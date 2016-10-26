@@ -1,0 +1,104 @@
+
+
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+Date: 25 October 2016
+Peer: Asmaa AlJuahni
+
+----------
+1) Critique
+The metabolic system is a network of multiple types of nodes, multiple types of links between them, and tens of thousands of instances of all of these.
+Asmaa recognized the overwhelming complexity of this network and recommended that I use a much-simplified subset of this network data for my concept-based project.
+
+1) Response
+Asmaa's advice to simplify the data for the sake of a concept-exploratory project is wise.
+I will need to select a representative subset of the network.
+
+----------
+2) Critique
+In my current design, the user queries the biological network for paths that connect specific nodes or subsets of the network that otherwise satisfy specific criteria.
+The user then selects a subset of the network from a list of ranked results.
+The user then refines this subset according to her or his interest.
+This refinement process involves selecting types or instances of nodes and links to include or remove from the subset.
+Asmaa observed that these subsequent refinements will drastically alter the relevance of the original search results.
+For example, the only thing connecting two branches of a subset of the network is a gene.
+If the user subsequently decides not to include gene-related links in the network, then that entire branch will be lost.
+The main issue is that subsequent modifications will render the search results obsolete and irrelevant.
+Asmaa thought that this use of multiple levels of user interaction to define subsets of interest (separation of initial query from more-specific refinements) will not work well.
+
+2) Response
+Asmaa's observation is accurate and very relevant.
+
+It is important for the user to obtain an objective and accurate selection of a subset of the network.
+For that reason, the query process matters.
+It seems detrimental to nullify this query process.
+
+The difficulty and source of this problem relates to the complexity of the biological network.
+This network has multiple types of nodes and multiple types of links.
+For this reason, querying this network is more complex than querying a social authorship network as in PathFinder.
+
+It is important to consider the goal of the subset selection process.
+The problem is that the biological network is too vast and complex to really consider or understand comprehensively.
+The solution is to use a computational system to store information about the comprehensive biological network and then enable the human user to select and access subsets according to her or his interest.
+
+It think it is important for this selection process to be objective and free of bias so that the user does not over-emphasize some aspects and neglect others inappropriately.
+When I think about it more, however, I am not sure if any selection process will be entirely free of bias.
+Any specific query criteria will exclude aspects of the network.
+That will be true even if the criteria are to select the most direct paths rather than extremely round-about ones.
+To solve this problem, I think the interface should balance computational objectivity with human intuition.
+
+Maybe the solution is to use an holistic selection process.
+Do not try to separate the selection process into multiple steps.
+Use a dynamic query interface so that the user can narrow a selection progressively.
+The idea is to say "show me all of the nodes and links in the network that match these criteria".
+Keep all of these criteria together for the sake of transparency and to preserve the record of what the user did.
+
+Alright, so that is the selection process.
+Another, related process is visualization and exploration of the selection or subset of the network.
+Even with a very specific (and exclusive) selection process, I think it will be necessary for the user to interactively narrow and change the aspects of the network that show up at any point. For example, at this point the user can select which types of nodes and links to display in a given view at a given time.
+
+Maybe it should not be possible for the user to exclude specific types of nodes or links from the query selection subset.
+It probably should be possible for the user to decide how or if to display these.
+
+----------
+3) Critique
+In my current design, a node-link diagram with dynamic layout is the primary visual representation of the metabolic network.
+I also considered alternative representations of the network.
+My favorite alternative visual representation of the network is a parallel coordinates chart.
+Asmaa did not much like the node-link diagram as a visual representation of the metabolic network.
+I think she considered the network to be too complex for the node-link diagram to represent it well.
+In contrast, Asmaa thought that the parallel coordinates chart had a lot of potential to represent aspects of the network.
+
+3) Response
+I like the idea of considering alternative methods of representing the metabolic network visually.
+The parallel coordinates chart is my favorite alternative visual representation that I have considered.
+I have not figured out all the details, but my idea is to somehow rank or order each type of entity on a separate axis and then draw lines to represent relations between different entity types.
+The ranking could be based on degree of connectivity or on experimental data.
+
+The parallel coordinates chart would handle scale and complexity well and represent it clearly.
+Trends would be clear.
+The parallel coordinates chart would, in some ways, handle scale and complexity better than the node-link diagram.
+
+A challenge of the parallel coordinates representation is that the chart would have to be different for different types of relations.
+For example, code relations are only between genes, transcripts, and proteins, not metabolites.
+Also, often there are relations between entities of the same type.
+For example, multiple proteins interact with each other.
+
+I think that a node-link diagram is one of the best ways to represent the metabolic network visually.
+It definitely has limitations also.
+A major challenge is how to represent multiple different types of nodes and links simultaneously.
+Representing multiple types of links is especially problematic.
+
+----------
+4) Critique
+Asmaa wanted some sort of overview of the entire network for the sake of context.
+
+4) Response
+I agree that it would be helpful to have some sort of overview or means to give a sense of context.
+The scale and complexity of the metabolic network is such that I doubt that a truly-complete representation would be an effective overview.
+For example, it would be difficult even to highlight the subset on this complete overview in an understandable way.
+Maybe there are other methods to establish some sense of context.
+I need to consider ideas more.
+
+
