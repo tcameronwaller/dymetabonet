@@ -1,10 +1,145 @@
 
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+Peer Feedback Exercise
+
+Date: 1 November 2016
+Peer: Jared P Rutter
+
+----------
+----------
+----------
+Detail
+
+Jared P Rutter is an expert in biology and metabolism.
+
+----------
+1) Critique
+I showed Jared my sketch 2016-10-31_1 (Date: 31 October 2016, Number: 1) to illustrate the concept that the metabolic network is actually a combination of networks in multiple dimensions for different types of entities and relations between them.
+I showed Jared my sketch 2016-10-31_2 (Date: 31 October 2016, Number: 2) to illustrate the concept that it would be possible to organize nodes spatially by properties such as sub-cellular compartment.
+I showed Jared my sketch 2016-10-31_3 (Date: 31 October 2016, Number: 3) to illustrate the concept that it would be possible to represent the metabolic network on a grid between two or more node types.
+Jared did not like this visual representation of the metabolic network.
+I showed Jared my sketch 2016-10-20_1 (Date: 20 October 2016, Number: 1) to illustrate the concept that it would be possible to represent the metabolic network as a node-link diagram with multiple types of nodes and multiple types of links.
+Jared preferred this node-link diagram representation of the network, and he also thought that it would be beneficial to simplify the network by only representing relevant nodes and types of nodes.
+I also showed Jared an example of the interface of the KEGG Pathways database.
+This interface involves static maps of pre-define pathways.
+Jared drew sketch 2016-11-01_1 (Date: 1 November 2016, Number: 1) to illustrate his idea for a minimally-functional and useful tool.
+His idea for a functional tool most importantly considers the network of direct relations of reactions between metabolites, the direct metabolic network.
+The user is able to select a subset of this network using a set of metabolites for which she or he has data, for example.
+The tool draws a custom, dynamic map of the network connecting these entities of interest.
+The map is a node-link diagram.
+This map primarily represents nodes for entities of the metabolite type and links for relations of the reaction type.
+The map is interactive allowing the user to navigate and explore the map and customize it further.
+Also, the user can highlight nodes in the query set on the network.
+Also, the user can highlight or position nodes in the network by properties (compartment, cofactor).
+The user can then observe some indication for accumulation or depletion of metabolites on the network map to give context to the data.
+The user can map a representation of experimental data onto the network map.
+Color value of nodes or glyphs next to nodes would most likely encode the experimental data for each node.
+Jared was not sure if it would be better to show a quantitative color scale for degree of accumulation (red) or degree of depletion (blue) or to just use two colors for binary (yes or no) accumulation or depletion.
+The issue is how informative fold change really is anyway.
+In other terms, the color could represent fold change (bidirectional), direction of change (up or down), or p-value associated with change (accumulation or depletion determines color--red or blue--, p-value determines color value).
+Jared emphasized the importance to start small with a feasible scope and think big, allowing for extensibility.
+The most common usage scenario will probably involve a single data set for a single node type.
+For example, accomodate a data set for metabolomics (most important), transcriptomics (next priority), or proteomics.
+Accomodating data sets for multiple node types (metabolomics and transcriptomics) is an additional feature.
+Also, the network of reactions between metabolites is most important.
+It will also be useful to include information about enzymes (for proteomics), their transcripts (for transcriptomics), and their genes.
+Also, it will simplify to filter out properties that do not matter as much.
+In Jared's opinion, reaction rates are unreliable predictions anyway.
+Jared does acknowledge the value of properties such as subcellular compartment and protein cofactors.
+
+1) Response
+Jared's idea for the tool is an improvement on current tools such as KEGG Pathways.
+The users ability to define a custom subset of the network by a query against the comprehensive database is a very important and useful feature.
+The user could query by a set of metabolites (most important), proteins, or transcripts.
+A major limitation of current technology is the necessity to view parts of the metabolic network in sets of pre-defined, somewhat arbitrary pathways.
+Really all metabolic pathways are connected, so a custom subset of the network is most relevant.
+
 
 --------------------------------------------------
 --------------------------------------------------
 --------------------------------------------------
+Peer Feedback Exercise
+
+Date: 31 October 2016
+Peer: Sean P McKenna
+
+----------
+----------
+----------
+Detail
+
+Sean P McKenna is an expert in information visualization.
+
+----------
+1) Critique
+Sean emphasized the importance of matching visual encodings with the priority level of the information.
+It is beneficial to use the best visual channel to represent the most important information.
+Position is the best visual channel.
+Sean thought that the node-link diagram did not use position for the most important information.
+Sean also thought that the node-link diagram would not scale well to a large set of data.
+Sean also thought that a parallel-coordinates chart did not represent the network information well.
+Sean recommended using position to represent the network.
+Sean recommended using a representation similar to an adjacency matrix or a grid.
+Sean specifically referred me to the RelEx project by Michael Sedlmair.
+
+1) Response
+A grid-like representation of the network has a lot of potential.
+This representation scales well and supports spatial/positional grouping well.
+One axis could have metabolites, and the other axis could have proteins that interact with those metabolites.
+It might be beneficial to group entities on either axis by subcellular compartment, experimental data, or any other property.
+This representation would show groups well.
+Maybe it would be good to represent the network using both node-link diagrams and grids.
+The grid can only represent so many types of information at a time.
+The user will need to specify the node types for each axis.
+The user will need to specify which property to use for grouping nodes on each axis.
+Maybe the program could somehow suggest grouping strategies based on experimental data.
+
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+Peer Feedback Exercise
+
 Date: 25 October 2016
 Peer: Asmaa AlJuahni
+
+----------
+----------
+----------
+Summary
+
+1) Critique
+Use simplification of network data for visual design project.
+1) Response
+Use a representative (variety of node types, node properties, and relation types) subset of network data.
+Use simulation data.
+
+2) Critique
+Multiple levels of user interaction in query may be too complex.
+2) Response
+Distinguish subset selection query from exploration processes.
+Provide sufficient support for dynamic and specific queries.
+Provide functionality to narrow selection further for the sake of exploration.
+
+3) Critique
+The node-link diagram is complex and does not scale well with the data.
+The parallel-coordinates chart might scale better while representing trends well.
+3) Response
+While it has major limitations, a node-link diagram is one of the best ways to represent the metabolic network visually.
+Alternative visual representations, including parallel-coordinates chart, might be useful in supplementary views, especially to represent experimental data in context.
+
+4) Critique
+It would be helpful to represent some sort of holistic overview of the entire network to orient the user and provide context.
+4) Response
+The scale and complexity of the metabolic network essentially rules out a comprehensive overview.
+Maybe a good query interface will provide sufficient access to the comprehensive system.
+It would still be beneficial to have some sort of representation of overview context.
+
+----------
+----------
+----------
+Detail
 
 ----------
 1) Critique
@@ -14,6 +149,7 @@ Asmaa recognized the overwhelming complexity of this network and recommended tha
 1) Response
 Asmaa's advice to simplify the data for the sake of a concept-exploratory project is wise.
 I will need to select a representative subset of the network.
+I could also consider using simulation data or artificial data for the sake of the concept.
 
 ----------
 2) Critique
@@ -100,5 +236,5 @@ The scale and complexity of the metabolic network is such that I doubt that a tr
 For example, it would be difficult even to highlight the subset on this complete overview in an understandable way.
 Maybe there are other methods to establish some sense of context.
 I need to consider ideas more.
-
+Maybe a good query interface will be enough to provide access to the comprehensive system.
 
