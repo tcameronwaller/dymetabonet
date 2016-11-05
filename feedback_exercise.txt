@@ -1,4 +1,73 @@
 
+
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+Peer Feedback Exercise
+
+Date: 4 November 2016
+Peers: Alexander Lex, Sean P McKenna
+
+----------
+----------
+----------
+Detail
+
+Alexander Lex and Sean P McKenna are experts in information visualization
+
+----------
+1) Critique
+Alex and Sean recommend that I distinguish between the short-term trial project for the Data Visualization Course and the long-term research project for publication.
+The scopes of the projects are very different.
+I need to narrow the scope of the short-term trial project for the sake of feasibility.
+
+1) Response
+There are many features that I envision for the long-term project that I will need to omit from the short-term project.
+
+----------
+2) Critique
+Alex and Sean both considered my plan for the project to be far too broad and general.
+They emphasized the need for specific use tasks and requirements.
+
+2) Response
+It is accurate that my plan for the project up to this point is very general and broad.
+I need to consider specific requirements for the project and propose specific solutions to meet those.
+As I consider requirements and solutions, I need to consider the scope of the project to ensure feasibility.
+
+----------
+3) Critique
+Alex considered it unnecessary to disregard pathway annotation in the metabolic network.
+He considered pathway annotation to be an informative semantic feature of the data.
+He did not consider this annotation to be arbitrary.
+
+3) Response
+I agree that pathway annotation (Glycolysis, Pentose Phosphate, Citrate Cycle) is informative.
+Pathways are a useful way to recognize portions of the metabolic network.
+I do intend for the user to be able to explore the network by pre-defined pathways (assuming that the models of the metabolic network include this annotation).
+I also want to enable the user to query the network in a way that is independent of pre-defined pathways.
+I intend for the user to be able to query the network on the basis of topology, not just annotation.
+The user will be able to query for paths connecting nodes even if these paths cross multiple pre-defined pathways.
+
+----------
+4) Critique
+Alex asked me about my previous idea to include flux rates as properties of the network.
+There are mixed, conflicting opinions in the biological community about the utility of reaction rates in metabolic models since many of these rates are predictions.
+Alex considers this information to be an interesting aspect of the network.
+Alex also considers that since the community is divided, it may be helpful to support visual evaluation of this rate information.
+
+4) Response
+I agree with Alex.
+I lean towards acknowledging the utility of the rate information.
+I think that rate should be an aspect of the long-term project.
+
+----------
+5) Critique
+In the interest of feasibility in the scope of this project (for the data visualization course), both Alex and Sean recommend that I focus on the visual representation of the network information.
+They recommend that I omit query interface from this short-term trial project.
+
+5) Response
+I agree.
+
 --------------------------------------------------
 --------------------------------------------------
 --------------------------------------------------
@@ -55,7 +124,6 @@ The users ability to define a custom subset of the network by a query against th
 The user could query by a set of metabolites (most important), proteins, or transcripts.
 A major limitation of current technology is the necessity to view parts of the metabolic network in sets of pre-defined, somewhat arbitrary pathways.
 Really all metabolic pathways are connected, so a custom subset of the network is most relevant.
-
 
 --------------------------------------------------
 --------------------------------------------------
