@@ -2,10 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Profondeur</title>
     <link rel="stylesheet" href="style.css"/>
 
     <!-- References -->
+    <!-- Viewport Dimensions
+         "Using the viewport meta tag to control layout on mobile browsers"
+         Mozilla Developer Network
+         nasearle et al
+         12 October 2016
+         https://developer.mozilla.org/en-US/docs/Mozilla/Mobile/Viewport_meta_tag -->
+    <!-- Float Property
+         "float"
+         Mozilla Developer Network
+         duncanmcdonald et al
+         10 February 2016
+         https://developer.mozilla.org/en-US/docs/Web/CSS/float -->
     <!-- Object-Oriented Programming In JavaScript
          "Introduction to Object-Oriented JavaScript"
          Mozilla Developer Network
@@ -35,13 +48,57 @@
          "Immediately-invoked function expression"
          Wikipedia
          https://en.wikipedia.org/wiki/Immediately-invoked_function_expression -->
+    <!-- Element Dimensions And Position
+         "Element.getBoundingClientRect()"
+         Mozilla Developer Network
+         SeanMcMillan et al
+         26 July 2016
+         https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect -->
+    <!-- Window Viewport Dimensions
+         "Window.innerWidth"
+         Mozilla Developer Network
+         mrenty et al
+         8 January 2016
+         https://developer.mozilla.org/en-US/docs/Web/API/Window/innerWidth -->
 </head>
 <body>
-    <div id="title">
-        <span class="level1">Profondeur:</span>
-        <span class="level2">Visual Exploration And Analysis Of Metabolic Networks</span>
+
+    <!-- Use D3 to create elements that associate and change with data. -->
+    <!-- Create all other elements within the HTML. -->
+    <!-- Group all page content in a container element. -->
+
+    <div>
+
+        <!-- Create element for title or header of interface. -->
+        <header>
+            <h1>Profondeur</h1>
+            <h2>Visual Exploration And Analysis Of Metabolic Networks</h2>
+        </header>
+
+        <!-- What is the best way to scale views by screen/window size? -->
+        <!-- TODO: Scale elements by screen/window size. -->
+
+        <!-- TODO: Give some nice borders and background color to the query and navigation views. -->
+
+        <!-- Create element for query selection view. -->
+        <!-- For this project, this view will not associate with data beyond a selection menu. -->
+        <div id="query" class="view">
+            <svg width="300" height="1000"></svg>
+        </div>
+
+        <!-- Create element for network view. -->
+        <div id="network" class="view"></div>
+
+        <!-- Create element for navigation view. -->
+        <!-- Maybe the navigation view should actually have a fixed size. -->
+        <div id="navigation" class="view">
+            <svg width="300" height="1000"></svg>
+        </div>
+
     </div>
-    <div id="network"></div>
+
+    <!-- Call the script. -->
     <script type="application/javascript" src="script.js"></script>
+
 </body>
 </html>

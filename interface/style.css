@@ -1,1 +1,26 @@
 
+/* Elements */
+
+header {}
+
+/* Classes */
+
+.view {}
+
+
+/* Identifiers */
+
+#title {}
+
+#query {
+    float: left;
+}
+
+#network {
+    float: left;
+}
+
+#navigation {
+    float: right;
+}
+
