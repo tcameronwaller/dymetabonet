@@ -1,26 +1,45 @@
+/* Set dimensions of elements proportional to dimensions of the viewport or window. */
 
 /* Elements */
 
-header {}
+header {
+    width: 95vw;
+}
 
 /* Classes */
 
-.view {}
-
+.view {
+    display: inline;
+    float: left;
+    margin: 5px;
+    border: 5px solid black;
+    padding: 10px;
+}
 
 /* Identifiers */
 
-#title {}
+#window {
+    width: 97vw;
+    height: 97vh;
+}
 
 #query {
+    display: inline;
     float: left;
+    width: 30vw;
+    height: 42vh;
 }
 
 #network {
-    float: left;
+    display: inline;
+    float: right;
+    width: 63vw;
+    height: 87vh;
 }
 
 #navigation {
-    float: right;
+    display:inline;
+    float: left;
+    width: 30vw;
+    height: 42vh;
 }
-

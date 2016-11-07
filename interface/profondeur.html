@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
     <title>Profondeur</title>
     <link rel="stylesheet" href="style.css"/>
+    <script src="https://d3js.org/d3.v4.js"></script>
 
     <!-- References -->
     <!-- Viewport Dimensions
@@ -60,14 +61,43 @@
          mrenty et al
          8 January 2016
          https://developer.mozilla.org/en-US/docs/Web/API/Window/innerWidth -->
+    <!-- Window Viewport Dimensions
+         "Window.innerHeight"
+         Mozilla Developer Network
+         mrenty et al
+         28 January 2016
+         https://developer.mozilla.org/en-US/docs/Web/API/Window/innerHeight -->
+    <!-- Element Dimensions
+         "Determining the dimensions of elements"
+         Mozilla Developer Network
+         fscholz et al
+         24 July 2015
+         https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model/Determining_the_dimensions_of_elements -->
+    <!-- Load Data To D3 From JSON
+         "Bar chart from external JSON file"
+         Blocks
+         Janu Verma
+         26 September 2016
+         http://bl.ocks.org/Jverma/887877fc5c2c2d99be10 -->
+    <!-- Create HTML Selection Element With D3
+         "d3js: Create an HTML select box using d3.js and create a paragraph referencing the selection"
+         Blocks
+         Justin Freels
+         13 August 2016
+         http://bl.ocks.org/jfreels/6734823 -->
+    <!-- D3 Event Handling
+         "Handling Events"
+         https://github.com/d3/d3-selection#handling-events -->
+
 </head>
+
 <body>
 
-    <!-- Use D3 to create elements that associate and change with data. -->
+    <!-- Use D3 to create elements that associate with data or change with data. -->
     <!-- Create all other elements within the HTML. -->
     <!-- Group all page content in a container element. -->
 
-    <div>
+    <div id="window">
 
         <!-- Create element for title or header of interface. -->
         <header>
@@ -83,7 +113,12 @@
         <!-- Create element for query selection view. -->
         <!-- For this project, this view will not associate with data beyond a selection menu. -->
         <div id="query" class="view">
-            <svg width="300" height="1000"></svg>
+            <!-- <svg width="300" height="1000"></svg> -->
+            <div id="selectordiv">
+                <label>Data:</label>
+                <select id="selector"></select>
+                <button id="submit">Submit</button>
+            </div>
         </div>
 
         <!-- Create element for network view. -->
@@ -101,4 +136,5 @@
     <script type="application/javascript" src="script.js"></script>
 
 </body>
+
 </html>
