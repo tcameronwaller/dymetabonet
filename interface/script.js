@@ -1,12 +1,27 @@
 
+// TODO: In NavigationView, select between free and restricted compartment layouts.
+// TODO: In NavigationView, select whether or not to highlight nodes of a specific compartment or to highlight edges
+// TODO: that represent reversible reactions.
+// TODO: In NavigationView, select whether or not to show labels by nodes.
+// TODO: Implement a tool tip to give more information about nodes AND links.
+
+
 /**
  * Declare a class to contain properties and methods of the query view.
+ * In the final implementation, methods of this class will build and execute queries to select subsets of the network
+ * data in the original model.
+ * Methods of of this class will modify the actual data to create a copy that only includes relevant parts of the
+ * network.
+ * In this preliminary implementation, methods of this class simply load different versions of a model.
+ * Methods of this class then pass the data for the subset of the network to the navigation view for further
+ * modification with user interaction.
  */
 class QueryView {
 
-    constructor() {
+    constructor(navigationView) {
 
         var self = this;
+        self.navigationView = navigationView;
         self.initialize();
 
     }
@@ -76,33 +91,88 @@ class QueryView {
             // Create objects that associate with these data.
 
             d3.json(("data/" + self.dataFile), function (error, data) {
-                var networkView = new NetworkView(data);
+                self.send(data);
             });
 
         });
+    }
+
+    send(data) {
+
+        var self = this;
+
+        self.navigationView.receive(data);
+    }
+}
+
+
+/**
+ * Declare a class to contain properties and methods of the navigation view.
+ * Methods of this class receive data for a subset of the network from the query view.
+ * In response to user interaction, methods of this class modify the data further and modify parameters for the visual
+ * representation of the network.
+ * Methods of this class then pass the data with annotations to the network view.
+ * In a typical session, the expectation is that the navigation view will interact with the network view frequently.
+ */
+class NavigationView {
+
+    constructor(networkView) {
+
+        var self = this;
+        self.networkView = networkView;
+
+        self.initialize();
+    }
+
+    initialize() {
+
+        // This method creates any necessary elements of the navigation view.
+        // This method establishes all necessary event handlers for elements of the navigation view.
+        // These event handlers respectively call appropriate methods.
+    }
+
+    receive(data) {
+
+        var self = this;
+
+        // The navigation view supports modification of the data.
+        // Copy the data so that it is always possible to revert to the original from the query view.
+        self.dataOriginal = data;
+        self.dataDerivation = data;
+        console.log("NavigationView Data")
+        console.log(self.dataOriginal)
+        self.send(self.dataDerivation);
+    }
+
+    send(data) {
+
+        var self = this;
+
+        self.networkView.receive(data);
     }
 }
 
 
 /**
  * Declare a class to contain properties and methods of the network view.
+ * Methods of this class receive data for a subset of the network with annotations from the navigation view.
+ * Methods of this class create visual representations of the data for the network.
  */
 class NetworkView {
 
-    constructor(data) {
+    constructor() {
         // Declare variable self to store original instance of the object.
         var self = this;
-        self.data = data;
 
         self.initialize();
-        self.update();
+
     }
 
     initialize() {
 
-        var self = this;
+        // This method creates any necessary elements of the network view.
 
-        console.log(self.data);
+        var self = this;
 
         // Create SVG element.
         // Set dimensions of SVG proportional to dimensions of the viewport or window.
@@ -132,7 +202,22 @@ class NetworkView {
 
     }
 
+    receive(data) {
+
+        var self = this;
+
+        self.data = data;
+
+        console.log("NetworkView Data")
+        console.log(self.data);
+
+    }
+
     update() {
+
+        // This method establishes any necessary event handlers for elements of the network view.
+        // These event handlers respectively call appropriate methods.
+
 
         var self = this;
 
@@ -150,6 +235,13 @@ class NetworkView {
  * An alternative style would be to declare the function and subsequently call it.
  */
 (function () {
-    var queryView = new QueryView();
+
+    // Create single instance objects of each view's class.
+    // Pass instance objects as arguments to classes that need to interact with them.
+    // This strategy avoids creation of replicate instances of each class and enables instances to communicate together.
+    var networkView = new NetworkView();
+    var navigationView = new NavigationView(networkView);
+    var queryView = new QueryView(navigationView);
+
 })();
 
