@@ -91,6 +91,7 @@ class QueryView {
             // Create objects that associate with these data.
 
             d3.json(("data/" + self.dataFile), function (error, data) {
+                if (error) throw error;
                 self.send(data);
             });
 
@@ -139,8 +140,8 @@ class NavigationView {
         // Copy the data so that it is always possible to revert to the original from the query view.
         self.dataOriginal = data;
         self.dataDerivation = data;
-        console.log("NavigationView Data")
-        console.log(self.dataOriginal)
+        //console.log("NavigationView Data")
+        //console.log(self.dataOriginal)
         self.send(self.dataDerivation);
     }
 
@@ -210,16 +211,99 @@ class NetworkView {
 
         console.log("NetworkView Data")
         console.log(self.data);
+        self.update();
 
     }
 
     update() {
 
-        // This method establishes any necessary event handlers for elements of the network view.
-        // These event handlers respectively call appropriate methods.
-
-
         var self = this;
+        //console.log(self.data);
+
+        // Determine dimensions of SVG element.
+        // self.svgWidth = +self.networkSVG.attr("width");
+        // self.svgHeight = +self.networkSVG.attr("height");
+
+        // The code below is an adaptation of Mike Bostock's "Force-Directed Graph".
+        // I do not know yet if it will work.
+
+        self.simulation = d3.forceSimulation()
+            .force("link", d3.forceLink().id(function (d) {return d.id;}))
+            .force("charge", d3.forceManyBody())
+            .force("center", d3.forceCenter(self.svgWidth / 2, self.svgHeight / 2));
+
+        self.link = self.networkSVG.append("g")
+            .selectAll("line")
+            .data(self.data.reactions)
+            .enter()
+            .append("line")
+            .attr("stroke", "black")
+            .attr("stroke-opacity", 1)
+            .attr("stroke-width", 3);
+
+        self.node = self.networkSVG.append("g")
+            .selectAll("circle")
+            .data(self.data.metabolites)
+            .enter()
+            .append("circle")
+            .attr("r", 5)
+            .attr("fill", "red")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        // Create titles for nodes so that mouse hover will display title.
+        self.node.append("title")
+            .text(function (d) {
+                return d.name;
+            });
+
+        self.simulation
+            .nodes(self.data.metabolites)
+            .on("tick", ticked);
+
+        self.simulation
+            .force("link")
+            .links(self.data.reactions);
+
+        // TODO: In order for this node-link diagram to work, I need a set of links between nodes.
+        // TODO: The JSON from the original model includes multiple links in each reaction.
+        // TODO: I'll need to change that with a parser.
+
+        function ticked() {
+            link
+                .attr("x1", function (d) {return d.source.x;})
+                .attr("y1", function (d) {return d.source.y;})
+                .attr("x2", function (d) {return d.target.x;})
+                .attr("y2", function (d) {return d.target.y;});
+
+            node
+                .attr("cx", function (d) {return d.x;})
+                .attr("cy", function (d) {return d.y;});
+
+        };
+
+        function dragstarted(d) {
+            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        };
+
+        function dragged(d) {
+            d.fx = d3.event.x;
+            d.fy = d3.event.y;
+        };
+
+        function dragended(d) {
+            if (!d3.event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        };
+
+
+
+
 
     }
 }

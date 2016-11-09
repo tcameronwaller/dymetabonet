@@ -102,14 +102,54 @@ import cobra
 # Test script
 
 import os
+# http://sbml.org/Software/libSBML
+#In terminal: pip install python-libsbml
+#import libsbml
+#In terminal: pip install cobra
 import cobra
-from __future__ import print_function
+#from __future__ import print_function
 import cobra.io
 import cobra.test
 
-# Model
 
+
+# Apparently I also need libsbml for the Recon 2.2 model.
+
+
+# Load models and export to JSON.
+
+# Escherichia coli model example.
+
+directory_root = os.path.join(
+    "C:\\", "Data", "Local", "Course_Visualization", "Project_Profondeur",
+    "profondeur", "data"
+)
+file_path = os.path.join(
+    directory_root, "model_e-coli_core.json"
+)
+
+# model = cobra.io.read_sbml_model(cobra.test.ecoli_sbml)
 model = cobra.test.create_test_model("textbook")
+cobra.io.save_json_model(model, file_path)
+
+# Homo sapiens model Recon 2.2.
+
+file_path_out = os.path.join(
+    directory_root, "model_h-sapiens_recon-2.json"
+)
+
+file_path_in = os.path.join(
+    directory_root, "model_h-sapiens_recon-2.xml"
+)
+
+file_path_out = os.path.join(
+    directory_root, "model_h-sapiens_recon-2.json"
+)
+
+model = cobra.io.read_sbml_model(file_path_in)
+cobra.io.save_json_model(model, file_path_out)
+
+# Explore model.
 print(model)
 
 # Explore Reactions
@@ -151,21 +191,6 @@ print(pgi.genes)
 pgi_gene = model.genes.get_by_id("b4025")
 print(pgi_gene)
 print(pgi_gene.reactions)
-
-# Export model to JSON
-
-directory_root = os.path.join(
-    "C:\\", "Data", "Local", "Course_Visualization", "Project_Profondeur"
-)
-file_path = os.path.join(
-    directory_root, "model_e-coli_core.json"
-)
-
-# model = cobra.io.read_sbml_model(cobra.test.ecoli_sbml)
-model = cobra.test.create_test_model("textbook")
-cobra.io.save_json_model(model, file_path)
-
-
 
 ###########################################################################
 # Script functionality
