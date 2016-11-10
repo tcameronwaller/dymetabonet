@@ -35,7 +35,9 @@ class QueryView {
         // TODO: Create selector options for all available data sets.
         // TODO: It seems this functionality is difficult.
         // TODO: readdirSync from Node.js might work.
-        self.optionsArray = ["model_e-coli_core.json", "model_e-coli_2.json"];
+        self.optionsArray = [
+            "model_e-coli_citrate-cycle_node-link.json", "model_e-coli_citrate-cycle_sub_node-link.json"
+        ];
         self.selector = d3.select("#selector");
         self.options = self.selector.selectAll("option")
             .data(self.optionsArray)
