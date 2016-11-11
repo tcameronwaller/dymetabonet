@@ -1,0 +1,201 @@
+--------------------------------------------------
+
+--------------------------------------------------
+10 November 2016
+
+----------
+
+Changes to the network representation such as replicating nodes should result in a total redraw of the network, I think.
+
+Changing the layout of the network to group nodes by property such as cellular compartment should happen on the network nodes and links as currently drawn.
+
+Highlighting should also happen on the network as currently drawn.
+
+----------
+
+Use arrows to indicate directionality in the force-directed graph.
+
+References
+
+"<defs>"
+https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs
+
+----------
+
+Modify models (preserve originals) duplicating common nodes such as h20, h, co2, and maybe others.
+
+Mike Bostock's example "Force-Directed Graph" uses d3.forceSimulation(), but most other examples, including several of Bostock's use d3.layout.force().
+
+After searching, I think that d3.forceSimulation() is the more current replacement for d3.layout.force().
+d3.forceSimulation()
+d3.layout.force()
+
+The relevant documentation is in the d3-force module of d3.
+https://github.com/d3/d3-force
+
+I want to distinguish clearly between links for metabolites and links for reactions.
+Make reaction links thicker and make them arrows.
+Make nodes for reactions barely visible.
+Vary the force properties/strengths for metabolite lengths and reaction links.
+
+----------
+
+References
+
+"Force-Directed Graph"
+Mike Bostock
+9 November 2016
+https://bl.ocks.org/mbostock/4062045
+
+"Mobile Patent Suits"
+Mike Bostock
+27 September 2016
+http://bl.ocks.org/mbostock/1153292
+
+"Force-Directed Graph with Mouseover"
+Mike Bostock
+22 February 2016
+http://bl.ocks.org/mbostock/2706022
+
+"Basic Directional Force Layout Diagram"
+d3noob
+29 February 2016
+http://bl.ocks.org/d3noob/5141278
+
+"A Simple d3 Network Graph"
+Jose Christian
+7 October 2016
+http://bl.ocks.org/jose187/4733747
+
+"Clustered Force Layout III"
+Mike Bostock
+21 October 2016
+http://bl.ocks.org/mbostock/7881887
+
+"Clustered Force Layout I"
+Mike Bostock
+18 September 2016
+http://bl.ocks.org/mbostock/1747543
+
+
+--------------------------------------------------
+7 November 2016
+
+----------
+In general, organize functionality together as much as is practical.
+Try to keep as much element creation in the HTML as is practical.
+Try to keep as much style definition in the CSS as is practical.
+Use JavaScript and D3 to create and modify elements that either associate with data or change with user interaction.
+Otherwise, minimize script-based element creation and in-line styling because it is more difficult to find and understand.
+
+----------
+In terms of style/strategy, would it be better to create SVG's for my views in the HTML?
+Those SVG's do not depend on data, so it might be better style to create them there.
+An argument for creating them in the script would be if I needed some script functionality, such as to scale properly.
+However, it should work fine to size them relatively in the CSS using vw and vh.
+Actually, that might work even better than in the script since it is difficult to access the padding dimension from CSS.
+In general, I think that I should minimize in-line styling with D3.
+Minimizing in-line styling will make the project more readable and easier to follow.
+Another reason to create elements in the script would be if you only wanted them to appear when some event occurs.
+I don't need that with my views.
+I think I'll make the change later and save the old code blocks in a scrap file.
+Here is my note that accompanies the scrap code.
+I originally used D3 in the JavaScript script to create Scalable Vector Graphics elements within my DIV elements.
+Then I decided that these SVG elements neither depend on data nor on user interaction.
+I decided instead to create these SVG elements in the HTML and style them in the CSS.
+Since I learned some neat things (such as methods to scale elements relatively), I want to keep the code.
+
+----------
+I found some nice resources for visualizing networks in node-link graphs using D3.
+I wonder if Mike Bostock's clustered force layout could have some clues about how to group nodes into separate regions depending on properties such as cellular compartment.
+References
+"How to Make an Interactive Network Visualization"
+Jim Vallandingham
+https://flowingdata.com/2012/08/02/how-to-make-an-interactive-network-visualization/
+"A Simple d3 Network Graph"
+Jose Christian
+7 October 2016
+http://bl.ocks.org/jose187/4733747
+"AN A TO Z OF EXTRA FEATURES FOR THE D3 FORCE LAYOUT"
+Simon Raper
+23 July 2014
+"Force-Directed Graph"
+Mike Bostock
+6 November 2016
+https://bl.ocks.org/mbostock/4062045
+"Clustered Force Layout III"
+Mike Bostock
+21 October 2016
+http://bl.ocks.org/mbostock/7881887
+"Clustered Force Layout I"
+Mike Bostock
+18 September 2016
+http://bl.ocks.org/mbostock/1747543
+"d3.js: force layout; click to group/bundle nodes; multiple relations"
+Ger Hobbelt
+19 May 2016
+http://bl.ocks.org/GerHobbelt/3104394
+"Hierarchical Edge Bundling"
+Mike Bostock
+1 November 2016
+https://bl.ocks.org/mbostock/7607999
+
+
+--------------------------------------------------
+6 November 2016
+
+----------
+Document Object Model (DOM)
+SVG (Scalable Vector Graphics)
+
+----------
+In principle, use D3 to create DOM elements that associate with data or change with data.
+Create all other elements within the HTML.
+
+----------
+Layout of elements in the DOM is tricky.
+References
+"flex"
+https://developer.mozilla.org/en-US/docs/Web/CSS/flex
+"display"
+https://developer.mozilla.org/en-US/docs/Web/CSS/display
+"float"
+https://developer.mozilla.org/en-US/docs/Web/CSS/float
+
+
+----------
+Set dimensions of DOM elements (especially view div and svg) proportional to dimensions of the viewport or window.
+The styles for the views' div elements set these elements dimensions proportionally using the relative units "vw" and "vh" for width and height attributes.
+Since I set the dimensions of those parent elements proportionally, I can access their dimensions to set those of the child svg elements.
+I can use "Element.getBoundingClientRect()".
+Alternatively I could use "window.innerWidth" and "window.innerHeight" to access the dimensions of the viewport.
+References
+"Window.innerWidth"
+https://developer.mozilla.org/en-US/docs/Web/API/Window/innerWidth
+"Window.innerHeight"
+https://developer.mozilla.org/en-US/docs/Web/API/Window/innerHeight
+
+----------
+Determine dimensions of elements in order to scale child elements properly.
+Element.getBoundingClientRect() and Element.getClientRects() essentially return the same values but in a different format.
+Element.clientWidth and Element.clientHeight might actually account for margin and border, though maybe not padding.
+console.log(self.queryDiv.node().getBoundingClientRect());
+console.log(self.queryDiv.node().getClientRects());
+console.log(self.queryDiv.node().clientWidth);
+console.log(self.queryDiv.node().clientHeight);
+self.bounds = self.queryDiv.node().getBoundingClientRect();
+self.svgWidth = self.bounds.width - (self.margin.left + self.margin.right);
+self.svgHeight = self.bounds.height - (self.margin.top + self.margin.bottom);
+References
+"Determining the dimensions of elements"
+https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model/Determining_the_dimensions_of_elements
+"Element.getClientRects()"
+https://developer.mozilla.org/en-US/docs/Web/API/Element/getClientRects
+
+----------
+I decided to use sequential creation of class instances.
+If a class needs to access or influence another class, it creates an instance of that class.
+I suppose this method could be problematic if subsequent iterations create multiple conflicting instances.
+An alternative that I might consider is creating class instances initially and then passing those instances around as
+arguments or parameters.
+That method might ensure that subsequent modifications influence the existing instance.

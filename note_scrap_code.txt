@@ -1,0 +1,12 @@
+--------------------------------------------------
+Notes: Scrap Code For Project Profondeur
+--------------------------------------------------
+
+--------------------------------------------------
+7 November 2016
+
+I originally used D3 in the JavaScript script to create Scalable Vector Graphics elements within my DIV elements.
+Then I decided that these SVG elements neither depend on data nor on user interaction.
+I decided instead to create these SVG elements in the HTML and style them in the CSS.
+Since I learned some neat things (such as methods to scale elements relatively), I want to keep the code.
+
