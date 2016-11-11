@@ -6,6 +6,35 @@ Name: T Cameron Waller
 Project: Profondeur
 
 --------------------------------------------------
+Date: 11 November 2016
+Number: 1
+Note:
+Alexander Lex and Sean P McKenna helped to inspire the ideas of this sketch.
+
+In this sketch I illustrated the general functionality of the Profondeur application.
+
+Via the Query View, the user can select between multiple small subsets of the metabolic model.
+These subsets are in JavaScript-Object-Notation (JSON) format.
+I will convert original metabolic models from Systems-Biology-Markup-Language (SBML) format using COBRApy.
+Then I want to use the otherwise-native data of these metabolic models as input for the Profondeur application.
+In early prototypes, I will use modifications of these data that provide the necessary arrays of nodes and links.
+
+Via the Control View, the user can select whether or not to replicate nodes with great degree in the network.
+Replication of these nodes can simplify the network by reducing connectivity.
+Excessive replication of central nodes can distort the network.
+Since a balance is important and likely depends on interest, it is important to allow the user to make this decision.
+When the user hovers the mouse over a metabolite in the degree table, the corresponding row in the table and the corresponding node(s) in the network graph have a highlight.
+
+Via the Explore View, the user can see a visual representation of the network as a node-link graph with a force layout.
+Nodes with replication appear differently than other nodes to make it clear that the user modified the network with respect to these nodes.
+When the user hovers the mouse over a metabolite node or a reaction link, that element has a highlight.
+Also, a title label appears giving the name of that element.
+When the user selects a metabolite node or a reaction link, an information panel in a corner on the bottom of the Explore View appears with more information about that metabolite or reaction.
+This information panel might be a good way to represent experimental data.
+Perhaps the user could hold down "Shift" to select multiple metabolite nodes or reaction links in order to visualize experimental data for these nodes or links in a new view.
+It would also be possible, of course, to represent accumulation or depletion of node entities (metabolites, proteins, transcripts) by color value of nodes or links on the network graph.
+
+--------------------------------------------------
 Date: 8 November 2016
 Number: 5
 Note:

@@ -387,6 +387,8 @@ class ExplorationView {
             console.log("Element Type: " + d.type);
             console.log("Name: " + d.name);
             console.log("----------");
+            console.log(d);
+            console.log("----------");
 
             // Display highlight edge around node.
             self.highlight = d3.select(this)
