@@ -219,11 +219,13 @@ class ExplorationView {
 
         console.log("ExplorationView Data")
         console.log(self.data);
-        self.update();
+        self.draw();
 
+        // Call update method.
+        self.update();
     }
 
-    update() {
+    draw() {
 
         var self = this;
         //console.log(self.data);
@@ -234,11 +236,21 @@ class ExplorationView {
 
         // TODO: Modify the force simulation to make links longer.
         // TODO: Give reaction links different force constraint (longer) than metabolite links.
+        // TODO: Set radius for collision force according to the radius of the actual node circles.
 
         // Initiate the force simulation.
+        // Collision force prevents overlap occlusion of nodes.
         self.simulation = d3.forceSimulation()
-            .force("charge", d3.forceManyBody())
-            .force("link", d3.forceLink().id(function (d) {return d.id;}))
+            .force("charge", d3.forceManyBody()
+                .strength(-150)
+            )
+            .force("collide", d3.forceCollide()
+                .radius(12)
+            )
+            .force("link", d3.forceLink()
+                .id(function (d) {return d.id;})
+                .distance(65)
+            )
             .force("center", d3.forceCenter(self.svgWidth / 2, self.svgHeight / 2));
 
         // TODO: Make markers bi-directional according to model.
@@ -255,7 +267,7 @@ class ExplorationView {
             .append("marker")
             .attr("id", "marker")
             .attr("viewBox", "0 0 10 10")
-            .attr("refX", 15)
+            .attr("refX", 20)
             .attr("refY", 5)
             .attr("markerWidth", 5)
             .attr("markerHeight", 5)
@@ -288,6 +300,7 @@ class ExplorationView {
         // TODO: They would occlude parts of the network otherwise.
         // Create nodes.
         self.node = self.explorationSVG.append("g")
+        //self.node = self.nodes
             .selectAll("circle")
             .data(self.data.nodes)
             .enter()
@@ -307,6 +320,11 @@ class ExplorationView {
 
         // Create titles for nodes so that mouse hover will display title.
         self.node.append("title")
+            .text(function (d) {
+                return d.name;
+            });
+
+        self.link.append("title")
             .text(function (d) {
                 return d.name;
             });
@@ -353,8 +371,106 @@ class ExplorationView {
         };
 
     }
-}
 
+    update() {
+
+        var self = this;
+
+        // Define interaction for nodes.
+
+        self.node.on("mouseover", function (d) {
+            //console.log(d3.event);
+            //console.log(d3.event.srcElement);
+            //console.log(d3.event.target);
+            //self.selectionNode = d3.select(d3.event.srcElement);
+            console.log("----------");
+            console.log("Element Type: " + d.type);
+            console.log("Name: " + d.name);
+            console.log("----------");
+
+            // Display highlight edge around node.
+            self.highlight = d3.select(this)
+                .classed("highlightnode", true);
+
+            // Display panel in top left of view with information about the node.
+            // TODO: Make this a group so that it can include text elements in addition to the rectangle.
+            self.panel = self.explorationSVG
+                .append("g");
+                //.data(d);
+            self.panel
+                .append("rect")
+                .attr("x", 5)
+                .attr("y", 5)
+                .attr("width", 250)
+                .attr("height", 125)
+                .attr("fill", "black")
+                .attr("fill-opacity", 0.25)
+                .attr("stroke", "black")
+                .attr("stroke-width", 5);
+                //.attr("class", "panel")
+            //self.panel
+            //    .append("text")
+            //    .attr("x", 25)
+            //    .attr("y", 25)
+            //    .text(function (d) {
+            //        return d.type;
+            //    })
+
+        });
+
+        self.node.on("mouseout", function () {
+
+            // Remove highlight edge around node.
+            self.unhighlight = d3.select(this)
+                .classed("highlightnode", false);
+
+            // Remove panel in top left of view with information about the node.
+            self.panel.remove()
+
+        });
+
+        // Define interaction for links.
+
+        self.link.on("mouseover", function (d) {
+            console.log("----------");
+            console.log("Element Type: " + d.type);
+            console.log("Name: " + d.name);
+            console.log("----------");
+
+            // Display highlight edge around node.
+            self.highlight = d3.select(this)
+                .classed("highlightlink", true);
+
+            // Display panel in top left of view with information about the node.
+            // TODO: Make this a group so that it can include text elements in addition to the rectangle.
+            self.panel = self.explorationSVG
+                .append("g");
+            //.data(d);
+            self.panel
+                .append("rect")
+                .attr("x", 5)
+                .attr("y", 5)
+                .attr("width", 250)
+                .attr("height", 125)
+                .attr("fill", "black")
+                .attr("fill-opacity", 0.25)
+                .attr("stroke", "black")
+                .attr("stroke-width", 5);
+
+        });
+
+        self.link.on("mouseout", function () {
+
+            // Remove highlight edge around node.
+            self.unhighlight = d3.select(this)
+                .classed("highlightlink", false);
+
+            // Remove panel in top left of view with information about the node.
+            self.panel.remove()
+
+        });
+    }
+}
 
 // Use element dimensions and position to scale SVG element according to window size.
 // var divNetwork = d3.select(#network);

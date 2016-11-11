@@ -27,7 +27,7 @@ header {
 
 .linkreaction {
     stroke: black;
-    stroke-width: 5;
+    stroke-width: 7;
     marker-end: url(#marker);
 }
 
@@ -41,6 +41,23 @@ header {
     fill: black;
 }
 
+.highlightnode {
+    stroke: orange;
+    stroke-width: 5;
+}
+
+.highlightlink {
+    stroke: orange;
+    stroke-width: 7;
+}
+
+/*.panel {
+    fill: black;
+    fill-opacity: 0.25;
+    stroke: black;
+    stroke-width: 5;
+}*/
+
 /* Identifiers */
 
 #window {
@@ -52,21 +69,21 @@ header {
     display: inline;
     float: left;
     width: 30vw;
-    height: 42vh;
+    height: 37vh;
 }
 
 #exploration {
     display: inline;
     float: right;
     width: 60vw;
-    height: 87vh;
+    height: 80vh;
 }
 
 #navigation {
     display:inline;
     float: left;
     width: 30vw;
-    height: 42vh;
+    height: 37vh;
 }
 
 
