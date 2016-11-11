@@ -36,7 +36,7 @@ class QueryView {
         // TODO: It seems this functionality is difficult.
         // TODO: readdirSync from Node.js might work.
         self.optionsArray = [
-            "model_e-coli_citrate-cycle_node-link.json", "model_e-coli_citrate-cycle_sub_node-link.json"
+            "model_e-coli_citrate-cycle_sub_node-link.json", "model_e-coli_citrate-cycle_node-link.json"
         ];
         self.selector = d3.select("#selector");
         self.options = self.selector.selectAll("option")
@@ -196,12 +196,18 @@ class ExplorationView {
         self.explorationSVG = self.explorationDiv.append("svg")
             .attr("width", self.svgWidth)
             .attr("height", self.svgHeight);
-        self.explorationSVG.append("rect")
-            .attr("x", 0)
-            .attr("y", 5)
-            .attr("width", self.svgWidth)
-            .attr("height", self.svgHeight)
-            .attr("fill", "grey");
+
+        function createRectangle(self) {
+            var self = self;
+            // Create rectangle element to demonstrate dimensions of SVG element.
+            self.explorationSVG.append("rect")
+                .attr("x", 0)
+                .attr("y", 5)
+                .attr("width", self.svgWidth)
+                .attr("height", self.svgHeight)
+                .attr("fill", "grey");
+        };
+        //createRectangle(self);
 
     }
 
@@ -226,32 +232,74 @@ class ExplorationView {
         // self.svgWidth = +self.networkSVG.attr("width");
         // self.svgHeight = +self.networkSVG.attr("height");
 
-        // The code below is an adaptation of Mike Bostock's "Force-Directed Graph".
-        // I do not know yet if it will work.
+        // TODO: Modify the force simulation to make links longer.
+        // TODO: Give reaction links different force constraint (longer) than metabolite links.
 
-        // TODO: Remove styling of links and nodes to CSS.
-
+        // Initiate the force simulation.
         self.simulation = d3.forceSimulation()
             .force("charge", d3.forceManyBody())
             .force("link", d3.forceLink().id(function (d) {return d.id;}))
             .force("center", d3.forceCenter(self.svgWidth / 2, self.svgHeight / 2));
 
+        // TODO: Make markers bi-directional according to model.
+        // TODO: I will need to encode that information in the data.
+        // Create elements for markers (arrows) on reaction links.
+        // Apparently markers do not inherit styles from CSS.
+        // I tried.
+        // Also, due to the necessary method of defining markers, the marker itself does not associate with useful data.
+        // Instead, the link itself (that the marker is a part of) has the data.
+        self.marker = self.explorationSVG.append("defs")
+            .selectAll("marker")
+            .data("marker")
+            .enter()
+            .append("marker")
+            .attr("id", "marker")
+            .attr("viewBox", "0 0 10 10")
+            .attr("refX", 15)
+            .attr("refY", 5)
+            .attr("markerWidth", 5)
+            .attr("markerHeight", 5)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M 0 0 L 10 5 L 0 10 z");
+
+        // TODO: Implement highlighting and tool tip for reaction links.
+        // TODO: I don't think I want that for metabolite links.
+        // TODO: I think tool tips should probably appear in a corner of the view rather than over the network.
+        // TODO: They would occlude parts of the network otherwise.
+        // Create links.
         self.link = self.explorationSVG.append("g")
             .selectAll("line")
             .data(self.data.links)
             .enter()
             .append("line")
-            .attr("stroke", "black")
-            .attr("stroke-opacity", 1)
-            .attr("stroke-width", 3);
+            .attr("class", "link")
+            .attr("class", function (d) {
+                var type = d.type;
+                if (type === "metabolite") {
+                    return "linkmetabolite";
+                } else if (type === "reaction") {
+                    return "linkreaction";
+                };
+            });
 
+        // TODO: Implement highlighting and tool tip for metabolite links.
+        // TODO: I think tool tips should probably appear in a corner of the view rather than over the network.
+        // TODO: They would occlude parts of the network otherwise.
+        // Create nodes.
         self.node = self.explorationSVG.append("g")
             .selectAll("circle")
             .data(self.data.nodes)
             .enter()
             .append("circle")
-            .attr("r", 5)
-            .attr("fill", "red")
+            .attr("class", function (d) {
+                var type = d.type;
+                if (type === "metabolite") {
+                    return "nodemetabolite";
+                } else if (type === "reaction") {
+                    return "nodereaction";
+                };
+            })
             .call(d3.drag()
                 .on("start", dragstarted)
                 .on("drag", dragged)
@@ -271,9 +319,7 @@ class ExplorationView {
             .force("link")
             .links(self.data.links);
 
-        // TODO: In order for this node-link diagram to work, I need a set of links between nodes.
-        // TODO: The JSON from the original model includes multiple links in each reaction.
-        // TODO: I'll need to change that with a parser.
+        // Declare function to increment the force simulation.
 
         function ticked() {
             self.link
@@ -285,8 +331,9 @@ class ExplorationView {
             self.node
                 .attr("cx", function (d) {return d.x;})
                 .attr("cy", function (d) {return d.y;});
-
         };
+
+        // Declare functions to control user interaction with nodes of the graph.
 
         function dragstarted(d) {
             if (!d3.event.active) self.simulation.alphaTarget(0.3).restart();
@@ -304,10 +351,6 @@ class ExplorationView {
             d.fx = null;
             d.fy = null;
         };
-
-
-
-
 
     }
 }

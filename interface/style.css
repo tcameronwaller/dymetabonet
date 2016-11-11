@@ -16,6 +16,31 @@ header {
     padding: 10px;
 }
 
+.link {
+    stroke-opacity: 1;
+}
+
+.linkmetabolite {
+    stroke: grey;
+    stroke-width: 2;
+}
+
+.linkreaction {
+    stroke: black;
+    stroke-width: 5;
+    marker-end: url(#marker);
+}
+
+.nodemetabolite {
+    r: 10;
+    fill: blue;
+}
+
+.nodereaction {
+    r: 1;
+    fill: black;
+}
+
 /* Identifiers */
 
 #window {
@@ -33,7 +58,7 @@ header {
 #exploration {
     display: inline;
     float: right;
-    width: 63vw;
+    width: 60vw;
     height: 87vh;
 }
 
@@ -43,4 +68,5 @@ header {
     width: 30vw;
     height: 42vh;
 }
+
 

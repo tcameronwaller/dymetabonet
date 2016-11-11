@@ -39,6 +39,11 @@ These multiple levels of participation also make the metabolic network complex a
 To simplify the network, an option is to replicate highly-connected nodes in order to simplify the network representation.
 In order to do that, there is a need for algorithms to decide which nodes to replicate and which to preserve in their true context in the network.
 In representing the metabolic network there needs to be a balance between accuracy and simplicity/clarity.
+Maybe determine the degree of every node in the network model.
+Allow the user to select a range for the degrees of metabolites to replicate in order to simplify the representation of the network.
+For example, while the original network might have a single entry for h_c (cytosolic hydrogen), the user could specify to replicate nodes with degrees greater than 10 in the network.
+Then the program could replicate h_c for each reaction in which it participates (id: h_c_1, h_c_2, h_c3, etc).
+I think that process should probably happen specifically for the subset of the network that the user selects in the query.
 
 --------------------------------------------------
 Date: 8 November 2016
