@@ -6,6 +6,20 @@ Name: T Cameron Waller
 Project: Profondeur
 
 --------------------------------------------------
+Date: 15 November 2016
+Number: 1
+Note:
+Alexander Lex helped to inspire the ideas of this sketch.
+
+I showed Alex sketch 2016-11-11_1 and explained the idea of enabling the user to select which nodes to replicate according to their degree in the network.
+Alex recommended a long-term goal of informing the user of each node's degree in both the entire metabolic model (Recon 2.2 for example) and in the user's selection subset of the metabolic model (citrate cycle for example).
+In this sketch, I illustrated the idea of a table in the Control View that shows the user the degrees of all nodes in both the entire metabolic model and in the subset of the metabolic model.
+The user can sort this table either by node degree in the mode or by node degree in the subset.
+The user can also select nodes to replicate in the network graph.
+Maybe it would also be helpful to provide an option to automatically identify nodes that have such high degrees in the mode that they are outliers.
+Then the program would replicate those nodes by default.
+
+--------------------------------------------------
 Date: 11 November 2016
 Number: 1
 Note:
