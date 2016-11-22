@@ -1,13 +1,143 @@
 
-// TODO: In NavigationView, select between free and restricted compartment layouts.
-// TODO: In NavigationView, select whether or not to highlight nodes of a specific compartment or to highlight edges
-// TODO: that represent reversible reactions.
-// TODO: In NavigationView, select whether or not to show labels by nodes.
-// TODO: Implement a tool tip to give more information about nodes AND links.
+
+/**
+ * Declare a class to contain attributes and methods of the metabolite.
+ * This class initiates an instance from a single metabolite object.
+ */
+class Metabolite {
+    constructor(item) {
+        // Variable item is a single object for a metabolite from the array of objects in the metabolic model.
+        // The data are already in an object (key: value) structure.
+        var self = this;
+        // Set attributes of the class.
+        self.id = item.id;
+        self.name = item.name;
+        self.formula = item.formula;
+        self.charge = item.charge;
+        self.compartment = item.compartment;
+        // A method in class Model sets the attribute replication (boolean) of this class.
+        // A method in class Model sets the attribute degree (number) of this class.
+    }
+}
+
+// TODO: Determine gene name from the gene objects.
+// TODO: That's a low priority.
+/**
+ * Declare a class to contain attributes and methods of the reaction.
+ * This class initiates an instance from a single reaction object.
+ */
+class Reaction {
+    constructor(item) {
+        var self = this;
+        // Set attributes of the class.
+        self.id = item.id;
+        self.name = item.name;
+        self.gene = item.gene_reaction_rule;
+        self.upperBound = item.upper_bound;
+        self.lowerBound = item.lower_bound;
+        self.reversibility = self.setReversibility();
+        self.metabolite = item.metabolites;
+        self.reactant = self.setReactant();
+        self.product = self.setProduct();
+    }
+
+    setReversibility() {
+        /**
+         * This method determines the reversibility of a reaction.
+         */
+        var self = this;
+        if (self.upperBound > 0 && self.lowerBound < 0) {
+            return true;
+        } else {
+            return false;
+        };
+    }
+
+    setReactant() {
+        /**
+         * This method determines the reactant(s) of a reaction.
+         */
+        var self = this;
+        var reactant = [];
+        for (let item in self.metabolite) {
+            if (Number(self.metabolite[item]) == -1) {
+                reactant.push(item);
+            };
+        };
+        return reactant;
+    }
+
+    setProduct() {
+        /**
+         * This method determines the product(s) of a reaction.
+         */
+        var self = this;
+        var product = [];
+        for (let item in self.metabolite) {
+            if (Number(self.metabolite[item]) == 1) {
+                product.push(item);
+            };
+        };
+        return product;
+    }
+}
+
+
+// TODO: The Model class needs functionality to switch the replication flag for a metabolite.
+// TODO: The Model class needs functionality to determine nodes and links from the metabolites and reactions.
+// TODO: Determining degree will be straight-forward after definition of nodes and links.
+/**
+ * Declare a class to contain attributes and methods of the metabolic model.
+ * This class initiates an instance from a single metabolic model.
+ * This class organizes collections of instances of the classes for metabolite and reaction.
+ * It uses an object for this collection to enable direct access of values by reference to keys.
+ */
+class Model {
+
+    constructor(dataModel) {
+        var self = this;
+        self.dataModel = dataModel;
+        self.metabolite = self.setMetabolite();
+        self.reaction = self.setReaction();
+        self.node = self.setNode();
+        self.link = self.setLink();
+        self.setMetaboliteDegree();
+    }
+
+    setMetabolite() {
+        var self = this;
+        var metabolite = {};
+        for (let item of self.dataModel.metabolites) {
+            metabolite[item.id] = new Metabolite(item);
+        };
+        return metabolite;
+    }
+
+    setReaction() {
+        var self = this;
+        var reaction = {};
+        for (let item of self.dataModel.reactions) {
+            reaction[item.id] = new Reaction(item);
+        };
+        return reaction;
+    }
+
+    // TODO: Define nodes both for reactions (in/out) and metabolites.
+    setNode () {}
+
+    // TODO: Define links both for reactions (between in/out nodes) and metabolites.
+    setLink () {}
+
+    setMetaboliteDegree() {
+        var self = this;
+        // Iterate over each metabolite to determine its degree in the model.
+        for (let metabolite of self.metabolite) {};
+    }
+}
 
 
 /**
- * Declare a class to contain properties and methods of the query view.
+ * Declare a class to contain attributes and methods of the query view.
  * In the final implementation, methods of this class will build and execute queries to select subsets of the network
  * data in the original model.
  * Methods of of this class will modify the actual data to create a copy that only includes relevant parts of the
@@ -91,26 +221,30 @@ class QueryView {
 
             // Load data from file in JSON format.
             // Create objects that associate with these data.
-
-            d3.json(("data/" + self.dataFile), function (error, data) {
+            d3.json(("data/" + self.dataFile), function (error, dataModel) {
                 if (error) throw error;
-                self.send(data);
+                // TODO: Create instance of model object here.
+                // TODO: Then send that instance of the model object to the navigationView.
+                self.send(dataModel);
             });
-
         });
     }
 
-    send(data) {
-
+    send(dataModel) {
         var self = this;
-
-        self.navigationView.receive(data);
+        self.navigationView.receive(dataModel);
     }
 }
 
 
+// TODO: In NavigationView, select between free and restricted compartment layouts.
+// TODO: In NavigationView, select whether or not to highlight nodes of a specific compartment or to highlight edges
+// TODO: that represent reversible reactions.
+// TODO: In NavigationView, select whether or not to show labels by nodes.
+// TODO: Implement a tool tip to give more information about nodes AND links.
+
 /**
- * Declare a class to contain properties and methods of the navigation view.
+ * Declare a class to contain attributes and methods of the navigation view.
  * Methods of this class receive data for a subset of the network from the query view.
  * In response to user interaction, methods of this class modify the data further and modify parameters for the visual
  * representation of the network.
@@ -134,30 +268,30 @@ class NavigationView {
         // These event handlers respectively call appropriate methods.
     }
 
-    receive(data) {
+    receive(dataModel) {
 
         var self = this;
 
         // The navigation view supports modification of the data.
         // Copy the data so that it is always possible to revert to the original from the query view.
-        self.dataOriginal = data;
-        self.dataDerivation = data;
-        //console.log("NavigationView Data")
-        //console.log(self.dataOriginal)
-        self.send(self.dataDerivation);
+        // TODO: Send the model data to the Model class and let this class construct an instance of class Model.
+        self.modelOriginal =  new Model(dataModel);
+        self.modelDerivation = self.modelOriginal;
+        console.log("NavigationView Model");
+        console.log(self.modelDerivation);
+        console.log(self.modelDerivation.metabolite.accoa_c);
+        //self.send(self.modelDerivation);
     }
 
-    send(data) {
-
+    send(modelDerivation) {
         var self = this;
-
-        self.explorationView.receive(data);
+        self.explorationView.receive(modelDerivation);
     }
 }
 
 
 /**
- * Declare a class to contain properties and methods of the network view.
+ * Declare a class to contain attributes and methods of the network view.
  * Methods of this class receive data for a subset of the network with annotations from the navigation view.
  * Methods of this class create visual representations of the data for the network.
  */
@@ -211,14 +345,14 @@ class ExplorationView {
 
     }
 
-    receive(data) {
+    receive(modelDerivation) {
 
         var self = this;
 
-        self.data = data;
+        self.modelDerivation = modelDerivation;
 
-        console.log("ExplorationView Data")
-        console.log(self.data);
+        //console.log("ExplorationView Data")
+        //console.log(self.modelDerivation);
         self.draw();
 
         // Call update method.

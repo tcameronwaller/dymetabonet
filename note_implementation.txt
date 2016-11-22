@@ -1,6 +1,111 @@
 --------------------------------------------------
 
 --------------------------------------------------
+18 November 2016
+
+Feedback on implementation from Sean P McKenna
+
+Organize more functionality in discrete functions.
+
+Use JavaScript "module loading" to load multiple modules from script.
+Module Loading is an alternative to referencing all scripts separately in HTML document.
+Module Loading also requires an additional package or something and is probably not a priority.
+
+console.log()
+Minimize printing to console in the final code.
+Consider using conditionals such as Ternary Operator to print to console only for debugging.
+
+CSS Style Sheet
+If the style sheet becomes very large and complex, split into multiples.
+It is also possible to use SAS (I think) to use variables in CSS.
+
+Code Citations
+It is not necessary to cite every reference used in implementation.
+It is most important to cite references that influenced the actual code that you wrote.
+For example, if I pattern a portion of code extensively after some reference portion of code.
+It is probably best to cite these sources where you use them.
+
+Flex Box
+Bootstrap
+For longer-term implementation, consider using Flex Box or Bootstrap to control the layout of HTML DOM elements in the Web Page.
+
+HTML Table
+It is possible to design tables in SVG elements.
+These tables support fancy, stylistic sorting and animations through D3.
+For the sake of simplicity, use an HTML Table to structure the table for information on degrees of metabolite nodes.
+The web page will create a scroll bar automatically if the content of this table exceeds the dimensions of the div element that contains it.
+While packages exist for table sorting, these impose restrictive requirements for setting up the table.
+It is probably more simple to implement my own sort functionality for the table.
+
+HTML Input Checkbox
+Use the input HTML element with type checkbox for the option selection to replicate metabolite nodes.
+
+--------------------------------------------------
+18 November 2016
+
+I want to organize information about the metabolic network as class objects.
+
+Declare a new class for model.
+This class will organize information about the metabolic model.
+I will pass this class object around between the class objects for the views.
+
+Model
+-Methods:
+--Determine metabolite degree in entire metabolic model.
+---Call this method while the metabolite is still part of the entire model.
+--Determine metabolite degree in subset of metabolic model.
+--
+
+
+Metabolite:
+-Class objects for metabolites
+-These objects will have all of the attributes that they normally have in the metabolic model.
+-Attributes:
+--Name
+--Formula
+--Charge
+--Compartment
+--Degree in Model
+---Degree of the metabolite within the entire metabolic network
+---This attribute is new.
+---I will need to calculate it for each metabolite.
+--Degree in Subset
+--Replication
+---Whether or not to replicate the metabolite in node-link representations.
+---This flag attribute will inform a method or function that interacts with metabolites and reactions to assemble nodes and links.
+-Methods will tell these objects how to do things.
+-Methods:
+--Set the replication attribute.
+--Return important attributes.
+---Name, Formula, Compartment
+
+-Originally, I thought that the metabolite class could contain the method for determination of metabolite degree.
+-There are some problems.
+-The metabolite would need to know its model.
+-The metabolite would need access to all of its reactions.
+Instead, give the model class the ability to determine degree since this class organizes the necessary collection of metabolites and reactions.
+
+Reaction:
+-Class objects for reactions
+-Attributes:
+--Name
+--Protein
+--Gene(s)
+--Reactants
+---Even reversible reactions will have some sense of directionality (in and out).
+--Products
+--Reversibility
+-Methods:
+--Assemble list of nodes and links for the specific reaction.
+--Include in and out nodes for the reaction itself.
+--Include data for the reaction in nodes and links for the reaction.
+
+Functions that I need
+I need a function to assemble lists of nodes and links from my objects for metabolites and reactions.
+I need a function to determine the degrees of nodes within the entire model and within the subset of the model.
+
+
+--------------------------------------------------
 10 November 2016
 
 ----------

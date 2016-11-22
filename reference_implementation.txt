@@ -1,0 +1,173 @@
+
+References
+
+Mozilla Developer Network
+
+Viewport Dimensions
+"Using the viewport meta tag to control layout on mobile browsers"
+Mozilla Developer Network
+nasearle et al
+12 October 2016
+https://developer.mozilla.org/en-US/docs/Mozilla/Mobile/Viewport_meta_tag
+
+Float Property
+"float"
+Mozilla Developer Network
+duncanmcdonald et al
+10 February 2016
+https://developer.mozilla.org/en-US/docs/Web/CSS/float
+
+Object-Oriented Programming In JavaScript
+"Introduction to Object-Oriented JavaScript"
+Mozilla Developer Network
+sergroja et al
+9 October 2016
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Introduction_to_Object-Oriented_JavaScript
+
+Syntax For Object-Oriented Programming In JavaScript ECMAScript 6
+"Classes"
+Mozilla Developer Network
+iblazevic et al
+24 October 2016
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes
+
+JavaScript Class Get Method Syntax
+"getter"
+Mozilla Developer Network
+dwilsonmsft et al
+7 July 2016
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get
+
+Element Dimensions And Position
+"Element.getBoundingClientRect()"
+Mozilla Developer Network
+SeanMcMillan et al
+26 July 2016
+https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
+
+Window Viewport Dimensions
+"Window.innerWidth"
+Mozilla Developer Network
+mrenty et al
+8 January 2016
+https://developer.mozilla.org/en-US/docs/Web/API/Window/innerWidth
+
+Window Viewport Dimensions
+"Window.innerHeight"
+Mozilla Developer Network
+mrenty et al
+28 January 2016
+https://developer.mozilla.org/en-US/docs/Web/API/Window/innerHeight
+
+Element Dimensions
+"Determining the dimensions of elements"
+Mozilla Developer Network
+fscholz et al
+24 July 2015
+https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model/Determining_the_dimensions_of_elements
+
+Button
+"<button>"
+Mozilla Developer Network
+MichaelGeda et al
+26 August 2016
+https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button
+
+HTML defs Element
+"<defs>"
+Mozilla Developer Network
+Sebastianz et al
+27 September 2016
+https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs
+
+HTML marker Element
+"<marker>"
+Mozilla Developer Network
+Sebastianz et al
+16 September 2016
+https://developer.mozilla.org/en-US/docs/Web/SVG/Element/marker
+
+Iteration, For
+"for"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for
+
+Iteration, While
+"while"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/while
+
+Iteration, Array Elements
+"Array.prototype.forEach()"
+Mozilla Developer Network
+Lumexralph
+29 October 2016
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
+
+Iteration, Object Keys
+"for...in"
+Mozilla Developer Network
+magic_mike et al
+9 April 2016
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...in
+
+Iteration, Object Values
+"for...of"
+Mozilla Developer Network
+fscholz
+6 October 2016
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of
+
+Array Append
+"Array.prototype.push()"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/push
+
+Coercion to Type Number
+"Number"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number
+
+Create object
+"Object"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object
+
+Variable Declaration in Block Scope
+"let"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let
+
+Other
+
+
+
+Immediately-Invoked Function Expression
+"Immediately-invoked function expression"
+Wikipedia
+https://en.wikipedia.org/wiki/Immediately-invoked_function_expression
+
+Load Data To D3 From JSON
+"Bar chart from external JSON file"
+Blocks
+Janu Verma
+26 September 2016
+http://bl.ocks.org/Jverma/887877fc5c2c2d99be10
+
+Create HTML Selection Element With D3
+"d3js: Create an HTML select box using d3.js and create a paragraph referencing the selection"
+Blocks
+Justin Freels
+13 August 2016
+http://bl.ocks.org/jfreels/6734823
+
+D3 Event Handling
+"Handling Events"
+https://github.com/d3/d3-selection#handling-events
+
+Force-Directed Layout Graph
+"Force-Directed Graph"
+Blocks
+Mike Bostock
+9 November 2016
+https://bl.ocks.org/mbostock/4062045

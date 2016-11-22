@@ -6,6 +6,23 @@ Name: T Cameron Waller
 Project: Profondeur
 
 --------------------------------------------------
+Date: 18 November 2016
+Number: 1
+Note:
+In this sketch I illustrated multiple ideas for relevant information that I could represent in the Detail View.
+The category of information to represent in the Detail View depends on user selection.
+Without any selection, the Detail View displays information for an overview of the entire metabolic model.
+Depending on user interest, this view can display a histogram for the degrees of metabolites in the model or a representation of the distribution of metabolites between multiple sets, such as cellular compartments.
+If the user selects a reaction, the Detail View displays more information about that reaction.
+This view could also display experimental data for proteins or transcripts.
+If the user selects a mdetabolite, the Detail View displays more information about that metabolite.
+This view can display the reactions of the metabolite in different cellular compartments.
+Alternatively, this view can display the most common reaction neighbors of the metabolite.
+This view could also display experimental data for metabolites.
+
+For the project for the Data Visualization Course, the information in the Detail View will probably either be simple overview information about the entire metabolic model (counts of metabolites and reactions) or general information about a metabolite or reaction.
+
+--------------------------------------------------
 Date: 15 November 2016
 Number: 1
 Note:
