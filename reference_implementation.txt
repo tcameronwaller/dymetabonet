@@ -138,6 +138,27 @@ Variable Declaration in Block Scope
 Mozilla Developer Network
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let
 
+String Concatenation
+"String.prototype.concat()"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/concat
+
+String Assignment
+"Assignment operators"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Assignment_Operators
+
+String Operations
+"Arithmetic operators"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Arithmetic_Operators#Addition
+
+String Join
+Mozilla Developer Network
+
+
+
+
 Other
 
 

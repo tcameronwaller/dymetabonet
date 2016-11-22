@@ -1,5 +1,5 @@
 
-
+// TODO: The Metabolite class needs functionality to switch the replication flag for a metabolite.
 /**
  * Declare a class to contain attributes and methods of the metabolite.
  * This class initiates an instance from a single metabolite object.
@@ -10,13 +10,24 @@ class Metabolite {
         // The data are already in an object (key: value) structure.
         var self = this;
         // Set attributes of the class.
+        self.type = "metabolite";
         self.id = item.id;
         self.name = item.name;
         self.formula = item.formula;
         self.charge = item.charge;
         self.compartment = item.compartment;
+        self.replication = false;
         // A method in class Model sets the attribute replication (boolean) of this class.
         // A method in class Model sets the attribute degree (number) of this class.
+    }
+
+    setReplication() {
+        var self = this;
+        if (self.replication == false) {
+            self.replication == true;
+        } else if (self.replication == true) {
+            self.replication == false;
+        };
     }
 }
 
@@ -30,6 +41,7 @@ class Reaction {
     constructor(item) {
         var self = this;
         // Set attributes of the class.
+        self.type = "reaction";
         self.id = item.id;
         self.name = item.name;
         self.gene = item.gene_reaction_rule;
@@ -41,10 +53,10 @@ class Reaction {
         self.product = self.setProduct();
     }
 
+    /**
+     * This method determines the reversibility of a reaction.
+     */
     setReversibility() {
-        /**
-         * This method determines the reversibility of a reaction.
-         */
         var self = this;
         if (self.upperBound > 0 && self.lowerBound < 0) {
             return true;
@@ -53,10 +65,10 @@ class Reaction {
         };
     }
 
+    /**
+     * This method determines the reactant(s) of a reaction.
+     */
     setReactant() {
-        /**
-         * This method determines the reactant(s) of a reaction.
-         */
         var self = this;
         var reactant = [];
         for (let item in self.metabolite) {
@@ -67,10 +79,10 @@ class Reaction {
         return reactant;
     }
 
+    /**
+     * This method determines the product(s) of a reaction.
+     */
     setProduct() {
-        /**
-         * This method determines the product(s) of a reaction.
-         */
         var self = this;
         var product = [];
         for (let item in self.metabolite) {
@@ -83,14 +95,15 @@ class Reaction {
 }
 
 
-// TODO: The Model class needs functionality to switch the replication flag for a metabolite.
 // TODO: The Model class needs functionality to determine nodes and links from the metabolites and reactions.
 // TODO: Determining degree will be straight-forward after definition of nodes and links.
 /**
  * Declare a class to contain attributes and methods of the metabolic model.
  * This class initiates an instance from a single metabolic model.
  * This class organizes collections of instances of the classes for metabolite and reaction.
- * It uses an object for this collection to enable direct access of values by reference to keys.
+ * It uses objects (instead of arrays) for these collections to enable direct access of values by reference to keys.
+ * This class also creates and organizes collections of nodes and links.
+ * It again uses objects (instead of arrays) for these collections.
  */
 class Model {
 
@@ -123,15 +136,38 @@ class Model {
     }
 
     // TODO: Define nodes both for reactions (in/out) and metabolites.
-    setNode () {}
+    setNode() {
+        var self = this;
+        var node = {};
+        // Iterate over each metabolite to create matching nodes.
+        for (let item of self.metabolite) {
+            node[item.id] = item;
+        };
+        // Iterate over each reaction to create matching nodes.
+        for (let item of self.reaction) {
+            let item_in = item;
+            let item_out = item;
+            let item_in_id = item_in.id + "_in";
+            let item_out_id = item_out.id + "_out";
+            item_in.id = item_in_id;
+            item_out.id = item_out_id;
+            node[item_in.id] = item_in;
+            node[item_out.id] = item_out;
+        };
+        return node;
+    }
 
     // TODO: Define links both for reactions (between in/out nodes) and metabolites.
-    setLink () {}
+    setLink() {}
 
+    /**
+     * Declare a function to determine the degrees of all metabolites in a model.
+     * This functionality is within the Model class since the degree of the metabolite depends on its model context.
+     */
     setMetaboliteDegree() {
         var self = this;
         // Iterate over each metabolite to determine its degree in the model.
-        for (let metabolite of self.metabolite) {};
+        for (let item of self.metabolite) {};
     }
 }
 
