@@ -1,21 +1,27 @@
 
+
+// TODO: both "entry" and "entry" are reserved words in JavaScript. Don't use them.
+
+
+
+
 // TODO: The Metabolite class needs functionality to switch the replication flag for a metabolite.
 /**
  * Declare a class to contain attributes and methods of the metabolite.
  * This class initiates an instance from a single metabolite object.
  */
 class Metabolite {
-    constructor(item) {
-        // Variable item is a single object for a metabolite from the array of objects in the metabolic model.
+    constructor(metabolite) {
+        // Variable metabolite is a single object for a metabolite from the array of objects in the metabolic model.
         // The data are already in an object (key: value) structure.
         var self = this;
         // Set attributes of the class.
         self.type = "metabolite";
-        self.id = item.id;
-        self.name = item.name;
-        self.formula = item.formula;
-        self.charge = item.charge;
-        self.compartment = item.compartment;
+        self.id = metabolite.id;
+        self.name = metabolite.name;
+        self.formula = metabolite.formula;
+        self.charge = metabolite.charge;
+        self.compartment = metabolite.compartment;
         self.replication = false;
         // A method in class Model sets the attribute replication (boolean) of this class.
         // A method in class Model sets the attribute degree (number) of this class.
@@ -38,19 +44,19 @@ class Metabolite {
  * This class initiates an instance from a single reaction object.
  */
 class Reaction {
-    constructor(item) {
+    constructor(reaction) {
         var self = this;
         // Set attributes of the class.
         self.type = "reaction";
-        self.id = item.id;
-        self.name = item.name;
-        self.gene = item.gene_reaction_rule;
-        self.upperBound = item.upper_bound;
-        self.lowerBound = item.lower_bound;
+        self.id = reaction.id;
+        self.name = reaction.name;
+        self.gene = reaction.gene_reaction_rule;
+        self.upperBound = reaction.upper_bound;
+        self.lowerBound = reaction.lower_bound;
         self.reversibility = self.setReversibility();
-        self.metabolite = item.metabolites;
-        self.reactant = self.setReactant();
-        self.product = self.setProduct();
+        self.metabolites = reaction.metabolites;
+        self.reactants = self.setReactants();
+        self.products = self.setProducts();
     }
 
     /**
@@ -68,29 +74,29 @@ class Reaction {
     /**
      * This method determines the reactant(s) of a reaction.
      */
-    setReactant() {
+    setReactants() {
         var self = this;
-        var reactant = [];
-        for (let item in self.metabolite) {
-            if (Number(self.metabolite[item]) == -1) {
-                reactant.push(item);
+        var reactants = [];
+        for (let metabolite in self.metabolites) {
+            if (Number(self.metabolites[metabolite]) == -1) {
+                reactants.push(metabolite);
             };
         };
-        return reactant;
+        return reactants;
     }
 
     /**
      * This method determines the product(s) of a reaction.
      */
-    setProduct() {
+    setProducts() {
         var self = this;
-        var product = [];
-        for (let item in self.metabolite) {
-            if (Number(self.metabolite[item]) == 1) {
-                product.push(item);
+        var products = [];
+        for (let metabolite in self.metabolites) {
+            if (Number(self.metabolites[metabolite]) == 1) {
+                products.push(metabolite);
             };
         };
-        return product;
+        return products;
     }
 }
 
@@ -110,55 +116,92 @@ class Model {
     constructor(dataModel) {
         var self = this;
         self.dataModel = dataModel;
-        self.metabolite = self.setMetabolite();
-        self.reaction = self.setReaction();
-        self.node = self.setNode();
-        self.link = self.setLink();
+        self.metabolites = self.setMetabolites();
+        self.reactions = self.setReactions();
+        self.nodes = self.setNodes();
+        self.links = self.setLinks();
         self.setMetaboliteDegree();
     }
 
-    setMetabolite() {
+    setMetabolites() {
         var self = this;
-        var metabolite = {};
-        for (let item of self.dataModel.metabolites) {
-            metabolite[item.id] = new Metabolite(item);
+        var metabolites = {};
+        for (let metabolite of self.dataModel.metabolites) {
+            metabolite[metabolite.id] = new Metabolite(metabolite);
         };
-        return metabolite;
+        return metabolites;
     }
 
-    setReaction() {
+    setReactions() {
         var self = this;
-        var reaction = {};
-        for (let item of self.dataModel.reactions) {
-            reaction[item.id] = new Reaction(item);
+        var reactions = {};
+        for (let reaction of self.dataModel.reactions) {
+            reaction[reaction.id] = new Reaction(reaction);
         };
-        return reaction;
+        return reactions;
     }
 
-    // TODO: Define nodes both for reactions (in/out) and metabolites.
-    setNode() {
+    /**
+     * Declare a function to create nodes for metabolites and reactions (in and out).
+     */
+    setNodes() {
         var self = this;
-        var node = {};
+        var nodes = {};
         // Iterate over each metabolite to create matching nodes.
-        for (let item of self.metabolite) {
-            node[item.id] = item;
+        for (let metabolite of self.metabolites) {
+            nodes[metabolite.id] = metabolite;
         };
         // Iterate over each reaction to create matching nodes.
-        for (let item of self.reaction) {
-            let item_in = item;
-            let item_out = item;
-            let item_in_id = item_in.id + "_in";
-            let item_out_id = item_out.id + "_out";
-            item_in.id = item_in_id;
-            item_out.id = item_out_id;
-            node[item_in.id] = item_in;
-            node[item_out.id] = item_out;
+        for (let reaction of self.reactions)
+            // TODO: I get a "reserved word" error for the next line.
+            // TODO: is let only usable within the initiation of the for loop?
+            let reactionIn = reaction;
+            let reactionOut = reaction;
+            let reactionInId = reactionIn.id + "_in";
+            let reactionOutId = reactionOut.id + "_out";
+            reactionIn.id = reactionInId;
+            reactionOut.id = reactionOutId;
+            nodes[reactionIn.id] = reactionIn;
+            nodes[reactionOut.id] = reactionOut;
         };
-        return node;
+        return nodes;
     }
 
+    /**
+     * Declare a function to create links for metabolites and reactions.
+     * Links between in and out nodes of reactions (type reaction) need complete information about the reaction.
+     * Links between metabolite nodes and reaction nodes (type metabolite) do not need complete information.
+     */
     // TODO: Define links both for reactions (between in/out nodes) and metabolites.
-    setLink() {}
+    // TODO: Link reactant metabolites to reaction_in.
+    // TODO: Link product metabolites to reaction_out.
+    setLinks() {
+        var self = this;
+        var link = {};
+        // Iterate over each reaction to create matching links.
+        // For each reaction, there is a single link of type reaction, and there are multiple links of type metabolite.
+        for (let reaction of self.reactions) {
+            // Create link of type reaction for the reaction.
+            // As I transfer the reaction information, the type is already reaction.
+            let reactionInId = reaction.id + "_in";
+            let reactionOutId = reaction.id + "_out";
+            link[reaction.id] = reaction;
+            link[reaction.id][source] = reactionInId;
+            link[reaction.id][target] = reactionOutId;
+            // Create links of type metabolite for the reaction.
+            // Attribute reactant is an array of identifiers for metabolites.
+            for (let reactant of reaction.reactants) {
+                let id = reaction.id + "_" + reactant;
+                let source = reaction.id + "_in";
+                link[id][type] = "metabolite";
+                link[id][source] = source;
+                link[id][source] = reactant;
+            };
+            // Attribute product is an array of identifiers for metabolites.
+            for (let product of reaction.products) {};
+        };
+        return link;
+    }
 
     /**
      * Declare a function to determine the degrees of all metabolites in a model.
@@ -167,7 +210,7 @@ class Model {
     setMetaboliteDegree() {
         var self = this;
         // Iterate over each metabolite to determine its degree in the model.
-        for (let item of self.metabolite) {};
+        for (let entry of self.metabolite) {};
     }
 }
 
@@ -315,7 +358,7 @@ class NavigationView {
         self.modelDerivation = self.modelOriginal;
         console.log("NavigationView Model");
         console.log(self.modelDerivation);
-        console.log(self.modelDerivation.metabolite.accoa_c);
+        //console.log(self.modelDerivation.metabolite.accoa_c);
         //self.send(self.modelDerivation);
     }
 
