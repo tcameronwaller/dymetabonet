@@ -94,7 +94,6 @@ class Reaction {
 }
 
 
-// TODO: Determining degree will be straight-forward after definition of nodes and links.
 /**
  * Declare a class to contain attributes and methods of the metabolic model.
  * This class initiates an instance from a single metabolic model.
@@ -144,6 +143,29 @@ class Model {
         return reactions;
     }
 
+
+    // TODO: How will I determine how to replicate nodes?
+    // TODO: I will need to give unique identifiers to the replicate nodes.
+
+    // TODO: When replicating nodes, do not modify the underlying records for metabolites and reactions other than
+    // TODO: changing the replication flag of the metabolite.
+
+    /**
+     * 1) Iterate over reactions, not metabolites.
+     * 2) Create in and out nodes for the reaction with complete information about the reaction.
+     * 3) Give each node object a new field to indicate whether it is an in node or an out node.
+     * 4) Create link between in and out nodes for the reaction with complete information about the reaction.
+     * 5) Iterate over metabolites (reactants and products) of the reaction.
+     * 6) For each metabolite, access the corresponding metabolite class instance.
+     * 7) Check the replication flag of the metabolite.
+     * 8) If replication flag is true, create a special replicate node for the metabolite that is specific to the
+     *    reaction.
+     * 9) Give this special metabolite node a unique identifier and a field that indicates its reaction.
+     */
+
+
+    // TODO: If replication flag is true, create a special node for the metabolite
+
     /**
      * Declare a function to create nodes for metabolites and reactions (in and out).
      */
@@ -186,14 +208,9 @@ class Model {
      * Declare a function to create links for metabolites and reactions.
      * Links between in and out nodes of reactions (type reaction) need complete information about the reaction.
      * Links between metabolite nodes and reaction nodes (type metabolite) do not need complete information.
+     * Reactant metabolites link to in nodes for reactions.
+     * Product metabolites link to out nodes for reactions.
      */
-    // TODO: Define links both for reactions (between in/out nodes) and metabolites.
-    // TODO: Link reactant metabolites to reaction_in.
-    // TODO: Link product metabolites to reaction_out.
-
-    // TODO: I need to correct the process for setLinks similar to how I did for setNodes.
-
-
     setLinks() {
         var self = this;
         var link = {};
@@ -209,6 +226,7 @@ class Model {
             link[self.reactions[reaction].identifier]["target"] = reactionOutId;
             // Create links of type metabolite for the reaction.
             // Attribute reactant is an array of identifiers for metabolites.
+            // Links originate at reactant node (in or out) and terminate at the metabolite (reactant or product).
             for (let reactant of self.reactions[reaction].reactants) {
                 let reactantIdentifier = self.reactions[reaction].identifier + "_" + reactant;
                 let linkTemporary = {
@@ -232,9 +250,13 @@ class Model {
         return link;
     }
 
+
+    // TODO: Determining degree will be straight-forward after definition of nodes and links.
     /**
      * Declare a function to determine the degrees of all metabolites in a model.
      * This functionality is within the Model class since the degree of the metabolite depends on its model context.
+     * Consider all links to or from a metabolite in determining its degree.
+     * For each metabolite, iterate through all links
      */
     setMetaboliteDegree() {
         var self = this;
