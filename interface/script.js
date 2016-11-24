@@ -1,11 +1,4 @@
 
-
-// TODO: both "entry" and "entry" are reserved words in JavaScript. Don't use them.
-
-
-
-
-// TODO: The Metabolite class needs functionality to switch the replication flag for a metabolite.
 /**
  * Declare a class to contain attributes and methods of the metabolite.
  * This class initiates an instance from a single metabolite object.
@@ -101,7 +94,6 @@ class Reaction {
 }
 
 
-// TODO: The Model class needs functionality to determine nodes and links from the metabolites and reactions.
 // TODO: Determining degree will be straight-forward after definition of nodes and links.
 /**
  * Declare a class to contain attributes and methods of the metabolic model.
@@ -123,9 +115,10 @@ class Model {
         //console.log(self.metabolites["accoa_c"].formula);
         //console.log(self.reactions);
         self.nodes = self.setNodes();
-        console.log(self.nodes);
+        //console.log(self.nodes);
         self.links = self.setLinks();
-        self.setMetaboliteDegree();
+        //console.log(self.links);
+        //self.setMetaboliteDegree();
     }
 
     setMetabolites() {
@@ -162,20 +155,27 @@ class Model {
         // Metabolite class.
         // Instead iterate over keys of the object.
         for (let metabolite in self.metabolites) {
+            // Create node for each metabolite.
             // The keys of self.metabolites are identical to the identifiers.
             //console.log(metabolite);
             //console.log(self.metabolites[metabolite]);
             nodes[self.metabolites[metabolite].identifier] = self.metabolites[metabolite];
         };
-        // TODO: For some reason, I'm only getting Out nodes for the reactions.
         // Iterate over each reaction to create matching nodes.
         for (let reaction in self.reactions) {
-            let reactionIn = self.reactions[reaction];
-            let reactionOut = self.reactions[reaction];
+            // Create in and out nodes of type reaction for each reaction.
+            // Clone reaction to replicates for in and out.
+            // Direct assignment of object only copies reference.
+            let reactionIn = Object.assign({}, self.reactions[reaction]);
+            let reactionOut = Object.assign({}, self.reactions[reaction]);
             let reactionInId = reactionIn.identifier + "_in";
             let reactionOutId = reactionOut.identifier + "_out";
+            //console.log(reactionInId);
+            //console.log(reactionOutId);
             reactionIn.identifier = reactionInId;
             reactionOut.identifier = reactionOutId;
+            //console.log(reactionIn);
+            //console.log(reactionOut);
             nodes[reactionIn.identifier] = reactionIn;
             nodes[reactionOut.identifier] = reactionOut;
         };
@@ -199,25 +199,35 @@ class Model {
         var link = {};
         // Iterate over each reaction to create matching links.
         // For each reaction, there is a single link of type reaction, and there are multiple links of type metabolite.
-        for (let reaction of self.reactions) {
+        for (let reaction in self.reactions) {
             // Create link of type reaction for the reaction.
             // As I transfer the reaction information, the type is already reaction.
-            let reactionInId = reaction.identifier + "_in";
-            let reactionOutId = reaction.identifier + "_out";
-            link[reaction.identifier] = reaction;
-            link[reaction.identifier][source] = reactionInId;
-            link[reaction.identifier][target] = reactionOutId;
+            let reactionInId = self.reactions[reaction].identifier + "_in";
+            let reactionOutId = self.reactions[reaction].identifier + "_out";
+            link[self.reactions[reaction].identifier] = self.reactions[reaction];
+            link[self.reactions[reaction].identifier]["source"] = reactionInId;
+            link[self.reactions[reaction].identifier]["target"] = reactionOutId;
             // Create links of type metabolite for the reaction.
             // Attribute reactant is an array of identifiers for metabolites.
-            for (let reactant of reaction.reactants) {
-                let id = reaction.identifier + "_" + reactant;
-                let source = reaction.identifier + "_in";
-                link[id][type] = "metabolite";
-                link[id][source] = source;
-                link[id][source] = reactant;
+            for (let reactant of self.reactions[reaction].reactants) {
+                let reactantIdentifier = self.reactions[reaction].identifier + "_" + reactant;
+                let linkTemporary = {
+                    type: "metabolite",
+                    source: self.reactions[reaction].identifier + "_in",
+                    target: reactant
+                };
+                link[reactantIdentifier] = linkTemporary;
             };
             // Attribute product is an array of identifiers for metabolites.
-            for (let product of reaction.products) {};
+            for (let product of self.reactions[reaction].products) {
+                let productIdentifier = self.reactions[reaction].identifier + "_" + product;
+                let linkTemporary = {
+                    type: "metabolite",
+                    source: self.reactions[reaction].identifier + "_out",
+                    target: product
+                };
+                link[productIdentifier] = linkTemporary;
+            };
         };
         return link;
     }
@@ -375,7 +385,7 @@ class NavigationView {
         // TODO: Send the model data to the Model class and let this class construct an instance of class Model.
         self.modelOriginal =  new Model(dataModel);
         self.modelDerivation = self.modelOriginal;
-        console.log("NavigationView Model");
+        //console.log("NavigationView Model");
         console.log(self.modelDerivation);
         //console.log(self.modelDerivation.metabolite.accoa_c);
         //self.send(self.modelDerivation);
