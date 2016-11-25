@@ -118,28 +118,26 @@ class Model {
         self.links = self.setLinks();
         //console.log(self.links);
         //self.setMetaboliteDegree();
+        self.setNetwork();
     }
 
     setMetabolites() {
         var self = this;
         var metabolites = {};
-        //console.log(self.dataModel.metabolites);
-        for (let metabolite of self.dataModel.metabolites) {
-            //console.log(metabolite);
+        for (let value of self.dataModel.metabolites) {
+            let metabolite = value;
             metabolites[metabolite.id] = new Metabolite(metabolite);
-            //console.log(metabolite[metabolite.identifier]);
         };
-        //console.log(metabolites);
         return metabolites;
     }
 
     setReactions() {
         var self = this;
         var reactions = {};
-        for (let reaction of self.dataModel.reactions) {
+        for (let value of self.dataModel.reactions) {
+            let reaction = value;
             reactions[reaction.id] = new Reaction(reaction);
         };
-        //console.log(reactions);
         return reactions;
     }
 
@@ -151,20 +149,65 @@ class Model {
     // TODO: changing the replication flag of the metabolite.
 
     /**
+     * In order to support replication of nodes for metabolites, it is most reasonable to create nodes for reactions.
      * 1) Iterate over reactions, not metabolites.
-     * 2) Create in and out nodes for the reaction with complete information about the reaction.
-     * 3) Give each node object a new field to indicate whether it is an in node or an out node.
-     * 4) Create link between in and out nodes for the reaction with complete information about the reaction.
-     * 5) Iterate over metabolites (reactants and products) of the reaction.
-     * 6) For each metabolite, access the corresponding metabolite class instance.
-     * 7) Check the replication flag of the metabolite.
-     * 8) If replication flag is true, create a special replicate node for the metabolite that is specific to the
-     *    reaction.
-     * 9) Give this special metabolite node a unique identifier and a field that indicates its reaction.
+     * 2) Create in and out nodes for each reaction with complete information about the reaction.
+     * 3) Give each reaction's node a new field to store the identifier of the original reaction.
+     * 4) Give each reaction's node a new field to indicate whether it is an in node or an out node.
+     * 5) Create link between in and out nodes for the reaction with complete information about the reaction.
+     * 6) Give reaction's link a new field to store the identifier of the original reaction.
+     * 7) Iterate over metabolites (reactants and products) of each reaction.
+     * 8) For each metabolite, access the corresponding metabolite class instance.
+     * 9) Increment
+     * 9) Check the replication flag of the metabolite.
+     * 10) If replication flag is true, create a special replicate node for the metabolite that is specific to the
+     *     reaction.
+     * 11) Give this special metabolite node a unique identifier.
+     * 12) Give this metabolite node a new field to store the identifier of the original metabolite.
+     * 13) Give this metabolite node a new field that indicates its reaction and in/out.
+     * 14) If replication flag is false, create a new node for it only if a node does not already exist for it.
+     * 15) Create a new link between the reaction in or out and the metabolite.
+     * 16) Determine the degree of each metabolite.
      */
 
+    setNetwork() {
+        var self = this;
+        var nodes = {};
+        var links = {};
+        // Iterate over reactions.
+        // Iterate over keys, not values, of the object.
+        for (let key in self.reactions) {
+            let reaction = self.reactions[key];
+            let reactionIdentifier = reaction.identifier;
+            // Create in and out nodes for reaction.
+            let reactionInIdentifier = reactionIdentifier + "_in";
+            let reactionOutIdentifier = reactionIdentifier + "_out";
+            // Clone reaction to replicates for in and out.
+            // Direct assignment of object only copies reference.
+            let reactionIn = Object.assign({}, reaction);
+            let reactionOut = Object.assign({}, reaction);
+            reactionIn.identifier = reactionInIdentifier;
+            reactionOut.identifier = reactionOutIdentifier;
+            reactionIn.reaction = reaction.identifier;
+            reactionOut.reaction = reaction.identifier;
+            reactionIn.direction = "in";
+            reactionOut.direction = "out";
+            nodes[reactionInIdentifier] = Object.assign({}, reactionIn);
+            nodes[reactionOutIdentifier] = Object.assign({}, reactionOut);
+            // Create link for reaction.
+            links[reactionIdentifier] = Object.assign({}, reaction);
+            links[reactionIdentifier].reaction = reactionIdentifier;
+            links[reactionIdentifier]["source"] = reactionInIdentifier;
+            links[reactionIdentifier]["target"] = reactionOutIdentifier;
+            // Iterate over reactant metabolites of the reaction.
 
-    // TODO: If replication flag is true, create a special node for the metabolite
+
+
+        };
+    }
+
+    // TODO: In the current implementation with setNodes and setLinks, for some reason the reaction instances themselves
+    // TODO: are changed to have "source" and "target". That seems like a mistake, maybe of a reference issue.
 
     /**
      * Declare a function to create nodes for metabolites and reactions (in and out).
@@ -407,7 +450,7 @@ class NavigationView {
         // TODO: Send the model data to the Model class and let this class construct an instance of class Model.
         self.modelOriginal =  new Model(dataModel);
         self.modelDerivation = self.modelOriginal;
-        //console.log("NavigationView Model");
+        console.log("NavigationView Model");
         console.log(self.modelDerivation);
         //console.log(self.modelDerivation.metabolite.accoa_c);
         //self.send(self.modelDerivation);
