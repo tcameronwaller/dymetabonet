@@ -168,6 +168,27 @@ Create Object Prototype
 Mozilla Developer Network
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
 
+Object Properties
+"Object.prototype.hasOwnProperty()"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
+
+Keys in Object 
+"in operator"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/in
+
+Object Keys
+"Object.keys()"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
+
+Logical Operators
+"Logical Operators"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_Operators
+
+
 
 
 

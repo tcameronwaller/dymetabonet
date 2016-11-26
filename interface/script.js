@@ -15,12 +15,30 @@ class Metabolite {
         self.formula = metabolite.formula;
         self.charge = metabolite.charge;
         self.compartment = metabolite.compartment;
-        self.replication = false;
+        self.degree = self.setDegree();
+        self.replication = self.setReplication();
         // A method in class Model sets the attribute replication (boolean) of this class.
         // A method in class Model sets the attribute degree (number) of this class.
     }
 
+    setDegree() {
+        var self = this;
+        var degree = 0;
+        return degree;
+    }
+
+    incrementDegree() {
+        var self = this;
+        self.degree = self.degree + 1;
+    }
+
     setReplication() {
+        var self = this;
+        var replication = false;
+        return replication;
+    }
+
+    changeReplication() {
         var self = this;
         if (self.replication == false) {
             self.replication == true;
@@ -107,16 +125,10 @@ class Model {
     constructor(dataModel) {
         var self = this;
         self.dataModel = dataModel;
-        //console.log(self.dataModel);
         self.metabolites = self.setMetabolites();
         self.reactions = self.setReactions();
-        //console.log(self.metabolites);
-        //console.log(self.metabolites["accoa_c"].formula);
-        //console.log(self.reactions);
         self.nodes = self.setNodes();
-        //console.log(self.nodes);
         self.links = self.setLinks();
-        //console.log(self.links);
         //self.setMetaboliteDegree();
         self.setNetwork();
     }
@@ -150,6 +162,7 @@ class Model {
 
     /**
      * In order to support replication of nodes for metabolites, it is most reasonable to create nodes for reactions.
+     * In the current structure, reactions contain the information about the connectivity between metabolites.
      * 1) Iterate over reactions, not metabolites.
      * 2) Create in and out nodes for each reaction with complete information about the reaction.
      * 3) Give each reaction's node a new field to store the identifier of the original reaction.
@@ -158,20 +171,23 @@ class Model {
      * 6) Give reaction's link a new field to store the identifier of the original reaction.
      * 7) Iterate over metabolites (reactants and products) of each reaction.
      * 8) For each metabolite, access the corresponding metabolite class instance.
-     * 9) Increment
-     * 9) Check the replication flag of the metabolite.
-     * 10) If replication flag is true, create a special replicate node for the metabolite that is specific to the
+     * 9) Increment the degree of the metabolite.
+     * 10) Check the replication flag of the metabolite.
+     * 11) If replication flag is false, create a node for the metabolite if a node does not already exist.
+     *
+     * 12) If replication flag is true, create a special replicate node for the metabolite that is specific to the
      *     reaction.
-     * 11) Give this special metabolite node a unique identifier.
-     * 12) Give this metabolite node a new field to store the identifier of the original metabolite.
-     * 13) Give this metabolite node a new field that indicates its reaction and in/out.
-     * 14) If replication flag is false, create a new node for it only if a node does not already exist for it.
-     * 15) Create a new link between the reaction in or out and the metabolite.
-     * 16) Determine the degree of each metabolite.
+     * 13) Give this special metabolite node a unique identifier.
+     * 14) Give this metabolite node a new field to store the identifier of the original metabolite.
+     * 15) Give this metabolite node a new field that indicates its reaction and in/out.
+     * 17) Create a new link between the reaction in or out and the metabolite.
+     * 18) Determine the degree of each metabolite.
      */
 
     setNetwork() {
         var self = this;
+        // TODO: Before running the portion of code that increments metabolite degrees, set all degrees to 0.
+        // TODO: I think just iterate over all metabolites in the model and set their degrees to 0 using setDegree().
         var nodes = {};
         var links = {};
         // Iterate over reactions.
@@ -195,14 +211,65 @@ class Model {
             nodes[reactionInIdentifier] = Object.assign({}, reactionIn);
             nodes[reactionOutIdentifier] = Object.assign({}, reactionOut);
             // Create link for reaction.
-            links[reactionIdentifier] = Object.assign({}, reaction);
-            links[reactionIdentifier].reaction = reactionIdentifier;
-            links[reactionIdentifier]["source"] = reactionInIdentifier;
-            links[reactionIdentifier]["target"] = reactionOutIdentifier;
+            let linkTemporary = Object.assign({}, reaction);
+            linkTemporary.reaction = reactionIdentifier;
+            linkTemporary.source = reactionInIdentifier;
+            linkTemporary.target = reactionOutIdentifier;
+            links[reactionIdentifier] = Object.assign({}, linkTemporary);
+            // TODO: A lot of the code is identical for reactants and products.
+            // TODO: Organize the code with some sort of conditional to accomodate either reactants or products.
+            // TODO: Also, I need to create nodes for the reactants and products.
             // Iterate over reactant metabolites of the reaction.
+            // Attribute reactant is an array of identifiers for metabolites that are reactants for a reaction.
+            for (let value of reaction.reactants) {
+                let reactant = value;
+                let metabolite = self.metabolites[reactant];
+                // Increment the degree of the metabolite.
+                // The degree of each metabolite increments for each reaction in which it participates.
+                metabolite.incrementDegree();
+                let metaboliteIdentifier = metabolite.identifier;
+                let replication = metabolite.replication;
+                // Determine if the replication flag is false or true.
+                if (replication == false) {
+                    // Determine if a node for the metabolite already exists.
+                    if (!(metaboliteIdentifier in Object.keys(nodes))) {
+                        // Create new node for the metabolite.
+                        let nodeTemporary = Object.assign({}, metabolite);
+                        nodeTemporary.reaction = reactionInIdentifier;
+                        nodes[metaboliteIdentifier] = Object.assign({}, nodeTemporary);
+                    };
+                    // Create new link for the metabolite.
+                    let metaboliteLinkIdentifier = reactionIdentifier + "_" + reactant;
+                    let linkTemporary = {
+                        type: "metabolite",
+                        source: reactionInIdentifier,
+                        target: reactant
+                    };
+                    links[metaboliteLinkIdentifier] = Object.assign({}, linkTemporary);
+                } else if (replication == true) {
+                    // Determine unique identifier for a reaction-specific node of the metabolite.
+                    let metaboliteReactionIdentifier = metaboliteIdentifier + reactionInIdentifier;
+                    // Create new node for the metabolite.
+                    let nodeTemporary = Object.assign({}, metabolite);
+                    nodeTemporary.identifier = metaboliteReactionIdentifier;
+                    nodeTemporary.metabolite = metaboliteIdentifier;
+                    nodeTemporary.reaction = reactionInIdentifier;
+                    nodes[metaboliteReactionIdentifier] = Object.assign({}, nodeTemporary);
+                    // Create new link for the metabolite.
+                };
 
-
-
+                // Create link for reactant or product metabolite.
+                let reactantLinkIdentifier = reaction.identifier + "_" + reactant;
+                // Link originates at reaction node (in or out) and terminate at the metabolite (reactant or product).
+                let linkTemporary = {
+                    type: "metabolite",
+                    source: reaction.identifier + "_in",
+                    target: reactant
+                };
+                links[reactantIdentifier] = Object.assign({}, linkTemporary);
+            };
+            // Iterate over product metabolites of the reaction.
+            // Attribute product is an array of identifiers for metabolites.
         };
     }
 
