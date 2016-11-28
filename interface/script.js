@@ -19,6 +19,7 @@ class Metabolite {
         self.replication = self.setReplication();
         // A method in class Model sets the attribute replication (boolean) of this class.
         // A method in class Model sets the attribute degree (number) of this class.
+        // This functionality is within the Model class since the degree of the metabolite depends on its model context.
     }
 
     setDegree() {
@@ -41,9 +42,9 @@ class Metabolite {
     changeReplication() {
         var self = this;
         if (self.replication == false) {
-            self.replication == true;
+            self.replication = true;
         } else if (self.replication == true) {
-            self.replication == false;
+            self.replication = false;
         };
     }
 }
@@ -131,7 +132,14 @@ class Model {
         //self.nodes = self.setNodes();
         //self.links = self.setLinks();
         //self.setMetaboliteDegree();
+        self.testReplication();
         self.setNetwork();
+    }
+
+
+    testReplication() {
+        var self = this;
+        self.metabolites["h2o_c"].changeReplication();
     }
 
 
@@ -157,6 +165,10 @@ class Model {
     }
 
 
+    /**
+     * Declare a function to create identifiers for nodes and links for reactions and metabolites.
+     * Identifiers for all links begin with a reference to their reaction.
+     */
     createIdentifiers(parameters) {
         var self = this;
         var reaction = parameters.reaction;
@@ -182,6 +194,13 @@ class Model {
     }
 
 
+    /**
+     * Declare a function to create nodes for reactions.
+     * Create in and out nodes for each reaction with complete information about the reaction.
+     * Give each reaction's node a new field, "type", to indicate the type of node, "reaction".
+     * Give each reaction's node a new field, "reference", to store the identifier of the original reaction.
+     * Give each reaction's node a new field, "direction", to indicate whether it is an "in" node or an "out" node.
+     */
     createReactionNode(reaction) {
         var self = this;
         var reaction = reaction;
@@ -202,6 +221,13 @@ class Model {
     }
 
 
+    /**
+     * Declare a function to create links for reactions.
+     * Create link between in and out nodes for each reaction with complete information about the reaction.
+     * Give each reaction's link a new field, "type", to indicate the type of link, "reaction".
+     * Give each reaction's link a new field, "reference", to store the identifier of the original reaction.
+     * Links for reactions originate at the reaction's in node and terminate at the reaction's out node.
+     */
     createReactionLink(reaction) {
         var self = this;
         var reaction = reaction;
@@ -217,6 +243,16 @@ class Model {
     }
 
 
+    /**
+     * Declare a function to create nodes for metabolites.
+     * If a metabolite's replication flag is false, and if a node does not already exist, then create a node for the
+     *     metabolite.
+     * If replication flag is true, create a special replicate node for the metabolite that is specific to the reaction.
+     * Give this special metabolite node a unique identifier.
+     * Maybe give this metabolite node new fields, "reaction" and "direction", that indicate its reaction and in/out?
+     * Give each metabolite's node a new field, "type", to indicate the type of node, "metabolite".
+     * Give each metabolite's node a new field, "reference", to store the identifier of the original metabolite.
+     */
     createMetaboliteNode(parameters) {
         var self = this;
         var reaction = parameters.reaction;
@@ -249,6 +285,12 @@ class Model {
     }
 
 
+    /**
+     * Declare a function to create links for metabolites.
+     * Create link between each metabolite node and the appropriate reaction node.
+     * Give each metabolite's link a new field, "type", to indicate the type of link, "metabolite".
+     * Links for metabolites originate at the reaction's in or out node and terminate at the metabolite's node.
+     */
     createMetaboliteLink(parameters) {
         var self = this;
         var reaction = parameters.reaction;
@@ -282,29 +324,20 @@ class Model {
 
 
     /**
+     * Declare a function to create a node-link network representation of the metabolic model.
      * Nodes and links relate within the network.
-     * Due to this relation, it is more efficient to organize the creation of nodes and links within the same iterative
+     * Due to this relation, it is efficient to organize the creation of nodes and links within the same iterative
      * process.
      * As reactions contain the relevant information about connectivity between metabolites, it is most reasonable to
      * guide the creation of nodes and links by iteration over reactions.
+     * Procedure:
      * 1) Iterate over reactions, not metabolites.
-     * 2) Create in and out nodes for each reaction with complete information about the reaction.
-     * 3) Give each reaction's node a new field, "reference" to store the identifier of the original reaction.
-     * 4) Give each reaction's node a new field, "direction", to indicate whether it is an "in" node or an "out" node.
-     * 5) Create link between in and out nodes for the reaction with complete information about the reaction.
-     * 6) Give reaction's link a new field, "reference", to store the identifier of the original reaction.
-     * 7) Iterate over metabolites (reactants and products) of each reaction.
-     * 8) For each metabolite, access the corresponding metabolite class instance.
-     * 9) Increment the degree of the metabolite.
-     * 10) Check the replication flag of the metabolite.
-     * 11) If replication flag is false, create a node for the metabolite if a node does not already exist.
-     * 12) Also create a link between this metabolite node and it's appropriate reaction node.
-     * 13) If replication flag is true, create a special replicate node for the metabolite that is specific to the
-     *     reaction.
-     * 14) Give this special metabolite node a unique identifier.
-     * 15) Give this metabolite node a new field, "reference", to store the identifier of the original metabolite.
-     * 16) Give this metabolite node new fields, "reaction" and "direction", that indicate its reaction and in/out.
-     * 17) Create a new link between the reaction in or out and the metabolite.
+     * 2) Create nodes for each reaction.
+     * 3) Create link between in and out nodes for each reaction.
+     * 4) Iterate over metabolites (reactants and products) of each reaction.
+     * 5) Increment the degree of each metabolite for each reaction in which it participates.
+     * 6) Create node for each metabolite.
+     * 7) Create link between each metabolite node and the appropriate reaction node.
      */
     setNetwork() {
         var self = this;
@@ -331,7 +364,7 @@ class Model {
                     let role = value2;
                     let metabolite = self.metabolites[role];
                     // Increment the degree of the metabolite.
-                    // The degree of each metabolite increments for each reaction in which it participates.
+                    // The degree of each metabolite increments for each reaction of the model in which it participates.
                     // The degree of the metabolite instance increments before creation of the node, so the increment
                     // affects both.
                     metabolite.incrementDegree();
@@ -349,107 +382,6 @@ class Model {
                 };
             };
         };
-    }
-
-    // TODO: In the current implementation with setNodes and setLinks, for some reason the reaction instances themselves
-    // TODO: are changed to have "source" and "target". That seems like a mistake, maybe of a reference issue.
-
-    /**
-     * Declare a function to create nodes for metabolites and reactions (in and out).
-     */
-    setNodes() {
-        var self = this;
-        var nodes = {};
-        // Iterate over each metabolite to create matching nodes.
-        // It is not practical to iterate over values of the object, since these values are all instances of the same
-        // Metabolite class.
-        // Instead iterate over keys of the object.
-        for (let metabolite in self.metabolites) {
-            // Create node for each metabolite.
-            // The keys of self.metabolites are identical to the identifiers.
-            //console.log(metabolite);
-            //console.log(self.metabolites[metabolite]);
-            nodes[self.metabolites[metabolite].identifier] = self.metabolites[metabolite];
-        };
-        // Iterate over each reaction to create matching nodes.
-        for (let reaction in self.reactions) {
-            // Create in and out nodes of type reaction for each reaction.
-            // Clone reaction to replicates for in and out.
-            // Direct assignment of object only copies reference.
-            let reactionIn = Object.assign({}, self.reactions[reaction]);
-            let reactionOut = Object.assign({}, self.reactions[reaction]);
-            let reactionInId = reactionIn.identifier + "_in";
-            let reactionOutId = reactionOut.identifier + "_out";
-            //console.log(reactionInId);
-            //console.log(reactionOutId);
-            reactionIn.identifier = reactionInId;
-            reactionOut.identifier = reactionOutId;
-            //console.log(reactionIn);
-            //console.log(reactionOut);
-            nodes[reactionIn.identifier] = reactionIn;
-            nodes[reactionOut.identifier] = reactionOut;
-        };
-        return nodes;
-    }
-
-    /**
-     * Declare a function to create links for metabolites and reactions.
-     * Links between in and out nodes of reactions (type reaction) need complete information about the reaction.
-     * Links between metabolite nodes and reaction nodes (type metabolite) do not need complete information.
-     * Reactant metabolites link to in nodes for reactions.
-     * Product metabolites link to out nodes for reactions.
-     */
-    setLinks() {
-        var self = this;
-        var link = {};
-        // Iterate over each reaction to create matching links.
-        // For each reaction, there is a single link of type reaction, and there are multiple links of type metabolite.
-        for (let reaction in self.reactions) {
-            // Create link of type reaction for the reaction.
-            // As I transfer the reaction information, the type is already reaction.
-            let reactionInId = self.reactions[reaction].identifier + "_in";
-            let reactionOutId = self.reactions[reaction].identifier + "_out";
-            link[self.reactions[reaction].identifier] = self.reactions[reaction];
-            link[self.reactions[reaction].identifier]["source"] = reactionInId;
-            link[self.reactions[reaction].identifier]["target"] = reactionOutId;
-            // Create links of type metabolite for the reaction.
-            // Attribute reactant is an array of identifiers for metabolites.
-            // Links originate at reactant node (in or out) and terminate at the metabolite (reactant or product).
-            for (let reactant of self.reactions[reaction].reactants) {
-                let reactantIdentifier = self.reactions[reaction].identifier + "_" + reactant;
-                let linkTemporary = {
-                    type: "metabolite",
-                    source: self.reactions[reaction].identifier + "_in",
-                    target: reactant
-                };
-                link[reactantIdentifier] = linkTemporary;
-            };
-            // Attribute product is an array of identifiers for metabolites.
-            for (let product of self.reactions[reaction].products) {
-                let productIdentifier = self.reactions[reaction].identifier + "_" + product;
-                let linkTemporary = {
-                    type: "metabolite",
-                    source: self.reactions[reaction].identifier + "_out",
-                    target: product
-                };
-                link[productIdentifier] = linkTemporary;
-            };
-        };
-        return link;
-    }
-
-
-    // TODO: Determining degree will be straight-forward after definition of nodes and links.
-    /**
-     * Declare a function to determine the degrees of all metabolites in a model.
-     * This functionality is within the Model class since the degree of the metabolite depends on its model context.
-     * Consider all links to or from a metabolite in determining its degree.
-     * For each metabolite, iterate through all links
-     */
-    setMetaboliteDegree() {
-        var self = this;
-        // Iterate over each metabolite to determine its degree in the model.
-        for (let entry of self.metabolite) {};
     }
 }
 
