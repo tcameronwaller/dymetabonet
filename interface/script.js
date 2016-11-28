@@ -122,6 +122,7 @@ class Reaction {
  */
 class Model {
 
+
     constructor(dataModel) {
         var self = this;
         self.dataModel = dataModel;
@@ -130,9 +131,9 @@ class Model {
         //self.nodes = self.setNodes();
         //self.links = self.setLinks();
         //self.setMetaboliteDegree();
-        // TODO: Before creating nodes and links, initiate these to make them empty.
         self.setNetwork();
     }
+
 
     setMetabolites() {
         var self = this;
@@ -143,6 +144,7 @@ class Model {
         };
         return metabolites;
     }
+
 
     setReactions() {
         var self = this;
@@ -155,19 +157,21 @@ class Model {
     }
 
 
-    createIdentifiers(arguments) {
+    createIdentifiers(parameters) {
         var self = this;
-        var reaction = arguments.reaction;
-        var metabolite = arguments.metabolite;
+        var reaction = parameters.reaction;
+        var metabolite = parameters.metabolite;
         var identifiers = {};
         // Determine identifiers for reaction if reaction is not null.
         if (reaction) {
+            identifiers.reaction = {};
             identifiers.reaction.original = reaction.identifier;
             identifiers.reaction.in = reaction.identifier + "_in";
             identifiers.reaction.out = reaction.identifier + "_out";
         };
         // Determine identifiers for metabolite if neither reaction nor metabolite is null.
         if (reaction && metabolite) {
+            identifiers.metabolite = {};
             identifiers.metabolite.original = metabolite.identifier;
             identifiers.metabolite.reactionIn = metabolite.identifier + "_" + identifiers.reaction.in;
             identifiers.metabolite.reactionOut = metabolite.identifier + "_" + identifiers.reaction.out;
@@ -197,6 +201,7 @@ class Model {
         };
     }
 
+
     createReactionLink(reaction) {
         var self = this;
         var reaction = reaction;
@@ -211,11 +216,12 @@ class Model {
         self.links[reactionLink.identifier] = Object.assign({}, reactionLink);
     }
 
-    createMetaboliteNode(arguments) {
+
+    createMetaboliteNode(parameters) {
         var self = this;
-        var reaction = arguments.reaction;
-        var direction = arguments.direction;
-        var metabolite = arguments.metabolite;
+        var reaction = parameters.reaction;
+        var direction = parameters.direction;
+        var metabolite = parameters.metabolite;
         var identifiers = self.createIdentifiers({reaction: reaction, metabolite: metabolite});
         // Determine whether the metabolite's replication flag is false or true.
         if (metabolite.replication == false) {
@@ -243,11 +249,11 @@ class Model {
     }
 
 
-    createMetaboliteLink(arguments) {
+    createMetaboliteLink(parameters) {
         var self = this;
-        var reaction = arguments.reaction;
-        var direction = arguments.direction;
-        var metabolite = arguments.metabolite;
+        var reaction = parameters.reaction;
+        var direction = parameters.direction;
+        var metabolite = parameters.metabolite;
         var identifiers = self.createIdentifiers({reaction: reaction, metabolite: metabolite});
         // Create link for metabolite.
         // Link originates at reaction node (in or out) and terminates at the metabolite (reactant or product).
@@ -302,13 +308,11 @@ class Model {
      */
     setNetwork() {
         var self = this;
-
         // TODO: Before running the portion of code that increments metabolite degrees, set all degrees to 0.
         // TODO: I think just iterate over all metabolites in the model and set their degrees to 0 using setDegree().
-
-        var network = {};
-        network.nodes = {};
-        network.links = {};
+        // Before creating nodes and links, initiate these to make them empty.
+        self.nodes = {};
+        self.links = {};
         // Iterate over reactions.
         // Iterate over keys, not values, of the object.
         for (let key in self.reactions) {
@@ -328,6 +332,8 @@ class Model {
                     let metabolite = self.metabolites[role];
                     // Increment the degree of the metabolite.
                     // The degree of each metabolite increments for each reaction in which it participates.
+                    // The degree of the metabolite instance increments before creation of the node, so the increment
+                    // affects both.
                     metabolite.incrementDegree();
                     if (side == "reactants") {
                         // Create node for metabolite.
@@ -343,7 +349,6 @@ class Model {
                 };
             };
         };
-        return network;
     }
 
     // TODO: In the current implementation with setNodes and setLinks, for some reason the reaction instances themselves
@@ -479,7 +484,7 @@ class QueryView {
         // TODO: It seems this functionality is difficult.
         // TODO: readdirSync from Node.js might work.
         self.optionsArray = [
-            "model_e-coli_citrate-cycle_sub_node-link.json", "model_e-coli_citrate-cycle_node-link.json"
+            "model_e-coli_citrate-cycle_sub.json", "model_e-coli_citrate-cycle.json"
         ];
         self.selector = d3.select("#selector");
         self.options = self.selector.selectAll("option")

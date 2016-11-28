@@ -34,24 +34,6 @@
     {
       "upper_bound": 1000,
       "annotation": {
-        "bigg.reaction": "AKGDH"
-      },
-      "lower_bound": 0,
-      "gene_reaction_rule": "b0726 and b0116 and b0727",
-      "name": "2-Oxogluterate dehydrogenase",
-      "metabolites": {
-        "succoa_c": 1,
-        "nad_c": -1,
-        "co2_c": 1,
-        "akg_c": -1,
-        "coa_c": -1,
-        "nadh_c": 1
-      },
-      "id": "AKGDH"
-    },
-    {
-      "upper_bound": 1000,
-      "annotation": {
         "bigg.reaction": "CS"
       },
       "lower_bound": 0,
@@ -70,37 +52,6 @@
     {
       "upper_bound": 1000,
       "annotation": {
-        "bigg.reaction": "FRD7"
-      },
-      "lower_bound": 0,
-      "gene_reaction_rule": "b4153 and b4151 and b4152 and b4154",
-      "name": "fumarate reductase",
-      "metabolites": {
-        "fum_c": -1,
-        "succ_c": 1,
-        "q8_c": 1,
-        "q8h2_c": -1
-      },
-      "id": "FRD7"
-    },
-    {
-      "upper_bound": 1000,
-      "annotation": {
-        "bigg.reaction": "FUM"
-      },
-      "lower_bound": -1000,
-      "gene_reaction_rule": "b4122 or b1612 or b1611",
-      "name": "fumarase",
-      "metabolites": {
-        "fum_c": -1,
-        "mal__L_c": 1,
-        "h2o_c": -1
-      },
-      "id": "FUM"
-    },
-    {
-      "upper_bound": 1000,
-      "annotation": {
         "bigg.reaction": "ICDHyr"
       },
       "lower_bound": -1000,
@@ -114,57 +65,6 @@
         "akg_c": 1
       },
       "id": "ICDHyr"
-    },
-    {
-      "upper_bound": 1000,
-      "annotation": {
-        "bigg.reaction": "MDH"
-      },
-      "lower_bound": -1000,
-      "gene_reaction_rule": "b3236",
-      "name": "malate dehydrogenase",
-      "metabolites": {
-        "h_c": 1,
-        "mal__L_c": -1,
-        "nadh_c": 1,
-        "oaa_c": 1,
-        "nad_c": -1
-      },
-      "id": "MDH"
-    },
-    {
-      "upper_bound": 1000,
-      "annotation": {
-        "bigg.reaction": "SUCDi"
-      },
-      "lower_bound": 0,
-      "gene_reaction_rule": "b0723 and b0721 and b0722 and b0724",
-      "name": "succinate dehydrogenase (irreversible)",
-      "metabolites": {
-        "fum_c": 1,
-        "succ_c": -1,
-        "q8_c": -1,
-        "q8h2_c": 1
-      },
-      "id": "SUCDi"
-    },
-    {
-      "upper_bound": 1000,
-      "annotation": {
-        "bigg.reaction": "SUCOAS"
-      },
-      "lower_bound": -1000,
-      "gene_reaction_rule": "b0728 and b0729",
-      "name": "succinyl-CoA synthetase (ADP-forming)",
-      "metabolites": {
-        "adp_c": 1,
-        "coa_c": -1,
-        "succ_c": -1,
-        "succoa_c": 1,
-        "pi_c": 1,
-        "atp_c": -1
-      },
-      "id": "SUCOAS"
     }
   ],
   "links": [
@@ -748,51 +648,6 @@
     },
     {
       "compartment": "c",
-      "formula": "C10H12N5O10P2",
-      "charge": -3,
-      "name": "ADP",
-      "annotation": {
-        "kegg.compound": "C00008",
-        "hmdb": "HMDB01341",
-        "seed.compound": "cpd00008",
-        "unipathway.compound": "UPC00008",
-        "bigg.metabolite": "adp",
-        "chebi": [
-          "CHEBI:13222",
-          "CHEBI:16761",
-          "CHEBI:2342",
-          "CHEBI:22244",
-          "CHEBI:40553",
-          "CHEBI:456216"
-        ],
-        "reactome": [
-          "REACT_190072",
-          "REACT_481002",
-          "REACT_211606",
-          "REACT_429160",
-          "REACT_29370",
-          "REACT_196180",
-          "REACT_113581",
-          "REACT_113582",
-          "REACT_114564",
-          "REACT_114565",
-          "REACT_429153"
-        ],
-        "pubchem.substance": "3310",
-        "cas": [
-          "58-64-0",
-          "58-64-0"
-        ],
-        "kegg.glycan": "G11113",
-        "biocyc": [
-          "ADP",
-          "ADP-GROUP"
-        ]
-      },
-      "id": "adp_c"
-    },
-    {
-      "compartment": "c",
       "formula": "C5H4O5",
       "charge": -2,
       "name": "2-Oxoglutarate",
@@ -831,48 +686,6 @@
         "biocyc": "2-KETOGLUTARATE"
       },
       "id": "akg_c"
-    },
-    {
-      "compartment": "c",
-      "formula": "C10H12N5O13P3",
-      "charge": -4,
-      "name": "ATP",
-      "annotation": {
-        "kegg.compound": "C00002",
-        "hmdb": "HMDB00538",
-        "seed.compound": "cpd00002",
-        "unipathway.compound": "UPC00002",
-        "bigg.metabolite": "atp",
-        "chebi": [
-          "CHEBI:40938",
-          "CHEBI:15422",
-          "CHEBI:57299",
-          "CHEBI:13236",
-          "CHEBI:10789",
-          "CHEBI:30616",
-          "CHEBI:22249",
-          "CHEBI:10841",
-          "CHEBI:2359"
-        ],
-        "reactome": [
-          "REACT_190078",
-          "REACT_113592",
-          "REACT_113593",
-          "REACT_114570",
-          "REACT_29358",
-          "REACT_389573",
-          "REACT_139836",
-          "REACT_211579"
-        ],
-        "pubchem.substance": "3304",
-        "cas": [
-          "56-65-5",
-          "56-65-5"
-        ],
-        "kegg.drug": "D08646",
-        "biocyc": "ATP"
-      },
-      "id": "atp_c"
     },
     {
       "compartment": "c",
@@ -1009,47 +822,6 @@
         "biocyc": "CO-A"
       },
       "id": "coa_c"
-    },
-    {
-      "compartment": "c",
-      "formula": "C4H2O4",
-      "charge": -2,
-      "name": "Fumarate",
-      "annotation": {
-        "kegg.compound": "C00122",
-        "hmdb": "HMDB00134",
-        "seed.compound": "cpd00106",
-        "unipathway.compound": "UPC00122",
-        "bigg.metabolite": "fum",
-        "chebi": [
-          "CHEBI:42743",
-          "CHEBI:18012",
-          "CHEBI:5190",
-          "CHEBI:22958",
-          "CHEBI:24122",
-          "CHEBI:24124",
-          "CHEBI:22956",
-          "CHEBI:22957",
-          "CHEBI:37154",
-          "CHEBI:37155",
-          "CHEBI:42511",
-          "CHEBI:29806",
-          "CHEBI:36180",
-          "CHEBI:14284"
-        ],
-        "reactome": [
-          "REACT_29586",
-          "REACT_113588"
-        ],
-        "pubchem.substance": "3422",
-        "cas": [
-          "110-17-8",
-          "110-17-8"
-        ],
-        "kegg.drug": "D02308",
-        "biocyc": "FUM"
-      },
-      "id": "fum_c"
     },
     {
       "compartment": "c",
@@ -1215,97 +987,6 @@
     },
     {
       "compartment": "c",
-      "formula": "C4H4O5",
-      "charge": -2,
-      "name": "L-Malate",
-      "annotation": {
-        "kegg.compound": "C00149",
-        "pubchem.substance": "3449",
-        "cas": [
-          "97-67-6",
-          "97-67-6"
-        ],
-        "bigg.metabolite": "mal__L"
-      },
-      "id": "mal__L_c"
-    },
-    {
-      "compartment": "c",
-      "formula": "C21H26N7O14P2",
-      "charge": -1,
-      "name": "Nicotinamide adenine dinucleotide",
-      "annotation": {
-        "kegg.compound": "C00003",
-        "hmdb": "HMDB00902",
-        "seed.compound": "cpd00003",
-        "unipathway.compound": "UPC00003",
-        "bigg.metabolite": "nad",
-        "chebi": [
-          "CHEBI:21901",
-          "CHEBI:7422",
-          "CHEBI:44214",
-          "CHEBI:15846",
-          "CHEBI:13394",
-          "CHEBI:13393",
-          "CHEBI:44215",
-          "CHEBI:13389",
-          "CHEBI:57540",
-          "CHEBI:44281"
-        ],
-        "reactome": [
-          "REACT_192307",
-          "REACT_29360",
-          "REACT_427523",
-          "REACT_194653",
-          "REACT_113526"
-        ],
-        "pubchem.substance": "3305",
-        "cas": [
-          "53-84-9",
-          "53-84-9"
-        ],
-        "kegg.drug": "D00002",
-        "biocyc": "NAD"
-      },
-      "id": "nad_c"
-    },
-    {
-      "compartment": "c",
-      "formula": "C21H27N7O14P2",
-      "charge": -2,
-      "name": "Nicotinamide adenine dinucleotide - reduced",
-      "annotation": {
-        "kegg.compound": "C00004",
-        "hmdb": "HMDB01487",
-        "seed.compound": "cpd00004",
-        "unipathway.compound": "UPC00004",
-        "bigg.metabolite": "nadh",
-        "chebi": [
-          "CHEBI:13395",
-          "CHEBI:21902",
-          "CHEBI:16908",
-          "CHEBI:7423",
-          "CHEBI:44216",
-          "CHEBI:57945",
-          "CHEBI:13396"
-        ],
-        "reactome": [
-          "REACT_192305",
-          "REACT_73473",
-          "REACT_194697",
-          "REACT_29362"
-        ],
-        "cas": [
-          "58-68-4",
-          "58-68-4"
-        ],
-        "pubchem.substance": "3306",
-        "biocyc": "NADH"
-      },
-      "id": "nadh_c"
-    },
-    {
-      "compartment": "c",
       "formula": "C21H25N7O17P3",
       "charge": -3,
       "name": "Nicotinamide adenine dinucleotide phosphate",
@@ -1451,182 +1132,6 @@
         ]
       },
       "id": "oaa_c"
-    },
-    {
-      "compartment": "c",
-      "formula": "HO4P",
-      "charge": -2,
-      "name": "Phosphate",
-      "annotation": {
-        "kegg.compound": [
-          "C13556",
-          "C13558",
-          "C00009"
-        ],
-        "hmdb": "HMDB02142",
-        "seed.compound": [
-          "cpd09464",
-          "cpd09463",
-          "cpd00009"
-        ],
-        "unipathway.compound": "UPC00009",
-        "bigg.metabolite": "pi",
-        "chebi": [
-          "CHEBI:37583",
-          "CHEBI:7793",
-          "CHEBI:37585",
-          "CHEBI:34683",
-          "CHEBI:14791",
-          "CHEBI:34855",
-          "CHEBI:29137",
-          "CHEBI:29139",
-          "CHEBI:63036",
-          "CHEBI:26020",
-          "CHEBI:39739",
-          "CHEBI:32597",
-          "CHEBI:32596",
-          "CHEBI:43474",
-          "CHEBI:63051",
-          "CHEBI:43470",
-          "CHEBI:9679",
-          "CHEBI:35433",
-          "CHEBI:4496",
-          "CHEBI:45024",
-          "CHEBI:18367",
-          "CHEBI:26078",
-          "CHEBI:39745",
-          "CHEBI:24838"
-        ],
-        "reactome": [
-          "REACT_947590",
-          "REACT_109277",
-          "REACT_113548",
-          "REACT_2255331",
-          "REACT_29372",
-          "REACT_113550",
-          "REACT_113551"
-        ],
-        "pubchem.substance": "3311",
-        "cas": [
-          "14265-44-2",
-          "14265-44-2"
-        ],
-        "kegg.drug": "D05467",
-        "biocyc": [
-          "Pi",
-          "PHOSPHATE-GROUP",
-          "CPD0-1421"
-        ]
-      },
-      "id": "pi_c"
-    },
-    {
-      "compartment": "c",
-      "formula": "C49H74O4",
-      "charge": 0,
-      "name": "Ubiquinone-8",
-      "annotation": {
-        "kegg.compound": [
-          "C17569",
-          "C00399"
-        ],
-        "pubchem.substance": "3689",
-        "lipidmaps": "LMPR02010005",
-        "bigg.metabolite": "q8",
-        "chebi": "CHEBI:61683",
-        "seed.compound": "cpd15560",
-        "cas": [
-          "1339-63-5",
-          "1339-63-5"
-        ],
-        "biocyc": "UBIQUINONE-8"
-      },
-      "id": "q8_c"
-    },
-    {
-      "compartment": "c",
-      "formula": "C49H76O4",
-      "charge": 0,
-      "name": "Ubiquinol-8",
-      "annotation": {
-        "kegg.compound": "C00390",
-        "pubchem.substance": "3680",
-        "bigg.metabolite": "q8h2",
-        "chebi": "CHEBI:61682",
-        "seed.compound": "cpd15561",
-        "biocyc": "CPD-9956"
-      },
-      "id": "q8h2_c"
-    },
-    {
-      "compartment": "c",
-      "formula": "C4H4O4",
-      "charge": -2,
-      "name": "Succinate",
-      "annotation": {
-        "kegg.compound": "C00042",
-        "hmdb": "HMDB00254",
-        "lipidmaps": "LMFA01170043",
-        "unipathway.compound": "UPC00042",
-        "bigg.metabolite": "succ",
-        "chebi": [
-          "CHEBI:22941",
-          "CHEBI:22943",
-          "CHEBI:26807",
-          "CHEBI:26803",
-          "CHEBI:30031",
-          "CHEBI:9304",
-          "CHEBI:15125",
-          "CHEBI:45639",
-          "CHEBI:15741",
-          "CHEBI:30779"
-        ],
-        "reactome": [
-          "REACT_113536",
-          "REACT_433123",
-          "REACT_29434",
-          "REACT_389583",
-          "REACT_1650769",
-          "REACT_159939"
-        ],
-        "seed.compound": "cpd00036",
-        "cas": [
-          "110-15-6",
-          "110-15-6"
-        ],
-        "pubchem.substance": "3344",
-        "biocyc": "SUC"
-      },
-      "id": "succ_c"
-    },
-    {
-      "compartment": "c",
-      "formula": "C25H35N7O19P3S",
-      "charge": -5,
-      "name": "Succinyl-CoA",
-      "annotation": {
-        "kegg.compound": "C00091",
-        "hmdb": "HMDB01022",
-        "seed.compound": "cpd00078",
-        "unipathway.compound": "UPC00091",
-        "chebi": [
-          "CHEBI:15127",
-          "CHEBI:15380",
-          "CHEBI:57292",
-          "CHEBI:26811",
-          "CHEBI:9310",
-          "CHEBI:45541",
-          "CHEBI:10746"
-        ],
-        "reactome": "REACT_70958",
-        "cas": [
-          "604-98-8",
-          "604-98-8"
-        ],
-        "pubchem.substance": "3391",
-        "bigg.metabolite": "succoa"
-      },
-      "id": "succoa_c"
     }
   ],
   "nodes": [
