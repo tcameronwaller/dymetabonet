@@ -1,10 +1,19 @@
 --------------------------------------------------
 
 --------------------------------------------------
+29 November 2016
+
+Give a title to each metabolite row in the degree table.
+Make the title the full name of the metabolite.
+That way the user can see the full name of the metabolite in a tool tip.
+
+
+
+--------------------------------------------------
 28 November 2016
 
 I want to implement an interactive table in the NavigationView.
-Study the table (data-driven creation, sorting, interaction) from Homework 3.
+Study the table (data-driven creation, sorting, interaction) from Homework 4.
 Use an HTML table element.
 Create rows in a data-driven way, one for each metabolite.
 Maybe worry about sorting later.

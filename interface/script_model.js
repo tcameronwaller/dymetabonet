@@ -14,8 +14,9 @@ class Metabolite {
         self.formula = metabolite.formula;
         self.charge = metabolite.charge;
         self.compartment = metabolite.compartment;
-        self.degree = self.setDegree();
-        self.replication = self.setReplication();
+        // Use methods to manipulate attributes of the class that change.
+        self.setDegree();
+        self.setReplication();
         // A method in class Model sets the attribute replication (boolean) of this class.
         // A method in class Model sets the attribute degree (number) of this class.
         // This functionality is within the Model class since the degree of the metabolite depends on its model context.
@@ -23,8 +24,7 @@ class Metabolite {
 
     setDegree() {
         var self = this;
-        var degree = 0;
-        return degree;
+        self.degree = 0;
     }
 
     incrementDegree() {
@@ -34,8 +34,7 @@ class Metabolite {
 
     setReplication() {
         var self = this;
-        var replication = false;
-        return replication;
+        self.replication = false;
     }
 
     changeReplication() {
@@ -131,7 +130,7 @@ class Model {
         //self.nodes = self.setNodes();
         //self.links = self.setLinks();
         //self.setMetaboliteDegree();
-        self.testReplication();
+        //self.testReplication();
         self.setNetwork();
     }
 
@@ -141,6 +140,13 @@ class Model {
         self.metabolites["h2o_c"].changeReplication();
     }
 
+    initiateDegrees() {
+        var self = this;
+        for (let key in self.metabolites) {
+            let metabolite = self.metabolites[key];
+            metabolite.setDegree();
+        };
+    }
 
     setMetabolites() {
         var self = this;
@@ -340,8 +346,7 @@ class Model {
      */
     setNetwork() {
         var self = this;
-        // TODO: Before running the portion of code that increments metabolite degrees, set all degrees to 0.
-        // TODO: I think just iterate over all metabolites in the model and set their degrees to 0 using setDegree().
+        self.initiateDegrees();
         // Before creating nodes and links, initiate these to make them empty.
         self.nodes = {};
         self.links = {};
@@ -360,8 +365,7 @@ class Model {
             for (let value1 of index) {
                 let side = value1;
                 for (let value2 of reaction[side]) {
-                    let role = value2;
-                    let metabolite = self.metabolites[role];
+                    let metabolite = self.metabolites[value2];
                     // Increment the degree of the metabolite.
                     // The degree of each metabolite increments for each reaction of the model in which it participates.
                     // The degree of the metabolite instance increments before creation of the node, so the increment

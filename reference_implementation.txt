@@ -203,10 +203,24 @@ Table Element
 Mozilla Developer Network
 https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table
 
+SVG Element
+"<svg>"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/SVG/Element/svg
+
+SVG Elements
+"SVG element reference"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/SVG/Element
+
+
+
 
 
 
 Other
+
+
 
 
 
@@ -239,3 +253,11 @@ Blocks
 Mike Bostock
 9 November 2016
 https://bl.ocks.org/mbostock/4062045
+
+Force-Directed Layout Restrained to Bounding SVG Element
+"Bounded Force Layout"
+Blocks
+Mike Bostock
+22 November 2016
+http://bl.ocks.org/mbostock/1129492
+

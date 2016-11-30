@@ -55,19 +55,24 @@ class QueryView {
             // Create objects that associate with these data.
             d3.json(("data/" + self.dataFile), function (error, dataModel) {
                 if (error) throw error;
-                // TODO: Create instance of model object here.
-                // TODO: Then send that instance of the model object to the navigationView.
-                self.send(dataModel);
+                self.createModel(dataModel);
             });
         });
     }
 
-    send(dataModel) {
+    createModel(dataModel) {
         var self = this;
-        self.navigationView.receive(dataModel);
+        // Create instance of class Model.
+        self.model = new Model(dataModel);
+        self.send();
+    }
+
+    send() {
+        var self = this;
+        // Send instance of class Model to the Navigation View.
+        self.navigationView.receive(self.model);
     }
 }
-
 
 // TODO: In NavigationView, select between free and restricted compartment layouts.
 // TODO: In NavigationView, select whether or not to highlight nodes of a specific compartment or to highlight edges
@@ -87,7 +92,7 @@ class NavigationView {
     constructor(explorationView) {
         var self = this;
         self.explorationView = explorationView;
-        self.initialize();
+        //self.initialize();
     }
 
     initialize() {
@@ -96,14 +101,19 @@ class NavigationView {
         // These event handlers respectively call appropriate methods.
     }
 
-    receive(dataModel) {
+    /**
+     * Declare a function to receive a specific instance of class Model.
+     */
+    receive(model) {
         var self = this;
+
         // The navigation view supports modification of the data.
         // Copy the data so that it is always possible to revert to the original from the query view.
-        // TODO: Send the model data to the Model class and let this class construct an instance of class Model.
-        self.modelOriginal =  new Model(dataModel);
-        self.modelDerivation = self.modelOriginal;
-        console.log(self.modelDerivation);
+        // I do not think that is necessary.
+
+        // I want access to the specific instance of the Model class.
+        // For that reason, I copy the reference rather than clone content using Object.assign().
+        self.model =  model;
         self.createDegreeTable();
     }
 
@@ -119,9 +129,9 @@ class NavigationView {
         self.degreeTableBody = self.degreeTable.select("tbody");
         self.degreeTableBodyRows = self.degreeTableBody
             .selectAll("tr")
-            //.data(self.modelDerivation.metabolites);
+            //.data(self.model.metabolites);
             // It seems that D3's data association only works with arrays.
-            .data(Object.values(self.modelDerivation.metabolites));
+            .data(Object.values(self.model.metabolites));
         self.degreeTableBodyRows
             .exit()
             .remove();
@@ -131,6 +141,7 @@ class NavigationView {
         self.degreeTableBodyRows = self.degreeTableBodyRowsEnter
             .merge(self.degreeTableBodyRows);
 
+        // TODO: Define interactivity of table rows.
         // Create interactivity (highlighting) of table rows.
     }
 
@@ -152,7 +163,7 @@ class NavigationView {
                 rowData.push(degree);
                 var replication = {};
                 replication.column = "replication"
-                replication.type = "selection";
+                replication.identifier = d.identifier;
                 replication.value = d.replication;
                 rowData.push(replication);
                 return rowData;
@@ -247,11 +258,20 @@ class NavigationView {
                     return "red";
                 };
             });
+        // TODO: I will also need to re-create the nodes and links using the Model Class.
+        self.degreeTableReplicationsBar
+            .on("click", function (d) {
+                self.model.metabolites[d.identifier].changeReplication();
+                self.model.setNetwork();
+                self.createDegreeTable();
+            });
+
     }
 
     createDegreeTable() {
         var self = this;
-        self.cellWidth = 350;
+
+        self.cellWidth = 250;
         self.cellHeight = 25;
         self.cellPad = 10;
 
@@ -279,12 +299,12 @@ class NavigationView {
         // Set properties of replication column.
         self.createDegreeTableReplication();
 
-        //self.send(self.modelDerivation);
+        self.send();
     }
 
-    send(modelDerivation) {
+    send() {
         var self = this;
-        self.explorationView.receive(modelDerivation);
+        self.explorationView.receive(self.model);
     }
 }
 
@@ -304,40 +324,17 @@ class ExplorationView {
     initialize() {
         // This method creates any necessary elements of the network view.
         var self = this;
-        // Create SVG element.
-        // Set dimensions of SVG proportional to dimensions of the viewport or window.
-        // Definition of margin, border, and padding is in the style.
-        // Define padding again here since it is difficult to access element dimensions without padding.
-        // Also artificially adjust height to leave room for the selector.
-        // Select element for network view from DOM.
-        self.explorationDiv = d3.select("#exploration");
-        // Determine element dimensions.
-        self.padding = {top: 10, right: 10, bottom: 10, left: 10};
-        self.bounds = {width: (self.explorationDiv.node().clientWidth), height: (self.explorationDiv.node().clientHeight)}
-        self.svgWidth = self.bounds.width - (self.padding.left + self.padding.right);
-        self.svgHeight = self.bounds.height - (self.padding.top + self.padding.bottom);
-        // Create SVG element.
-        self.explorationSVG = self.explorationDiv.append("svg")
-            .attr("width", self.svgWidth)
-            .attr("height", self.svgHeight);
-        function createRectangle(self) {
-            var self = self;
-            // Create rectangle element to demonstrate dimensions of SVG element.
-            self.explorationSVG.append("rect")
-                .attr("x", 0)
-                .attr("y", 5)
-                .attr("width", self.svgWidth)
-                .attr("height", self.svgHeight)
-                .attr("fill", "grey");
-        };
-        //createRectangle(self);
     }
 
-    receive(modelDerivation) {
+    receive(model) {
         var self = this;
-        self.modelDerivation = modelDerivation;
+        self.model = Object.assign({}, model);
         //console.log("ExplorationView Data")
-        //console.log(self.modelDerivation);
+        //console.log(self.model);
+        // I think that the node-link diagram process modifies the data.
+        // Create collections of nodes and links specific to this object.
+        self.nodes = Object.values(self.model.nodes);
+        self.links = Object.values(self.model.links);
         self.draw();
         // Call update method.
         self.update();
@@ -345,28 +342,39 @@ class ExplorationView {
 
     draw() {
         var self = this;
-        // Determine dimensions of SVG element.
-        // self.svgWidth = +self.networkSVG.attr("width");
-        // self.svgHeight = +self.networkSVG.attr("height");
 
         // TODO: Modify the force simulation to make links longer.
         // TODO: Give reaction links different force constraint (longer) than metabolite links.
         // TODO: Set radius for collision force according to the radius of the actual node circles.
 
+        self.explorationSVG = d3.select("#exploration").select("svg");
+
+        // Determine dimensions of SVG element.
+        self.svgWidth = +self.explorationSVG.attr("width");
+        self.svgHeight = +self.explorationSVG.attr("height");
+
+        // Remove existing nodes and links.
+        self.explorationSVG
+            .selectAll("g")
+            .remove();
+
+
+        // TODO: Use anonymous function and if clauses to set different distances for links of different types.
         // Initiate the force simulation.
         // Collision force prevents overlap occlusion of nodes.
         self.simulation = d3.forceSimulation()
             .force("charge", d3.forceManyBody()
-                .strength(-150)
+                .strength(-250)
             )
             .force("collide", d3.forceCollide()
                 .radius(12)
             )
             .force("link", d3.forceLink()
-                .id(function (d) {return d.id;})
+                .id(function (d) {return d.identifier;})
                 .distance(65)
             )
             .force("center", d3.forceCenter(self.svgWidth / 2, self.svgHeight / 2));
+            //.size([self.svgWidth, self.svgHeight]);
 
         // TODO: Make markers bi-directional according to model.
         // TODO: I will need to encode that information in the data.
@@ -397,7 +405,7 @@ class ExplorationView {
         // Create links.
         self.link = self.explorationSVG.append("g")
             .selectAll("line")
-            .data(self.data.links)
+            .data(self.links)
             .enter()
             .append("line")
             .attr("class", "link")
@@ -417,7 +425,7 @@ class ExplorationView {
         self.node = self.explorationSVG.append("g")
         //self.node = self.nodes
             .selectAll("circle")
-            .data(self.data.nodes)
+            .data(self.nodes)
             .enter()
             .append("circle")
             .attr("class", function (d) {
@@ -445,12 +453,12 @@ class ExplorationView {
             });
 
         self.simulation
-            .nodes(self.data.nodes)
+            .nodes(self.nodes)
             .on("tick", ticked);
 
         self.simulation
             .force("link")
-            .links(self.data.links);
+            .links(self.links);
 
         // Declare function to increment the force simulation.
 

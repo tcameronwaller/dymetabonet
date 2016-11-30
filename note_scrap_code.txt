@@ -3,6 +3,32 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
+30 November 2016
+
+class ExplorationView {
+...
+initialize() {
+        // Create SVG element.
+        // Set dimensions of SVG proportional to dimensions of the viewport or window.
+        // Definition of margin, border, and padding is in the style.
+        // Define padding again here since it is difficult to access element dimensions without padding.
+        // Also artificially adjust height to leave room for the selector.
+        // Select element for network view from DOM.
+        self.explorationDiv = d3.select("#exploration");
+        // Determine element dimensions.
+        self.padding = {top: 10, right: 10, bottom: 10, left: 10};
+        self.bounds = {width: (self.explorationDiv.node().clientWidth), height: (self.explorationDiv.node().clientHeight)}
+        self.svgWidth = self.bounds.width - (self.padding.left + self.padding.right);
+        self.svgHeight = self.bounds.height - (self.padding.top + self.padding.bottom);
+        // Create SVG element.
+        self.explorationSVG = self.explorationDiv.append("svg")
+            .attr("width", self.svgWidth)
+            .attr("height", self.svgHeight);
+}
+}
+
+
+--------------------------------------------------
 28 November 2016
 
 I originally used D3 in the JavaScript script to create Scalable Vector Graphics elements within my DIV elements.

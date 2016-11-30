@@ -15,6 +15,8 @@
     <!-- Create all other elements within the HTML. -->
     <!-- Group all page content in a container element. -->
 
+    <!-- TODO: For now, just set static dimensions for all elements of the document. -->
+
     <div id="window">
 
         <!-- Create element for title or header of interface. -->
@@ -32,7 +34,7 @@
             <!-- Create element for query view. -->
             <!-- For this project, this view will not associate with data beyond a selection menu. -->
             <div id="query" class="view">
-                <h3>Model Selector</h3>
+                <h3>Query</h3>
                 <div id="selector-div">
                     <label>Model:</label>
                     <select id="selector"></select>
@@ -43,7 +45,7 @@
             <!-- Create element for navigation view. -->
             <!-- Maybe the navigation view should actually have a fixed size. -->
             <div id="navigation" class="view">
-                <h3>Metabolite Table</h3>
+                <h3>Metabolite Degree Table</h3>
                 <table id="degree-table">
                     <thead>
                     <tr>
@@ -62,7 +64,11 @@
         </div>
 
         <!-- Create element for exploration view. -->
-        <div id="exploration" class="view"></div>
+        <div id="exploration" class="view">
+            <!-- It is possible to initiate this svg with dimensions 100X100 and then change those in the CSS. -->
+            <!-- I set the final dimensions for now since it makes it simple to access them in the JavaScript. -->
+            <svg width="1500" height="890"></svg>
+        </div>
 
     </div>
 
