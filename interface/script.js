@@ -1,392 +1,5 @@
 
 /**
- * Declare a class to contain attributes and methods of the metabolite.
- * This class initiates an instance from a single metabolite object.
- */
-class Metabolite {
-    constructor(metabolite) {
-        // Variable metabolite is a single object for a metabolite from the array of objects in the metabolic model.
-        // The data are already in an object (key: value) structure.
-        var self = this;
-        // Set attributes of the class.
-        //self.type = "metabolite";
-        self.identifier = metabolite.id;
-        self.name = metabolite.name;
-        self.formula = metabolite.formula;
-        self.charge = metabolite.charge;
-        self.compartment = metabolite.compartment;
-        self.degree = self.setDegree();
-        self.replication = self.setReplication();
-        // A method in class Model sets the attribute replication (boolean) of this class.
-        // A method in class Model sets the attribute degree (number) of this class.
-        // This functionality is within the Model class since the degree of the metabolite depends on its model context.
-    }
-
-    setDegree() {
-        var self = this;
-        var degree = 0;
-        return degree;
-    }
-
-    incrementDegree() {
-        var self = this;
-        self.degree = self.degree + 1;
-    }
-
-    setReplication() {
-        var self = this;
-        var replication = false;
-        return replication;
-    }
-
-    changeReplication() {
-        var self = this;
-        if (self.replication == false) {
-            self.replication = true;
-        } else if (self.replication == true) {
-            self.replication = false;
-        };
-    }
-}
-
-// TODO: Determine gene name from the gene objects.
-// TODO: That's a low priority.
-/**
- * Declare a class to contain attributes and methods of the reaction.
- * This class initiates an instance from a single reaction object.
- */
-class Reaction {
-    constructor(reaction) {
-        var self = this;
-        // Set attributes of the class.
-        //self.type = "reaction";
-        self.identifier = reaction.id;
-        self.name = reaction.name;
-        self.gene = reaction.gene_reaction_rule;
-        self.upperBound = reaction.upper_bound;
-        self.lowerBound = reaction.lower_bound;
-        self.reversibility = self.setReversibility();
-        self.metabolites = reaction.metabolites;
-        self.reactants = self.setReactants();
-        self.products = self.setProducts();
-    }
-
-    /**
-     * This method determines the reversibility of a reaction.
-     */
-    setReversibility() {
-        var self = this;
-        if (self.upperBound > 0 && self.lowerBound < 0) {
-            return true;
-        } else {
-            return false;
-        };
-    }
-
-    /**
-     * This method determines the reactant(s) of a reaction.
-     */
-    setReactants() {
-        var self = this;
-        var reactants = [];
-        for (let metabolite in self.metabolites) {
-            if (Number(self.metabolites[metabolite]) == -1) {
-                reactants.push(metabolite);
-            };
-        };
-        return reactants;
-    }
-
-    /**
-     * This method determines the product(s) of a reaction.
-     */
-    setProducts() {
-        var self = this;
-        var products = [];
-        for (let metabolite in self.metabolites) {
-            if (Number(self.metabolites[metabolite]) == 1) {
-                products.push(metabolite);
-            };
-        };
-        return products;
-    }
-}
-
-
-/**
- * Declare a class to contain attributes and methods of the metabolic model.
- * This class initiates an instance from a single metabolic model.
- * This class organizes collections of instances of the classes for metabolite and reaction.
- * It uses objects (instead of arrays) for these collections to enable direct access of values by reference to keys.
- * This class also creates and organizes collections of nodes and links.
- * It again uses objects (instead of arrays) for these collections.
- */
-class Model {
-
-
-    constructor(dataModel) {
-        var self = this;
-        self.dataModel = dataModel;
-        self.metabolites = self.setMetabolites();
-        self.reactions = self.setReactions();
-        //self.nodes = self.setNodes();
-        //self.links = self.setLinks();
-        //self.setMetaboliteDegree();
-        self.testReplication();
-        self.setNetwork();
-    }
-
-
-    testReplication() {
-        var self = this;
-        self.metabolites["h2o_c"].changeReplication();
-    }
-
-
-    setMetabolites() {
-        var self = this;
-        var metabolites = {};
-        for (let value of self.dataModel.metabolites) {
-            let metabolite = value;
-            metabolites[metabolite.id] = new Metabolite(metabolite);
-        };
-        return metabolites;
-    }
-
-
-    setReactions() {
-        var self = this;
-        var reactions = {};
-        for (let value of self.dataModel.reactions) {
-            let reaction = value;
-            reactions[reaction.id] = new Reaction(reaction);
-        };
-        return reactions;
-    }
-
-
-    /**
-     * Declare a function to create identifiers for nodes and links for reactions and metabolites.
-     * Identifiers for all links begin with a reference to their reaction.
-     */
-    createIdentifiers(parameters) {
-        var self = this;
-        var reaction = parameters.reaction;
-        var metabolite = parameters.metabolite;
-        var identifiers = {};
-        // Determine identifiers for reaction if reaction is not null.
-        if (reaction) {
-            identifiers.reaction = {};
-            identifiers.reaction.original = reaction.identifier;
-            identifiers.reaction.in = reaction.identifier + "_in";
-            identifiers.reaction.out = reaction.identifier + "_out";
-        };
-        // Determine identifiers for metabolite if neither reaction nor metabolite is null.
-        if (reaction && metabolite) {
-            identifiers.metabolite = {};
-            identifiers.metabolite.original = metabolite.identifier;
-            identifiers.metabolite.reactionIn = metabolite.identifier + "_" + identifiers.reaction.in;
-            identifiers.metabolite.reactionOut = metabolite.identifier + "_" + identifiers.reaction.out;
-            identifiers.metabolite.reactant = identifiers.reaction.in + "_" + metabolite.identifier;
-            identifiers.metabolite.product = identifiers.reaction.out + "_" + metabolite.identifier;
-        };
-        return identifiers;
-    }
-
-
-    /**
-     * Declare a function to create nodes for reactions.
-     * Create in and out nodes for each reaction with complete information about the reaction.
-     * Give each reaction's node a new field, "type", to indicate the type of node, "reaction".
-     * Give each reaction's node a new field, "reference", to store the identifier of the original reaction.
-     * Give each reaction's node a new field, "direction", to indicate whether it is an "in" node or an "out" node.
-     */
-    createReactionNode(reaction) {
-        var self = this;
-        var reaction = reaction;
-        var identifiers = self.createIdentifiers({reaction: reaction, metabolite: null});
-        // Create in and out nodes for reaction.
-        var index = ["in", "out"];
-        for (let value of index) {
-            let direction = value;
-            // Clone reaction to replicates for in and out.
-            // Direct assignment of object only copies reference.
-            let reactionNode = Object.assign({}, reaction);
-            reactionNode.identifier = identifiers.reaction[direction];
-            reactionNode.type = "reaction";
-            reactionNode.reference = identifiers.reaction.original;
-            reactionNode.direction = direction;
-            self.nodes[reactionNode.identifier] = Object.assign({}, reactionNode);
-        };
-    }
-
-
-    /**
-     * Declare a function to create links for reactions.
-     * Create link between in and out nodes for each reaction with complete information about the reaction.
-     * Give each reaction's link a new field, "type", to indicate the type of link, "reaction".
-     * Give each reaction's link a new field, "reference", to store the identifier of the original reaction.
-     * Links for reactions originate at the reaction's in node and terminate at the reaction's out node.
-     */
-    createReactionLink(reaction) {
-        var self = this;
-        var reaction = reaction;
-        var identifiers = self.createIdentifiers({reaction: reaction, metabolite: null});
-        // Create link for reaction.
-        var reactionLink = Object.assign({}, reaction);
-        reactionLink.identifier = identifiers.reaction.original;
-        reactionLink.type = "reaction";
-        reactionLink.reference = identifiers.reaction.original;
-        reactionLink.source = identifiers.reaction.in;
-        reactionLink.target = identifiers.reaction.out;
-        self.links[reactionLink.identifier] = Object.assign({}, reactionLink);
-    }
-
-
-    /**
-     * Declare a function to create nodes for metabolites.
-     * If a metabolite's replication flag is false, and if a node does not already exist, then create a node for the
-     *     metabolite.
-     * If replication flag is true, create a special replicate node for the metabolite that is specific to the reaction.
-     * Give this special metabolite node a unique identifier.
-     * Maybe give this metabolite node new fields, "reaction" and "direction", that indicate its reaction and in/out?
-     * Give each metabolite's node a new field, "type", to indicate the type of node, "metabolite".
-     * Give each metabolite's node a new field, "reference", to store the identifier of the original metabolite.
-     */
-    createMetaboliteNode(parameters) {
-        var self = this;
-        var reaction = parameters.reaction;
-        var direction = parameters.direction;
-        var metabolite = parameters.metabolite;
-        var identifiers = self.createIdentifiers({reaction: reaction, metabolite: metabolite});
-        // Determine whether the metabolite's replication flag is false or true.
-        if (metabolite.replication == false) {
-            // Determine whether or not a node already exists for the metabolite.
-            if (!(identifiers.metabolite.original in Object.keys(self.nodes))) {
-                // Create node for metabolite.
-                var metaboliteNode = Object.assign({}, metabolite);
-                metaboliteNode.identifier = identifiers.metabolite.original;
-                metaboliteNode.type = "metabolite";
-                metaboliteNode.reference = identifiers.metabolite.original;
-                self.nodes[metaboliteNode.identifier] = Object.assign({}, metaboliteNode);
-            };
-        } else if (metabolite.replication == true) {
-            // Create node for metabolite.
-            var metaboliteNode = Object.assign({}, metabolite);
-            if (direction == "in") {
-                metaboliteNode.identifier = identifiers.metabolite.reactionIn;
-            } else if (direction == "out") {
-                metaboliteNode.identifier = identifiers.metabolite.reactionOut;
-            };
-            metaboliteNode.type = "metabolite";
-            metaboliteNode.reference = identifiers.metabolite.original;
-            self.nodes[metaboliteNode.identifier] = Object.assign({}, metaboliteNode);
-        };
-    }
-
-
-    /**
-     * Declare a function to create links for metabolites.
-     * Create link between each metabolite node and the appropriate reaction node.
-     * Give each metabolite's link a new field, "type", to indicate the type of link, "metabolite".
-     * Links for metabolites originate at the reaction's in or out node and terminate at the metabolite's node.
-     */
-    createMetaboliteLink(parameters) {
-        var self = this;
-        var reaction = parameters.reaction;
-        var direction = parameters.direction;
-        var metabolite = parameters.metabolite;
-        var identifiers = self.createIdentifiers({reaction: reaction, metabolite: metabolite});
-        // Create link for metabolite.
-        // Link originates at reaction node (in or out) and terminates at the metabolite (reactant or product).
-        var metaboliteLink = Object.assign({}, metabolite);
-        if (direction == "in") {
-            metaboliteLink.identifier = identifiers.metabolite.reactant;
-            metaboliteLink.source = identifiers.reaction.in;
-        } else if (direction == "out") {
-            metaboliteLink.identifier = identifiers.metabolite.product;
-            metaboliteLink.source = identifiers.reaction.out;
-        };
-        metaboliteLink.type = "metabolite";
-        metaboliteLink.reference = identifiers.metabolite.original;
-        // Determine whether the metabolite's replication flag is false or true.
-        if (metabolite.replication == false) {
-            metaboliteLink.target = identifiers.metabolite.original;
-        } else if (metabolite.replication == true) {
-            if (direction == "in") {
-                metaboliteLink.target = identifiers.metabolite.reactionIn;
-            } else if (direction == "out") {
-                metaboliteLink.target = identifiers.metabolite.reactionOut;
-            };
-        };
-        self.links[metaboliteLink.identifier] = Object.assign({}, metaboliteLink);
-    }
-
-
-    /**
-     * Declare a function to create a node-link network representation of the metabolic model.
-     * Nodes and links relate within the network.
-     * Due to this relation, it is efficient to organize the creation of nodes and links within the same iterative
-     * process.
-     * As reactions contain the relevant information about connectivity between metabolites, it is most reasonable to
-     * guide the creation of nodes and links by iteration over reactions.
-     * Procedure:
-     * 1) Iterate over reactions, not metabolites.
-     * 2) Create nodes for each reaction.
-     * 3) Create link between in and out nodes for each reaction.
-     * 4) Iterate over metabolites (reactants and products) of each reaction.
-     * 5) Increment the degree of each metabolite for each reaction in which it participates.
-     * 6) Create node for each metabolite.
-     * 7) Create link between each metabolite node and the appropriate reaction node.
-     */
-    setNetwork() {
-        var self = this;
-        // TODO: Before running the portion of code that increments metabolite degrees, set all degrees to 0.
-        // TODO: I think just iterate over all metabolites in the model and set their degrees to 0 using setDegree().
-        // Before creating nodes and links, initiate these to make them empty.
-        self.nodes = {};
-        self.links = {};
-        // Iterate over reactions.
-        // Iterate over keys, not values, of the object.
-        for (let key in self.reactions) {
-            let reaction = self.reactions[key];
-            // Create in and out nodes for reaction.
-            self.createReactionNode(reaction);
-            // Create link for reaction.
-            self.createReactionLink(reaction);
-            // Iterate over reactant and product metabolites of the reaction.
-            // Attribute reactant is an array of identifiers for metabolites that are reactants for a reaction.
-            // Attribute product is an array of identifiers for metabolites that are products for a reaction.
-            let index = ["reactants", "products"];
-            for (let value1 of index) {
-                let side = value1;
-                for (let value2 of reaction[side]) {
-                    let role = value2;
-                    let metabolite = self.metabolites[role];
-                    // Increment the degree of the metabolite.
-                    // The degree of each metabolite increments for each reaction of the model in which it participates.
-                    // The degree of the metabolite instance increments before creation of the node, so the increment
-                    // affects both.
-                    metabolite.incrementDegree();
-                    if (side == "reactants") {
-                        // Create node for metabolite.
-                        self.createMetaboliteNode({reaction: reaction, direction: "in", metabolite: metabolite});
-                        // Create link for metabolite.
-                        self.createMetaboliteLink({reaction: reaction, direction: "in", metabolite: metabolite});
-                    } else if (side == "products") {
-                        // Create node for the metabolite.
-                        self.createMetaboliteNode({reaction: reaction, direction: "out", metabolite: metabolite});
-                        // Create link for metabolite.
-                        self.createMetaboliteLink({reaction: reaction, direction: "out", metabolite: metabolite});
-                    };
-                };
-            };
-        };
-    }
-}
-
-
-/**
  * Declare a class to contain attributes and methods of the query view.
  * In the final implementation, methods of this class will build and execute queries to select subsets of the network
  * data in the original model.
@@ -397,19 +10,15 @@ class Model {
  * modification with user interaction.
  */
 class QueryView {
-
     constructor(navigationView) {
-
         var self = this;
         self.navigationView = navigationView;
         self.initialize();
-
+        self.update();
     }
 
     initialize() {
-
         var self = this;
-
         // Create the selector element.
         // TODO: Provide user with a list of all files in the data directory on the SERVER.
         // TODO: Create selector options for all available data sets.
@@ -427,31 +36,6 @@ class QueryView {
                 return d;
             });
         self.submit = d3.select("#submit");
-
-        // Create SVG element with a rectangle as a temporary space-filler.
-        // Set dimensions of SVG proportional to dimensions of the viewport or window.
-        // Definition of margin, border, and padding is in the style.
-        // Define padding again here since it is difficult to access element dimensions without padding.
-        // Also artificially adjust height to leave room for the selector.
-        self.padding = {top: 20, right: 10, bottom: 20, left: 10};
-        self.queryDiv = d3.select("#query");
-        self.bounds = {width: (self.queryDiv.node().clientWidth), height: (self.queryDiv.node().clientHeight)}
-        self.svgWidth = self.bounds.width - (self.padding.left + self.padding.right);
-        self.svgHeight = self.bounds.height - (self.padding.top + self.padding.bottom);
-
-        self.querySVG = self.queryDiv.append("svg")
-            .attr("width", self.svgWidth)
-            .attr("height", self.svgHeight);
-        self.querySVG.append("rect")
-            .attr("x", 0)
-            .attr("y", 5)
-            .attr("width", self.svgWidth)
-            .attr("height", self.svgHeight)
-            .attr("fill", "grey");
-
-        // Call update method.
-        self.update();
-
     }
 
     update() {
@@ -463,12 +47,10 @@ class QueryView {
             //console.log(d3.event);
             //console.log(d3.event.srcElement.value);
             //console.log(d3.event.target.value);
-
             //self.dataFile = d3.event.target.value;
             //console.log(self.selector.node().value);
             self.dataFile = self.selector.node().value;
             //console.log(self.dataFile);
-
             // Load data from file in JSON format.
             // Create objects that associate with these data.
             d3.json(("data/" + self.dataFile), function (error, dataModel) {
@@ -502,34 +84,201 @@ class QueryView {
  * In a typical session, the expectation is that the navigation view will interact with the network view frequently.
  */
 class NavigationView {
-
     constructor(explorationView) {
-
         var self = this;
         self.explorationView = explorationView;
-
         self.initialize();
     }
 
     initialize() {
-
         // This method creates any necessary elements of the navigation view.
         // This method establishes all necessary event handlers for elements of the navigation view.
         // These event handlers respectively call appropriate methods.
     }
 
     receive(dataModel) {
-
         var self = this;
-
         // The navigation view supports modification of the data.
         // Copy the data so that it is always possible to revert to the original from the query view.
         // TODO: Send the model data to the Model class and let this class construct an instance of class Model.
         self.modelOriginal =  new Model(dataModel);
         self.modelDerivation = self.modelOriginal;
-        console.log("NavigationView Model");
         console.log(self.modelDerivation);
-        //console.log(self.modelDerivation.metabolite.accoa_c);
+        self.createDegreeTable();
+    }
+
+    createDegreeTableRows() {
+        var self = this;
+        // Remove existing rows of table.
+        d3.select("#degree-table")
+            .select("tbody")
+            .selectAll("tr")
+            .remove();
+        // Create rows of table that associate with data.
+        self.degreeTable = d3.select("#degree-table");
+        self.degreeTableBody = self.degreeTable.select("tbody");
+        self.degreeTableBodyRows = self.degreeTableBody
+            .selectAll("tr")
+            //.data(self.modelDerivation.metabolites);
+            // It seems that D3's data association only works with arrays.
+            .data(Object.values(self.modelDerivation.metabolites));
+        self.degreeTableBodyRows
+            .exit()
+            .remove();
+        self.degreeTableBodyRowsEnter = self.degreeTableBodyRows
+            .enter()
+            .append("tr");
+        self.degreeTableBodyRows = self.degreeTableBodyRowsEnter
+            .merge(self.degreeTableBodyRows);
+
+        // Create interactivity (highlighting) of table rows.
+    }
+
+    createDegreeTableCells() {
+        var self = this;
+        // Create cells of table that associate with data.
+        self.degreeTableBodyCells = self.degreeTableBodyRows.selectAll("td")
+            .data(function (d) {
+                var rowData = [];
+                var identifier = {};
+                identifier.column = "identifier";
+                identifier.type = "text";
+                identifier.value = d.identifier;
+                rowData.push(identifier);
+                var degree = {};
+                degree.column = "degree";
+                degree.type = "numberBar";
+                degree.value = d.degree;
+                rowData.push(degree);
+                var replication = {};
+                replication.column = "replication"
+                replication.type = "selection";
+                replication.value = d.replication;
+                rowData.push(replication);
+                return rowData;
+            });
+        self.degreeTableBodyCells
+            .exit()
+            .remove();
+        self.degreeTableBodyCellsEnter = self.degreeTableBodyCells
+            .enter()
+            .append("td");
+        self.degreeTableBodyCells = self.degreeTableBodyCellsEnter
+            .merge(self.degreeTableBodyCells);
+    }
+
+    createDegreeTableScale() {
+        var self = this;
+        // Create scale for degrees.
+        // TODO: Determine domain from data.
+        self.degreeScale = d3.scaleLinear()
+            .domain([0, 5])
+            .range([self.cellPad, (self.cellWidth - self.cellPad)])
+            .nice();
+    }
+
+    createDegreeTableIdentifier() {
+        var self = this;
+        self.degreeTableIdentifiers = self.degreeTableBodyCells
+            .filter(function (d) {
+                return d.column == "identifier";
+            });
+        self.degreeTableIdentifiers
+            .append("span")
+            .text(function (d) {
+                return d.value;
+            });
+    }
+
+    createDegreeTableDegree() {
+        var self = this;
+        // TODO: How can I set the dimensions of the SVG element according to the view dimensions?
+        self.degreeTableDegrees = self.degreeTableBodyCells
+            .filter(function (d) {
+                return d.column == "degree";
+            });
+        self.degreeTableDegreesSVG = self.degreeTableDegrees
+            .append("svg")
+            .attr("width", self.cellWidth)
+            .attr("height", self.cellHeight);
+        self.degreeTableDegreesGroup = self.degreeTableDegreesSVG
+            .append("g");
+        self.degreeTableDegreesBar = self.degreeTableDegreesGroup
+            .append("rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", function (d) {
+                return self.degreeScale(d.value);
+            })
+            .attr("height", self.cellHeight)
+            .style("fill", "grey");
+        self.degreeTableDegreesLabel = self.degreeTableDegreesGroup
+            .append("text")
+            .text(function (d) {
+                return String(d.value);
+            })
+            .attr("x", function (d) {
+                return self.degreeScale(d.value) - 15;
+            })
+            .attr("y", 18);
+            //.classed("label", true);
+    }
+
+    createDegreeTableReplication() {
+        var self = this;
+        self.degreeTableReplications = self.degreeTableBodyCells
+            .filter(function (d) {
+                return d.column == "replication";
+            });
+        self.degreeTableReplicationsSVG = self.degreeTableReplications
+            .append("svg")
+            .attr("width", 25)
+            .attr("height", 25);
+        self.degreeTableReplicationsBar = self.degreeTableReplicationsSVG
+            .append("rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", 25)
+            .attr("height", 25)
+            .attr("fill", function (d) {
+                if (d.value == false) {
+                    return "grey";
+                } else if (d.value == true) {
+                    return "red";
+                };
+            });
+    }
+
+    createDegreeTable() {
+        var self = this;
+        self.cellWidth = 350;
+        self.cellHeight = 25;
+        self.cellPad = 10;
+
+        // TODO: Sort the rows of the table before drawing the table.
+        // TODO: Sort so that metabolites with greater degrees are at top.
+        // TODO: Break ties in degree by alphabetical order.
+
+        // Create scale for degrees.
+        // TODO: Determine domain from data.
+        self.createDegreeTableScale();
+
+        // Create table rows.
+        self.createDegreeTableRows();
+
+        // Create table cells.
+        self.createDegreeTableCells();
+
+        // Set properties of table cells.
+        // Set properties of identifier column.
+        self.createDegreeTableIdentifier();
+
+        // Set properties of degree column.
+        self.createDegreeTableDegree();
+
+        // Set properties of replication column.
+        self.createDegreeTableReplication();
+
         //self.send(self.modelDerivation);
     }
 
@@ -546,41 +295,31 @@ class NavigationView {
  * Methods of this class create visual representations of the data for the network.
  */
 class ExplorationView {
-
     constructor() {
         // Declare variable self to store original instance of the object.
         var self = this;
-
         self.initialize();
-
     }
 
     initialize() {
-
         // This method creates any necessary elements of the network view.
-
         var self = this;
-
         // Create SVG element.
         // Set dimensions of SVG proportional to dimensions of the viewport or window.
         // Definition of margin, border, and padding is in the style.
         // Define padding again here since it is difficult to access element dimensions without padding.
         // Also artificially adjust height to leave room for the selector.
-
         // Select element for network view from DOM.
         self.explorationDiv = d3.select("#exploration");
-
         // Determine element dimensions.
         self.padding = {top: 10, right: 10, bottom: 10, left: 10};
         self.bounds = {width: (self.explorationDiv.node().clientWidth), height: (self.explorationDiv.node().clientHeight)}
         self.svgWidth = self.bounds.width - (self.padding.left + self.padding.right);
         self.svgHeight = self.bounds.height - (self.padding.top + self.padding.bottom);
-
         // Create SVG element.
         self.explorationSVG = self.explorationDiv.append("svg")
             .attr("width", self.svgWidth)
             .attr("height", self.svgHeight);
-
         function createRectangle(self) {
             var self = self;
             // Create rectangle element to demonstrate dimensions of SVG element.
@@ -592,28 +331,20 @@ class ExplorationView {
                 .attr("fill", "grey");
         };
         //createRectangle(self);
-
     }
 
     receive(modelDerivation) {
-
         var self = this;
-
         self.modelDerivation = modelDerivation;
-
         //console.log("ExplorationView Data")
         //console.log(self.modelDerivation);
         self.draw();
-
         // Call update method.
         self.update();
     }
 
     draw() {
-
         var self = this;
-        //console.log(self.data);
-
         // Determine dimensions of SVG element.
         // self.svgWidth = +self.networkSVG.attr("width");
         // self.svgHeight = +self.networkSVG.attr("height");
@@ -861,7 +592,6 @@ class ExplorationView {
 // Use element dimensions and position to scale SVG element according to window size.
 // var divNetwork = d3.select(#network);
 // var bounds = divNetwork.node().getBoundingClientRect();
-
 
 /**
  * Use an immediately-invoked function expression (IIFE) to establish scope in a convenient container.

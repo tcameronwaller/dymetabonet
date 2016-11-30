@@ -3,10 +3,35 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
-7 November 2016
+28 November 2016
 
 I originally used D3 in the JavaScript script to create Scalable Vector Graphics elements within my DIV elements.
 Then I decided that these SVG elements neither depend on data nor on user interaction.
 I decided instead to create these SVG elements in the HTML and style them in the CSS.
 Since I learned some neat things (such as methods to scale elements relatively), I want to keep the code.
 
+class QueryView {
+...
+initialize() {
+        // Create SVG element with a rectangle as a temporary space-filler.
+        // Set dimensions of SVG proportional to dimensions of the viewport or window.
+        // Definition of margin, border, and padding is in the style.
+        // Define padding again here since it is difficult to access element dimensions without padding.
+        // Also artificially adjust height to leave room for the selector.
+        self.padding = {top: 20, right: 10, bottom: 20, left: 10};
+        self.queryDiv = d3.select("#query");
+        self.bounds = {width: (self.queryDiv.node().clientWidth), height: (self.queryDiv.node().clientHeight)}
+        self.svgWidth = self.bounds.width - (self.padding.left + self.padding.right);
+        self.svgHeight = self.bounds.height - (self.padding.top + self.padding.bottom);
+
+        self.querySVG = self.queryDiv.append("svg")
+            .attr("width", self.svgWidth)
+            .attr("height", self.svgHeight);
+        self.querySVG.append("rect")
+            .attr("x", 0)
+            .attr("y", 5)
+            .attr("width", self.svgWidth)
+            .attr("height", self.svgHeight)
+            .attr("fill", "grey");
+}
+}

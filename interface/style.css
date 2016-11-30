@@ -6,6 +6,19 @@ header {
     width: 95vw;
 }
 
+h1 {
+    font-family: sans-serif;
+}
+
+h2 {
+    font-family: sans-serif;
+}
+
+h3 {
+    font-family: sans-serif;
+}
+
+
 /* Classes */
 
 .view {
@@ -14,6 +27,7 @@ header {
     margin: 5px;
     border: 5px solid black;
     padding: 10px;
+    font-family: sans-serif;
 }
 
 .link {
@@ -65,25 +79,48 @@ header {
     height: 97vh;
 }
 
-#query {
+#control {
     display: inline;
     float: left;
     width: 30vw;
-    height: 37vh;
+    height: 90vh;
 }
+
+#query {
+    display: inline;
+    float: top;
+    width: 90%;
+    height: 7%;
+}
+
+#navigation {
+    display: inline;
+    float: top;
+    width: 90%;
+    height: 60%;
+}
+
+#degree-table {
+    width: 95%;
+    height: 90%;
+}
+
+#degree-table > th {
+    font-family: sans-serif;
+}
+
+/*#degree-table > td {
+    height: 20px;
+}*/
+
+/*#degree-table > .svg-bar {
+    width: 100px;
+    height: 50px;
+} */
 
 #exploration {
     display: inline;
     float: right;
     width: 60vw;
-    height: 80vh;
+    height: 90vh;
 }
-
-#navigation {
-    display:inline;
-    float: left;
-    width: 30vw;
-    height: 37vh;
-}
-
-

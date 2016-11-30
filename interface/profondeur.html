@@ -19,8 +19,7 @@
 
         <!-- Create element for title or header of interface. -->
         <header>
-            <h1>Profondeur</h1>
-            <h2>Visual Exploration And Analysis Of Metabolic Networks</h2>
+            <h1 title="Profondeur: Visual Exploration and Analysis of Metabolic Networks">Profondeur</h1>
         </header>
 
         <!-- TODO: In terms of style/strategy, would it be better to create SVG's for my views here in the HTML? -->
@@ -28,29 +27,47 @@
         <!-- TODO: That way I can minimize in-line styling with D3. -->
         <!-- TODO: Also it should be fine to size them relatively in the CSS using vw and vh. -->
 
-        <!-- Create element for query view. -->
-        <!-- For this project, this view will not associate with data beyond a selection menu. -->
-        <div id="query" class="view">
-            <!-- <svg width="300" height="1000"></svg> -->
-            <div id="selectordiv">
-                <label>Data:</label>
-                <select id="selector"></select>
-                <button id="submit">Submit</button>
+        <!-- Create element for control views. -->
+        <div id="control">
+            <!-- Create element for query view. -->
+            <!-- For this project, this view will not associate with data beyond a selection menu. -->
+            <div id="query" class="view">
+                <h3>Model Selector</h3>
+                <div id="selector-div">
+                    <label>Model:</label>
+                    <select id="selector"></select>
+                    <button id="submit">Submit</button>
+                </div>
+            </div>
+
+            <!-- Create element for navigation view. -->
+            <!-- Maybe the navigation view should actually have a fixed size. -->
+            <div id="navigation" class="view">
+                <h3>Metabolite Table</h3>
+                <table id="degree-table">
+                    <thead>
+                    <tr>
+                        <th>Identifier</th>
+                        <th>Degree</th>
+                        <th>Replicate</th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td id="degree-scale"></td>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
 
         <!-- Create element for exploration view. -->
         <div id="exploration" class="view"></div>
 
-        <!-- Create element for navigation view. -->
-        <!-- Maybe the navigation view should actually have a fixed size. -->
-        <div id="navigation" class="view">
-            <svg width="300" height="1000"></svg>
-        </div>
-
     </div>
 
-    <!-- Call the script. -->
+    <!-- Call scripts. -->
+    <script type="application/javascript" src="script_model.js"></script>
     <script type="application/javascript" src="script.js"></script>
 
 </body>

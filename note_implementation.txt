@@ -1,7 +1,16 @@
 --------------------------------------------------
 
 --------------------------------------------------
-23 November 2016
+28 November 2016
+
+I want to implement an interactive table in the NavigationView.
+Study the table (data-driven creation, sorting, interaction) from Homework 3.
+Use an HTML table element.
+Create rows in a data-driven way, one for each metabolite.
+Maybe worry about sorting later.
+At first, just print the number for the degree of each metabolite.
+Figure out how to highlight nodes upon mouse selection of a row in the table.
+Make a check box (html element alread exists) for replication flag.
 
 --------------------------------------------------
 18 November 2016

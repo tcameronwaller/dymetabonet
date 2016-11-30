@@ -183,15 +183,25 @@ Object Keys
 Mozilla Developer Network
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
 
+Object Values
+"Object.values()"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/values
+
 Logical Operators
 "Logical Operators"
 Mozilla Developer Network
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_Operators
 
+Element Title
+"title"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/title
 
-
-
-
+Table Element
+"<table>"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table
 
 
 
