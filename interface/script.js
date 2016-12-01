@@ -443,10 +443,6 @@ class ExplorationView {
             .append("path")
             .attr("d", "M 0 0 L 10 5 L 0 10 z");
 
-        // TODO: Implement highlighting and tool tip for reaction links.
-        // TODO: I don't think I want that for metabolite links.
-        // TODO: I think tool tips should probably appear in a corner of the view rather than over the network.
-        // TODO: They would occlude parts of the network otherwise.
         // Create links.
         self.link = self.explorationSVG.append("g")
             .selectAll("line")
@@ -495,13 +491,6 @@ class ExplorationView {
                 return d.name;
             });
 
-        // TODO: Use anonymous function and if clauses to set different distances for links of different types.
-        // TODO: Give reaction links different force constraint (longer) than metabolite links.
-
-        // TODO: Follow modern version of Mike Bostocks Bounded Force Layout to restrict nodes to SVG bounds.
-
-        // TODO: Optimize forces and link distances.
-
         // TODO: Change representation to include labels.
 
         // TODO: Enable anchoring of nodes when user clicks on them.
@@ -525,9 +514,9 @@ class ExplorationView {
                 })
                 .distance(function (d) {
                     if (d.type == "reaction") {
-                        return 70;
+                        return 35;
                     } else if (d.type == "metabolite") {
-                        return 30;
+                        return 15;
                     };
                 })
             )
@@ -543,17 +532,21 @@ class ExplorationView {
             .on("tick", ticked);
 
         // Declare function to increment the force simulation.
-
+        // Impose constraints on node positions (d.x and d.y) according to dimensions of bounding SVG element.
+        var radius = 20;
         function ticked() {
+            self.node
+                .attr("cx", function (d) {
+                    return d.x = Math.max(radius, Math.min(self.svgWidth - radius, d.x));
+                })
+                .attr("cy", function (d) {
+                    return d.y = Math.max(radius, Math.min(self.svgHeight - radius, d.y));
+                });
             self.link
                 .attr("x1", function (d) {return d.source.x;})
                 .attr("y1", function (d) {return d.source.y;})
                 .attr("x2", function (d) {return d.target.x;})
                 .attr("y2", function (d) {return d.target.y;});
-
-            self.node
-                .attr("cx", function (d) {return d.x;})
-                .attr("cy", function (d) {return d.y;});
         };
 
         // Declare functions to control user interaction with nodes of the graph.

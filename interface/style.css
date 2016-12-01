@@ -44,12 +44,12 @@ h3 {
 
 .link-reaction {
     stroke: black;
-    stroke-width: 7;
+    stroke-width: 5;
     marker-end: url(#marker);
 }
 
 .node-metabolite {
-    r: 10;
+    r: 7;
     fill: blue;
 }
 
@@ -60,12 +60,12 @@ h3 {
 
 .emphasis-node {
     stroke: orange;
-    stroke-width: 10;
+    stroke-width: 7;
 }
 
 .emphasis-link {
     stroke: orange;
-    stroke-width: 10;
+    stroke-width: 5;
 }
 
 .emphasis-row {
