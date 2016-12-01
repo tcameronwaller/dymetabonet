@@ -25,7 +25,11 @@ class QueryView {
         // TODO: It seems this functionality is difficult.
         // TODO: readdirSync from Node.js might work.
         self.optionsArray = [
-            "model_e-coli_citrate-cycle_sub.json", "model_e-coli_citrate-cycle.json"
+            "e-coli_citrate-cycle_sub-1.json",
+            "e-coli_citrate-cycle_sub-2.json",
+            "e-coli_citrate-cycle_sub-3.json",
+            "e-coli_citrate-cycle_sub-4.json",
+            "e-coli_citrate-cycle.json",
         ];
         self.selector = d3.select("#selector");
         self.options = self.selector.selectAll("option")

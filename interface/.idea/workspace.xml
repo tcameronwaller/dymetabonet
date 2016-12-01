@@ -26,7 +26,7 @@
       <file leaf-file-name="profondeur.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/profondeur.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="620">
+            <state relative-caret-position="1156">
               <caret line="68" column="114" lean-forward="false" selection-start-line="68" selection-start-column="114" selection-end-line="68" selection-end-column="114" />
               <folding />
             </state>
@@ -36,7 +36,7 @@
       <file leaf-file-name="style.css" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/style.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="331">
+            <state relative-caret-position="1054">
               <caret line="62" column="19" lean-forward="false" selection-start-line="62" selection-start-column="19" selection-end-line="62" selection-end-column="19" />
               <folding />
             </state>
@@ -46,8 +46,8 @@
       <file leaf-file-name="script.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/script.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="141">
-              <caret line="427" column="19" lean-forward="true" selection-start-line="427" selection-start-column="19" selection-end-line="427" selection-end-column="19" />
+            <state relative-caret-position="153">
+              <caret line="30" column="38" lean-forward="false" selection-start-line="30" selection-start-column="38" selection-end-line="30" selection-end-column="38" />
               <folding />
             </state>
           </provider>
@@ -56,7 +56,7 @@
       <file leaf-file-name="script_model.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/script_model.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1258">
+            <state relative-caret-position="6460">
               <caret line="380" column="35" lean-forward="false" selection-start-line="380" selection-start-column="35" selection-end-line="380" selection-end-column="35" />
               <folding />
             </state>
@@ -66,7 +66,7 @@
       <file leaf-file-name="script.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../../../Homework_Visualization/hw4/solutions/script.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-112">
+            <state relative-caret-position="3128">
               <caret line="184" column="11" lean-forward="false" selection-start-line="184" selection-start-column="7" selection-end-line="184" selection-end-column="11" />
               <folding />
             </state>
@@ -76,7 +76,7 @@
       <file leaf-file-name="script.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../../../Homework_Visualization/hw4/script.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
+            <state relative-caret-position="15164">
               <caret line="892" column="0" lean-forward="false" selection-start-line="885" selection-start-column="0" selection-end-line="892" selection-end-column="0" />
               <folding />
             </state>
@@ -86,7 +86,7 @@
       <file leaf-file-name="styles.css" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../../../Homework_Visualization/hw4/solutions/styles.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-680">
+            <state relative-caret-position="34">
               <caret line="2" column="4" lean-forward="false" selection-start-line="2" selection-start-column="4" selection-end-line="2" selection-end-column="4" />
               <folding />
             </state>
@@ -290,15 +290,16 @@
       <workItem from="1480351158082" duration="12525000" />
       <workItem from="1480436281683" duration="23726000" />
       <workItem from="1480518615513" duration="32464000" />
+      <workItem from="1480615028074" duration="540000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="239059000" />
+    <option name="totallyTimeSpent" value="239599000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1358" y="-320" width="1936" height="1056" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -655,13 +656,12 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../../Homework_Visualization/hw4/solutions/script.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-112">
+        <state relative-caret-position="3128">
           <caret line="184" column="11" lean-forward="false" selection-start-line="184" selection-start-column="7" selection-end-line="184" selection-end-column="11" />
           <folding />
         </state>
@@ -669,7 +669,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/profondeur.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="620">
+        <state relative-caret-position="1156">
           <caret line="68" column="114" lean-forward="false" selection-start-line="68" selection-start-column="114" selection-end-line="68" selection-end-column="114" />
           <folding />
         </state>
@@ -677,7 +677,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/script_model.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1258">
+        <state relative-caret-position="6460">
           <caret line="380" column="35" lean-forward="false" selection-start-line="380" selection-start-column="35" selection-end-line="380" selection-end-column="35" />
           <folding />
         </state>
@@ -685,7 +685,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/../../../Homework_Visualization/hw4/script.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
+        <state relative-caret-position="15164">
           <caret line="892" column="0" lean-forward="false" selection-start-line="885" selection-start-column="0" selection-end-line="892" selection-end-column="0" />
           <folding />
         </state>
@@ -693,7 +693,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/../../../Homework_Visualization/hw4/solutions/styles.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-680">
+        <state relative-caret-position="34">
           <caret line="2" column="4" lean-forward="false" selection-start-line="2" selection-start-column="4" selection-end-line="2" selection-end-column="4" />
           <folding />
         </state>
@@ -701,7 +701,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/style.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="331">
+        <state relative-caret-position="1054">
           <caret line="62" column="19" lean-forward="false" selection-start-line="62" selection-start-column="19" selection-end-line="62" selection-end-column="19" />
           <folding />
         </state>
@@ -709,8 +709,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/script.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="141">
-          <caret line="427" column="19" lean-forward="true" selection-start-line="427" selection-start-column="19" selection-end-line="427" selection-end-column="19" />
+        <state relative-caret-position="153">
+          <caret line="30" column="38" lean-forward="false" selection-start-line="30" selection-start-column="38" selection-end-line="30" selection-end-column="38" />
           <folding />
         </state>
       </provider>
