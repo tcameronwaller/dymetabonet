@@ -119,6 +119,24 @@ class NavigationView {
 
     createDegreeTableRows() {
         var self = this;
+        // Prepare data for rows.
+        self.metaboliteRows = Object.values(self.model.metabolites);
+        // Sort metabolites by degree in descending order, breaking ties by identifier in alphabetical order.
+        self.metaboliteRows.sort(function compare(a, b) {
+            if (a.degree < b.degree) {
+                return 1;
+            } else if (a.degree > b.degree) {
+                return -1;
+            } else if (a.degree == b.degree) {
+                if (a.identifier < b.identifier) {
+                    return -1;
+                } else if (a.identifier > b.identifier) {
+                    return 1;
+                } else {
+                    return 0;
+                };
+            };
+        });
         // Remove existing rows of table.
         d3.select("#degree-table")
             .select("tbody")
@@ -131,7 +149,8 @@ class NavigationView {
             .selectAll("tr")
             //.data(self.model.metabolites);
             // It seems that D3's data association only works with arrays.
-            .data(Object.values(self.model.metabolites));
+            //.data(Object.values(self.model.metabolites));
+            .data(self.metaboliteRows);
         self.degreeTableBodyRows
             .exit()
             .remove();
@@ -141,8 +160,29 @@ class NavigationView {
         self.degreeTableBodyRows = self.degreeTableBodyRowsEnter
             .merge(self.degreeTableBodyRows);
 
-        // TODO: Define interactivity of table rows.
+        // TODO: The title creation for rows works properly.
+        // TODO: For some reason the title does not display on mouse hover.
+        // Create titles for rows so that mouse hover will display title.
+        self.degreeTableBodyRows
+            .append("title")
+            .text(function (d) {
+                return d.name;
+            });
+
         // Create interactivity (highlighting) of table rows.
+        // Use mouseenter and mouseleave to avoid specificity for child elements (tds).
+        self.degreeTableBodyRows
+            .on("mouseenter", function (d) {
+                d3.select(this)
+                    .classed("emphasis-row", true);
+                self.explorationView.emphasizeNodes(d.identifier);
+            });
+        self.degreeTableBodyRows
+            .on("mouseleave", function (d) {
+                d3.select(this)
+                    .classed("emphasis-row", false);
+                self.explorationView.restoreNodes(d.identifier);
+            });
     }
 
     createDegreeTableCells() {
@@ -201,6 +241,7 @@ class NavigationView {
             });
     }
 
+    // TODO: Encode degree also in the value of the bars.
     createDegreeTableDegree() {
         var self = this;
         // TODO: How can I set the dimensions of the SVG element according to the view dimensions?
@@ -222,7 +263,8 @@ class NavigationView {
                 return self.degreeScale(d.value);
             })
             .attr("height", self.cellHeight)
-            .style("fill", "grey");
+            .classed("degree-bar", true);
+
         self.degreeTableDegreesLabel = self.degreeTableDegreesGroup
             .append("text")
             .text(function (d) {
@@ -231,8 +273,8 @@ class NavigationView {
             .attr("x", function (d) {
                 return self.degreeScale(d.value) - 15;
             })
-            .attr("y", 18);
-            //.classed("label", true);
+            .attr("y", 18)
+            .classed("degree-label", true);
     }
 
     createDegreeTableReplication() {
@@ -258,14 +300,12 @@ class NavigationView {
                     return "red";
                 };
             });
-        // TODO: I will also need to re-create the nodes and links using the Model Class.
         self.degreeTableReplicationsBar
             .on("click", function (d) {
                 self.model.metabolites[d.identifier].changeReplication();
                 self.model.setNetwork();
                 self.createDegreeTable();
             });
-
     }
 
     createDegreeTable() {
@@ -340,13 +380,36 @@ class ExplorationView {
         self.update();
     }
 
+    emphasizeNodes(identifier) {
+        var self = this;
+        var identifier = identifier;
+        // Use a filter to accommodate multiple nodes that match the criteria.
+        // If there was a single node, it might be more reasonable to assign unique identifiers to every node when
+        // creating them.
+        // .attr("id", function(d) { return d.identifier; })
+        // Then select by nodes by their identifiers.
+        // d3.select("#" + identifier);
+        self.node
+            .filter(function (d) {
+                return (d.reference == identifier);
+            })
+            .classed("emphasis-node", true);
+    }
+
+    restoreNodes(identifier) {
+        var self = this;
+        var identifier = identifier;
+        self.node
+            .filter(function (d) {
+                return (d.reference == identifier);
+            })
+            .classed("emphasis-node", false);
+    }
+
     draw() {
         var self = this;
 
-        // TODO: Modify the force simulation to make links longer.
-        // TODO: Give reaction links different force constraint (longer) than metabolite links.
-        // TODO: Set radius for collision force according to the radius of the actual node circles.
-
+        // Select SVG element in Exploration DIV.
         self.explorationSVG = d3.select("#exploration").select("svg");
 
         // Determine dimensions of SVG element.
@@ -357,24 +420,6 @@ class ExplorationView {
         self.explorationSVG
             .selectAll("g")
             .remove();
-
-
-        // TODO: Use anonymous function and if clauses to set different distances for links of different types.
-        // Initiate the force simulation.
-        // Collision force prevents overlap occlusion of nodes.
-        self.simulation = d3.forceSimulation()
-            .force("charge", d3.forceManyBody()
-                .strength(-250)
-            )
-            .force("collide", d3.forceCollide()
-                .radius(12)
-            )
-            .force("link", d3.forceLink()
-                .id(function (d) {return d.identifier;})
-                .distance(65)
-            )
-            .force("center", d3.forceCenter(self.svgWidth / 2, self.svgHeight / 2));
-            //.size([self.svgWidth, self.svgHeight]);
 
         // TODO: Make markers bi-directional according to model.
         // TODO: I will need to encode that information in the data.
@@ -412,15 +457,13 @@ class ExplorationView {
             .attr("class", function (d) {
                 var type = d.type;
                 if (type === "metabolite") {
-                    return "linkmetabolite";
+                    return "link-metabolite";
                 } else if (type === "reaction") {
-                    return "linkreaction";
+                    return "link-reaction";
                 };
             });
 
-        // TODO: Implement highlighting and tool tip for metabolite links.
-        // TODO: I think tool tips should probably appear in a corner of the view rather than over the network.
-        // TODO: They would occlude parts of the network otherwise.
+        // TODO: Represent nodes for replicated nodes differently... maybe.
         // Create nodes.
         self.node = self.explorationSVG.append("g")
         //self.node = self.nodes
@@ -431,9 +474,9 @@ class ExplorationView {
             .attr("class", function (d) {
                 var type = d.type;
                 if (type === "metabolite") {
-                    return "nodemetabolite";
+                    return "node-metabolite";
                 } else if (type === "reaction") {
-                    return "nodereaction";
+                    return "node-reaction";
                 };
             })
             .call(d3.drag()
@@ -452,13 +495,52 @@ class ExplorationView {
                 return d.name;
             });
 
-        self.simulation
-            .nodes(self.nodes)
-            .on("tick", ticked);
+        // TODO: Use anonymous function and if clauses to set different distances for links of different types.
+        // TODO: Give reaction links different force constraint (longer) than metabolite links.
 
-        self.simulation
-            .force("link")
-            .links(self.links);
+        // TODO: Follow modern version of Mike Bostocks Bounded Force Layout to restrict nodes to SVG bounds.
+
+        // TODO: Optimize forces and link distances.
+
+        // TODO: Change representation to include labels.
+
+        // TODO: Enable anchoring of nodes when user clicks on them.
+        // TODO: Free nodes when user double clicks or single clicks again.
+
+        // Initiate the force simulation.
+        // Collision force prevents overlap occlusion of nodes.
+        self.simulation = d3.forceSimulation()
+            .nodes(self.nodes)
+            .force("charge", d3.forceManyBody()
+                .strength(-250)
+            )
+            .force("collide", d3.forceCollide()
+                .radius(20)
+                .strength(0.9)
+            )
+            .force("link", d3.forceLink()
+                .links(self.links)
+                .id(function (d) {
+                    return d.identifier;
+                })
+                .distance(function (d) {
+                    if (d.type == "reaction") {
+                        return 70;
+                    } else if (d.type == "metabolite") {
+                        return 30;
+                    };
+                })
+            )
+            .force("center", d3.forceCenter((self.svgWidth / 2), (self.svgHeight / 2)))
+            .force("positionX", d3.forceX()
+                .x(self.svgWidth / 2)
+                .strength(0.01)
+            )
+            .force("positionY", d3.forceY()
+                .y(self.svgHeight / 2)
+                .strength(0.01)
+            )
+            .on("tick", ticked);
 
         // Declare function to increment the force simulation.
 
@@ -492,107 +574,51 @@ class ExplorationView {
             d.fx = null;
             d.fy = null;
         };
-
     }
 
     update() {
-
         var self = this;
 
         // Define interaction for nodes.
-
         self.node.on("mouseover", function (d) {
             //console.log(d3.event);
             //console.log(d3.event.srcElement);
             //console.log(d3.event.target);
             //self.selectionNode = d3.select(d3.event.srcElement);
-            console.log("----------");
-            console.log("Element Type: " + d.type);
-            console.log("Name: " + d.name);
-            console.log("----------");
-            console.log(d);
-            console.log("----------");
-
+            //console.log("----------");
+            //console.log("Element Type: " + d.type);
+            //console.log("Name: " + d.name);
+            //console.log("----------");
+            //console.log(d);
+            //console.log("----------");
             // Display highlight edge around node.
-            self.highlight = d3.select(this)
-                .classed("highlightnode", true);
-
-            // Display panel in top left of view with information about the node.
-            // TODO: Make this a group so that it can include text elements in addition to the rectangle.
-            self.panel = self.explorationSVG
-                .append("g");
-                //.data(d);
-            self.panel
-                .append("rect")
-                .attr("x", 5)
-                .attr("y", 5)
-                .attr("width", 250)
-                .attr("height", 125)
-                .attr("fill", "black")
-                .attr("fill-opacity", 0.25)
-                .attr("stroke", "black")
-                .attr("stroke-width", 5);
-                //.attr("class", "panel")
-            //self.panel
-            //    .append("text")
-            //    .attr("x", 25)
-            //    .attr("y", 25)
-            //    .text(function (d) {
-            //        return d.type;
-            //    })
-
+            d3.select(this)
+                .classed("emphasis-node", true);
         });
-
         self.node.on("mouseout", function () {
-
             // Remove highlight edge around node.
-            self.unhighlight = d3.select(this)
-                .classed("highlightnode", false);
-
-            // Remove panel in top left of view with information about the node.
-            self.panel.remove()
-
+            d3.select(this)
+                .classed("emphasis-node", false);
         });
 
         // Define interaction for links.
-
-        self.link.on("mouseover", function (d) {
-            console.log("----------");
-            console.log("Element Type: " + d.type);
-            console.log("Name: " + d.name);
-            console.log("----------");
-
+        self.link
+            .filter(function (d) {
+                return (d.type == "reaction");
+            })
+            .on("mouseover", function (d) {
+            //console.log("----------");
+            //console.log("Element Type: " + d.type);
+            //console.log("Name: " + d.name);
+            //console.log("----------");
             // Display highlight edge around node.
-            self.highlight = d3.select(this)
-                .classed("highlightlink", true);
-
-            // Display panel in top left of view with information about the node.
-            // TODO: Make this a group so that it can include text elements in addition to the rectangle.
-            self.panel = self.explorationSVG
-                .append("g");
-            //.data(d);
-            self.panel
-                .append("rect")
-                .attr("x", 5)
-                .attr("y", 5)
-                .attr("width", 250)
-                .attr("height", 125)
-                .attr("fill", "black")
-                .attr("fill-opacity", 0.25)
-                .attr("stroke", "black")
-                .attr("stroke-width", 5);
-
+            d3.select(this)
+                .classed("emphasis-link", true);
         });
-
         self.link.on("mouseout", function () {
-
             // Remove highlight edge around node.
-            self.unhighlight = d3.select(this)
-                .classed("highlightlink", false);
-
-            // Remove panel in top left of view with information about the node.
-            self.panel.remove()
-
+            d3.select(this)
+                .classed("emphasis-link", false);
         });
     }
 }

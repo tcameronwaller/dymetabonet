@@ -213,6 +213,19 @@ SVG Elements
 Mozilla Developer Network
 https://developer.mozilla.org/en-US/docs/Web/SVG/Element
 
+Sort Array
+"Array.prototype.sort()"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+
+CSS Colors
+"<color>"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/CSS/color_value
+
+SVG Fill and Stroke
+"Fills and Strokes"
+Mozilla Developer Network
 
 
 
@@ -260,4 +273,8 @@ Blocks
 Mike Bostock
 22 November 2016
 http://bl.ocks.org/mbostock/1129492
+
+Selection of DOM Elements by Associated Data
+"Select d3 node by its datum"
+http://stackoverflow.com/questions/22507072/select-d3-node-by-its-datum
 

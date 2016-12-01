@@ -37,35 +37,48 @@ h3 {
     stroke-opacity: 1;
 }
 
-.linkmetabolite {
+.link-metabolite {
     stroke: grey;
     stroke-width: 2;
 }
 
-.linkreaction {
+.link-reaction {
     stroke: black;
     stroke-width: 7;
     marker-end: url(#marker);
 }
 
-.nodemetabolite {
+.node-metabolite {
     r: 10;
     fill: blue;
 }
 
-.nodereaction {
+.node-reaction {
     r: 1;
     fill: black;
 }
 
-.highlightnode {
+.emphasis-node {
     stroke: orange;
-    stroke-width: 5;
+    stroke-width: 10;
 }
 
-.highlightlink {
+.emphasis-link {
     stroke: orange;
-    stroke-width: 7;
+    stroke-width: 10;
+}
+
+.emphasis-row {
+    background-color: orange;
+}
+
+.degree-bar {
+    fill: darkmagenta;
+}
+
+.degree-label {
+    fill: chartreuse;
+    font-family: sans-serif
 }
 
 /*.panel {

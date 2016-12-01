@@ -7,6 +7,46 @@ Notes: Scrap Code For Project Profondeur
 
 class ExplorationView {
 ...
+update() {
+
+        self.node.on("mouseover", function (d) {
+            ...
+            // Display panel in top left of view with information about the node.
+            // TODO: Make this a group so that it can include text elements in addition to the rectangle.
+            self.panel = self.explorationSVG
+                .append("g");
+                //.data(d);
+            self.panel
+                .append("rect")
+                .attr("x", 5)
+                .attr("y", 5)
+                .attr("width", 250)
+                .attr("height", 125)
+                .attr("fill", "black")
+                .attr("fill-opacity", 0.25)
+                .attr("stroke", "black")
+                .attr("stroke-width", 5);
+                //.attr("class", "panel")
+            //self.panel
+            //    .append("text")
+            //    .attr("x", 25)
+            //    .attr("y", 25)
+            //    .text(function (d) {
+            //        return d.type;
+            //    })
+        }
+        self.node.on("mouseout", function (d) {
+            ...
+            // Remove panel in top left of view with information about the node.
+            self.panel.remove()
+        }
+}
+}
+
+
+
+class ExplorationView {
+...
 initialize() {
         // Create SVG element.
         // Set dimensions of SVG proportional to dimensions of the viewport or window.
