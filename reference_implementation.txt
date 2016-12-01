@@ -227,11 +227,26 @@ SVG Fill and Stroke
 "Fills and Strokes"
 Mozilla Developer Network
 
+Apply Function to Array
+"Function.prototype.apply()"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply
 
+Apply Function to Array Returning Array
+"Array.prototype.map()"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
 
+Find Maximal Value
+"Math.max()"
+Mozilla Developer Network
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/max
 
 
 Other
+
+
+
 
 
 
@@ -277,4 +292,12 @@ http://bl.ocks.org/mbostock/1129492
 Selection of DOM Elements by Associated Data
 "Select d3 node by its datum"
 http://stackoverflow.com/questions/22507072/select-d3-node-by-its-datum
+
+Anchor Nodes in Force Layout
+"Sticky Force Layout"
+Blocks
+Mike Bostock
+https://bl.ocks.org/mbostock/3750558
+
+
 

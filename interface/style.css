@@ -51,6 +51,12 @@ h3 {
 .node-metabolite {
     r: 7;
     fill: blue;
+    cursor: move;
+}
+
+.node-metabolite.fixed {
+    fill: red;
+    cursor: move;
 }
 
 .node-reaction {

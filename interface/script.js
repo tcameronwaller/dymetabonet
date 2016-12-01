@@ -225,9 +225,15 @@ class NavigationView {
     createDegreeTableScale() {
         var self = this;
         // Create scale for degrees.
-        // TODO: Determine domain from data.
+        // Find maximal degree of model for domain.
+        var degreeArray = [];
+        for (let key in self.model.metabolites) {
+            let metabolite = self.model.metabolites[key];
+            degreeArray.push(metabolite.degree);
+        };
+        var maximumDegree = Math.max.apply(null, degreeArray);
         self.degreeScale = d3.scaleLinear()
-            .domain([0, 5])
+            .domain([0, maximumDegree])
             .range([self.cellPad, (self.cellWidth - self.cellPad)])
             .nice();
     }
@@ -480,9 +486,11 @@ class ExplorationView {
                 };
             })
             .call(d3.drag()
-                .on("start", dragstarted)
+                .on("start", dragStart)
                 .on("drag", dragged)
-                .on("end", dragended));
+                .on("end", dragEnd)
+            )
+            .on("dblclick", release);
 
         // Create titles for nodes so that mouse hover will display title.
         self.node.append("title")
@@ -533,12 +541,12 @@ class ExplorationView {
                 .y(self.svgHeight / 2)
                 .strength(0.01)
             )
-            .on("tick", ticked);
+            .on("tick", ticker);
 
         // Declare function to increment the force simulation.
         // Impose constraints on node positions (d.x and d.y) according to dimensions of bounding SVG element.
         var radius = 20;
-        function ticked() {
+        function ticker() {
             self.node
                 .attr("cx", function (d) {
                     return d.x = Math.max(radius, Math.min(self.svgWidth - radius, d.x));
@@ -554,11 +562,16 @@ class ExplorationView {
         };
 
         // Declare functions to control user interaction with nodes of the graph.
+        // Allow user to drag nodes.
+        // Anchor nodes in new position after drag.
+        // Release nodes on double click.
 
-        function dragstarted(d) {
+        function dragStart(d) {
             if (!d3.event.active) self.simulation.alphaTarget(0.3).restart();
             d.fx = d.x;
             d.fy = d.y;
+            d3.select(this)
+                .classed("fixed", true);
         };
 
         function dragged(d) {
@@ -566,10 +579,17 @@ class ExplorationView {
             d.fy = d3.event.y;
         };
 
-        function dragended(d) {
+        function dragEnd(d) {
             if (!d3.event.active) self.simulation.alphaTarget(0);
+            //d.fx = null;
+            //d.fy = null;
+        };
+
+        function release(d) {
             d.fx = null;
             d.fy = null;
+            d3.select(this)
+                .classed("fixed", false);
         };
     }
 
