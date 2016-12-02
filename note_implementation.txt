@@ -1,13 +1,28 @@
 --------------------------------------------------
 
 --------------------------------------------------
+1 December 2016
+
+Creative Commons recommends not to use its licenses for software.
+https://creativecommons.org/
+https://creativecommons.org/faq/#can-i-apply-a-creative-commons-license-to-software
+
+GNU General Public License
+https://www.gnu.org/licenses/licenses.html
+https://www.gnu.org/licenses/gpl-howto.html
+
+
+Large and complex networks are extremely pervasive.
+These include social networks and transportation networks.
+
+The main distinguishing factor of this project is the emphasis on queries 
+
+--------------------------------------------------
 29 November 2016
 
 Give a title to each metabolite row in the degree table.
 Make the title the full name of the metabolite.
 That way the user can see the full name of the metabolite in a tool tip.
-
-
 
 --------------------------------------------------
 28 November 2016
