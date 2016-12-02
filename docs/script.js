@@ -303,9 +303,9 @@ class NavigationView {
                 return String(d.value);
             })
             .attr("x", function (d) {
-                return self.degreeScale(d.value) - 15;
+                return self.degreeScale(d.value) - 10;
             })
-            .attr("y", 18)
+            .attr("y", 9)
             .classed("degree-label", true);
     }
 
@@ -317,14 +317,14 @@ class NavigationView {
             });
         self.degreeTableReplicationsSVG = self.degreeTableReplications
             .append("svg")
-            .attr("width", 25)
-            .attr("height", 25);
+            .attr("width", (self.cellHeight + self.cellPad))
+            .attr("height", (self.cellHeight + self.cellPad));
         self.degreeTableReplicationsBar = self.degreeTableReplicationsSVG
             .append("rect")
             .attr("x", 0)
             .attr("y", 0)
-            .attr("width", 25)
-            .attr("height", 25)
+            .attr("width", self.cellHeight)
+            .attr("height", self.cellHeight)
             .attr("fill", function (d) {
                 if (d.value == false) {
                     return "grey";
@@ -343,9 +343,9 @@ class NavigationView {
     createDegreeTable() {
         var self = this;
 
-        self.cellWidth = 250;
-        self.cellHeight = 25;
-        self.cellPad = 10;
+        self.cellWidth = 150;
+        self.cellHeight = 10;
+        self.cellPad = 2;
 
         // TODO: Sort the rows of the table before drawing the table.
         // TODO: Sort so that metabolites with greater degrees are at top.
@@ -445,8 +445,10 @@ class ExplorationView {
         self.explorationSVG = d3.select("#exploration").select("svg");
 
         // Determine dimensions of SVG element.
-        self.svgWidth = +self.explorationSVG.attr("width");
-        self.svgHeight = +self.explorationSVG.attr("height");
+        //self.svgWidth = +self.explorationSVG.attr("width");
+        //self.svgHeight = +self.explorationSVG.attr("height");
+        self.svgWidth = 924;
+        self.svgHeight = 572;
 
         // Remove existing nodes and links.
         self.explorationSVG
@@ -532,13 +534,14 @@ class ExplorationView {
 
         // Initiate the force simulation.
         // Collision force prevents overlap occlusion of nodes.
+        // The center force causes nodes to behave strangely when user repositions them manually.
         self.simulation = d3.forceSimulation()
             .nodes(self.nodes)
             .force("charge", d3.forceManyBody()
-                .strength(-250)
+                .strength(-200)
             )
             .force("collide", d3.forceCollide()
-                .radius(20)
+                .radius(10)
                 .strength(0.9)
             )
             .force("link", d3.forceLink()
@@ -548,26 +551,29 @@ class ExplorationView {
                 })
                 .distance(function (d) {
                     if (d.type == "reaction") {
-                        return 35;
+                        return 7;
                     } else if (d.type == "metabolite") {
-                        return 15;
+                        return 5;
                     };
                 })
             )
-            .force("center", d3.forceCenter((self.svgWidth / 2), (self.svgHeight / 2)))
             .force("positionX", d3.forceX()
                 .x(self.svgWidth / 2)
-                .strength(0.01)
+                .strength(0.1)
             )
             .force("positionY", d3.forceY()
                 .y(self.svgHeight / 2)
-                .strength(0.01)
+                .strength(0.1)
             )
+            //.force("center", d3.forceCenter()
+            //    .x(self.svgWidth / 2)
+            //    .y(self.svgHeight / 2)
+            //)
             .on("tick", ticker);
 
         // Declare function to increment the force simulation.
         // Impose constraints on node positions (d.x and d.y) according to dimensions of bounding SVG element.
-        var radius = 20;
+        var radius = 7;
         function ticker() {
             self.node
                 .attr("cx", function (d) {

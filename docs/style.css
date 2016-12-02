@@ -25,24 +25,23 @@
 /* Elements */
 
 header {
-    width: 95vw;
+    width: 95%;
 }
 
 h1 {
     font-family: sans-serif;
-    font-size: large;
+    font-size: medium;
 }
 
 h2 {
     font-family: sans-serif;
-    font-size: large;
+    font-size: small;
 }
 
 h3 {
     font-family: sans-serif;
-    font-size: medium;
+    font-size: small;
 }
-
 
 /* Classes */
 
@@ -61,17 +60,17 @@ h3 {
 
 .link-metabolite {
     stroke: grey;
-    stroke-width: 2;
+    stroke-width: 1;
 }
 
 .link-reaction {
     stroke: black;
-    stroke-width: 5;
+    stroke-width: 3;
     marker-end: url(#marker);
 }
 
 .node-metabolite {
-    r: 7;
+    r: 5;
     fill: blue;
     cursor: move;
 }
@@ -82,13 +81,19 @@ h3 {
 }
 
 .node-reaction {
-    r: 1;
-    fill: black;
+    r: 5;
+    fill: grey;
+    cursor: move;
+}
+
+.node-reaction.fixed {
+    fill: red;
+    cursor:move;
 }
 
 .emphasis-node {
     stroke: orange;
-    stroke-width: 7;
+    stroke-width: 5;
 }
 
 .emphasis-link {
@@ -106,7 +111,8 @@ h3 {
 
 .degree-label {
     fill: chartreuse;
-    font-family: sans-serif
+    font-family: sans-serif;
+    font-size: xx-small;
 }
 
 /*.panel {
@@ -120,17 +126,18 @@ h3 {
 
 /* For now, use absolute/static dimensions. */
 /* In future, consider relative/dynamic dimensions with "vw" and "vh". */
+/* Also consider using the auto setting for width and height of the window. */
 
 #window {
     width: 1320px;
-    height: 590px;
+    height: 615px;
 }
 
 #control {
     display: inline;
     float: left;
-    width: 23%;
-    height: 93%;
+    width: 25%;
+    height: 97%;
 }
 
 #query {
@@ -140,11 +147,23 @@ h3 {
     height: 10%;
 }
 
+#selector-div {
+    font-size: x-small;
+}
+
+#selector {
+    font-size: x-small;
+}
+
+#submit {
+    font-size: x-small;
+}
+
 #navigation {
     display: inline;
     float: top;
     width: 100%;
-    height: 90%;
+    height: 83%;
 }
 
 #degree-table {
@@ -155,12 +174,14 @@ h3 {
     border-color: black;
 }
 
-#degree-table > th {
+#degree-table > thead {
     font-family: sans-serif;
+    font-size: small;
 }
 
-#degree-table > td {
+#degree-table td {
     padding: 2px;
+    font-size: small;
 }
 
 /*#degree-table > .svg-bar {
@@ -171,11 +192,13 @@ h3 {
 #exploration {
     display: inline;
     float: right;
-    width: 75%;
-    height: 95%;
+    width: 70%;
+    height: 93%;
 }
 
+/*
 #exploration > svg {
     width: 100%;
     height: 100%;
 }
+*/
