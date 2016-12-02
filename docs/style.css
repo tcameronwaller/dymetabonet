@@ -122,8 +122,8 @@ h3 {
 /* In future, consider relative/dynamic dimensions with "vw" and "vh". */
 
 #window {
-    width: 2000px;
-    height: 937px;
+    width: 1500px;
+    height: 750px;
 }
 
 #control {
