@@ -206,3 +206,15 @@ h3 {
 #caption {
     margin-top: 1cm;
 }
+
+#caption h1{
+    font-size: x-large;
+}
+
+#caption h2{
+    font-size: large;
+}
+
+#caption h3{
+    font-size: medium;
+}

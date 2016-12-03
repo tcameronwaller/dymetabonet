@@ -1,6 +1,12 @@
 --------------------------------------------------
 
 --------------------------------------------------
+2 December 2016
+
+<a href="link_destination">Text for link</a>
+
+
+--------------------------------------------------
 1 December 2016
 
 Creative Commons recommends not to use its licenses for software.
