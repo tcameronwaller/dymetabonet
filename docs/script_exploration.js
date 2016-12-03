@@ -227,7 +227,7 @@ class ExplorationView {
 
         // Declare function to increment the force simulation.
         // Impose constraints on node positions (d.x and d.y) according to dimensions of bounding SVG element.
-        var radius = 7;
+        var radius = 9;
         function ticker() {
             self.nodeCircles
                 .attr("cx", function (d) {

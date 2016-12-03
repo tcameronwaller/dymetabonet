@@ -54,29 +54,31 @@ h3 {
     font-family: sans-serif;
 }
 
-.link {
-    stroke-opacity: 1;
+.degree-bar {
+    fill: darkmagenta;
 }
 
-.link-metabolite {
-    stroke: grey;
-    stroke-width: 1;
+.degree-label {
+    fill: chartreuse;
+    font-family: sans-serif;
+    font-size: xx-small;
 }
 
-.link-reaction {
+/*.panel {
+    fill: black;
+    fill-opacity: 0.25;
     stroke: black;
-    stroke-width: 3;
-    marker-end: url(#marker);
-}
+    stroke-width: 5;
+}*/
 
 .node-metabolite {
-    r: 5;
+    r: 7;
     fill: blue;
     cursor: move;
 }
 
 .node-metabolite-replication {
-    r: 5;
+    r: 7;
     fill: red;
     cursor: move;
 }
@@ -102,6 +104,21 @@ h3 {
     stroke-width: 5;
 }
 
+.link {
+    stroke-opacity: 1;
+}
+
+.link-metabolite {
+    stroke: grey;
+    stroke-width: 1;
+}
+
+.link-reaction {
+    stroke: black;
+    stroke-width: 3;
+    marker-end: url(#marker);
+}
+
 .emphasis-link {
     stroke: orange;
     stroke-width: 5;
@@ -110,23 +127,6 @@ h3 {
 .emphasis-row {
     background-color: orange;
 }
-
-.degree-bar {
-    fill: darkmagenta;
-}
-
-.degree-label {
-    fill: chartreuse;
-    font-family: sans-serif;
-    font-size: xx-small;
-}
-
-/*.panel {
-    fill: black;
-    fill-opacity: 0.25;
-    stroke: black;
-    stroke-width: 5;
-}*/
 
 /* Identifiers */
 
