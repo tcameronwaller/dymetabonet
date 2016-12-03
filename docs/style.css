@@ -75,8 +75,14 @@ h3 {
     cursor: move;
 }
 
-.node-metabolite.fixed {
+.node-metabolite-replication {
+    r: 5;
     fill: red;
+    cursor: move;
+}
+
+.node-metabolite.fixed {
+    fill: purple;
     cursor: move;
 }
 
@@ -87,7 +93,7 @@ h3 {
 }
 
 .node-reaction.fixed {
-    fill: red;
+    fill: black;
     cursor:move;
 }
 

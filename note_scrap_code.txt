@@ -3,6 +3,178 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
+2 December 2016
+
+
+----------
+Also Doesn't Work
+----------
+
+class ExplorationView {
+...
+draw() {
+...
+
+}
+}
+
+----------
+Also Doesn't Work
+----------
+
+class ExplorationView {
+...
+draw() {
+...
+        // I wanted to use groups for nodes instead of circles...
+        self.nodes = self.explorationSVG
+            .append("g");
+        self.nodeGroups = self.nodes
+            .selectAll("g")
+            .data(Object.values(self.model.nodes));
+        self.nodeGroups
+            .exit()
+            .remove();
+        self.nodeGroupsEnter = self.nodeGroups
+            .enter()
+            .append("g");
+        self.nodeGroups = self.nodeGroupsEnter
+            .merge(self.nodeGroups);
+
+        self.nodeGroups
+            .call(d3.drag()
+                .on("start", dragStart)
+                .on("drag", dragged)
+                .on("end", dragEnd)
+            )
+            .on("dblclick", release);
+
+        self.nodeCircles = self.nodes
+            .selectAll("circle")
+            .data(function (d) {
+                return d;
+            });
+        self.nodeCircles
+            .exit()
+            .remove();
+        self.nodeCirclesEnter = self.nodeCircles
+            .enter()
+            .append("g");
+        self.nodeCircles = self.nodeCirclesEnter
+            .merge(self.nodeCircles);
+        self.nodeCircles
+            .attr("class", function (d) {
+                var type = d.type;
+                if (type === "metabolite") {
+                    return "node-metabolite";
+                } else if (type === "reaction") {
+                    return "node-reaction";
+                };
+            });
+
+}
+}
+
+----------
+Doesn't Work
+----------
+
+class ExplorationView {
+...
+draw() {
+...
+
+        self.nodes = self.explorationSVG
+            .append("g");
+        self.nodeGroups = self.nodes
+            .selectAll("g")
+            .data(Object.values(self.model.nodes));
+        self.nodeGroups
+            .exit()
+            .remove();
+        self.nodeGroupsEnter = self.nodeGroups
+            .enter()
+            .append("g");
+        self.nodeGroups = self.nodeGroupsEnter
+            .merge(self.nodeGroups);
+
+        self.nodeGroups
+            .call(d3.drag()
+                .on("start", dragStart)
+                .on("drag", dragged)
+                .on("end", dragEnd)
+            )
+            .on("dblclick", release);
+
+        // This strategy does not work.
+        // It starts right after creating the groups for nodes.
+        // They inherit data... but I don't think they inherit position.
+        self.nodeCircles = self.nodeGroups
+            .append("circle")
+            .attr("class", function (d) {
+                var type = d.type;
+                if (type === "metabolite") {
+                    return "node-metabolite";
+                } else if (type === "reaction") {
+                    return "node-reaction";
+                };
+            })
+
+        self.nodeLabels = self.nodeGroups
+            //.filter(function (d) {
+            //    return (d.type == "metabolite");
+            //})
+            .append("text")
+            .text(function (d) {
+                return d.identifier;
+            });
+}
+}
+
+
+
+
+----------
+Original Version
+----------
+
+class ExplorationView {
+...
+draw() {
+...
+
+        // Create nodes.
+        self.nodes = self.explorationSVG
+            .append("g")
+            .selectAll("circle")
+            .data(Object.values(self.model.nodes))
+            .enter()
+            .append("circle")
+            .attr("class", function (d) {
+                var type = d.type;
+                if (type === "metabolite") {
+                    return "node-metabolite";
+                } else if (type === "reaction") {
+                    return "node-reaction";
+                };
+            })
+            .call(d3.drag()
+                .on("start", dragStart)
+                .on("drag", dragged)
+                .on("end", dragEnd)
+            )
+            .on("dblclick", release);
+
+        // Create titles for nodes so that mouse hover will display title.
+        self.nodes.append("title")
+            .text(function (d) {
+                return d.name;
+            });
+}
+}
+
+
+--------------------------------------------------
 30 November 2016
 
 class ExplorationView {

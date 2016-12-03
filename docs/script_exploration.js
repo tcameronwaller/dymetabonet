@@ -44,8 +44,8 @@ class ExplorationView {
         //console.log(self.model);
         // I think that the node-link diagram process modifies the data.
         // Create collections of nodes and links specific to this object.
-        self.nodes = Object.values(self.model.nodes);
-        self.links = Object.values(self.model.links);
+        //self.nodes = Object.values(self.model.nodes);
+        //self.links = Object.values(self.model.links);
         self.draw();
         // Call update method.
         self.update();
@@ -60,7 +60,7 @@ class ExplorationView {
         // .attr("id", function(d) { return d.identifier; })
         // Then select by nodes by their identifiers.
         // d3.select("#" + identifier);
-        self.node
+        self.nodeCircles
             .filter(function (d) {
                 return (d.reference == identifier);
             })
@@ -70,7 +70,7 @@ class ExplorationView {
     restoreNodes(identifier) {
         var self = this;
         var identifier = identifier;
-        self.node
+        self.nodeCircles
             .filter(function (d) {
                 return (d.reference == identifier);
             })
@@ -117,9 +117,10 @@ class ExplorationView {
             .attr("d", "M 0 0 L 10 5 L 0 10 z");
 
         // Create links.
-        self.link = self.explorationSVG.append("g")
+        // Create links before nodes so that nodes will appear over the links.
+        self.links = self.explorationSVG.append("g")
             .selectAll("line")
-            .data(self.links)
+            .data(Object.values(self.model.links))
             .enter()
             .append("line")
             .attr("class", "link")
@@ -132,25 +133,46 @@ class ExplorationView {
                 };
             });
 
+        // Create titles for links so that mouse hover will display title.
+        self.links.append("title")
+            .text(function (d) {
+                return d.name;
+            });
+
         // TODO: Represent nodes for replicated nodes differently... maybe... that might be confusing.
         // TODO: Use circles of different radii for metabolites and reactions.
         // TODO: Use larger circles for metabolites.
         // TODO: Add labels for the metabolites.
         // Create nodes.
-        self.node = self.explorationSVG.append("g")
-        //self.node = self.nodes
+        // I wanted to use groups for nodes instead of circles...
+        self.nodes = self.explorationSVG
+            .append("g");
+        self.nodeCircles = self.nodes
             .selectAll("circle")
-            .data(self.nodes)
+            .data(Object.values(self.model.nodes));
+        self.nodeCircles
+            .exit()
+            .remove();
+        self.nodeCirclesEnter = self.nodeCircles
             .enter()
-            .append("circle")
+            .append("circle");
+        self.nodeCircles = self.nodeCirclesEnter
+            .merge(self.nodeCircles);
+        self.nodeCircles
             .attr("class", function (d) {
                 var type = d.type;
                 if (type === "metabolite") {
-                    return "node-metabolite";
+                    var replication = d.replication;
+                    if (replication == true) {
+                        return "node-metabolite-replication";
+                    } else if (replication == false) {
+                        return "node-metabolite";
+                    };
                 } else if (type === "reaction") {
                     return "node-reaction";
                 };
             })
+        self.nodeCircles
             .call(d3.drag()
                 .on("start", dragStart)
                 .on("drag", dragged)
@@ -159,35 +181,25 @@ class ExplorationView {
             .on("dblclick", release);
 
         // Create titles for nodes so that mouse hover will display title.
-        self.node.append("title")
+        self.nodeCircles.append("title")
             .text(function (d) {
                 return d.name;
             });
-
-        self.link.append("title")
-            .text(function (d) {
-                return d.name;
-            });
-
-        // TODO: Change representation to include labels.
-
-        // TODO: Enable anchoring of nodes when user clicks on them.
-        // TODO: Free nodes when user double clicks or single clicks again.
 
         // Initiate the force simulation.
         // Collision force prevents overlap occlusion of nodes.
         // The center force causes nodes to behave strangely when user repositions them manually.
         self.simulation = d3.forceSimulation()
-            .nodes(self.nodes)
+            .nodes(Object.values(self.model.nodes))
             .force("charge", d3.forceManyBody()
-                .strength(-200)
+                .strength(-250)
             )
             .force("collide", d3.forceCollide()
                 .radius(10)
                 .strength(0.9)
             )
             .force("link", d3.forceLink()
-                .links(self.links)
+                .links(Object.values(self.model.links))
                 .id(function (d) {
                     return d.identifier;
                 })
@@ -217,14 +229,14 @@ class ExplorationView {
         // Impose constraints on node positions (d.x and d.y) according to dimensions of bounding SVG element.
         var radius = 7;
         function ticker() {
-            self.node
+            self.nodeCircles
                 .attr("cx", function (d) {
                     return d.x = Math.max(radius, Math.min(self.svgWidth - radius, d.x));
                 })
                 .attr("cy", function (d) {
                     return d.y = Math.max(radius, Math.min(self.svgHeight - radius, d.y));
                 });
-            self.link
+            self.links
                 .attr("x1", function (d) {return d.source.x;})
                 .attr("y1", function (d) {return d.source.y;})
                 .attr("x2", function (d) {return d.target.x;})
@@ -267,7 +279,7 @@ class ExplorationView {
         var self = this;
 
         // Define interaction for nodes.
-        self.node.on("mouseover", function (d) {
+        self.nodeCircles.on("mouseover", function (d) {
             //console.log(d3.event);
             //console.log(d3.event.srcElement);
             //console.log(d3.event.target);
@@ -282,14 +294,14 @@ class ExplorationView {
             d3.select(this)
                 .classed("emphasis-node", true);
         });
-        self.node.on("mouseout", function () {
+        self.nodeCircles.on("mouseout", function () {
             // Remove highlight edge around node.
             d3.select(this)
                 .classed("emphasis-node", false);
         });
 
         // Define interaction for links.
-        self.link
+        self.links
             .filter(function (d) {
                 return (d.type == "reaction");
             })
@@ -302,7 +314,7 @@ class ExplorationView {
                 d3.select(this)
                     .classed("emphasis-link", true);
             });
-        self.link.on("mouseout", function () {
+        self.links.on("mouseout", function () {
             // Remove highlight edge around node.
             d3.select(this)
                 .classed("emphasis-link", false);
