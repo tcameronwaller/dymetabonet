@@ -6,6 +6,30 @@ Name: T Cameron Waller
 Project: Profondeur
 
 --------------------------------------------------
+Date: 20 December 2016
+Number: 1
+Note:
+This sketch illustrates essentially a single option for visual representation of relations between sets of nodes.
+
+--------------------------------------------------
+Date: 20 December 2016
+Number: 2
+Note:
+This sketch illustrates options for visual representation of relations between sets of nodes or between nodes and sets of nodes.
+
+--------------------------------------------------
+Date: 16 December 2016
+Number: 1
+Note:
+This sketch illustrates an interactive, menu-like interface for defining queries against the metabolic network.
+
+--------------------------------------------------
+Date: 15 December 2016
+Number: 1
+Note:
+This sketch illustrates a simple interface for defining queries against the metabolic network.
+
+--------------------------------------------------
 Date: 18 November 2016
 Number: 1
 Note:

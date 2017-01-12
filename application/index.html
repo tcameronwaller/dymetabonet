@@ -1,0 +1,149 @@
+<!--
+ Profondeur supports visual exploration and analysis of metabolic networks.
+ Copyright (C) 2016  Thomas Cameron Waller
+
+ Author email: tcameronwaller@gmail.com
+
+ This file is part of Profondeur.
+
+ Profondeur is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+    <title>Profondeur</title>
+    <link rel="stylesheet" href="style.css"/>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="cytoscape.js"></script>
+
+</head>
+
+<body>
+
+    <!-- Use D3 to create elements that associate with data or change with data. -->
+    <!-- Create all other elements within the HTML. -->
+    <!-- Group all page content in a container element. -->
+
+    <!-- TODO: For now, just set static dimensions for all elements of the document. -->
+
+    <div id="window">
+
+        <!-- Create element for title or header of interface. -->
+        <header>
+            <h1 title="Profondeur: Visual Exploration and Analysis of Metabolic Networks">Profondeur</h1>
+        </header>
+
+        <!-- TODO: In terms of style/strategy, would it be better to create SVG's for my views here in the HTML? -->
+        <!-- TODO: Those SVG's do not depend on data, so it might be better style to create them here. -->
+        <!-- TODO: That way I can minimize in-line styling with D3. -->
+        <!-- TODO: Also it should be fine to size them relatively in the CSS using vw and vh. -->
+
+        <!-- Create element for control views. -->
+        <div id="control">
+            <!-- Create element for query view. -->
+            <!-- For this project, this view will not associate with data beyond a selection menu. -->
+            <div id="query" class="view">
+                <h3>Query</h3>
+                <div id="selector-div">
+                    <label>Model:</label>
+                    <select id="selector"></select>
+                    <button id="submit">Submit</button>
+                </div>
+            </div>
+
+            <!-- Create element for navigation view. -->
+            <!-- Maybe the navigation view should actually have a fixed size. -->
+            <div id="navigation" class="view">
+                <h3>Metabolite Degree Table</h3>
+                <table id="degree-table">
+                    <thead>
+                    <tr>
+                        <th>Identifier</th>
+                        <th>Degree</th>
+                        <th>Replicate</th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td id="degree-scale"></td>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Create element for exploration view. -->
+        <div id="exploration" class="view">
+            <!-- It is possible to initiate this svg with dimensions 100X100 and then change those in the CSS. -->
+            <!-- I set the final dimensions for now since it makes it simple to access them in the JavaScript. -->
+            <svg width="924" height="572"></svg>
+        </div>
+
+    </div>
+
+    <div id="caption">
+
+        <h1>Profondeur</h1>
+        <h2>Visual Exploration and Analysis of Metabolic Networks</h2>
+
+        <h3>Project Repository:
+            <a href="https://github.com/tcameronwaller/profondeur">
+                https://github.com/tcameronwaller/profondeur
+            </a>
+        </h3>
+
+        <h3>Project Website:
+            <a href="https://tcameronwaller.github.io/profondeur/">
+                https://tcameronwaller.github.io/profondeur/
+            </a>
+        </h3>
+
+        <h3>Process Book:
+            <a href="process_book.pdf">
+                process book
+            </a>
+        </h3>
+
+        <h3>Introductory Video:
+            <a href="https://youtu.be/UtBwxdMJWQY">
+                introductory video
+            </a>
+        </h3>
+
+        <p>
+            Metabolic networks are large and complex, involving many types of relations between many types of entities.
+            Biologists and clinicians need access to the information from these networks in order to interpret
+            experimental data that inform the diagnosis and treatment of human disease.
+            The goal of this project is to develop methods that enable users to explore the metabolic network.
+            In contrast to many existing technologies, this project employs automatic, dynamic layouts to represent
+            subsets of the network.
+            In future projects, these dynamic layouts will be necessary to represent subsets of the network that the
+            user specifies by custom queries.
+        </p>
+
+    </div>
+
+    <!-- Call scripts. -->
+    <script type="application/javascript" src="script_model.js"></script>
+    <script type="application/javascript" src="script_query.js"></script>
+    <script type="application/javascript" src="script_navigation.js"></script>
+    <script type="application/javascript" src="script_exploration.js"></script>
+    <script type="application/javascript" src="script_main.js"></script>
+
+</body>
+
+</html>

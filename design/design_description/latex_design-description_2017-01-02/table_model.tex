@@ -1,0 +1,96 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%
+% Table Model
+
+% table
+\begin{table}[htb]
+\small
+\centering
+\begin{tabular}{ |m{3cm}|m{7.5cm}|m{1.5cm}| }
+
+% Header
+
+% Row 0
+\hline
+\textbf{Category}
+& \textbf{Property}
+& \textbf{Value}
+
+% Category: Compartment
+
+% Row 1
+\\ \hline
+\multirow{1}{3cm}{\textbf{Compartment}}
+& Count
+& \textbf{9}
+
+% Category: Metabolite
+
+% Row 2
+\\ \hline
+\multirow{11}{3cm}{\textbf{Metabolite}}
+& Count of chemically unique
+& \textbf{2652}
+% Row 3
+\\ \cline{2-3}
+& Count in extracellular space
+& 642*
+% Row 4
+\\ \cline{2-3}
+& Count in cytoplasm
+& 1878*
+% Row 5
+\\ \cline{2-3}
+& Count in mitochondrion matrix
+& 500*
+% Row 6
+\\ \cline{2-3}
+& Count in mitochondrion intermembrane space
+& 250*
+% Row 7
+\\ \cline{2-3}
+& Count in nucleus
+& 165*
+% Row 8
+\\ \cline{2-3}
+& Count in endoplasmic reticulum
+& 570*
+% Row 9
+\\ \cline{2-3}
+& Count in peroxisome
+& 435*
+% Row 10
+\\ \cline{2-3}
+& Count in lysosome
+& 302*
+% Row 11
+\\ \cline{2-3}
+& Count in golgi apparatus
+& 317*
+% Row 12
+\\ \cline{2-3}
+& Count of total compartmental
+& \textbf{5324}
+
+% Category: Reaction
+
+% Row 13
+\\ \hline
+\multirow{3}{3cm}{\textbf{Reaction}}
+& Count of reactions
+& \textbf{7785}
+% Row 14
+\\ \cline{2-3}
+& Count of genes
+& \textbf{1675}
+% Row 15
+\\ \cline{2-3}
+& Count of transcripts
+& 2194*
+
+\\ \hline
+\end{tabular}
+\caption{Specifications of the \textbf{Recon 2.2 model of human metabolism} \supercite{thiele_community-driven_2013, swainston_recon_2016}. Symbol "*" indicates approximate values.}
+\label{table:model}
+\end{table}
+

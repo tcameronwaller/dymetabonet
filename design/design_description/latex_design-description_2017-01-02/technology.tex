@@ -1,0 +1,73 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%
+
+% Current Technology
+
+\section{Current Technology}
+
+% figures
+
+% tables
+
+\input{table_model}
+
+This section includes a concise depiction of the current technology that is relevant to this project with summaries and evaluations of a set of tools.
+This set of tools is not comprehensive.
+
+\subsection{Databases}
+
+Many databases provide information about biological entities that is relevant to the metabolic system.
+The Universal Protein Resource (UniProt, http://www.uniprot.org/) \supercite{uniprot_consortium_uniprot:_2015} provides information about proteins, their properties and functions.
+The Kyoto Encyclopedia of Genes and Genomes (KEGG, http://www.genome.jp/kegg/) \supercite{kanehisa_kegg_2016}, and the MetaCyc Metabolic Pathway Database (http://www.metacyc.org/) \supercite{caspi_metacyc_2016}, provide information about metabolites and reactions.
+
+\subsection{Metabolic Models}
+
+% Metabolic models
+
+Systems biology uses computational models \supercite{thiele_protocol_2010, obrien_using_2015, bordbar_constraint-based_2014} to study the vastness and complexity of biological systems.
+These models are compilations of current knowledge.
+Relevant information comes from annotations of genes in genomes, from databases about biological entities, and from many biochemical and molecular biological studies that characterize the functions of individual genes, transcripts, proteins, and metabolites.
+\textbf{Metabolic models} are \textbf{collections of all known reactions}.
+These reactions include information for \textbf{reactant and product metabolites} with appropriate \textbf{stoichiometry to balance mass and charge}.
+They include information about \textbf{rates, directionality, and reversibility}.
+They also include information about \textbf{cellular compartments and transport} of metabolites between compartments.
+In cases of catalysis or transport, they include information about the \textbf{genes that encode the transcripts and proteins} to facilitate the process.
+Metabolic models are \textbf{specific to species, tissues, and even conditions}.
+Active communities of experts develop, curate, and maintain models that are available from multiple repositories \supercite{pornputtapong_human_2015, moretti_metanetx/mnxref--reconciliation_2016, king_bigg_2016}.
+Robust models are available for many organisms, including \textit{Saccharomyces cerevisiae} (yeast), \textit{Mus musculus} (mouse), and \textit{Homo sapiens} (human).
+The most current model for human metabolism is Recon 2.2 \supercite{thiele_community-driven_2013, swainston_recon_2016} (\textbf{Table \ref{table:model}}).
+
+% Tools for working with metabolic models
+
+Tools are also available for managing these metabolic models.
+The Systems-Biology-Markup-Language (SBML) (http://sbml.org) relates to the Extensible-Markup-Language (XML) and is an open standard and format for the representation of computational models for biological systems.
+libSBML \supercite{bornstein_libsbml:_2008} (http://sbml.org/Software/libSBML) is a reference for interpreting information in SBML format.
+COBRApy \supercite{ebrahim_cobrapy:_2013} (https://opencobra.github.io/cobrapy/) is an open-source tool for managing metabolic models in Python.
+libSBML and COBRApy together are useful to convert information for metabolic models from SBML format to JavaScript Object Notation (JSON) format.
+
+\subsection{Visualization and Exploratory Analysis}
+
+\textbf{KEGG Atlas} (http://www.kegg.jp/kegg/atlas/) \supercite{kanehisa_kegg_2016} is a web application that enables users to explore metabolic maps from KEGG.
+The user can select from a large set of available maps for standard subsets and pathways in metabolism.
+It is not possible to view maps for custom subsets of metabolism.
+Rather it is necessary to search through multiple separate maps for reactions of interest.
+Maps in the atlas use a static, spatial layout that arranges reactions by process or pathway.
+This static layout distorts relations between metabolites.
+Two metabolites may be far apart on the map although they relate by a single reaction.
+It is not possible to change the map's layout to represent other properties such as cellular compartment.
+The map only represents the priority metabolites of each reaction, leaving out reactants and products that might be of interest.
+Also it is not obvious where the map represents a single metabolite in multiple places.
+It is only possible to search the map by identities of metabolites or reactions.
+It is not possible to search by relations or properties.
+It is possible to change the colors of individual icons for metabolites.
+It is not possible to vary color saturation of icons to represent quantitative attributes.
+This design renders KEGG Atlas inappropriate for visual exploration of \textbf{custom subsets of the metabolic network that traverse standard pathways}.
+
+\textbf{Escher} \supercite{king_escher:_2015} (https://escher.github.io/) is a web application that enables users to draw metabolic maps and visualize experimental data on these maps.
+It imports information from metabolic models.
+The user selects individual reactions from these models to include in the maps.
+It is not possible to query the metabolic model by relations or properties, so the user must know the identities of metabolites and reactions of interest.
+The user manually positions the individual reactions and their metabolites to create a static map.
+The user can arrange reactions and metabolites however she/he wants to represent sets and create a map that is readable.
+The user can change the color of individual icons for metabolites or reactions to represent  properties or quantitative attributes.
+This design renders Escher inappropriate for \textbf{efficient, dynamic exploration of custom portions of the metabolic system}.

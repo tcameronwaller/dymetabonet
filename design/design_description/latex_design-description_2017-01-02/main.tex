@@ -1,0 +1,259 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%
+% Document preamble
+
+% Document type
+\documentclass[11pt, twoside]{article}
+\usepackage[utf8]{inputenc}
+
+% Document layout dimensions
+%\usepackage[letterpaper, portrait, margin=1in]{geometry}
+\usepackage{geometry}
+\geometry{letterpaper, portrait, margin=2cm}
+
+% Document header and footer
+% https://www.sharelatex.com/learn/Headers_and_footers
+% https://www.ctan.org/pkg/fancyhdr?lang=en
+% Commands \pagestyle and \pagenumbering are native to latex.
+% Package fancyhdr provides additional ease and control.
+\usepackage{fancyhdr}
+\setlength{\headheight}{14pt}
+% Include headers and footers in both fancy and plain page styles
+% so that the first pages of chapters will have headers and footers.
+% For any page of the document set the page style using commands.
+%\thispagestyle{empty}
+%\thispagestyle{plain}
+%\thispagestyle{headings}
+%\thispagestyle{myheadings}
+%\thispagestyle{fancy}
+
+%\pagestyle{fancy}
+%\lhead{}
+%\chead{}
+%\rhead{}
+%\lfoot{}
+%\cfoot{}
+%\rfoot{\thepage}
+%\fancyhf{}
+%\fancyhead{}
+%\fancyhead[L]{Profondeur}
+%\fancyhead[R]{Visual Exploration and Analysis of Metabolic Networks}
+%\fancyfoot{}
+%\fancyfoot[L]{Chapter \thechapter}
+%\fancyfoot[C]{T Cameron Waller}
+%\fancyfoot[R]{Page \thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+% Document font
+%\renewcommand{\familydefault}{\rmdefault}
+\renewcommand{\familydefault}{\sfdefault}
+%\rmfamily
+%\sffamily
+%\ttfamily
+
+\setcounter{secnumdepth}{0}
+\usepackage{indentfirst}
+
+% figures
+% https://www.sharelatex.com/learn/Inserting_Images
+
+
+\usepackage{graphicx}
+\graphicspath{ {figures/} }
+
+
+%\begin{figure}[t]
+%\centering
+%\includegraphics{file name without suffix}
+%\includegraphics[scale=1.5]{file name without suffix}
+% scale image dimensions by document property
+%\includegraphics[width=\textwidth]{file name without suffix}
+%\includegraphics[width=8cm]{Plot}
+%\caption{}
+%\label{fig:figure_reference}
+%\end{figure}
+%\ref{fig:figure_reference}
+
+% table
+\usepackage{array}
+\usepackage{multirow}
+\setlength{\tabcolsep}{0.1cm}
+\renewcommand{\arraystretch}{1.5}
+%\begin{table}[t]
+%\centering
+%\begin{tabular}{ |c|c|c| }
+%\hline
+%cell1 & cell2 & cell3 \\
+%\hline
+%cell4 & cell5 & cell6 \\
+%\hline
+%cell7 & cell8 & cell9 \\
+%\hline
+%\end{tabular}
+%\caption{}
+%\label{table:concepts}
+%\end{table}
+%\ref{table:concepts}
+
+% Support reference citations
+\usepackage[backend=biber, sorting=none]{biblatex}
+\addbibresource{reference.bib}
+%\bibliographystyle{unsrt}
+
+% Project title, author, and date
+\title{design_proposal}
+\author{Thomas Cameron Waller}
+\date{\today}
+
+%%%%%%%%%%
+% Format notes
+
+% block comments
+%\usepackage{comment}
+%\begin{comment}
+%\end{comment}
+
+%\hyphenation{unusual-word}
+%unusual\word
+
+% text justification
+%\begin{center} %\centering
+%\end{center}
+%\begin{flushleft} %\raggedright
+%\end{flushleft}
+%\begin{flushright} %\raggedleft
+%\end{flushright}
+
+% paragraph indentation
+%\setlength{\parindent}{10ex}
+%\indent
+%\noindent
+
+% paragraph break
+%\par
+
+% line break
+% \\
+% \\*
+% \newline
+%\hfill \break
+%\linebreak[number0-4] % priority 0-4 for optimal formatting
+
+% page break
+%\newpage
+%\clearpage
+
+% horizontal blank space
+%\hspace{1cm} % other units work, too
+%\hfill
+%\hrulefill
+%\dotfill
+
+% vertical blank space
+%\vspace{5mm}
+%\vfill
+%\smallskip
+%\medskip
+%\bigskip
+
+% document sections
+%\chapter{Name}
+%\section{Name}
+%\paragraph{Name}
+
+% font
+%\textbf{text}
+%\textit{text}
+
+% citation
+%\supercite{reference}
+%\printbibliography
+
+%%%%%%%%%%
+% references
+% https://www.sharelatex.com/learn/
+% https://www.sharelatex.com/learn/Font_sizes,_families,_and_styles
+% https://www.sharelatex.com/learn/Font_typefaces
+% https://www.sharelatex.com/learn/Lists
+% https://www.sharelatex.com/learn/Bibliography_management_in_LaTeX
+% https://www.sharelatex.com/learn/Tables
+% https://www.sharelatex.com/learn/Positioning_images_and_tables
+% http://tex.stackexchange.com/questions/39017/how-to-influence-the-position-of-float-environments-like-figure-and-table-in-lat
+% https://www.latex-project.org/publications/#publications-in-2014
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%
+% document body
+\begin{document}
+
+%%%%%%%%%%
+% I need to be careful of my terminology.
+% I need to consider when and where to use "system" or "network".
+
+%%%%%%%%%%
+% Title
+\input{title}
+
+%%%%%%%%%%
+% summary
+\input{summary}
+
+%%%%%%%%%%
+% introduction
+\input{introduction}
+
+%%%%%%%%%%
+% requirements
+\input{requirements}
+
+%%%%%%%%%%
+% current technology
+\input{technology}
+% include explanation of limitations of current technology
+% kegg and kegg atlas
+% escher
+
+%%%%%%%%%%
+% features
+\input{features}
+% Describe the abstract representation of reactions
+% include final-version design sketches showing interface
+
+%%%%%%%%%%
+% implementation
+%\input{implementation}
+
+% network data source (metabolic models)
+% models (recon 1 and recon 2 especially)
+% give detail on their availability (license)
+% give detail on what information they include
+% include specific examples of content
+% number reactions and metabolites
+% fields in these entries
+% give detail on the file size of the model itself (supports rationale for client-side web application)
+% give detail on the format of the data...
+% libsbml and cobrapy for format conversion
+
+% architecture
+% program languages and packages/libraries
+% give rationale for web application
+% give rationale for entirely client-side program (simplicity, reliability)
+
+%%%%%%%%%%
+% schedule
+\input{schedule}
+% 6 months to functional prototype and user trials
+
+%%%%%%%%%%
+% References
+\printbibliography
+
+%%%%%%%%%%
+% Figures
+\input{figures}
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

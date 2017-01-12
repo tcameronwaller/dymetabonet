@@ -1,0 +1,24 @@
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+
+Message date: 2 January 2017
+Message from: T Cameron Waller
+Message to: Alexander Lex, Jared P Rutter, Brian E Chapman, James E Cox, Adam L Hughes, Janet Iwasa
+
+Dear Committee Members,
+
+In our meeting on 19 December 2016, we decided for me to prepare a document to describe the design and plan of my project. I composed this document, and it is an attachment with this message.
+
+As I understand it, the purpose of this document is to describe in detail 1) the goal of the project, 2) the specific requirements to achieve this goal, and 3) the design decisions and plan for specific features to meet these requirements. This project involves a lot of decisions about details that matter and make a difference. The idea is that making these decisions early on and getting feedback will help the project to follow a specific plan and progress towards a specific goal. I also acknowledge that there are very many details and decisions that this document does not address. We will deal with those as we encounter them during implementation.
+
+As you read the document and provide feedback, please consider these subjects.
+1) How appropriate is the goal of the project? How might it be possible and reasonable to improve this goal?
+2) How accurate and appropriate are the requirements of the project, especially with consideration for the user? Which requirements might you include or exclude?
+3) How appropriate are the design features to meet the requirements of the user and to support the goal? Which features might you include or exclude?
+
+Please tell me if you have any questions or if you would like to discuss the project more. I look forward to receiving your feedback and welcome it either in text or in person. Thank you for your help.
+
+Ciao,
+
+Cameron

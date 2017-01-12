@@ -1,0 +1,71 @@
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+Notes About Recon 2.2 Model of Human Metabolism
+
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+
+--------------------------------------------------
+5 January 2017
+
+Model
+Recon 2.2
+
+Publication
+https://www.ncbi.nlm.nih.gov/pubmed/27358602
+
+Accession
+http://identifiers.org/biomodels.db/MODEL1603150001
+
+Format
+The accessible version of Recon 2.2 is in format SBML L2 V4.
+This format is prior to FBC 2.
+
+Details
+
+metabolites
+-count: 5324
+-charge (not available for every metabolite)
+
+reactions
+-count: 7785
+-properties:
+--id (up to 12 characters)
+--name (long)
+--subsystem (basically pathway)
+--lower_bound (reversible if lower_bound < 0 < upper_bound)
+--upper_bound (reversible if lower_bound < 0 < upper_bound)
+--metabolites
+---identifier: -1 (reactant) or 1 (product)
+--gene_reaction_rule (not available for every reaction)
+
+genes
+-count: 1675
+-properties:
+--id (HGNC:numeric_code)
+--name (not available for many genes, maybe every gene)
+
+Tools
+COBRApy (https://opencobra.github.io/cobrapy/)
+libSBML (http://sbml.org/Software/libSBML)
+http://cobrapy.readthedocs.io/en/stable/io.html?highlight=libsbml
+COBRApy cannont read information from SBML format prior to FBC 2 without libSBML.
+
+libSBML
+Install libSBML from PyPi for Python 3.x with pip.
+In shell terminal, execute "pip install python-libsbml" for stable release.
+In shell terminal, execute "pip install python-libsbml-experimental" for experimental release.
+In Python terminal, execute "import libsbml" before using cobra in script.
+
+COBRApy
+In shell terminal, execute "pip install cobra" for stable release.
+In Python terminal, execute "import cobra" before using cobra in script.
+
+COBRApy methods derive some properties conveniently.
+The method "model.reversibility" determines a Boolean (true/false) reversibility from upper_bound and lower_bound.
+The method "model.reaction.reaction" determines a reaction equation from identifiers for reactant and product metabolites.
+The method "model.metabolite.reactions" determines the reactions in which the metabolite participates.
+The method "model.gene.reactions" determines the reactions in which the gene participates.
+The method "model.reaction.check_mass_balance()" determines whether or not a reaction has balancing masses in reactants and products.

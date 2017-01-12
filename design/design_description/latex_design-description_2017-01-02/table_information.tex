@@ -1,0 +1,109 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%
+% table information
+
+% table
+\begin{table}[htbp]
+\small
+\centering
+\begin{tabular}{ |m{2cm}|m{4cm}|m{10cm}| }
+
+% Header
+
+% Row 0
+\hline
+\textbf{Source}
+& \textbf{Category}
+& \textbf{Example}
+
+% Source: Community
+
+% Category: Topology
+
+% Row 1
+\\ \hline
+\multirow{19}{2cm}{\textbf{Community}}
+& \multirow{5}{4cm}{\textbf{Topology} (connectivity of a network)}
+& Count and identities of metabolites as \textbf{reactants} in a reaction
+% Row 2
+\\ \cline{3-3}
+& & Count and identities of metabolites as \textbf{products} in a reaction
+% Row 3
+\\ \cline{3-3}
+& & \textbf{Degree} of a metabolite (count of reactions in which it participates)
+% Row 4
+\\ \cline{3-3}
+& & Continuous \textbf{paths} of multiple metabolites and reactions
+% Row 5
+\\ \cline{3-3}
+& & \textbf{Betweenness centrality} of a metabolite (count of shortest paths that pass through it between all other metabolites in network)
+
+% Category: Property of Metabolite
+
+% Row 6
+\\ \cline{2-3}
+& \multirow{5}{4cm}{\textbf{Property of Metabolite}}
+& \textbf{Identity}
+% Row 7
+\\ \cline{3-3}
+& & \textbf{Name}
+% Row 8
+\\ \cline{3-3}
+& & \textbf{Chemical formula}
+% Row 9
+\\ \cline{3-3}
+& & \textbf{Charge}
+% Row 10
+\\ \cline{3-3}
+& & \textbf{Cellular compartment}
+
+% Category: Property of Reaction
+
+% Row 11
+\\ \cline{2-3}
+& \multirow{9}{4cm}{\textbf{Property of Reaction}}
+& \textbf{Identity}
+% Row 12
+\\ \cline{3-3}
+& & \textbf{Name}
+% Row 13
+\\ \cline{3-3}
+& & \textbf{Rate}
+% Row 14
+\\ \cline{3-3}
+& & \textbf{Reversibility}
+% Row 15
+\\ \cline{3-3}
+& & \textbf{Type} (chemical reaction or transport event)
+% Row 16
+\\ \cline{3-3}
+& & \textbf{Cellular compartment(s)}
+% Row 17
+\\ \cline{3-3}
+& & \textbf{Metabolic pathway(s)}
+% Row 18
+\\ \cline{3-3}
+& & Identities and properties of \textbf{constituent genes, transcripts, and proteins}
+% Row 19
+\\ \cline{3-3}
+& & \textbf{Cofactors} of proteins
+
+% Source: User
+
+% Category: Attribute
+
+% Row 20
+\\ \hline
+\multirow{2}{2cm}{\textbf{User}}
+& \multirow{2}{4cm}{\textbf{Attribute} (experimental measurement)}
+& \textbf{Fold change} in study condition relative to a control condition
+% Row 21
+\\ \cline{3-3}
+& & \textbf{P-Value} for comparison between study condition and control condition
+
+\\ \hline
+\end{tabular}
+\caption{Categories of information about metabolic network.}
+\label{table:information}
+\end{table}
+
