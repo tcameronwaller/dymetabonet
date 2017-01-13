@@ -21,6 +21,10 @@
  */
 
 
+// I'm just testing to see how typing affects the CPU usange by WebStorm.
+// Webstorm
+
+
 /**
  * Declare a class to contain attributes and methods of the query view.
  * In the final implementation, methods of this class will build and execute queries to select subsets of the network
@@ -47,11 +51,7 @@ class QueryView {
         // TODO: It seems this functionality is difficult.
         // TODO: readdirSync from Node.js might work.
         self.optionsArray = [
-            "e-coli_citrate-cycle_sub-1.json",
-            "e-coli_citrate-cycle_sub-2.json",
-            "e-coli_citrate-cycle_sub-3.json",
-            "e-coli_citrate-cycle_sub-4.json",
-            "e-coli_citrate-cycle.json",
+            "model_h-sapiens_recon-2.json",
         ];
         self.selector = d3.select("#selector");
         self.options = self.selector.selectAll("option")
@@ -79,23 +79,23 @@ class QueryView {
             //console.log(self.dataFile);
             // Load data from file in JSON format.
             // Create objects that associate with these data.
-            d3.json(("data/" + self.dataFile), function (error, dataModel) {
+            d3.json(("../model/homo-sapiens/" + self.dataFile), function (error, dataModel) {
                 if (error) throw error;
-                self.createModel(dataModel);
+                self.assembleNetwork(dataModel);
             });
         });
     }
 
-    createModel(dataModel) {
+    assembleNetwork(dataModel) {
         var self = this;
-        // Create instance of class Model.
-        self.model = new Model(dataModel);
-        self.send();
+        // Create instance of class Network.
+        self.network = new NetworkAssembly(dataModel);
+        //self.send();
     }
 
     send() {
         var self = this;
-        // Send instance of class Model to the Navigation View.
-        self.navigationView.receive(self.model);
+        // Send instance of class Network to the Navigation View.
+        self.navigationView.receive(self.network);
     }
 }
