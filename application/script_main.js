@@ -50,7 +50,7 @@ function createDataElements(selection, element, accessData) {
     elements = elementsEnter
         .merge(elements);
     return elements;
-}
+};
 
 /**
  * Script for query portion.
@@ -87,21 +87,121 @@ function createDataElements(selection, element, accessData) {
 
             // Load data from file in JSON format.
             // Create objects that associate with these data.
-            d3.json(("../model/homo-sapiens/" + dataFile), function (error, dataModel) {
+            d3.json(("../model/homo-sapiens/" + dataFile), function (error, model) {
                 if (error) throw error;
-                console.log(dataModel);
-                assembleNetwork(dataModel);
+                console.log(model);
+
+                // Call function to assemble network.
+                assembleNetwork(model);
+
+
             });
 
         })
 
 })();
 
+function assembleNetwork(model) {
+    //determineCompartmentAbbreviations({
+    //    cit_m: -1,
+    //    h2o2_c: 1,
+    //    h2o_c: -1,
+    //    h2o_e: -1,
+    //    h2o_c: -1,
+    //    h2o_i: -1,
+    //    h2o_c: -1
+    //});
+    var reaction = {
+        metabolites: {
+            cit_m: -1,
+            h2o2_c: 1,
+            h2o_e: -1,
+            h2o_c: 1,
+            h2o_m: 1,
+            h2o_i: -1
+        }
+    }
+    var test = determineCompartments(model, reaction);
+    console.log(test);
+};
 
 
 // Network Assembly Portion
 
-// Declare function to perform on each element from the collection.
+function determineCompartmentAbbreviations(metabolites) {
+    var metaboliteIdentifiers = Object.keys(metabolites);
+    // Split all metabolite identifiers by underscore.
+    // Select the compartment identifiers, which are the last elements from the split lists.
+    // Collect unique compartment identifiers.
+    // Return unique compartment identifiers.
+    var compartmentAbbreviations = metaboliteIdentifiers
+        .map(function (identifier) {
+            return identifier
+                .split("_")
+                .pop();
+        })
+        .reduce(function (accumulator, currentValue) {
+            if (!accumulator.includes(currentValue)) {
+                accumulator.push(currentValue);
+            };
+            return accumulator;
+        }, []);
+    return compartmentAbbreviations;
+};
+
+
+// Use map to prepare an array of objects.
+// Then concatenate this array of objects.
+
+function determineCompartments(model, reaction) {
+    var compartmentAbbreviations = determineCompartmentAbbreviations(reaction.metabolites);
+    var compartments = compartmentAbbreviations
+        .reduce(function (accumulator, currentValue) {
+            accumulator[currentValue] = model.compartments[currentValue];
+            return accumulator;
+        }, {});
+    return compartments;
+};
+
+// TODO: Maybe I should re-write my determineCompartments and determineCompartmentAbbreviations functions so that they
+// TODO: accommodate single metabolites. Then I'll have a master function(s) that handle collections.
+// TODO: That way I can use the same functions for a single metabolite.
+
+// function 1: split a metabolite identifier to get the compartment abbreviation for a SINGLE metabolite.
+// function 2: determine the full compartment name for a SINGLE compartment abbreviation.
+// function 3: use map to apply function 1 over Object.keys() for a collection of metabolites... then reduce to unique.
+// function 4: use reduce to apply function 2 over a collection of compartment abbreviations from function 3.
+
+
+// Process for each reaction
+function createReactionNode(model, reaction) {
+    var reactionNode = {
+        group: "nodes",
+        class: "reaction",
+        data: {
+            compartments: determineCompartments(reaction),
+            gene_reaction_rule: reaction.gene_reaction_rule,
+            id: reaction.id,
+            lower_bound: reaction.lower_bound,
+            metabolites: Object.assign({}, reaction.metabolites),
+            name: reaction.name,
+            products: determineProducts(reaction),
+            reactants: determineReactants(reaction),
+            reversibility: determineReversibility(reaction),
+            subsystem: reaction.subsystem,
+            type_reaction: determineTypeReaction(reaction),
+            type_transport: determineTypeTransport(reaction),
+            upper_bound: reaction.upper_bound
+        }
+    };
+    return reactionNode;
+};
+
+// Process for each metabolite
+
+
+
+
 
 
 // Apply the function to the collection using map.

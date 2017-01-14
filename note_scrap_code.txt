@@ -2,6 +2,23 @@
 Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
+
+--------------------------------------------------
+13 January 2017
+
+function determineCompartments(model, reaction) {
+  var compartmentAbbreviations = determineCompartmentAbbreviations(reaction.metabolites);
+  var compartmentsTemporary = compartmentAbbreviations
+    .map(function (abbreviation) {
+      var pair = {};
+        pair[abbreviation] = model.compartments[abbreviation];
+        return pair;
+    });
+  var compartments = Object.assign(compartmentsTemporary[0], compartmentsTemporary[1], compartmentsTemporary[2], compartmentsTemporary[3]);
+  return compartments;
+};
+
+
 --------------------------------------------------
 2 December 2016
 
