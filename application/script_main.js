@@ -50,7 +50,7 @@ function createDataElements(selection, element, accessData) {
     elements = elementsEnter
         .merge(elements);
     return elements;
-};
+}
 
 /**
  * Script for query portion.
@@ -101,6 +101,13 @@ function createDataElements(selection, element, accessData) {
 
 })();
 
+
+
+
+
+
+// Network Assembly Portion
+
 function assembleNetwork(model) {
     //determineCompartmentAbbreviations({
     //    cit_m: -1,
@@ -123,23 +130,32 @@ function assembleNetwork(model) {
     }
     var test = determineCompartments(model, reaction);
     console.log(test);
-};
+}
 
+function determineCompartmentAbbreviation(metaboliteIdentifier) {
+    // Split metabolite identifier to obtain compartment abbreviation.
+    var compartmentAbbreviation = metaboliteIdentifier
+        .split("_")
+        .pop();
+    return compartmentAbbreviation;
+}
 
-// Network Assembly Portion
+function determineCompartment(compartmentAbbreviation, model) {
+    // Determine full name of a compartment from its abbreviation.
+    var compartment = {}
+    compartment[compartmentAbbreviation] = model.compartments[compartmentAbbreviation];
+    return compartment;
+}
 
 function determineCompartmentAbbreviations(metabolites) {
-    var metaboliteIdentifiers = Object.keys(metabolites);
+    // Determine metabolite identifiers.
     // Split all metabolite identifiers by underscore.
     // Select the compartment identifiers, which are the last elements from the split lists.
     // Collect unique compartment identifiers.
     // Return unique compartment identifiers.
+    var metaboliteIdentifiers = Object.keys(metabolites);
     var compartmentAbbreviations = metaboliteIdentifiers
-        .map(function (identifier) {
-            return identifier
-                .split("_")
-                .pop();
-        })
+        .map(determineCompartmentAbbreviation)
         .reduce(function (accumulator, currentValue) {
             if (!accumulator.includes(currentValue)) {
                 accumulator.push(currentValue);
@@ -147,31 +163,21 @@ function determineCompartmentAbbreviations(metabolites) {
             return accumulator;
         }, []);
     return compartmentAbbreviations;
-};
-
-
-// Use map to prepare an array of objects.
-// Then concatenate this array of objects.
+}
 
 function determineCompartments(model, reaction) {
+    // Determine compartment abbreviations from reaction's metabolites.
+    // Determine compartment names from these abbreviations.
     var compartmentAbbreviations = determineCompartmentAbbreviations(reaction.metabolites);
     var compartments = compartmentAbbreviations
+        .map(function (compartmentAbbreviation) {
+            return determineCompartment(compartmentAbbreviation, model);
+        })
         .reduce(function (accumulator, currentValue) {
-            accumulator[currentValue] = model.compartments[currentValue];
-            return accumulator;
+            return Object.assign(accumulator, currentValue);
         }, {});
     return compartments;
-};
-
-// TODO: Maybe I should re-write my determineCompartments and determineCompartmentAbbreviations functions so that they
-// TODO: accommodate single metabolites. Then I'll have a master function(s) that handle collections.
-// TODO: That way I can use the same functions for a single metabolite.
-
-// function 1: split a metabolite identifier to get the compartment abbreviation for a SINGLE metabolite.
-// function 2: determine the full compartment name for a SINGLE compartment abbreviation.
-// function 3: use map to apply function 1 over Object.keys() for a collection of metabolites... then reduce to unique.
-// function 4: use reduce to apply function 2 over a collection of compartment abbreviations from function 3.
-
+}
 
 // Process for each reaction
 function createReactionNode(model, reaction) {
@@ -195,7 +201,7 @@ function createReactionNode(model, reaction) {
         }
     };
     return reactionNode;
-};
+}
 
 // Process for each metabolite
 
