@@ -26,8 +26,6 @@
 // var bounds = divNetwork.node().getBoundingClientRect();
 
 
-
-
 // Query portion
 
 /**
@@ -74,7 +72,9 @@ function createDataElements(selection, element, accessData) {
         "option",
         ["model_h-sapiens_recon-2.json"]
     )
-        .text(function (d) {return d});
+        .text(function (d) {
+            return d
+        });
 
     d3.select("#submit")
         .on("click", function () {
@@ -93,8 +93,6 @@ function createDataElements(selection, element, accessData) {
 
                 // Call function to assemble network.
                 assembleNetwork(model);
-
-
             });
 
         })
@@ -102,35 +100,10 @@ function createDataElements(selection, element, accessData) {
 })();
 
 
-
-
-
-
 // Network Assembly Portion
 
-function assembleNetwork(model) {
-    //determineCompartmentAbbreviations({
-    //    cit_m: -1,
-    //    h2o2_c: 1,
-    //    h2o_c: -1,
-    //    h2o_e: -1,
-    //    h2o_c: -1,
-    //    h2o_i: -1,
-    //    h2o_c: -1
-    //});
-    var reaction = {
-        metabolites: {
-            cit_m: -1,
-            h2o2_c: 1,
-            h2o_e: -1,
-            h2o_c: 1,
-            h2o_m: 1,
-            h2o_i: -1
-        }
-    }
-    var test = determineCompartments(model, reaction);
-    console.log(test);
-}
+
+// Compartments
 
 function determineCompartmentAbbreviation(metaboliteIdentifier) {
     // Split metabolite identifier to obtain compartment abbreviation.
@@ -140,38 +113,37 @@ function determineCompartmentAbbreviation(metaboliteIdentifier) {
     return compartmentAbbreviation;
 }
 
-function determineCompartment(compartmentAbbreviation, model) {
-    // Determine full name of a compartment from its abbreviation.
-    var compartment = {}
-    compartment[compartmentAbbreviation] = model.compartments[compartmentAbbreviation];
-    return compartment;
-}
-
-function determineCompartmentAbbreviations(metabolites) {
-    // Determine metabolite identifiers.
+function determineCompartmentAbbreviations(metaboliteIdentifiers) {
     // Split all metabolite identifiers by underscore.
     // Select the compartment identifiers, which are the last elements from the split lists.
     // Collect unique compartment identifiers.
     // Return unique compartment identifiers.
-    var metaboliteIdentifiers = Object.keys(metabolites);
     var compartmentAbbreviations = metaboliteIdentifiers
         .map(determineCompartmentAbbreviation)
         .reduce(function (accumulator, currentValue) {
             if (!accumulator.includes(currentValue)) {
                 accumulator.push(currentValue);
-            };
+            }
+            ;
             return accumulator;
         }, []);
     return compartmentAbbreviations;
 }
 
-function determineCompartments(model, reaction) {
+function determineCompartment(compartmentAbbreviation, compartmentsReference) {
+    // Determine full name of a compartment from its abbreviation.
+    var compartment = {};
+    compartment[compartmentAbbreviation] = compartmentsReference[compartmentAbbreviation];
+    return compartment;
+}
+
+function determineCompartments(reaction, compartmentsReference) {
     // Determine compartment abbreviations from reaction's metabolites.
     // Determine compartment names from these abbreviations.
-    var compartmentAbbreviations = determineCompartmentAbbreviations(reaction.metabolites);
+    var compartmentAbbreviations = determineCompartmentAbbreviations(Object.keys(reaction.metabolites));
     var compartments = compartmentAbbreviations
         .map(function (compartmentAbbreviation) {
-            return determineCompartment(compartmentAbbreviation, model);
+            return determineCompartment(compartmentAbbreviation, compartmentsReference);
         })
         .reduce(function (accumulator, currentValue) {
             return Object.assign(accumulator, currentValue);
@@ -179,13 +151,59 @@ function determineCompartments(model, reaction) {
     return compartments;
 }
 
+// Reactant Metabolites
+
+function determineReactants(reaction) {
+    // Determine metabolite identifiers.
+    // Return metabolite identifiers for reactants.
+    var metaboliteIdentifiers = Object.keys(reaction.metabolites);
+    return metaboliteIdentifiers.filter(function (metaboliteIdentifier) {
+        return reaction.metabolites[metaboliteIdentifier] === -1;
+    });
+}
+
+// Product Metabolites
+
+function determineProducts(reaction) {
+    // Determine metabolite identifiers.
+    // Return metabolite identifiers for products.
+    var metaboliteIdentifiers = Object.keys(reaction.metabolites);
+    return metaboliteIdentifiers.filter(function (metaboliteIdentifier) {
+        return reaction.metabolites[metaboliteIdentifier] === 1;
+    });
+}
+
+// Reversibility
+
+function determineReversibility(reaction) {
+    return (0 > reaction.lower_bound && reaction.upper_bound > 0);
+}
+
+// Reaction Type
+
+function determineTypeTransport(reaction) {
+    // For a reaction, determine whether the compartments of reactant metabolites are identical to the compartments of
+    // product metabolites.
+    var reactantIdentifiers = determineReactants(reaction);
+    var productIdentifiers = determineProducts(reaction);
+    var reactantCompartmentAbbreviations = determineCompartmentAbbreviations(reactantIdentifiers);
+    var productCompartmentAbbreviations = determineCompartmentAbbreviations(productIdentifiers);
+    console.log(reactantCompartmentAbbreviations);
+    console.log(productCompartmentAbbreviations);
+    return !(reactantCompartmentAbbreviations.every(function (element) {
+        return (productCompartmentAbbreviations.includes(element));
+    }) && productCompartmentAbbreviations.every(function (element) {
+        return (reactantCompartmentAbbreviations.includes(element));
+    }));
+}
+
 // Process for each reaction
-function createReactionNode(model, reaction) {
+function createReactionNode(reaction, compartmentsReference) {
     var reactionNode = {
         group: "nodes",
         class: "reaction",
         data: {
-            compartments: determineCompartments(reaction),
+            compartments: determineCompartments(reaction, compartmentsReference),
             gene_reaction_rule: reaction.gene_reaction_rule,
             id: reaction.id,
             lower_bound: reaction.lower_bound,
@@ -195,7 +213,7 @@ function createReactionNode(model, reaction) {
             reactants: determineReactants(reaction),
             reversibility: determineReversibility(reaction),
             subsystem: reaction.subsystem,
-            type_reaction: determineTypeReaction(reaction),
+            //type_reaction: determineTypeReaction(reaction),
             type_transport: determineTypeTransport(reaction),
             upper_bound: reaction.upper_bound
         }
@@ -203,15 +221,33 @@ function createReactionNode(model, reaction) {
     return reactionNode;
 }
 
+function assembleNetwork(model) {
+    var reaction = {
+        gene_reaction_rule: "gene1 or gene2 or gene3",
+        id: "13DAMPPOX",
+        lower_bound: 0,
+        metabolites: {
+            cit_c: -1,
+            pyr_e: -1,
+            h2o_m: -1,
+            gln_c: 1,
+            h2o_e: 1,
+            glc_m: 1
+        },
+        name: "Reaction Name",
+        subsystem: "Process 1",
+        upper_bound: 1000
+    }
+    var test = createReactionNode(reaction, model.compartments);
+    //var test = createReactionNode(model.reactions[0], model.compartments);
+    console.log(test);
+}
+
+
 // Process for each metabolite
 
 
-
-
-
-
 // Apply the function to the collection using map.
-
 
 
 /**
