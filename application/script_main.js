@@ -103,6 +103,17 @@ function createDataElements(selection, element, accessData) {
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
+// Reactions
+
+function determineLinkIdentifier(metaboliteIdentifier, reactionIdentifier) {
+    return (reactionIdentifier + "_" + metaboliteIdentifier);
+}
+
+function determineReversibility(reaction) {
+    return (0 > reaction.lower_bound && reaction.upper_bound > 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Compartments
 
 function determineCompartmentAbbreviation(metaboliteIdentifier) {
@@ -412,14 +423,7 @@ function determineMetaboliteCompartmentalReactions(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Reaction Reversibility
-
-function determineReversibility(reaction) {
-    return (0 > reaction.lower_bound && reaction.upper_bound > 0);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Assembly for reactions
+// Assembly for reaction nodes
 
 function createReactionNode(reaction, model) {
     var reactionNode = {
@@ -458,7 +462,7 @@ function createReactionNodes(model) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Assembly for metabolites
+// Assembly for metabolite nodes
 
 function createMetaboliteNode(metabolite, model) {
     var metaboliteNode = {
@@ -497,6 +501,33 @@ function createMetaboliteNodes(model) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Assembly for reaction links
+
+function createReactionLink(metaboliteIdentifier, reactionIdentifier) {
+    var reactionLink = {
+        group: "edges",
+        data: {
+            id: determineLinkIdentifier(metaboliteIdentifier, reactionIdentifier),
+            source: reactionIdentifier,
+            target: metaboliteIdentifier
+        }
+    };
+    return reactionLink;
+}
+
+function createReactionLinks(reactions) {
+    return reactions.map(function (reaction) {
+        return Object.keys(reaction.metabolites)
+            .map(function (metaboliteIdentifier) {
+            return createReactionLink(metaboliteIdentifier, reaction.id);
+        })
+    })
+        .reduce(function (accumulator, currentValue) {
+            return accumulator.concat(currentValue);
+        }, []);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Process for network
 
 function assembleNetwork(model) {
@@ -526,16 +557,14 @@ function assembleNetwork(model) {
     var metaboliteNodes = createMetaboliteNodes(model);
     console.log(metaboliteNodes);
 
-    // I think that I will need to reaction nodes, metabolite nodes, and links
-    // using concat when I create the network in CytoScapeJS.
+    var reactionLinks = createReactionLinks(model.reactions);
+    console.log(reactionLinks);
 
+    // I think that I will need to collect reaction nodes, metabolite nodes, and
+    // links using concat when I create the network in CytoScapeJS.
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Process for each metabolite
-
-
-// Apply the function to the collection using map.
 
 
 /**
