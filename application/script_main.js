@@ -86,14 +86,25 @@ function createDataElements(selection, element, accessData) {
 
             // Load data from file in JSON format.
             // Create objects that associate with these data.
-            d3.json(("../model/homo-sapiens/" + dataFile), function (error, model) {
+            d3.json(("../model/homo-sapiens/" + dataFile),
+                function (error, model) {
                 if (error) throw error;
-                console.log(model);
-
                 // Call function to assemble network.
                 assembleNetwork(model);
             });
         })
+    d3.select("#assembly")
+        .on("click", function () {
+            // Load data from file in JSON format.
+            // Create objects that associate with these data.
+            d3.json(("../model/homo-sapiens/" + "network.json"),
+                function (error, network) {
+                if (error) throw error;
+                // Call function to assemble network.
+                exploreNetwork(network);
+            });
+        })
+
 })();
 
 
@@ -106,7 +117,7 @@ function createDataElements(selection, element, accessData) {
 // Reactions
 
 function determineLinkIdentifier(metaboliteIdentifier, reactionIdentifier) {
-    return (reactionIdentifier + "_" + metaboliteIdentifier);
+    return (reactionIdentifier.concat("_", metaboliteIdentifier));
 }
 
 function determineReversibility(reaction) {
@@ -530,36 +541,46 @@ function createReactionLinks(reactions) {
 ////////////////////////////////////////////////////////////////////////////////
 // Process for network
 
-function assembleNetwork(model) {
-    var reaction = {
-        gene_reaction_rule: "gene1 or gene2 or gene3",
-        id: "13DAMPPOX",
-        lower_bound: 0,
-        metabolites: {
-            glc_c: -1,
-            pyr_c: -1,
-            h2o_c: -1,
-            cit_m: 1,
-            pyr_m: 1,
-            h2o_m: 1
-        },
-        name: "Reaction Name",
-        subsystem: "Process 1",
-        upper_bound: 1000
-    }
-    //var test = createReactionNode(reaction, model);
-    //var test = createReactionNode(model.reactions[0], model);
-    //console.log(test);
+function downloadJSON(object, name) {
+    var objectJSON = JSON.stringify(object);
+    var blob = new Blob([objectJSON], {type: "application/json"});
+    var url = URL.createObjectURL(blob);
+    var documentReference = document.createElement("a");
+    documentReference.setAttribute("href", url);
+    documentReference.setAttribute("download", name);
+    documentReference.click();
+}
 
+function assembleNetwork(model) {
+    console.log(model);
     var reactionNodes = createReactionNodes(model);
     console.log(reactionNodes);
-
     var metaboliteNodes = createMetaboliteNodes(model);
     console.log(metaboliteNodes);
-
     var reactionLinks = createReactionLinks(model.reactions);
     console.log(reactionLinks);
+    var networkElements = reactionNodes.concat(metaboliteNodes, reactionLinks);
+    var network = cytoscape({
+        elements: networkElements
+    });
+    //console.log(network)
+    var networkJSON = network.json();
+    downloadJSON(networkJSON, "network.json");
 
+    //return network;
+    // I think that I will need to collect reaction nodes, metabolite nodes, and
+    // links using concat when I create the network in CytoScapeJS.
+}
+
+function exploreNetwork(network) {
+    var network = cytoscape(network);
+    //console.log(network)
+    var pyruvateNode = network.elements.filterFn(function (element) {
+        return element.data.id === "pyr_c";
+    });
+    var pyruvateNeighborhood = pyruvateNode.closedNeighborhood();
+
+    //return network;
     // I think that I will need to collect reaction nodes, metabolite nodes, and
     // links using concat when I create the network in CytoScapeJS.
 }
