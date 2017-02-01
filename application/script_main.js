@@ -87,21 +87,23 @@ function createDataElements(selection, element, accessData) {
             // Load data from file in JSON format.
             // Create objects that associate with these data.
             d3.json(("../model/homo-sapiens/" + dataFile),
-                function (error, model) {
+                function (error, modelInitial) {
                 if (error) throw error;
-                // Call function to assemble network.
-                assembleNetwork(model);
+                // Call function to assemble model.
+                assembleModel(modelInitial);
             });
         })
+
+    // TODO: I broke this functionality...
     d3.select("#assembly")
         .on("click", function () {
             // Load data from file in JSON format.
             // Create objects that associate with these data.
-            d3.json(("../model/homo-sapiens/" + "network.json"),
-                function (error, network) {
+            d3.json(("../model/homo-sapiens/" + "model_h-sapiens_recon-2.json"),
+                function (error, modelInitial) {
                 if (error) throw error;
-                // Call function to assemble network.
-                exploreNetwork(network);
+                // Call function to assemble model.
+                assembleModel(modelInitial);
             });
         })
 
@@ -116,10 +118,23 @@ function createDataElements(selection, element, accessData) {
 ////////////////////////////////////////////////////////////////////////////////
 // Reactions
 
-function determineLinkIdentifier(metaboliteIdentifier, reactionIdentifier) {
-    return (reactionIdentifier.concat("_", metaboliteIdentifier));
+/**
+ * Determines the identifier for a link between a metabolite and a reaction.
+ * @param {string} sourceIdentifier Unique identifier of a metabolite or a
+ * reaction that is the link's source.
+ * @param {string} targetIdentifier Unique identifier of a metabolite or a
+ * reaction that is the link's target.
+ * @returns {string} Unique identifier for the link.
+ */
+function determineLinkIdentifier(sourceIdentifier, targetIdentifier) {
+    return (sourceIdentifier.concat("_", targetIdentifier));
 }
 
+/**
+ * Determines whether or not a reaction is reversible.
+ * @param {Object} reaction Information for a reaction.
+ * @returns {boolean} Whether or not the reaction is reversible.
+ */
 function determineReversibility(reaction) {
     return (0 > reaction.lower_bound && reaction.upper_bound > 0);
 }
@@ -296,12 +311,18 @@ function determineReactantsProducts(reaction, modelMetabolites, flag) {
     return metabolites;
 }
 
-function determineMetaboliteAbbreviation(metaboliteIdentifier) {
-    // Select the portion of the metabolite identifier before the underscore to
-    // obtain the metabolite abbreviation.
-    var metaboliteAbbreviation = metaboliteIdentifier
-        .substring(0, metaboliteIdentifier.lastIndexOf("_"));
-    return metaboliteAbbreviation;
+/**
+ * Determines the identifier of a general metabolite from the identifier of a
+ * compartmental metabolite.
+ * @param {string} compartmentalMetaboliteIdentifier Unique identifier of a
+ * compartmental metabolite.
+ * @returns {string} Unique identifier of a general metabolite.
+ */
+function determineMetaboliteIdentifier(compartmentalMetaboliteIdentifier) {
+    // Select the portion of the compartmental metabolite identifier before the
+    // underscore to obtain the general metabolite identifier.
+    return compartmentalMetaboliteIdentifier
+        .substring(0, compartmentalMetaboliteIdentifier.lastIndexOf("_"));
 }
 
 function determineMetaboliteAbbreviations(metaboliteIdentifiers) {
@@ -434,31 +455,62 @@ function determineMetaboliteCompartmentalReactions(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Assembly for reaction nodes
+// Create metabolite nodes
 
-function createReactionNode(reaction, model) {
+/**
+ * Creates a network node for a single compartmental metabolite from a metabolic
+ * model.
+ * @param {Object} metabolite Information for a compartmental metabolite.
+ * @returns {Object} Node for a compartmental metabolite.
+ */
+function createCompartmentalMetaboliteNode(metabolite) {
+    var metaboliteNode = {
+        group: "nodes",
+        class: "metabolite",
+        data: {
+            compartment: metabolite.compartment,
+            id: metabolite.id,
+            metabolite: determineMetaboliteIdentifier(metabolite.id)
+        }
+    };
+    return metaboliteNode;
+}
+
+// TODO: Accommodate assembly for general metabolite nodes that are not
+// TODO: compartment-specific.
+
+/**
+ * Creates network nodes for all compartmental metabolites from a metabolic
+ * model.
+ * @param {Array<Object>} metabolites Information for all metabolites of a
+ * metabolic model.
+ * @returns {Array<Object>} Nodes for compartmental metabolites.
+ */
+function createMetaboliteNodes(metabolites) {
+    return metabolites.map(createCompartmentalMetaboliteNode);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Create reaction nodes
+
+// TODO: Maybe introduce an option flag and an if clause to create a reaction
+// TODO: node appropriate for general, non-compartment-specific metabolites.
+
+/**
+ * Creates a network node for a single reaction from a metabolic model.
+ * @param {Object} reaction Information for a reaction.
+ * @returns {Object} Node for a reaction.
+ */
+function createReactionNode(reaction) {
     var reactionNode = {
         group: "nodes",
         class: "reaction",
         data: {
-            chemicals_change: determineChangeChemicals(reaction),
-            compartments_change: determineChangeCompartments(reaction),
-            compartments: determineReactionCompartments(
-                reaction, model.compartments
-            ),
             gene_reaction_rule: reaction.gene_reaction_rule,
             id: reaction.id,
             lower_bound: reaction.lower_bound,
             metabolites: Object.assign({}, reaction.metabolites),
-            multiple_compartments: determineMultipleCompartments(reaction),
             name: reaction.name,
-            products: determineReactantsProducts(
-                reaction, model.metabolites, "products"
-            ),
-            reactants: determineReactantsProducts(
-                reaction, model.metabolites, "reactants"
-            ),
-            reversibility: determineReversibility(reaction),
             subsystem: reaction.subsystem,
             upper_bound: reaction.upper_bound
         }
@@ -466,80 +518,210 @@ function createReactionNode(reaction, model) {
     return reactionNode;
 }
 
-function createReactionNodes(model) {
-    return model.reactions.map(function (reaction) {
-        return createReactionNode(reaction, model);
-    });
+/**
+ * Creates network nodes for all reactions from a metabolic model.
+ * @param {Array<Object>} reactions Information for all reactions of a metabolic
+ * model.
+ * @returns {Array<Object>} Nodes for reactions.
+ */
+function createReactionNodes(reactions) {
+    return reactions.map(createReactionNode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Assembly for metabolite nodes
+// Create reaction links
 
-function createMetaboliteNode(metabolite, model) {
-    var metaboliteNode = {
-        group: "nodes",
-        class: "metabolite",
-        data: {
-            abbreviation: determineMetaboliteAbbreviation(metabolite.id),
-            charge: metabolite.charge,
-            compartment: determineCompartment(
-                metabolite.compartment, model.compartments
-            ),
-            compartmental_reactions: determineCompartmentalMetaboliteReactions(
-                metabolite.id, model.reactions
-            ),
-            compartments: determineMetaboliteCompartments(
-                metabolite.id, model.metabolites, model.compartments
-            ),
-            formula: metabolite.formula,
-            id: metabolite.id,
-            name: metabolite.name,
-            reactions: determineMetaboliteReactions(
-                metabolite.id, model.reactions
-            ),
-            reactions_by_compartment: determineMetaboliteCompartmentalReactions(
-                metabolite.id, model.reactions
-            )
-        }
-    };
-    return metaboliteNode;
+/**
+ * Determines the role of a metabolite in a reaction, either as a reactant or a
+ * product.
+ * @param {Object} reaction Information for a reaction.
+ * @param {string} metaboliteIdentifier Unique identifier of a metabolite that
+ * participates in the reaction.
+ * @returns {string} The metabolite's role as a reactant or product in the
+ * reaction.
+ */
+function determineReactionMetaboliteRole(reaction, metaboliteIdentifier) {
+    if (reaction.metabolites[metaboliteIdentifier] === -1) {
+        return "reactant";
+    } else if (reaction.metabolites[metaboliteIdentifier] === 1) {
+        return "product";
+    }
 }
 
-function createMetaboliteNodes(model) {
-    return model.metabolites.map(function (metabolite) {
-        return createMetaboliteNode(metabolite, model);
-    });
+/**
+ * Filters a reaction's metabolites by their role in the reaction as reactant or
+ * product.
+ * @param {Object} reaction Information for a reaction.
+ * @returns {Array<string>} Identifiers for metabolites with specific role.
+ */
+function filterReactionMetabolitesByRole(reaction, role) {
+    return Object.keys(reaction.metabolites)
+        .filter(function (metaboliteIdentifier) {
+            return (determineReactionMetaboliteRole(
+                reaction, metaboliteIdentifier
+            ) === role);
+        });
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Assembly for reaction links
-
-function createReactionLink(metaboliteIdentifier, reactionIdentifier) {
+/**
+ * Creates a link or edge between specific source and target nodes.
+ * @param {string} sourceIdentifier Unique identifier of source node.
+ * @param {string} targetIdentifier Unique identifier of target node.
+ * @returns {Object} Link between source and target nodes.
+ */
+function createReactionLink(sourceIdentifier, targetIdentifier) {
     var reactionLink = {
         group: "edges",
         data: {
-            id: determineLinkIdentifier(metaboliteIdentifier, reactionIdentifier),
-            source: reactionIdentifier,
-            target: metaboliteIdentifier
+            id: determineLinkIdentifier(
+                sourceIdentifier, targetIdentifier
+            ),
+            source: sourceIdentifier,
+            target: targetIdentifier
         }
     };
     return reactionLink;
 }
 
-function createReactionLinks(reactions) {
-    return reactions.map(function (reaction) {
+/**
+ * Controls the creation of network links for a single reaction from a metabolic
+ * model.
+ * @param {Object} reaction Information for a reaction.
+ * @returns {Array<Object>} Links for a reaction.
+ */
+function controlReactionLinks(reaction) {
+    // Determine whether or not the reaction is reversible.
+    var reversible = determineReversibility(reaction);
+    if (!reversible) {
+        // Reaction is not reversible.
+        // Create directional links between reactant metabolites and the
+        // reaction and between the reaction and product metabolites.
+        var reactantLinks = filterReactionMetabolitesByRole(
+            reaction, "reactant"
+        ).map(function (metaboliteIdentifier) {
+            return createReactionLink(metaboliteIdentifier, reaction.id);
+        });
+        var productLinks = filterReactionMetabolitesByRole(
+            reaction, "product"
+        ).map(function (metaboliteIdentifier) {
+            return createReactionLink(reaction.id, metaboliteIdentifier);
+        });
+        return [].concat(reactantLinks, productLinks);
+    } else if (reversible) {
+        // Reaction is reversible.
+        // Create directional links in both directions between the metabolites
+        // and the reaction.
         return Object.keys(reaction.metabolites)
             .map(function (metaboliteIdentifier) {
-            return createReactionLink(metaboliteIdentifier, reaction.id);
-        })
-    })
+                return [].concat(
+                    createReactionLink(metaboliteIdentifier, reaction.id),
+                    createReactionLink(reaction.id, metaboliteIdentifier)
+                );
+            })
+            .reduce(function (accumulator, currentValue) {
+                return accumulator.concat(currentValue);
+            }, []);
+    }
+}
+
+/**
+ * Creates network links for all reactions from a metabolic model.
+ * @param {Array<Object>} reactions Information for all reactions of a metabolic
+ * model.
+ * @returns {Array<Object>} Links for reactions.
+ */
+function createReactionLinks(reactions) {
+    return reactions
+        .map(controlReactionLinks)
         .reduce(function (accumulator, currentValue) {
             return accumulator.concat(currentValue);
         }, []);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Process for network
+// Assemble relational tables for sets
+
+// TODO: Function assembleSets should return an object with key-value pairs for
+// TODO: each relational table.
+
+// TODO: Function assembleSets() needs to accommodate requests for
+// TODO: compartment-specific metabolite nodes and non-compartment-specific
+// TODO: metabolite nodes.
+
+/**
+ * Assembles relational tables for information about sets of nodes of a
+ * metabolic model.
+ * @param {Object} model Information of a metabolic model from systems biology.
+ * @returns {Object} Information about sets of nodes.
+ */
+function assembleSets(model) {}
+
+////////////////////////////////////////////////////////////////////////////////
+// Assemble network
+
+// TODO: Function assembleNetwork() needs to accommodate requests for
+// TODO: compartment-specific metabolite nodes and non-compartment-specific
+// TODO: metabolite nodes.
+
+/**
+ * Assembles a CytoScape.js network from information of a metabolic model.
+ * @param {Object} model Information of a metabolic model from systems biology.
+ * @returns {Object} An object with a key of "network" and a value of a
+ * CytoScape.js network.
+ */
+function assembleNetwork(model) {
+    var network = {
+        network: cytoscape({
+            elements: [].concat(
+                createMetaboliteNodes(model.metabolites),
+                createReactionNodes(model.reactions),
+                createReactionLinks(model.reactions)
+            )
+        })
+    };
+    return network;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Assemble model
+
+/**
+ * Assembles a practical and concise model to represent information of a
+ * metabolic model.
+ * @param {Object} model Information of a metabolic model from systems biology,
+ * conversion from SBML to JSON formats by COBRApy.
+ * @param {Object<string>} model.compartments Abbreviations and names of
+ * compartments in the model.
+ * @param {Object<string>} model.genes Information for genes in the model.
+ * @param {Object} model.metabolites Information for compartment-specific
+ * metabolites in the model.
+ * @param {Object} model.reactions Information for reactions in the model.
+ * @returns {Object} An object with information in both relational and graph or
+ * network structures.
+ */
+function assembleModel(modelInitial) {
+    var model = Object.assign({},
+        //assembleSets(modelInitial),
+        assembleNetwork(modelInitial)
+    );
+    exploreNetwork(model.network);
+    //var modelJSON = model.json();
+    //downloadJSON(modelJSON, "model.json");
+    //return model;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Select nodes and links from network
+
+// Select nodes and links by proximity degree 1 to a node
+
+
+// Select nodes and links by proximity degree >1 to a node
+// (select proximity degree 1 to every node in successive collections)
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Utility
 
 function downloadJSON(object, name) {
     var objectJSON = JSON.stringify(object);
@@ -551,34 +733,91 @@ function downloadJSON(object, name) {
     documentReference.click();
 }
 
-function assembleNetwork(model) {
-    console.log(model);
-    var reactionNodes = createReactionNodes(model);
-    console.log(reactionNodes);
-    var metaboliteNodes = createMetaboliteNodes(model);
-    console.log(metaboliteNodes);
-    var reactionLinks = createReactionLinks(model.reactions);
-    console.log(reactionLinks);
-    var networkElements = reactionNodes.concat(metaboliteNodes, reactionLinks);
-    var network = cytoscape({
-        elements: networkElements
-    });
-    //console.log(network)
-    var networkJSON = network.json();
-    downloadJSON(networkJSON, "network.json");
-
-    //return network;
-    // I think that I will need to collect reaction nodes, metabolite nodes, and
-    // links using concat when I create the network in CytoScapeJS.
-}
-
 function exploreNetwork(network) {
-    var network = cytoscape(network);
-    //console.log(network)
-    var pyruvateNode = network.elements.filterFn(function (element) {
-        return element.data.id === "pyr_c";
+    console.log("Network");
+    console.log(network);
+    console.log("Network Nodes");
+    console.log(network.nodes());
+
+    //console.log("Metabolite Nodes");
+    //console.log(network.nodes().metabolite);
+    //console.log(network.metabolite);
+    //console.log(network.elements.metabolite);
+
+    console.log(network.getElementById("pyr_c").data());
+    var pyruvateNeighborhood = network.getElementById("pyr_c").neighborhood();
+    console.log(pyruvateNeighborhood);
+
+    var subnetwork = cytoscape({
+        container: document.getElementById("exploration"),
+        elements: [
+            {
+                data: {
+                    id: "a"
+                }
+            },
+            {
+                data: {
+                    id: "b"
+                }
+            },
+            {
+                data: {
+                    id: "c"
+                }
+            },
+            {
+                data: {
+                    id: "d"
+                }
+            },
+            {
+                data: {
+                    id: "e"
+                }
+            },
+            {
+                data: {
+                    id: "ab",
+                    source: "a",
+                    target: "b"
+                }
+            },
+            {
+                data: {
+                    id: "ac",
+                    source: "a",
+                    target: "c"
+                }
+            },
+            {
+                data: {
+                    id: "ad",
+                    source: "a",
+                    target: "d"
+                }
+            },
+            {
+                data: {
+                    id: "ae",
+                    source: "a",
+                    target: "e"
+                }
+            }
+        ],
+        layout: {
+            name: "concentric"
+        }
     });
-    var pyruvateNeighborhood = pyruvateNode.closedNeighborhood();
+    console.log(subnetwork);
+
+    //container: document.getElementById("exploration"),
+
+
+    //console.log(network.nodes())
+    //var pyruvateNode = network.elements.filter("node[id = 'pyr_c']");
+    //var pyruvateNeighborhood = pyruvateNode.closedNeighborhood();
+    //console.log(pyruvateNeighborhood);
 
     //return network;
     // I think that I will need to collect reaction nodes, metabolite nodes, and

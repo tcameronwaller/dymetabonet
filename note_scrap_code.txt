@@ -2,6 +2,112 @@
 Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
+--------------------------------------------------
+31 January 2017
+
+// Return a single array for each reaction.
+function controlReactionLinks2(reaction) {
+    // Determine whether or not the reaction is reversible.
+    var reversible = determineReversibility(reaction);
+    if (!reversible) {
+        // Reaction is not reversible.
+        return Object.keys(reaction.metabolites)
+            .map(function (metaboliteIdentifier) {
+                // Determine whether the metabolite is a reactant or a product
+                // in the reaction.
+                // In a reaction, assume that a metabolite only participates as
+                // either a reactant or a product, not both.
+                if (determineReactionMetaboliteRole(
+                        reaction, metaboliteIdentifier
+                    ) === "reactant") {
+                    // Metabolite participates as a reactant in the reaction.
+                    return createReactionLink(
+                        metaboliteIdentifier, reaction.id
+                    );
+                } else if (determineReactionMetaboliteRole(
+                        reaction, metaboliteIdentifier
+                    ) === "product") {
+                    // Metabolite participates as a product in the reaction.
+                    return createReactionLink(
+                        reaction.id, metaboliteIdentifier
+                    );
+                }
+            });
+    } else if (reversible) {
+        // Reaction is reversible.
+        return Object.keys(reaction.metabolites)
+            .map(function (metaboliteIdentifier) {
+                return [].concat(
+                    createReactionLink(metaboliteIdentifier, reaction.id),
+                    createReactionLink(reaction.id, metaboliteIdentifier)
+                );
+            })
+            .reduce(function (accumulator, currentValue) {
+                return accumulator.concat(currentValue);
+            }, []);
+    }
+}
+
+function createReactionNode(reaction, model) {
+    var reactionNode = {
+        group: "nodes",
+        class: "reaction",
+        data: {
+            chemicals_change: determineChangeChemicals(reaction),
+            compartments_change: determineChangeCompartments(reaction),
+            compartments: determineReactionCompartments(
+                reaction, model.compartments
+            ),
+            gene_reaction_rule: reaction.gene_reaction_rule,
+            id: reaction.id,
+            lower_bound: reaction.lower_bound,
+            metabolites: Object.assign({}, reaction.metabolites),
+            multiple_compartments: determineMultipleCompartments(reaction),
+            name: reaction.name,
+            products: determineReactantsProducts(
+                reaction, model.metabolites, "products"
+            ),
+            reactants: determineReactantsProducts(
+                reaction, model.metabolites, "reactants"
+            ),
+            reversibility: determineReversibility(reaction),
+            subsystem: reaction.subsystem,
+            upper_bound: reaction.upper_bound
+        }
+    };
+    return reactionNode;
+}
+
+
+function createMetaboliteNode(metabolite, model) {
+    var metaboliteNode = {
+        group: "nodes",
+        class: "metabolite",
+        data: {
+            abbreviation: determineMetaboliteAbbreviation(metabolite.id),
+            charge: metabolite.charge,
+            compartment: determineCompartment(
+                metabolite.compartment, model.compartments
+            ),
+            compartmental_reactions: determineCompartmentalMetaboliteReactions(
+                metabolite.id, model.reactions
+            ),
+            compartments: determineMetaboliteCompartments(
+                metabolite.id, model.metabolites, model.compartments
+            ),
+            formula: metabolite.formula,
+            id: metabolite.id,
+            name: metabolite.name,
+            reactions: determineMetaboliteReactions(
+                metabolite.id, model.reactions
+            ),
+            reactions_by_compartment: determineMetaboliteCompartmentalReactions(
+                metabolite.id, model.reactions
+            )
+        }
+    };
+    return metaboliteNode;
+}
 
 --------------------------------------------------
 13 January 2017
