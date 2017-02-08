@@ -6,6 +6,41 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Creation of Metabolite Nodes
 
+// TODO: Accommodate assembly for general metabolite nodes that are not
+// TODO: compartment-specific.
+
+
+
+// TODO: Complete function checkMetaboliteReaction().
+
+/**
+ * Checks to ensure that a metabolite participates in at least one reaction in
+ * the metabolic model.
+ * @param {Object} metabolite Information for a metabolite.
+ * @returns {boolean} Whether or not the metabolite participates in a reaction.
+ */
+function checkMetaboliteReaction(metabolite) {
+    if (
+        // Identify reactions (if any) in which the metabolite participates.
+    ) {
+        return true;
+    } else {
+        console.log(
+            "Check Metabolites: " + metabolite.id +
+            " failed participation check."
+        );
+        return false;
+    }
+}
+
+/**
+ * Checks a single metabolite from a metabolic model.
+ * @param {Object} metabolite Information for a metabolite.
+ */
+function checkMetabolite(metabolite) {
+    checkMetaboliteReaction(metabolite);
+}
+
 /**
  * Creates a network node for a single compartmental metabolite from a metabolic
  * model.
@@ -19,14 +54,11 @@ function createCompartmentalMetaboliteNode(metabolite) {
         data: {
             compartment: metabolite.compartment,
             id: metabolite.id,
-            metabolite: determineMetaboliteIdentifier(metabolite.id)
+            metabolite: extractMetaboliteIdentifier(metabolite.id)
         }
     };
     return metaboliteNode;
 }
-
-// TODO: Accommodate assembly for general metabolite nodes that are not
-// TODO: compartment-specific.
 
 /**
  * Creates network nodes for all compartmental metabolites from a metabolic
@@ -39,49 +71,102 @@ function createMetaboliteNodes(metabolites) {
     // Confirm that all compartmental metabolites participate in reactions.
     // For each metabolite, make sure that there is at least 1 reaction in which
     // it participates. Use a filter function.
+    // Check metabolites.
+    metabolites.map(checkMetabolite);
+    // Create nodes for metabolites.
     return metabolites.map(createCompartmentalMetaboliteNode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Creation of Reaction Nodes
 
-// TODO: Maybe introduce an option flag and an if clause to create a reaction
-// TODO: node appropriate for general, non-compartment-specific metabolites.
+/**
+ * Checks bounds values of a single reaction from a metabolic model.
+ * @param {Object} reaction Information for a reaction.
+ * @returns {boolean} Whether or not the reaction's bounds match expectations.
+ */
+function checkReactionBoundsValues(reaction) {
+    // Confirm that lower_bound and upper_bound properties only have values
+    // of -1000, 0, or 1000.
+    // According to this situation, the bounds primarily only signify the
+    // direction of the reaction.
+    if (
+        (
+            reaction.lower_bound === -1000 ||
+            reaction.lower_bound === 0 ||
+            reaction.lower_bound === 1000
+        ) && (
+            reaction.upper_bound === -1000 ||
+            reaction.upper_bound === 0 ||
+            reaction.upper_bound === 1000
+        )
+    ) {
+        return true;
+    } else {
+        console.log(
+            "Check Reactions: " + reaction.id + " failed bounds values check."
+        );
+        return false;
+    }
+}
 
+/**
+ * Checks bounds ranges of a single reaction from a metabolic model.
+ * @param {Object} reaction Information for a reaction.
+ * @returns {boolean} Whether or not the reaction's bounds match expectations.
+ */
+function checkReactionBoundsRanges(reaction) {
+    // Confirm that lower_bound values are less than or equal to zero and
+    // upper_bound values are greater than or equal to zero.
+    if (
+        (reaction.lower_bound <= 0) && (reaction.upper_bound >= 0)
+    ) {
+        return true;
+    } else {
+        console.log(
+            "Check Reactions: " + reaction.id + " failed bounds ranges check."
+        );
+        return false;
+    }
+}
 
-
-
-
-
+/**
+ * Checks bounds directionality of a single reaction from a metabolic model.
+ * @param {Object} reaction Information for a reaction.
+ * @returns {boolean} Whether or not the reaction's bounds match expectations.
+ */
+function checkReactionBoundsDirection(reaction) {
+    // Confirm from lower_bound and upper_bound properties the primary direction
+    // of the reaction.
+    // Confirm that upper_bound is never zero.
+    // That situation might imply that the reaction proceeds only in the reverse
+    // direction.
+    // Confirm that both lower_bound and upper_bound do not have values of
+    // zero simultaneously.
+    // That situation would imply that the reaction that proceeds in neither
+    // direction.
+    if (
+        ((reaction.lower_bound < 0) && (reaction.upper_bound > 0)) ||
+        ((reaction.lower_bound === 0) && (reaction.upper_bound > 0))
+    ) {
+        return true;
+    } else {
+        console.log(
+            "Check Reactions: " + reaction.id +
+            " failed bounds directionality check."
+        );
+        return false;
+    }
+}
 
 /**
  * Checks a single reaction from a metabolic model.
  * @param {Object} reaction Information for a reaction.
  */
 function checkReaction(reaction) {
-    // 1. Confirm that no reactions involving multiple compartments in total are
-    // reversible.
-    console.log("testing in checkReaction")
-    if (
-        (
-            reaction.lower_bound != -1000 &&
-            reaction.lower_bound != 0 &&
-            reaction.lower_bound != 1000
-        ) && (
-            reaction.upper_bound != -1000 &&
-            reaction.upper_bound != 0 &&
-            reaction.upper_bound != 1000
-        )
-    ) {
-        console.log(reaction.id);
-    }
-    //if (reaction.id === "10FTHFtl") {
-    //    console.log(reaction);
-    //}
-
-    // 2. Confirm that lower_bound and upper_bound properties only have values
-    // of 0 or 1000.
-
+    checkReactionBoundsValues(reaction);
+    checkReactionBoundsRanges(reaction);
+    checkReactionBoundsDirection(reaction);
 }
 
 /**
@@ -113,11 +198,10 @@ function createReactionNode(reaction) {
  * @returns {Array<Object>} Nodes for reactions.
  */
 function createReactionNodes(reactions) {
-    // Test reactions.
-    console.log("tests...");
+    // Check reactions.
     reactions.map(checkReaction);
     // Create nodes for reactions.
-    //return reactions.map(createReactionNode);
+    return reactions.map(createReactionNode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

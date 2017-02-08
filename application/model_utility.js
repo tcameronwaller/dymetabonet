@@ -45,7 +45,175 @@ function compareArraysByInclusion(firstArray, secondArray) {
     });
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Metabolites
 
+/**
+ * Determines general metabolite identifier from compartmental metabolite
+ * identifier.
+ * @param {string} compartmentalMetaboliteIdentifier Unique identifier of
+ * compartmental metabolite.
+ * @returns {string} Unique identifier of general metabolite.
+ */
+function extractMetaboliteIdentifier(compartmentalMetaboliteIdentifier) {
+    // Select the portion of the compartmental metabolite identifier before the
+    // underscore to obtain the general metabolite identifier.
+    return compartmentalMetaboliteIdentifier
+        .substring(0, compartmentalMetaboliteIdentifier.lastIndexOf("_"));
+}
+
+/**
+ * Determines general metabolite identifiers from compartmental metabolite
+ * identifiers.
+ * @param {Array<string>} compartmentalMetaboliteIdentifiers Unique identifiers
+ * of compartmental metabolites.
+ * @returns {Array<string>} Unique identifiers of general metabolites.
+ */
+function extractMetaboliteIdentifiers(compartmentalMetaboliteIdentifiers) {
+    // Collect the metabolite identifiers from the compartmental metabolite
+    // identifiers.
+    return compartmentalMetaboliteIdentifiers
+        .map(extractMetaboliteIdentifier);
+}
+
+
+
+
+function determineMetaboliteName(metaboliteIdentifier, modelMetabolites) {
+    // Determine full name of a metabolite from its abbreviation.
+    var metabolite = modelMetabolites.filter(function (modelMetabolite) {
+        return (modelMetabolite.id === metaboliteIdentifier);
+    })[0];
+    return metabolite.name;
+}
+
+function determineMetaboliteIdentifierName(
+    metaboliteIdentifier, modelMetabolites
+) {
+    // Collect identifier and name of a metabolite.
+    var metabolite = {};
+    metabolite[metaboliteIdentifier] = determineMetaboliteName(
+        metaboliteIdentifier, modelMetabolites
+    );
+    return metabolite;
+}
+
+function determineReactantsProducts(reaction, modelMetabolites, flag) {
+    var reactantProductIdentifiers = determineReactantProductIdentifiers(
+        reaction, flag
+    );
+    var metabolites = reactantProductIdentifiers
+        .map(function (reactantProductIdentifier) {
+            return determineMetaboliteIdentifierName(
+                reactantProductIdentifier, modelMetabolites
+            );
+        })
+        .reduce(function (accumulator, currentValue) {
+            return Object.assign(accumulator, currentValue);
+        }, {});
+    return metabolites;
+}
+
+
+
+
+
+function filterReactionsMetabolite(metaboliteIdentifier, modelReactions) {
+    // Select reactions that involve a specific metabolite.
+    // This selection does not consider compartment.
+    var metaboliteAbbreviation =
+        determineMetaboliteAbbreviation(metaboliteIdentifier);
+    var reactions = modelReactions.filter(function (modelReaction) {
+        return (
+            determineMetaboliteAbbreviations(
+                Object.keys(modelReaction.metabolites)
+            )
+                .includes(metaboliteAbbreviation));
+    });
+    return reactions;
+}
+
+function filterReactionsCompartmentalMetabolite(
+    metaboliteIdentifier, modelReactions
+) {
+    // Select reactions that involve a specific compartmental metabolite.
+    var reactions = modelReactions.filter(function (modelReaction) {
+        return (Object.keys(modelReaction.metabolites)
+            .includes(metaboliteIdentifier));
+    });
+    return reactions;
+}
+
+function determineReactionIdentifierName(modelReaction) {
+    // Collect identifier and full name of a reaction.
+    var reaction = {};
+    reaction[modelReaction.id] = modelReaction.name;
+    return reaction;
+}
+
+function determineCompartmentalMetaboliteReactions(
+    // Select all reactions that involve the metabolite in its compartment.
+    // Include chemical reactions and transport events.
+    metaboliteIdentifier, modelReactions
+) {
+    var metaboliteReactions = filterReactionsCompartmentalMetabolite(
+        metaboliteIdentifier, modelReactions
+    );
+    var reactions = metaboliteReactions
+        .map(determineReactionIdentifierName)
+        .reduce(function (accumulator, currentValue) {
+            return Object.assign(accumulator, currentValue);
+        }, {});
+    return reactions;
+}
+
+function determineMetaboliteReactions(
+    metaboliteIdentifier, modelReactions
+) {
+    var metaboliteReactions = filterReactionsMetabolite(
+        metaboliteIdentifier, modelReactions
+    );
+    var reactions = metaboliteReactions
+        .map(determineReactionIdentifierName)
+        .reduce(function (accumulator, currentValue) {
+            return Object.assign(accumulator, currentValue);
+        }, {});
+    return reactions;
+}
+
+function determineMetaboliteCompartmentalReactions(
+    metaboliteIdentifier, modelReactions
+) {
+    // Select all reactions that involve the metabolite in any compartment.
+    // Include reactions that only involve metabolites in a single compartment
+    // to avoid transport events.
+    // The count of compartmental reactions for the metabolite will not include
+    // transport events.
+    var metaboliteReactions = filterReactionsMetabolite(
+        metaboliteIdentifier, modelReactions
+    )
+        .filter(function (metaboliteReaction) {
+            return !(determineMultipleCompartments(metaboliteReaction));
+        });
+
+    var reactionCompartments = metaboliteReactions
+        .map(function (metaboliteReaction) {
+            return determineUniqueCompartmentIdentifiers(
+                Object.keys(metaboliteReaction.metabolites));
+        })
+        .reduce(function (accumulator, currentValue) {
+            return accumulator.concat(currentValue);
+        }, [])
+        .reduce(function (accumulator, currentValue) {
+            if (Object.keys(accumulator).includes(currentValue)) {
+                accumulator[currentValue] += 1;
+            } else {
+                accumulator[currentValue] = 1;
+            };
+            return accumulator;
+        }, {});
+    return reactionCompartments;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Reactions
@@ -268,175 +436,5 @@ function determineMetaboliteCompartments(
             return Object.assign(accumulator, currentValue);
         }, {});
     return compartments;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Metabolites
-
-/**
- * Determines general metabolite identifier from compartmental metabolite
- * identifier.
- * @param {string} compartmentalMetaboliteIdentifier Unique identifier of
- * compartmental metabolite.
- * @returns {string} Unique identifier of general metabolite.
- */
-function extractMetaboliteIdentifier(compartmentalMetaboliteIdentifier) {
-    // Select the portion of the compartmental metabolite identifier before the
-    // underscore to obtain the general metabolite identifier.
-    return compartmentalMetaboliteIdentifier
-        .substring(0, compartmentalMetaboliteIdentifier.lastIndexOf("_"));
-}
-
-/**
- * Determines general metabolite identifiers from compartmental metabolite
- * identifiers.
- * @param {Array<string>} compartmentalMetaboliteIdentifiers Unique identifiers
- * of compartmental metabolites.
- * @returns {Array<string>} Unique identifiers of general metabolites.
- */
-function extractMetaboliteIdentifiers(compartmentalMetaboliteIdentifiers) {
-    // Collect the metabolite identifiers from the compartmental metabolite
-    // identifiers.
-    return compartmentalMetaboliteIdentifiers
-        .map(extractMetaboliteIdentifier);
-}
-
-
-
-
-function determineMetaboliteName(metaboliteIdentifier, modelMetabolites) {
-    // Determine full name of a metabolite from its abbreviation.
-    var metabolite = modelMetabolites.filter(function (modelMetabolite) {
-        return (modelMetabolite.id === metaboliteIdentifier);
-    })[0];
-    return metabolite.name;
-}
-
-function determineMetaboliteIdentifierName(
-    metaboliteIdentifier, modelMetabolites
-) {
-    // Collect identifier and name of a metabolite.
-    var metabolite = {};
-    metabolite[metaboliteIdentifier] = determineMetaboliteName(
-        metaboliteIdentifier, modelMetabolites
-    );
-    return metabolite;
-}
-
-function determineReactantsProducts(reaction, modelMetabolites, flag) {
-    var reactantProductIdentifiers = determineReactantProductIdentifiers(
-        reaction, flag
-    );
-    var metabolites = reactantProductIdentifiers
-        .map(function (reactantProductIdentifier) {
-            return determineMetaboliteIdentifierName(
-                reactantProductIdentifier, modelMetabolites
-            );
-        })
-        .reduce(function (accumulator, currentValue) {
-            return Object.assign(accumulator, currentValue);
-        }, {});
-    return metabolites;
-}
-
-
-
-
-
-function filterReactionsMetabolite(metaboliteIdentifier, modelReactions) {
-    // Select reactions that involve a specific metabolite.
-    // This selection does not consider compartment.
-    var metaboliteAbbreviation =
-        determineMetaboliteAbbreviation(metaboliteIdentifier);
-    var reactions = modelReactions.filter(function (modelReaction) {
-        return (
-            determineMetaboliteAbbreviations(
-                Object.keys(modelReaction.metabolites)
-            )
-                .includes(metaboliteAbbreviation));
-    });
-    return reactions;
-}
-
-function filterReactionsCompartmentalMetabolite(
-    metaboliteIdentifier, modelReactions
-) {
-    // Select reactions that involve a specific compartmental metabolite.
-    var reactions = modelReactions.filter(function (modelReaction) {
-        return (Object.keys(modelReaction.metabolites)
-            .includes(metaboliteIdentifier));
-    });
-    return reactions;
-}
-
-function determineReactionIdentifierName(modelReaction) {
-    // Collect identifier and full name of a reaction.
-    var reaction = {};
-    reaction[modelReaction.id] = modelReaction.name;
-    return reaction;
-}
-
-function determineCompartmentalMetaboliteReactions(
-    // Select all reactions that involve the metabolite in its compartment.
-    // Include chemical reactions and transport events.
-    metaboliteIdentifier, modelReactions
-) {
-    var metaboliteReactions = filterReactionsCompartmentalMetabolite(
-        metaboliteIdentifier, modelReactions
-    );
-    var reactions = metaboliteReactions
-        .map(determineReactionIdentifierName)
-        .reduce(function (accumulator, currentValue) {
-            return Object.assign(accumulator, currentValue);
-        }, {});
-    return reactions;
-}
-
-function determineMetaboliteReactions(
-    metaboliteIdentifier, modelReactions
-) {
-    var metaboliteReactions = filterReactionsMetabolite(
-        metaboliteIdentifier, modelReactions
-    );
-    var reactions = metaboliteReactions
-        .map(determineReactionIdentifierName)
-        .reduce(function (accumulator, currentValue) {
-            return Object.assign(accumulator, currentValue);
-        }, {});
-    return reactions;
-}
-
-function determineMetaboliteCompartmentalReactions(
-    metaboliteIdentifier, modelReactions
-) {
-    // Select all reactions that involve the metabolite in any compartment.
-    // Include reactions that only involve metabolites in a single compartment
-    // to avoid transport events.
-    // The count of compartmental reactions for the metabolite will not include
-    // transport events.
-    var metaboliteReactions = filterReactionsMetabolite(
-        metaboliteIdentifier, modelReactions
-    )
-        .filter(function (metaboliteReaction) {
-            return !(determineMultipleCompartments(metaboliteReaction));
-        });
-
-    var reactionCompartments = metaboliteReactions
-        .map(function (metaboliteReaction) {
-            return determineUniqueCompartmentIdentifiers(
-                Object.keys(metaboliteReaction.metabolites));
-        })
-        .reduce(function (accumulator, currentValue) {
-            return accumulator.concat(currentValue);
-        }, [])
-        .reduce(function (accumulator, currentValue) {
-            if (Object.keys(accumulator).includes(currentValue)) {
-                accumulator[currentValue] += 1;
-            } else {
-                accumulator[currentValue] = 1;
-            };
-            return accumulator;
-        }, {});
-    return reactionCompartments;
 }
 

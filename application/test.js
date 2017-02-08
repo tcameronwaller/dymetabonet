@@ -11,25 +11,6 @@ function testCollectUniqueElements() {
 }
 
 /**
- * Tests function checkReaction().
- * @returns {boolean} Whether or not the function meets expectation.
- */
-function testCheckReaction1() {
-    var reaction = {
-        metabolites: {
-            a_c: 1,
-            b_e: 1,
-            c_c: 1,
-            d_m: -1,
-            e_m: -1,
-            f_m: -1
-        },
-        id: "test_reaction"
-    };
-    return checkReaction(reaction) === false;
-}
-
-/**
  * Tests function countReactantProductCompartments().
  * @returns {boolean} Whether or not the function meets expectation.
  */
@@ -100,4 +81,43 @@ function testDetermineChangeChemicals() {
         id: "test_reaction"
     };
     return determineChangeChemicals(reaction) === true;
+}
+
+/**
+ * Tests function checkReactionBoundsValues().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testCheckReactionBoundsValues() {
+    var reaction = {
+        id: "test_reaction",
+        lower_bound: -1000,
+        upper_bound: 0
+    };
+    return checkReactionBoundsValues(reaction) === true;
+}
+
+/**
+ * Tests function checkReactionBoundsRanges().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testCheckReactionBoundsRanges() {
+    var reaction = {
+        id: "test_reaction",
+        lower_bound: -500,
+        upper_bound: 500
+    };
+    return checkReactionBoundsRanges(reaction) === true;
+}
+
+/**
+ * Tests function checkReactionBoundsDirection().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testCheckReactionBoundsDirection() {
+    var reaction = {
+        id: "test_reaction",
+        lower_bound: 0,
+        upper_bound: 500
+    };
+    return checkReactionBoundsDirection(reaction) === true;
 }
