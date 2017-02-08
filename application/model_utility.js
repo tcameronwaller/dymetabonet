@@ -76,6 +76,39 @@ function extractMetaboliteIdentifiers(compartmentalMetaboliteIdentifiers) {
         .map(extractMetaboliteIdentifier);
 }
 
+/**
+ * Filters a model's reactions by their inclusion of a compartmental metabolite.
+ * @param {Array<Object>} reactions Information for reactions in the model.
+ * @param {Object} metabolite Information for a metabolite.
+ * @returns {Array<string>} Identifiers for reactions in which the metabolite
+ * participates.
+ */
+function filterReactionsByCompartmentalMetabolite(reactions, metabolite) {
+    // Select reactions in which a compartmental metabolite participates.
+    return reactions.filter(function (reaction) {
+        return (Object.keys(reaction.metabolites)
+            .includes(metabolite.id));
+    });
+}
+
+/**
+ * Counts the unique reactions in which a metabolite participates.
+ * @param {Array<Object>} reactions Information for reactions in the model.
+ * @param {Object} metabolite Information for a metabolite.
+ * @returns {number} Count of unique reactions.
+ */
+function countCompartmentalMetaboliteReactions(reactions, metabolite) {
+    return collectUniqueElements(
+        filterReactionsByCompartmentalMetabolite(reactions, metabolite)
+    )
+        .length;
+}
+
+
+
+
+
+
 
 
 
@@ -129,17 +162,6 @@ function filterReactionsMetabolite(metaboliteIdentifier, modelReactions) {
                 Object.keys(modelReaction.metabolites)
             )
                 .includes(metaboliteAbbreviation));
-    });
-    return reactions;
-}
-
-function filterReactionsCompartmentalMetabolite(
-    metaboliteIdentifier, modelReactions
-) {
-    // Select reactions that involve a specific compartmental metabolite.
-    var reactions = modelReactions.filter(function (modelReaction) {
-        return (Object.keys(modelReaction.metabolites)
-            .includes(metaboliteIdentifier));
     });
     return reactions;
 }

@@ -9,20 +9,16 @@
 // TODO: Accommodate assembly for general metabolite nodes that are not
 // TODO: compartment-specific.
 
-
-
-// TODO: Complete function checkMetaboliteReaction().
-
 /**
  * Checks to ensure that a metabolite participates in at least one reaction in
  * the metabolic model.
+ * @param {Array<Object>} reactions Information for reactions in the model.
  * @param {Object} metabolite Information for a metabolite.
  * @returns {boolean} Whether or not the metabolite participates in a reaction.
  */
-function checkMetaboliteReaction(metabolite) {
-    if (
-        // Identify reactions (if any) in which the metabolite participates.
-    ) {
+function checkMetaboliteReaction(reactions, metabolite) {
+    // Confirm that metabolite participates in at least one reaction.
+    if (countCompartmentalMetaboliteReactions(reactions, metabolite) >= 1) {
         return true;
     } else {
         console.log(
@@ -37,8 +33,8 @@ function checkMetaboliteReaction(metabolite) {
  * Checks a single metabolite from a metabolic model.
  * @param {Object} metabolite Information for a metabolite.
  */
-function checkMetabolite(metabolite) {
-    checkMetaboliteReaction(metabolite);
+function checkMetabolite(reactions, metabolite) {
+    checkMetaboliteReaction(reactions, metabolite);
 }
 
 /**
@@ -67,12 +63,14 @@ function createCompartmentalMetaboliteNode(metabolite) {
  * metabolic model.
  * @returns {Array<Object>} Nodes for compartmental metabolites.
  */
-function createMetaboliteNodes(metabolites) {
+function createMetaboliteNodes(reactions, metabolites) {
     // Confirm that all compartmental metabolites participate in reactions.
     // For each metabolite, make sure that there is at least 1 reaction in which
     // it participates. Use a filter function.
     // Check metabolites.
-    metabolites.map(checkMetabolite);
+    metabolites.map(function (metabolite) {
+        return checkMetabolite(reactions, metabolite);
+    });
     // Create nodes for metabolites.
     return metabolites.map(createCompartmentalMetaboliteNode);
 }
@@ -181,11 +179,11 @@ function createReactionNode(reaction) {
         data: {
             gene_reaction_rule: reaction.gene_reaction_rule,
             id: reaction.id,
-            lower_bound: reaction.lower_bound,
-            metabolites: Object.assign({}, reaction.metabolites),
             name: reaction.name,
+            products: filterReactionMetabolitesByRole(reaction, "product"),
+            reactants: filterReactionMetabolitesByRole(reaction, "reactant"),
+            reversibility: determineReversibility(reaction),
             subsystem: reaction.subsystem,
-            upper_bound: reaction.upper_bound
         }
     };
     return reactionNode;
@@ -282,7 +280,70 @@ function createReactionLinks(reactions) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Assemble relational tables for sets
+// Creation of records for compartments
+
+/**
+ * Creates a record for a single compartment from a metabolic model.
+ * @param {Object} compartments Information for all compartments of a metabolic
+ * model.
+ * @param {string} compartmentIdentifier Unique identifier of a compartment.
+ * @returns {Object} Record for a compartment.
+ */
+function createCompartmentRecord(compartments, compartmentIdentifier) {
+    return {
+        id: compartmentIdentifier,
+        name: compartments[compartmentIdentifier]
+    };
+}
+
+/**
+ * Creates records for all compartments from a metabolic model.
+ * @param {Object} compartments Information for all compartments of a metabolic
+ * model.
+ * @returns {Array<Object>} Records for compartments.
+ */
+function createCompartmentRecords(compartments) {
+    // Create records for compartments.
+    return Object.keys(compartments).map(function (compartmentIdentifier) {
+        return createCompartmentRecord(compartments, compartmentIdentifier);
+    });
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Creation of records for metabolites
+
+// TODO: I need to figure out how to handle the compartmental metabolites.
+// TODO: I need to make sure that all compartmental metabolites have the same common information.
+// TODO: Then I need to make a unique record for each metabolite.
+
+
+/**
+ * Creates a record for a single metabolite from a metabolic model.
+ * @param {Object} metabolite Information for a metabolite.
+ * @returns {Object} Record for a metabolite.
+ */
+function createMetaboliteRecord(metabolite) {
+    return {
+        charge: metabolite.charge,
+        formula: metabolite.formula,
+        id: extractMetaboliteIdentifier(metabolite.id),
+        name: compartments[compartmentIdentifier]
+    };
+}
+
+/**
+ * Creates records for all metabolites from a metabolic model.
+ * @param {Array<Object>} metabolites Information for all metabolites of a
+ * metabolic model.
+ * @returns {Array<Object>} Records for metabolites.
+ */
+function createMetaboliteRecords(metabolites) {
+    // Create records for metabolites.
+    return metabolites.map(createMetaboliteRecord);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Assembly of relational tables for sets
 
 // TODO: Function assembleSets should return an object with key-value pairs for
 // TODO: each relational table.
@@ -292,15 +353,23 @@ function createReactionLinks(reactions) {
 // TODO: metabolite nodes.
 
 /**
- * Assembles relational tables for information about sets of nodes of a
+ * Creates relational tables for information about sets of nodes of a
  * metabolic model.
  * @param {Object} model Information of a metabolic model from systems biology.
  * @returns {Object} Information about sets of nodes.
  */
-function assembleSets(model) {}
+function assembleSets(model) {
+    return {
+        sets: {
+            compartments: createCompartmentRecords(model.compartments)//,
+            metabolites: createMetaboliteRecords(model.metabolites),
+            //subsystems: createSubsystemRecords(model.reactions)
+        }
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
-// Assemble of Network
+// Assembly of Network
 
 // TODO: Function assembleNetwork() needs to accommodate requests for
 // TODO: compartment-specific metabolite nodes and non-compartment-specific
@@ -313,16 +382,15 @@ function assembleSets(model) {}
  * CytoScape.js network.
  */
 function assembleNetwork(model) {
-    var network = {
+    return {
         network: cytoscape({
             elements: [].concat(
-                //createMetaboliteNodes(model.metabolites),
+                createMetaboliteNodes(model.reactions, model.metabolites),
                 createReactionNodes(model.reactions),
                 createReactionLinks(model.reactions)
             )
         })
     };
-    return network;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -335,18 +403,19 @@ function assembleNetwork(model) {
  * conversion from SBML to JSON formats by COBRApy and libSBML.
  * @param {Object<string>} model.compartments Abbreviations and names of
  * compartments in the model.
- * @param {Object<string>} model.genes Information for genes in the model.
- * @param {Object} model.metabolites Information for compartment-specific
+ * @param {Array<Object<string>>} model.genes Information for genes in the model.
+ * @param {Array<Object>} model.metabolites Information for compartment-specific
  * metabolites in the model.
- * @param {Object} model.reactions Information for reactions in the model.
+ * @param {Array<Object>} model.reactions Information for reactions in the model.
  * @returns {Object} An object with information in both relational and graph or
  * network structures.
  */
 function assembleModel(modelInitial) {
     var model = Object.assign({},
-        //assembleSets(modelInitial),
+        assembleSets(modelInitial),
         assembleNetwork(modelInitial)
     );
+    console.log(model.sets);
     exploreNetwork(model.network);
     //var modelJSON = model.json();
     //downloadJSON(modelJSON, "model.json");
