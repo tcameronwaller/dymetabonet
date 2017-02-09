@@ -12,6 +12,10 @@ function collectUniqueElements(elements) {
     return elements
         .reduce(function (accumulator, value) {
             if (!accumulator.includes(value)) {
+                // Method concat does not modify the original array.
+                // Method concat returns a new array.
+                // It is necessary to store this new array or return it
+                // directly.
                 return accumulator.concat(value);
             } else {
                 return accumulator;
@@ -141,8 +145,8 @@ function determineReactantsProducts(reaction, modelMetabolites, flag) {
                 reactantProductIdentifier, modelMetabolites
             );
         })
-        .reduce(function (accumulator, currentValue) {
-            return Object.assign(accumulator, currentValue);
+        .reduce(function (accumulator, value) {
+            return Object.assign(accumulator, value);
         }, {});
     return metabolites;
 }
@@ -183,8 +187,8 @@ function determineCompartmentalMetaboliteReactions(
     );
     var reactions = metaboliteReactions
         .map(determineReactionIdentifierName)
-        .reduce(function (accumulator, currentValue) {
-            return Object.assign(accumulator, currentValue);
+        .reduce(function (accumulator, value) {
+            return Object.assign(accumulator, value);
         }, {});
     return reactions;
 }
@@ -197,8 +201,8 @@ function determineMetaboliteReactions(
     );
     var reactions = metaboliteReactions
         .map(determineReactionIdentifierName)
-        .reduce(function (accumulator, currentValue) {
-            return Object.assign(accumulator, currentValue);
+        .reduce(function (accumulator, value) {
+            return Object.assign(accumulator, value);
         }, {});
     return reactions;
 }
@@ -223,14 +227,14 @@ function determineMetaboliteCompartmentalReactions(
             return determineUniqueCompartmentIdentifiers(
                 Object.keys(metaboliteReaction.metabolites));
         })
-        .reduce(function (accumulator, currentValue) {
-            return accumulator.concat(currentValue);
+        .reduce(function (accumulator, value) {
+            return accumulator.concat(value);
         }, [])
-        .reduce(function (accumulator, currentValue) {
-            if (Object.keys(accumulator).includes(currentValue)) {
-                accumulator[currentValue] += 1;
+        .reduce(function (accumulator, value) {
+            if (Object.keys(accumulator).includes(value)) {
+                accumulator[value] += 1;
             } else {
-                accumulator[currentValue] = 1;
+                accumulator[value] = 1;
             };
             return accumulator;
         }, {});
@@ -428,8 +432,8 @@ function determineReactionCompartments(reaction, modelCompartments) {
                 compartmentAbbreviation, modelCompartments
             );
         })
-        .reduce(function (accumulator, currentValue) {
-            return Object.assign(accumulator, currentValue);
+        .reduce(function (accumulator, value) {
+            return Object.assign(accumulator, value);
         }, {});
     return compartments;
 }
@@ -454,8 +458,8 @@ function determineMetaboliteCompartments(
                 compartmentAbbreviation, modelCompartments
             );
         })
-        .reduce(function (accumulator, currentValue) {
-            return Object.assign(accumulator, currentValue);
+        .reduce(function (accumulator, value) {
+            return Object.assign(accumulator, value);
         }, {});
     return compartments;
 }

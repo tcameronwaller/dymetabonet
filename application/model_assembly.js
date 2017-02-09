@@ -259,8 +259,8 @@ function controlReactionLinks(reaction) {
                     createReactionLink(reaction.id, metaboliteIdentifier)
                 );
             })
-            .reduce(function (accumulator, currentValue) {
-                return accumulator.concat(currentValue);
+            .reduce(function (accumulator, value) {
+                return accumulator.concat(value);
             }, []);
     }
 }
@@ -274,8 +274,8 @@ function controlReactionLinks(reaction) {
 function createReactionLinks(reactions) {
     return reactions
         .map(controlReactionLinks)
-        .reduce(function (accumulator, currentValue) {
-            return accumulator.concat(currentValue);
+        .reduce(function (accumulator, value) {
+            return accumulator.concat(value);
         }, []);
 }
 
@@ -317,8 +317,43 @@ function createCompartmentRecords(compartments) {
 // TODO: Then I need to make a unique record for each metabolite.
 
 
+// TODO: This strategy will not work.
+// TODO: Rather than driving the iteration by map, I will need reduce.
+
+
+/**
+ * Checks a single metabolite from a metabolic model.
+ * @param {Array<Object>} metabolites Information for all metabolites of a
+ * metabolic model.
+ * @param {Object} metabolite Information for a metabolite.
+ * @returns {Object} Record for a metabolite.
+ */
+function checkMetaboliteSet(metabolites, metabolite) {
+    var metaboliteIdentifier = extractMetaboliteIdentifier(metabolite.id);
+}
+
+
+
+
+// In a check function, confirm that metabolite information is identical for all compartmental versions of the same metabolite.
+// Then iterate over compartmental metabolites.
+// Create a record for a metabolite the first time you encounter it.
+// Use .includes() on an array of id's to check if you've already created a record for each successive metabolite.
+// I'll probably need a .reduce() function to accumulate the unique metabolite records.
+
+// checkMetaboliteSet
+// 1. obtain a compartmental metabolite
+// 2. obtain the general metabolite identifier
+// 3. determine if a record already exists for the metabolite
+// 4. if a record does not exist, continue
+// 5. access all compartmental entries for the general metabolite
+// 6. check that information for all compartmental entries is consistent
+
+
 /**
  * Creates a record for a single metabolite from a metabolic model.
+ * @param {Array<Object>} metabolites Information for all metabolites of a
+ * metabolic model.
  * @param {Object} metabolite Information for a metabolite.
  * @returns {Object} Record for a metabolite.
  */
@@ -327,9 +362,15 @@ function createMetaboliteRecord(metabolite) {
         charge: metabolite.charge,
         formula: metabolite.formula,
         id: extractMetaboliteIdentifier(metabolite.id),
-        name: compartments[compartmentIdentifier]
+        name: metabolite.name
     };
 }
+
+
+
+// TODO: WORK HERE!!!
+
+
 
 /**
  * Creates records for all metabolites from a metabolic model.
@@ -338,9 +379,33 @@ function createMetaboliteRecord(metabolite) {
  * @returns {Array<Object>} Records for metabolites.
  */
 function createMetaboliteRecords(metabolites) {
+    // Check metabolites.
     // Create records for metabolites.
-    return metabolites.map(createMetaboliteRecord);
+    console.log("testing collect unique elements");
+    console.log(testCollectUniqueElements());
+    return metabolites.reduce(function (accumulator, value) {
+        //console.log(value.id);
+        // Determine if a record already exists for the metabolite.
+        if (
+            //accumulator.filter(function (record) {
+            //    return extractMetaboliteIdentifier(record.id) === extractMetaboliteIdentifier(value.id);
+            //}
+            //).length === 0
+            accumulator.find(function (record) {
+                return extractMetaboliteIdentifier(record.id) === extractMetaboliteIdentifier(value.id);
+            }) === undefined
+        ) {
+            // Confirm that information for a general metabolite is consistent
+            // in all of its compartmental records in the model.
+            //checkMetaboliteSet(metabolites, metabolite);
+            // Create record for the metabolite.
+            return accumulator.concat(createMetaboliteRecord(value));
+        } else {
+            return accumulator;
+        }
+    }, []);
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Assembly of relational tables for sets
@@ -361,8 +426,8 @@ function createMetaboliteRecords(metabolites) {
 function assembleSets(model) {
     return {
         sets: {
-            compartments: createCompartmentRecords(model.compartments)//,
-            metabolites: createMetaboliteRecords(model.metabolites),
+            compartments: createCompartmentRecords(model.compartments),
+            //metabolites: createMetaboliteRecords(model.metabolites)//,
             //subsystems: createSubsystemRecords(model.reactions)
         }
     }

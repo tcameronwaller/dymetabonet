@@ -67,6 +67,10 @@ function testDetermineChangeCompartments() {
     return determineChangeCompartments(reaction) === true;
 }
 
+/**
+ * Tests function determineChangeChemicals().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
 function testDetermineChangeChemicals() {
     var reaction = {
         metabolites: {
@@ -120,4 +124,20 @@ function testCheckReactionBoundsDirection() {
         upper_bound: 500
     };
     return checkReactionBoundsDirection(reaction) === true;
+}
+
+
+//checkMetaboliteReaction
+/**
+ * Tests function checkMetaboliteReaction().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testCheckMetaboliteReaction() {
+    var reactions = [
+        {metabolites: {a_c: 1}, id: "reaction_1"},
+        {metabolites: {a_c: 1}, id: "reaction_2"},
+        {metabolites: {a_c: 1}, id: "reaction_3"}
+        ];
+    var metabolite = {id: "a_c"};
+    return checkMetaboliteReaction(reactions, metabolite) === true;
 }
