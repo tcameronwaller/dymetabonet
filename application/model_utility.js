@@ -118,7 +118,8 @@ function filterReactionsByCompartmentalMetabolite(reactions, metabolite) {
 function filterCompartmentalMetabolitesByMetabolite(metabolites, metaboliteIdentifier) {
     // Select compartmental records for a general metabolite.
     return metabolites.filter(function (metabolite) {
-        return extractMetaboliteIdentifier(metabolite.id) === metaboliteIdentifier;
+        return extractMetaboliteIdentifier(metabolite.id) ===
+            metaboliteIdentifier;
     });
 }
 
@@ -418,6 +419,8 @@ function determineChangeChemicals(reaction) {
 function extractCompartmentIdentifier(metaboliteIdentifier) {
     // Select the portion of the metabolite identifier after the underscore to
     // obtain the compartment identifier.
+    // This function assumes that the compartment identifier is always the last
+    // part of the metabolite identifier with underscore delimiter.
     return metaboliteIdentifier
         .substring(metaboliteIdentifier.lastIndexOf("_") + 1);
 }

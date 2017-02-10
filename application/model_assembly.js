@@ -316,11 +316,6 @@ function createCompartmentRecords(compartments) {
 // TODO: I need to make sure that all compartmental metabolites have the same common information.
 // TODO: Then I need to make a unique record for each metabolite.
 
-
-// TODO: This strategy will not work.
-// TODO: Rather than driving the iteration by map, I will need reduce.
-
-
 /**
  * Checks a single metabolite from a metabolic model to ensure that all
  * compartmental records for a metabolite share identical properties.
@@ -351,35 +346,63 @@ function checkMetaboliteSet(metabolites, metaboliteIdentifier) {
     });
 }
 
-
-// In a check function, confirm that metabolite information is identical for all compartmental versions of the same metabolite.
-// Then iterate over compartmental metabolites.
-// Create a record for a metabolite the first time you encounter it.
-// Use .includes() on an array of id's to check if you've already created a record for each successive metabolite.
-// I'll probably need a .reduce() function to accumulate the unique metabolite records.
-
-// checkMetaboliteSet
-// 1. obtain a compartmental metabolite
-// 2. obtain the general metabolite identifier
-// 3. determine if a record already exists for the metabolite
-// 4. if a record does not exist, continue
-// 5. access all compartmental entries for the general metabolite
-// 6. check that information for all compartmental entries is consistent
-
+//checkMetaboliteSet(metabolites, extractMetaboliteIdentifier(metabolite.id));
 
 /**
  * Creates a record for a single metabolite from a metabolic model.
  * @param {Array<Object>} metabolites Information for all metabolites of a
  * metabolic model.
- * @param {Object} metabolite Information for a metabolite.
+ * @param {Object} metaboliteIdentifier Unique identifier of general metabolite.
  * @returns {Object} Record for a metabolite.
  */
-function createMetaboliteRecord(metabolite) {
+function createMetaboliteRecord(metabolites, metaboliteIdentifier) {
+    // Collect all compartmental versions of the metabolite.
+    var setMetabolites = filterCompartmentalMetabolitesByMetabolite(
+        metabolites, metaboliteIdentifier
+    );
+    // Collect consensus properties from all metabolites in set.
+    // Charge
+    var charges = collectValuesFromObjects(setMetabolites, "charge");
+    if (collectUniqueElements(charges).length <= 1) {
+        var chargeValue = collectUniqueElements(charges)[0];
+    }
+    // Formula
+    var formulas = collectValuesFromObjects(setMetabolites, "formula");
+    if (collectUniqueElements(formulas).length <= 1) {
+        var formulaValue = collectUniqueElements(formulas)[0];
+    } else {
+        var formulasSpecific = formulas.filter(function (formula) {
+            return !formula.includes("R");
+        });
+        if (collectUniqueElements(formulasSpecific).length === 1) {
+            var formulaValue = collectUniqueElements(formulasSpecific)[0];
+            //else if (collectUniqueElements(formulasSpecific).length > 1) {}
+        } else {
+            var formulaValue = formulas[0];
+        }
+    }
+    // Name
+    // TODO: This code is messy and needs attention...
+    // TODO: Clean up the handling for compartment identifiers
+    // TODO: Then implement the handling for stereoisomers
+    var names = collectValuesFromObjects(setMetabolites, "name");
+    if (collectUniqueElements(names).length <= 1) {
+        var nameValue = collectUniqueElements(names)[0];
+    } else if ((setMetabolites.every(function (element) {
+        return (element.name.includes("_")) &&
+            (
+                element.compartment ===
+                extractCompartmentIdentifier(element.name)
+            );
+    })) &&
+        (collectUniqueElements(extractMetaboliteIdentifiers(names)).length <= 1)) {
+        var nameValue = collectUniqueElements(extractMetaboliteIdentifiers(names))[0];
+    }
     return {
-        charge: metabolite.charge,
-        formula: metabolite.formula,
-        id: extractMetaboliteIdentifier(metabolite.id),
-        name: metabolite.name
+        charge: chargeValue,
+        formula: formulaValue,
+        id: metaboliteIdentifier,
+        name: nameValue
     };
 }
 
@@ -392,25 +415,19 @@ function createMetaboliteRecord(metabolite) {
 function createMetaboliteRecords(metabolites) {
     // Check metabolites.
     // Create records for metabolites.
-    console.log("testing collect unique elements");
-    console.log(testCollectUniqueElements());
     return metabolites.reduce(function (accumulator, metabolite) {
-        //console.log(value.id);
         // Determine if a record already exists for the metabolite.
         if (
-            //accumulator.filter(function (record) {
-            //    return extractMetaboliteIdentifier(record.id) === extractMetaboliteIdentifier(value.id);
-            //}
-            //).length === 0
             accumulator.find(function (record) {
                 return record.id === extractMetaboliteIdentifier(metabolite.id);
             }) === undefined
         ) {
-            // Confirm that information for a general metabolite is consistent
-            // in all of its compartmental records in the model.
-            checkMetaboliteSet(metabolites, extractMetaboliteIdentifier(metabolite.id));
             // Create record for the metabolite.
-            return accumulator.concat(createMetaboliteRecord(metabolite));
+            return accumulator.concat(
+                createMetaboliteRecord(
+                    metabolites, extractMetaboliteIdentifier(metabolite.id)
+                )
+            );
         } else {
             return accumulator;
         }
@@ -437,8 +454,8 @@ function createMetaboliteRecords(metabolites) {
 function assembleSets(model) {
     return {
         sets: {
-            compartments: createCompartmentRecords(model.compartments),
-            metabolites: createMetaboliteRecords(model.metabolites)//,
+            compartments: createCompartmentRecords(model.compartments)//,
+            //metabolites: createMetaboliteRecords(model.metabolites)//,
             //subsystems: createSubsystemRecords(model.reactions)
         }
     }
