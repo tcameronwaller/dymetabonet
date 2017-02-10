@@ -5,9 +5,13 @@
  */
 function testCollectUniqueElements() {
     return compareArraysByValuesIndices(
-        collectUniqueElements(["a", "b", "c", "a", "a", "b"]),
-        ["a", "b", "c"]
-    );
+        collectUniqueElements(
+            ["a", "b", "c", "a", "a", "b"]),
+            ["a", "b", "c"]
+        ) && compareArraysByValuesIndices(
+            ["a", "b", "c"],
+            collectUniqueElements(["a", "b", "c", "a", "a", "b"])
+        );
 }
 
 /**

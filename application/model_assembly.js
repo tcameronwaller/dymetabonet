@@ -322,17 +322,34 @@ function createCompartmentRecords(compartments) {
 
 
 /**
- * Checks a single metabolite from a metabolic model.
+ * Checks a single metabolite from a metabolic model to ensure that all
+ * compartmental records for a metabolite share identical properties.
  * @param {Array<Object>} metabolites Information for all metabolites of a
  * metabolic model.
- * @param {Object} metabolite Information for a metabolite.
- * @returns {Object} Record for a metabolite.
+ * @param {Object} metaboliteIdentifier Unique identifier of general metabolite.
+ * @returns {boolean} Whether or not all compartmental records for the
+ * metabolite share identical properties.
  */
-function checkMetaboliteSet(metabolites, metabolite) {
-    var metaboliteIdentifier = extractMetaboliteIdentifier(metabolite.id);
+function checkMetaboliteSet(metabolites, metaboliteIdentifier) {
+    // Collect all compartmental versions of the metabolite.
+    var setMetabolites = filterCompartmentalMetabolitesByMetabolite(
+        metabolites, metaboliteIdentifier
+    );
+    // Confirm that all compartmental records have identical values for relevant
+    // properties.
+    ["charge", "formula", "name"].map(function (property) {
+        if (collectUniqueElements(collectValuesFromObjects(setMetabolites, property)).length <= 1) {
+            return true;
+        } else {
+            console.log(
+                "Check Metabolite Sets: " + metaboliteIdentifier +
+                " failed common properties check."
+            );
+            console.log(setMetabolites);
+            return false;
+        }
+    });
 }
-
-
 
 
 // In a check function, confirm that metabolite information is identical for all compartmental versions of the same metabolite.
@@ -366,12 +383,6 @@ function createMetaboliteRecord(metabolite) {
     };
 }
 
-
-
-// TODO: WORK HERE!!!
-
-
-
 /**
  * Creates records for all metabolites from a metabolic model.
  * @param {Array<Object>} metabolites Information for all metabolites of a
@@ -383,7 +394,7 @@ function createMetaboliteRecords(metabolites) {
     // Create records for metabolites.
     console.log("testing collect unique elements");
     console.log(testCollectUniqueElements());
-    return metabolites.reduce(function (accumulator, value) {
+    return metabolites.reduce(function (accumulator, metabolite) {
         //console.log(value.id);
         // Determine if a record already exists for the metabolite.
         if (
@@ -392,14 +403,14 @@ function createMetaboliteRecords(metabolites) {
             //}
             //).length === 0
             accumulator.find(function (record) {
-                return extractMetaboliteIdentifier(record.id) === extractMetaboliteIdentifier(value.id);
+                return record.id === extractMetaboliteIdentifier(metabolite.id);
             }) === undefined
         ) {
             // Confirm that information for a general metabolite is consistent
             // in all of its compartmental records in the model.
-            //checkMetaboliteSet(metabolites, metabolite);
+            checkMetaboliteSet(metabolites, extractMetaboliteIdentifier(metabolite.id));
             // Create record for the metabolite.
-            return accumulator.concat(createMetaboliteRecord(value));
+            return accumulator.concat(createMetaboliteRecord(metabolite));
         } else {
             return accumulator;
         }
@@ -427,7 +438,7 @@ function assembleSets(model) {
     return {
         sets: {
             compartments: createCompartmentRecords(model.compartments),
-            //metabolites: createMetaboliteRecords(model.metabolites)//,
+            metabolites: createMetaboliteRecords(model.metabolites)//,
             //subsystems: createSubsystemRecords(model.reactions)
         }
     }
@@ -477,11 +488,11 @@ function assembleNetwork(model) {
  */
 function assembleModel(modelInitial) {
     var model = Object.assign({},
-        assembleSets(modelInitial),
-        assembleNetwork(modelInitial)
+        assembleSets(modelInitial)//,
+        //assembleNetwork(modelInitial)
     );
     console.log(model.sets);
-    exploreNetwork(model.network);
+    //exploreNetwork(model.network);
     //var modelJSON = model.json();
     //downloadJSON(modelJSON, "model.json");
     //return model;

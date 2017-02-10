@@ -10,17 +10,29 @@
 function collectUniqueElements(elements) {
     // Collect and return unique elements.
     return elements
-        .reduce(function (accumulator, value) {
-            if (!accumulator.includes(value)) {
+        .reduce(function (accumulator, element) {
+            if (!accumulator.includes(element)) {
                 // Method concat does not modify the original array.
                 // Method concat returns a new array.
                 // It is necessary to store this new array or return it
                 // directly.
-                return accumulator.concat(value);
+                return accumulator.concat(element);
             } else {
                 return accumulator;
             }
         }, []);
+}
+
+/**
+ * Collects values for identical keys from multiple objects.
+ * @param {Array<Object>} objects Array of objects.
+ * @param {string} key Common key for all objects.
+ * @returns {Array} Values from all objects.
+ */
+function collectValuesFromObjects(objects, key) {
+    return objects.reduce(function (accumulator, object) {
+        return accumulator.concat(object[key]);
+    }, []);
 }
 
 /**
@@ -31,8 +43,8 @@ function collectUniqueElements(elements) {
  * index.
  */
 function compareArraysByValuesIndices(firstArray, secondArray) {
-    return firstArray.every(function (value, index) {
-        return value === secondArray[index];
+    return firstArray.every(function (element, index) {
+        return element === secondArray[index];
     });
 }
 
@@ -44,8 +56,8 @@ function compareArraysByValuesIndices(firstArray, secondArray) {
  * second array.
  */
 function compareArraysByInclusion(firstArray, secondArray) {
-    return secondArray.every(function (value, index) {
-        return firstArray.includes(value);
+    return secondArray.every(function (element, index) {
+        return firstArray.includes(element);
     });
 }
 
@@ -94,6 +106,22 @@ function filterReactionsByCompartmentalMetabolite(reactions, metabolite) {
             .includes(metabolite.id));
     });
 }
+
+/**
+ * Filters a model's compartmental metabolites by their identity to a general
+ * metabolite.
+ * @param {Array<Object>} metabolites Information for metabolites in the model.
+ * @param {Object} metaboliteIdentifier Unique identifier of general metabolite.
+ * @returns {Array<string>} Identifiers for compartmental metabolites that are
+ * chemically identical to the general metabolite.
+ */
+function filterCompartmentalMetabolitesByMetabolite(metabolites, metaboliteIdentifier) {
+    // Select compartmental records for a general metabolite.
+    return metabolites.filter(function (metabolite) {
+        return extractMetaboliteIdentifier(metabolite.id) === metaboliteIdentifier;
+    });
+}
+
 
 /**
  * Counts the unique reactions in which a metabolite participates.
