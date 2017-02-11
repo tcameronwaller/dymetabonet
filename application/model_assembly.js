@@ -348,6 +348,86 @@ function checkMetaboliteSet(metabolites, metaboliteIdentifier) {
 
 //checkMetaboliteSet(metabolites, extractMetaboliteIdentifier(metabolite.id));
 
+
+/**
+ * Determines a consensus charge for a set of metabolites.
+ * @param {Array<Object>} setMetabolites Information for all compartmental
+ * metabolites that are chemically identical.
+ * @returns {string} Consensus charge of the set of metabolites.
+ */
+function determineMetaboliteSetCharge(setMetabolites) {
+    var charges = collectValuesFromObjects(setMetabolites, "charge");
+    if (collectUniqueElements(charges).length <= 1) {
+        return collectUniqueElements(charges)[0];
+    }
+}
+
+/**
+ * Determines a consensus formula for a set of metabolites.
+ * @param {Array<Object>} setMetabolites Information for all compartmental
+ * metabolites that are chemically identical.
+ * @returns {string} Consensus formula of the set of metabolites.
+ */
+function determineMetaboliteSetFormula(setMetabolites) {
+    var formulas = collectValuesFromObjects(setMetabolites, "formula");
+    if (collectUniqueElements(formulas).length <= 1) {
+        return collectUniqueElements(formulas)[0];
+    } else {
+        var formulasSpecific = formulas.filter(function (formula) {
+            return !formula.includes("R");
+        });
+        if (collectUniqueElements(formulasSpecific).length === 1) {
+            return collectUniqueElements(formulasSpecific)[0];
+            //else if (collectUniqueElements(formulasSpecific).length > 1) {}
+        } else {
+            return formulas[0];
+        }
+    }
+}
+
+/**
+ * Determines a consensus name for a set of metabolites.
+ * @param {Array<Object>} setMetabolites Information for all compartmental
+ * metabolites that are chemically identical.
+ * @returns {string} Consensus name of the set of metabolites.
+ */
+function determineMetaboliteSetName(setMetabolites) {
+    var names = collectValuesFromObjects(setMetabolites, "name");
+    if (collectUniqueElements(names).length <= 1) {
+        return collectUniqueElements(names)[0];
+    } else if (
+        (setMetabolites.every(function (metabolite) {
+            return (metabolite.name.includes("_")) &&
+                (metabolite.compartment ===
+                extractCompartmentIdentifier(metabolite.name));
+        })) &&
+        (
+            collectUniqueElements(
+                extractMetaboliteIdentifiers(names)
+            ).length === 1
+        )
+    ) {
+        return collectUniqueElements(extractMetaboliteIdentifiers(names))[0];
+    } else if (
+        (names.find(function (name) {
+            return name.includes("(R)") || name.includes("(S)");
+        }) != undefined) &&
+        (collectUniqueElements(names.map(function (name) {
+            return name.replace("(R)", "(R/S)");
+        }).map(function (name) {
+            return name.replace("(S)", "(R/S)");
+        })).length === 1)
+    ) {
+        return collectUniqueElements(names.map(function (name) {
+            return name.replace("(R)", "(R/S)");
+        }).map(function (name) {
+            return name.replace("(S)", "(R/S)");
+        }))[0];
+    } else {
+        return names[0];
+    }
+}
+
 /**
  * Creates a record for a single metabolite from a metabolic model.
  * @param {Array<Object>} metabolites Information for all metabolites of a
@@ -361,48 +441,11 @@ function createMetaboliteRecord(metabolites, metaboliteIdentifier) {
         metabolites, metaboliteIdentifier
     );
     // Collect consensus properties from all metabolites in set.
-    // Charge
-    var charges = collectValuesFromObjects(setMetabolites, "charge");
-    if (collectUniqueElements(charges).length <= 1) {
-        var chargeValue = collectUniqueElements(charges)[0];
-    }
-    // Formula
-    var formulas = collectValuesFromObjects(setMetabolites, "formula");
-    if (collectUniqueElements(formulas).length <= 1) {
-        var formulaValue = collectUniqueElements(formulas)[0];
-    } else {
-        var formulasSpecific = formulas.filter(function (formula) {
-            return !formula.includes("R");
-        });
-        if (collectUniqueElements(formulasSpecific).length === 1) {
-            var formulaValue = collectUniqueElements(formulasSpecific)[0];
-            //else if (collectUniqueElements(formulasSpecific).length > 1) {}
-        } else {
-            var formulaValue = formulas[0];
-        }
-    }
-    // Name
-    // TODO: This code is messy and needs attention...
-    // TODO: Clean up the handling for compartment identifiers
-    // TODO: Then implement the handling for stereoisomers
-    var names = collectValuesFromObjects(setMetabolites, "name");
-    if (collectUniqueElements(names).length <= 1) {
-        var nameValue = collectUniqueElements(names)[0];
-    } else if ((setMetabolites.every(function (element) {
-        return (element.name.includes("_")) &&
-            (
-                element.compartment ===
-                extractCompartmentIdentifier(element.name)
-            );
-    })) &&
-        (collectUniqueElements(extractMetaboliteIdentifiers(names)).length <= 1)) {
-        var nameValue = collectUniqueElements(extractMetaboliteIdentifiers(names))[0];
-    }
     return {
-        charge: chargeValue,
-        formula: formulaValue,
+        charge: determineMetaboliteSetCharge(setMetabolites),
+        formula: determineMetaboliteSetFormula(setMetabolites),
         id: metaboliteIdentifier,
-        name: nameValue
+        name: determineMetaboliteSetName(setMetabolites)
     };
 }
 
@@ -415,17 +458,20 @@ function createMetaboliteRecord(metabolites, metaboliteIdentifier) {
 function createMetaboliteRecords(metabolites) {
     // Check metabolites.
     // Create records for metabolites.
+    console.log("testing determineMetaboliteSetName");
+    console.log(testDetermineMetaboliteSetCharge());
+    console.log(testDetermineMetaboliteSetFormula1());
+    console.log(testDetermineMetaboliteSetFormula2());
+    console.log(testDetermineMetaboliteSetName1());
+    console.log(testDetermineMetaboliteSetName2());
     return metabolites.reduce(function (accumulator, metabolite) {
         // Determine if a record already exists for the metabolite.
-        if (
-            accumulator.find(function (record) {
-                return record.id === extractMetaboliteIdentifier(metabolite.id);
-            }) === undefined
-        ) {
+        if (accumulator.find(function (record) {
+            return record.id === extractMetaboliteIdentifier(metabolite.id);
+        }) === undefined) {
             // Create record for the metabolite.
-            return accumulator.concat(
-                createMetaboliteRecord(
-                    metabolites, extractMetaboliteIdentifier(metabolite.id)
+            return accumulator.concat(createMetaboliteRecord(
+                metabolites, extractMetaboliteIdentifier(metabolite.id)
                 )
             );
         } else {
@@ -433,7 +479,6 @@ function createMetaboliteRecords(metabolites) {
         }
     }, []);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Assembly of relational tables for sets
@@ -454,8 +499,8 @@ function createMetaboliteRecords(metabolites) {
 function assembleSets(model) {
     return {
         sets: {
-            compartments: createCompartmentRecords(model.compartments)//,
-            //metabolites: createMetaboliteRecords(model.metabolites)//,
+            compartments: createCompartmentRecords(model.compartments),
+            metabolites: createMetaboliteRecords(model.metabolites)//,
             //subsystems: createSubsystemRecords(model.reactions)
         }
     }

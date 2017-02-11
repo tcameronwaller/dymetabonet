@@ -131,7 +131,6 @@ function testCheckReactionBoundsDirection() {
 }
 
 
-//checkMetaboliteReaction
 /**
  * Tests function checkMetaboliteReaction().
  * @returns {boolean} Whether or not the function meets expectation.
@@ -144,4 +143,70 @@ function testCheckMetaboliteReaction() {
         ];
     var metabolite = {id: "a_c"};
     return checkMetaboliteReaction(reactions, metabolite) === true;
+}
+
+/**
+ * Tests function determineMetaboliteSetCharge().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testDetermineMetaboliteSetCharge() {
+    var setMetabolites = [
+        {charge: -3},
+        {charge: -3},
+        {charge: -3}
+    ];
+    return determineMetaboliteSetCharge(setMetabolites) === -3;
+}
+
+
+/**
+ * Tests function determineMetaboliteSetFormula().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testDetermineMetaboliteSetFormula1() {
+    var setMetabolites = [
+        {formula: "H2O"},
+        {formula: "C6H12O6"},
+        {formula: "C3H7O9"}
+    ];
+    return determineMetaboliteSetFormula(setMetabolites) === "H2O";
+}
+
+/**
+ * Tests function determineMetaboliteSetFormula().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testDetermineMetaboliteSetFormula2() {
+    var setMetabolites = [
+        {formula: "H2O"},
+        {formula: "H1OR"},
+        {formula: "H2O"}
+    ];
+    return determineMetaboliteSetFormula(setMetabolites) === "H2O";
+}
+
+/**
+ * Tests function determineMetaboliteSetName().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testDetermineMetaboliteSetName1() {
+    var setMetabolites = [
+        {compartment: "e", name: "pyruvate_e"},
+        {compartment: "c", name: "pyruvate_c"},
+        {compartment: "m", name: "pyruvate_m"}
+    ];
+    return determineMetaboliteSetName(setMetabolites) === "pyruvate";
+}
+
+/**
+ * Tests function determineMetaboliteSetName().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testDetermineMetaboliteSetName2() {
+    var setMetabolites = [
+        {compartment: "e", name: "pyruvate(R)"},
+        {compartment: "c", name: "pyruvate(S)"},
+        {compartment: "m", name: "pyruvate(R)"}
+    ];
+    return determineMetaboliteSetName(setMetabolites) === "pyruvate(R/S)";
 }
