@@ -132,17 +132,17 @@ function testCheckReactionBoundsDirection() {
 
 
 /**
- * Tests function checkMetaboliteReaction().
+ * Tests function checkMetaboliteReactions().
  * @returns {boolean} Whether or not the function meets expectation.
  */
-function testCheckMetaboliteReaction() {
+function testCheckMetaboliteReactions() {
     var reactions = [
         {metabolites: {a_c: 1}, id: "reaction_1"},
         {metabolites: {a_c: 1}, id: "reaction_2"},
         {metabolites: {a_c: 1}, id: "reaction_3"}
         ];
     var metabolite = {id: "a_c"};
-    return checkMetaboliteReaction(reactions, metabolite) === true;
+    return checkMetaboliteReactions(reactions, metabolite) === true;
 }
 
 /**
@@ -178,8 +178,8 @@ function testDetermineMetaboliteSetFormula1() {
  */
 function testDetermineMetaboliteSetFormula2() {
     var setMetabolites = [
-        {formula: "H2O"},
         {formula: "H1OR"},
+        {formula: "H2O"},
         {formula: "H2O"}
     ];
     return determineMetaboliteSetFormula(setMetabolites) === "H2O";

@@ -6,17 +6,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Creation of Metabolite Nodes
 
-// TODO: Accommodate assembly for general metabolite nodes that are not
-// TODO: compartment-specific.
-
 /**
  * Checks to ensure that a metabolite participates in at least one reaction in
  * the metabolic model.
- * @param {Array<Object>} reactions Information for reactions in the model.
+ * @param {Array<Object>} reactions Information for all reactions of a metabolic
+ * model.
  * @param {Object} metabolite Information for a metabolite.
  * @returns {boolean} Whether or not the metabolite participates in a reaction.
  */
-function checkMetaboliteReaction(reactions, metabolite) {
+function checkMetaboliteReactions(reactions, metabolite) {
     // Confirm that metabolite participates in at least one reaction.
     if (countCompartmentalMetaboliteReactions(reactions, metabolite) >= 1) {
         return true;
@@ -157,14 +155,48 @@ function checkReactionBoundsDirection(reaction) {
     }
 }
 
+
+// TODO: Write a test function for checkReactionMetabolites().
+
+/**
+ * Checks to ensure that a reaction's metabolites have corresponding records in
+ * the metabolic model.
+ * @param {Object} reaction Information for a reaction.
+ * @param {Array<Object>} metabolites Information for all metabolites of a
+ * metabolic model.
+ * @returns {boolean} Whether or not the reaction's metabolites have records.
+ */
+function checkReactionMetabolites(reaction, metabolites) {
+    // Confirm that a reaction's metabolites have corresponding records.
+    if (
+        Object.keys(reaction.metabolites)
+            .every(function (metaboliteIdentifier) {
+                return metabolites.find(function (metabolite) {
+                    return metabolite.id === metaboliteIdentifier;
+                }) != undefined;
+            })
+    ) {
+        return true;
+    } else {
+        console.log(
+            "Check Reactions: " + reaction.id +
+            " failed metabolite check."
+        );
+        return false;
+    }
+}
+
 /**
  * Checks a single reaction from a metabolic model.
  * @param {Object} reaction Information for a reaction.
+ * @param {Array<Object>} metabolites Information for all metabolites of a
+ * metabolic model.
  */
-function checkReaction(reaction) {
+function checkReaction(reaction, metabolites) {
     checkReactionBoundsValues(reaction);
     checkReactionBoundsRanges(reaction);
     checkReactionBoundsDirection(reaction);
+    checkReactionMetabolites(reaction, metabolites);
 }
 
 /**
@@ -193,11 +225,15 @@ function createReactionNode(reaction) {
  * Creates network nodes for all reactions from a metabolic model.
  * @param {Array<Object>} reactions Information for all reactions of a metabolic
  * model.
+ * @param {Array<Object>} metabolites Information for all metabolites of a
+ * metabolic model.
  * @returns {Array<Object>} Nodes for reactions.
  */
-function createReactionNodes(reactions) {
+function createReactionNodes(reactions, metabolites) {
     // Check reactions.
-    reactions.map(checkReaction);
+    reactions.map(function (reaction) {
+        return checkReaction(reaction, metabolites);
+    });
     // Create nodes for reactions.
     return reactions.map(createReactionNode);
 }
@@ -310,30 +346,74 @@ function createCompartmentRecords(compartments) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Creation of records for metabolites
+// Creation of records for genes
 
-// TODO: I need to figure out how to handle the compartmental metabolites.
-// TODO: I need to make sure that all compartmental metabolites have the same common information.
-// TODO: Then I need to make a unique record for each metabolite.
+// TODO: Confirm that all genes in the "genes" list of the model participate in at least 1 reaction.
+// TODO: Confirm that all genes in the "reactions" list of the model have a record in the "genes" list.
+
+// TODO: Create a function to extract the geneIdentifiers from a reaction's gene_reaction_rule.
+// TODO: To do so, it might be helpful to remove spaces and "or" and create an array for each reaction.
+
+
+
+/**
+ * Creates a record for a single metabolic process from a metabolic model.
+ * @param {string} processName Name of a metabolic subsystem or process.
+ * @returns {Object} Record for a process.
+ */
+function createProcessRecord(processName) {
+    return {
+        name: processName
+    };
+}
+
+/**
+ * Creates records for all processes from a metabolic model.
+ * @param {Array<Object>} reactions Information for all reactions of a metabolic
+ * model.
+ * @returns {Array<Object>} Records for processes.
+ */
+function createProcessRecords(reactions) {
+    // Create records for processes.
+    // Assume that according to their annotation, all reactions in the metabolic
+    // model participate in only a single metabolic process.
+    return reactions.reduce(function (accumulator, reaction) {
+        // Determine if a record already exists for the process.
+        if (accumulator.find(function (record) {
+                return record.name === reaction.subsystem;
+            }) === undefined) {
+            // Create record for the process.
+            return accumulator.concat(createProcessRecord(reaction.subsystem));
+        } else {
+            return accumulator;
+        }
+    }, []);
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Creation of records for metabolites
 
 /**
  * Checks a single metabolite from a metabolic model to ensure that all
  * compartmental records for a metabolite share identical properties.
- * @param {Array<Object>} metabolites Information for all metabolites of a
- * metabolic model.
- * @param {Object} metaboliteIdentifier Unique identifier of general metabolite.
+ * @param {Array<Object>} setMetabolites Information for all compartmental
+ * metabolites that are chemically identical.
+ * @param {string} metaboliteIdentifier Unique identifier of general metabolite.
  * @returns {boolean} Whether or not all compartmental records for the
  * metabolite share identical properties.
  */
-function checkMetaboliteSet(metabolites, metaboliteIdentifier) {
-    // Collect all compartmental versions of the metabolite.
-    var setMetabolites = filterCompartmentalMetabolitesByMetabolite(
-        metabolites, metaboliteIdentifier
-    );
+function checkMetaboliteSet(setMetabolites, metaboliteIdentifier) {
     // Confirm that all compartmental records have identical values for relevant
     // properties.
     ["charge", "formula", "name"].map(function (property) {
-        if (collectUniqueElements(collectValuesFromObjects(setMetabolites, property)).length <= 1) {
+        if (
+            collectUniqueElements(
+                collectValuesFromObjects(setMetabolites, property)
+            ).length <= 1
+        ) {
             return true;
         } else {
             console.log(
@@ -346,14 +426,11 @@ function checkMetaboliteSet(metabolites, metaboliteIdentifier) {
     });
 }
 
-//checkMetaboliteSet(metabolites, extractMetaboliteIdentifier(metabolite.id));
-
-
 /**
  * Determines a consensus charge for a set of metabolites.
  * @param {Array<Object>} setMetabolites Information for all compartmental
  * metabolites that are chemically identical.
- * @returns {string} Consensus charge of the set of metabolites.
+ * @returns {string} Consensus charge for the set of metabolites.
  */
 function determineMetaboliteSetCharge(setMetabolites) {
     var charges = collectValuesFromObjects(setMetabolites, "charge");
@@ -366,13 +443,17 @@ function determineMetaboliteSetCharge(setMetabolites) {
  * Determines a consensus formula for a set of metabolites.
  * @param {Array<Object>} setMetabolites Information for all compartmental
  * metabolites that are chemically identical.
- * @returns {string} Consensus formula of the set of metabolites.
+ * @returns {string} Consensus formula for the set of metabolites.
  */
 function determineMetaboliteSetFormula(setMetabolites) {
     var formulas = collectValuesFromObjects(setMetabolites, "formula");
     if (collectUniqueElements(formulas).length <= 1) {
         return collectUniqueElements(formulas)[0];
     } else {
+        // Chemical formulas for some metabolites in the model might include an
+        // R character to denote a nonspecific alkyl substituent.
+        // Inclusion of these nonspecific formulas can impart discrepancies in
+        // separate records for the same metabolite.
         var formulasSpecific = formulas.filter(function (formula) {
             return !formula.includes("R");
         });
@@ -389,7 +470,7 @@ function determineMetaboliteSetFormula(setMetabolites) {
  * Determines a consensus name for a set of metabolites.
  * @param {Array<Object>} setMetabolites Information for all compartmental
  * metabolites that are chemically identical.
- * @returns {string} Consensus name of the set of metabolites.
+ * @returns {string} Consensus name for the set of metabolites.
  */
 function determineMetaboliteSetName(setMetabolites) {
     var names = collectValuesFromObjects(setMetabolites, "name");
@@ -407,6 +488,10 @@ function determineMetaboliteSetName(setMetabolites) {
             ).length === 1
         )
     ) {
+        // Names for some metabolites in the model might include compartment
+        // identifiers.
+        // Inclusion of these compartment identifiers in the names can impart
+        // discrepancies in separate records fro the same metabolite.
         return collectUniqueElements(extractMetaboliteIdentifiers(names))[0];
     } else if (
         (names.find(function (name) {
@@ -418,6 +503,10 @@ function determineMetaboliteSetName(setMetabolites) {
             return name.replace("(S)", "(R/S)");
         })).length === 1)
     ) {
+        // Names for some metabolites in the model might include designations of
+        // stereoisomers around chirality centers.
+        // While these stereoisomers are chemically distinct, the model might
+        // give them the same identifier.
         return collectUniqueElements(names.map(function (name) {
             return name.replace("(R)", "(R/S)");
         }).map(function (name) {
@@ -432,7 +521,7 @@ function determineMetaboliteSetName(setMetabolites) {
  * Creates a record for a single metabolite from a metabolic model.
  * @param {Array<Object>} metabolites Information for all metabolites of a
  * metabolic model.
- * @param {Object} metaboliteIdentifier Unique identifier of general metabolite.
+ * @param {string} metaboliteIdentifier Unique identifier of general metabolite.
  * @returns {Object} Record for a metabolite.
  */
 function createMetaboliteRecord(metabolites, metaboliteIdentifier) {
@@ -440,6 +529,12 @@ function createMetaboliteRecord(metabolites, metaboliteIdentifier) {
     var setMetabolites = filterCompartmentalMetabolitesByMetabolite(
         metabolites, metaboliteIdentifier
     );
+    // Confirm that all compartmental records have identical values for relevant
+    // properties.
+    //checkMetaboliteSet(setMetabolites, metaboliteIdentifier);
+    // Optionally introduce a conditional clause here to print the record for
+    // specific metabolite sets and confirm proper correction for discrepancies.
+    //if (metaboliteIdentifier === "CE7081") {}
     // Collect consensus properties from all metabolites in set.
     return {
         charge: determineMetaboliteSetCharge(setMetabolites),
@@ -458,12 +553,6 @@ function createMetaboliteRecord(metabolites, metaboliteIdentifier) {
 function createMetaboliteRecords(metabolites) {
     // Check metabolites.
     // Create records for metabolites.
-    console.log("testing determineMetaboliteSetName");
-    console.log(testDetermineMetaboliteSetCharge());
-    console.log(testDetermineMetaboliteSetFormula1());
-    console.log(testDetermineMetaboliteSetFormula2());
-    console.log(testDetermineMetaboliteSetName1());
-    console.log(testDetermineMetaboliteSetName2());
     return metabolites.reduce(function (accumulator, metabolite) {
         // Determine if a record already exists for the metabolite.
         if (accumulator.find(function (record) {
@@ -474,6 +563,43 @@ function createMetaboliteRecords(metabolites) {
                 metabolites, extractMetaboliteIdentifier(metabolite.id)
                 )
             );
+        } else {
+            return accumulator;
+        }
+    }, []);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Creation of records for processes
+
+/**
+ * Creates a record for a single metabolic process from a metabolic model.
+ * @param {string} processName Name of a metabolic subsystem or process.
+ * @returns {Object} Record for a process.
+ */
+function createProcessRecord(processName) {
+    return {
+        name: processName
+    };
+}
+
+/**
+ * Creates records for all processes from a metabolic model.
+ * @param {Array<Object>} reactions Information for all reactions of a metabolic
+ * model.
+ * @returns {Array<Object>} Records for processes.
+ */
+function createProcessRecords(reactions) {
+    // Create records for processes.
+    // Assume that according to their annotation, all reactions in the metabolic
+    // model participate in only a single metabolic process.
+    return reactions.reduce(function (accumulator, reaction) {
+        // Determine if a record already exists for the process.
+        if (accumulator.find(function (record) {
+                return record.name === reaction.subsystem;
+            }) === undefined) {
+            // Create record for the process.
+            return accumulator.concat(createProcessRecord(reaction.subsystem));
         } else {
             return accumulator;
         }
@@ -500,8 +626,9 @@ function assembleSets(model) {
     return {
         sets: {
             compartments: createCompartmentRecords(model.compartments),
-            metabolites: createMetaboliteRecords(model.metabolites)//,
-            //subsystems: createSubsystemRecords(model.reactions)
+            //genes: createGeneRecords(model.genes, model.reactions),
+            metabolites: createMetaboliteRecords(model.metabolites),
+            processes: createProcessRecords(model.reactions)
         }
     }
 }
@@ -524,7 +651,7 @@ function assembleNetwork(model) {
         network: cytoscape({
             elements: [].concat(
                 createMetaboliteNodes(model.reactions, model.metabolites),
-                createReactionNodes(model.reactions),
+                createReactionNodes(model.reactions, model.metabolites),
                 createReactionLinks(model.reactions)
             )
         })

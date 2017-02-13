@@ -4,6 +4,30 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+13 February 2017
+
+Test the function to make sure all reaction's metabolites have records.
+
+Create set records for genes.
+
+
+
+----------
+
+Future quality controls
+
+Consider confirming or correcting the charges of metabolites by calculating formal charges on the basis of their formulas.
+
+Consider confirming that all metabolites and reactions in the model have unique identifiers.
+
+----------
+
+Queries
+-Select all reactions and their metabolites of a specific metabolic process.
+
+
+
+--------------------------------------------------
 9 February 2017
 
 ----------
@@ -36,7 +60,10 @@ Both of these metabolites have identical formulas and identifiers.
 These stereoisomers are chemically distinct, and the model should accurately represent them in separate records.
 However, changing their identifiers would require me to also change the identifiers within their reactions.
 To solve this problem, reduce the specificity of the metabolites names so they do not specify stereoisomers.
-For example, change both "15(R)-HEPE" and "15(S)-HEPE" to "15(R/S)-HEPE".
+For example, change both "15(R)-HEPE" and "15(S)-HEPE" to "15(R/S)-HEPE" (identifier "CE7081").
+
+4. Typographical Errors
+The metabolite with identifier "hedepecoa" has names "2,4,7,10,13-hexadecapentenoylcoa" and "2,4,7,10,13-hexadecapentaenoylcoa".
 
 Only make the corrections if there are discrepancies in the properties of records for the same metabolite.
 
