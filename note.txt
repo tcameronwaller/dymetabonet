@@ -6,11 +6,7 @@ Research With Alexander Lex
 --------------------------------------------------
 13 February 2017
 
-Test the function to make sure all reaction's metabolites have records.
-
 Create set records for genes.
-
-
 
 ----------
 
@@ -24,8 +20,6 @@ Consider confirming that all metabolites and reactions in the model have unique 
 
 Queries
 -Select all reactions and their metabolites of a specific metabolic process.
-
-
 
 --------------------------------------------------
 9 February 2017

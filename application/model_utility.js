@@ -56,7 +56,7 @@ function compareArraysByValuesIndices(firstArray, secondArray) {
  * second array.
  */
 function compareArraysByInclusion(firstArray, secondArray) {
-    return secondArray.every(function (element, index) {
+    return secondArray.every(function (element) {
         return firstArray.includes(element);
     });
 }
@@ -406,6 +406,25 @@ function determineChangeChemicals(reaction) {
         (reactantIdentifiers.length === productIdentifiers.length)
     );
 }
+
+/**
+ * Determines gene identifiers from a reaction's gene reaction rule.
+ * @param {string} geneReactionRule Rule for a reaction's gene requirements.
+ * @returns {Array<string>} Identifiers for genes that participate in the
+ * reaction.
+ */
+function extractGeneIdentifiers(geneReactionRule) {
+    return geneReactionRule.split(" ").filter(function (element) {
+        return element.includes(":");
+    });
+}
+
+// TODO: Replace "(" and ")" both by "", then split by " ". I like that option better.
+
+//HGNC:21481 or HGNC:28335 or HGNC:30866 or (HGNC:6535 and HGNC:6541) or HGNC:6535 or HGNC:6541 or HGNC:6544
+//(HGNC:10606 and HGNC:121 and HGNC:2754 and (HGNC:3247 or HGNC:5213)) or (HGNC:121 and HGNC:2754 and (HGNC:3247 or HGNC:5213) and HGNC:82)
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Compartments

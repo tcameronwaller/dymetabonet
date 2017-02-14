@@ -92,6 +92,20 @@ function testDetermineChangeChemicals() {
 }
 
 /**
+ * Tests function extractGeneIdentifiers().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testExtractGeneIdentifiers() {
+    return compareArraysByValuesIndices(
+        extractGeneIdentifiers("HGNC:549 or HGNC:550 or HGNC:80"),
+            ["HGNC:549", "HGNC:550", "HGNC:80"]
+    ) && compareArraysByValuesIndices(
+        ["HGNC:549", "HGNC:550", "HGNC:80"],
+            extractGeneIdentifiers("HGNC:549 or HGNC:550 or HGNC:80")
+        );
+}
+
+/**
  * Tests function checkReactionBoundsValues().
  * @returns {boolean} Whether or not the function meets expectation.
  */
@@ -129,6 +143,53 @@ function testCheckReactionBoundsDirection() {
     };
     return checkReactionBoundsDirection(reaction) === true;
 }
+
+/**
+ * Tests function checkReactionMetabolites().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testCheckReactionMetabolites() {
+    var reaction = {id: "reaction_1", metabolites: {a_c: 1, b_c: 1, c_c: -1}};
+    var metabolites = [
+        {id: "a_c"},
+        {id: "b_c"},
+        {id: "c_c"}
+    ];
+    return checkReactionMetabolites(reaction, metabolites) === true;
+}
+
+
+
+
+
+
+
+
+
+
+/**
+ * Tests function checkReactionGenes().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testCheckReactionGenes() {
+    var reaction = {
+        gene_reaction_rule: "HGNC:549 or (HGNC:550 and HGNC:125) or HGNC:80"
+    };
+    var genes = [
+        {id: "HGNC:549"},
+        {id: "HGNC:550"},
+        {id: "HGNC:80"}
+    ];
+    return checkReactionGenes(reaction, genes) === true;
+}
+
+
+
+
+
+
+
+
 
 
 /**

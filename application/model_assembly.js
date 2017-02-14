@@ -32,7 +32,7 @@ function checkMetaboliteReactions(reactions, metabolite) {
  * @param {Object} metabolite Information for a metabolite.
  */
 function checkMetabolite(reactions, metabolite) {
-    checkMetaboliteReaction(reactions, metabolite);
+    checkMetaboliteReactions(reactions, metabolite);
 }
 
 /**
@@ -155,9 +155,6 @@ function checkReactionBoundsDirection(reaction) {
     }
 }
 
-
-// TODO: Write a test function for checkReactionMetabolites().
-
 /**
  * Checks to ensure that a reaction's metabolites have corresponding records in
  * the metabolic model.
@@ -186,17 +183,64 @@ function checkReactionMetabolites(reaction, metabolites) {
     }
 }
 
+
+
+
+// TODO: Confirm that all genes in the "reactions" list of the model have a record in the "genes" list.
+
+// TODO: Create a function to extract the geneIdentifiers from a reaction's gene_reaction_rule.
+// TODO: To do so, it might be helpful to remove spaces and "or" and create an array for each reaction.
+
+
+/**
+ * Checks to ensure that a reaction's genes have corresponding records in the
+ * metabolic model.
+ * @param {Object} reaction Information for a reaction.
+ * @param {Array<Object>} genes Information for all genes of a metabolic model.
+ * @returns {boolean} Whether or not the reaction's genes have records.
+ */
+function checkReactionGenes(reaction, genes) {
+    // Confirm that a reaction's genes have corresponding records.
+    if (
+        extractGeneIdentifiers(reaction.gene_reaction_rule)
+            .every(function (geneIdentifier) {
+                return genes.find(function (gene) {
+                        return gene.id === geneIdentifier;
+                    }) != undefined;
+            })
+    ) {
+        return true;
+    } else {
+        console.log(
+            "Check Reactions: " + reaction.id +
+            " failed gene check."
+        );
+        return false;
+    }
+}
+
+
+
+
+
+
+
+
+
+
 /**
  * Checks a single reaction from a metabolic model.
  * @param {Object} reaction Information for a reaction.
  * @param {Array<Object>} metabolites Information for all metabolites of a
  * metabolic model.
+ * @param {Array<Object>} genes Information for all genes of a metabolic model.
  */
-function checkReaction(reaction, metabolites) {
+function checkReaction(reaction, metabolites, genes) {
     checkReactionBoundsValues(reaction);
     checkReactionBoundsRanges(reaction);
     checkReactionBoundsDirection(reaction);
     checkReactionMetabolites(reaction, metabolites);
+    checkReactionGenes(reaction, genes);
 }
 
 /**
@@ -205,6 +249,9 @@ function checkReaction(reaction, metabolites) {
  * @returns {Object} Node for a reaction.
  */
 function createReactionNode(reaction) {
+    if (reaction.id === "FAOXCPRIST3x") {
+        console.log(reaction);
+    }
     var reactionNode = {
         group: "nodes",
         class: "reaction",
@@ -227,12 +274,15 @@ function createReactionNode(reaction) {
  * model.
  * @param {Array<Object>} metabolites Information for all metabolites of a
  * metabolic model.
+ * @param {Array<Object>} genes Information for all genes of a metabolic model.
  * @returns {Array<Object>} Nodes for reactions.
  */
-function createReactionNodes(reactions, metabolites) {
+function createReactionNodes(reactions, metabolites, genes) {
+    console.log("testing checkReactionGenes()");
+    console.log(testCheckReactionGenes());
     // Check reactions.
     reactions.map(function (reaction) {
-        return checkReaction(reaction, metabolites);
+        return checkReaction(reaction, metabolites, genes);
     });
     // Create nodes for reactions.
     return reactions.map(createReactionNode);
@@ -349,19 +399,13 @@ function createCompartmentRecords(compartments) {
 // Creation of records for genes
 
 // TODO: Confirm that all genes in the "genes" list of the model participate in at least 1 reaction.
-// TODO: Confirm that all genes in the "reactions" list of the model have a record in the "genes" list.
-
-// TODO: Create a function to extract the geneIdentifiers from a reaction's gene_reaction_rule.
-// TODO: To do so, it might be helpful to remove spaces and "or" and create an array for each reaction.
-
-
 
 /**
  * Creates a record for a single metabolic process from a metabolic model.
  * @param {string} processName Name of a metabolic subsystem or process.
  * @returns {Object} Record for a process.
  */
-function createProcessRecord(processName) {
+function createGeneRecord(processName) {
     return {
         name: processName
     };
@@ -373,7 +417,7 @@ function createProcessRecord(processName) {
  * model.
  * @returns {Array<Object>} Records for processes.
  */
-function createProcessRecords(reactions) {
+function createGeneRecords(reactions) {
     // Create records for processes.
     // Assume that according to their annotation, all reactions in the metabolic
     // model participate in only a single metabolic process.
@@ -651,7 +695,9 @@ function assembleNetwork(model) {
         network: cytoscape({
             elements: [].concat(
                 createMetaboliteNodes(model.reactions, model.metabolites),
-                createReactionNodes(model.reactions, model.metabolites),
+                createReactionNodes(
+                    model.reactions, model.metabolites, model.genes
+                ),
                 createReactionLinks(model.reactions)
             )
         })
@@ -677,8 +723,8 @@ function assembleNetwork(model) {
  */
 function assembleModel(modelInitial) {
     var model = Object.assign({},
-        assembleSets(modelInitial)//,
-        //assembleNetwork(modelInitial)
+        //assembleSets(modelInitial),
+        assembleNetwork(modelInitial)
     );
     console.log(model.sets);
     //exploreNetwork(model.network);
