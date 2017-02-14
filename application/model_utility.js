@@ -24,6 +24,24 @@ function collectUniqueElements(elements) {
 }
 
 /**
+ * Replaces all instances of a substring in a string.
+ * @param {string} currentString The string that contains the substring for
+ * replacement.
+ * @param {string} target The substring for replacement.
+ * @param {string} replacement The substring to substitute in place of the
+ * substring for replacement.
+ * @returns {string} New string after replacement of all instances.
+ */
+function replaceAllString(currentString, target, replacement) {
+    if (currentString.includes(target)) {
+        var newString = currentString.replace(target, replacement);
+        return replaceAllString(newString, target, replacement);
+    } else {
+        return currentString;
+    }
+}
+
+/**
  * Collects values for identical keys from multiple objects.
  * @param {Array<Object>} objects Array of objects.
  * @param {string} key Common key for all objects.
@@ -93,25 +111,10 @@ function extractMetaboliteIdentifiers(compartmentalMetaboliteIdentifiers) {
 }
 
 /**
- * Filters a model's reactions by their inclusion of a compartmental metabolite.
- * @param {Array<Object>} reactions Information for reactions in the model.
- * @param {Object} metabolite Information for a metabolite.
- * @returns {Array<string>} Identifiers for reactions in which the metabolite
- * participates.
- */
-function filterReactionsByCompartmentalMetabolite(reactions, metabolite) {
-    // Select reactions in which a compartmental metabolite participates.
-    return reactions.filter(function (reaction) {
-        return (Object.keys(reaction.metabolites)
-            .includes(metabolite.id));
-    });
-}
-
-/**
  * Filters a model's compartmental metabolites by their identity to a general
  * metabolite.
  * @param {Array<Object>} metabolites Information for metabolites in the model.
- * @param {Object} metaboliteIdentifier Unique identifier of general metabolite.
+ * @param {string} metaboliteIdentifier Unique identifier of general metabolite.
  * @returns {Array<string>} Identifiers for compartmental metabolites that are
  * chemically identical to the general metabolite.
  */
@@ -122,26 +125,6 @@ function filterCompartmentalMetabolitesByMetabolite(metabolites, metaboliteIdent
             metaboliteIdentifier;
     });
 }
-
-
-/**
- * Counts the unique reactions in which a metabolite participates.
- * @param {Array<Object>} reactions Information for reactions in the model.
- * @param {Object} metabolite Information for a metabolite.
- * @returns {number} Count of unique reactions.
- */
-function countCompartmentalMetaboliteReactions(reactions, metabolite) {
-    return collectUniqueElements(
-        filterReactionsByCompartmentalMetabolite(reactions, metabolite)
-    )
-        .length;
-}
-
-
-
-
-
-
 
 
 
@@ -329,6 +312,71 @@ function filterReactionMetabolitesByRole(reaction, role) {
 }
 
 /**
+ * Filters a model's reactions by their inclusion of a compartmental metabolite.
+ * @param {string} metaboliteIdentifier Identifier of a compartmental
+ * metabolite.
+ * @param {Array<Object>} reactions Information for reactions in the model.
+ * @returns {Array<string>} Identifiers for reactions in which the metabolite
+ * participates.
+ */
+function filterReactionsByCompartmentalMetabolite(
+    metaboliteIdentifier, reactions
+) {
+    // Select reactions in which a compartmental metabolite participates.
+    return reactions.filter(function (reaction) {
+        return (Object.keys(reaction.metabolites)
+            .includes(metaboliteIdentifier));
+    });
+}
+
+/**
+ * Filters a model's reactions by their inclusion of a gene.
+ * @param {string} geneIdentifier Identifier of a gene.
+ * @param {Array<Object>} reactions Information for reactions in the model.
+ * @returns {Array<string>} Identifiers for reactions in which the gene
+ * participates.
+ */
+function filterReactionsByGene(geneIdentifier, reactions) {
+    return reactions.filter(function (reaction) {
+        return extractGeneIdentifiers(reaction.gene_reaction_rule)
+            .includes(geneIdentifier);
+    });
+}
+
+/**
+ * Counts the unique reactions in which a compartmental metabolite participates.
+ * @param {string} metaboliteIdentifier Identifier of a compartmental
+ * metabolite.
+ * @param {Array<Object>} reactions Information for reactions in the model.
+ * @returns {number} Count of unique reactions.
+ */
+function countCompartmentalMetaboliteReactions(
+    metaboliteIdentifier, reactions
+) {
+    return collectUniqueElements(
+        filterReactionsByCompartmentalMetabolite(
+            metaboliteIdentifier, reactions
+        )
+    )
+        .length;
+}
+
+/**
+ * Counts the unique reactions in which a gene participates.
+ * @param {string} geneIdentifier Identifier for a metabolite.
+ * @param {Array<Object>} reactions Information for reactions in the model.
+ * @returns {number} Count of unique reactions.
+ */
+function countGeneReactions(geneIdentifier, reactions) {
+    return collectUniqueElements(
+        filterReactionsByGene(
+            geneIdentifier, reactions
+        )
+    )
+        .length;
+}
+
+/**
  * Counts the unique compartments of a reaction's metabolites that participate
  * as either reactant or product.
  * @param {Object} reaction Information for a reaction.
@@ -414,17 +462,18 @@ function determineChangeChemicals(reaction) {
  * reaction.
  */
 function extractGeneIdentifiers(geneReactionRule) {
-    return geneReactionRule.split(" ").filter(function (element) {
-        return element.includes(":");
-    });
+    return collectUniqueElements(
+        replaceAllString(
+            replaceAllString(
+                geneReactionRule, "(", ""
+            ), ")", ""
+        )
+            .split(" ")
+            .filter(function (element) {
+                return element.includes(":");
+            })
+    );
 }
-
-// TODO: Replace "(" and ")" both by "", then split by " ". I like that option better.
-
-//HGNC:21481 or HGNC:28335 or HGNC:30866 or (HGNC:6535 and HGNC:6541) or HGNC:6535 or HGNC:6541 or HGNC:6544
-//(HGNC:10606 and HGNC:121 and HGNC:2754 and (HGNC:3247 or HGNC:5213)) or (HGNC:121 and HGNC:2754 and (HGNC:3247 or HGNC:5213) and HGNC:82)
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Compartments

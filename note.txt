@@ -4,6 +4,33 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+14 February 2017
+
+----------
+
+Assembly of the model from sets and network requires about 3.5 minutes.
+
+----------
+
+Some reactions have long and intricate gene reaction rules.
+Examples:
+//HGNC:21481 or HGNC:28335 or HGNC:30866 or (HGNC:6535 and HGNC:6541) or HGNC:6535 or HGNC:6541 or HGNC:6544
+//(HGNC:10606 and HGNC:121 and HGNC:2754 and (HGNC:3247 or HGNC:5213)) or (HGNC:121 and HGNC:2754 and (HGNC:3247 or HGNC:5213) and HGNC:82)
+
+----------
+Style
+
+Pass the minimal practical amount of information between functions.
+Example: function(thing.id)
+
+List the arguments to a function in order of decreasing specificity or relevance to the function.
+More specific or relevant arguments come before more general arguments.
+Example: function(searchQuery, elementsToSearchAgainst)
+
+----------
+
+
+--------------------------------------------------
 13 February 2017
 
 Create set records for genes.

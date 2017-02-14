@@ -15,6 +15,14 @@ function testCollectUniqueElements() {
 }
 
 /**
+ * Tests function replaceAllString().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testReplaceAllString() {
+    return replaceAllString("a b c d e f g", " ", "") === "abcdefg";
+}
+
+/**
  * Tests function countReactantProductCompartments().
  * @returns {boolean} Whether or not the function meets expectation.
  */
@@ -97,11 +105,15 @@ function testDetermineChangeChemicals() {
  */
 function testExtractGeneIdentifiers() {
     return compareArraysByValuesIndices(
-        extractGeneIdentifiers("HGNC:549 or HGNC:550 or HGNC:80"),
-            ["HGNC:549", "HGNC:550", "HGNC:80"]
+        extractGeneIdentifiers(
+            "HGNC:100 or (HGNC:200 and HGNC:300) or (HGNC:300 and HGNC:400)"
+        ),
+            ["HGNC:100", "HGNC:200", "HGNC:300", "HGNC:400"]
     ) && compareArraysByValuesIndices(
-        ["HGNC:549", "HGNC:550", "HGNC:80"],
-            extractGeneIdentifiers("HGNC:549 or HGNC:550 or HGNC:80")
+            ["HGNC:100", "HGNC:200", "HGNC:300", "HGNC:400"],
+            extractGeneIdentifiers(
+                "HGNC:100 or (HGNC:200 and HGNC:300) or (HGNC:300 and HGNC:400)"
+            )
         );
 }
 
@@ -158,39 +170,23 @@ function testCheckReactionMetabolites() {
     return checkReactionMetabolites(reaction, metabolites) === true;
 }
 
-
-
-
-
-
-
-
-
-
 /**
  * Tests function checkReactionGenes().
  * @returns {boolean} Whether or not the function meets expectation.
  */
 function testCheckReactionGenes() {
     var reaction = {
-        gene_reaction_rule: "HGNC:549 or (HGNC:550 and HGNC:125) or HGNC:80"
+        gene_reaction_rule: "(HGNC:549) or (HGNC:550 and HGNC:125) or HGNC:80",
+        id: "reaction_1"
     };
     var genes = [
         {id: "HGNC:549"},
         {id: "HGNC:550"},
+        {id: "HGNC:125"},
         {id: "HGNC:80"}
     ];
     return checkReactionGenes(reaction, genes) === true;
 }
-
-
-
-
-
-
-
-
-
 
 /**
  * Tests function checkMetaboliteReactions().
@@ -202,9 +198,25 @@ function testCheckMetaboliteReactions() {
         {metabolites: {a_c: 1}, id: "reaction_2"},
         {metabolites: {a_c: 1}, id: "reaction_3"}
         ];
-    var metabolite = {id: "a_c"};
-    return checkMetaboliteReactions(reactions, metabolite) === true;
+    var metaboliteIdentifier = "a_c";
+    return checkMetaboliteReactions(metaboliteIdentifier, reactions) === true;
 }
+
+/**
+ * Tests function checkGeneReactions().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testCheckGeneReactions() {
+    var reactions = [
+        {gene_reaction_rule: "HGNC:100 or HGNC:200", id: "reaction_1"},
+        {gene_reaction_rule: "HGNC:100 or HGNC:300", id: "reaction_2"},
+        {gene_reaction_rule: "HGNC:100 or HGNC:400", id: "reaction_3"}
+    ];
+    var geneIdentifier = "HGNC:100";
+    return checkGeneReactions(geneIdentifier, reactions) === true;
+}
+
+
 
 /**
  * Tests function determineMetaboliteSetCharge().
