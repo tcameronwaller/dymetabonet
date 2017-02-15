@@ -3,6 +3,60 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
+14 February 2017
+
+////////////////////////////////////////////////////////////////////////////////
+// Assembly of Network
+
+/**
+ * Assembles a CytoScape.js network from information of a metabolic model.
+ * @param {Object} model Information of a metabolic model from systems biology.
+ * @returns {Object} An object with a key of "network" and a value of a
+ * CytoScape.js network.
+ */
+function assembleNetwork(model) {
+    return {
+        network: cytoscape({
+            elements: {
+                edges: createReactionLinks(model.reactions),
+                nodes: [].concat(
+                    createMetaboliteNodes(model.metabolites, model.reactions),
+                    createReactionNodes(
+                        model.reactions, model.metabolites, model.genes
+                    )
+                )
+            }
+        }).json()
+    };
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Assembly of Network
+
+/**
+ * Assembles a CytoScape.js network from information of a metabolic model.
+ * @param {Object} model Information of a metabolic model from systems biology.
+ * @returns {Object} An object with a key of "network" and a value of a
+ * CytoScape.js network.
+ */
+function assembleNetwork(model) {
+    return {
+        network: cytoscape({
+            elements: [].concat(
+                createMetaboliteNodes(model.metabolites, model.reactions),
+                createReactionNodes(
+                    model.reactions, model.metabolites, model.genes
+                ),
+                createReactionLinks(model.reactions)
+            )
+        }).json()
+    };
+}
+
+
+
+
+--------------------------------------------------
 1 February 2017
 
     var subNetwork = cytoscape({

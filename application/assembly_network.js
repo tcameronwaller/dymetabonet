@@ -48,7 +48,7 @@ function checkMetabolite(metaboliteIdentifier, reactions) {
 function createCompartmentalMetaboliteNode(metabolite) {
     var metaboliteNode = {
         group: "nodes",
-        class: "metabolite",
+        classes: "metabolite",
         data: {
             compartment: metabolite.compartment,
             id: metabolite.id,
@@ -239,7 +239,7 @@ function checkReaction(reaction, metabolites, genes) {
 function createReactionNode(reaction) {
     var reactionNode = {
         group: "nodes",
-        class: "reaction",
+        classes: "reaction",
         data: {
             gene_reaction_rule: reaction.gene_reaction_rule,
             id: reaction.id,
@@ -247,7 +247,7 @@ function createReactionNode(reaction) {
             products: filterReactionMetabolitesByRole(reaction, "product"),
             reactants: filterReactionMetabolitesByRole(reaction, "reactant"),
             reversibility: determineReversibility(reaction),
-            subsystem: reaction.subsystem,
+            subsystem: reaction.subsystem
         }
     };
     return reactionNode;
@@ -352,22 +352,34 @@ function createReactionLinks(reactions) {
 // Assembly of Network
 
 /**
- * Assembles a CytoScape.js network from information of a metabolic model.
+ * Assembles network elements, nodes and links, to represent information of a
+ * metabolic model.
  * @param {Object} model Information of a metabolic model from systems biology.
- * @returns {Object} An object with a key of "network" and a value of a
- * CytoScape.js network.
+ * @returns {Object} Network elements.
  */
 function assembleNetwork(model) {
     return {
-        network: cytoscape({
-            elements: [].concat(
+        network_elements: {
+            edges: createReactionLinks(model.reactions),
+            nodes: [].concat(
                 createMetaboliteNodes(model.metabolites, model.reactions),
                 createReactionNodes(
                     model.reactions, model.metabolites, model.genes
-                ),
-                createReactionLinks(model.reactions)
+                )
             )
-        })
+        }
     };
+}
+
+/**
+ * Assembles a CytoScape.js network and appends it to a model.
+ * @param {Object} modelPremature Information of a metabolic model.
+ * @returns {Object} An object with a key of "network" and a value of a
+ * CytoScape.js network.
+ */
+function initializeNetwork(modelPremature) {
+    return Object.assign({}, modelPremature, {
+        network: cytoscape({elements: modelPremature.network_elements})
+    });
 }
 

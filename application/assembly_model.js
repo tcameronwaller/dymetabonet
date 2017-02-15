@@ -26,20 +26,7 @@ function assembleModel(modelInitial) {
     );
     console.log(model);
     //exploreNetwork(model.network);
-    //var modelJSON = model.json();
-    //downloadJSON(modelJSON, "model.json");
-    //return model;
-}
-
-/** Temporary */
-function assembleModel2(modelInitial) {
-    var model = Object.assign({},
-        //assembleSets(modelInitial),
-        assembleNetwork(modelInitial)
-    );
-    exploreNetwork(model.network);
-    //var modelJSON = model.json();
-    //downloadJSON(modelJSON, "model.json");
+    downloadJSON(model, "model_sets_network.json");
     //return model;
 }
 
@@ -54,27 +41,23 @@ function assembleModel2(modelInitial) {
 ////////////////////////////////////////////////////////////////////////////////
 // Utility
 
-function downloadJSON(object, name) {
-    var objectJSON = JSON.stringify(object);
-    var blob = new Blob([objectJSON], {type: "application/json"});
-    var url = URL.createObjectURL(blob);
-    var documentReference = document.createElement("a");
-    documentReference.setAttribute("href", url);
-    documentReference.setAttribute("download", name);
-    documentReference.click();
-}
+// TODO: Define functionality (organize in functions) for queries!!!
 
-function exploreNetwork(network) {
+function exploreModel(modelPremature) {
 
-    console.log("Metabolite Nodes");
-    console.log(network.nodes(".metabolite").cy());
-    console.log(network.filter(".metabolite").cy());
+    // Initialize network
+    var model = initializeNetwork(modelPremature);
+    console.log(model);
+
+    //console.log("Metabolite Nodes");
+    //console.log(network.nodes(".metabolite").cy());
+    //console.log(network.filter(".metabolite").cy());
     //console.log(network.metabolite);
     //console.log(network.elements.metabolite);
 
     // collection.cy() returns core
 
-    console.log(network.getElementById("10FTHFtl").data());
+    //console.log(network.getElementById("10FTHFtl").data());
     //var pyruvateNeighborhood = network
     //    .getElementById("pyr_c")
     //    .closedNeighborhood();

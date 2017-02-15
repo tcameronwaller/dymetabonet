@@ -51,7 +51,7 @@ function initializeQueryInterface() {
             return d
         });
 
-    d3.select("#submit")
+    d3.select("#assemble")
         .on("click", function () {
             //console.log(d3.event);
             //console.log(d3.event.srcElement.value);
@@ -70,16 +70,15 @@ function initializeQueryInterface() {
                 });
         })
 
-    // TODO: I broke this functionality...
-    d3.select("#assembly")
+    d3.select("#load")
         .on("click", function () {
             // Load data from file in JSON format.
             // Create objects that associate with these data.
-            d3.json(("../model/homo-sapiens/" + "model_h-sapiens_recon-2.json"),
-                function (error, modelInitial) {
+            d3.json(("../model/homo-sapiens/" + "model_sets_network_2017-02-14.json"),
+                function (error, modelPremature) {
                     if (error) throw error;
-                    // Call function to assemble model.
-                    assembleModel(modelInitial);
+                    // Call function to explore model.
+                    exploreModel(modelPremature);
                 });
         })
 }

@@ -6,9 +6,81 @@ Research With Alexander Lex
 --------------------------------------------------
 14 February 2017
 
+
+----------
+The program...
+1) assembles sets and network elements for a model
+2) saves this model to the user's computer
+3) loads the model from the user's computer into memory
+4) initiates a CytoScape.js network from the network elements
+5) organizes sets, network elements, and network instance all in a model object
+
+Future directions...
+1) query against the model (sets and network) to obtain specific subsets
+2) visualize those subsets
+
+
 ----------
 
-Assembly of the model from sets and network requires about 3.5 minutes.
+The program reads from the original metabolic model, converted from SBML to JSON format, and assembles a new model object with sets and network elements.
+I decided to store network elements under key "network_elements" within this model object without creating a CytoScape.js network instance from them at first.
+Without creating a CytoScape.js network instance, it is not necessary to export the network using json() for saving.
+Also, CytoScape.js adds a lot of excess information when it initiates a network and then exports to JSON.
+The JSON file for the model of sets and CytoScape.js network has a file size of 12639 kilobytes.
+The JSON file for the model of sets and network elements without a CytoScape.js network instance has a file size of 6727 kilobytes.
+
+The network elements in the model are compatible for direct creation of a CytoScape.js network instance.
+I will create the CytoScape.js network instance after saving the model's JSON file and then loading it for analysis.
+Store the network instance under a new key in the model object for "network".
+
+Model version of 18 January 2017 with redundant and derived properties had a JSON file size of 22071 kilobytes.
+Model version of 14 February 2017 with relational sets and JSON version of CytoScape.js network had a JSON file size of 12639 kilobytes.
+Model version of 14 February 2017 with relational sets and network elements had a JSON file size of 6727 kilobytes.
+I think this version of 6727 kilobytes is still larger than the original metabolic model in JSON format (4000 kilobytes) due to additional information for links.
+
+----------
+
+Complete assembly of the model from sets and network requires about 3.5 minutes.
+
+----------
+
+CytoscapeJS can accept elements in a variety of formats to assemble a network.
+
+I prefer Option 1.
+Even if the user initializes a network with Option 2, Cytoscape.js assembles the network in a structure more like Option 1.
+
+Option 1
+http://blog.js.cytoscape.org/2016/06/08/glycolysis/
+
+var network = cytoscape({
+  elements: {
+    edges: [
+      {edge_1},
+      {edge_2}
+    ],
+    nodes: [
+      {node_1},
+      {node_2},
+      {node_3}
+    ]
+    {edge_1},
+    {edge_2}
+  }
+}
+
+Option 2
+http://js.cytoscape.org/#notation/elements-json
+http://blog.js.cytoscape.org/2016/05/24/getting-started/
+
+var network = cytoscape({
+  elements: [
+    {node_1},
+    {node_2},
+    {node_3},
+    {edge_1},
+    {edge_2}
+  ]
+}
 
 ----------
 
