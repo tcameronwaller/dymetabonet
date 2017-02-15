@@ -4,6 +4,74 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+15 February 2017
+
+----------
+
+
+
+----------
+
+Meeting with Alexander Lex
+
+Alex recommended organizing information for sets in dictionaries rather than in arrays.
+For example, the metabolites should be in a dictionary object with identifiers as keys.
+Accessing information from dictionaries by direct reference to a key is more efficient that filtering an array.
+
+Alex recommended 3 levels of queries.
+1) Query against the full model to select a subset selection.
+2) Filter that subset selection to refine it further.
+3) Select portions of the selection for highlighting.
+For example...
+1) Query against the full model to include only mitochondrial metabolites and reactions.
+2) Filter this subset to include only metabolites and reactions in valine biosynthesis.
+3) Select transport reactions for highlighting.
+
+Selection of Primary Data Structure
+I drew Sketch 2017-02-15_1 to compare and contrast the representations of the metabolic network with and without distinct nodes for compartmental metabolites.
+This sketch illustrates challenges in representing reactions between metabolites in multiple (>1) compartments without distinct nodes for compartmental metabolites.
+Representation of reversible transport reactions is a special challenge.
+Topological traversal and path tracing are not intuitive without distinct nodes for compartmental metabolites.
+
+Assembly of Sets and Network
+-Checks of properties of metabolites, reactions, genes, and processes
+-Discrepancies in formulas, and names of compartmental records for metabolites
+
+Current Functionality
+1) Assemble sets and network elements for a model, checking properties (3.5 minutes)
+2) Saves model to user's computer (6727 kilobytes)
+3) Load model from user's computer to memory
+4) Initiate a CytoScape.js network from network elements
+5) Organize sets, network elements, and network instance all in a model object
+
+Future Functionality
+1) Query against the model (sets and network) to obtain specific subsets
+2) Visualize those subsets
+
+----------
+
+Model properties
+
+-Metabolites
+--Each compartmental metabolite with a record participates in at least a single reaction.
+
+-Reactions
+--Each reaction has annotation for participation from at least a single metabolite.
+--Each compartmental metabolite that participates in a reaction has a corresponding record.
+--Some reactions do not have annotations for genes.
+--Each gene that participates in a reaction has a corresponding record.
+--Some reactions do not have annotations for subsystem or metabolic process.
+--Lower bound of each reaction is either 0 or -1000.
+--Upper bound of each reaction is always 1000.
+--Each reaction either proceeds in forward direction or is reversible.
+--Some reactions involve multiple compartments in either reactants or products, such that they involve more than 2 compartments in total.
+--Some reactions involve both multiple compartments (>1) in total and chemical changes in metabolites.
+--Some reactions that involve multiple compartments (>1) in total are also reversible.
+
+Genes
+--Each gene with a record participates in at least a single reaction.
+
+--------------------------------------------------
 14 February 2017
 
 

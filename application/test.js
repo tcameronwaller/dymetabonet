@@ -160,7 +160,21 @@ function testCheckReactionBoundsDirection() {
  * Tests function checkReactionMetabolites().
  * @returns {boolean} Whether or not the function meets expectation.
  */
-function testCheckReactionMetabolites() {
+function testCheckReactionMetabolites1() {
+    var reaction = {id: "reaction_1", metabolites: {}};
+    var metabolites = [
+        {id: "a_c"},
+        {id: "b_c"},
+        {id: "c_c"}
+    ];
+    return checkReactionMetabolites(reaction, metabolites) === false;
+}
+
+/**
+ * Tests function checkReactionMetabolites().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testCheckReactionMetabolites2() {
     var reaction = {id: "reaction_1", metabolites: {a_c: 1, b_c: 1, c_c: -1}};
     var metabolites = [
         {id: "a_c"},
@@ -186,6 +200,41 @@ function testCheckReactionGenes() {
         {id: "HGNC:80"}
     ];
     return checkReactionGenes(reaction, genes) === true;
+}
+
+/**
+ * Tests function checkReactionProcess().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testCheckReactionProcess1() {
+    var reaction = {
+        id: "reaction_1",
+        subsystem: "World Peace"
+    };
+    return checkReactionProcess(reaction) === true;
+}
+
+/**
+ * Tests function checkReactionProcess().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testCheckReactionProcess2() {
+    var reaction = {
+        id: "reaction_1"
+    };
+    return checkReactionProcess(reaction) === false;
+}
+
+/**
+ * Tests function checkReactionProcess().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testCheckReactionProcess3() {
+    var reaction = {
+        id: "reaction_1",
+        subsystem: undefined
+    };
+    return checkReactionProcess(reaction) === false;
 }
 
 /**

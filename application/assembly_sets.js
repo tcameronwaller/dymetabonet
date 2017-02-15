@@ -138,6 +138,9 @@ function determineMetaboliteSetCharge(setMetabolites) {
     var charges = collectValuesFromObjects(setMetabolites, "charge");
     if (collectUniqueElements(charges).length <= 1) {
         return collectUniqueElements(charges)[0];
+    } else {
+        console.log("charge discrepancy");
+        console.log(setMetabolites);
     }
 }
 
@@ -163,6 +166,8 @@ function determineMetaboliteSetFormula(setMetabolites) {
             return collectUniqueElements(formulasSpecific)[0];
             //else if (collectUniqueElements(formulasSpecific).length > 1) {}
         } else {
+            console.log("formula discrepancy");
+            console.log(setMetabolites);
             return formulas[0];
         }
     }
@@ -215,6 +220,8 @@ function determineMetaboliteSetName(setMetabolites) {
             return name.replace("(S)", "(R/S)");
         }))[0];
     } else {
+        //console.log("name discrepancy");
+        //console.log(setMetabolites);
         return names[0];
     }
 }

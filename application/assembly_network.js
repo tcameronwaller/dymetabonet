@@ -162,8 +162,8 @@ function checkReactionBoundsDirection(reaction) {
 }
 
 /**
- * Checks to ensure that a reaction's metabolites have corresponding records in
- * the metabolic model.
+ * Checks to ensure that a reaction has annotations for metabolites and that
+ * these metabolties have corresponding records in the metabolic model.
  * @param {Object} reaction Information for a reaction.
  * @param {Array<Object>} metabolites Information for all metabolites of a
  * metabolic model.
@@ -172,12 +172,13 @@ function checkReactionBoundsDirection(reaction) {
 function checkReactionMetabolites(reaction, metabolites) {
     // Confirm that a reaction's metabolites have corresponding records.
     if (
-        Object.keys(reaction.metabolites)
+        (Object.keys(reaction.metabolites).length >= 1) &&
+        (Object.keys(reaction.metabolites)
             .every(function (metaboliteIdentifier) {
                 return metabolites.find(function (metabolite) {
-                        return metabolite.id === metaboliteIdentifier;
-                    }) != undefined;
-            })
+                    return metabolite.id === metaboliteIdentifier;
+                }) != undefined;
+            }))
     ) {
         return true;
     } else {
@@ -217,6 +218,27 @@ function checkReactionGenes(reaction, genes) {
 }
 
 /**
+ * Checks to confirm that a reaction has an annotation for its metabolic
+ * subsystem or process.
+ * @param {Object} reaction Information for a reaction.
+ * @returns {boolean} Whether or not the reaction has an annotation for its
+ * metabolic process.
+ */
+function checkReactionProcess(reaction) {
+    // Confirm that reaction has an annotation for a metabolic process.
+    if (
+        reaction.subsystem != undefined
+    ) {
+        return true;
+    } else {
+        console.log(
+            "Check Reactions: " + reaction.id + " failed process check."
+        );
+        return false;
+    }
+}
+
+/**
  * Checks a single reaction from a metabolic model.
  * @param {Object} reaction Information for a reaction.
  * @param {Array<Object>} metabolites Information for all metabolites of a
@@ -229,6 +251,7 @@ function checkReaction(reaction, metabolites, genes) {
     checkReactionBoundsDirection(reaction);
     checkReactionMetabolites(reaction, metabolites);
     checkReactionGenes(reaction, genes);
+    //checkReactionProcess(reaction);
 }
 
 /**
