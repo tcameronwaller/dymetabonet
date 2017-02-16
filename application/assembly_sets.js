@@ -14,8 +14,10 @@
  */
 function createCompartmentRecord(compartments, compartmentIdentifier) {
     return {
-        id: compartmentIdentifier,
-        name: compartments[compartmentIdentifier]
+        [compartmentIdentifier]: {
+            id: compartmentIdentifier,
+            name: compartments[compartmentIdentifier]
+        }
     };
 }
 
@@ -23,13 +25,17 @@ function createCompartmentRecord(compartments, compartmentIdentifier) {
  * Creates records for all compartments from a metabolic model.
  * @param {Object} compartments Information for all compartments of a metabolic
  * model.
- * @returns {Array<Object>} Records for compartments.
+ * @returns {Object} Records for compartments.
  */
 function createCompartmentRecords(compartments) {
     // Create records for compartments.
-    return Object.keys(compartments).map(function (compartmentIdentifier) {
-        return createCompartmentRecord(compartments, compartmentIdentifier);
-    });
+    return Object.keys(compartments)
+        .reduce(function (collection, compartmentIdentifier) {
+            return Object.assign(
+                collection,
+                createCompartmentRecord(compartments, compartmentIdentifier)
+            );
+        }, {});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,14 +73,30 @@ function checkGene(geneIdentifier, reactions) {
 }
 
 /**
+ * Determines the identifier of a single gene from a metabolic model.
+ * @param {string} geneIdentifier Identifier for a gene.
+ * @param {string} Identifier for a gene.
+ */
+function determineGeneIdentifier(geneIdentifier) {
+    if (!geneIdentifier.includes("HGNC:HGNC:")) {
+        return geneIdentifier;
+    } else {
+        return geneIdentifier.replace("HGNC:", "");
+    }
+}
+
+
+/**
  * Creates a record for a single gene from a metabolic model.
  * @param {string} processName Name of a metabolic subsystem or process.
  * @returns {Object} Record for a process.
  */
 function createGeneRecord(gene) {
     return {
-        id: gene.id,
-        name: gene.name
+        [determineGeneIdentifier(gene.id)]: {
+            id: determineGeneIdentifier(gene.id),
+            name: gene.name
+        }
     };
 }
 
@@ -84,7 +106,7 @@ function createGeneRecord(gene) {
  * model.
  * @param {Array<Object>} reactions Information for all reactions of a metabolic
  * model.
- * @returns {Array<Object>} Records for genes.
+ * @returns {Object} Records for genes.
  */
 function createGeneRecords(genes, reactions) {
     // Check genes.
@@ -92,7 +114,9 @@ function createGeneRecords(genes, reactions) {
         return checkGene(gene.id, reactions);
     });
     // Create records for genes.
-    return genes.map(createGeneRecord);
+    return genes.reduce(function (collection, gene) {
+        return Object.assign(collection, createGeneRecord(gene));
+    }, {});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -246,10 +270,12 @@ function createMetaboliteRecord(metabolites, metaboliteIdentifier) {
     //if (metaboliteIdentifier === "CE7081") {}
     // Collect consensus properties from all metabolites in set.
     return {
-        charge: determineMetaboliteSetCharge(setMetabolites),
-        formula: determineMetaboliteSetFormula(setMetabolites),
-        id: metaboliteIdentifier,
-        name: determineMetaboliteSetName(setMetabolites)
+        [metaboliteIdentifier]: {
+            charge: determineMetaboliteSetCharge(setMetabolites),
+            formula: determineMetaboliteSetFormula(setMetabolites),
+            id: metaboliteIdentifier,
+            name: determineMetaboliteSetName(setMetabolites)
+        }
     };
 }
 
@@ -257,25 +283,28 @@ function createMetaboliteRecord(metabolites, metaboliteIdentifier) {
  * Creates records for all metabolites from a metabolic model.
  * @param {Array<Object>} metabolites Information for all metabolites of a
  * metabolic model.
- * @returns {Array<Object>} Records for metabolites.
+ * @returns {Object} Records for metabolites.
  */
 function createMetaboliteRecords(metabolites) {
     // Check metabolites.
     // Create records for metabolites.
-    return metabolites.reduce(function (accumulator, metabolite) {
+    return metabolites.reduce(function (collection, metabolite) {
         // Determine if a record already exists for the metabolite.
-        if (accumulator.find(function (record) {
-                return record.id === extractMetaboliteIdentifier(metabolite.id);
-            }) === undefined) {
+        if (
+            collection[extractMetaboliteIdentifier(metabolite.id)] ===
+            undefined
+        ) {
             // Create record for the metabolite.
-            return accumulator.concat(createMetaboliteRecord(
-                metabolites, extractMetaboliteIdentifier(metabolite.id)
+            return Object.assign(
+                collection,
+                createMetaboliteRecord(
+                    metabolites, extractMetaboliteIdentifier(metabolite.id)
                 )
             );
         } else {
-            return accumulator;
+            return collection;
         }
-    }, []);
+    }, {});
 }
 
 ////////////////////////////////////////////////////////////////////////////////

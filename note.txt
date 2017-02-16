@@ -8,7 +8,11 @@ Research With Alexander Lex
 
 ----------
 
+I changed the organization of sets for compartments, metabolites, and genes.
+Now these sets use dictionary objects with keys.
 
+Assembly of the sets and network elements now only requires 2 minutes.
+The file size of the JSON model is 6774 kilobytes.
 
 ----------
 

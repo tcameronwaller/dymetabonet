@@ -25,8 +25,8 @@ function assembleModel(modelInitial) {
         assembleNetwork(modelInitial)
     );
     console.log(model);
-    //exploreNetwork(model.network);
     downloadJSON(model, "model_sets_network.json");
+    //exploreNetwork(model.network);
     //return model;
 }
 
