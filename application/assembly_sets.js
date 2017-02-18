@@ -321,6 +321,10 @@ function createProcessRecord(processName) {
     };
 }
 
+
+// TODO: Create unique identifiers for metabolic subsystems or processes.
+// TODO: Use these identifiers as keys for a dictionary-like object.
+
 /**
  * Creates records for all processes from a metabolic model.
  * @param {Array<Object>} reactions Information for all reactions of a metabolic

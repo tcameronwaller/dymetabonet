@@ -4,6 +4,109 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+17 February 2017
+
+----------
+
+Ego Network with specific directionality
+
+The user of Profondeur might want to know the ego network surrounding a metabolite either without consideration of link direction, or with specific restriction for link directionality in either direction towards or from the focal metabolite.
+
+CytoScape.js has an implementation of the breadth-first search algorithm.
+This implementation has an option to either ignore link direction or to follow link direction forward from source to target.
+It cannot follow links in reverse direction from target to source.
+
+With the current implementation of the breadth-first search algorithm in CytoScape.js, I cannot allow the user to select an ego network coming towards the focal metabolite.
+
+I think that it will be beneficial for me to implement a custom function to select or collect an ego network with bidirectional control.
+
+My implementation will involve a recursive version of the breadth first search algorithm.
+https://en.wikipedia.org/wiki/Breadth-first_search
+
+
+----------
+NetworkX ego_graph
+http://networkx.readthedocs.io/en/stable/reference/generated/networkx.generators.ego.ego_graph.html?highlight=ego
+This function provides nearly the functionality that I need.
+
+----------
+
+Social Network Application for CytoScape
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4760270/
+https://github.com/BaderLab/SocialNetworkApp
+
+----------
+
+I learned that Christopher J Myers and his team (http://www.async.ece.utah.edu/) study biological systems.
+They have knowledge and expertise in biological models in Systems Biology Markup Language.
+I contacted Chris to request an informal discussion about our projects.
+
+Tramy Nguyen from Chris Meyers' team especially works on this subject.
+
+I know Tramy's sister, Yennhi Thi Nguyen, who is a member of the team of Jeffrey Weiss.
+
+--------------------------------------------------
+16 February 2017
+
+----------
+
+Before I implement any new algorithms for topological traversal, I need to understand the available algorithms in CytoScape.js thoroughly.
+
+Neighborhood
+The neighborhood of a source node includes all nodes within 1 link of the source node and links between these nodes.
+A neighborhood is always for direct relationships between nodes 1 link away from eachother.
+A neighborhood is an ego network with a depth of 1.
+
+Ego Network
+http://www.faculty.ucr.edu/~hanneman/nettext/C9_Ego_networks.html
+An ego network is a network with center around a single ego or focal node.
+
+
+----------
+
+In topological queries or graph searches, include all links between the nodes in the selection.
+Neighborhoods include links between the nodes that they include (https://en.wikipedia.org/wiki/Neighbourhood_(graph_theory)).
+
+For a "recursive neighborhood", or search by proximity, I might be able to use a depth-first search algorithm.
+
+----------
+
+In the core functionality (functions), I would prefer to distinguish between selections by properties/attributes and selections by topology.
+Rather than considering properties (compartment, for example) at each step of a traversal, the query will be the same by narrowing a collection by properties and then calling the topological query on that narrowed collection.
+
+I do think that topological functions should at least be able to consider link directionality.
+
+----------
+Network Selection in Cytoscape.js
+
+Select single element by identifier
+core.getElementById("id");
+core.collection("#id");
+core.nodes("#id");
+core.edges("#id");
+core.elements("#id");
+core.elements("node#id");
+
+Selection by multiple identifiers
+
+
+Selection by single attribute
+core.elements("node[attribute = value]"); // From core elements, select nodes with attribute equal to value.
+
+Selection by multiple attributes
+core.elements("node[attribute1 = value1][attribute2 = value2]")
+
+Combination of selection criteria
+-elements.union()
+-elements.difference()
+-elements.absoluteComplement()
+-elements.intersection()
+
+
+
+
+
+--------------------------------------------------
 15 February 2017
 
 ----------
@@ -77,7 +180,6 @@ Genes
 
 --------------------------------------------------
 14 February 2017
-
 
 ----------
 The program...

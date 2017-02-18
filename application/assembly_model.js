@@ -43,6 +43,96 @@ function assembleModel(modelInitial) {
 
 // TODO: Define functionality (organize in functions) for queries!!!
 
+
+// TODO: Implement a function that can spread outwards from a single node.
+// TODO: Consider directionality of links: 1. null disregard directionality 2. in only follow links towards the node 3. out only follow links away from the node
+
+// The traversal will depend on link directionality.
+// Also provide the option of including parallel links (reversible reactions) in the final collection.
+
+// 1. A basic 1-step traversal function... how do I know which direction to go?... Union will take care of that in the end.
+// This function should
+
+
+// 2. A driving function that keeps track of elements in each depth and then union's them at the end.
+
+function collectEgoNetwork(ego, core, direction, depth) {
+    function traverseBreadthByDepth(
+        collection, queue, core, direction, currentDepth, goalDepth
+    ) {
+        var currentNode = core.getElementById(queue.shift());
+        if (direction === null) {
+            var neighbors = currentNode.openNeighborhood();
+        } else if (direction === "out") {
+            var neighbors = currentNode.outgoers();
+        } else if (direction === "in") {
+            var neighbors = currentNode.incomers();
+        }
+        neighbors.each(function (index, element) {
+            if (!collection.anySame(element)) {
+                collection = collection.union(element);
+            }
+            // TODO: now for the rest...
+        })
+        if (queue.length > 0) {
+            traverseBreadthByDepth(
+                collection, queue, core, direction, currentDepth, goalDepth
+            );
+        }
+    }
+    var collection = core.collection();
+    var queue = [];
+    queue.push(ego);
+    return traverseBreadthByDepth(
+        collection, queue, core, direction, currentDepth, goalDepth
+    );
+
+
+    // nested function for recursion...
+
+}
+
+
+
+
+
+
+function collectEgoNetworkOld(ego, collection, direction, depth) {
+    if (direction === null) {
+        return collection.breadthFirstSearch({
+            roots: ego,
+            visit: function (index, depthCurrent) {
+                if (depthCurrent > depth) {
+                    return false;
+                }
+            },
+            directed: false
+        });
+    } else if (direction === "out") {
+        return collection.breadthFirstSearch({
+            roots: ego,
+            visit: function (index, depthCurrent) {
+                if (depthCurrent > depth) {
+                    return false;
+                }
+            },
+            directed: true
+        });
+    } else if (direction === "in") {
+        // With the current implementation of breadthFirstSearch, and because of
+        // bidirectional edges, I cannot use this breadthFirstSearch strategy to
+        // obtain the ego network with only edges towards the ego.
+    }
+}
+
+
+
+
+
+
+
+
+
 function exploreModel(modelPremature) {
 
     // Initialize network
