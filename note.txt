@@ -4,6 +4,16 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+20 February 2017
+
+The algorithms in CytoScape.js for finding shortest paths only find the shortest path from a root node to all other nodes in the network.
+There is not option to restrict the algorithms to a specific depth.
+Calculation all path lengths and then using this would be tedious and inefficient.
+
+
+
+
+--------------------------------------------------
 17 February 2017
 
 ----------

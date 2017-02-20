@@ -56,37 +56,106 @@ function assembleModel(modelInitial) {
 
 // 2. A driving function that keeps track of elements in each depth and then union's them at the end.
 
+
+
+// TODO: I need to test this function.
+// TODO: Initiate a simple network in CytoScape.js, and apply the function to it.
+// TODO: Also, split up the nested functions and test them separately.
+
 function collectEgoNetwork(ego, core, direction, depth) {
+    // traverseBreadthByDepth is a hybrid of depth-first-search to consider level or depth structure of the network.
+    // traverseBreadthByDepth iterates for each depth level of the network from the ego.
     function traverseBreadthByDepth(
-        collection, queue, core, direction, currentDepth, goalDepth
+        collection, currentQueue, core,
+        direction, currentDepth, goalDepth
     ) {
-        var currentNode = core.getElementById(queue.shift());
-        if (direction === null) {
-            var neighbors = currentNode.openNeighborhood();
-        } else if (direction === "out") {
-            var neighbors = currentNode.outgoers();
-        } else if (direction === "in") {
-            var neighbors = currentNode.incomers();
+        function collectNodes(collection, currentQueue, nextQueue,
+                              core, direction) {
+            if (currentQueue.length > 0) {
+                // The queue for current depth is not empty.
+                // Extract identifier for current node from the current queue.
+                var currentNodeIdentifier = currentQueue[0];
+                currentQueue = currentQueue.slice(1);
+                // Extract identifiers for nodes in collection.
+                var collectionNodeIdentifiers = collection
+                    .nodes()
+                    .map(function (node) {
+                        return node.id();
+                    });
+                if (
+                    !collectionNodeIdentifiers.includes(currentNodeIdentifier)
+                ) {
+                    // Current node is novel.
+                    // Include current node in collection.
+                    var currentNode = core
+                        .getElementById(currentNodeIdentifier);
+                    collection = collection.union(currentNode);
+                    var newCollectionNodeIdentifiers = collection
+                        .nodes()
+                        .map(function (node) {
+                            return node.id();
+                        });
+                    // Find neighbors of current node.
+                    if (direction === null) {
+                        var neighbors = currentNode.openNeighborhood();
+                    } else if (direction === "out") {
+                        var neighbors = currentNode.outgoers();
+                    } else if (direction === "in") {
+                        var neighbors = currentNode.incomers();
+                    }
+                    // Include neighbors in queue for next depth only if they
+                    // are not already in the collection.
+                    var newNextQueue = neighbors
+                        .nodes()
+                        .map(function (node) {
+                            return node.id();
+                        })
+                        .filter(function (identifier) {
+                            return !newCollectionNodeIdentifiers
+                                .includes(identifier);
+                        });
+                    nextQueue = []
+                        .concat(nextQueue, newNextQueue);
+                }
+                // Recursively call the function with new parameters.
+                return collectNodes(collection, currentQueue, nextQueue,
+                    core, direction);
+            } else {
+                // The current queue is empty.
+                return {
+                    collection: collection,
+                    nextQueue: nextQueue
+                };
+            }
+        }
+
+
+
+        if (currentDepth <= goalDepth) {
+            var returnValues = collectNodes(collection, currentQueue, [],
+                core, direction);
+            var collection = returnValues.collection;
+            var nextQueue = returnValues.nextQueue;
         }
         neighbors.each(function (index, element) {
             if (!collection.anySame(element)) {
                 collection = collection.union(element);
+                queue.push(element);
             }
             // TODO: now for the rest...
         })
         if (queue.length > 0) {
-            traverseBreadthByDepth(
+            return traverseBreadthByDepth(
                 collection, queue, core, direction, currentDepth, goalDepth
             );
         }
     }
-    var collection = core.collection();
-    var queue = [];
-    queue.push(ego);
     return traverseBreadthByDepth(
-        collection, queue, core, direction, currentDepth, goalDepth
+        core.collection(), currentQueue[ego], core, direction, 0, depth
     );
 
+
+    //nodes.connectedEdges();
 
     // nested function for recursion...
 
