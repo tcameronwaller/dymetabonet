@@ -552,3 +552,110 @@ function testTraverseBreadthByDepth() {
         )
     );
 }
+
+/**
+ * Tests function collectEgoNetwork().
+ * @returns {boolean} Whether or not the function meets expectation.
+ */
+function testCollectEgoNetwork() {
+    var network = cytoscape({
+        container: document.getElementById("exploration"),
+        elements: {
+            edges: [
+                {group: "edges", data: {id: "a_b", source: "a", target: "b"}},
+                {group: "edges", data: {id: "a_c", source: "a", target: "c"}},
+                {group: "edges", data: {id: "a_d", source: "a", target: "d"}},
+                {group: "edges", data: {id: "e_a", source: "e", target: "a"}},
+                {group: "edges", data: {id: "f_a", source: "f", target: "a"}},
+                {group: "edges", data: {id: "b_g", source: "b", target: "g"}},
+                {group: "edges", data: {id: "b_h", source: "b", target: "h"}},
+                {group: "edges", data: {id: "c_d", source: "c", target: "d"}},
+                {group: "edges", data: {id: "d_c", source: "d", target: "c"}},
+                {group: "edges", data: {id: "d_i", source: "d", target: "i"}},
+                {group: "edges", data: {id: "j_d", source: "j", target: "d"}},
+                {group: "edges", data: {id: "k_e", source: "k", target: "e"}},
+                {group: "edges", data: {id: "l_f", source: "l", target: "f"}},
+                {group: "edges", data: {id: "m_f", source: "m", target: "f"}},
+                {group: "edges", data: {id: "h_n", source: "h", target: "n"}},
+                {group: "edges", data: {id: "o_k", source: "o", target: "k"}},
+                {group: "edges", data: {id: "p_k", source: "p", target: "k"}},
+                {group: "edges", data: {id: "q_l", source: "q", target: "l"}},
+                {group: "edges", data: {id: "r_m", source: "r", target: "m"}},
+                {group: "edges", data: {id: "n_s", source: "n", target: "s"}},
+                {group: "edges", data: {id: "n_t", source: "n", target: "t"}}
+            ],
+            nodes: [
+                {group: "nodes", data: {id: "a"}},
+                {group: "nodes", data: {id: "b"}},
+                {group: "nodes", data: {id: "c"}},
+                {group: "nodes", data: {id: "d"}},
+                {group: "nodes", data: {id: "e"}},
+                {group: "nodes", data: {id: "f"}},
+                {group: "nodes", data: {id: "g"}},
+                {group: "nodes", data: {id: "h"}},
+                {group: "nodes", data: {id: "i"}},
+                {group: "nodes", data: {id: "j"}},
+                {group: "nodes", data: {id: "k"}},
+                {group: "nodes", data: {id: "l"}},
+                {group: "nodes", data: {id: "m"}},
+                {group: "nodes", data: {id: "n"}},
+                {group: "nodes", data: {id: "o"}},
+                {group: "nodes", data: {id: "p"}},
+                {group: "nodes", data: {id: "q"}},
+                {group: "nodes", data: {id: "r"}},
+                {group: "nodes", data: {id: "s"}},
+                {group: "nodes", data: {id: "t"}}
+            ]
+        },
+        layout: {
+            animate: true,
+            name: "cose",
+            fit: true,
+            idealEdgeLength: 10,
+            nodeOverlap: 5,
+            nodeRepulsion: 500000,
+            padding: 10,
+            randomize: true
+        },
+        style: [
+            {
+                selector: "node",
+                style: {
+                    "background-color": "red",
+                    "font-size": "25px",
+                    "label": "data(id)",
+                    "text-halign": "center",
+                    "text-valign": "center"
+                }
+            },
+            {
+                selector: "edge",
+                style: {
+                    "line-color": "grey",
+                    "line-style": "solid",
+                    "mid-target-arrow-color": "black",
+                    "mid-target-arrow-shape": "triangle",
+                    "width": 7
+                }
+            }
+
+        ]
+    });
+    var collection = collectEgoNetwork(["a"], true, true, 2, network);
+    // Extract identifiers for nodes in collection.
+    var collectionNodeIdentifiers = collection
+        .nodes()
+        .map(function (node) {
+            return node.id();
+        });
+    return (
+        compareArraysByValuesIndices(
+            collectionNodeIdentifiers,
+            ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"]
+        ) &&
+        compareArraysByValuesIndices(
+            ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"],
+            collectionNodeIdentifiers
+        )
+    );
+}

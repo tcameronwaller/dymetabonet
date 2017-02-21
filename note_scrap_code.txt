@@ -3,6 +3,41 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
+21 February 2017
+
+function collectEgoNetworkOld(ego, collection, direction, depth) {
+    if (direction === null) {
+        return collection.breadthFirstSearch({
+            roots: ego,
+            visit: function (index, depthCurrent) {
+                if (depthCurrent > depth) {
+                    return false;
+                }
+            },
+            directed: false
+        });
+    } else if (direction === "out") {
+        return collection.breadthFirstSearch({
+            roots: ego,
+            visit: function (index, depthCurrent) {
+                if (depthCurrent > depth) {
+                    return false;
+                }
+            },
+            directed: true
+        });
+    } else if (direction === "in") {
+        // With the current implementation of breadthFirstSearch in
+        // CytoScape.js, and because of bidirectional edges, I cannot use this
+        // breadthFirstSearch strategy to obtain the ego network with only edges
+        // towards the ego.
+    }
+}
+
+
+
+
+--------------------------------------------------
 14 February 2017
 
 ////////////////////////////////////////////////////////////////////////////////

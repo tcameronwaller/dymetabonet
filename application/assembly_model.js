@@ -43,21 +43,6 @@ function assembleModel(modelInitial) {
 
 // TODO: Define functionality (organize in functions) for queries!!!
 
-
-// TODO: Implement a function that can spread outwards from a single node.
-// TODO: Consider directionality of links: 1. null disregard directionality 2. in only follow links towards the node 3. out only follow links away from the node
-
-// The traversal will depend on link directionality.
-// Also provide the option of including parallel links (reversible reactions) in the final collection.
-
-// 1. A basic 1-step traversal function... how do I know which direction to go?... Union will take care of that in the end.
-// This function should
-
-
-// 2. A driving function that keeps track of elements in each depth and then union's them at the end.
-
-
-
 /**
  * Collects the neighborhood of nodes that are immediately proximal to a list of
  * nodes.
@@ -147,8 +132,7 @@ function collectProximalNodes(
  * @param {number} currentDepth Count of edges of current nodes from origin.
  * @param {number} goalDepth Count of edges from origin to traverse.
  * @param {Object} core A CytoScape.js network.
- * @returns {Object} An object with information about a collection of nodes of
- * interest and identifiers of nodes at next depth.
+ * @returns {Object} A CytoScape.js collection of nodes and links of interest.
  */
 function traverseBreadthByDepth(
     collection, currentQueue, directionIn, directionOut,
@@ -173,68 +157,33 @@ function traverseBreadthByDepth(
     }
 }
 
-
-// TODO: Now implement collectEgoNetwork() to simplify interface with traverseBreadthByDepth().
-
+/**
+ * Collects nodes and links within specific proximity to a single focal node to
+ * create an ego network for that node.
+ * @param {string} ego Identifier for a single focal node.
+ * @param {boolean} directionIn Whether or not to follow edges towards nodes of
+ * interest.
+ * @param {boolean} directionOut Whether or not to follow edges away from nodes
+ * of interest.
+ * @param {number} depth Count of edges of current nodes from origin.
+ * @param {Object} core A CytoScape.js network.
+ * @returns {Object} A CytoScape.js collection of nodes and links of interest.
+ */
 function collectEgoNetwork(ego, directionIn, directionOut, depth, core) {
+    // This function initiates the recursive traversal and collection process.
+    // This function exists to provide a simpler, more concise interface to the
+    // process.
     return traverseBreadthByDepth(
-        core.collection(), currentQueue[ego], core, direction, 0, depth
+        core.collection(), [ego], directionIn, directionOut, 0, depth, core
     );
-
-
-    //nodes.connectedEdges();
-
-    // nested function for recursion...
-
 }
-
-
-
-
-
-
-function collectEgoNetworkOld(ego, collection, direction, depth) {
-    if (direction === null) {
-        return collection.breadthFirstSearch({
-            roots: ego,
-            visit: function (index, depthCurrent) {
-                if (depthCurrent > depth) {
-                    return false;
-                }
-            },
-            directed: false
-        });
-    } else if (direction === "out") {
-        return collection.breadthFirstSearch({
-            roots: ego,
-            visit: function (index, depthCurrent) {
-                if (depthCurrent > depth) {
-                    return false;
-                }
-            },
-            directed: true
-        });
-    } else if (direction === "in") {
-        // With the current implementation of breadthFirstSearch, and because of
-        // bidirectional edges, I cannot use this breadthFirstSearch strategy to
-        // obtain the ego network with only edges towards the ego.
-    }
-}
-
-
-
-
-
-
-
-
 
 function exploreModel(modelPremature) {
 
     // Initialize network
     //var model = initializeNetwork(modelPremature);
     //console.log(model);
-
+    console.log(testCollectEgoNetwork());
     //console.log("Metabolite Nodes");
     //console.log(network.nodes(".metabolite").cy());
     //console.log(network.filter(".metabolite").cy());
