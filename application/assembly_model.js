@@ -58,98 +58,125 @@ function assembleModel(modelInitial) {
 
 
 
-// TODO: I need to test this function.
-// TODO: Initiate a simple network in CytoScape.js, and apply the function to it.
-// TODO: Also, split up the nested functions and test them separately.
-
-function collectEgoNetwork(ego, core, direction, depth) {
-    // traverseBreadthByDepth is a hybrid of depth-first-search to consider level or depth structure of the network.
-    // traverseBreadthByDepth iterates for each depth level of the network from the ego.
-    function traverseBreadthByDepth(
-        collection, currentQueue, core,
-        direction, currentDepth, goalDepth
-    ) {
-        function collectNodes(collection, currentQueue, nextQueue,
-                              core, direction) {
-            if (currentQueue.length > 0) {
-                // The queue for current depth is not empty.
-                // Extract identifier for current node from the current queue.
-                var currentNodeIdentifier = currentQueue[0];
-                currentQueue = currentQueue.slice(1);
-                // Extract identifiers for nodes in collection.
-                var collectionNodeIdentifiers = collection
-                    .nodes()
-                    .map(function (node) {
-                        return node.id();
-                    });
-                if (
-                    !collectionNodeIdentifiers.includes(currentNodeIdentifier)
-                ) {
-                    // Current node is novel.
-                    // Include current node in collection.
-                    var currentNode = core
-                        .getElementById(currentNodeIdentifier);
-                    collection = collection.union(currentNode);
-                    var newCollectionNodeIdentifiers = collection
-                        .nodes()
-                        .map(function (node) {
-                            return node.id();
-                        });
-                    // Find neighbors of current node.
-                    if (direction === null) {
-                        var neighbors = currentNode.openNeighborhood();
-                    } else if (direction === "out") {
-                        var neighbors = currentNode.outgoers();
-                    } else if (direction === "in") {
-                        var neighbors = currentNode.incomers();
-                    }
-                    // Include neighbors in queue for next depth only if they
-                    // are not already in the collection.
-                    var newNextQueue = neighbors
-                        .nodes()
-                        .map(function (node) {
-                            return node.id();
-                        })
-                        .filter(function (identifier) {
-                            return !newCollectionNodeIdentifiers
-                                .includes(identifier);
-                        });
-                    nextQueue = []
-                        .concat(nextQueue, newNextQueue);
-                }
-                // Recursively call the function with new parameters.
-                return collectNodes(collection, currentQueue, nextQueue,
-                    core, direction);
-            } else {
-                // The current queue is empty.
-                return {
-                    collection: collection,
-                    nextQueue: nextQueue
-                };
+/**
+ * Collects the neighborhood of nodes that are immediately proximal to a list of
+ * nodes.
+ * @param {Object} collection A CytoScape.js collection of nodes of interest.
+ * @param {Array<string>} currentQueue Identifiers of nodes at current depth for
+ * which to search and collect proximal neighbors.
+ * @param {Array<string>} nextQueue Identifiers of nodes at next depth for which
+ * to search and collect proximal neighbors.
+ * @param {boolean} directionIn Whether or not to follow edges towards nodes of
+ * interest.
+ * @param {boolean} directionOut Whether or not to follow edges away from nodes
+ * of interest.
+ * @param {Object} core A CytoScape.js network.
+ * @returns {Object} An object with information about a collection of nodes of
+ * interest and identifiers of nodes at next depth.
+ */
+function collectProximalNodes(
+    collection, currentQueue, nextQueue, directionIn, directionOut, core
+) {
+    // This process recurses for each node in a queue.
+    if (currentQueue.length > 0) {
+        // The queue for current depth is not empty.
+        // Extract identifier for current node from the current queue.
+        var currentNodeIdentifier = currentQueue[0];
+        var newCurrentQueue = currentQueue.slice(1);
+        // Extract identifiers for nodes in collection.
+        var collectionNodeIdentifiers = collection
+            .nodes()
+            .map(function (node) {
+                return node.id();
+            });
+        if (
+            !collectionNodeIdentifiers.includes(currentNodeIdentifier)
+        ) {
+            // Current node is novel.
+            // Include current node in collection.
+            var currentNode = core
+                .getElementById(currentNodeIdentifier);
+            var newCollection = collection.union(currentNode);
+            // Find neighbors of current node.
+            if (directionIn === true && directionOut === true) {
+                var neighbors = currentNode.openNeighborhood();
+            } else if (directionIn === false && directionOut === true) {
+                var neighbors = currentNode.outgoers();
+            } else if (directionIn === true && directionOut === false) {
+                var neighbors = currentNode.incomers();
             }
-        }
-
-
-
-        if (currentDepth <= goalDepth) {
-            var returnValues = collectNodes(collection, currentQueue, [],
-                core, direction);
-            var collection = returnValues.collection;
-            var nextQueue = returnValues.nextQueue;
-        }
-        neighbors.each(function (index, element) {
-            if (!collection.anySame(element)) {
-                collection = collection.union(element);
-                queue.push(element);
-            }
-            // TODO: now for the rest...
-        })
-        if (queue.length > 0) {
-            return traverseBreadthByDepth(
-                collection, queue, core, direction, currentDepth, goalDepth
+            // Include neighbors in queue for next depth.
+            var neighborIdentifiers = neighbors
+                .nodes()
+                .map(function (node) {
+                    return node.id();
+                });
+            var newNextQueue = []
+                .concat(nextQueue, neighborIdentifiers);
+            // Recursively call the function with new parameters.
+            return collectProximalNodes(
+                newCollection, newCurrentQueue, newNextQueue,
+                directionIn, directionOut, core
+            );
+        } else {
+            // Recursively call the function with new parameters.
+            return collectProximalNodes(
+                collection, newCurrentQueue, nextQueue,
+                directionIn, directionOut, core
             );
         }
+    } else {
+        // The current queue is empty.
+        return {
+            collection: collection,
+            nextQueue: nextQueue
+        };
     }
+}
+
+/**
+ * Traverses a network in breadth-first sequence, collecting nodes and links
+ * until reaching a specific depth from the origin.
+ * @param {Object} collection A CytoScape.js collection of nodes of interest.
+ * @param {Array<string>} currentQueue Identifiers of nodes at current depth for
+ * which to search and collect proximal neighbors.
+ * @param {boolean} directionIn Whether or not to follow edges towards nodes of
+ * interest.
+ * @param {boolean} directionOut Whether or not to follow edges away from nodes
+ * of interest.
+ * @param {number} currentDepth Count of edges of current nodes from origin.
+ * @param {number} goalDepth Count of edges from origin to traverse.
+ * @param {Object} core A CytoScape.js network.
+ * @returns {Object} An object with information about a collection of nodes of
+ * interest and identifiers of nodes at next depth.
+ */
+function traverseBreadthByDepth(
+    collection, currentQueue, directionIn, directionOut,
+    currentDepth, goalDepth, core
+) {
+    // This process recurses for each depth level within bounds.
+    if (currentDepth <= goalDepth) {
+        var returnValues = collectProximalNodes(
+            collection, currentQueue, [], directionIn, directionOut, core
+        );
+        //console.log(returnValues);
+        var newCollection = returnValues.collection;
+        var nextQueue = returnValues.nextQueue;
+        var newDepth = currentDepth + 1;
+        return traverseBreadthByDepth(
+            newCollection, nextQueue, directionIn, directionOut,
+            newDepth, goalDepth, core
+        );
+    } else {
+        // Include in the collection all edges between nodes in the collection.
+        return collection.union(collection.nodes().edgesWith(collection.nodes()));
+    }
+}
+
+
+// TODO: Now implement collectEgoNetwork() to simplify interface with traverseBreadthByDepth().
+
+function collectEgoNetwork(ego, directionIn, directionOut, depth, core) {
     return traverseBreadthByDepth(
         core.collection(), currentQueue[ego], core, direction, 0, depth
     );
@@ -205,7 +232,6 @@ function collectEgoNetworkOld(ego, collection, direction, depth) {
 function exploreModel(modelPremature) {
 
     // Initialize network
-    testCollectEgoNetwork();
     //var model = initializeNetwork(modelPremature);
     //console.log(model);
 
