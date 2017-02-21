@@ -6,12 +6,26 @@ Research With Alexander Lex
 --------------------------------------------------
 20 February 2017
 
+----------
+
+"CySBML: a Cytoscape plugin for SBML"
+Bioinformatics
+2012
+https://www.ncbi.nlm.nih.gov/pubmed/22772946
+
+CySBML imports information from metabolic models in SBML format to the Java version of CytoScape.
+I anticipate that an interactive implementation in the JavaScript version of CytoScape will be much more accessible to biologists.
+
+----------
+
+Cola layout
+https://github.com/cytoscape/cytoscape.js-cola
+
+----------
+
 The algorithms in CytoScape.js for finding shortest paths only find the shortest path from a root node to all other nodes in the network.
 There is not option to restrict the algorithms to a specific depth.
 Calculation all path lengths and then using this would be tedious and inefficient.
-
-
-
 
 --------------------------------------------------
 17 February 2017

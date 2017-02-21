@@ -205,8 +205,9 @@ function collectEgoNetworkOld(ego, collection, direction, depth) {
 function exploreModel(modelPremature) {
 
     // Initialize network
-    var model = initializeNetwork(modelPremature);
-    console.log(model);
+    testCollectEgoNetwork();
+    //var model = initializeNetwork(modelPremature);
+    //console.log(model);
 
     //console.log("Metabolite Nodes");
     //console.log(network.nodes(".metabolite").cy());
@@ -225,9 +226,7 @@ function exploreModel(modelPremature) {
     //var subNetwork = cytoscape({
     //    container: document.getElementById("exploration"),
     //    elements: pyruvateNeighborhood.jsons(),
-    //    layout: {
-    //        name: "concentric"
-    //    }
+    //    layout: {name: "concentric"}
     //})
     //console.log(subNetwork);
 
