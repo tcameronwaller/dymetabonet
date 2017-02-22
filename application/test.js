@@ -420,7 +420,6 @@ function testCollectProximalNodes() {
                     "width": 7
                 }
             }
-
         ]
     });
     var returnValues = collectProximalNodes(
@@ -529,7 +528,6 @@ function testTraverseBreadthByDepth() {
                     "width": 7
                 }
             }
-
         ]
     });
     var collection = traverseBreadthByDepth(
@@ -638,7 +636,6 @@ function testCollectEgoNetwork() {
                     "width": 7
                 }
             }
-
         ]
     });
     var collection = collectEgoNetwork(["a"], true, true, 2, network);

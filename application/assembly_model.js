@@ -178,12 +178,54 @@ function collectEgoNetwork(ego, directionIn, directionOut, depth, core) {
     );
 }
 
+/**
+ * Visualizes a collection of nodes and links from a network.
+ * @param {Object} collection A CytoScape.js collection of nodes and links.
+ */
+function visualizeNetwork(collection) {
+    cytoscape({
+        container: document.getElementById("exploration"),
+        elements: collection.jsons(),
+        layout: {
+            animate: true,
+            name: "cose",
+            fit: true,
+            idealEdgeLength: 10,
+            nodeOverlap: 5,
+            nodeRepulsion: 500000,
+            padding: 10,
+            randomize: true
+        },
+        style: [
+            {
+                selector: "node",
+                style: {
+                    "background-color": "red",
+                    "font-size": "25px",
+                    "label": "data(id)",
+                    "text-halign": "center",
+                    "text-valign": "center"
+                }
+            },
+            {
+                selector: "edge",
+                style: {
+                    "line-color": "grey",
+                    "line-style": "solid",
+                    "mid-target-arrow-color": "black",
+                    "mid-target-arrow-shape": "triangle",
+                    "width": 7
+                }
+            }
+        ]
+    });
+}
+
 function exploreModel(modelPremature) {
 
     // Initialize network
-    //var model = initializeNetwork(modelPremature);
-    //console.log(model);
-    console.log(testCollectEgoNetwork());
+    var model = initializeNetwork(modelPremature);
+    console.log(model);
     //console.log("Metabolite Nodes");
     //console.log(network.nodes(".metabolite").cy());
     //console.log(network.filter(".metabolite").cy());
@@ -192,12 +234,36 @@ function exploreModel(modelPremature) {
 
     // collection.cy() returns core
 
-    //console.log(network.getElementById("10FTHFtl").data());
-    //var pyruvateNeighborhood = network
-    //    .getElementById("pyr_c")
-    //    .closedNeighborhood();
+    // Examples of simple networks:
+    // pyr_x at depth 2
+
+    // Examples of complex networks
+    // pyr_m at depth 2
+    // cit_m at depth 2
+
+    // Examples of enormous networks
+    // pyr_x at depth 3
+    // pyr_m at depth 3
+
+    var collection = collectEgoNetwork("pyr_m", true, true, 1, model.network);
+    console.log(collection.nodes().size());
+    visualizeNetwork(collection);
+    console.log(model.network.getElementById("pyr_x").data());
+
     //console.log(pyruvateNeighborhood);
     //console.log(pyruvateNeighborhood.jsons());
+    //pyruvateNeighborhood.cy.layout({
+    //    animate: true,
+    //    name: "cose",
+    //    fit: true,
+    //    idealEdgeLength: 10,
+    //    nodeOverlap: 5,
+    //    nodeRepulsion: 500000,
+    //    padding: 10,
+    //    randomize: true
+    //});
+
+
     //var subNetwork = cytoscape({
     //    container: document.getElementById("exploration"),
     //    elements: pyruvateNeighborhood.jsons(),

@@ -4,6 +4,47 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+21 February 2017
+
+
+I completed the implementation of a function to collect nodes and links in an ego network around a focal node.
+The function considers link directionality and traverses outward from the focal node to a specific depth.
+
+Ego networks for many metabolites become very complex and enormous very quickly.
+At depth 2 or 3, ego networks for many metabolites become very complex and enormous.
+
+The user will need very specific control over queries in order to select sufficiently specific and narrow subsets of the network.
+In particular, I think it will be very important for the user to be able to add additional depth by clicking on nodes on the visual network.
+That way the user can expand depth in very specific directions.
+
+----------
+
+http://www.pathwaycommons.org/
+
+----------
+
+I met with Tramy Nguyen and Leandro Watanabe, who are members of Christopher J Myers' research team.
+I understand from Tramy and Leandro that some tools already exist to visualize networks from systems biology, specifically networks from Systems Biology Markup Language (SBML).
+The most popular tool for visualizing these networks is CytoScape (the desktop implementation in Java), using the importer cySBML, for example.
+SBGN and associated tools are also useful for visualizing these networks.
+Tramy and Leandro mentioned several tools, including iBioSim, BioPAX, CytoScape, Escher, KEGG Translator, and SBGN.
+
+BioPAX seems to be a potentially useful standard for representing biological pathways with more general information than models in SBML tend to include.
+When I checked, however, it seems that thorough models of human metabolism are not available in BioPAX as they are in SBML.
+It seems that BioPAX more commonly includes general biological pathways.
+
+----------
+
+I wish I knew a better, or at least neater, way to convert a collection to a core in CytoScape.js.
+In order to visualize a subNetwork, I need to use the JSON representation of the element in a collection to initiate an entirely new network instance.
+I need to specify container, layout, and style in this initiation.
+
+The function collection.cy() returns a core instance from the collection.
+The function collection.cy().elements() does not work for defining the elements upon initation of a new network instance.
+
+----------
+
+--------------------------------------------------
 20 February 2017
 
 ----------
