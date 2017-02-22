@@ -4,8 +4,26 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
-21 February 2017
+22 February 2017
 
+Observations
+
+pyr_x at depth 2 links: 22 nodes (metabolites and reactions)
+pyr_x at depth 3 links: 1510 nodes (metabolites and reactions)
+pyr_c at depth 2 links: 117 nodes (metabolites and reactions)
+cit_c at depth 2 links: 45 nodes (metabolites and reactions)
+cit_c at depth 3 links: 2557 nodes (metabolites and reactions)
+
+From a biological perspective, I knew before that pyruvate and citrate were both central nodes in cellular metabolism.
+I also knew that the metabolic network was highly interconnected.
+Still, even this rather simple analysis of the metabolic network has a certain degree of novelty to biology.
+Even this rather simple analysis impresses me from a biological perspective as just how extreme the interconnection of the metabolic network is and how central these metabolites are.
+
+I am eager to evaluate the degrees of metabolites in the network.
+This global-level analysis might be very interesting.
+
+--------------------------------------------------
+21 February 2017
 
 I completed the implementation of a function to collect nodes and links in an ego network around a focal node.
 The function considers link directionality and traverses outward from the focal node to a specific depth.

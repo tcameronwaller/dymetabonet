@@ -244,8 +244,9 @@ function exploreModel(modelPremature) {
     // Examples of enormous networks
     // pyr_x at depth 3
     // pyr_m at depth 3
+    // cit_c at depth 3
 
-    var collection = collectEgoNetwork("pyr_m", true, true, 1, model.network);
+    var collection = collectEgoNetwork("cit_c", true, true, 3, model.network);
     console.log(collection.nodes().size());
     visualizeNetwork(collection);
     console.log(model.network.getElementById("pyr_x").data());
