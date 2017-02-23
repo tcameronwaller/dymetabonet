@@ -6,6 +6,79 @@ Research With Alexander Lex
 --------------------------------------------------
 22 February 2017
 
+----------
+Tasks
+
+Selection
+The user can combine these selections for specificity.
+
+1. Select metabolites and reactions by topology.
+1.1. Select metabolites and reactions within a specific topological proximity to a single query metabolite or reaction.
+Example: Select metabolites and reactions within 1 reaction of pyruvate.
+Example: Select metabolites and reactions within 3 reactions of pyruvate.
+Solution: I implemented function collectEgoNetwork to collect nodes and links in an ego network around a single focal node.
+This function can also consider link directionality in its traversal of the network.
+
+1.2. Select metabolites and reactions within shortest paths between multiple metabolites, reactions, or combinations thereof.
+Example: Select metabolites and reactions in the shortest paths between glucose and pyruvate.
+Requirements: Functionality for traversal for neighborhood and shortest paths.
+Solution: The aStar function in CytoScape.js finds the shortest path between two nodes.
+This function can consider link directionality in its traversal of the network.
+Will it be helpful to consider k shortest paths (https://en.wikipedia.org/wiki/K_shortest_path_routing), more than just the single shortest path?
+Will it be helpful to find shortest paths connecting more than two nodes?
+I can probably perform the aStar function multiple times for each pair of nodes and then combine the results.
+
+2. Select metabolites and reactions by property, attribute, or category.
+2.1. Select metabolites and reactions by inclusion criteria.
+Example: Select transport reactions and their metabolites.
+Example: Select metabolites and reactions that appear or occur in the mitochondrial matrix.
+2.2. Select metabolites and reactions by exclusion criteria.
+Example: Select metabolites and reactions that do not appear or occur in the cytoplasm.
+Requirements: Functionality for selections and filters by a variety of properties.
+Structure 1: Ignore transport reactions.
+
+3. Select metabolites and reactions by combinations of topology and property, attribute, or category.
+3.1. Select metabolites and reactions by multiple topological criteria.
+Example: Select metabolites and reactions in the shortest paths between glucose and pyruvate.
+Then select metabolites and reactions within 1 reaction of all of these metabolites and reactions.
+3.2. Select metabolites and reactions by multiple properties, attributes, or categories.
+Example: Select transport reactions and their metabolites between the cytoplasm and the mitochondrial matrix.
+3.3. Select metabolites and reactions by combinations of topological criteria and properties, attributes, or categories.
+Example: Exclude metabolites with especially high degrees (water, proton, carbon dioxide, etc) from consideration in the network.
+Then select metabolites and reactions within 1 reaction of pyruvate.
+Example: Select metabolites and reactions within 1 reaction of mitochondrial pyruvate.
+Example: Select metabolites and reactions within 1 reaction of pyruvate.
+Then select only the metabolites and reactions that appear or occur in the mitochondrion.
+Example: Select metabolites and reactions that appear or occur in the mitochondrion.
+Then select only the metabolites and reactions that are also in the shortest paths between pyruvate and citrate.
+
+Visualization
+
+1. Represent nodes and links for the network.
+Distinct nodes for compartmental metabolites or not...
+2. Represents properties and attributes, including those that define sets, clearly and in multiple ways.
+Spatial clusters, color highlighting
+3. User interaction.
+
+Analysis
+
+Betweenness Centrality
+Degree Centrality
+Communities, clusters, and cliques in the network might be relevant and interesting, but they are probably beyond the interest of the typical user.
+
+----------
+Network
+
+JSNetworkX
+My network is a MultiDiGraph.
+JSNetworkX supports attributes of nodes and links.
+
+----------
+Plans
+
+Queries need to be more specific.
+
+----------
 Observations
 
 pyr_x at depth 2 links: 22 nodes (metabolites and reactions)
@@ -184,10 +257,6 @@ Combination of selection criteria
 -elements.difference()
 -elements.absoluteComplement()
 -elements.intersection()
-
-
-
-
 
 --------------------------------------------------
 15 February 2017

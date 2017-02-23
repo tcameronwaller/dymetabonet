@@ -55,12 +55,12 @@ function assembleModel(modelInitial) {
  * interest.
  * @param {boolean} directionOut Whether or not to follow edges away from nodes
  * of interest.
- * @param {Object} core A CytoScape.js network.
+ * @param {Object} network A CytoScape.js network.
  * @returns {Object} An object with information about a collection of nodes of
  * interest and identifiers of nodes at next depth.
  */
 function collectProximalNodes(
-    collection, currentQueue, nextQueue, directionIn, directionOut, core
+    collection, currentQueue, nextQueue, directionIn, directionOut, network
 ) {
     // This process recurses for each node in a queue.
     if (currentQueue.length > 0) {
@@ -79,7 +79,7 @@ function collectProximalNodes(
         ) {
             // Current node is novel.
             // Include current node in collection.
-            var currentNode = core
+            var currentNode = network
                 .getElementById(currentNodeIdentifier);
             var newCollection = collection.union(currentNode);
             // Find neighbors of current node.
@@ -101,13 +101,13 @@ function collectProximalNodes(
             // Recursively call the function with new parameters.
             return collectProximalNodes(
                 newCollection, newCurrentQueue, newNextQueue,
-                directionIn, directionOut, core
+                directionIn, directionOut, network
             );
         } else {
             // Recursively call the function with new parameters.
             return collectProximalNodes(
                 collection, newCurrentQueue, nextQueue,
-                directionIn, directionOut, core
+                directionIn, directionOut, network
             );
         }
     } else {
@@ -131,17 +131,17 @@ function collectProximalNodes(
  * of interest.
  * @param {number} currentDepth Count of edges of current nodes from origin.
  * @param {number} goalDepth Count of edges from origin to traverse.
- * @param {Object} core A CytoScape.js network.
+ * @param {Object} network A CytoScape.js network.
  * @returns {Object} A CytoScape.js collection of nodes and links of interest.
  */
 function traverseBreadthByDepth(
     collection, currentQueue, directionIn, directionOut,
-    currentDepth, goalDepth, core
+    currentDepth, goalDepth, network
 ) {
     // This process recurses for each depth level within bounds.
     if (currentDepth <= goalDepth) {
         var returnValues = collectProximalNodes(
-            collection, currentQueue, [], directionIn, directionOut, core
+            collection, currentQueue, [], directionIn, directionOut, network
         );
         //console.log(returnValues);
         var newCollection = returnValues.collection;
@@ -149,13 +149,17 @@ function traverseBreadthByDepth(
         var newDepth = currentDepth + 1;
         return traverseBreadthByDepth(
             newCollection, nextQueue, directionIn, directionOut,
-            newDepth, goalDepth, core
+            newDepth, goalDepth, network
         );
     } else {
         // Include in the collection all edges between nodes in the collection.
         return collection.union(collection.nodes().edgesWith(collection.nodes()));
     }
 }
+
+// TODO: Modify the functionality for collectEgoNetwork to keep track of the
+// TODO: depth of each node from the ego.
+// TODO: This information will be important for the table view.
 
 /**
  * Collects nodes and links within specific proximity to a single focal node to
@@ -166,15 +170,16 @@ function traverseBreadthByDepth(
  * @param {boolean} directionOut Whether or not to follow edges away from nodes
  * of interest.
  * @param {number} depth Count of edges of current nodes from origin.
- * @param {Object} core A CytoScape.js network.
+ * @param {Object} network A CytoScape.js network.
  * @returns {Object} A CytoScape.js collection of nodes and links of interest.
  */
-function collectEgoNetwork(ego, directionIn, directionOut, depth, core) {
+function collectEgoNetwork(ego, directionIn, directionOut, depth, network) {
     // This function initiates the recursive traversal and collection process.
     // This function exists to provide a simpler, more concise interface to the
     // process.
     return traverseBreadthByDepth(
-        core.collection(), [ego], directionIn, directionOut, 0, depth, core
+        network.collection(), [ego], directionIn, directionOut,
+        0, depth, network
     );
 }
 
@@ -221,6 +226,28 @@ function visualizeNetwork(collection) {
     });
 }
 
+function temporaryEgoNetwork(ego, depth, network) {
+    // Examples of simple networks:
+    // pyr_x at depth 2
+    // Examples of complex networks
+    // pyr_m at depth 2
+    // cit_m at depth 2
+    // Examples of enormous networks
+    // pyr_x at depth 3
+    // pyr_m at depth 3
+    // cit_c at depth 3
+    var collection = collectEgoNetwork(ego, true, true, depth, network);
+    console.log("Ego Network of " + ego + " at a depth of " + depth);
+    console.log(network.getElementById(ego).data());
+    console.log("Count of nodes in collection: " + collection.nodes().size());
+    visualizeNetwork(collection);
+}
+
+// TODO: Figure out how to make aStar as convenient and capable as possible.
+// TODO: Maybe consider how to determine k shortest paths?
+// TODO: Figure out how to perform multiple aStar's for multiple (>2) nodes and then combine the results.
+// TODO: Maybe is there a way to find the shortest paths between collections (collection from each aStar)?
+
 function exploreModel(modelPremature) {
 
     // Initialize network
@@ -234,46 +261,16 @@ function exploreModel(modelPremature) {
 
     // collection.cy() returns core
 
-    // Examples of simple networks:
-    // pyr_x at depth 2
+    //temporaryEgoNetwork("cit_c", 2, model.network);
 
-    // Examples of complex networks
-    // pyr_m at depth 2
-    // cit_m at depth 2
-
-    // Examples of enormous networks
-    // pyr_x at depth 3
-    // pyr_m at depth 3
-    // cit_c at depth 3
-
-    var collection = collectEgoNetwork("cit_c", true, true, 3, model.network);
-    console.log(collection.nodes().size());
+    var collection = model.network.elements().aStar(
+        {
+            root: model.network.getElementById("pyr_c"),
+            goal: model.network.getElementById("cit_c"),
+            directed: true
+        }
+        ).path;
     visualizeNetwork(collection);
-    console.log(model.network.getElementById("pyr_x").data());
-
-    //console.log(pyruvateNeighborhood);
-    //console.log(pyruvateNeighborhood.jsons());
-    //pyruvateNeighborhood.cy.layout({
-    //    animate: true,
-    //    name: "cose",
-    //    fit: true,
-    //    idealEdgeLength: 10,
-    //    nodeOverlap: 5,
-    //    nodeRepulsion: 500000,
-    //    padding: 10,
-    //    randomize: true
-    //});
-
-
-    //var subNetwork = cytoscape({
-    //    container: document.getElementById("exploration"),
-    //    elements: pyruvateNeighborhood.jsons(),
-    //    layout: {name: "concentric"}
-    //})
-    //console.log(subNetwork);
-
-    //container: document.getElementById("exploration"),
-
 
     //console.log(network.nodes())
     //var pyruvateNode = network.elements.filter("node[id = 'pyr_c']");
