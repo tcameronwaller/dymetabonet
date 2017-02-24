@@ -3,6 +3,88 @@ Notes
 Research With Alexander Lex
 --------------------------------------------------
 
+
+--------------------------------------------------
+23 February 2017
+
+----------
+Alex observed that both the Dijkstra's algorithm and the K Simple Shortest Paths algorithm (Jin Y Yen, 1971) are for general, weighted graphs.
+Dijkstra's algorithm is a special type of breadth-first search to accommodate weights.
+
+My graph (as I treat it) is not weighted.
+I should be able to find k simple shortest paths using an algorithm built on top of a breadth-first search.
+
+Maybe I should implement my own recursive breadth-first-search that has optional restriction for link directionality in both directions and proceeds to a specific depth.
+
+Then I can use that function to drive both my ego network function and my function for k simple shortest paths.
+
+Do I need to worry since my network is a multi-di-graph?
+That is, my network has directional links.
+Also, I can have multiple, parallel links in opposite directions between two nodes.
+
+https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+http://stackoverflow.com/questions/8379785/how-does-a-breadth-first-search-work-when-looking-for-shortest-path
+
+
+http://www.eecs.yorku.ca/course_archive/2006-07/W/2011/Notes/BFS_part2.pdf
+http://networkx.readthedocs.io/en/stable/reference/generated/networkx.algorithms.simple_paths.shortest_simple_paths.html
+
+
+----------
+
+There are a few additional topological queries that I think would be useful.
+
+1) Shortest path between 2 nodes with consideration of link directionality.
+Solution: A Star algorithm, available in CytoScape.js as eles.aStar().
+
+2) Shortest paths between more than 2 nodes with consideration of link directionality. I'm considering a recursive application of the A Star algorithm.
+Solution: Use a single-source version of Dijkstra's algorithm to determine shortest paths between each node of interest and all other nodes in the network.
+Then select for each node of interest the paths to all other nodes of interest.
+Combine these.
+Use CytoScape.js eles.dijkstra(), filter appropriately, and use eles.union().
+
+3) Multiple alternative shortest paths between 2 nodes, "K Shortest Paths".
+NetworkX, the Python library, has a function for "shortest_simple_paths".
+There is no similar solution either in CytoScape.js or in JSNetworkX.
+Solution: Consider implementing the K Simple Shortest Paths algorithm (Jin Y Yen, 1971) for CytoScape.js.
+Use the currently available implementation of Dijkstra's algorithm or A Star algorithm if possible.
+
+----------
+
+Dijkstra's Algorithm
+https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+Dijkstra's Algorithm "is asymptotically the fastest known single-source shortest-path algorithm for arbitrary directed graphs with unbounded non-negative weights".
+
+A Star Algorithm
+A Star algorithm relies on a heuristic function to prioritize paths in progress.
+Without this heuristic function, I think that the A Star algorithm is essentially identical to Dijkstra's algorithm.
+
+In order to determine the paths (shortest or otherwise) between nodes, any search algorithm must traverse a substantial portion of the network.
+This traversal is computationally expensive, and it will be more efficient to perform it a single time.
+To find paths between multiple nodes, it will be more efficient to traverse the network a single time, store information about all paths, and then select the information for paths between desired nodes.
+
+In contrast, my implementation of functionality to collect ego networks does not need to traverse the entire network.
+In that case, I think that my implementation was more efficient that determine the lengths of all paths and filtering.
+
+----------
+Shortest Paths beween Multiple Nodes
+
+I would like to implement a recursive application of the aStar algorithm that can find shortest paths between all nodes in a list of more than 2 nodes.
+I suppose that I could consider the option of adapting the algorithm that finds shortest paths between all pairs of nodes in a network.
+
+----------
+K Shortest Paths
+https://en.wikipedia.org/wiki/K_shortest_path_routing
+
+NetworkX has a function for "shortest_simple_paths" (http://networkx.readthedocs.io/en/stable/reference/generated/networkx.algorithms.simple_paths.shortest_simple_paths.html).
+This function returns a count of simple paths (no loops or revisits) up to a specific limit between a source node and a target node in a network.
+It is thus possible to select how many shortest paths you want.
+
+JSNetworkX does not yet have "shortest_simple_paths" from NetworkX.
+JSNetworkX has not had any updates since 18 July 2015.
+
+CytoScape.js does not have a function to compute all simple paths.
+
 --------------------------------------------------
 22 February 2017
 
@@ -77,6 +159,12 @@ JSNetworkX supports attributes of nodes and links.
 Plans
 
 Queries need to be more specific.
+
+----------
+Meet with Alexander Lex
+
+Alex recommended representing the ego network in a table along with the node-link diagram.
+This table would have columns for nodes at specific depths from the ego or focal node.
 
 ----------
 Observations
