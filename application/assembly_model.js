@@ -20,9 +20,8 @@
  * network structures.
  */
 function assembleModel(modelInitial) {
-    var model = Object.assign({},
-        assembleSets(modelInitial),
-        assembleNetwork(modelInitial)
+    var model = Object.assign(
+        {}, assembleSets(modelInitial), assembleNetwork(modelInitial)
     );
     console.log(model);
     downloadJSON(model, "model_sets_network.json");
@@ -392,7 +391,6 @@ function collectProcessNetwork(process, model) {
 }
 
 //function includeTransportReactions()
-
 
 function exploreModel(modelPremature) {
 

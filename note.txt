@@ -7,6 +7,16 @@ Research With Alexander Lex
 2 March 2017
 
 ----------
+
+
+----------
+Assembly of the model with the new structure requires about 7 minutes.
+The assembly only required about 3 minutes in the previous structure.
+
+Previous file size: 7001 kilobytes
+New file size: 6293 kilobytes
+
+----------
 Design Decision
 
 With node records in an array, many filter operations are necessary.

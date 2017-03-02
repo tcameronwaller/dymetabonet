@@ -32,6 +32,7 @@ function createCompartmentRecords(compartments) {
     return Object.keys(compartments)
         .reduce(function (collection, compartmentIdentifier) {
             return Object.assign(
+                {},
                 collection,
                 createCompartmentRecord(compartments, compartmentIdentifier)
             );
@@ -115,7 +116,7 @@ function createGeneRecords(genes, reactions) {
     });
     // Create records for genes.
     return genes.reduce(function (collection, gene) {
-        return Object.assign(collection, createGeneRecord(gene));
+        return Object.assign({}, collection, createGeneRecord(gene));
     }, {});
 }
 
@@ -296,6 +297,7 @@ function createMetaboliteRecords(metabolites) {
         ) {
             // Create record for the metabolite.
             return Object.assign(
+                {},
                 collection,
                 createMetaboliteRecord(
                     metabolites, extractMetaboliteIdentifier(metabolite.id)
