@@ -3,6 +3,121 @@ Notes
 Research With Alexander Lex
 --------------------------------------------------
 
+--------------------------------------------------
+1 March 2017
+
+----------
+Identifiers for Metabolic Processes
+
+process_1, process_2, process_3, etc
+Determine when assembling the set.
+Replace the names in reaction nodes.
+
+----------
+
+TODO: include a "process" field for every reaction node.
+If the process is undefined, set it to "null".
+
+----------
+
+New Queries
+
+Select an ego network within a specific compartment.
+
+Select a process network within a specific compartment.
+
+
+----------
+
+Transport events are general and do not have annotations for specific processes.
+As a result, networks for processes are disjoint with separate networks for separate compartments.
+
+I can include transport events in the process networks by connecting identical metabolites in separate compartments (pyr_c, pyr_m, pyr_x).
+That matching algorithm would be a little complex.
+
+----------
+Metabolic Process
+
+Count of reactions in model: 7785
+Count of reactions with annotation for metabolic process: 6931
+Count of reactions without annotation for metabolic process: 854
+
+----------
+
+--------------------------------------------------
+28 February 2017
+
+----------
+Query Selection
+
+Selection by Attribute
+
+All queries by attributes will consider nodes only.
+
+Select nodes in a network.
+network.nodes().filter(***selector or function***);
+
+Select nodes by name.
+***I need a function to check for names that include a query string.
+
+Select nodes by class.
+network.filter("node.className");
+network.nodes().filter(".className");
+
+Select nodes by data attribute or attributes.
+network.filter("node[attributeName = numericValue]");
+network.nodes().filter("[attributeName1 = numericValue]");
+network.nodes().filter("[attributeName2 = 'characterValue']");
+Join by logical and operator.
+network.nodes().filter("[attributeName1 = numericValue][attributeName2 = 'characterValue']");
+Join by logical or operator.
+network.nodes().filter("[attributeName1 = numericValue], [attributeName2 = 'characterValue']");
+
+Examples
+
+Select nodes for metabolites in the peroxisomal compartment.
+network.nodes().filter(".metabolite[compartment = 'x']");
+
+Selection by Attribute and Topology
+
+Select all reactions that participate in a specific process or pathway.
+Then select all metabolites that participate in these reactions.
+
+--------------------------------------------------
+27 February 2017
+
+----------
+
+Before implementing new algorithms for queries for shortest paths, Alex recommended implementing functionality for filters by properties.
+Then I can also combine those filters with topological queries.
+
+I can use the A Star algorithm to find the directional or nondirectional shortest paths between 2 nodes.
+There are a few additional things that I need for shortest path queries.
+
+1) Many shortest paths pass through nodes with extremely high degrees, such as water or protons.
+Alex recommended giving the user control over whether or not to ignore these nodes in shortest path queries.
+He also recommended giving the user control over which nodes to ignore in shortest path queries.
+Maybe I can simply filter or omit them from the network before the shortest path query.
+Filter these nodes from the network.
+Pass the resulting network to the shortest path query.
+
+2) I need to consider multiple shortest paths between nodes.
+The single shortest path that the query returns might not be the only shortest path, or there might be other paths that are relevant.
+Alex approves of my using a breadth-first search to assemble these multiple shortest simple paths.
+
+3) I need to consider shortest paths between multiple (>2) nodes.
+I might just find shortest paths between all pairs of nodes and then take the union.
+I might be able to apply my multiple shortest simple paths algorithm recursively.
+Alex approves of this strategy.
+
+----------
+
+This conversation on Stack Overflow is helpful for modifying a breadth-first search to find k shortest paths in an unweighted network.
+
+http://stackoverflow.com/questions/14144071/finding-all-the-shortest-paths-between-two-nodes-in-unweighted-undirected-graph
+
+Here is what I need.
+Find k (multiple) shortest simple (no replicate visits to nodes) paths between 2 nodes in a directed, unweighted graph with multiple links between nodes (a multi digraph).
 
 --------------------------------------------------
 23 February 2017

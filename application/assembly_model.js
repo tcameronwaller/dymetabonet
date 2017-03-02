@@ -153,13 +153,16 @@ function traverseBreadthByDepth(
         );
     } else {
         // Include in the collection all edges between nodes in the collection.
-        return collection.union(collection.nodes().edgesWith(collection.nodes()));
+        return collection
+            .union(collection.nodes().edgesWith(collection.nodes()));
     }
 }
 
 // TODO: Modify the functionality for collectEgoNetwork to keep track of the
 // TODO: depth of each node from the ego.
 // TODO: This information will be important for the table view.
+
+// TODO: Can this function really accommodate either a core network or a collection?
 
 /**
  * Collects nodes and links within specific proximity to a single focal node to
@@ -170,7 +173,7 @@ function traverseBreadthByDepth(
  * @param {boolean} directionOut Whether or not to follow edges away from nodes
  * of interest.
  * @param {number} depth Count of edges of current nodes from origin.
- * @param {Object} network A CytoScape.js network.
+ * @param {Object} network A CytoScape.js network or collection.
  * @returns {Object} A CytoScape.js collection of nodes and links of interest.
  */
 function collectEgoNetwork(ego, directionIn, directionOut, depth, network) {
@@ -248,6 +251,122 @@ function temporaryEgoNetwork(ego, depth, network) {
 // TODO: Figure out how to perform multiple aStar's for multiple (>2) nodes and then combine the results.
 // TODO: Maybe is there a way to find the shortest paths between collections (collection from each aStar)?
 
+// what are the available attributes
+// attributes differ between metabolites and reactions
+// I might need to handle metabolites and reactions differently
+
+// 1.
+// Select individual metabolites by whether or not their names include a string.
+// Example, select all metabolites with names that include "citrate".
+// This functionality will be useful for dynamic queries.
+
+
+
+
+// 1.
+// Select only mitochondrial metabolites.
+// I guess keep all reactions, since they won't participate without the metabolites anyway.
+
+/**
+ * Collects metabolites that participate either as reactants or products in
+ * specific reactions.
+ * @param {Array<Object>} reactions Nodes for reactions.
+ * @returns {Array<string>} Unique identifiers for metabolites.
+ */
+function collectMetabolitesOfReactions(reactions) {
+    return collectUniqueElements(
+        reactions
+            .map(function (reaction) {
+                return [].concat(
+                    reaction.data.products, reaction.data.reactants
+                );
+            })
+            .reduce(function (accumulator, element) {
+                return accumulator.concat(element);
+            }, [])
+    );
+}
+
+// TODO: Include transport reactions.
+// 2. Recursively find pairs or collections of metabolites... oh... just use the metabolite identifier in the node's data!
+
+/**
+ * Collects reactions that are part of a specific metabolic process along with
+ * their metabolites and links between.
+ * @param {string} process Identifier or name for a metabolic process.
+ * @param {Object} model Information for a metabolic model in both relational
+ * and graph or network structures.
+ * @returns {Object} A CytoScape.js collection of nodes and links of interest.
+ */
+function collectProcessNetwork(process, model) {
+    var initialReactions = model
+        .network_elements
+        .nodes
+        .filter(function (node) {
+            return node.data.type === "reaction";
+        })
+        .filter(function (node) {
+            return node.data.process === process;
+        });
+    // Determine whether or not multiple compartmental version of the same
+    // metabolite participate in the process.
+    var initialMetabolites = collectMetabolitesOfReactions(initialReactions);
+    var sets = initialMetabolites
+        .reduce(function (accumulator, compartmentalIdentifier, index, array) {
+            if (
+                accumulator.filter(function (element) {
+                    return element.includes(compartmentalIdentifier);
+                }).length < 1
+            ) {
+                // The identifier for the compartmental metabolite is not
+                // already in the collection.
+                var identifier = model
+                    .network_elements
+                    .nodes
+                    .filter(function (node) {
+                        return node.data.type === "metabolite";
+                    })
+                    .filter(function (node) {
+                        return node.data.id === compartmentalIdentifier;
+                    })[0]
+                    .data
+                    .metabolite;
+                var set = array.filter(function (element) {
+                    return model
+                        .network_elements
+                        .nodes
+                        .filter(function (node) {
+                            return node.data.type === "metabolite";
+                        })
+                        .filter(function (node) {
+                            return node.data.id === element;
+                        })[0]
+                        .data
+                        .metabolite === identifier;
+                });
+                if (set.length > 1) {
+                    // Multiple compartmental versions of the same metabolite
+                    // participate in the process.
+                    return accumulator.concat([set]);
+                } else {
+                    return accumulator;
+                }
+            } else {
+                return accumulator;
+            }
+        }, []);
+    // TODO: Now filter reactions for reactions that involve combinations of the compartmental metabolites in reactants or products...
+    // TODO: For simplicity, consider all reactants and products of the reaction together (collectMetabolitesOfReactions).
+    // TODO: Be sure to consider all possible permutations of the compartmental metabolites.
+    // TODO: An easy way to do that might be to select all reactions that involve >= 2 of the compartmental metabolites either as reactants or products.
+    console.log(sets);
+    //var collection = collectUniqueElements(metabolites)
+    //    .reduce(function (accumulator, identifier) {
+    //        return accumulator.union(network.getElementById(identifier));
+    //    }, reactions);
+    //return collection.union(collection.nodes().edgesWith(collection.nodes()));
+}
+
 function exploreModel(modelPremature) {
 
     // Initialize network
@@ -263,14 +382,32 @@ function exploreModel(modelPremature) {
 
     //temporaryEgoNetwork("cit_c", 2, model.network);
 
-    var collection = model.network.elements().aStar(
-        {
-            root: model.network.getElementById("pyr_c"),
-            goal: model.network.getElementById("cit_c"),
-            directed: true
-        }
-        ).path;
-    visualizeNetwork(collection);
+    //var collection = model.network.elements().aStar(
+    //    {
+    //        root: model.network.getElementById("cit_m"),
+    //        goal: model.network.getElementById("pyr_x"),
+    //        directed: true
+    //    }
+    //    ).path;
+
+    //console.log("beta-Alanine metabolism");
+    //console.log("Vitamin D metabolism");
+    //console.log("Lysine metabolism");
+    //console.log("Glycine, serine, alanine and threonine metabolism");
+    console.log("Methionine and cysteine metabolism");
+    var collection = collectProcessNetwork(
+        "Methionine and cysteine metabolism", model
+    );
+    //visualizeNetwork(collection);
+
+    //console.log(model.network.getElementById("AGDC"));
+    //console.log(model.network.getElementById("AGDC").data("process"));
+    //console.log(model.network.getElementById("AGDC").data("products"));
+
+    //var processReactions = collectProcessNetwork(
+    //    "beta-Alanine metabolism", model.network
+    //);
+    //console.log(processReactions);
 
     //console.log(network.nodes())
     //var pyruvateNode = network.elements.filter("node[id = 'pyr_c']");

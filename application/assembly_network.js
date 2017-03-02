@@ -52,7 +52,8 @@ function createCompartmentalMetaboliteNode(metabolite) {
         data: {
             compartment: metabolite.compartment,
             id: metabolite.id,
-            metabolite: extractMetaboliteIdentifier(metabolite.id)
+            metabolite: extractMetaboliteIdentifier(metabolite.id),
+            type: "metabolite"
         }
     };
     return metaboliteNode;
@@ -267,10 +268,11 @@ function createReactionNode(reaction) {
             gene_reaction_rule: reaction.gene_reaction_rule,
             id: reaction.id,
             name: reaction.name,
+            process: reaction.subsystem,
             products: filterReactionMetabolitesByRole(reaction, "product"),
             reactants: filterReactionMetabolitesByRole(reaction, "reactant"),
             reversibility: determineReversibility(reaction),
-            subsystem: reaction.subsystem
+            type: "reaction"
         }
     };
     return reactionNode;

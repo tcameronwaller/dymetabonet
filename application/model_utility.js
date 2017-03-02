@@ -133,7 +133,9 @@ function extractMetaboliteIdentifiers(compartmentalMetaboliteIdentifiers) {
  * @returns {Array<string>} Identifiers for compartmental metabolites that are
  * chemically identical to the general metabolite.
  */
-function filterCompartmentalMetabolitesByMetabolite(metabolites, metaboliteIdentifier) {
+function filterCompartmentalMetabolitesByMetabolite(
+    metabolites, metaboliteIdentifier
+) {
     // Select compartmental records for a general metabolite.
     return metabolites.filter(function (metabolite) {
         return extractMetaboliteIdentifier(metabolite.id) ===
