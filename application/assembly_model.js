@@ -270,7 +270,7 @@ function temporaryEgoNetwork(ego, depth, network) {
 /**
  * Collects metabolites that participate either as reactants or products in
  * specific reactions.
- * @param {Array<Object>} reactions Nodes for reactions.
+ * @param {Array<Object>} reactions Node records for reactions.
  * @returns {Array<string>} Unique identifiers for metabolites.
  */
 function collectMetabolitesOfReactions(reactions) {
@@ -305,8 +305,8 @@ function collectProcessNetwork(process, model) {
         .filter(function (node) {
             return node.data.type === "reaction";
         })
-        .filter(function (node) {
-            return node.data.process === process;
+        .filter(function (reaction) {
+            return reaction.data.process === process;
         });
     // Determine whether or not multiple compartmental version of the same
     // metabolite participate in the process.
@@ -355,17 +355,44 @@ function collectProcessNetwork(process, model) {
                 return accumulator;
             }
         }, []);
+    console.log(sets);
     // TODO: Now filter reactions for reactions that involve combinations of the compartmental metabolites in reactants or products...
     // TODO: For simplicity, consider all reactants and products of the reaction together (collectMetabolitesOfReactions).
     // TODO: Be sure to consider all possible permutations of the compartmental metabolites.
     // TODO: An easy way to do that might be to select all reactions that involve >= 2 of the compartmental metabolites either as reactants or products.
-    console.log(sets);
+    // Identify putative transport reactions as those whose metabolites
+    // (reactants or products) include multiple compartmental metabolites from
+    // the set.
+    var transportReactions = model
+        .network_elements
+        .nodes
+        .filter(function (node) {
+            return node.data.type === "reaction";
+        })
+        .filter(function (reaction) {
+            return sets.some(function (set) {
+                return set.filter(function (identifier) {
+                    return [].concat(
+                        reaction.data.products, reaction.data.reactants
+                    ).includes(identifier);
+                }).length > 1;
+            });
+        });
+    console.log(transportReactions);
+
+    // TODO: I think the algorithm works up to this point.
+    // TODO: Including these transport reactions increases the scale of the subnetwork dramatically.
+    // TODO: There are a lot of transport reactions.
+
     //var collection = collectUniqueElements(metabolites)
     //    .reduce(function (accumulator, identifier) {
     //        return accumulator.union(network.getElementById(identifier));
     //    }, reactions);
     //return collection.union(collection.nodes().edgesWith(collection.nodes()));
 }
+
+//function includeTransportReactions()
+
 
 function exploreModel(modelPremature) {
 

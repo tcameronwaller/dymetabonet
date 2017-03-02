@@ -4,6 +4,39 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+2 March 2017
+
+----------
+Design Decision
+
+With node records in an array, many filter operations are necessary.
+These filter operations on arrays are less efficient than look-up operations on dictionary-like objects.
+The computational burden is obvious, for example in the collectProcessNetwork procedure.
+I will change the structure of the data to store records for links and nodes in dictionary-like objects with unique identifiers as keys.
+
+This structure will, I think, also be beneficial for my strategy of using the data in this structure as much as practical.
+
+----------
+Design Decision
+
+All of my top-level primary query functions need to be versatile so that I can combine them in various sequences (chain them together).
+All of these query functions exist to select collections of nodes.
+I will always show all links (including bidirectional) between nodes.
+Hence, collections of nodes themselves are the most important goal of query functions.
+
+I prefer to handle data in as basic and fundamental a structure as is practical.
+These structures are most reliable, versatile, and permanent.
+These structures are also convenient for handling my data in its combination of relational and network structures.
+I prefer to handle the network data in its basic form, not as a CytoScape.js core or collection.
+Handling the network data as a CytoScape.js core or collection might be most useful for some topological or attribute queries and for visualization.
+
+Each query function needs to accept a collection (array) of nodes as input and return a new collection of nodes as output.
+The functions themselves can convert these collections of nodes to CytoScape.js cores or collections if necessary.
+
+Also, I will convert the collections of nodes to CytoScape.js cores or collections as a final step in each query.
+That step will be important for visualization.
+
+--------------------------------------------------
 1 March 2017
 
 ----------
