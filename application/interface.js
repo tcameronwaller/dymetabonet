@@ -75,10 +75,10 @@ function initializeQueryInterface() {
             // Load data from file in JSON format.
             // Create objects that associate with these data.
             d3.json(("../model/homo-sapiens/" + "model_sets_network.json"),
-                function (error, modelPremature) {
+                function (error, model) {
                     if (error) throw error;
                     // Call function to explore model.
-                    exploreModel(modelPremature);
+                    exploreModel(model);
                 });
         })
 }

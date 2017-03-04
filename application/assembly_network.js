@@ -264,7 +264,7 @@ function createReactionNodeRecord(reaction) {
             gene_reaction_rule: reaction.gene_reaction_rule,
             id: reaction.id,
             name: reaction.name,
-            process: reaction.subsystem,
+            process: determineReactionProcess(reaction),
             products: filterReactionMetabolitesByRole(reaction, "product"),
             reactants: filterReactionMetabolitesByRole(reaction, "reactant"),
             reversibility: determineReversibility(reaction),
@@ -403,22 +403,7 @@ function assembleNetwork(model) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Assembly of Network
-
-
-// TODO: I need a new function that can initiate/initialize a CytoScape.js network on the fly, given an array of NODE identifiers.
-// TODO: This function will handle all the formatting that is specific to CytoScape.js... the "group" field, the "classes" filed, and the "data" field.
-// TODO: Object.values() will be helpful, as well as concat().
-
-// TODO: 1) I need to accept an array of node identifiers and return an array of nodes ready for CytoScape.js.
-// TODO: 2) I need to collect identifiers of all links whose source and target nodes are in a collection (array).
-// Filter Object.values() for source and target nodes in the collection of nodes of interest.
-// Return an array of the identifiers of the keepers.
-// TODO: 3) I need to accept an array of link identifiers and return an array of edges ready for CytoScape.js.
-
-// TODO: Now that I have the functions... put them all together.
-// TODO: Then adapt all of my query functions to behave properly (using arrays of node identifiers).
-
+// Initialization of an Instance of a CytoScape.js Network
 
 /**
  * Translates a record for a network node to match CytoScape.js.
@@ -429,15 +414,15 @@ function assembleNetwork(model) {
  */
 function translateCytoScapeNode(identifier, model) {
     if (
-        (model.nodes.metabolites[identifier] != undefined) &&
-        (model.nodes.reactions[identifier] === undefined)
+        (model.network_elements.nodes.metabolites[identifier] != undefined) &&
+        (model.network_elements.nodes.reactions[identifier] === undefined)
     ) {
-        var data = model.nodes.metabolites[identifier];
+        var data = model.network_elements.nodes.metabolites[identifier];
     } else if (
-        (model.nodes.metabolites[identifier] === undefined) &&
-        (model.nodes.reactions[identifier] != undefined)
+        (model.network_elements.nodes.metabolites[identifier] === undefined) &&
+        (model.network_elements.nodes.reactions[identifier] != undefined)
     ) {
-        var data = model.nodes.reactions[identifier];
+        var data = model.network_elements.nodes.reactions[identifier];
     }
     return {
         classes: data.type,
@@ -454,7 +439,7 @@ function translateCytoScapeNode(identifier, model) {
  * @returns {Array<Object>} Nodes that match CytoScape.js.
  */
 function translateCytoScapeNodes(identifiers, model) {
-    identifiers.map(function (identifier) {
+    return identifiers.map(function (identifier) {
         return translateCytoScapeNode(identifier, model);
     });
 }
@@ -467,13 +452,13 @@ function translateCytoScapeNodes(identifiers, model) {
  * @returns {Array<string>} Unique identifiers for network links.
  */
 function collectLinksBetweenNodes(nodeIdentifiers, model) {
-    var links = Object.values(model.links).filter(function (link) {
-        return (nodeIdentifiers.includes(link.source)) &&
-            (nodeIdentifiers.includes(link.target));
-    });
+    var links = Object.values(model.network_elements.links)
+        .filter(function (link) {
+            return (nodeIdentifiers.includes(link.source)) &&
+                (nodeIdentifiers.includes(link.target));
+        });
     return collectValuesFromObjects(links, "id");
 }
-
 
 /**
  * Translates a record for a network link to match CytoScape.js.
@@ -485,7 +470,7 @@ function collectLinksBetweenNodes(nodeIdentifiers, model) {
 function translateCytoScapeLink(identifier, model) {
     return {
         group: "edges",
-        data: model.links[identifier]
+        data: model.network_elements.links[identifier]
     };
 }
 
@@ -497,13 +482,29 @@ function translateCytoScapeLink(identifier, model) {
  * @returns {Array<Object>} Links that match CytoScape.js.
  */
 function translateCytoScapeLinks(identifiers, model) {
-    identifiers.map(function (identifier) {
+    return identifiers.map(function (identifier) {
         return translateCytoScapeLink(identifier, model);
     });
 }
 
-// [].concat(createMetaboliteNodeRecords(model.metabolites, model.reactions), createReactionNodeRecords(model.reactions, model.metabolites, model.genes))
+/**
+ * Collects nodes and links in proper format to initialize a CytoScape.js
+ * network.
+ * @param {Array<string>} nodeIdentifiers Unique identifiers for network nodes.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ * @returns {Object} Nodes and links for a core network in CytoScape.js.
+ */
+function collectElementsForCytoScapeNetwork(nodeIdentifiers, model) {
+    return {
+        edges: translateCytoScapeLinks(
+            collectLinksBetweenNodes(nodeIdentifiers, model), model
+        ),
+        nodes: translateCytoScapeNodes(nodeIdentifiers, model)
+    }
+}
 
+// TODO: I think this function is now obsolete.
 /**
  * Assembles a CytoScape.js network and appends it to a model.
  * @param {Object} modelPremature Information of a metabolic model.

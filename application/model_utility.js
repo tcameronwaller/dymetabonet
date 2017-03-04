@@ -274,6 +274,19 @@ function determineMetaboliteCompartmentalReactions(
 // Reactions
 
 /**
+ * Determines the value for a reaction's process.
+ * @param {Object} reaction Information for a reaction.
+ * @returns {string} The name of the process.
+ */
+function determineReactionProcess(reaction) {
+    if (reaction.subsystem != undefined) {
+        return reaction.subsystem;
+    } else {
+        return null;
+    }
+}
+
+/**
  * Determines the identifier for a link between a metabolite and a reaction.
  * @param {string} sourceIdentifier Unique identifier of a metabolite or a
  * reaction that is the link's source.

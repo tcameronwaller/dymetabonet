@@ -23,8 +23,29 @@ function assembleModel(modelInitial) {
     var model = Object.assign(
         {}, assembleSets(modelInitial), assembleNetwork(modelInitial)
     );
-    console.log(model);
     downloadJSON(model, "model_sets_network.json");
+    // Print the model and metrics to the console.
+    console.log(model);
+    console.log(
+        "Count of nodes for reactions: " +
+        Object.keys(model.network_elements.nodes.reactions).length
+    );
+    console.log(
+        "Count of nodes for compartmental metabolites: " +
+        Object.keys(model.network_elements.nodes.metabolites).length
+    );
+    console.log(
+        "Count of links: " +
+        Object.keys(model.network_elements.links).length
+    );
+    console.log(
+        "Count of metabolites: " +
+        Object.keys(model.sets.metabolites).length
+    );
+    console.log(
+        "Count of processes: " +
+        Object.keys(model.sets.processes).length
+    );
     //exploreNetwork(model.network);
     //return model;
 }
@@ -186,13 +207,16 @@ function collectEgoNetwork(ego, directionIn, directionOut, depth, network) {
 }
 
 /**
- * Visualizes a collection of nodes and links from a network.
- * @param {Object} collection A CytoScape.js collection of nodes and links.
+ * Initializes and visualizes a CytoScape.js network.
+ * @param {Array<string>} nodeIdentifiers Unique identifiers for network nodes.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
  */
-function visualizeNetwork(collection) {
+function visualizeNetwork(nodeIdentifiers, model) {
     cytoscape({
         container: document.getElementById("exploration"),
-        elements: collection.jsons(),
+        //elements: collection.jsons(),
+        elements: collectElementsForCytoScapeNetwork(nodeIdentifiers, model),
         layout: {
             animate: true,
             name: "cose",
@@ -269,15 +293,20 @@ function temporaryEgoNetwork(ego, depth, network) {
 /**
  * Collects metabolites that participate either as reactants or products in
  * specific reactions.
- * @param {Array<Object>} reactions Node records for reactions.
+ * @param {Array<string>} reactionIdentifiers Unique identifiers for reactions.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
  * @returns {Array<string>} Unique identifiers for metabolites.
  */
-function collectMetabolitesOfReactions(reactions) {
+function collectMetabolitesOfReactions(reactionIdentifiers, model) {
+    var reactions = reactionIdentifiers.map(function (identifier) {
+        return model.network_elements.nodes.reactions[identifier];
+    });
     return collectUniqueElements(
         reactions
             .map(function (reaction) {
                 return [].concat(
-                    reaction.data.products, reaction.data.reactants
+                    reaction.products, reaction.reactants
                 );
             })
             .reduce(function (accumulator, element) {
@@ -286,30 +315,40 @@ function collectMetabolitesOfReactions(reactions) {
     );
 }
 
-// TODO: Include transport reactions.
-// 2. Recursively find pairs or collections of metabolites... oh... just use the metabolite identifier in the node's data!
-
 /**
  * Collects reactions that are part of a specific metabolic process along with
  * their metabolites and links between.
  * @param {string} process Identifier or name for a metabolic process.
- * @param {Object} model Information for a metabolic model in both relational
- * and graph or network structures.
- * @returns {Object} A CytoScape.js collection of nodes and links of interest.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ * @returns {Array<Object>} Unique identifiers for network nodes.
  */
-function collectProcessNetwork(process, model) {
-    var initialReactions = model
-        .network_elements
-        .nodes
-        .filter(function (node) {
-            return node.data.type === "reaction";
-        })
+function collectProcessNetworkNodes(process, model) {
+    var reactions = Object.values(
+        model.network_elements.nodes.reactions
+    )
         .filter(function (reaction) {
-            return reaction.data.process === process;
+            return reaction.process === process;
         });
+    var reactionIdentifiers = collectValuesFromObjects(reactions, "id");
+    var metaboliteIdentifiers = collectMetabolitesOfReactions(
+        reactionIdentifiers, model
+    );
+    return [].concat(reactionIdentifiers, metaboliteIdentifiers);
+
+    //var collection = collectUniqueElements(metabolites)
+    //    .reduce(function (accumulator, identifier) {
+    //        return accumulator.union(network.getElementById(identifier));
+    //    }, reactions);
+    //return collection.union(collection.nodes().edgesWith(collection.nodes()));
+}
+
+// TODO: Include transport reactions.
+// 2. Recursively find pairs or collections of metabolites... oh... just use the metabolite identifier in the node's data!
+
+function includeTransportReactions() {
     // Determine whether or not multiple compartmental version of the same
     // metabolite participate in the process.
-    var initialMetabolites = collectMetabolitesOfReactions(initialReactions);
     var sets = initialMetabolites
         .reduce(function (accumulator, compartmentalIdentifier, index, array) {
             if (
@@ -332,16 +371,16 @@ function collectProcessNetwork(process, model) {
                     .metabolite;
                 var set = array.filter(function (element) {
                     return model
-                        .network_elements
-                        .nodes
-                        .filter(function (node) {
-                            return node.data.type === "metabolite";
-                        })
-                        .filter(function (node) {
-                            return node.data.id === element;
-                        })[0]
-                        .data
-                        .metabolite === identifier;
+                            .network_elements
+                            .nodes
+                            .filter(function (node) {
+                                return node.data.type === "metabolite";
+                            })
+                            .filter(function (node) {
+                                return node.data.id === element;
+                            })[0]
+                            .data
+                            .metabolite === identifier;
                 });
                 if (set.length > 1) {
                     // Multiple compartmental versions of the same metabolite
@@ -371,10 +410,10 @@ function collectProcessNetwork(process, model) {
         .filter(function (reaction) {
             return sets.some(function (set) {
                 return set.filter(function (identifier) {
-                    return [].concat(
-                        reaction.data.products, reaction.data.reactants
-                    ).includes(identifier);
-                }).length > 1;
+                        return [].concat(
+                            reaction.data.products, reaction.data.reactants
+                        ).includes(identifier);
+                    }).length > 1;
             });
         });
     console.log(transportReactions);
@@ -382,26 +421,11 @@ function collectProcessNetwork(process, model) {
     // TODO: I think the algorithm works up to this point.
     // TODO: Including these transport reactions increases the scale of the subnetwork dramatically.
     // TODO: There are a lot of transport reactions.
-
-    //var collection = collectUniqueElements(metabolites)
-    //    .reduce(function (accumulator, identifier) {
-    //        return accumulator.union(network.getElementById(identifier));
-    //    }, reactions);
-    //return collection.union(collection.nodes().edgesWith(collection.nodes()));
 }
 
-//function includeTransportReactions()
+function exploreModel(model) {
 
-function exploreModel(modelPremature) {
-
-    // Initialize network
-    var model = initializeNetwork(modelPremature);
     console.log(model);
-    //console.log("Metabolite Nodes");
-    //console.log(network.nodes(".metabolite").cy());
-    //console.log(network.filter(".metabolite").cy());
-    //console.log(network.metabolite);
-    //console.log(network.elements.metabolite);
 
     // collection.cy() returns core
 
@@ -419,11 +443,12 @@ function exploreModel(modelPremature) {
     //console.log("Vitamin D metabolism");
     //console.log("Lysine metabolism");
     //console.log("Glycine, serine, alanine and threonine metabolism");
+
     console.log("Methionine and cysteine metabolism");
-    var collection = collectProcessNetwork(
+    var nodeIdentifiers = collectProcessNetworkNodes(
         "Methionine and cysteine metabolism", model
     );
-    //visualizeNetwork(collection);
+    visualizeNetwork(nodeIdentifiers, model);
 
     //console.log(model.network.getElementById("AGDC"));
     //console.log(model.network.getElementById("AGDC").data("process"));

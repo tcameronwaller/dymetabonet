@@ -4,10 +4,31 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
-2 March 2017
+3 March 2017
 
 ----------
 
+For perspective, here are some metrics of the current model of the metabolic network.
+Count of nodes for reactions: 7785
+Count of nodes for metabolites: 5324
+Count of total nodes: 13109
+Count of links: 43212
+Mean links per node: 3.30
+
+With a mean of only 3 links per node, the network is very sparse. Still, as I've explored the network with various queries, the density of the network has impressed me a lot. I expect that a few nodes with extremely high degrees dominate, as we've considered before. I'm curious to see the distribution of the degrees of nodes in the network.
+
+I expected the network to be far more sparse, and I predict that most biologists would expect the same. Most maps represent the network in very sparse pathways that ignore a lot of metabolites, especially those with extremely high degrees.
+
+From a biological perspective, I hope that my project can illustrate the interconnectedness of the metabolic network. This illustration might even promote an appropriate paradigm shift in the misconception that the metabolic network involves discrete pathways.
+
+The density of the metabolic network is a great challenge with node-link diagrams. I still think these diagrams are necessary, but I also wonder if a matrix representation would be useful. I don't think that I've ever seen a matrix representation of the metabolic network. This representation would bring a certain degree of novelty, a new way of interpreting the metabolic network. Also, there might be some interesting observations.
+
+What do you think about including a matrix representation? Here are the encodings I would consider: 1) Metabolites as both rows and columns with pixels for reactions 2) Metabolites as rows and reactions as columns with pixels for links between them.
+
+--------------------------------------------------
+2 March 2017
+
+----------
 
 ----------
 Assembly of the model with the new structure requires about 7 minutes.
@@ -635,8 +656,6 @@ var network = cytoscape({
       {node_2},
       {node_3}
     ]
-    {edge_1},
-    {edge_2}
   }
 }
 
