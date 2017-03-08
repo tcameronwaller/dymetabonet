@@ -4,6 +4,174 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+7 March 2017
+
+----------
+
+Magdalena Schwarzle recommends keeping all code as modular as is practical.
+She also recommends using descriptive comments.
+She also recommends using libraries rather than re-implementing common functionality.
+
+Use libraries
+Accordion
+Resizable div
+
+Figure out transitions, like the example below uses.
+http://www.hongkiat.com/blog/create-css-based-content/
+
+----------
+Interface Plan
+
+I want my control and navigation menus (HTML Forms) in a collapsible panel on the left side of the screen.
+I want this panel to occupy the full height of the screen.
+
+Note
+I do not want Dropdown panels.
+These lie on top of the other page elements.
+I want an accordion that pushes other page elements down.
+
+http://www.hongkiat.com/blog/css-only-accordion/
+
+http://www.hongkiat.com/blog/create-css-based-content/
+
+https://codepen.io/josh_vogt/pen/EaaZbP
+
+https://webdesign.tutsplus.com/tutorials/how-to-make-responsive-scrollable-panels-with-flexbox--cms-23269
+
+https://developer.mozilla.org/en-US/docs/Web/CSS/:checked
+https://codepen.io/josh_vogt/pen/EaaZbP
+
+----------
+Interface Study
+
+Use standard elements for the interface.
+
+HTML Introduction
+https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML
+Tutorials I read:
+-Introduction to HTML
+--HTML Basics
+--Getting started with HTML
+--What's in the head? Metadata in HTML
+--HTML text fundamentals
+--Creating hyperlinks
+--Advanced text formatting
+--Document and website structure
+--Debugging HTML
+
+CSS Introduction
+https://developer.mozilla.org/en-US/docs/Learn/CSS
+Tutorials I read:
+-CSS Basics
+-Introduction to CSS
+--How CSS works
+--CSS Syntax
+--Selectors (not all sub-articles yet...)
+---CSS Values and Units
+--Cascade and Inheritance
+--The Box Model
+-Styling Boxes (not all sub-articles yet...)
+-CSS Layout
+--Introduction to CSS Layout
+--Floats
+--Positioning
+
+Web Color Tool
+https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Colors/Color_picker_tool
+
+HTML Tables
+https://developer.mozilla.org/en-US/docs/Learn/HTML/Tables
+
+HTML Forms Tutorial
+https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms
+
+HTML Elements
+<div>
+<span>
+<h1> etc...
+<ul>, <li>
+<ol>, <li>
+<dl>, <dt>, <dd>
+<details> and <summary> elements
+<em>
+<strong>
+<b>, <i>, <u>
+<a>
+<header>, <nav>
+<main>, <article>, <section>, <p>, <div>, <span>, <aside>, <footer>
+<br>
+<hr>
+
+Unicode Characters
+https://www.w3schools.com/charsets/ref_utf_geometric.asp
+
+Drop-down menus
+https://www.w3schools.com/howto/howto_js_dropdown.asp
+
+Collabsible lists
+https://www.w3schools.com/howto/howto_js_accordion.asp
+
+Hide/Show Panel
+https://www.w3schools.com/css/tryit.asp?filename=trycss_display_js
+
+--------------------------------------------------
+6 March 2017
+
+----------
+Query Goals
+
+- Sequentially apply multiple query operations (ego network for single compartment).
+- Select k-shortest simple paths between 2 or more nodes (optionally ignoring specific nodes... filter them out first).
+- Replicate specific nodes, such as those with excessively great degrees.
+- Represent the metabolic network as reactions between general (non-compartmental) metabolites.
+
+----------
+
+"Network Visualization in Cell Biology"
+Kasper Dinkla, Michel A Westenberg
+2012
+http://ieeexplore.ieee.org/document/6297584/
+
+"Compressed Adjacency Matrices: Untangling Gene Regulatory Networks"
+Kasper Dinkla, Michel A Westenberg, Jarke J van Wijk
+2012
+http://ieeexplore.ieee.org/abstract/document/6327251/
+
+----------
+
+Meeting with Alexander Lex and Team
+
+Progress
+
+-Minimize dependency on CytoScape.js
+--The functionality of CytoScape.js does not impress me much
+--I prefer to query the data using core JavaScript, since some query operations are more complex that typical CytoScape.js support
+--Changed strategy to pass arrays of nodes between query functions
+--Only use CytoScape.js core network when necessary
+
+-Change to data structure
+--Filters on arrays of nodes and links inefficient
+--Organized data in keyed, dictionary-like objects instead
+
+Plan
+
+Interface
+-Query
+--Identity (this is essentially a selection by identifier property)
+---Select single or multiple nodes by identity
+--Property
+---Select or filter multiple nodes by property
+--Relation
+---Select nodes by relation to previously-selected node(s)
+
+Matrix Representation of metabolic network?
+
+Alex did not recommend attempting a matrix representation of the metabolic network (metabolites as columns, reactions as rows, with links as grids).
+The mean degree of nodes in the network is low (3.3), so the network is very sparse.
+
+Alex advised me to consider Kasper Dinkla's hybrid matrix representation of metabolic networks.
+
+--------------------------------------------------
 3 March 2017
 
 ----------
@@ -89,7 +257,6 @@ New Queries
 Select an ego network within a specific compartment.
 
 Select a process network within a specific compartment.
-
 
 ----------
 

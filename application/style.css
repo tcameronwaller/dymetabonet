@@ -22,10 +22,33 @@
 
 /* Set dimensions of elements proportional to dimensions of the viewport or window. */
 
+
+/* Media Queries */
+
+@media (max-width: 500px) {
+    #interface {
+        flex-direction: column;
+    }
+}
+
+
 /* Elements */
 
+html {
+    margin: 0;
+}
+
+body {
+    background-color: rgba(0, 0, 0, 1);
+    border: 0;
+    margin: 0;
+}
+
 header {
-    width: 95%;
+    background-color: rgba(50, 50, 50, 1);
+    color: red;
+    height: 1cm;
+    width: 100%;
 }
 
 h1 {
@@ -134,17 +157,57 @@ h3 {
 /* In future, consider relative/dynamic dimensions with "vw" and "vh". */
 /* Also consider using the auto setting for width and height of the window. */
 
-#window {
-    width: 1320px;
-    height: 615px;
+#view {
+    height: 97vh;
+    margin: 0;
+    width: 97vw;
+}
+
+#interface {
+    display: flex;
+    height: 100%;
+    width: 100%;
 }
 
 #control {
-    display: inline;
-    float: left;
-    width: 25%;
-    height: 97%;
+    background-color:rgba(50, 50, 50, 1);
+    flex: 1;
+    overflow: auto;
 }
+
+#control .tab input {
+    display: none;
+}
+
+#control label h2 {
+    color: rgba(100, 100, 100, 1);
+}
+
+#control label h2:hover {
+    background-color: rgba(150, 150, 150, 1);
+}
+
+#control .tab > div {
+    display: none;
+}
+
+#control .tab input:checked ~ label h2 {
+    background-color: rgba(200, 100, 100, 1);
+}
+
+#control .tab input:checked ~ div {
+    display:block;
+}
+
+#exploration {
+    background-color: rgba(0, 0, 0, 1);
+    flex: 3;
+    overflow: auto;
+}
+
+
+
+
 
 #query {
     display: inline;
@@ -194,13 +257,6 @@ h3 {
     width: 100px;
     height: 50px;
 } */
-
-#exploration {
-    display: inline;
-    float: right;
-    width: 70%;
-    height: 93%;
-}
 
 /*
 #exploration > svg {

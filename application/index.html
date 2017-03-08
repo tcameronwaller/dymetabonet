@@ -22,78 +22,99 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Profondeur</title>
+    <meta name="author" content="T Cameron Waller">
+    <meta name="description" content="Profondeur is a tool for the visual
+    exploration and analysis of metabolic networks.">
     <link rel="stylesheet" href="style.css"/>
     <script src="https://d3js.org/d3.v4.js"></script>
     <script src="./cytoscape.js-2.7.13/cytoscape.js"></script>
-
 </head>
 
 <body>
+    <!-- Create container for entire view. -->
+    <div id="view">
 
-    <!-- Use D3 to create elements that associate with data or change with data. -->
-    <!-- Create all other elements within the HTML. -->
-    <!-- Group all page content in a container element. -->
-
-    <!-- TODO: For now, just set static dimensions for all elements of the document. -->
-
-    <div id="window">
-
-        <!-- Create element for title or header of interface. -->
+        <!-- Create header. -->
         <header>
             <h1 title="Profondeur: Visual Exploration and Analysis of Metabolic Networks">Profondeur</h1>
         </header>
 
-        <!-- TODO: In terms of style/strategy, would it be better to create SVG's for my views here in the HTML? -->
-        <!-- TODO: Those SVG's do not depend on data, so it might be better style to create them here. -->
-        <!-- TODO: That way I can minimize in-line styling with D3. -->
-        <!-- TODO: Also it should be fine to size them relatively in the CSS using vw and vh. -->
+        <!-- Create container for main interface. -->
+        <div id="interface">
 
-        <!-- Create element for control views. -->
-        <div id="control">
-            <!-- Create element for query view. -->
-            <!-- For this project, this view will not associate with data beyond a selection menu. -->
-            <div id="query" class="view">
-                <h3>Query</h3>
-                <div id="selector-div">
-                    <label>Model:</label>
-                    <select id="selector"></select>
-                    <button id="assemble">Assemble</button>
-                    <button id="load">Load</button>
+
+            <!-- TODO: change to use checkbox so that multiple can be active.-->
+
+            <!-- Create control panel. -->
+            <div id="control">
+                <!-- Create model panel. -->
+                <div id="model" class="tab">
+                    <input type="checkbox" id="model_tab">
+                    <label for="model_tab"><h2>Model</h2></label>
+                    <div>
+                        This is the Model div.
+                    </div>
                 </div>
+                <!-- Create query panel. -->
+                <div id="query" class="tab">
+                    <input type="checkbox" id="query_tab">
+                    <label for="query_tab"><h2>Query</h2></label>
+                    <div>
+                        This is the Query div.
+                    </div>
+                    <!--<div id="selector-div">
+                        <label>Model:</label>
+                        <select id="selector"></select>
+                        <button id="assemble">Assemble</button>
+                        <button id="load">Load</button>
+                    </div> -->
+                </div>
+                <!-- Create navigation panel. -->
+                <div id="navigation" class="tab">
+                    <input type="checkbox" id="navigation_tab">
+                    <label for="navigation_tab"><h2>Navigation</h2></label>
+                    <div>
+                        This is the Navigation div.
+                    </div>
+                    <!-- <table id="degree-table">
+                        <thead>
+                        <tr>
+                            <th>Identifier</th>
+                            <th>Degree</th>
+                            <th>Replicate</th>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td id="degree-scale"></td>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table> -->
+                </div>
+                <!-- Create detail panel. -->
+                <div id="detail" class="tab">
+                    <input type="checkbox" id="detail_tab">
+                    <label for="detail_tab"><h2>Detail</h2></label>
+                    <div>
+                        This is the Detail div.
+                    </div>
+                </div>
+
             </div>
 
-            <!-- Create element for navigation view. -->
-            <!-- Maybe the navigation view should actually have a fixed size. -->
-            <div id="navigation" class="view">
-                <h3>Metabolite Degree Table</h3>
-                <table id="degree-table">
-                    <thead>
-                    <tr>
-                        <th>Identifier</th>
-                        <th>Degree</th>
-                        <th>Replicate</th>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td id="degree-scale"></td>
-                    </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+            <!-- Create element for exploration view. -->
+            <div id="exploration">
+                <!-- It is possible to initiate this svg with dimensions 100X100 and then change those in the CSS. -->
+                <!-- I set the final dimensions for now since it makes it simple to access them in the JavaScript. -->
+                <!-- <svg width="924" height="572"></svg> -->
             </div>
-        </div>
 
-        <!-- Create element for exploration view. -->
-        <div id="exploration" class="view">
-            <!-- It is possible to initiate this svg with dimensions 100X100 and then change those in the CSS. -->
-            <!-- I set the final dimensions for now since it makes it simple to access them in the JavaScript. -->
-            <!-- <svg width="924" height="572"></svg> -->
         </div>
-
     </div>
 
     <div id="caption">
