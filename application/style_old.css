@@ -24,13 +24,13 @@
 
 
 /* Media Queries */
-/*
-@media (max-width: 15cm) {
+
+@media (max-width: 500px) {
     #interface {
         flex-direction: column;
     }
 }
-*/
+
 
 /* Elements */
 
@@ -153,6 +153,10 @@ h3 {
 
 /* Identifiers */
 
+/* For now, use absolute/static dimensions. */
+/* In future, consider relative/dynamic dimensions with "vw" and "vh". */
+/* Also consider using the auto setting for width and height of the window. */
+
 #view {
     height: 97vh;
     margin: 0;
@@ -165,57 +169,43 @@ h3 {
     width: 100%;
 }
 
-/******************************************************************************/
-/* Control Panel */
-
 #control {
-    background-color: rgba(50, 50, 50, 1);
-    display: block;
-    flex-basis: 7.5 cm;
-    flex-grow: 1;
-    flex-shrink: 1;
+    background-color:rgba(50, 50, 50, 1);
+    flex: 1;
     overflow: auto;
-    resize: horizontal;
 }
 
-#control .control_tab {
-    background-color: rgba(100, 100, 100, 1);
-}
-
-#control .control_tab > input {
+#control .tab input {
     display: none;
 }
 
-#control .control_tab label h2 {
-    color: rgba(200, 200, 200, 1);
+#control label h2 {
+    color: rgba(100, 100, 100, 1);
 }
 
-#control .control_tab label h2:hover {
+#control label h2:hover {
     background-color: rgba(150, 150, 150, 1);
 }
 
-#control .control_tab > div {
+#control .tab > div {
     display: none;
 }
 
-#control .control_tab input:checked ~ label h2 {
+#control .tab input:checked ~ label h2 {
     background-color: rgba(200, 100, 100, 1);
 }
 
-#control .control_tab input:checked ~ div {
+#control .tab input:checked ~ div {
     display:block;
 }
 
 #exploration {
     background-color: rgba(0, 0, 0, 1);
-    flex-grow: 5;
-    flex-shrink: 1;
+    flex: 3;
     overflow: auto;
 }
 
-.query_step {
-    background-color: rgba(150, 100, 150, 1);
-}
+
 
 
 

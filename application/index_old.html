@@ -46,50 +46,36 @@
 
         <!-- Create container for main interface. -->
         <div id="interface">
-            <!-- TODO: Per Google HTML/CSS Style Guide, change to control behavior in JavaScript. -->
+
+
+            <!-- TODO: change to use checkbox so that multiple can be active.-->
+
             <!-- Create control panel. -->
             <div id="control">
                 <!-- Create model panel. -->
-                <div id="model" class="control_tab">
+                <div id="model" class="tab">
                     <input type="checkbox" id="model_tab">
                     <label for="model_tab"><h2>Model</h2></label>
                     <div>
                         This is the Model div.
-                        <!-- TODO: Support a custom file upload. -->
-                        <input type="file">
-                        <div id="selector-div">
-                            <label>Model:</label>
-                            <select id="selector"></select>
-                            <button id="assemble">Assemble</button>
-                            <button id="load">Load</button>
-                        </div>
                     </div>
                 </div>
                 <!-- Create query panel. -->
-                <div id="query" class="control_tab">
+                <div id="query" class="tab">
                     <input type="checkbox" id="query_tab">
                     <label for="query_tab"><h2>Query</h2></label>
                     <div>
-                        Please assemble steps of the query.
-                        <div id="query_queue">
-                            <div class="query_step">
-                                <h3>Type of Query Step</h3>
-                                <label>Attribute:
-                                    <input name="type" type="radio" value="attribute">
-                                </label>
-                                <label>Identity:
-                                    <input name="type" type="radio" value="identity">
-                                </label>
-                                <br>
-                                <button type="button">Delete</button>
-                            </div>
-                        </div>
-                        <button id="query_queue_add" type="button">+</button>
-                        <button type="button">Submit</button>
+                        This is the Query div.
                     </div>
+                    <!--<div id="selector-div">
+                        <label>Model:</label>
+                        <select id="selector"></select>
+                        <button id="assemble">Assemble</button>
+                        <button id="load">Load</button>
+                    </div> -->
                 </div>
                 <!-- Create navigation panel. -->
-                <div id="navigation" class="control_tab">
+                <div id="navigation" class="tab">
                     <input type="checkbox" id="navigation_tab">
                     <label for="navigation_tab"><h2>Navigation</h2></label>
                     <div>
@@ -111,21 +97,66 @@
                     </table> -->
                 </div>
                 <!-- Create detail panel. -->
-                <div id="detail" class="control_tab">
+                <div id="detail" class="tab">
                     <input type="checkbox" id="detail_tab">
                     <label for="detail_tab"><h2>Detail</h2></label>
                     <div>
                         This is the Detail div.
                     </div>
                 </div>
+
             </div>
+
             <!-- Create element for exploration view. -->
             <div id="exploration">
                 <!-- It is possible to initiate this svg with dimensions 100X100 and then change those in the CSS. -->
                 <!-- I set the final dimensions for now since it makes it simple to access them in the JavaScript. -->
                 <!-- <svg width="924" height="572"></svg> -->
             </div>
+
         </div>
+    </div>
+
+    <div id="caption">
+
+        <h1>Profondeur</h1>
+        <h2>Visual Exploration and Analysis of Metabolic Networks</h2>
+
+        <h3>Project Repository:
+            <a href="https://github.com/tcameronwaller/profondeur">
+                https://github.com/tcameronwaller/profondeur
+            </a>
+        </h3>
+
+        <h3>Project Website:
+            <a href="https://tcameronwaller.github.io/profondeur/">
+                https://tcameronwaller.github.io/profondeur/
+            </a>
+        </h3>
+
+        <h3>Process Book:
+            <a href="process_book.pdf">
+                process book
+            </a>
+        </h3>
+
+        <h3>Introductory Video:
+            <a href="https://youtu.be/UtBwxdMJWQY">
+                introductory video
+            </a>
+        </h3>
+
+        <p>
+            Metabolic networks are large and complex, involving many types of relations between many types of entities.
+            Biologists and clinicians need access to the information from these networks in order to interpret
+            experimental data that inform the diagnosis and treatment of human disease.
+            The goal of this project is to develop methods that enable users to explore the metabolic network.
+            In contrast to many existing technologies, this project employs automatic, dynamic layouts to represent
+            subsets of the network.
+            In future projects, these dynamic layouts will be necessary to represent subsets of the network that the
+            user specifies by custom queries.
+        </p>
+
     </div>
 
     <!-- Call scripts. -->

@@ -4,6 +4,173 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+13 March 2017
+
+----------
+
+Method setAttribute() returns "undefined".
+
+
+----------
+
+document.element.style.visibility = "hidden";
+
+I think that "visibility" of "hidden" is a CSS style property.
+
+
+----------
+New Query Functionality
+
+User selects single node in diagram to include all depth-1 neighbors in the current selection.
+Upon selecting the node, maybe provide a panel with options.
+Call an appropriate function to include the depth-1 neighbor network in the current network selection.
+Then re-create the CytoScape.js network.
+
+----------
+Set Attributes of Element in DOM
+
+https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute
+https://www.w3schools.com/jsref/met_element_setattribute.asp
+
+
+
+                        <div id="query_queue">
+                            <div class="query_step">
+                                <h3>Type of Query Step</h3>
+                                <label>Identity:
+                                    <input name="type" type="radio" value="identity">
+                                </label>
+                                <label>Attribute:
+                                    <input name="type" type="radio" value="attribute">
+                                </label>
+                                <br>
+                                <button type="button">Delete</button>
+                            </div>
+                        </div>
+
+
+
+
+----------
+Append Elements to DOM
+
+https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild
+https://www.w3schools.com/jsref/met_node_appendchild.asp
+
+----------
+HTML Input Element Values
+
+https://www.w3schools.com/jsref/prop_text_value.asp
+
+Access
+var x = document.getElementById("InputElementIdentifier").value;
+
+Assignment
+document.getElementById("InputElementIdentifier").value = x;
+
+----------
+DOM Element Event Handler or Listener
+
+If I understand correctly, the Event Listener method is more modern, and more versatile.
+
+Event Listener
+https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
+JavaScript: document.getElementById("identifier").addEventListener("click", function);
+
+On-Event Handlers
+https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Event_handlers
+HTML: <button onclick="return function(event);">
+JavaScript: document.getElementById("identifier").onclick = function() {...}
+
+----------
+Selecting Iterable Elements
+
+Select children of a single element in the document.
+document.getElementById("container_identifier").children
+
+Select all elements in the document with specific class names.
+document.getElementsByClassName("class1 class2")
+
+Select a single element in the document.
+Select all child elements in the document with specific class names.
+document.getElementById("container_identifier").getElementsByClassName("class1 class2")
+
+I need to use this last option.
+If I select all child elements of the container, I will get all individual elements.
+I want to select child containers (with their contents) of the queue container.
+
+Select a single element in the document.
+Select all child elements in the document with specific names.
+document.getElementById("container_identifier").getElementsByName("name")
+
+--------------------------------------------------
+10 March 2017
+
+----------
+Should I use a single form for the entire query (multiple steps)?
+
+I think so.
+That way I can have the form's submit button call the appropriate function in JavaScript.
+
+----------
+Change the interface dynamically as the user changes options.
+As the user selects the type of query step (identity, property, topology), change the contents of the form to match the appropriate options.
+
+----------
+Name and ID attributes for forms and input elements
+
+I think use an ID for the form.
+I think use name attributes for all input elements in the form.
+I think then you can use dot notation to access the value of each element by name.
+
+----------
+Access information from an HTML form
+
+http://stackoverflow.com/questions/2435525/best-practice-access-form-elements-by-html-id-or-name-attribute
+
+https://www.w3schools.com/js/js_input_examples.asp
+https://www.w3schools.com/js/tryit.asp?filename=tryjs_form_elements
+
+Give form an identifier.
+Access the form by "getElementById()".
+Use dot notation to access values of individual properties from the form.
+
+----------
+Collect information in an HTML form.
+Use the onsubmit event to trigger a function in JavaScript to collect information from the form.
+Access the values from the form using form syntax, form["property"].value;
+
+https://www.w3schools.com/js/js_validation.asp
+http://stackoverflow.com/questions/6051143/how-to-use-html-forms-without-a-server
+
+Do not specify the "action" or "method" attributes of the form, I think.
+Do specify a function in JavaScript to call upon submission of the form.
+
+----------
+
+--------------------------------------------------
+8 March 2017
+
+----------
+Autocomplete Box
+
+https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms/The_native_form_widgets
+
+----------
+Meet with Alexander Lex
+
+Alex recommends to minimize development of features for style or convenience.
+An example is the collapsible control panel and responsive accommodation of different display dimensions.
+Alex recommends completing a prototype with basic functionality as soon as possible.
+
+Query Interface
+Alex recommends allowing the user to append a new div element to a Query queue for each query step.
+The query div elements will give the user all the necessary options for the query functions.
+Alex recommends using JavaScript, probably D3 to append these div elements.
+JQuery might be another option.
+Or I could just use straight JavaScript.
+
+--------------------------------------------------
 7 March 2017
 
 ----------

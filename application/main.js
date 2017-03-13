@@ -30,6 +30,7 @@
  */
 (function () {
 
-    initializeQueryInterface()
+    initializeQueryInterface();
+    manageInterface();
 
 })();

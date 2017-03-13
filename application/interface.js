@@ -83,3 +83,106 @@ function initializeQueryInterface() {
         })
 }
 
+function manageInterface() {
+    document
+        .getElementById("query_queue_add")
+        .addEventListener("click", addQueryStep);
+}
+
+/**
+ * Determines the value of the only active radio button in a group.
+ * @param {Array<Object>} radios Group of radio buttons.
+ * @returns {string} Value of the only active radio button from the group.
+ */
+function determineRadioGroupValue(radios) {
+    return radios.filter(function (radio) {
+        return radio.checked;
+    })[0].value;
+}
+
+/**
+ * Appends one additional query step to the query queue.
+ * @param {Object} event Record of event from Document Object Model.
+ */
+function addQueryStep2(event) {
+    //console.log(event.currentTarget);
+    //event.currentTarget // element on which the event originated.
+
+    var textHead = document.createTextNode("Type of Query Step");
+    var headHead = document
+        .createElement("h3")
+        .appendChild(textHead);
+
+    var textAttribute = document
+        .createTextNode("Attribute:");
+    var textIdentity = document
+        .createTextNode("Identity:");
+    var textTopology = document
+        .createTextNode("Topology:");
+    var inputAttribute = document
+        .createElement("input")
+        .setAttribute("name", "typer")
+        .setAttribute("type", "radio")
+        .setAttribute("value", "attribute");
+    var inputIdentity = document
+        .createElement("input")
+        .setAttribute("name", "typer")
+        .setAttribute("type", "radio")
+        .setAttribute("value", "identity");
+    var inputTopology = document
+        .createElement("input")
+        .setAttribute("name", "typer")
+        .setAttribute("type", "radio")
+        .setAttribute("value", "topology");
+    var labelAttribute = document
+        .createElement("label")
+        .appendChild(textAttribute)
+        .appendChild(inputAttribute);
+    var labelIdentity = document
+        .createElement("label")
+        .appendChild(textIdentity)
+        .appendChild(inputIdentity);
+    var labelTopology = document
+        .createElement("label")
+        .appendChild(textTopology)
+        .appendChild(inputTopology);
+
+    var breaker = document
+        .createElement("br");
+    var textDelete = document
+        .createTextNode("Delete");
+    var button = document
+        .createElement("button")
+        .setAttribute("type", "button")
+        .appendChild(textDelete);
+
+    var step = document
+        .createElement("div")
+        .setAttribute("class", "query_step")
+        .appendChild(headHead)
+        .appendChild(labelAttribute)
+        .appendChild(labelIdentity)
+        .appendChild(labelTopology)
+        .appendChild(breaker)
+        .appendChild(button);
+    document.getElementById("query_queue").appendChild(step);
+}
+
+// TODO: Trouble-shoot this test function.
+// TODO: I'm trying to chain together creation, setting attribute, and appending child.
+// TODO: It is possible that the setAttribute method does not return the new element.
+// TODO: That's ridiculous.
+
+function addQueryStep(event) {
+    //console.log(event.currentTarget);
+    //event.currentTarget // element on which the event originated.
+
+    var text = document
+        .createTextNode("Test");
+
+    var step = document
+        .createElement("div")
+        .setAttribute("class", "query_step")
+        .appendChild(text);
+    document.getElementById("query_queue").appendChild(step);
+}
