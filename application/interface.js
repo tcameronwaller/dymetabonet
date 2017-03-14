@@ -101,88 +101,80 @@ function determineRadioGroupValue(radios) {
 }
 
 /**
+ * Creates a radio button with a label for a step in a queue.
+ * @param {number} stepCount Count of the step in the queue.
+ * @param {string} labelText Text for the radio button's label.
+ * @param {string} inputValue Value for the radio button.
+ */
+function createStepRadioButton(stepCount, labelText, inputValue) {
+    var label = document.createElement("label");
+    label.appendChild(
+        document.createTextNode(labelText)
+    );
+    var input = document.createElement("input");
+    input.setAttribute("name", "step_" + stepCount + "_type");
+    input.setAttribute("type", "radio");
+    input.setAttribute("value", inputValue);
+    label.appendChild(input);
+    return label;
+}
+
+/**
+ * Deletes the parent element of the element that triggered the event.
+ * @param {Object} event Record of event from Document Object Model.
+ */
+function deleteParentElement(event) {
+    // Element on which the event originated is event.currentTarget.
+    event
+        .currentTarget
+        .parentElement
+        .parentElement
+        .removeChild(event.currentTarget.parentElement);
+}
+
+/**
  * Appends one additional query step to the query queue.
  * @param {Object} event Record of event from Document Object Model.
  */
-function addQueryStep2(event) {
-    //console.log(event.currentTarget);
-    //event.currentTarget // element on which the event originated.
-
-    var textHead = document.createTextNode("Type of Query Step");
-    var headHead = document
-        .createElement("h3")
-        .appendChild(textHead);
-
-    var textAttribute = document
-        .createTextNode("Attribute:");
-    var textIdentity = document
-        .createTextNode("Identity:");
-    var textTopology = document
-        .createTextNode("Topology:");
-    var inputAttribute = document
-        .createElement("input")
-        .setAttribute("name", "typer")
-        .setAttribute("type", "radio")
-        .setAttribute("value", "attribute");
-    var inputIdentity = document
-        .createElement("input")
-        .setAttribute("name", "typer")
-        .setAttribute("type", "radio")
-        .setAttribute("value", "identity");
-    var inputTopology = document
-        .createElement("input")
-        .setAttribute("name", "typer")
-        .setAttribute("type", "radio")
-        .setAttribute("value", "topology");
-    var labelAttribute = document
-        .createElement("label")
-        .appendChild(textAttribute)
-        .appendChild(inputAttribute);
-    var labelIdentity = document
-        .createElement("label")
-        .appendChild(textIdentity)
-        .appendChild(inputIdentity);
-    var labelTopology = document
-        .createElement("label")
-        .appendChild(textTopology)
-        .appendChild(inputTopology);
-
-    var breaker = document
-        .createElement("br");
-    var textDelete = document
-        .createTextNode("Delete");
-    var button = document
-        .createElement("button")
-        .setAttribute("type", "button")
-        .appendChild(textDelete);
-
-    var step = document
-        .createElement("div")
-        .setAttribute("class", "query_step")
-        .appendChild(headHead)
-        .appendChild(labelAttribute)
-        .appendChild(labelIdentity)
-        .appendChild(labelTopology)
-        .appendChild(breaker)
-        .appendChild(button);
-    document.getElementById("query_queue").appendChild(step);
-}
-
-// TODO: Trouble-shoot this test function.
-// TODO: I'm trying to chain together creation, setting attribute, and appending child.
-// TODO: It is possible that the setAttribute method does not return the new element.
-// TODO: That's ridiculous.
-
 function addQueryStep(event) {
-    //console.log(event.currentTarget);
-    //event.currentTarget // element on which the event originated.
+    // Element on which the event originated is event.currentTarget.
 
-    var text = document
-        .createTextNode("Test");
+    // Determine the count of the new step in the query queue.
+    var steps = document
+            .getElementById("query_queue")
+            .getElementsByClassName("query_step");
+    var stepCount = steps.length + 1;
 
-    var step = document
-        .createElement("div")
-        .setAttribute("class", "query_step")
-        .appendChild(text);
-    document.getElementById("query_queue").appendChild(step);
+    // Create element for query step and append it to the query queue.
+    var step = document.createElement("div");
+    step.setAttribute("class", "query_step");
+    var header = document.createElement("h3");
+    header.appendChild(document.createTextNode("Step " + stepCount));
+    step.appendChild(header);
+    step.appendChild(
+        createStepRadioButton(stepCount, "Attribute:", "attribute")
+    );
+    step.appendChild(
+        createStepRadioButton(stepCount, "Identity:", "identity")
+    );
+    step.appendChild(
+        createStepRadioButton(stepCount, "Topology:", "topology")
+    );
+    step.appendChild(document.createElement("br"));
+    var button = document.createElement("button");
+    button.setAttribute("class", "delete");
+    button.setAttribute("type", "button");
+    button.appendChild(document.createTextNode("Delete"));
+    step.appendChild(button);
+    document
+        .getElementById("query_queue")
+        .appendChild(step);
+
+    // Activate delete buttons in query steps.
+    document
+        .getElementById("query_queue")
+        .querySelectorAll("div.query_step > button.delete")
+        .forEach(function (element) {
+            element.addEventListener("click", deleteParentElement);
+        });
 }

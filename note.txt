@@ -4,12 +4,40 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+14 March 2017
+
+----------
+Select multiple elements from DOM by multiple criteria
+
+Selections such as...
+document/element.children
+document/element.getElementsByClassName("class1 class2")
+document/element.getElementsByClassName("class1 class2")
+document/element.getElementsByName("name")
+document/element.getElementsByTagName("name")
+... return HTMLCollections or NodeLists.
+
+https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection
+https://developer.mozilla.org/en-US/docs/Web/API/NodeList
+
+These NodeLists are not the same as arrays in JavaScript.
+It is neither possible to use map, filter, nor reduce on these NodeLists.
+
+http://stackoverflow.com/questions/18242171/get-element-by-tag-name-and-class-name
+
+Fortunately, it is possible to select multiple elements by multiple criteria using syntax similar to CSS selectors.
+
+document/element.querySelectorAll()
+
+https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll
+https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelectorAll
+
+
+
+--------------------------------------------------
 13 March 2017
 
 ----------
-
-Method setAttribute() returns "undefined".
-
 
 ----------
 
@@ -32,30 +60,29 @@ Set Attributes of Element in DOM
 https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute
 https://www.w3schools.com/jsref/met_element_setattribute.asp
 
-
-
-                        <div id="query_queue">
-                            <div class="query_step">
-                                <h3>Type of Query Step</h3>
-                                <label>Identity:
-                                    <input name="type" type="radio" value="identity">
-                                </label>
-                                <label>Attribute:
-                                    <input name="type" type="radio" value="attribute">
-                                </label>
-                                <br>
-                                <button type="button">Delete</button>
-                            </div>
-                        </div>
-
-
-
+Method setAttribute() returns "undefined".
 
 ----------
-Append Elements to DOM
+Append and Remove Elements to and from DOM
 
 https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild
 https://www.w3schools.com/jsref/met_node_appendchild.asp
+https://www.w3schools.com/js/js_htmldom_nodes.asp
+
+Create the element first.
+document.createElement("html_tag");
+document.createTextNode("text");
+
+Then append the element to an existing element.
+element.appendChild(child);
+element.insertBefore(child);
+
+https://developer.mozilla.org/en-US/docs/Web/API/Node/removeChild
+https://www.w3schools.com/js/js_htmldom_nodes.asp
+
+Remove existing element from DOM
+parent.removeChild(child);
+
 
 ----------
 HTML Input Element Values
@@ -84,6 +111,12 @@ JavaScript: document.getElementById("identifier").onclick = function() {...}
 
 ----------
 Selecting Iterable Elements
+
+document.getElementById("container_identifier").children
+document.getElementsByClassName("class1 class2")
+document.getElementById("container_identifier").getElementsByClassName("class1 class2")
+document.getElementById("container_identifier").getElementsByName("name")
+document.getElementById("container_identifier").getElementsByTagName("name")
 
 Select children of a single element in the document.
 document.getElementById("container_identifier").children
