@@ -7,6 +7,18 @@ Research With Alexander Lex
 14 March 2017
 
 ----------
+Assemble type-specific query interfaces.
+
+When the user selects the type of the query step, create appropriate input elements for the specific query step.
+
+I drew sketch 2017-03-14_1 to represent the query queue with multiple query steps of different types.
+
+----------
+The interface now supports appending and removing query steps from the query queue.
+
+I need to update the header with the count of each step (Step 1, Step 2, Step 3, ...) in the queue after deletion of an intermediate (not last) step.
+
+----------
 Select multiple elements from DOM by multiple criteria
 
 Selections such as...
@@ -32,7 +44,7 @@ document/element.querySelectorAll()
 https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll
 https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelectorAll
 
-
+----------
 
 --------------------------------------------------
 13 March 2017

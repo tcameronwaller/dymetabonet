@@ -89,16 +89,28 @@ function manageInterface() {
         .addEventListener("click", addQueryStep);
 }
 
+
+
+
+
+// TODO: I will need to re-write this function to handle the NodeList of radio buttons properly.
+// TODO: use NodeList.forEach() to return the value of whichever is checked.
+// TODO
 /**
  * Determines the value of the only active radio button in a group.
  * @param {Array<Object>} radios Group of radio buttons.
  * @returns {string} Value of the only active radio button from the group.
  */
 function determineRadioGroupValue(radios) {
+    // Assume that only a single radio button in the group is active.
     return radios.filter(function (radio) {
         return radio.checked;
     })[0].value;
 }
+
+
+
+
 
 /**
  * Creates a radio button with a label for a step in a queue.
@@ -120,10 +132,10 @@ function createStepRadioButton(stepCount, labelText, inputValue) {
 }
 
 /**
- * Deletes the parent element of the element that triggered the event.
+ * Removes the parent element of the element that triggered the event.
  * @param {Object} event Record of event from Document Object Model.
  */
-function deleteParentElement(event) {
+function removeParentElement(event) {
     // Element on which the event originated is event.currentTarget.
     event
         .currentTarget
@@ -162,19 +174,21 @@ function addQueryStep(event) {
     );
     step.appendChild(document.createElement("br"));
     var button = document.createElement("button");
-    button.setAttribute("class", "delete");
+    button.setAttribute("class", "remove");
     button.setAttribute("type", "button");
-    button.appendChild(document.createTextNode("Delete"));
+    button.appendChild(document.createTextNode("Remove"));
     step.appendChild(button);
     document
         .getElementById("query_queue")
         .appendChild(step);
 
+    // TODO: Update Step Count headers after deleting an intermediate step.
+
     // Activate delete buttons in query steps.
     document
         .getElementById("query_queue")
-        .querySelectorAll("div.query_step > button.delete")
+        .querySelectorAll("div.query_step > button.remove")
         .forEach(function (element) {
-            element.addEventListener("click", deleteParentElement);
+            element.addEventListener("click", removeParentElement);
         });
 }
