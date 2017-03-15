@@ -178,31 +178,31 @@ h3 {
     resize: horizontal;
 }
 
-#control .control_tab {
+#control .control-tab {
     background-color: rgba(100, 100, 100, 1);
 }
 
-#control .control_tab > input {
+#control .control-tab > input {
     display: none;
 }
 
-#control .control_tab label h2 {
+#control .control-tab label h2 {
     color: rgba(200, 200, 200, 1);
 }
 
-#control .control_tab label h2:hover {
+#control .control-tab label h2:hover {
     background-color: rgba(150, 150, 150, 1);
 }
 
-#control .control_tab > div {
+#control .control-tab > div {
     display: none;
 }
 
-#control .control_tab input:checked ~ label h2 {
+#control .control-tab input:checked ~ label h2 {
     background-color: rgba(200, 100, 100, 1);
 }
 
-#control .control_tab input:checked ~ div {
+#control .control-tab input:checked ~ div {
     display:block;
 }
 
@@ -213,7 +213,7 @@ h3 {
     overflow: auto;
 }
 
-.query_step {
+.query-step {
     background-color: rgba(150, 100, 150, 1);
 }
 

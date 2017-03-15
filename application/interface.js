@@ -85,7 +85,7 @@ function initializeQueryInterface() {
 
 function manageInterface() {
     document
-        .getElementById("query_queue_add")
+        .getElementById("query-queue-add")
         .addEventListener("click", addQueryStep);
 }
 
@@ -118,15 +118,20 @@ function determineRadioGroupValue(radios) {
  * @param {string} labelText Text for the radio button's label.
  * @param {string} inputValue Value for the radio button.
  */
-function createStepRadioButton(stepCount, labelText, inputValue) {
+function createLabelRadioButton(stepCount, labelText, inputValue) {
     var label = document.createElement("label");
     label.appendChild(
         document.createTextNode(labelText)
     );
     var input = document.createElement("input");
-    input.setAttribute("name", "step_" + stepCount + "_type");
+    input.setAttribute("name", "step-" + stepCount + "-type");
     input.setAttribute("type", "radio");
     input.setAttribute("value", inputValue);
+
+    // TODO: Attach an event listener for the radio button.
+    // TODO: The listener function will need to determine the parent query step of the currentTarget to modify the correct step.
+
+    //input.addEventListener("change", respondTypeChange);
     label.appendChild(input);
     return label;
 }
@@ -142,6 +147,10 @@ function removeParentElement(event) {
         .parentElement
         .parentElement
         .removeChild(event.currentTarget.parentElement);
+
+    // TODO: After removing a query element, I should update the step count for the step label and for the names of groups of radio buttons.
+    // TODO: Maybe the event should trigger a specific container function that calls the general removeParentElement function along with another function to update query step counts.
+
 }
 
 /**
@@ -153,41 +162,42 @@ function addQueryStep(event) {
 
     // Determine the count of the new step in the query queue.
     var steps = document
-            .getElementById("query_queue")
-            .getElementsByClassName("query_step");
+            .getElementById("query-queue")
+            .getElementsByClassName("query-step");
     var stepCount = steps.length + 1;
 
     // Create element for query step and append it to the query queue.
     var step = document.createElement("div");
-    step.setAttribute("class", "query_step");
+    step.setAttribute("class", "query-step");
     var header = document.createElement("h3");
     header.appendChild(document.createTextNode("Step " + stepCount));
     step.appendChild(header);
     step.appendChild(
-        createStepRadioButton(stepCount, "Attribute:", "attribute")
+        createLabelRadioButton(stepCount, "Attribute:", "attribute")
     );
     step.appendChild(
-        createStepRadioButton(stepCount, "Identity:", "identity")
+        createLabelRadioButton(stepCount, "Identity:", "identity")
     );
     step.appendChild(
-        createStepRadioButton(stepCount, "Topology:", "topology")
+        createLabelRadioButton(stepCount, "Topology:", "topology")
     );
     step.appendChild(document.createElement("br"));
     var button = document.createElement("button");
     button.setAttribute("class", "remove");
     button.setAttribute("type", "button");
+    //button.addEventListener("click", removeParentElement);
     button.appendChild(document.createTextNode("Remove"));
     step.appendChild(button);
     document
-        .getElementById("query_queue")
+        .getElementById("query-queue")
         .appendChild(step);
 
     // TODO: Update Step Count headers after deleting an intermediate step.
 
     // Activate delete buttons in query steps.
     document
-        .getElementById("query_queue")
-        .querySelectorAll("div.query_step > button.remove")
+        .getElementById("query-queue")
+        .querySelectorAll("div.query-step > button.remove")
         .forEach(function (element) {
             element.addEventListener("click", removeParentElement);
         });

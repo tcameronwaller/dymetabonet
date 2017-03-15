@@ -4,7 +4,66 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+15 March 2017
+
+----------
+Begin with queries by attributes
+
+Query by single attributes.
+
+The auto-complete text field should recommend all attributes that match/include the user's string.
+The auto-complete text field should specify what type of attribute each potential match represents.
+For example, the auto-complete field might indicate a key value pair such as "value (attribute)".
+An example might be "mitochondrion (compartment)".
+
+In the background, organize the information for the auto-complete in an array of objects.
+{
+attribute: "compartment",
+value: "mitochondrion",
+representation: "mitochondrion (compartment)"
+}
+
+When the user selects an item from this array, return all of the information (attribute, value, and representation) to the appropriate handler function.
+
+
+----------
+Meet with Alexander Lex
+
+I showed Alex my sketch 2017-03-14_1.
+Alex advised me to simplify the query interface substantially.
+He specifically recommended combining my interfaces for "Attribute" and "Identity" query steps into a single interface.
+
+Names and identifiers are attributes.
+It is reasonable to treat names and identifiers along with other attributes.
+Queries by all of these attributes are similar.
+They differ fundamentally from topological queries.
+
+The interface for attribute query steps could involve a single auto-complete text field.
+The user can enter an identifier, name, compartment, or other attribute in this text field.
+The text field automatically recommends matches along with the type of attribute they represent.
+For example, if the user enters "mit", then the text field might recommend "mitochondrion (compartment)".
+
+Alex also recommended that I have a single input interface for assembling the query queues.
+The user inputs relevant information into this single interface.
+The user then adds that query step to a queue.
+The queue shows a summary of the type and details of each query step.
+
+The input interface for topological query steps is important.
+Topological query steps can fit anywhere in the query queue.
+While defining a topological query step, the user will select specific nodes to consider for proximity or path queries.
+The options available in these node selections will depend on the previous filters in the query queue.
+
+We will design the query interface later.
+
+For now, implement a prototype in which the interface communicates and controls the back-end functionality of the tool.
+The interface can be very basic for this early prototype.
+
+--------------------------------------------------
 14 March 2017
+
+----------
+HTML Tables
+
 
 ----------
 Assemble type-specific query interfaces.
