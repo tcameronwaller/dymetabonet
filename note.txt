@@ -3,11 +3,112 @@ Notes
 Research With Alexander Lex
 --------------------------------------------------
 
+
+--------------------------------------------------
+16 March 2017
+
+----------
+Procedure for Combination or Chaining Steps in Queries
+
+Queries collect specific nodes and all links between them.
+Individual query steps sequentially select identifiers of nodes to combine with the query collection.
+
+There are two aspects to queries.
+1. Selection of nodes according to a single criterion.
+2. Combination of these selections from multiple criteria according to logical "and", "or", or "not" rules.
+These combinations of selections construct query collections.
+These collections evolve sequentially throughout the query, and they are the end result of the query.
+
+For convenience in initiating a network in CytoScape.js, I think it will be practical to keep identifiers for reactions and metabolites separate as I pass them between query functions.
+Use a structure similar to the model itself so that the model and collection are somewhat interchangeable in query steps.
+
+I realize that performance might be more efficient if selection of nodes considers both the current query collection and logical rules for combination.
+For example, in the case of combination by "and" or "not" rules, it would not be necessary to consider all nodes in the model.
+It would only be necessary to consider nodes in the current query collection.
+
+In addition, it is necessary to consider logical rules for combination in the case of topological query steps.
+It might be necessary to exclude some paths during traversal in a topological search.
+
+Hence, functions for all query steps will consider the criteria for selection (in that step), logical rules for combination, the current query collection, and the context of the entire model (for reference).
+Query functions will accept these arguments:
+1. criteria: criterion or criteria for selection
+2. combination: logical rules (and, or, not) for combination
+3. collection: current query collection (an object with separate arrays of identifiers for reactions and metabolites, adapted from the entire model by default for initial step)
+3. model: entire model (for reference)
+
+
+
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments
+http://exploringjs.com/es6/ch_parameter-handling.html#sec_named-parameters
+http://usejsdoc.org/tags-param.html
+
+There will be a final process of every query chain.
+1. Collect all links between all nodes in the collection.
+2. Gather records for all node and link identifiers in the collection.
+3. Translate all nodes and links for CytoScape.js.
+4. Initiate an instance of a network in CytoScape.js.
+
+----------
+Query Functionality
+
+All of these core query operations should collect nodes of metabolites and reactions.
+Attribute
+1. Collect attribute values that include a query string that the user enters.
+2. Collect node(s) of a specific name or identifier.
+3. Collect nodes of a specific metabolic process.
+4. Collect nodes of specific comartment (matching compartmental metabolites and reactions with a matching compartmental metabolite).
+5. Collect reaction nodes with properties relevant to transport reactions (multiple compartments, change in compartments).
+6. Collect reaction nodes with properties relevant to chemical reactions (change in chemicals).
+Topology
+1. Collect nodes within specific proximity or depth of a single focal node.
+2. Collect nodes within specific count of shortest simple paths between two or more focal nodes.
+It will be useful to filter out high-degree nodes (water, proton, etc) before this shortest paths step.
+
+It will be necessary to combine multiple collections of nodes.
+
+1. Add two collections of nodes together.
+2. Subtract one collection of nodes from another collection of nodes.
+
+----------
+Visualization Functionality
+
+- Replicate specific nodes, such as those with excessively great degrees.
+- Represent the metabolic network as reactions between general (non-compartmental) metabolites.
+
 --------------------------------------------------
 15 March 2017
 
 ----------
-Begin with queries by attributes
+Early Prototype
+
+Consider making a temporary tab in the control panel to store the preliminary query interface.
+
+Include a text box for the attribute query.
+Include a text box for node and a text box or drop-down for the ego network.
+These query interfaces should be separate and have their own submit buttons, maybe.
+The submit buttons call the appropriate functions in the script.
+
+----------
+Code Organization
+
+Organize the query code from "assembly_model.js" in separate files for topology and attributes.
+
+----------
+Node Depth Table to Accompany Ego Network
+
+With our consideration of ego networks, we previously considered a table to list every node in the ego network by its depth from the focal node.
+While that table sounds useful, its design is very specific for ego networks.
+It is only appropriate for ego-only networks.
+
+I think a similar table to accompany the subnetwork might be very useful, but maybe we can structure it in a way that is more versatile to accomodate the variety of network types from custom queries.
+
+Maybe in addition to the more general table the node-depth table could be an option for ego networks.
+
+The goal is to supplement the network view to enable the user to understand the network as effectively as possible.
+This table might be a good way to give the user access to attributes and highlighting of the individual nodes in the network.
+
+----------
+Begin with Queries by Attributes
 
 Query by single attributes.
 
@@ -417,7 +518,7 @@ Progress
 -Minimize dependency on CytoScape.js
 --The functionality of CytoScape.js does not impress me much
 --I prefer to query the data using core JavaScript, since some query operations are more complex that typical CytoScape.js support
---Changed strategy to pass arrays of nodes between query functions
+--Changed strategy to pass arrays of node identifiers between query functions
 --Only use CytoScape.js core network when necessary
 
 -Change to data structure
