@@ -54,8 +54,12 @@ function collectProcessReactionsMetabolites(
     // Determine initial reaction identifiers according to the combination
     // strategy.
     if (combination === "and" || combination === "not") {
+        // Combination strategies and and not only consider reactions from the
+        // current collection.
         var reactionsInitial = collection.reactions;
     } else if (combination === "or") {
+        // Combination strategy or considers all reactions from the metabolic
+        // model.
         var reactionsInitial = collectValuesFromObjects(
             Object.values(model.networkElements.nodes.reactions), "id"
         );
@@ -72,9 +76,53 @@ function collectProcessReactionsMetabolites(
     });
     // Collect identifiers of metabolites that participate in the reactions.
     var metabolites = collectMetabolitesOfReactions(reactions, model);
+
+
+
+    // TODO: There is potential for a new "combinator" function here.
+    // TODO: This function should accept arguments for new reactions and metabolites and old reactions and metabolites.
+    // TODO: This function should return a new collection of reactions and metabolites.
+
+
+
     // Combine new selection of identifiers for reactions and metabolites with
     // query's current collection according to combination strategy.
-    if (combination === "and") {} else if (combination === "or") {} else if (combination === "not") {}
+    var combinationReactions = collectUniqueElements(
+        collection.reactions.concat(reactions)
+    );
+    var combinationMetabolites = collectUniqueElements(
+        collection.metabolites.concat(metabolites)
+    );
+
+    if (combination === "and") {
+        // Combination strategy and includes reactions and metabolites that both
+        // exist in the current collection and satisfy the new selection.
+        // TODO: While "reactions" is appropriate for the process algorithm, filter reactions like I do metabolites so the algorithm is more versatile.
+        var newReactions = reactions;
+        var newMetabolites = combinationMetabolites
+            .filter(function (metabolite) {
+            return (
+                collection.metabolites.includes(metabolite) &&
+                metabolites.includes(metabolite)
+            );
+        });
+    } else if (combination === "or") {
+        // Combination strategy or includes reactions and metabolites that
+        // either exist in the current collection or satisfy the new selection.
+        var newReactions = combinationReactions;
+        var newMetabolites = combinationMetabolites;
+    } else if (combination === "not") {
+        // Combination strategy not includes reactions and metabolites that
+        // exist in the current collection but do not satisfy the new selection.
+        var newReactions = collection.reactions.filter(function (reaction) {
+            return !reactions.includes(reaction);
+        });
+        var newMetabolites = collection
+            .metabolites
+            .filter(function (metabolite) {
+                return !metabolites.includes(metabolite);
+            });
+    }
     // TODO: Complete the appropriate combinations and return an object of arrays of reaction identifiers and metabolite identifiers.
 }
 
