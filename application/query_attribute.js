@@ -17,7 +17,7 @@
  */
 function collectMetabolitesOfReactions(reactionIdentifiers, model) {
     var reactions = reactionIdentifiers.map(function (identifier) {
-        return model.network_elements.nodes.reactions[identifier];
+        return model.networkElements.nodes.reactions[identifier];
     });
     return collectUniqueElements(
         reactions
@@ -32,6 +32,53 @@ function collectMetabolitesOfReactions(reactionIdentifiers, model) {
     );
 }
 
+
+/**
+ * Collects identifiers of reactions that are part of a specific metabolic
+ * process along with identifiers of their metabolites.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.process Identifier or name for a metabolic
+ * process.
+ * @param {string} parameters.combination Indication of logical operator and,
+ * or, not for combination of new selection with the query's current collection.
+ * @param {Object<string, Array<string>>} parameters.collection Identifiers of
+ * reactions and metabolites in the query's current collection.
+ * @param {Object} parameters.model Information about entities and relations in
+ * a metabolic model.
+ * @returns {Object<string, Array<string>>} Identifiers of reactions and
+ * metabolites in the query's new collection.
+ */
+function collectProcessReactionsMetabolites(
+    {process, combination, collection, model} = {}
+    ) {
+    // Determine initial reaction identifiers according to the combination
+    // strategy.
+    if (combination === "and" || combination === "not") {
+        var reactionsInitial = collection.reactions;
+    } else if (combination === "or") {
+        var reactionsInitial = collectValuesFromObjects(
+            Object.values(model.networkElements.nodes.reactions), "id"
+        );
+    }
+    // Filter initial reaction identifiers for those of reactions that
+    // participate in a specific metabolic process.
+    // Refer to the metabolic model for the record of each reaction.
+    var reactions = reactionsInitial.filter(function (reaction) {
+        return model
+                .networkElements
+                .nodes
+                .reactions[reaction]
+                .process === process;
+    });
+    // Collect identifiers of metabolites that participate in the reactions.
+    var metabolites = collectMetabolitesOfReactions(reactions, model);
+    // Combine new selection of identifiers for reactions and metabolites with
+    // query's current collection according to combination strategy.
+    if (combination === "and") {} else if (combination === "or") {} else if (combination === "not") {}
+    // TODO: Complete the appropriate combinations and return an object of arrays of reaction identifiers and metabolite identifiers.
+}
+
+
 /**
  * Collects reactions that are part of a specific metabolic process along with
  * their metabolites and links between.
@@ -40,9 +87,9 @@ function collectMetabolitesOfReactions(reactionIdentifiers, model) {
  * model.
  * @returns {Array<Object>} Unique identifiers for network nodes.
  */
-function collectProcessNetworkNodes(process, model) {
+function collectProcessNetworkNodesOld(process, model) {
     var reactions = Object.values(
-        model.network_elements.nodes.reactions
+        model.networkElements.nodes.reactions
     )
         .filter(function (reaction) {
             return reaction.process === process;
@@ -78,7 +125,7 @@ function includeTransportReactions() {
                 // The identifier for the compartmental metabolite is not
                 // already in the collection.
                 var identifier = model
-                    .network_elements
+                    .networkElements
                     .nodes
                     .filter(function (node) {
                         return node.data.type === "metabolite";
@@ -90,7 +137,7 @@ function includeTransportReactions() {
                     .metabolite;
                 var set = array.filter(function (element) {
                     return model
-                            .network_elements
+                            .networkElements
                             .nodes
                             .filter(function (node) {
                                 return node.data.type === "metabolite";
@@ -121,7 +168,7 @@ function includeTransportReactions() {
     // (reactants or products) include multiple compartmental metabolites from
     // the set.
     var transportReactions = model
-        .network_elements
+        .networkElements
         .nodes
         .filter(function (node) {
             return node.data.type === "reaction";

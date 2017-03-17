@@ -388,7 +388,7 @@ function createReactionLinkRecords(reactions) {
  */
 function assembleNetwork(model) {
     return {
-        network_elements: {
+        networkElements: {
             links: createReactionLinkRecords(model.reactions),
             nodes: {
                 metabolites: createMetaboliteNodeRecords(
@@ -414,15 +414,15 @@ function assembleNetwork(model) {
  */
 function translateCytoScapeNode(identifier, model) {
     if (
-        (model.network_elements.nodes.metabolites[identifier] != undefined) &&
-        (model.network_elements.nodes.reactions[identifier] === undefined)
+        (model.networkElements.nodes.metabolites[identifier] != undefined) &&
+        (model.networkElements.nodes.reactions[identifier] === undefined)
     ) {
-        var data = model.network_elements.nodes.metabolites[identifier];
+        var data = model.networkElements.nodes.metabolites[identifier];
     } else if (
-        (model.network_elements.nodes.metabolites[identifier] === undefined) &&
-        (model.network_elements.nodes.reactions[identifier] != undefined)
+        (model.networkElements.nodes.metabolites[identifier] === undefined) &&
+        (model.networkElements.nodes.reactions[identifier] != undefined)
     ) {
-        var data = model.network_elements.nodes.reactions[identifier];
+        var data = model.networkElements.nodes.reactions[identifier];
     }
     return {
         classes: data.type,
@@ -452,7 +452,7 @@ function translateCytoScapeNodes(identifiers, model) {
  * @returns {Array<string>} Unique identifiers for network links.
  */
 function collectLinksBetweenNodes(nodeIdentifiers, model) {
-    var links = Object.values(model.network_elements.links)
+    var links = Object.values(model.networkElements.links)
         .filter(function (link) {
             return (nodeIdentifiers.includes(link.source)) &&
                 (nodeIdentifiers.includes(link.target));
@@ -470,7 +470,7 @@ function collectLinksBetweenNodes(nodeIdentifiers, model) {
 function translateCytoScapeLink(identifier, model) {
     return {
         group: "edges",
-        data: model.network_elements.links[identifier]
+        data: model.networkElements.links[identifier]
     };
 }
 
@@ -513,7 +513,7 @@ function collectElementsForCytoScapeNetwork(nodeIdentifiers, model) {
  */
 function initializeNetwork(modelPremature) {
     return Object.assign({}, modelPremature, {
-        network: cytoscape({elements: modelPremature.network_elements})
+        network: cytoscape({elements: modelPremature.networkElements})
     });
 }
 

@@ -8,6 +8,16 @@ Research With Alexander Lex
 16 March 2017
 
 ----------
+Method
+
+If a function takes many arguments or parameters (more than 2 maybe), use destructuring assignment for an option object argument to simulate descriptive names.
+
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
+https://google.github.io/styleguide/jsguide.html#features-objects-destructuring
+http://exploringjs.com/es6/ch_parameter-handling.html#sec_named-parameters
+http://usejsdoc.org/tags-param.html
+
+----------
 Procedure for Combination or Chaining Steps in Queries
 
 Queries collect specific nodes and all links between them.
@@ -36,11 +46,6 @@ Query functions will accept these arguments:
 3. collection: current query collection (an object with separate arrays of identifiers for reactions and metabolites, adapted from the entire model by default for initial step)
 3. model: entire model (for reference)
 
-
-
-https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments
-http://exploringjs.com/es6/ch_parameter-handling.html#sec_named-parameters
-http://usejsdoc.org/tags-param.html
 
 There will be a final process of every query chain.
 1. Collect all links between all nodes in the collection.

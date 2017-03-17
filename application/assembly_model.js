@@ -28,15 +28,15 @@ function assembleModel(modelInitial) {
     console.log(model);
     console.log(
         "Count of nodes for reactions: " +
-        Object.keys(model.network_elements.nodes.reactions).length
+        Object.keys(model.networkElements.nodes.reactions).length
     );
     console.log(
         "Count of nodes for compartmental metabolites: " +
-        Object.keys(model.network_elements.nodes.metabolites).length
+        Object.keys(model.networkElements.nodes.metabolites).length
     );
     console.log(
         "Count of links: " +
-        Object.keys(model.network_elements.links).length
+        Object.keys(model.networkElements.links).length
     );
     console.log(
         "Count of metabolites: " +
