@@ -6,9 +6,17 @@ Research With Alexander Lex
 --------------------------------------------------
 17 March 2017
 
+
 ----------
+Plan
 
+Introduce a text field to the interface so that the user can enter a process of choice and then activate the appropriate function.
 
+----------
+Progress
+
+Function collectProcessReactionsMetabolites() works properly as far as I can tell.
+The functions for translating collections of node identifiers and initiating a network instance in CytoScape.js also work properly.
 
 --------------------------------------------------
 16 March 2017

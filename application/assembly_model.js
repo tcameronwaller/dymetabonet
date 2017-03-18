@@ -28,15 +28,15 @@ function assembleModel(modelInitial) {
     console.log(model);
     console.log(
         "Count of nodes for reactions: " +
-        Object.keys(model.networkElements.nodes.reactions).length
+        Object.keys(model.network.nodes.reactions).length
     );
     console.log(
         "Count of nodes for compartmental metabolites: " +
-        Object.keys(model.networkElements.nodes.metabolites).length
+        Object.keys(model.network.nodes.metabolites).length
     );
     console.log(
         "Count of links: " +
-        Object.keys(model.networkElements.links).length
+        Object.keys(model.network.links).length
     );
     console.log(
         "Count of metabolites: " +
@@ -58,15 +58,16 @@ function assembleModel(modelInitial) {
 
 /**
  * Initializes and visualizes a CytoScape.js network.
- * @param {Array<string>} nodeIdentifiers Unique identifiers for network nodes.
+ * @param {Object<string, Array<string>>} collection Identifiers of reactions
+ * and metabolites in the query's current collection.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function visualizeNetwork(nodeIdentifiers, model) {
+function visualizeNetwork(collection, model) {
     cytoscape({
         container: document.getElementById("exploration"),
         //elements: collection.jsons(),
-        elements: collectElementsForCytoScapeNetwork(nodeIdentifiers, model),
+        elements: collectElementsForCytoScapeNetwork(collection, model),
         layout: {
             animate: true,
             name: "cose",
@@ -102,6 +103,24 @@ function visualizeNetwork(nodeIdentifiers, model) {
     });
 }
 
+/**
+ * Initializes and visualizes a CytoScape.js network.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ * @returns {Object<string, Array<string>>} Identifiers of reactions and
+ * metabolites in the query's new collection.
+ */
+function extractInitialCollectionFromModel(model) {
+    return {
+        metabolites: collectValuesFromObjects(
+            Object.values(model.network.nodes.metabolites), "id"
+        ),
+        reactions: collectValuesFromObjects(
+            Object.values(model.network.nodes.reactions), "id"
+        )
+    }
+}
+
 function exploreModel(model) {
 
     console.log(model);
@@ -123,11 +142,13 @@ function exploreModel(model) {
     //console.log("Lysine metabolism");
     //console.log("Glycine, serine, alanine and threonine metabolism");
 
-    console.log("Methionine and cysteine metabolism");
-    var nodeIdentifiers = collectProcessNetworkNodes(
-        "Methionine and cysteine metabolism", model
-    );
-    visualizeNetwork(nodeIdentifiers, model);
+    var collection = collectProcessReactionsMetabolites({
+        process: "Methionine and cysteine metabolism",
+        combination: "and",
+        collection: extractInitialCollectionFromModel(model),
+        model: model
+    });
+    visualizeNetwork(collection, model);
 
     //console.log(model.network.getElementById("AGDC"));
     //console.log(model.network.getElementById("AGDC").data("process"));

@@ -388,7 +388,7 @@ function createReactionLinkRecords(reactions) {
  */
 function assembleNetwork(model) {
     return {
-        networkElements: {
+        network: {
             links: createReactionLinkRecords(model.reactions),
             nodes: {
                 metabolites: createMetaboliteNodeRecords(
@@ -407,23 +407,15 @@ function assembleNetwork(model) {
 
 /**
  * Translates a record for a network node to match CytoScape.js.
- * @param {string} identifier Unique identifier for a network node.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.identifier Unique identifier for a network node.
+ * @param {string} parameters.type Metabolite or reaction type of node.
+ * @param {Object} parameters.model Information about entities and relations in
+ * a metabolic model.
  * @returns {Object} A node that matches CytoScape.js.
  */
-function translateCytoScapeNode(identifier, model) {
-    if (
-        (model.networkElements.nodes.metabolites[identifier] != undefined) &&
-        (model.networkElements.nodes.reactions[identifier] === undefined)
-    ) {
-        var data = model.networkElements.nodes.metabolites[identifier];
-    } else if (
-        (model.networkElements.nodes.metabolites[identifier] === undefined) &&
-        (model.networkElements.nodes.reactions[identifier] != undefined)
-    ) {
-        var data = model.networkElements.nodes.reactions[identifier];
-    }
+function translateCytoScapeNode({identifier, type, model} = {}) {
+    var data = model.network.nodes[type][identifier];
     return {
         classes: data.type,
         group: "nodes",
@@ -433,29 +425,53 @@ function translateCytoScapeNode(identifier, model) {
 
 /**
  * Translates records for network nodes to match CytoScape.js.
- * @param {Array<string>} identifiers Unique identifiers for network nodes.
+ * @param {Object<string, Array<string>>} collection Identifiers of reactions
+ * and metabolites in the query's current collection.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  * @returns {Array<Object>} Nodes that match CytoScape.js.
  */
-function translateCytoScapeNodes(identifiers, model) {
-    return identifiers.map(function (identifier) {
-        return translateCytoScapeNode(identifier, model);
-    });
+function translateCytoScapeNodes(collection, model) {
+    var metaboliteNodes = collection
+        .metabolites
+        .map(function (identifier) {
+            return translateCytoScapeNode({
+                identifier: identifier, type: "metabolites", model: model
+            });
+        });
+    var reactionNodes = collection
+        .reactions
+        .map(function (identifier) {
+            return translateCytoScapeNode({
+                identifier: identifier, type: "reactions", model: model
+            });
+        });
+    return metaboliteNodes.concat(reactionNodes);
 }
 
 /**
  * Collects links between a collection of nodes in a network.
- * @param {Array<string>} nodeIdentifiers Unique identifiers for network nodes.
+ * @param {Object<string, Array<string>>} collection Identifiers of reactions
+ * and metabolites in the query's current collection.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  * @returns {Array<string>} Unique identifiers for network links.
  */
-function collectLinksBetweenNodes(nodeIdentifiers, model) {
-    var links = Object.values(model.networkElements.links)
+function collectLinksBetweenNodes(collection, model) {
+    // Collect links if both their source and target nodes are in the
+    // collection.
+    var links = Object.values(model.network.links)
         .filter(function (link) {
-            return (nodeIdentifiers.includes(link.source)) &&
-                (nodeIdentifiers.includes(link.target));
+            return (
+                (
+                    collection.metabolites.includes(link.source) ||
+                    collection.reactions.includes(link.source)
+                ) &&
+                (
+                    collection.metabolites.includes(link.target) ||
+                    collection.reactions.includes(link.target)
+                )
+            );
         });
     return collectValuesFromObjects(links, "id");
 }
@@ -470,7 +486,7 @@ function collectLinksBetweenNodes(nodeIdentifiers, model) {
 function translateCytoScapeLink(identifier, model) {
     return {
         group: "edges",
-        data: model.networkElements.links[identifier]
+        data: model.network.links[identifier]
     };
 }
 
@@ -490,17 +506,18 @@ function translateCytoScapeLinks(identifiers, model) {
 /**
  * Collects nodes and links in proper format to initialize a CytoScape.js
  * network.
- * @param {Array<string>} nodeIdentifiers Unique identifiers for network nodes.
+ * @param {Object<string, Array<string>>} collection Identifiers of reactions
+ * and metabolites in the query's current collection.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  * @returns {Object} Nodes and links for a core network in CytoScape.js.
  */
-function collectElementsForCytoScapeNetwork(nodeIdentifiers, model) {
+function collectElementsForCytoScapeNetwork(collection, model) {
     return {
         edges: translateCytoScapeLinks(
-            collectLinksBetweenNodes(nodeIdentifiers, model), model
+            collectLinksBetweenNodes(collection, model), model
         ),
-        nodes: translateCytoScapeNodes(nodeIdentifiers, model)
+        nodes: translateCytoScapeNodes(collection, model)
     }
 }
 
@@ -513,7 +530,7 @@ function collectElementsForCytoScapeNetwork(nodeIdentifiers, model) {
  */
 function initializeNetwork(modelPremature) {
     return Object.assign({}, modelPremature, {
-        network: cytoscape({elements: modelPremature.networkElements})
+        networkCytoScape: cytoscape({elements: modelPremature.network})
     });
 }
 

@@ -1,23 +1,52 @@
+
 /**
- * Created by Cameron on 3/16/2017.
+ * Combines elements according to specific strategies.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {Array<string>} parameters.newElements Elements for combination.
+ * @param {Array<string>} parameters.oldElements Elements for modification.
+ * @param {string} parameters.strategy Indication of logical operator and, or,
+ * not for combination of new selection with the query's current collection.
+ * @returns {Array<string>} Result of combination.
  */
-
-
-
-
-
+function combineElements({newElements, oldElements, strategy} = {}) {
+    // Combine elements initially.
+    var initialCombination = collectUniqueElements(oldElements.concat(newElements));
+    // Prepare final combination according to logical strategy.
+    if (strategy === "and") {
+        // Combination strategy and includes elements that exist both in the old
+        // elements and in the new elements.
+        var finalCombination = initialCombination
+            .filter(function (element) {
+                return (
+                    oldElements.includes(element) &&
+                    newElements.includes(element)
+                );
+            });
+    } else if (combination === "or") {
+        // Combination strategy or includes elements that exist either in the
+        // old elements or in the new elements.
+        var finalCombination = initialCombination;
+    } else if (combination === "not") {
+        // Combination strategy not includes elements that exist in the old
+        // elements but not in the new elements.
+        var finalCombination = oldElements.filter(function (element) {
+            return !newElements.includes(element);
+        });
+    }
+    return finalCombination;
+}
 
 /**
- * Collects metabolites that participate either as reactants or products in
+ * Extracts metabolites that participate either as reactants or products in
  * specific reactions.
  * @param {Array<string>} reactionIdentifiers Unique identifiers for reactions.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  * @returns {Array<string>} Unique identifiers for metabolites.
  */
-function collectMetabolitesOfReactions(reactionIdentifiers, model) {
+function extractReactionMetabolites(reactionIdentifiers, model) {
     var reactions = reactionIdentifiers.map(function (identifier) {
-        return model.networkElements.nodes.reactions[identifier];
+        return model.network.nodes.reactions[identifier];
     });
     return collectUniqueElements(
         reactions
@@ -31,7 +60,6 @@ function collectMetabolitesOfReactions(reactionIdentifiers, model) {
             }, [])
     );
 }
-
 
 /**
  * Collects identifiers of reactions that are part of a specific metabolic
@@ -61,7 +89,7 @@ function collectProcessReactionsMetabolites(
         // Combination strategy or considers all reactions from the metabolic
         // model.
         var reactionsInitial = collectValuesFromObjects(
-            Object.values(model.networkElements.nodes.reactions), "id"
+            Object.values(model.network.nodes.reactions), "id"
         );
     }
     // Filter initial reaction identifiers for those of reactions that
@@ -69,91 +97,42 @@ function collectProcessReactionsMetabolites(
     // Refer to the metabolic model for the record of each reaction.
     var reactions = reactionsInitial.filter(function (reaction) {
         return model
-                .networkElements
+                .network
                 .nodes
                 .reactions[reaction]
                 .process === process;
     });
     // Collect identifiers of metabolites that participate in the reactions.
-    var metabolites = collectMetabolitesOfReactions(reactions, model);
-
-
-
-    // TODO: There is potential for a new "combinator" function here.
-    // TODO: This function should accept arguments for new reactions and metabolites and old reactions and metabolites.
-    // TODO: This function should return a new collection of reactions and metabolites.
-
-
-
-    // Combine new selection of identifiers for reactions and metabolites with
-    // query's current collection according to combination strategy.
-    var combinationReactions = collectUniqueElements(
-        collection.reactions.concat(reactions)
-    );
-    var combinationMetabolites = collectUniqueElements(
-        collection.metabolites.concat(metabolites)
-    );
-
-    if (combination === "and") {
-        // Combination strategy and includes reactions and metabolites that both
-        // exist in the current collection and satisfy the new selection.
-        // TODO: While "reactions" is appropriate for the process algorithm, filter reactions like I do metabolites so the algorithm is more versatile.
-        var newReactions = reactions;
-        var newMetabolites = combinationMetabolites
-            .filter(function (metabolite) {
-            return (
-                collection.metabolites.includes(metabolite) &&
-                metabolites.includes(metabolite)
-            );
-        });
-    } else if (combination === "or") {
-        // Combination strategy or includes reactions and metabolites that
-        // either exist in the current collection or satisfy the new selection.
-        var newReactions = combinationReactions;
-        var newMetabolites = combinationMetabolites;
-    } else if (combination === "not") {
-        // Combination strategy not includes reactions and metabolites that
-        // exist in the current collection but do not satisfy the new selection.
-        var newReactions = collection.reactions.filter(function (reaction) {
-            return !reactions.includes(reaction);
-        });
-        var newMetabolites = collection
-            .metabolites
-            .filter(function (metabolite) {
-                return !metabolites.includes(metabolite);
-            });
-    }
-    // TODO: Complete the appropriate combinations and return an object of arrays of reaction identifiers and metabolite identifiers.
+    var metabolites = extractReactionMetabolites(reactions, model);
+    // Prepare new collection according to combination strategy.
+    return {
+        metabolites: combineElements({
+            newElements: metabolites,
+            oldElements: collection.metabolites,
+            strategy: combination
+        }),
+        reactions: combineElements({
+            newElements: reactions,
+            oldElements: collection.reactions,
+            strategy: combination
+        })
+    };
 }
 
+// TODO: Get the process network function to work.
+// TODO: Integrate this functionality with the interface.
 
-/**
- * Collects reactions that are part of a specific metabolic process along with
- * their metabolites and links between.
- * @param {string} process Identifier or name for a metabolic process.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
- * @returns {Array<Object>} Unique identifiers for network nodes.
- */
-function collectProcessNetworkNodesOld(process, model) {
-    var reactions = Object.values(
-        model.networkElements.nodes.reactions
-    )
-        .filter(function (reaction) {
-            return reaction.process === process;
-        });
-    var reactionIdentifiers = collectValuesFromObjects(reactions, "id");
-    var metaboliteIdentifiers = collectMetabolitesOfReactions(
-        reactionIdentifiers, model
-    );
-    return [].concat(reactionIdentifiers, metaboliteIdentifiers);
 
-    //var collection = collectUniqueElements(metabolites)
-    //    .reduce(function (accumulator, identifier) {
-    //        return accumulator.union(network.getElementById(identifier));
-    //    }, reactions);
-    //return collection.union(collection.nodes().edgesWith(collection.nodes()));
-}
+
+
+
+
+// TODO: Next step... get function to work for including transport events to connect a discontinuous, multi-compartment network.
+// TODO: This could just be a check box on the process network interface.
+
+
+
+
 
 // TODO: Include transport reactions.
 // TODO: Prioritize which transport reactions to include by those with the least number of reactants/products.
@@ -173,7 +152,7 @@ function includeTransportReactions() {
                 // The identifier for the compartmental metabolite is not
                 // already in the collection.
                 var identifier = model
-                    .networkElements
+                    .network
                     .nodes
                     .filter(function (node) {
                         return node.data.type === "metabolite";
@@ -185,7 +164,7 @@ function includeTransportReactions() {
                     .metabolite;
                 var set = array.filter(function (element) {
                     return model
-                            .networkElements
+                            .network
                             .nodes
                             .filter(function (node) {
                                 return node.data.type === "metabolite";
@@ -216,7 +195,7 @@ function includeTransportReactions() {
     // (reactants or products) include multiple compartmental metabolites from
     // the set.
     var transportReactions = model
-        .networkElements
+        .network
         .nodes
         .filter(function (node) {
             return node.data.type === "reaction";
