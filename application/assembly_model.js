@@ -6,24 +6,11 @@
 // Assembly of Model
 
 /**
- * Assembles a practical and concise model to represent information of a
- * metabolic model.
- * @param {Object} model Information of a metabolic model from systems biology,
- * conversion from SBML to JSON formats by COBRApy and libSBML.
- * @param {Object<string>} model.compartments Abbreviations and names of
- * compartments in the model.
- * @param {Array<Object<string>>} model.genes Information for genes in the model.
- * @param {Array<Object>} model.metabolites Information for compartment-specific
- * metabolites in the model.
- * @param {Array<Object>} model.reactions Information for reactions in the model.
- * @returns {Object} An object with information in both relational and graph or
- * network structures.
+ * Prints summary information to console about a metabolic model.
+ * @param {Object} model Information about entities and relations in
+ * a metabolic model.
  */
-function assembleModel(modelInitial) {
-    var model = Object.assign(
-        {}, assembleSets(modelInitial), assembleNetwork(modelInitial)
-    );
-    downloadJSON(model, "model_sets_network.json");
+function summarizeModel(model) {
     // Print the model and metrics to the console.
     console.log(model);
     console.log(
@@ -46,6 +33,31 @@ function assembleModel(modelInitial) {
         "Count of processes: " +
         Object.keys(model.sets.processes).length
     );
+}
+
+
+
+// TODO: This documentation misrepresents the new format of the metabolic model.
+/**
+ * Assembles a practical and concise model to represent information of a
+ * metabolic model.
+ * @param {Object} model Information of a metabolic model from systems biology,
+ * conversion from SBML to JSON formats by COBRApy and libSBML.
+ * @param {Object<string>} model.compartments Abbreviations and names of
+ * compartments in the model.
+ * @param {Array<Object<string>>} model.genes Information for genes in the model.
+ * @param {Array<Object>} model.metabolites Information for compartment-specific
+ * metabolites in the model.
+ * @param {Array<Object>} model.reactions Information for reactions in the model.
+ * @returns {Object} An object with information in both relational and graph or
+ * network structures.
+ */
+function assembleModel(modelInitial) {
+    var model = Object.assign(
+        {}, assembleSets(modelInitial), assembleNetwork(modelInitial)
+    );
+    downloadJSON(model, "model_sets_network.json");
+    summarizeModel(model)
     //exploreNetwork(model.network);
     //return model;
 }
@@ -82,17 +94,20 @@ function visualizeNetwork(collection, model) {
             {
                 selector: "node",
                 style: {
-                    "background-color": "red",
+                    "background-color": "rgb(255, 0, 255)",
+                    "background-opacity": 1,
+                    "color": "rgb(255, 255, 255)",
                     "font-size": "25px",
                     "label": "data(id)",
                     "text-halign": "center",
+                    "text-opacity": 1,
                     "text-valign": "center"
                 }
             },
             {
                 selector: "edge",
                 style: {
-                    "line-color": "grey",
+                    "line-color": "rgb(200, 200, 200)",
                     "line-style": "solid",
                     "mid-target-arrow-color": "black",
                     "mid-target-arrow-shape": "triangle",
@@ -123,7 +138,7 @@ function extractInitialCollectionFromModel(model) {
 
 function exploreModel(model) {
 
-    console.log(model);
+    summarizeModel(model);
 
     // collection.cy() returns core
 
@@ -141,14 +156,6 @@ function exploreModel(model) {
     //console.log("Vitamin D metabolism");
     //console.log("Lysine metabolism");
     //console.log("Glycine, serine, alanine and threonine metabolism");
-
-    var collection = collectProcessReactionsMetabolites({
-        process: "Methionine and cysteine metabolism",
-        combination: "and",
-        collection: extractInitialCollectionFromModel(model),
-        model: model
-    });
-    visualizeNetwork(collection, model);
 
     //console.log(model.network.getElementById("AGDC"));
     //console.log(model.network.getElementById("AGDC").data("process"));

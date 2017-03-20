@@ -4,8 +4,42 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
-17 March 2017
+20 March 2017
 
+----------
+Plan
+
+Introduce multiple query steps along with interface support.
+Include a text box for metabolic process.
+Include a second text box for compartment.
+Include a submit button.
+If both text boxes have values, then query by metabolic process and then query by compartment.
+I will need to implement functionality to query by compartment.
+
+Change color scheme.
+Learn how to specify styles for CytoScapeJS in a style file.
+Learn how to use alternative style files interactively.
+
+----------
+Meet with Alexander Lex
+
+Alex recommends changing the interface's color scheme to use a white background.
+To support printing, a color scheme with a white background is essential.
+
+A color scheme with a black background is optional, but it must have an accompanying color scheme with white background for printing.
+
+An option is to use alternative style files.
+
+----------
+Progress
+
+I introduced a text field and a button to the interface.
+The user can enter the name of a metabolic process in the text field.
+When the user clicks the button, the button calls a function that controls the query by metabolic process.
+The interface displays the resulting portion of the network.
+
+--------------------------------------------------
+17 March 2017
 
 ----------
 Plan

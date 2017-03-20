@@ -68,7 +68,10 @@ function initializeQueryInterface() {
                     // Call function to assemble model.
                     assembleModel(modelInitial);
                 });
-        })
+        });
+}
+
+function manageInterface() {
 
     d3.select("#load")
         .on("click", function () {
@@ -79,15 +82,43 @@ function initializeQueryInterface() {
                     if (error) throw error;
                     // Call function to explore model.
                     exploreModel(model);
-                });
-        })
-}
 
-function manageInterface() {
+                    document
+                        .getElementById("submit-process")
+                        .addEventListener(
+                            "click", function (event) {
+                                return controlProcessQuery(event, model);
+                            }
+                            );
+                });
+        });
+
     document
         .getElementById("query-queue-add")
         .addEventListener("click", addQueryStep);
 }
+
+/**
+ * Controls query by metabolic process.
+ * @param {Object} event Record of event from Document Object Model.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function controlProcessQuery(event, model) {
+    // Element on which the event originated is event.currentTarget.
+    var process = document.getElementById("process-text").value;
+    // Methionine and cysteine metabolism
+
+    console.log("Process Network for " + process);
+    var collection = collectProcessReactionsMetabolites({
+        process: process,
+        combination: "and",
+        collection: extractInitialCollectionFromModel(model),
+        model: model
+    });
+    visualizeNetwork(collection, model);
+}
+
 
 
 
