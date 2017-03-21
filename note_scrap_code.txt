@@ -3,6 +3,39 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
+20 March 2017
+
+function manageInterface() {
+    // Activate file selector.
+    document
+        .getElementById("file-selector")
+        .addEventListener("change", function (selectorEvent) {
+            // Activate assemble button with appropriate file path.
+            document
+                .getElementById("assemble-model")
+                .removeEventListener("click");
+            document
+                .getElementById("assemble-model")
+                .addEventListener("click", function (buttonEvent) {
+                    controlModelAssembly(
+                        document.getElementById("file-selector").value
+                    );
+                });
+            // Activate load button with appropriate file path.
+            document
+                .getElementById("load-model")
+                .removeEventListener("click");
+            document
+                .getElementById("load-model")
+                .addEventListener("click", function (buttonEvent) {
+                    controlModelLoad(
+                        document.getElementById("file-selector").value
+                    );
+                });
+        });
+}
+
+--------------------------------------------------
 21 February 2017
 
 function collectEgoNetworkOld(ego, collection, direction, depth) {

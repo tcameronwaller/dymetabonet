@@ -71,31 +71,73 @@ function initializeQueryInterface() {
         });
 }
 
+// TODO: Maybe test if the file path is correct... if not, launch an alert to the user.
+function controlModelAssembly(event) {
+    console.log(filePath);
+}
+
+function controlModelLoad(event) {
+    console.log(filePath);
+}
+
+
+
 function manageInterface() {
 
-    d3.select("#load")
-        .on("click", function () {
-            // Load data from file in JSON format.
-            // Create objects that associate with these data.
-            d3.json(("../model/homo-sapiens/" + "model_sets_network.json"),
-                function (error, model) {
-                    if (error) throw error;
-                    // Call function to explore model.
-                    exploreModel(model);
 
-                    document
-                        .getElementById("submit-process")
-                        .addEventListener(
-                            "click", function (event) {
-                                return controlProcessQuery(event, model);
-                            }
-                            );
-                });
+    // TODO: I need to correct the code for events for assembly and load.
+    // TODO: I might need to change my strategy.
+    // TODO: Maybe just access the value of the file-selector from within the handlers for assemble and load buttons.
+
+    // Activate file selector.
+    // As change to the file selector activates the assembly and load buttons,
+    // these buttons will not be active until after a change to the file
+    // selector.
+    document
+        .getElementById("file-selector")
+        .addEventListener("change", function (selectorEvent) {});
+
+    // Activate assemble button with appropriate file path.
+    document
+        .getElementById("assemble-model")
+        .addEventListener("click", function (buttonEvent) {
+            controlModelAssembly(
+                document.getElementById("file-selector").value
+            );
+        });
+    // Activate load button with appropriate file path.
+    document
+        .getElementById("load-model")
+        .addEventListener("click", function (buttonEvent) {
+            controlModelLoad(
+                document.getElementById("file-selector").value
+            );
         });
 
     document
         .getElementById("query-queue-add")
         .addEventListener("click", addQueryStep);
+
+
+    //d3.select("#load")
+    //    .on("click", function () {
+    //        // Load data from file in JSON format.
+    //        // Create objects that associate with these data.
+    //        d3.json(("../model/homo-sapiens/" + "model_sets_network.json"),
+    //            function (error, model) {
+    //                if (error) throw error;
+    //                // Call function to explore model.
+    //                exploreModel(model);
+    //
+    //                document
+    //                    .getElementById("submit-temp-query")
+    //                    .addEventListener(
+    //                        "click", function (event) {
+    //                            return controlProcessQuery(event, model);
+    //                        }
+    //                        );
+    //            });
+    //    });
 }
 
 /**

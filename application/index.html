@@ -54,15 +54,10 @@
                     <input type="checkbox" id="model-tab">
                     <label for="model-tab"><h2>Model</h2></label>
                     <div>
-                        This is the Model div.
-                        <!-- TODO: Support a custom file upload. -->
-                        <input type="file">
-                        <div id="selector-div">
-                            <label>Model:</label>
-                            <select id="selector"></select>
-                            <button id="assemble">Assemble</button>
-                            <button id="load">Load</button>
-                        </div>
+                        Select a model.
+                        <input id="file-selector" type="file"><br>
+                        <button id="assemble-model">Assemble</button>
+                        <button id="load-model">Load</button>
                     </div>
                 </div>
                 <!-- Create temporary query panel. -->
@@ -71,8 +66,11 @@
                     <label for="query-tab-temporary"><h2>Query Temporary</h2></label>
                     <div>
                         Enter name of metabolic process...<br>
-                        <input id="process-text" type="text">
-                        <button id="submit-process" type="sumbit">Submit</button>
+                        <input id="process-text" type="text"><br>
+                        Enter name of compartment...<br>
+                        <input id="compartment-text" type="text"><br>
+                        <button id="submit-temp-query" type="sumbit">Submit</button>
+
                     </div>
                 </div>
                 <!-- Create query panel. -->

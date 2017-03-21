@@ -7,6 +7,55 @@ Research With Alexander Lex
 20 March 2017
 
 ----------
+Load Files
+
+This article is helpful.
+Study this article and follow conventions and recommendations.
+
+https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications
+
+----------
+DOM Event Functions
+
+I wanted to try a more functional implementation of some functions that handle events from the Document Object Model (DOM).
+
+The obvious solution was to access my file input element's value from within the handler function for a button.
+I wanted a more functional implementation to avoid acting beyond parameters of the function.
+I wanted the file input element to trigger a function on change to its value.
+This function would set event handlers for the buttons, passing them the current value of the file input.
+
+If the file input changes values multiple times, it's handler function attaches multiple handlers to the button.
+In order to remove previous handlers, I needed a name of the handler function.
+Because I needed to pass a parameter (the file input's value) to the handler, I had to use an anonymous function.
+
+http://stackoverflow.com/questions/5660131/how-to-removeeventlistener-that-is-addeventlistener-with-anonymous-function
+
+Basically, my strategy will not work without some awkward work-around.
+
+The Document Object Model is inherently object-oriented and non-functional.
+
+----------
+Event Handler Add and Remove
+
+target.addEventListener()
+https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
+
+target.removeEventListener()
+https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener
+
+http://stackoverflow.com/questions/5660131/how-to-removeeventlistener-that-is-addeventlistener-with-anonymous-function
+
+This Stack Overflow discussion is helpful about passing an event object to event handler functions.
+
+----------
+Loading and Parsing a JSON file
+
+JSON.parse()
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse
+
+http://stackoverflow.com/questions/7346563/loading-local-json-file
+
+----------
 Plan
 
 Introduce multiple query steps along with interface support.
