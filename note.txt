@@ -3,16 +3,40 @@ Notes
 Research With Alexander Lex
 --------------------------------------------------
 
+
 --------------------------------------------------
-20 March 2017
+21 March 2017
+
+----------
+Progress
+
+The user can select files from her or his local computer to use for assembly of a metabolic model or for loading a metabolic model.
+I implemented functionality for file load and the relevant operations.
 
 ----------
 Load Files
 
+D3's JSON reader requires a file path and name.
+The browser cannot access real file path's from the user's computer.
+It is necessary to specify the path within the script or include files in the same directory as the script.
+
+It is therefore necessary to use JavaScript functionality for file loading.
+
 This article is helpful.
 Study this article and follow conventions and recommendations.
 
+File Tutorial
 https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications
+
+FileReader
+https://developer.mozilla.org/en/docs/Web/API/FileReader
+
+File object
+https://developer.mozilla.org/en-US/docs/Web/API/File
+
+
+--------------------------------------------------
+20 March 2017
 
 ----------
 DOM Event Functions
@@ -20,9 +44,11 @@ DOM Event Functions
 I wanted to try a more functional implementation of some functions that handle events from the Document Object Model (DOM).
 
 The obvious solution was to access my file input element's value from within the handler function for a button.
-I wanted a more functional implementation to avoid acting beyond parameters of the function.
+I wanted a more functional implementation to avoid acting beyond parameters of the function (off-target effects).
 I wanted the file input element to trigger a function on change to its value.
 This function would set event handlers for the buttons, passing them the current value of the file input.
+
+This value of the file input passes by reference such that when the value changes the handler has access to the new value anyway.
 
 If the file input changes values multiple times, it's handler function attaches multiple handlers to the button.
 In order to remove previous handlers, I needed a name of the handler function.
@@ -32,7 +58,8 @@ http://stackoverflow.com/questions/5660131/how-to-removeeventlistener-that-is-ad
 
 Basically, my strategy will not work without some awkward work-around.
 
-The Document Object Model is inherently object-oriented and non-functional.
+The Document Object Model (DOM) is inherently object-oriented and non-functional.
+I recommend that I not worry about trying to handle the DOM in a functional way.
 
 ----------
 Event Handler Add and Remove

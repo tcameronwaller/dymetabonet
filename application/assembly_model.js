@@ -41,25 +41,24 @@ function summarizeModel(model) {
 /**
  * Assembles a practical and concise model to represent information of a
  * metabolic model.
- * @param {Object} model Information of a metabolic model from systems biology,
+ * @param {Object} data Information of a metabolic model from systems biology,
  * conversion from SBML to JSON formats by COBRApy and libSBML.
- * @param {Object<string>} model.compartments Abbreviations and names of
+ * @param {Object<string>} data.compartments Abbreviations and names of
  * compartments in the model.
- * @param {Array<Object<string>>} model.genes Information for genes in the model.
- * @param {Array<Object>} model.metabolites Information for compartment-specific
+ * @param {Array<Object<string>>} data.genes Information for genes in the model.
+ * @param {Array<Object>} data.metabolites Information for compartment-specific
  * metabolites in the model.
- * @param {Array<Object>} model.reactions Information for reactions in the model.
- * @returns {Object} An object with information in both relational and graph or
- * network structures.
+ * @param {Array<Object>} data.reactions Information for reactions in the model.
+ * @returns {Object} Information about entities and relations in a metabolic
+ * model.
  */
-function assembleModel(modelInitial) {
+function assembleModel(data) {
     var model = Object.assign(
-        {}, assembleSets(modelInitial), assembleNetwork(modelInitial)
+        {}, assembleSets(data), assembleNetwork(data)
     );
     downloadJSON(model, "model_sets_network.json");
-    summarizeModel(model)
-    //exploreNetwork(model.network);
-    //return model;
+    summarizeModel(model);
+    return model;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

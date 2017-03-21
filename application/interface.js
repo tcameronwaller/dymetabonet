@@ -71,74 +71,104 @@ function initializeQueryInterface() {
         });
 }
 
-// TODO: Maybe test if the file path is correct... if not, launch an alert to the user.
+/**
+ * Controls model assembly in response to user interaction.
+ * @param {Object} event Record of event from Document Object Model.
+ */
 function controlModelAssembly(event) {
-    console.log(filePath);
+    // Obtain a single file object from the file selector.
+    var file = document.getElementById("file-selector").files[0];
+    // Create a file reader object.
+    var reader = new FileReader();
+    // Specify operation to perform after file loads.
+    reader.onload = function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // After load, the file reader's result attribute contains the file's
+        // contents, according to the read method.
+
+        // Assemble metabolic model.
+        var model = assembleModel(JSON.parse(event.currentTarget.result));
+        // Initialize interface for metabolic model.
+        initializeInterfaceForModel(model);
+    };
+    // Read file as text.
+    reader.readAsText(file);
 }
 
+/**
+ * Controls model load in response to user interaction.
+ * @param {Object} event Record of event from Document Object Model.
+ */
 function controlModelLoad(event) {
-    console.log(filePath);
+    // Obtain a single file object from the file selector.
+    var file = document.getElementById("file-selector").files[0];
+    // Create a file reader object.
+    var reader = new FileReader();
+    // Specify operation to perform after file loads.
+    reader.onload = function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // After load, the file reader's result attribute contains the file's
+        // contents, according to the read method.
+
+        // Load metabolic model.
+        var model = JSON.parse(event.currentTarget.result);
+        // Initialize interface for metabolic model.
+        initializeInterfaceForModel(model);
+    };
+    // Read file as text.
+    reader.readAsText(file);
 }
 
+/**
+ * Initializes the interface to support behavior independent of data for
+ * metabolic model.
+ */
+function initializeInterface() {
 
+    // TODO: Activate all DOM behavior that is independent of the model data.
+    // TODO: Make it obvious (styling) which aspects of the interface are inactive prior to loading model data.
+    // TODO: Maybe change classes once I activate these elements in initializeInterfaceForModel().
 
-function manageInterface() {
-
-
-    // TODO: I need to correct the code for events for assembly and load.
-    // TODO: I might need to change my strategy.
-    // TODO: Maybe just access the value of the file-selector from within the handlers for assemble and load buttons.
-
-    // Activate file selector.
-    // As change to the file selector activates the assembly and load buttons,
-    // these buttons will not be active until after a change to the file
-    // selector.
-    document
-        .getElementById("file-selector")
-        .addEventListener("change", function (selectorEvent) {});
-
-    // Activate assemble button with appropriate file path.
+    // Activate button for assembly of metabolic model from data in file.
     document
         .getElementById("assemble-model")
-        .addEventListener("click", function (buttonEvent) {
-            controlModelAssembly(
-                document.getElementById("file-selector").value
-            );
-        });
-    // Activate load button with appropriate file path.
+        .addEventListener("click", controlModelAssembly);
+    // Activate button for load of metabolic model from assembly in file.
     document
         .getElementById("load-model")
-        .addEventListener("click", function (buttonEvent) {
-            controlModelLoad(
-                document.getElementById("file-selector").value
-            );
-        });
+        .addEventListener("click", controlModelLoad);
 
+    //TODO:
     document
         .getElementById("query-queue-add")
         .addEventListener("click", addQueryStep);
 
-
-    //d3.select("#load")
-    //    .on("click", function () {
-    //        // Load data from file in JSON format.
-    //        // Create objects that associate with these data.
-    //        d3.json(("../model/homo-sapiens/" + "model_sets_network.json"),
-    //            function (error, model) {
-    //                if (error) throw error;
-    //                // Call function to explore model.
-    //                exploreModel(model);
-    //
-    //                document
-    //                    .getElementById("submit-temp-query")
-    //                    .addEventListener(
-    //                        "click", function (event) {
-    //                            return controlProcessQuery(event, model);
-    //                        }
-    //                        );
-    //            });
-    //    });
 }
+
+/**
+ * Initializes the interface to support behavior dependent on data for metabolic
+ * model.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function initializeInterfaceForModel(model) {
+
+    // TODO: Maybe change classes and styles of elements once I activate them.
+
+    document
+        .getElementById("submit-temp-query")
+        .addEventListener(
+            "click", function (event) {
+                return controlProcessQuery(event, model);
+            }
+        );
+
+}
+
+
+
+
+
 
 /**
  * Controls query by metabolic process.
