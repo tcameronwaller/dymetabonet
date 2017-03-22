@@ -39,13 +39,13 @@ html {
 }
 
 body {
-    background-color: rgba(0, 0, 0, 1);
+    background-color: rgba(255, 255, 255, 1);
     border: 0;
     margin: 0;
 }
 
 header {
-    background-color: rgba(50, 50, 50, 1);
+    background-color: rgba(200, 200, 200, 1);
     color: red;
     height: 1cm;
     width: 100%;
@@ -169,7 +169,7 @@ h3 {
 /* Control Panel */
 
 #control {
-    background-color: rgba(50, 50, 50, 1);
+    background-color: rgba(255, 255, 255, 1);
     display: block;
     flex-basis: 7.5 cm;
     flex-grow: 1;
@@ -187,8 +187,8 @@ h3 {
 }
 
 #control .control-tab label h2 {
-    background-color: rgba(100, 100, 100, 1);
-    color: rgba(200, 200, 200, 1);
+    background-color: rgba(200, 200, 200, 1);
+    color: rgba(0, 0, 0, 1);
 }
 
 #control .control-tab label h2:hover {
@@ -208,7 +208,7 @@ h3 {
 }
 
 #exploration {
-    background-color: rgba(0, 0, 0, 1);
+    background-color: rgba(255, 255, 255, 1);
     flex-grow: 5;
     flex-shrink: 1;
     overflow: auto;

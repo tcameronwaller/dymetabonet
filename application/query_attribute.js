@@ -193,27 +193,37 @@ function collectCompartmentReactionsMetabolites(
                 .metabolites[metabolite]
                 .compartment === compartment;
     });
-    // Filter initial reactions identifiers for those that involve metabolites
-    // in a specific cellular compartment.
+    // Filter initial reaction identifiers for those that involve metabolites in
+    // a specific cellular compartment.
     // Refer to the metabolic model for the record of each reaction.
     var reactions = initialReactions.filter(function (reaction) {
         var reactionMetabolites = [].concat(
             Object.values(model.network.nodes.reactions[reaction].products),
             Object.values(model.network.nodes.reactions[reaction].reactants)
         );
-        // Keep reaction only if all of its metabolites are in a specific
-        // compartment.
-        // TODO: I'm not sure if this is the best strategy.
-        // TODO: Should I instead keep reactions if any of their metabolites are in the compartment?
-        // TODO: Also, should I consider only metabolites that match the selection (such as from the current collection)? <-- Yes.
-        // TODO: Or should I consider all metabolites in the model that are within the compartment... that doesn't make any sense at all.
-        return reactionMetabolites.every(function (metabolite) {
-            metabolites.includes(metabolite);
+        // Keep reaction only if some of its metabolites are in the selection of
+        // metabolites in a specific compartment.
+        // In this implementation, a single metabolite is sufficient to qualify
+        // its reactions.
+        // Consider using reactionMetabolites.every() so that all of a
+        // reaction's metabolites must qualify.
+        return reactionMetabolites.some(function (metabolite) {
+            return metabolites.includes(metabolite);
         });
     });
-
-
-
+    // Prepare new collection according to combination strategy.
+    return {
+        metabolites: combineElements({
+            newElements: metabolites,
+            oldElements: collection.metabolites,
+            strategy: combination
+        }),
+        reactions: combineElements({
+            newElements: reactions,
+            oldElements: collection.reactions,
+            strategy: combination
+        })
+    };
 }
 
 

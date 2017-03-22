@@ -3,6 +3,26 @@ Notes
 Research With Alexander Lex
 --------------------------------------------------
 
+--------------------------------------------------
+22 March 2017
+
+
+----------
+
+
+
+
+
+----------
+Ideas
+
+Draw a sketch to represent the concepts of combination of queries by and, or, and not logic.
+
+For poster or presentation, give clear examples of deficiencies in current tools to explore metabolic networks.
+Show images of KEGG Atlas and/or some other poster type representation of the metabolic network.
+Highlight relevant proximity and shortest path networks to illustrate the issue of layout not representing degree of relation.
+Highlight the proximity of a transport event in two compartments to illustrate the issue of layout not representing compartmentalization.
+Overall, illustrate the problem that static maps do not represent custom sets of interest well.
 
 --------------------------------------------------
 21 March 2017

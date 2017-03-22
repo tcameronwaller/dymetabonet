@@ -183,10 +183,11 @@ function controlProcessQuery(event, model) {
     var process = document.getElementById("process-text").value;
     // Methionine and cysteine metabolism
     var compartment = document.getElementById("compartment-text").value;
+    // c, m, e, n
 
     console.log(
         "Process Network for " + process +
-        "within compartment " + compartment
+        " within compartment " + compartment
     );
     var collection1 = collectProcessReactionsMetabolites({
         process: process,
@@ -200,6 +201,7 @@ function controlProcessQuery(event, model) {
         collection: collection1,
         model: model
     });
+    console.log(collection2);
     visualizeNetwork(collection2, model);
 }
 

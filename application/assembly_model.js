@@ -94,7 +94,7 @@ function visualizeNetwork(collection, model) {
                 style: {
                     "background-color": "rgb(255, 0, 255)",
                     "background-opacity": 1,
-                    "color": "rgb(255, 255, 255)",
+                    "color": "rgb(0, 0, 0)",
                     "font-size": "25px",
                     "label": "data(id)",
                     "text-halign": "center",
@@ -105,7 +105,7 @@ function visualizeNetwork(collection, model) {
             {
                 selector: "edge",
                 style: {
-                    "line-color": "rgb(200, 200, 200)",
+                    "line-color": "rgb(50, 50, 50)",
                     "line-style": "solid",
                     "mid-target-arrow-color": "black",
                     "mid-target-arrow-shape": "triangle",
