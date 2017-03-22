@@ -1,9 +1,46 @@
 
 /**
+ * Determines identifiers of initial elements for a query step.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.type Type of elements, either metabolites or
+ * reactions.
+ * @param {string} parameters.combination Indication of logical operator and,
+ * or, not for combination of new selection with the query's current collection.
+ * @param {Object<string, Array<string>>} parameters.collection Identifiers of
+ * metabolites and reactions in the query's current collection.
+ * @param {Object} parameters.model Information about entities and relations in
+ * a metabolic model.
+ * @returns {Array<string>>} Identifiers of initial elements for the query step.
+ */
+function determineInitialElements(
+    {type, combination, collection, model} = {}
+) {
+    // Determine identifiers of initial elements according to the combination
+    // strategy.
+    // These initial elements are the set to filter in the query step.
+    // The reason to determine initial elements according to the combination
+    // strategy is to make the filter operation more efficient.
+    if (combination === "and" || combination === "not") {
+        // Combination strategies and and not only need to consider elements
+        // from the current collection.
+        var initialElements = collection[type];
+    } else if (combination === "or") {
+        // Combination strategy or needs to consider all elements from the
+        // metabolic model.
+        var initialElements = collectValuesFromObjects(
+            Object.values(model.network.nodes[type]), "id"
+        );
+    }
+    return initialElements;
+}
+
+/**
  * Combines elements according to specific strategies.
  * @param {Object} parameters Destructured object of parameters.
- * @param {Array<string>} parameters.newElements Elements for combination.
- * @param {Array<string>} parameters.oldElements Elements for modification.
+ * @param {Array<string>} parameters.newElements Elements that meet some new
+ * selection criteria.
+ * @param {Array<string>} parameters.oldElements Elements from a previous
+ * collection.
  * @param {string} parameters.strategy Indication of logical operator and, or,
  * not for combination of new selection with the query's current collection.
  * @returns {Array<string>} Result of combination.
@@ -65,12 +102,12 @@ function extractReactionMetabolites(reactionIdentifiers, model) {
  * Collects identifiers of reactions that are part of a specific metabolic
  * process along with identifiers of their metabolites.
  * @param {Object} parameters Destructured object of parameters.
- * @param {string} parameters.process Identifier or name for a metabolic
- * process.
+ * @param {string} parameters.process Identifier or name for a specific
+ * metabolic process.
  * @param {string} parameters.combination Indication of logical operator and,
  * or, not for combination of new selection with the query's current collection.
  * @param {Object<string, Array<string>>} parameters.collection Identifiers of
- * reactions and metabolites in the query's current collection.
+ * metabolites and reactions in the query's current collection.
  * @param {Object} parameters.model Information about entities and relations in
  * a metabolic model.
  * @returns {Object<string, Array<string>>} Identifiers of reactions and
@@ -79,23 +116,18 @@ function extractReactionMetabolites(reactionIdentifiers, model) {
 function collectProcessReactionsMetabolites(
     {process, combination, collection, model} = {}
     ) {
-    // Determine initial reaction identifiers according to the combination
+    // Determine identifiers of initial reactions according to the combination
     // strategy.
-    if (combination === "and" || combination === "not") {
-        // Combination strategies and and not only consider reactions from the
-        // current collection.
-        var reactionsInitial = collection.reactions;
-    } else if (combination === "or") {
-        // Combination strategy or considers all reactions from the metabolic
-        // model.
-        var reactionsInitial = collectValuesFromObjects(
-            Object.values(model.network.nodes.reactions), "id"
-        );
-    }
+    var initialReactions = determineInitialElements({
+        type: "reactions",
+        combination: combination,
+        collection: collection,
+        model: model
+    });
     // Filter initial reaction identifiers for those of reactions that
     // participate in a specific metabolic process.
     // Refer to the metabolic model for the record of each reaction.
-    var reactions = reactionsInitial.filter(function (reaction) {
+    var reactions = initialReactions.filter(function (reaction) {
         return model
                 .network
                 .nodes
@@ -118,6 +150,79 @@ function collectProcessReactionsMetabolites(
         })
     };
 }
+
+/**
+ * Collects identifiers of metabolites in a specific cellular compartment along
+ * with identifiers of their reactions.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.compartment Identifier for a specific cellular
+ * compartment.
+ * @param {string} parameters.combination Indication of logical operator and,
+ * or, not for combination of new selection with the query's current collection.
+ * @param {Object<string, Array<string>>} parameters.collection Identifiers of
+ * metabolites and reactions in the query's current collection.
+ * @param {Object} parameters.model Information about entities and relations in
+ * a metabolic model.
+ * @returns {Object<string, Array<string>>} Identifiers of reactions and
+ * metabolites in the query's new collection.
+ */
+function collectCompartmentReactionsMetabolites(
+    {compartment, combination, collection, model} = {}
+    ) {
+    // Determine identifiers of initial metabolites and reactions according to
+    // the combination strategy.
+    var initialMetabolites = determineInitialElements({
+        type: "metabolites",
+        combination: combination,
+        collection: collection,
+        model: model
+    });
+    var initialReactions = determineInitialElements({
+        type: "reactions",
+        combination: combination,
+        collection: collection,
+        model: model
+    });
+    // Filter initial metabolite identifiers for those in a specific cellular
+    // compartment.
+    // Refer to the metabolic model for the record of each metabolite.
+    var metabolites = initialMetabolites.filter(function (metabolite) {
+        return model
+                .network
+                .nodes
+                .metabolites[metabolite]
+                .compartment === compartment;
+    });
+    // Filter initial reactions identifiers for those that involve metabolites
+    // in a specific cellular compartment.
+    // Refer to the metabolic model for the record of each reaction.
+    var reactions = initialReactions.filter(function (reaction) {
+        var reactionMetabolites = [].concat(
+            Object.values(model.network.nodes.reactions[reaction].products),
+            Object.values(model.network.nodes.reactions[reaction].reactants)
+        );
+        // Keep reaction only if all of its metabolites are in a specific
+        // compartment.
+        // TODO: I'm not sure if this is the best strategy.
+        // TODO: Should I instead keep reactions if any of their metabolites are in the compartment?
+        // TODO: Also, should I consider only metabolites that match the selection (such as from the current collection)? <-- Yes.
+        // TODO: Or should I consider all metabolites in the model that are within the compartment... that doesn't make any sense at all.
+        return reactionMetabolites.every(function (metabolite) {
+            metabolites.includes(metabolite);
+        });
+    });
+
+
+
+}
+
+
+
+
+
+
+
+
 
 // TODO: Get the process network function to work.
 // TODO: Integrate this functionality with the interface.

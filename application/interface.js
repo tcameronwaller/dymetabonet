@@ -88,6 +88,7 @@ function controlModelAssembly(event) {
 
         // Assemble metabolic model.
         var model = assembleModel(JSON.parse(event.currentTarget.result));
+        summarizeModel(model);
         // Initialize interface for metabolic model.
         initializeInterfaceForModel(model);
     };
@@ -112,6 +113,7 @@ function controlModelLoad(event) {
 
         // Load metabolic model.
         var model = JSON.parse(event.currentTarget.result);
+        summarizeModel(model);
         // Initialize interface for metabolic model.
         initializeInterfaceForModel(model);
     };
@@ -165,9 +167,9 @@ function initializeInterfaceForModel(model) {
 
 }
 
-
-
-
+// TODO: I need a recursive function that accepts an array of objects.
+// TODO: Each object in the array includes all information relevant to a single query step from the queue.
+// TODO: The function will recursively apply the appropriate function(s) for each query step from the queue.
 
 
 /**
@@ -180,15 +182,25 @@ function controlProcessQuery(event, model) {
     // Element on which the event originated is event.currentTarget.
     var process = document.getElementById("process-text").value;
     // Methionine and cysteine metabolism
+    var compartment = document.getElementById("compartment-text").value;
 
-    console.log("Process Network for " + process);
-    var collection = collectProcessReactionsMetabolites({
+    console.log(
+        "Process Network for " + process +
+        "within compartment " + compartment
+    );
+    var collection1 = collectProcessReactionsMetabolites({
         process: process,
         combination: "and",
         collection: extractInitialCollectionFromModel(model),
         model: model
     });
-    visualizeNetwork(collection, model);
+    var collection2 = collectCompartmentReactionsMetabolites({
+        compartment: compartment,
+        combination: "and",
+        collection: collection1,
+        model: model
+    });
+    visualizeNetwork(collection2, model);
 }
 
 

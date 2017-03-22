@@ -57,7 +57,6 @@ function assembleModel(data) {
         {}, assembleSets(data), assembleNetwork(data)
     );
     downloadJSON(model, "model_sets_network.json");
-    summarizeModel(model);
     return model;
 }
 

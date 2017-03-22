@@ -7,6 +7,18 @@ Research With Alexander Lex
 --------------------------------------------------
 21 March 2017
 
+Consider whether to use array.every() or array.some() to test reactions by the compartments of their metabolites.
+
+
+----------
+Plan
+
+I will need a recursive function to accept an array of objects.
+Each object will provide the relevant information for each step of the query queue.
+The function will recursively apply each query step from the queue.
+
+For now, just implement functionality for a 2-step query.
+
 ----------
 Progress
 
