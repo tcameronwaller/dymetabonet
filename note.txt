@@ -6,12 +6,103 @@ Research With Alexander Lex
 --------------------------------------------------
 22 March 2017
 
+Keep implementing the query queue process.
+
 
 ----------
+Dynamic Query Execution
 
+Eventually I want the query process to be dynamic.
+I want the query interface to communicate the number of nodes remaining after the addition of each step to the query queue.
+If the scale of the network selection is not prohibitive, I also want to display the network after the addition of each step to the query queue.
+In this case, the query runs progressively after every change to the queue.
+Every query step runs as soon as the user adds it.
 
+What if the user removes a step from the queue?
+In that case it will be necessary to re-run all of the query steps in sequence.
 
+Hence, I need to support 2 types of query execution.
+1. Run a single query step on the current query collection as soon as the user adds this step to the queue.
+I will need a function to control operations for a single step in the query.
+2. Run all steps in the query on demand, such as when the user clicks a submit button or removes a step for the queue.
+I will need a function to control the iterative application of the function for individual steps.
+I will need to update and pass the collection appropriately during iteration.
 
+The background query functions themselves will behave identically in both types of execution.
+The differences is in the execution itself.
+
+----------
+Recursive Iteration on Multiple Elements in the Document Object Model (DOM)
+Handle DOM Elements for Steps in Query Queue
+
+It is possible to iterate imperatively on a collection of multiple elements from the DOM, such as by using the forEach method of a NodeList.
+It is also possible to use a traditional for or while loop.
+
+For a functional style, it is also possible to iterate on a collection of multiple elements from the DOM using recursion.
+
+HTML Collection
+https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection
+HTML Collections are live such that changes to the DOM influence the elements in the collection.
+
+NodeList
+https://developer.mozilla.org/en-US/docs/Web/API/NodeList
+Node Lists are sometimes live and sometimes are static.
+
+Recursive handling of multiple DOM elements
+This article is very helpful.
+http://clubmate.fi/remove-a-class-name-from-multiple-elements-with-pure-javascript/
+
+Terminal recursion requires shortening the queue with each iteration.
+As HTML Collections and some NodeLists are live, the only way to remove an element from the collection is to change it so that it no longer matches the selection criteria to be a member of the collection.
+A convenient strategy for removing elements from an HTML Collection is the removal of a class from the element so that it no longer matches the selection.
+It seems practical to assign some sort of "recursion-queue" class to the elements before the start of the recursive process.
+Each iteration of the recursion will remove the class from the element.
+
+This strategy is possible by interaction with the classList attribute of the elements.
+
+Element.classList
+https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
+
+RadioNodeList
+Simplifies determination of value of a group of radio buttons.
+https://developer.mozilla.org/en-US/docs/Web/API/RadioNodeList
+
+----------
+Routine to Handle Variable Count of Query Steps
+
+1. User interaction with input elements in Document Object Model (DOM) will specify the type and details of each query step.
+2. User click on submit button activates a function to control the query (controlQuery).
+3. Access DOM elements for all query steps, probably using a document class selector.
+4. Extract information from elements relevant to query steps.
+How do I do that?
+I think I will need to use the forEach method for the NodeList.
+Organize query queue information in an array of objects.
+5. Pass the array for the query queue to a recursive control function to control (out-source) each query step.
+This function will recurse for each step in the queue, applying the appropriate functions to assembly the query's collection.
+
+----------
+Plan
+
+Implement a very basic interface that allows the user to add text fields to a queue.
+The user can add any count of text boxes.
+The user can provide names of metabolic processes or cellular compartments in these text boxes.
+The program performs queries by combining each query step.
+The default logical combination strategy for this early version will be "and".
+
+Eventually these text fields should have automatic completion from a set of names that I define.
+
+15 March 2017
+My notes about goal query functionality are useful.
+
+----------
+Progress
+
+I changed my color scheme to a white background.
+
+The user can select a file from her or his computer load either for assembly of a new model or for an existing model.
+
+The user can specify a metabolic process and a cellular compartment by which to query.
+The program performs the query and displays the resulting network.
 
 ----------
 Ideas
@@ -28,7 +119,6 @@ Overall, illustrate the problem that static maps do not represent custom sets of
 21 March 2017
 
 Consider whether to use array.every() or array.some() to test reactions by the compartments of their metabolites.
-
 
 ----------
 Plan
@@ -65,7 +155,6 @@ https://developer.mozilla.org/en/docs/Web/API/FileReader
 
 File object
 https://developer.mozilla.org/en-US/docs/Web/API/File
-
 
 --------------------------------------------------
 20 March 2017
@@ -217,7 +306,7 @@ Attribute
 1. Collect attribute values that include a query string that the user enters.
 2. Collect node(s) of a specific name or identifier.
 3. Collect nodes of a specific metabolic process.
-4. Collect nodes of specific comartment (matching compartmental metabolites and reactions with a matching compartmental metabolite).
+4. Collect nodes of specific compartment (matching compartmental metabolites and reactions with a matching compartmental metabolite).
 5. Collect reaction nodes with properties relevant to transport reactions (multiple compartments, change in compartments).
 6. Collect reaction nodes with properties relevant to chemical reactions (change in chemicals).
 Topology

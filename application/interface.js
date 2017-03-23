@@ -161,16 +161,11 @@ function initializeInterfaceForModel(model) {
         .getElementById("submit-temp-query")
         .addEventListener(
             "click", function (event) {
-                return controlProcessQuery(event, model);
+                return controlQuery(event, model);
             }
         );
 
 }
-
-// TODO: I need a recursive function that accepts an array of objects.
-// TODO: Each object in the array includes all information relevant to a single query step from the queue.
-// TODO: The function will recursively apply the appropriate function(s) for each query step from the queue.
-
 
 /**
  * Controls query by metabolic process.
@@ -205,7 +200,56 @@ function controlProcessQuery(event, model) {
     visualizeNetwork(collection2, model);
 }
 
+// TODO: I need a recursive function that accepts an array of objects.
+// TODO: Each object in the array includes all information relevant to a single query step from the queue.
+// TODO: The function will recursively apply the appropriate function(s) for each query step from the queue.
 
+/**
+ * Controls the execution of all steps in the queue for the query.
+ * @param {Object} event Record of event from Document Object Model.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function controlQueryQueue(event, model) {
+    // TODO: Write a general function for recursive iteration on a collection of DOM elements.
+    // TODO: This function will accept as an argument a function to apply to each element from the collection.
+    // Select all steps in the query's queue.
+    var querySteps = document
+        .getElementById("query-queue")
+        .getElementsByClassName("query-step");
+    // Assign a class to steps to keep track of recursive iteration.
+    querySteps.classList.add("queue-step");
+    // Select all steps that are in the queue for recursive iteration.
+    // The collection is live, so loss of the class will remove the step from
+    // the queue.
+    var queryQueue = document
+        .getElementById("query-queue")
+        .getElementsByClassName("queue-step");
+    // Call recursive function to act on each member of the queue.
+    controlQueryStep({
+        queue: queryQueue,
+        collection: extractInitialCollectionFromModel(model),
+        model: model
+    });
+}
+
+/**
+ * Controls the execution of all steps in the queue for the query.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.queue Elements that remain in the queue for
+ * recursive iteration.
+ * @param {Object<string, Array<string>>} parameters.collection Identifiers of
+ * metabolites and reactions in the query's current collection.
+ * @param {Object} parameters.model Information about entities and relations in
+ * a metabolic model.
+ * @returns {Array<string>>} Identifiers of initial elements for the query step.
+ */
+function controlQueryQueueStep({queue, collection, model} = {}) {}
+
+
+// TODO: Use this function to organize the functionality for handling a single step from the query.
+// TODO: Use this function to execute a single step right after adding it to the queue.
+function controlQueryStep() {}
 
 
 
