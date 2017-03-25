@@ -4,6 +4,87 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+24 March 2017
+
+----------
+HTML Forms
+
+For my purposes without a server, I think HTML Forms mostly provide a convenient (debatable) structure for input elements.
+The RadioNodeList only works for collections of elements from a form or fieldset.
+
+RadioNodeList
+Simplifies determination of value of a group of radio buttons.
+https://developer.mozilla.org/en-US/docs/Web/API/RadioNodeList
+
+
+--------------------------------------------------
+23 March 2017
+
+----------
+Iteration in General
+
+Arrays
+1. Apply an operation to elements in array.
+Use array.forEach().
+2. Apply an operation to elements in array and collect values from each and every application in a new array.
+Use array.map().
+3. Apply an operation to elements in array and accumulate values without necessity of a value from each and every application.
+Use array.reduce(function (accumulator, element) {}, initialValue).
+4. Filter elements in array to obtain only elements that match criteria.
+
+Array-Like Objects
+1. Convert Array-Like Objects to arrays.
+Array.from(arrayLikeObject)
+Array.prototype.slice.call(arrayLikeObject)
+[].slice.call(arrayLikeObject)
+2. Apply an operation to elements in collection.
+NodeList.forEach()
+3. Apply an operation to elements in collection and collect values from each and every application in a new array.
+Array.prototype.map.call(arrayLikeObject, operation)
+[].map.call(arrayLikeObject, operation)
+4. Apply an operation to elements in collection and accumulate values without necessity of a value from each and every application.
+Array.prototype.reduce.call(arrayLikeObject, function (accumulator, element) {}, initialValue)
+[].reduce.call(arrayLikeObject, function (accumulator, element) {}, initialValue)
+
+References
+http://xahlee.info/js/js_array_vs_nodelist_vs_html_collection.html
+https://developer.mozilla.org/en-US/docs/Web/API/NodeList
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
+
+----------
+Functional Programming in JavaScript
+
+http://eloquentjavascript.net/1st_edition/chapter6.html
+
+----------
+Query Execution
+
+The user specifies the parameters of the query--query steps and options for each step--by interaction with elements in the Document Object Model (DOM).
+It is necessary to extract relevant information from these elements of the DOM.
+It is also necessary to apply the appropriate query operations using this information.
+
+There are two strategies that I consider.
+
+1. Perform extraction and execution simultaneously.
+Extract information relevant to query steps directly from the elements in the DOM and apply this information immediately to execute the appropriate query functions.
+This option only requires a single iterative process for the query.
+It requires passing the query collection of nodes and the metabolic model between each recursive iteration for each query step.
+This option does not provide a convenient way to store the information from the query permanently.
+
+2. Separate extraction and execution.
+Extract information relevant to query steps directly from the elements in the DOM, and organize this information in an array of objects.
+There will be a single object for each step of the query.
+This object will specify the type of query step along with details for the specific type of query step.
+Potentially allow the user to save this array of objects as a JSON to preserve a record of the query.
+Potentially allow the user to load a query record from file to replicate a previous query.
+Iterate over this array of objects (I think using reduce with additional parameters) to collect nodes in the query.
+
+The advantage of option 2 is that it separates extraction from execution.
+This separation can make the code more versatile.
+
+--------------------------------------------------
 22 March 2017
 
 Keep implementing the query queue process.

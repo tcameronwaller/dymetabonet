@@ -65,12 +65,13 @@
                     <input type="checkbox" id="query-tab-temporary">
                     <label for="query-tab-temporary"><h2>Query Temporary</h2></label>
                     <div>
-                        Enter name of metabolic process...<br>
-                        <input id="process-text" type="text"><br>
-                        Enter name of compartment...<br>
-                        <input id="compartment-text" type="text"><br>
-                        <button id="submit-temp-query" type="sumbit">Submit</button>
-
+                        <div id="query-queue-temporary">
+                            Enter name of metabolic process...<br>
+                            <input class="query-step" id="process-text" type="text"><br>
+                            Enter name of compartment...<br>
+                            <input class="query-step" id="compartment-text" type="text"><br>
+                        </div>
+                        <button id="submit-temp-query" type="sumbit">Submit</button><br>
                     </div>
                 </div>
                 <!-- Create query panel. -->
@@ -80,41 +81,16 @@
                     <div>
                         Please assemble steps of the query.
                         <div id="query-queue">
-                            <div class="query-step">
-                                <h3>Step 1</h3>
-                                <label>Attribute:
-                                    <input name="step-1-type" type="radio" value="attribute">
-                                </label>
-                                <label>Identity:
-                                    <input name="step-1-type" type="radio" value="identity">
-                                </label>
-                                <br>
-                                <!-- Temporary pattern for table -->
-                                <table>
-                                    <thead>
-                                    <tr>
-                                        <th>Identifier</th>
-                                        <th>Name</th>
-                                        <th>Include</th>
-                                        <th>Exclude</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td><input name="step-1-row-1" type="radio" value="include"></td>
-                                        <td><input name="step-1-row-1" type="radio" value="include"></td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-
-                                <!-- Temporary pattern for table -->
-                                <button class="remove" type="button">Remove</button>
+                            <div id="initial-query-step">
+                                <h3>Step 0</h3>
+                                Entire Metabolic Model<br>
+                                Eventually I want to show the count <br>
+                                of metabolite and reaction nodes <br>
+                                at each query step.
                             </div>
                         </div>
                         <button id="query-queue-add" type="button">+</button>
-                        <button type="button">Submit</button>
+                        <button id="submit-query" type="button">Submit</button>
                     </div>
                 </div>
                 <!-- Create navigation panel. -->

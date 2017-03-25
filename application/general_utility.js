@@ -48,9 +48,9 @@ function replaceAllString(currentString, target, replacement) {
  * @returns {Array} Values from all objects.
  */
 function collectValuesFromObjects(objects, key) {
-    return objects.reduce(function (accumulator, object) {
-        return accumulator.concat(object[key]);
-    }, []);
+    return objects.map(function (object) {
+        return object[key];
+    });
 }
 
 /**

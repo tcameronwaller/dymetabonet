@@ -214,6 +214,10 @@ h3 {
     overflow: auto;
 }
 
+#initial-query-step {
+    background-color: rgba(150, 100, 150, 1);
+}
+
 .query-step {
     background-color: rgba(150, 100, 150, 1);
 }

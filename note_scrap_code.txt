@@ -3,6 +3,29 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
+24 March 2017
+
+<!-- Temporary pattern for table -->
+<table>
+  <thead>
+    <tr>
+      <th>Identifier</th>
+      <th>Name</th>
+      <th>Include</th>
+      <th>Exclude</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td></td>
+      <td></td>
+      <td><input name="step-1-row-1" type="radio" value="include"></td>
+      <td><input name="step-1-row-1" type="radio" value="include"></td>
+    </tr>
+  </tbody>
+</table>
+
+--------------------------------------------------
 20 March 2017
 
 function manageInterface() {

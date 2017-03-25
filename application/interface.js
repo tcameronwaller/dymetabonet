@@ -144,7 +144,25 @@ function initializeInterface() {
     document
         .getElementById("query-queue-add")
         .addEventListener("click", addQueryStep);
+}
 
+function testElementIteration(event) {
+    // Select all steps in the query's queue.
+    var collection = document
+        .getElementById("query_temporary")
+        .getElementsByClassName("test-iteration");
+    var result = Array.prototype.reduce.call(collection, function (accumulator, element) {
+        if (!accumulator.includes(element.textContent)) {
+            // Method concat does not modify the original array.
+            // Method concat returns a new array.
+            // It is necessary to store this new array or return it
+            // directly.
+            return accumulator.concat(element.textContent);
+        } else {
+            return accumulator;
+        }
+    }, []);
+    console.log(result);
 }
 
 /**
@@ -158,13 +176,104 @@ function initializeInterfaceForModel(model) {
     // TODO: Maybe change classes and styles of elements once I activate them.
 
     document
-        .getElementById("submit-temp-query")
+        .getElementById("submit-query")
         .addEventListener(
             "click", function (event) {
                 return controlQuery(event, model);
             }
         );
 
+}
+
+/**
+ * Applies a function recursively to a live collection of elements in the
+ * document object model (DOM).
+ * @param {Object} elements Live collection of elements in the DOM.
+ * @param {Function} applyFunction Function to apply on elements in the
+ * collection.
+ */
+function applyToDocumentCollection(elements, applyFunction) {
+    // Assign a class to elements in the collection to organize a queue for
+    // recursive iteration.
+    elements.classList.add("recursive-iteration-queue");
+    // Select all elements that are in the queue for recursive iteration.
+    // Assume that the class name of the queue is unique in the document.
+    // The collection is live, so loss of the class will remove a step from
+    // the queue.
+    var queue = document
+        .getElementsByClassName("recursive-iteration-queue");
+    // Call recursive function to act on each element in the queue.
+    applyToDocumentCollectionQueue(queue, applyFunction);
+}
+
+/**
+ * Applies a function recursively to steps or elements in a queue.
+ * @param {Object} queue Live collection of elements in the DOM.
+ * @param {Function} applyFunction Function to apply on elements in the
+ * collection.
+ */
+function applyToDocumentCollectionQueue(queue, applyFunction) {
+    // Apply function to next element in the queue.
+    applyFunction(queue[0]);
+    // Remove queue class from next element to remove it from the queue.
+    queue[0].classList.remove("recursive-iteration-queue");
+    // If the queue is not empty, call recursive function to act on each element
+    // in the queue.
+    if (queue[0]) {
+        applyToDocumentCollectionQueue(queue, applyFunction);
+    }
+}
+
+
+
+
+// TODO: I need this version of a reduce method to extract information from elements for my query steps.
+
+/**
+ * Accumulates a value or object by recursive application of a function to a
+ * live collection of elements in the document object model (DOM).
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {Object} parameters.elements Live collection of elements in the DOM.
+ * @param {Object} parameters.accumulator The value that accumulates from
+ * iterative application of the function to the elements.
+ * @param {Object} parameters.initialValue The initial value for the
+ * accumulator.
+ * @param {Object} parameters.operation The operation or function to apply on
+ * elements.
+ * @returns {Object} Identifiers of initial elements for the query step.
+
+ */
+function accumulateFromDocumentCollection({elements, collection, model} = {}) {
+    // Assign a class to elements in the collection to organize a queue for
+    // recursive iteration.
+    elements.classList.add("recursive-iteration-queue");
+    // Select all elements that are in the queue for recursive iteration.
+    // Assume that the class name of the queue is unique in the document.
+    // The collection is live, so loss of the class will remove a step from
+    // the queue.
+    var queue = document
+        .getElementsByClassName("recursive-iteration-queue");
+    // Call recursive function to act on each element in the queue.
+    applyToDocumentCollectionQueue(queue, applyFunction);
+}
+
+/**
+ * Accumulates an object by recursive application of a function to to steps or
+ * elements in a queue.
+ * @param {Object} queue Live collection of elements in the DOM.
+ * @param {Function} applyFunction Function to apply on elements in the
+ * collection.
+ */
+function accumulateFromDocumentCollectionQueue(queue, applyFunction) {
+    // Apply function to next element in the queue.
+    applyFunction(queue[0]);
+    // Remove queue class from next element to remove it from the queue.
+    queue[0].classList.remove("recursive-iteration-queue");
+    // If the queue is not empty, call recursive function to act on each element
+    // in the queue.
+    if (queue[0]) {
+        applyToDocumentCollectionQueue(queue, applyFunction);
+    }
 }
 
 /**
@@ -200,38 +309,74 @@ function controlProcessQuery(event, model) {
     visualizeNetwork(collection2, model);
 }
 
-// TODO: I need a recursive function that accepts an array of objects.
-// TODO: Each object in the array includes all information relevant to a single query step from the queue.
-// TODO: The function will recursively apply the appropriate function(s) for each query step from the queue.
-
 /**
  * Controls the execution of all steps in the queue for the query.
  * @param {Object} event Record of event from Document Object Model.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function controlQueryQueue(event, model) {
-    // TODO: Write a general function for recursive iteration on a collection of DOM elements.
-    // TODO: This function will accept as an argument a function to apply to each element from the collection.
+function controlQuery(event, model) {
+    var queryDetails = extractQueryDetails();
+
+    // TODO: I will need to determine whether the user enters a value for a process, a compartment, or a reaction type (transport, reaction).
+
+    // Apply a control function to each step in the queue for the query.
+    //applyToDocumentCollection(queryQueueSteps, controlQueryStep);
+
+    // Call recursive function to act on each member of the queue.
+    //controlQueryStep({
+    //    queue: queryQueue,
+    //    collection: extractInitialCollectionFromModel(model),
+    //    model: model
+    //});
+}
+
+/**
+ * Extracts details for steps in the query from elements in the Document Object
+ * Model.
+ */
+function extractQueryDetails() {
     // Select all steps in the query's queue.
-    var querySteps = document
+    var queryQueueSteps = document
         .getElementById("query-queue")
         .getElementsByClassName("query-step");
-    // Assign a class to steps to keep track of recursive iteration.
-    querySteps.classList.add("queue-step");
-    // Select all steps that are in the queue for recursive iteration.
-    // The collection is live, so loss of the class will remove the step from
-    // the queue.
-    var queryQueue = document
-        .getElementById("query-queue")
-        .getElementsByClassName("queue-step");
-    // Call recursive function to act on each member of the queue.
-    controlQueryStep({
-        queue: queryQueue,
-        collection: extractInitialCollectionFromModel(model),
-        model: model
-    });
+    var queryStepDetails = Array
+        .prototype
+        .map
+        .call(queryQueueSteps, extractQueryStepDetails);
+    console.log(queryStepDetails);
 }
+
+/**
+ * Determines the value of the only active radio button in a group.
+ * @param {Object} radios Live collection of radio buttons in the DOM.
+ * @returns {string} Value of the only active radio button from the group.
+ */
+function determineRadioGroupValue(radios) {
+    // Assume that only a single radio button in the group is active.
+    return Array.prototype.filter.call(radios, function (radio) {
+        return radio.checked;
+    })[0].value;
+}
+
+/**
+ * Extracts details for a single step in the query from elements in the Document
+ * Object Model.
+ */
+function extractQueryStepDetails(stepElement) {
+    return {
+        combination: determineRadioGroupValue(
+            stepElement.getElementsByClassName("combination")
+        ),
+        type: "attribute",
+        value: stepElement.getElementsByClassName("text")[0].value
+    };
+    // Determine the value of the text field.
+}
+
+
+
+
 
 /**
  * Controls the execution of all steps in the queue for the query.
@@ -251,49 +396,25 @@ function controlQueryQueueStep({queue, collection, model} = {}) {}
 // TODO: Use this function to execute a single step right after adding it to the queue.
 function controlQueryStep() {}
 
-
-
-
-// TODO: I will need to re-write this function to handle the NodeList of radio buttons properly.
-// TODO: use NodeList.forEach() to return the value of whichever is checked.
-// TODO
-/**
- * Determines the value of the only active radio button in a group.
- * @param {Array<Object>} radios Group of radio buttons.
- * @returns {string} Value of the only active radio button from the group.
- */
-function determineRadioGroupValue(radios) {
-    // Assume that only a single radio button in the group is active.
-    return radios.filter(function (radio) {
-        return radio.checked;
-    })[0].value;
-}
-
-
-
-
-
 /**
  * Creates a radio button with a label for a step in a queue.
- * @param {number} stepCount Count of the step in the queue.
- * @param {string} labelText Text for the radio button's label.
- * @param {string} inputValue Value for the radio button.
+ * @param {string} className Name of the class.
+ * @param {string} name Name of the radio button's group.
+ * @param {string} value Value for the radio button.
+ * @param {string} text Text for the radio button's label.
+ * @returns {Object} Label element with a radio button input element.
  */
-function createLabelRadioButton(stepCount, labelText, inputValue) {
+function createLabelRadioButton(className, name, value, text) {
     var label = document.createElement("label");
-    label.appendChild(
-        document.createTextNode(labelText)
-    );
     var input = document.createElement("input");
-    input.setAttribute("name", "step-" + stepCount + "-type");
+    input.setAttribute("class", className);
+    input.setAttribute("name", name);
     input.setAttribute("type", "radio");
-    input.setAttribute("value", inputValue);
-
-    // TODO: Attach an event listener for the radio button.
-    // TODO: The listener function will need to determine the parent query step of the currentTarget to modify the correct step.
-
-    //input.addEventListener("change", respondTypeChange);
+    input.setAttribute("value", value);
     label.appendChild(input);
+    label.appendChild(
+        document.createTextNode(text)
+    );
     return label;
 }
 
@@ -327,28 +448,44 @@ function addQueryStep(event) {
             .getElementsByClassName("query-step");
     var stepCount = steps.length + 1;
 
-    // Create element for query step and append it to the query queue.
+    // Create element for query step.
     var step = document.createElement("div");
     step.setAttribute("class", "query-step");
     var header = document.createElement("h3");
     header.appendChild(document.createTextNode("Step " + stepCount));
     step.appendChild(header);
+    // Create radio buttons for combination strategy.
     step.appendChild(
-        createLabelRadioButton(stepCount, "Attribute:", "attribute")
+        createLabelRadioButton(
+            "combination", "combination-step-" + stepCount, "and", "and"
+        )
     );
     step.appendChild(
-        createLabelRadioButton(stepCount, "Identity:", "identity")
+        createLabelRadioButton(
+            "combination", "combination-step-" + stepCount, "or", "or"
+        )
     );
     step.appendChild(
-        createLabelRadioButton(stepCount, "Topology:", "topology")
+        createLabelRadioButton(
+            "combination", "combination-step-" + stepCount, "not", "not"
+        )
     );
     step.appendChild(document.createElement("br"));
+    // Create text field.
+    // <input class="query-step" id="compartment-text" type="text">
+    var textField = document.createElement("input");
+    textField.setAttribute("class", "text");
+    textField.setAttribute("type", "text");
+    step.appendChild(textField);
+    step.appendChild(document.createElement("br"));
+    // Create button to remove step from queue.
     var button = document.createElement("button");
-    button.setAttribute("class", "remove");
+    button.setAttribute("class", "remove-query-step");
     button.setAttribute("type", "button");
-    //button.addEventListener("click", removeParentElement);
-    button.appendChild(document.createTextNode("Remove"));
+    button.addEventListener("click", removeParentElement);
+    button.appendChild(document.createTextNode("X"));
     step.appendChild(button);
+    // Append step element to the query queue.
     document
         .getElementById("query-queue")
         .appendChild(step);
@@ -356,10 +493,10 @@ function addQueryStep(event) {
     // TODO: Update Step Count headers after deleting an intermediate step.
 
     // Activate delete buttons in query steps.
-    document
-        .getElementById("query-queue")
-        .querySelectorAll("div.query-step > button.remove")
-        .forEach(function (element) {
-            element.addEventListener("click", removeParentElement);
-        });
+    //document
+    //    .getElementById("query-queue")
+    //    .querySelectorAll("div.query-step > button.remove")
+    //    .forEach(function (element) {
+    //        element.addEventListener("click", removeParentElement);
+    //    });
 }
