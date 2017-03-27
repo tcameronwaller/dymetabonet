@@ -435,6 +435,14 @@ function removeParentElement(event) {
 
 }
 
+// TODO: Do not include input elements in the iterable query steps in the queue.
+// TODO: Only include input elements in views at the bottom of the queue for adding new steps.
+// TODO: When adding the new step to the queue, include a concise description of the step with non-input elements.
+// TODO: For example, use <p> and <div> elements to style a concise description of the step.
+
+
+
+
 /**
  * Appends one additional query step to the query queue.
  * @param {Object} event Record of event from Document Object Model.

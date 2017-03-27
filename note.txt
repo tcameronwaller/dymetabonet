@@ -4,6 +4,71 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+27 March 2017
+
+----------
+Design of Query Interface
+
+Do not include active input elements in each query step in the query queue.
+
+Instead, only include active input elements in an assembly area below the queue.
+In the assembly area, the user constructs a new query step and then adds that step to the queue.
+Adding a new step to the queue should execute two operations.
+First, a new representation of the step without active input elements but with concise and clear style will appear in the queue.
+This representation in the queue will include a button to remove the step from the queue.
+Second, the query will execute through to the current step.
+The query interface will display a summary of the network that the current query selects.
+Counts of nodes and links might offer a good concise summary of the query results.
+Do not do this execution if the query results in a lag.
+Maybe do not visualize the resulting network until the user selects a visualize button.
+The reason to wait before visualizing the network is to avoid delays due to heavy processes.
+
+An advantage of this strategy is that it simplifies access to the query details.
+I will not need multiple groups of radio buttons, for example.
+I will only need a single group of active radio buttons for the combination strategy.
+
+----------
+Autocomplete Text Box
+
+<input type="text" list="options">
+<datalist id="options">
+  <option>cytosol</option>
+  <option>endoplasmic reticulum</option>
+  <option>mitochondrion</option>
+</datalist>
+
+Use JavaScript.
+Create a new datalist element with options.
+Give the datalist element a unique id attribute.
+Select the input element, such as a text field, that will reference the datalist.
+Append a list attribute to the input element that references the id of the datalist element.
+
+----------
+HTML Containers
+
+The tag <div> is the preferable generic container for organization of a document.
+
+The tag <section> is appropriate for generic coherent sections of a document.
+This tag might be appropriate for use with the <fieldset> tag in forms.
+
+Reference
+https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div
+
+----------
+HTML Forms
+
+The main purpose and function of forms is to send user information to a server.
+The default function of the form is to send information to a server.
+To use a form without a server it is necessary to override the form's default function of sending information (return false from handler function and use the post method so that the URL does not change).
+As I do not need to send information from the interface to a server, I do not know of any justifiable reason to use HTML Forms.
+
+Reference
+https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms
+https://www.w3schools.com/html/html_forms.asp
+https://www.w3schools.com/js/js_input_examples.asp
+http://stackoverflow.com/questions/6051143/how-to-use-html-forms-without-a-server
+
+--------------------------------------------------
 24 March 2017
 
 ----------
