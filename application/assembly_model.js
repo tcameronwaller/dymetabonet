@@ -53,9 +53,9 @@ function summarizeModel(model) {
  * model.
  */
 function assembleModel(data) {
-    var model = Object.assign(
-        {}, assembleSets(data), assembleNetwork(data)
-    );
+    var sets = assembleSets(data);
+    var network = assembleNetwork(data, sets);
+    var model = Object.assign({}, sets, network);
     downloadJSON(model, "model_sets_network.json");
     return model;
 }

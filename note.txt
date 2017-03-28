@@ -4,6 +4,49 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+28 March 2017
+
+----------
+Plan
+
+Check that "sets" and "processes" are getting passed along properly.
+
+
+----------
+Progress
+
+Remember that there are many reactions that do not have annotations for metabolic process.
+The proportion of these reactions is small.
+
+M previous operation for assembly of the model created a record for these undefined processes.
+
+I created concise and unique identifiers for all processes to store records about processes in an object as I do for all other sets.
+
+I then referred to these records while creating records for reactions.
+Instead of storing the process name in the records for reactions, I store the corresponding process identifier.
+
+----------
+Model Curation
+
+If I need to correct major errors in the metabolic model, such as some that I already encountered in metabolite naming, I should keep this curation functionality separate from all other functionality.
+I can develop a set of curation functions to run on the Recon 2.2 model specifically to correct errors.
+Then I can pass the model to my assembly functionality.
+
+The purpose is to isolate model-specific functionality from general functionality.
+
+----------
+Attribute Reference
+
+citrate (metabolite)
+citrate synthase (reaction)
+mitochondrion (compartment)
+glycolysis (process)
+conversion (reaction type)
+transport (reaction type)
+irreversible (reaction direction)
+reversible (reaction direction)
+
+--------------------------------------------------
 27 March 2017
 
 ----------

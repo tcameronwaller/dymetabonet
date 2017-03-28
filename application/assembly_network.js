@@ -253,18 +253,39 @@ function checkReaction(reaction, metabolites, genes) {
 }
 
 /**
+ * Determines the identifier for a reaction's process.
+ * @param {Object} reaction Information for a reaction.
+ * @param {Object} processes Information about processes in a metabolic model.
+ * @returns {string} Identifier for the reaction's process.
+ */
+function determineReactionProcessIdentifier(reaction, processes) {
+    if (reaction.subsystem != undefined) {
+        return Object.keys(processes).filter(function (key) {
+            return processes[key].name === reaction.subsystem;
+        })[0];
+    } else {
+        return undefined;
+    }
+}
+
+// TODO: I think that "processes" is undefined in the functions to create reaction node records.
+// TODO: Use console.log to check the trajectory of "sets" and "processes" as they pass through functions following their assembly.
+
+
+/**
  * Creates a record for a network node for a single reaction from a metabolic
  * model.
  * @param {Object} reaction Information for a reaction.
+ * @param {Object} processes Information about processes in a metabolic model.
  * @returns {Object} Record for a node for a reaction.
  */
-function createReactionNodeRecord(reaction) {
+function createReactionNodeRecord(reaction, processes) {
     return {
         [reaction.id]: {
             gene_reaction_rule: reaction.gene_reaction_rule,
             id: reaction.id,
             name: reaction.name,
-            process: determineReactionProcess(reaction),
+            process: determineReactionProcessIdentifier(reaction, processes),
             products: filterReactionMetabolitesByRole(reaction, "product"),
             reactants: filterReactionMetabolitesByRole(reaction, "reactant"),
             reversibility: determineReversibility(reaction),
@@ -280,9 +301,10 @@ function createReactionNodeRecord(reaction) {
  * @param {Array<Object>} metabolites Information for all metabolites of a
  * metabolic model.
  * @param {Array<Object>} genes Information for all genes of a metabolic model.
+ * @param {Object} processes Information about processes in a metabolic model.
  * @returns {Object} Records for nodes for reactions.
  */
-function createReactionNodeRecords(reactions, metabolites, genes) {
+function createReactionNodeRecords(reactions, metabolites, genes, processes) {
     // Check reactions.
     reactions.map(function (reaction) {
         return checkReaction(reaction, metabolites, genes);
@@ -290,7 +312,7 @@ function createReactionNodeRecords(reactions, metabolites, genes) {
     // Create nodes for reactions.
     return reactions.reduce(function (collection, reaction) {
         return Object.assign(
-            {}, collection, createReactionNodeRecord(reaction)
+            {}, collection, createReactionNodeRecord(reaction, processes)
         );
     }, {});
 }
@@ -384,9 +406,10 @@ function createReactionLinkRecords(reactions) {
  * Assembles network elements, nodes and links, to represent information of a
  * metabolic model.
  * @param {Object} model Information of a metabolic model from systems biology.
+ * @param {Object} sets Information about entities in a metabolic model.
  * @returns {Object} Network elements.
  */
-function assembleNetwork(model) {
+function assembleNetwork(model, sets) {
     return {
         network: {
             links: createReactionLinkRecords(model.reactions),
@@ -395,7 +418,10 @@ function assembleNetwork(model) {
                     model.metabolites, model.reactions
                 ),
                 reactions: createReactionNodeRecords(
-                    model.reactions, model.metabolites, model.genes
+                    model.reactions,
+                    model.metabolites,
+                    model.genes,
+                    sets.processes
                 )
             }
         }

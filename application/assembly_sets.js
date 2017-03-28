@@ -253,12 +253,12 @@ function determineMetaboliteSetName(setMetabolites) {
 
 /**
  * Creates a record for a single metabolite from a metabolic model.
+ * @param {string} metaboliteIdentifier Unique identifier of general metabolite.
  * @param {Array<Object>} metabolites Information for all metabolites of a
  * metabolic model.
- * @param {string} metaboliteIdentifier Unique identifier of general metabolite.
  * @returns {Object} Record for a metabolite.
  */
-function createMetaboliteRecord(metabolites, metaboliteIdentifier) {
+function createMetaboliteRecord(metaboliteIdentifier, metabolites) {
     // Collect all compartmental versions of the metabolite.
     var setMetabolites = filterCompartmentalMetabolitesByMetabolite(
         metabolites, metaboliteIdentifier
@@ -300,7 +300,7 @@ function createMetaboliteRecords(metabolites) {
                 {},
                 collection,
                 createMetaboliteRecord(
-                    metabolites, extractMetaboliteIdentifier(metabolite.id)
+                    extractMetaboliteIdentifier(metabolite.id), metabolites
                 )
             );
         } else {
@@ -315,11 +315,17 @@ function createMetaboliteRecords(metabolites) {
 /**
  * Creates a record for a single metabolic process from a metabolic model.
  * @param {string} processName Name of a metabolic subsystem or process.
+ * @param {Object} collection Records for processes.
  * @returns {Object} Record for a process.
  */
-function createProcessRecord(processName) {
+function createProcessRecord(processName, collection) {
+    var processIdentifier = "process_" +
+        (Object.keys(collection).length + 1).toString();
     return {
-        name: processName
+        [processIdentifier]: {
+            id: processIdentifier,
+            name: processName
+        }
     };
 }
 
@@ -331,23 +337,31 @@ function createProcessRecord(processName) {
  * Creates records for all processes from a metabolic model.
  * @param {Array<Object>} reactions Information for all reactions of a metabolic
  * model.
- * @returns {Array<Object>} Records for processes.
+ * @returns {Object} Records for processes.
  */
 function createProcessRecords(reactions) {
     // Create records for processes.
     // Assume that according to their annotation, all reactions in the metabolic
     // model participate in only a single metabolic process.
-    return reactions.reduce(function (accumulator, reaction) {
+    return reactions.reduce(function (collection, reaction) {
+        // Determine if the reaction has an annotation for process.
         // Determine if a record already exists for the process.
-        if (accumulator.find(function (record) {
-                return record.name === reaction.subsystem;
-            }) === undefined) {
+        if (
+            (reaction.subsystem != undefined) &&
+            (Object.keys(collection).find(function (key) {
+                return collection[key].name === reaction.subsystem;
+            }) === undefined)
+        ) {
             // Create record for the process.
-            return accumulator.concat(createProcessRecord(reaction.subsystem));
+            return Object.assign(
+                {},
+                collection,
+                createProcessRecord(reaction.subsystem, collection)
+            );
         } else {
-            return accumulator;
+            return collection;
         }
-    }, []);
+    }, {});
 }
 
 ////////////////////////////////////////////////////////////////////////////////

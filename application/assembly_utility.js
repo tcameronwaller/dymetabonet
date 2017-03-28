@@ -90,7 +90,7 @@ function determineReactionProcess(reaction) {
     if (reaction.subsystem != undefined) {
         return reaction.subsystem;
     } else {
-        return null;
+        return undefined;
     }
 }
 

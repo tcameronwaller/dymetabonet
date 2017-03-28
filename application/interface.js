@@ -215,13 +215,6 @@ function initializeInterfaceForModel(model) {
 
     // TODO: Maybe change classes and styles of elements once I activate them.
 
-    document
-        .getElementById("submit-query")
-        .addEventListener(
-            "click", function (event) {
-                return controlQuery(event, model);
-            }
-        );
     Array.from(
         document
             .getElementById("query-assembly")
@@ -230,26 +223,38 @@ function initializeInterfaceForModel(model) {
         .forEach(function (radio) {
             radio.addEventListener("change", function (event) {
                 // Element on which the event originated is event.currentTarget.
-                updateQueryAssembly();
+                updateQueryAssembly(model);
             });
         });
+    document
+        .getElementById("submit-query")
+        .addEventListener(
+            "click", function (event) {
+                // Element on which the event originated is event.currentTarget.
+                return controlQuery(model);
+            }
+        );
 }
 
 /**
  * Updates the interface for assembly of query steps by the type of step.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
  */
-function updateQueryAssembly() {
+function updateQueryAssembly(model) {
     // Remove any existing components of the interface for query assembly.
     removeChildElements(document.getElementById("query-assembly-details"));
     // Append elements to query assembly interface according to the type of
     // query.
-    appendQueryAssembly();
+    appendQueryAssembly(model);
 }
 
 /**
  * Appends elements to the interface for assembly of query steps.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
  */
-function appendQueryAssembly() {
+function appendQueryAssembly(model) {
     var queryType = determineRadioGroupValue(
         document
             .getElementById("query-assembly")
@@ -260,32 +265,67 @@ function appendQueryAssembly() {
         .getElementById("query-assembly-details");
     if (queryType === "attribute") {
         // Append elements to interface for assembly of query by attribute.
+
+        // Determine list of attributes for reference.
+        // TODO: Create an array of all possible attributes for the query.
+        var attributeReference = determineAttributeReference(model);
+
+        // Create reference list for text field.
+        // TODO: Create datalist with options for all elements in the attributeReference array.
+        var attributeList = document.createElement("datalist");
+        attributeList.setAttribute("id", "attribute-list");
+        attributeReference.forEach(function (element) {
+            var option = document.createElement("option");
+            option.setAttribute("value", element);
+            attributeList.appendChild(option);
+        });
+        queryAssemblyDetails.appendChild(attributeList);
+
         // Create text field.
         // <input class="query-step" id="compartment-text" type="text">
         var textField = document.createElement("input");
+        textField.setAttribute("autocomplete", "off");
         textField.setAttribute("class", "text");
-        textField.setAttribute("type", "text");
+        textField.setAttribute("id", "attribute-text");
+        textField.setAttribute("list", "attribute-list");
+        textField.setAttribute("type", "search");
         queryAssemblyDetails.appendChild(textField);
         queryAssemblyDetails.appendChild(document.createElement("br"));
-
-        // TODO: This might be a good point to bind the datalist to the text field.
-
 
     } else if (queryType === "topology") {
         // TODO: Eventually fill in the interface for topological queries.
     }
 }
 
-
-
-
-
-
-
-
-
-
-
+/**
+ * Determines all possible attribute selections from a metabolic model.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function determineAttributeReference(model) {
+    var metabolites = Object.values(model.sets.metabolites)
+        .map(function (metabolite) {
+            return metabolite.name + " (metabolite name)";
+        });
+    var reactions = Object.values(model.network.nodes.reactions)
+        .map(function (reaction) {
+            return reaction.name + " (reaction name)";
+        });
+    var compartments = Object.values(model.sets.compartments)
+        .map(function (compartment) {
+            return compartment.name + " (compartment name)";
+        });
+    var processes = model.sets.processes.map(function (process) {
+        return process.name + " (process name)";
+    });
+    var extras = [
+        "conversion (reaction type)",
+        "transport (reaction type)",
+        "irreversible (reaction direction)",
+        "reversible (reaction direction)"
+    ];
+    return [].concat(metabolites, reactions, compartments, processes, extras);
+}
 
 
 
@@ -416,7 +456,6 @@ function controlProcessQuery(event, model) {
 
 /**
  * Controls the execution of all steps in the queue for the query.
- * @param {Object} event Record of event from Document Object Model.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
