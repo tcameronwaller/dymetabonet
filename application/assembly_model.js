@@ -54,7 +54,7 @@ function summarizeModel(model) {
  */
 function assembleModel(data) {
     var sets = assembleSets(data);
-    var network = assembleNetwork(data, sets);
+    var network = assembleNetwork(data, sets.sets);
     var model = Object.assign({}, sets, network);
     downloadJSON(model, "model_sets_network.json");
     return model;

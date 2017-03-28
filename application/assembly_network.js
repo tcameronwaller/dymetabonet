@@ -268,10 +268,6 @@ function determineReactionProcessIdentifier(reaction, processes) {
     }
 }
 
-// TODO: I think that "processes" is undefined in the functions to create reaction node records.
-// TODO: Use console.log to check the trajectory of "sets" and "processes" as they pass through functions following their assembly.
-
-
 /**
  * Creates a record for a network node for a single reaction from a metabolic
  * model.
@@ -306,8 +302,8 @@ function createReactionNodeRecord(reaction, processes) {
  */
 function createReactionNodeRecords(reactions, metabolites, genes, processes) {
     // Check reactions.
-    reactions.map(function (reaction) {
-        return checkReaction(reaction, metabolites, genes);
+    reactions.forEach(function (reaction) {
+        checkReaction(reaction, metabolites, genes);
     });
     // Create nodes for reactions.
     return reactions.reduce(function (collection, reaction) {

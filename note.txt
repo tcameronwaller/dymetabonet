@@ -9,21 +9,30 @@ Research With Alexander Lex
 ----------
 Plan
 
-Check that "sets" and "processes" are getting passed along properly.
+I am in the process of implementing function updateQueryQueue and its subordinate functions.
+Specifically I am implementing function extractQueryAssemblyDetails.
+Continue to implement this function to assembly and return an object that contains all relevant details of the query step.
+Eventually I will need to implement functionality for topological query steps.
 
+----------
+Compatibility
+
+My current implementation includes several uses of Object.values().
+This method is incompatible with the Safari browser, I understand.
 
 ----------
 Progress
 
 Remember that there are many reactions that do not have annotations for metabolic process.
 The proportion of these reactions is small.
-
-M previous operation for assembly of the model created a record for these undefined processes.
+My previous operation for assembly of the model created a record for these undefined processes.
 
 I created concise and unique identifiers for all processes to store records about processes in an object as I do for all other sets.
-
 I then referred to these records while creating records for reactions.
-Instead of storing the process name in the records for reactions, I store the corresponding process identifier.
+Instead of storing the process name in the records for reactions, I stored the corresponding process identifier.
+
+The model in previous structure from 21 March 2017 had a file size of 6,306 kilobytes.
+The model in new structure has a file size of 6,206 kilobytes.
 
 ----------
 Model Curation

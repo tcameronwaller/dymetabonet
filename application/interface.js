@@ -179,11 +179,6 @@ function initializeInterface() {
     document
         .getElementById("load-model")
         .addEventListener("click", controlModelLoad);
-
-    //TODO:
-    document
-        .getElementById("query-queue-add")
-        .addEventListener("click", addQueryStep);
 }
 
 function testElementIteration(event) {
@@ -218,7 +213,7 @@ function initializeInterfaceForModel(model) {
     Array.from(
         document
             .getElementById("query-assembly")
-            .getElementsByClassName("type")
+            .getElementsByClassName("query-type-radio")
     )
         .forEach(function (radio) {
             radio.addEventListener("change", function (event) {
@@ -227,75 +222,21 @@ function initializeInterfaceForModel(model) {
             });
         });
     document
-        .getElementById("submit-query")
-        .addEventListener(
-            "click", function (event) {
-                // Element on which the event originated is event.currentTarget.
-                return controlQuery(model);
-            }
-        );
-}
-
-/**
- * Updates the interface for assembly of query steps by the type of step.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
- */
-function updateQueryAssembly(model) {
-    // Remove any existing components of the interface for query assembly.
-    removeChildElements(document.getElementById("query-assembly-details"));
-    // Append elements to query assembly interface according to the type of
-    // query.
-    appendQueryAssembly(model);
-}
-
-/**
- * Appends elements to the interface for assembly of query steps.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
- */
-function appendQueryAssembly(model) {
-    var queryType = determineRadioGroupValue(
-        document
-            .getElementById("query-assembly")
-            .getElementsByClassName("type")
-    );
-    console.log(queryType);
-    var queryAssemblyDetails = document
-        .getElementById("query-assembly-details");
-    if (queryType === "attribute") {
-        // Append elements to interface for assembly of query by attribute.
-
-        // Determine list of attributes for reference.
-        // TODO: Create an array of all possible attributes for the query.
-        var attributeReference = determineAttributeReference(model);
-
-        // Create reference list for text field.
-        // TODO: Create datalist with options for all elements in the attributeReference array.
-        var attributeList = document.createElement("datalist");
-        attributeList.setAttribute("id", "attribute-list");
-        attributeReference.forEach(function (element) {
-            var option = document.createElement("option");
-            option.setAttribute("value", element);
-            attributeList.appendChild(option);
+        .getElementById("update-query-queue")
+        .addEventListener("click", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            updateQueryQueue();
         });
-        queryAssemblyDetails.appendChild(attributeList);
-
-        // Create text field.
-        // <input class="query-step" id="compartment-text" type="text">
-        var textField = document.createElement("input");
-        textField.setAttribute("autocomplete", "off");
-        textField.setAttribute("class", "text");
-        textField.setAttribute("id", "attribute-text");
-        textField.setAttribute("list", "attribute-list");
-        textField.setAttribute("type", "search");
-        queryAssemblyDetails.appendChild(textField);
-        queryAssemblyDetails.appendChild(document.createElement("br"));
-
-    } else if (queryType === "topology") {
-        // TODO: Eventually fill in the interface for topological queries.
-    }
+    document
+        .getElementById("submit-query")
+        .addEventListener("click", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // controlQuery(model);
+        });
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Query Assembly Interface
 
 /**
  * Determines all possible attribute selections from a metabolic model.
@@ -315,10 +256,11 @@ function determineAttributeReference(model) {
         .map(function (compartment) {
             return compartment.name + " (compartment name)";
         });
-    var processes = model.sets.processes.map(function (process) {
+    var processes = Object.values(model.sets.processes).map(function (process) {
         return process.name + " (process name)";
     });
     var extras = [
+        "undefined (process name)",
         "conversion (reaction type)",
         "transport (reaction type)",
         "irreversible (reaction direction)",
@@ -326,6 +268,175 @@ function determineAttributeReference(model) {
     ];
     return [].concat(metabolites, reactions, compartments, processes, extras);
 }
+
+/**
+ * Appends elements to the interface for assembly of query steps.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function appendQueryAssembly(model) {
+    var queryType = determineRadioGroupValue(
+        document
+            .getElementById("query-assembly")
+            .getElementsByClassName("query-type-radio")
+    );
+    var queryAssemblyDetails = document
+        .getElementById("query-assembly-details");
+    if (queryType === "attribute") {
+        // Append elements to interface for assembly of query by attribute.
+        // Determine list of attributes for reference.
+        var attributeReference = determineAttributeReference(model);
+        // Create reference list for text field.
+        var attributeList = document.createElement("datalist");
+        attributeList.setAttribute("id", "attribute-options");
+        attributeReference.forEach(function (element) {
+            var option = document.createElement("option");
+            option.setAttribute("value", element);
+            attributeList.appendChild(option);
+        });
+        queryAssemblyDetails.appendChild(attributeList);
+        // Create text field.
+        var textField = document.createElement("input");
+        textField.setAttribute("autocomplete", "off");
+        textField.setAttribute("class", "text");
+        textField.setAttribute("id", "attribute-text");
+        textField.setAttribute("list", "attribute-options");
+        textField.setAttribute("type", "search");
+        queryAssemblyDetails.appendChild(textField);
+        queryAssemblyDetails.appendChild(document.createElement("br"));
+    } else if (queryType === "topology") {
+        // TODO: Eventually fill in the interface for topological queries.
+    }
+}
+
+/**
+ * Updates the interface for assembly of query steps by the type of step.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function updateQueryAssembly(model) {
+    // Remove any existing components of the interface for query assembly.
+    removeChildElements(document.getElementById("query-assembly-details"));
+    // Append elements to query assembly interface according to the type of
+    // query.
+    appendQueryAssembly(model);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Query Queue Interface
+
+/**
+ * Confirms that the query assembly interface is complete with all necessary
+ * details.
+ */
+function confirmQueryAssembly() {}
+
+/**
+ * Extracts details from the query assembly interface.
+ * @returns {Object} Details of the query step from the query assembly
+ * interface.
+ */
+function extractQueryAssemblyDetails() {
+    var queryAssembly = document.getElementById("query-assembly");
+    var combination = determineRadioGroupValue(
+        queryAssembly.getElementsByClassName("query-combination-radio")
+    );
+    var type = determineRadioGroupValue(
+        queryAssembly.getElementsByClassName("query-type-radio")
+    );
+    if (type === "attribute") {
+        var text = document.getElementById("attribute-text").value;
+
+        console.log(text);
+
+        // TODO: Extract the type of attribute (compartment name) from the text.
+        // TODO: Extract the attribute value (mitochondrion) from the text.
+        // TODO: Assemble an object to store all details of the query step.
+        // TODO: Return this object.
+    }
+}
+
+
+
+// TODO: This might still be useful for reading details from steps in the query queue.
+/**
+ * Extracts details for steps in the query from elements in the Document Object
+ * Model.
+ */
+function extractQueryDetails() {
+    // Select all steps in the query's queue.
+    var queryQueueSteps = document
+        .getElementById("query-queue")
+        .getElementsByClassName("query-step");
+    var queryStepDetails = Array
+        .prototype
+        .map
+        .call(queryQueueSteps, extractQueryStepDetails);
+    console.log(queryStepDetails);
+}
+
+/**
+ * Extracts details for a single step in the query from elements in the Document
+ * Object Model.
+ */
+function extractQueryStepDetails(stepElement) {
+    return {
+        combination: determineRadioGroupValue(
+            stepElement.getElementsByClassName("combination")
+        ),
+        type: "attribute",
+        value: stepElement.getElementsByClassName("text")[0].value
+    };
+    // Determine the value of the text field.
+}
+
+// TODO: When adding the new step to the queue, include a concise description of the step with non-input elements.
+// TODO: For example, use <p> and <div> elements to style a concise description of the step.
+/**
+ * Appends an additional query step to the query queue according to details from
+ * the query assembly interface.
+ */
+function appendQueryStep() {}
+
+
+/**
+ * Appends an additional query step to the query queue according to details from
+ * the query assembly interface.
+ */
+function updateQueryQueue() {
+
+    // Confirm that the query assembly interface is complete with all necessary
+    // details.
+    // If not then display an error message using alert.
+    confirmQueryAssembly();
+
+    // Extract information from query assembly interface.
+    var queryStepDetails = extractQueryAssemblyDetails();
+
+    // Append a new step element to the query queue with representations for the
+    // details of the query step.
+    appendQueryStep();
+
+    // Remove contents of query assembly interface.
+    removeChildElements(document.getElementById("query-assembly-details"));
+
+    // Execute all steps in query, and display summary information within the
+    // query queue.
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -475,37 +586,6 @@ function controlQuery(event, model) {
     //});
 }
 
-/**
- * Extracts details for steps in the query from elements in the Document Object
- * Model.
- */
-function extractQueryDetails() {
-    // Select all steps in the query's queue.
-    var queryQueueSteps = document
-        .getElementById("query-queue")
-        .getElementsByClassName("query-step");
-    var queryStepDetails = Array
-        .prototype
-        .map
-        .call(queryQueueSteps, extractQueryStepDetails);
-    console.log(queryStepDetails);
-}
-
-/**
- * Extracts details for a single step in the query from elements in the Document
- * Object Model.
- */
-function extractQueryStepDetails(stepElement) {
-    return {
-        combination: determineRadioGroupValue(
-            stepElement.getElementsByClassName("combination")
-        ),
-        type: "attribute",
-        value: stepElement.getElementsByClassName("text")[0].value
-    };
-    // Determine the value of the text field.
-}
-
 
 
 
@@ -553,16 +633,8 @@ function createLabelRadioButton(className, name, value, text) {
 
 
 
-
-
-// TODO: Do not include input elements in the iterable query steps in the queue.
-// TODO: Only include input elements in views at the bottom of the queue for adding new steps.
-// TODO: When adding the new step to the queue, include a concise description of the step with non-input elements.
-// TODO: For example, use <p> and <div> elements to style a concise description of the step.
-
-
-
-
+// TODO: Keep this function for now for the sake of reference.
+// TODO: Some aspects might be useful in constructing the new query interface.
 /**
  * Appends one additional query step to the query queue.
  * @param {Object} event Record of event from Document Object Model.

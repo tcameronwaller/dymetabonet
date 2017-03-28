@@ -8,6 +8,30 @@ Notes About Recon 2.2 Model of Human Metabolism
 --------------------------------------------------
 
 --------------------------------------------------
+28 March 2017
+
+----------
+Curiosity
+
+Why is the name of the metabolite record for citrate "citrate(3-)"?
+It seems that only some metabolite names include the charge.
+
+----------
+Discrepancy
+Replicate Records
+
+Metabolite records with identifiers "undcoa" and "c110coa" might be replicates.
+
+formula: "C32H52N7O17P3S"
+id: "undcoa"
+name: "undecanoylcoa"
+
+charge: -4
+formula: "C32H52N7O17P3S"
+id: "c110coa"
+name: "undecanoyl-CoA(4-)"
+
+--------------------------------------------------
 5 January 2017
 
 Model
