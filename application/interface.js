@@ -1,8 +1,48 @@
 
 ////////////////////////////////////////////////////////////////////////////////
-// Query portion
+// General Utility
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Removes an element's parent element.
+ * @param {Object} element Element in the Document Object Model.
+ */
+function removeParentElement(element) {
+    element
+        .parentElement
+        .parentElement
+        .removeChild(element.parentElement);
+}
+
+/**
+ * Removes an element's child elements.
+ * @param {Object} element Element in the Document Object Model.
+ */
+function removeChildElements(element) {
+    Array
+        .from(element.children)
+        .forEach(function (child) {
+            element.removeChild(child);
+        })
+}
+
+/**
+ * Determines the value of the only active radio button in a group.
+ * @param {Object} radios Live collection of radio buttons in the Document
+ * Object Model (DOM).
+ * @returns {string} Value of the only active radio button from the group.
+ */
+function determineRadioGroupValue(radios) {
+    // Assume that only a single radio button in the group is active.
+    return Array.prototype.filter.call(radios, function (radio) {
+        return radio.checked;
+    })[0].value;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Query Interface
+////////////////////////////////////////////////////////////////////////////////
 
 
 /**
@@ -182,8 +222,73 @@ function initializeInterfaceForModel(model) {
                 return controlQuery(event, model);
             }
         );
-
+    Array.from(
+        document
+            .getElementById("query-assembly")
+            .getElementsByClassName("type")
+    )
+        .forEach(function (radio) {
+            radio.addEventListener("change", function (event) {
+                // Element on which the event originated is event.currentTarget.
+                updateQueryAssembly();
+            });
+        });
 }
+
+/**
+ * Updates the interface for assembly of query steps by the type of step.
+ */
+function updateQueryAssembly() {
+    // Remove any existing components of the interface for query assembly.
+    removeChildElements(document.getElementById("query-assembly-details"));
+    // Append elements to query assembly interface according to the type of
+    // query.
+    appendQueryAssembly();
+}
+
+/**
+ * Appends elements to the interface for assembly of query steps.
+ */
+function appendQueryAssembly() {
+    var queryType = determineRadioGroupValue(
+        document
+            .getElementById("query-assembly")
+            .getElementsByClassName("type")
+    );
+    console.log(queryType);
+    var queryAssemblyDetails = document
+        .getElementById("query-assembly-details");
+    if (queryType === "attribute") {
+        // Append elements to interface for assembly of query by attribute.
+        // Create text field.
+        // <input class="query-step" id="compartment-text" type="text">
+        var textField = document.createElement("input");
+        textField.setAttribute("class", "text");
+        textField.setAttribute("type", "text");
+        queryAssemblyDetails.appendChild(textField);
+        queryAssemblyDetails.appendChild(document.createElement("br"));
+
+        // TODO: This might be a good point to bind the datalist to the text field.
+
+
+    } else if (queryType === "topology") {
+        // TODO: Eventually fill in the interface for topological queries.
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Applies a function recursively to a live collection of elements in the
@@ -348,18 +453,6 @@ function extractQueryDetails() {
 }
 
 /**
- * Determines the value of the only active radio button in a group.
- * @param {Object} radios Live collection of radio buttons in the DOM.
- * @returns {string} Value of the only active radio button from the group.
- */
-function determineRadioGroupValue(radios) {
-    // Assume that only a single radio button in the group is active.
-    return Array.prototype.filter.call(radios, function (radio) {
-        return radio.checked;
-    })[0].value;
-}
-
-/**
  * Extracts details for a single step in the query from elements in the Document
  * Object Model.
  */
@@ -418,22 +511,10 @@ function createLabelRadioButton(className, name, value, text) {
     return label;
 }
 
-/**
- * Removes the parent element of the element that triggered the event.
- * @param {Object} event Record of event from Document Object Model.
- */
-function removeParentElement(event) {
-    // Element on which the event originated is event.currentTarget.
-    event
-        .currentTarget
-        .parentElement
-        .parentElement
-        .removeChild(event.currentTarget.parentElement);
 
-    // TODO: After removing a query element, I should update the step count for the step label and for the names of groups of radio buttons.
-    // TODO: Maybe the event should trigger a specific container function that calls the general removeParentElement function along with another function to update query step counts.
 
-}
+
+
 
 // TODO: Do not include input elements in the iterable query steps in the queue.
 // TODO: Only include input elements in views at the bottom of the queue for adding new steps.
@@ -490,7 +571,12 @@ function addQueryStep(event) {
     var button = document.createElement("button");
     button.setAttribute("class", "remove-query-step");
     button.setAttribute("type", "button");
-    button.addEventListener("click", removeParentElement);
+    // TODO: After removing a query element, I should update the step count for the step labels.
+    // TODO: Maybe the event should trigger a specific container function that calls the general removeParentElement function along with another function to update query step counts.
+    button.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        removeParentElement(event.currentTarget);
+    });
     button.appendChild(document.createTextNode("X"));
     step.appendChild(button);
     // Append step element to the query queue.

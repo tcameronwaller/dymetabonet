@@ -81,7 +81,7 @@
                     <div>
                         Please assemble steps of the query.
                         <div id="query-queue">
-                            <div id="initial-query-step">
+                            <div id="query-source">
                                 <h3>Step 0</h3>
                                 Entire Metabolic Model<br>
                                 Eventually I want to show the count <br>
@@ -89,8 +89,39 @@
                                 at each query step.
                             </div>
                         </div>
-                        <button id="query-queue-add" type="button">+</button>
-                        <button id="submit-query" type="button">Submit</button>
+                        <div id="query-assembly">
+                            <h3>Create Query Step</h3>
+                            <div>
+                                Select combination strategy...<br>
+                                <label>
+                                    <input class="combination" name="combination" type="radio" value="and">
+                                    and
+                                </label>
+                                <label>
+                                    <input class="combination" name="combination" type="radio" value="or">
+                                    or
+                                </label>
+                                <label>
+                                    <input class="combination" name="combination" type="radio" value="not">
+                                    not
+                                </label>
+                            </div>
+                            <div>
+                                Select query step type...<br>
+                                <label>
+                                    <input class="type" name="type" type="radio" value="attribute">
+                                    attribute
+                                </label>
+                                <label>
+                                    <input class="type" name="type" type="radio" value="topology">
+                                    topology
+                                </label>
+                            </div>
+                            <div id="query-assembly-details"></div>
+
+                            <button id="query-queue-add" type="button">+</button>
+                            <button id="submit-query" type="button">Submit</button>
+                        </div>
                     </div>
                 </div>
                 <!-- Create navigation panel. -->

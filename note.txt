@@ -7,6 +7,22 @@ Research With Alexander Lex
 27 March 2017
 
 ----------
+Plan
+
+Continue implementation of function appendQueryAssembly.
+Attach the text field for attribute queries to an appropriate datalist with options for the auto-completion.
+I will need to assemble an array of strings for the autocompletion list.
+I think the strings should have the value, followed in parentheses by the attribute that corresponds to the value.
+
+mitochondrion (compartment)
+glycolysis (process)
+transport (reaction type)
+reaction (reaction type)
+
+How can I make the auto-completion not case sensitive?
+How can I make the auto-completion recognize portions in the middle of the string?
+
+----------
 Design of Query Interface
 
 Do not include active input elements in each query step in the query queue.
@@ -81,7 +97,6 @@ RadioNodeList
 Simplifies determination of value of a group of radio buttons.
 https://developer.mozilla.org/en-US/docs/Web/API/RadioNodeList
 
-
 --------------------------------------------------
 23 March 2017
 
@@ -104,12 +119,16 @@ Array.prototype.slice.call(arrayLikeObject)
 [].slice.call(arrayLikeObject)
 2. Apply an operation to elements in collection.
 NodeList.forEach()
+Array.prototype.forEach.call(HTMLCollection, operation)
+Array.from(HTMLCollection).forEach(operation)
 3. Apply an operation to elements in collection and collect values from each and every application in a new array.
 Array.prototype.map.call(arrayLikeObject, operation)
 [].map.call(arrayLikeObject, operation)
+Array.from(arrayLikeObject).map()
 4. Apply an operation to elements in collection and accumulate values without necessity of a value from each and every application.
 Array.prototype.reduce.call(arrayLikeObject, function (accumulator, element) {}, initialValue)
 [].reduce.call(arrayLikeObject, function (accumulator, element) {}, initialValue)
+Array.from(arrayLikeObject).reduce()
 
 References
 http://xahlee.info/js/js_array_vs_nodelist_vs_html_collection.html
@@ -117,6 +136,7 @@ https://developer.mozilla.org/en-US/docs/Web/API/NodeList
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
+http://stackoverflow.com/questions/22754315/for-loop-for-htmlcollection-elements
 
 ----------
 Functional Programming in JavaScript
