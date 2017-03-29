@@ -34,11 +34,21 @@ function removeChildElements(element) {
  */
 function determineRadioGroupValue(radios) {
     // Assume that only a single radio button in the group is active.
-    return Array.prototype.filter.call(radios, function (radio) {
+    return Array.from(radios).filter(function (radio) {
         return radio.checked;
     })[0].value;
 }
 
+/**
+ * Removes any selection of radio buttons in a group.
+ * @param {Object} radios Live collection of radio buttons in the Document
+ * Object Model (DOM).
+ */
+function removeRadioGroupSelection(radios) {
+    return Array.from(radios).forEach(function (radio) {
+        radio.checked = false;
+    });
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Query Interface
@@ -346,13 +356,20 @@ function extractQueryAssemblyDetails() {
     );
     if (type === "attribute") {
         var text = document.getElementById("attribute-text").value;
-
-        console.log(text);
-
-        // TODO: Extract the type of attribute (compartment name) from the text.
-        // TODO: Extract the attribute value (mitochondrion) from the text.
-        // TODO: Assemble an object to store all details of the query step.
-        // TODO: Return this object.
+        var value = text.slice(0, (text.lastIndexOf("(") - 1));
+        var entityAttribute = text
+            .slice((text.lastIndexOf("(") + 1), text.lastIndexOf(")"));
+        var entity = entityAttribute.split(" ")[0];
+        var attribute = entityAttribute.split(" ")[1];
+        return {
+            attribute: attribute,
+            combination: combination,
+            entity: entity,
+            type: type,
+            value: value
+        };
+    } else if (type === "topology") {
+        // TODO: Extract details for a topological query.
     }
 }
 
@@ -412,12 +429,23 @@ function updateQueryQueue() {
 
     // Extract information from query assembly interface.
     var queryStepDetails = extractQueryAssemblyDetails();
+    console.log(queryStepDetails);
 
     // Append a new step element to the query queue with representations for the
     // details of the query step.
     appendQueryStep();
 
     // Remove contents of query assembly interface.
+    removeRadioGroupSelection(
+        document
+            .getElementById("query-assembly")
+            .getElementsByClassName("query-combination-radio")
+    );
+    removeRadioGroupSelection(
+        document
+            .getElementById("query-assembly")
+            .getElementsByClassName("query-type-radio")
+    );
     removeChildElements(document.getElementById("query-assembly-details"));
 
     // Execute all steps in query, and display summary information within the

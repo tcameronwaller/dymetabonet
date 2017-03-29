@@ -4,6 +4,23 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+29 March 2017
+
+----------
+Plan
+
+Now that I extracted details from the assembly interface, create a group of elements to represent the details of the query step in the query queue.
+
+Then call the appropriate function to execute the appropriate query operation.
+
+I need to decide how to keep track of the current query queue.
+The user can add and remove steps from this queue.
+Maybe I should just treat the step elements in the DOM as the storage of the current state of the query queue.
+
+I could potentially use D3 to bind the data on the query details to the DOM elements in the query queue.
+That seems like a very reasonable strategy.
+
+--------------------------------------------------
 28 March 2017
 
 ----------
@@ -11,7 +28,7 @@ Plan
 
 I am in the process of implementing function updateQueryQueue and its subordinate functions.
 Specifically I am implementing function extractQueryAssemblyDetails.
-Continue to implement this function to assembly and return an object that contains all relevant details of the query step.
+Continue to implement this function to assemble and return an object that contains all relevant details of the query step.
 Eventually I will need to implement functionality for topological query steps.
 
 ----------
@@ -181,6 +198,8 @@ Array.from(arrayLikeObject).map()
 Array.prototype.reduce.call(arrayLikeObject, function (accumulator, element) {}, initialValue)
 [].reduce.call(arrayLikeObject, function (accumulator, element) {}, initialValue)
 Array.from(arrayLikeObject).reduce()
+5. ...
+Array.from(arrayLikeObject).filter()
 
 References
 http://xahlee.info/js/js_array_vs_nodelist_vs_html_collection.html
