@@ -7,6 +7,63 @@ Research With Alexander Lex
 29 March 2017
 
 ----------
+Passing Immutable Data Between Interface Interactions
+
+I want to organize details for all steps in the query queue within an array of objects in memory.
+I also want to organize within these objects the count of nodes after execution of each step in the query queue.
+I want to use D3 to bind data from this array to DOM elements for steps in the query queue interface.
+I want to update the array for every change to the query queue.
+
+Rather than updating the same array, I will create a new array for every change to the queue.
+In this way I will use immutable data.
+
+How can I pass this array between all relevant functions that handle user interaction with elements in the DOM?
+I want to avoid using a global variable for the array in order to use stateless functions without side effects.
+
+Here is my solution.
+Every time a function modifies the data array, remove all event listeners for functions that require the data array.
+Re-activate all of these event listeners, passing them the current version of the array as an argument.
+
+----------
+Using D3 with Immutable Data
+
+The Document Object Model (DOM) is inherently mutable.
+Elements in the DOM change attributes while the program runs and in response to user interaction.
+Also, managin the DOM requires accessing the DOM's current state in a way that involves side effects.
+Functions in JavaScript might not accept any arguments, but they must access DOM elements and change them.
+
+D3 binds data to DOM elements.
+If I understand correctly, the DOM elements do not change in response to changes to the underlying data.
+Another way to explain that concept is that the D3 does not bind data by reference.
+Instead, it binds data by value.
+In order to change the data bound to elements in the DOM, it is necessary to repeat the D3 sequence of selection, data binding, and update/enter/exit append.
+
+As a result, D3 does not use and certainly does not require binding to mutable data.
+In order to use D3 with immutable data, re-bind data every time the source data is different, handling changes in an immutable way.
+
+On a side subject, key functions in data binding are useful to maintain object constancy as the data for elements changes.
+
+Reference
+http://stackoverflow.com/questions/29515188/working-with-d3-js-and-immutable-js
+
+----------
+D3
+
+Reference
+
+https://d3js.org/
+
+https://github.com/d3/d3/wiki/Tutorials
+
+http://alignedleft.com/tutorials/d3/
+
+----------
+Functional Programming
+
+Reference
+https://www.smashingmagazine.com/2014/07/dont-be-scared-of-functional-programming/
+
+----------
 Plan
 
 Now that I extracted details from the assembly interface, create a group of elements to represent the details of the query step in the query queue.
