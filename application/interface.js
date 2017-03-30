@@ -232,10 +232,13 @@ function initializeInterfaceForModel(model) {
             });
         });
     document
-        .getElementById("update-query-queue")
-        .addEventListener("click", function (event) {
+        .getElementById("control-query")
+        .addEventListener("click", function handler(event) {
             // Element on which the event originated is event.currentTarget.
-            updateQueryQueue();
+            // Execute operation.
+            controlQuery([], model);
+            // Remove event listener after first execution of operation.
+            event.currentTarget.removeEventListener(event.type, handler);
         });
     document
         .getElementById("submit-query")
@@ -373,8 +376,6 @@ function extractQueryAssemblyDetails() {
     }
 }
 
-
-
 // TODO: This might still be useful for reading details from steps in the query queue.
 /**
  * Extracts details for steps in the query from elements in the Document Object
@@ -415,12 +416,30 @@ function extractQueryStepDetails(stepElement) {
  */
 function appendQueryStep() {}
 
+/**
+ * Executes all steps in the query and stores results of each step with queue
+ * details.
+ * @param {Array<Object>} queue Details for steps in the query's queue.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function executeQuery(queue, model) {
+}
+
+
 
 /**
  * Appends an additional query step to the query queue according to details from
  * the query assembly interface.
+ * @param {Array<Object>} queue Details for steps in the query's queue.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
  */
-function updateQueryQueue() {
+function controlQuery(queue, model) {
+
+    console.log("-------------------------")
+    console.log("initial queue")
+    console.log(queue);
 
     // Confirm that the query assembly interface is complete with all necessary
     // details.
@@ -429,11 +448,11 @@ function updateQueryQueue() {
 
     // Extract information from query assembly interface.
     var queryStepDetails = extractQueryAssemblyDetails();
-    console.log(queryStepDetails);
-
-    // Append a new step element to the query queue with representations for the
-    // details of the query step.
-    appendQueryStep();
+    var newQueue = [].concat(queue, queryStepDetails);
+    //console.log("query step details");
+    //console.log(queryStepDetails);
+    console.log("new queue");
+    console.log(newQueue);
 
     // Remove contents of query assembly interface.
     removeRadioGroupSelection(
@@ -448,9 +467,47 @@ function updateQueryQueue() {
     );
     removeChildElements(document.getElementById("query-assembly-details"));
 
-    // Execute all steps in query, and display summary information within the
-    // query queue.
+    // Execute all steps in query and store summaries of query results for each
+    // step within the queue.
 
+    var {queueResults, collection} = executeQuery(newQueue, model);
+
+    // TODO: Will function executeQuery need to be recursive?
+    // TODO: Can I use reduce instead?
+
+    // TODO: I will also need to figure out an immutable way to change the results within the objects...
+
+    var collection1 = collectProcessReactionsMetabolites({
+        process: process,
+        combination: "and",
+        collection: extractInitialCollectionFromModel(model),
+        model: model
+    });
+    var collection2 = collectCompartmentReactionsMetabolites({
+        compartment: compartment,
+        combination: "and",
+        collection: collection1,
+        model: model
+    });
+    console.log(collection2);
+    visualizeNetwork(collection2, model);
+
+    // After each execution of controlQuery in the event handler, remove the
+    // previous event listener and add a new event listener with new parameters.
+    document
+        .getElementById("control-query")
+        .addEventListener("click", function handler(event) {
+            // Element on which the event originated is event.currentTarget.
+            // Execute operation.
+            controlQuery(newQueue, model);
+            // Remove event listener after first execution of operation.
+            event.currentTarget.removeEventListener(event.type, handler);
+        });
+
+    // Append a new step element to the query queue with representations for the
+    // details of the query step.
+    appendQueryStep();
+    // TODO: This function will involve some D3.
 }
 
 
@@ -598,7 +655,7 @@ function controlProcessQuery(event, model) {
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function controlQuery(event, model) {
+function controlQueryOld(event, model) {
     var queryDetails = extractQueryDetails();
 
     // TODO: I will need to determine whether the user enters a value for a process, a compartment, or a reaction type (transport, reaction).

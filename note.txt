@@ -4,6 +4,178 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+30 March 2017
+
+----------
+Query Execution
+
+It would be more efficient to only execute new steps from the query.
+
+In order to do so, store the collection from each step along with query details.
+
+If the user removes a step from the queue, reset the collection and summary for all subsequent steps.
+
+The function for executing the query will need to check whether the collection and summary for each step are empty.
+If they are empty, begin with the previous step's collection and execute the query step.
+
+----------
+Progress
+
+Whew!
+I narrowly avoided using mutable data, causing side effects, and polluting namespace in the global scope.
+Using a functional programming style with the Document Object Model is tricky.
+
+----------
+Adding and Removing Event Listeners
+
+It is not possible to remove listeners that attached as anonymous functions.
+This situation is difficult when it is necessary to pass a custom parameter to the listener function.
+
+Example 1
+function initializeInterfaceForModel(model) {
+  ...
+  document
+    .getElementById("control-query")
+    .addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      controlQuery([], model);
+    });
+}
+
+In Example 1, the event listener function controlQuery attaches indirectly through an anonymous function.
+This strategy is convenient in order to pass controlQuery custom parameters.
+The problem is that removing the listener function requires a function name.
+Also, when attaching listeners through anonymous functions, replicate listener attachements behave as replicates.
+Listeners with identical names do not allow replicate behavior.
+
+In order to add, remove, and change the parameters of event listeners, it is necessary to use listeners with specific names.
+It is difficult to use listeners with specific names while passing custom parameters to the listener functions.
+It is necessary for the listener function's name to be accessible to both the addEventListener method and the removeEventListener method.
+
+If the add and remove methods are in separate functions, then the listener function's name must be accessible in the global scope.
+The only way to call a listener function in the global scope and pass it custom parameters would be to have the custom parameters also in the global scope.
+The reason is that the addEventListener method only passes the event as a parameter to the direct function.
+That is why anonymous functions are necessary for custom parameters.
+
+Example 2
+function initializeInterfaceForModel(model) {
+  ...
+
+  function listener(event) {
+    // Element on which the event originated is event.currentTarget.
+    controlQuery([], model);
+  });
+
+  document
+    .getElementById("control-query")
+    .addEventListener("click", listener);
+
+  setTimeout(function () {
+    document
+      .getElementById("control-query")
+      .removeEventListener("click", listener);
+  }, 10000);
+}
+
+In Example 2, it is not necessary to store the listener function or the parameters in the global scope because calls to both addEventListener and removeEventListener occur within the same function's scope.
+This solution is only useful to remove the listener after a certain delay, such as using the setTimeout function.
+
+Example 3
+function initializeInterfaceForModel(model) {
+  ...
+
+  document
+    .getElementById("control-query")
+    .addEventListener("click", function listener(event) {
+      // Element on which the event originated is event.currentTarget.
+      controlQuery([], model);
+    });
+  );
+
+  setTimeout(function () {
+    document
+      .getElementById("control-query")
+      .removeEventListener("click", listener);
+  }, 10000);
+}
+
+Example 3 is very similar to Example 2.
+Example 3 defines the listener function inline with the addEventListener call, similar to using an anonymous function.
+The difference is that Example 3 names this inline function so that it is accessible by name within the local scope of the initializeInterfaceForModel function.
+
+Example 4
+
+function initializeInterfaceForModel(model) {
+  ...
+
+  document
+    .getElementById("control-query")
+    .addEventListener("click", function listener(event) {
+      // Element on which the event originated is event.currentTarget.
+      controlQuery([], model);
+    });
+  );
+
+  setTimeout(function () {
+    document
+      .getElementById("control-query")
+      .removeEventListener("click", listener);
+  }, 10000);
+}
+
+function controlQuery(queue, model) {
+  ...
+  
+  document
+    .getElementById("control-query")
+    .removeEventListener("click", getEventListeners(document.keydown    [0].listener));
+}
+
+Example 4 accesses the listener to remove through the document itself.
+In this way it is possible to access the listener without a name in the global scope.
+However, it is necessary to know the sequence of all event listeners on the element.
+Also, getEventListeners might not actually be a tool with reliable browser support.
+
+Example 5
+function initializeInterfaceForModel(model) {
+  ...
+
+  document
+    .getElementById("control-query")
+    .addEventListener("click", function handler(event) {
+      // Element on which the event originated is event.currentTarget.
+
+      controlQuery([], model);
+
+      // Remove event listener after first execution.
+      event.currentTarget.removeEventListener(event.type, handler);
+    });
+  );
+}
+
+Example 5 uses an inline listener/handler function with a name.
+The name of this listener function is accessible within the local scope of the initializeInterfaceForModel function.
+I adapted the solution in Example 5 from material from Otto Nascarella, Iran Reyes, Harry Love, melleb, and Jonatas Walker on StackOverflow(http://stackoverflow.com/questions/4950115/removeeventlistener-on-anonymous-functions-in-javascript).
+
+Reference
+https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
+
+http://stackoverflow.com/questions/5660131/how-to-removeeventlistener-that-is-addeventlistener-with-anonymous-function
+The main solution in this discussion uses a global variable to reference the listener function.
+Another solution removes the listener within the same function that adds the event listener.
+In this way the listener function can be accessible to both add and remove operations without being in the global scope.
+
+http://stackoverflow.com/questions/4950115/removeeventlistener-on-anonymous-functions-in-javascript
+Solutions.
+1. Use Node.setUserDate and Node.getUserDate to store the reference to the listener function on the DOM element itself.
+I do not like this solution.
+2. Define parameters and listener function in global scope.
+I do not like this solution.
+3. Remove the listener function within the listener function itself after executing the essential operation.
+Use arguments.callee or arguments.caller.callee.
+...
+
+--------------------------------------------------
 29 March 2017
 
 ----------
