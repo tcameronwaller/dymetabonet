@@ -298,6 +298,7 @@ function appendQueryAssembly(model) {
     if (queryType === "attribute") {
         // Append elements to interface for assembly of query by attribute.
         // Determine list of attributes for reference.
+        // TODO: The attribute reference list should be different for different combination strategies (and, or, not).
         var attributeReference = determineAttributeReference(model);
         // Create reference list for text field.
         var attributeList = document.createElement("datalist");
@@ -367,6 +368,7 @@ function extractQueryAssemblyDetails() {
         return {
             attribute: attribute,
             combination: combination,
+            complete: false,
             entity: entity,
             type: type,
             value: value
@@ -408,13 +410,39 @@ function extractQueryStepDetails(stepElement) {
     // Determine the value of the text field.
 }
 
-// TODO: When adding the new step to the queue, include a concise description of the step with non-input elements.
-// TODO: For example, use <p> and <div> elements to style a concise description of the step.
 /**
- * Appends an additional query step to the query queue according to details from
- * the query assembly interface.
+ * Determines the identifier for an entity with a specific name.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.name Name of an entity.
+ * @param {string} parameters.entity Type of entity.
+ * @param {Object} parameters.model Information about entities and relations in
+ * a metabolic model.
+ * @returns {string} Identifier of entity with specific name.
  */
-function appendQueryStep() {}
+function determineEntityIdentifierFromName({name, entity, model} = {}) {
+    // Assume that there is a single record for each entity with each name.
+    if (entity === "compartment") {
+        return Object.keys(model.sets.compartments)
+            .filter(function (identifier) {
+                return model.sets.compartments[identifier].name === name;
+            })[0];
+    } else if (entity === "metabolite") {
+        // TODO: Return identifier for compartmental or general metabolite, depending on how you implement the query function for metabolite.
+    } else if (entity === "process") {
+        return Object.keys(model.sets.processes).filter(function (identifier) {
+            return model.sets.processes[identifier].name === name;
+        })[0];
+    } else if (entity === "reaction") {
+        return Object.keys(model.network.nodes.reactions)
+            .filter(function (identifier) {
+                return model
+                        .network
+                        .nodes
+                        .reactions[identifier]
+                        .name === "name";
+            })[0];
+    }
+}
 
 /**
  * Executes all steps in the query and stores results of each step with queue
@@ -422,24 +450,140 @@ function appendQueryStep() {}
  * @param {Array<Object>} queue Details for steps in the query's queue.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
+ * @returns {Array<Object>} Details and collections for each step in query
+ * queue.
  */
 function executeQuery(queue, model) {
+    return queue.map(function (step, index) {
+        if (!step.complete) {
+            // Query step is not complete.
+            // Execute query step and record collection and summary.
+            // Determine previous collection.
+
+            if (index === 0) {
+                // Step is first in query queue.
+                // Extract initial collection from metabolic model.
+                var oldCollection = extractInitialCollectionFromModel(model);
+            } else if (index > 0) {
+                // Step is not first in query queue.
+                // Use collection from previous step.
+                var oldCollection = queue[index - 1].collection;
+            }
+            if (step.type === "attribute") {
+                // Determine identifier from entity name.
+                var identifier = determineEntityIdentifierFromName({
+                    name: step.value,
+                    entity: step.entity,
+                    model: model
+                });
+                if (
+                    step.entity === "compartment" && step.attribute === "name"
+                ) {
+                    // Execute query by compartment name.
+                    var newCollection = collectCompartmentReactionsMetabolites({
+                        compartment: identifier,
+                        combination: step.combination,
+                        collection: oldCollection,
+                        model: model
+                    });
+                } else if (
+                    step.entity === "metabolite" && step.attribute === "name"
+                ) {
+                    // Execute query by metabolite name.
+                } else if (
+                    step.entity === "process" && step.attribute === "name"
+                ) {
+                    // Execute query by process name.
+                    var newCollection = collectProcessReactionsMetabolites({
+                        process: identifier,
+                        combination: step.combination,
+                        collection: oldCollection,
+                        model: model
+                    });
+                } else if (
+                    step.entity === "reaction" && step.attribute === "name"
+                ) {
+                    // Execute query by reaction name.
+                }
+                // Return a new record for the query step.
+                return {
+                    attribute: step.attribute,
+                    collection: newCollection,
+                    combination: step.combination,
+                    complete: true,
+                    entity: step.entity,
+                    type: step.type,
+                    value: step.value
+                };
+            } else if (step.type === "topology") {
+                // TODO: Execute a topology query.
+            }
+        } else {
+            // Query step is complete.
+            // Return copy of query step.
+            if (step.type === "attribute") {
+                return {
+                    attribute: step.attribute,
+                    collection: step.collection,
+                    combination: step.combination,
+                    complete: step.complete,
+                    entity: step.entity,
+                    type: step.type,
+                    value: step.value
+                };
+            } else if (step.type === "topology") {
+                // TODO: Return a copy of the object for a topology query step.
+            }
+        }
+    });
 }
-
-
 
 /**
  * Appends an additional query step to the query queue according to details from
  * the query assembly interface.
+ * @param {Array<Object>} queue Details for steps in the query's queue.
+ */
+function appendQueryStep(queue) {
+    // TODO: Once the user can remove steps, I'll need to handle the exit selection.
+    var steps = d3
+        .select("#query-queue")
+        .selectAll("div")
+        .data(queue)
+        .enter()
+        .append("div");
+    steps
+        .attr("class", "query-step");
+    steps
+        .append("p")
+        .text(function (data, index) {
+            return "Step";
+            //return "Step " + index.toString();
+        });
+    steps.text(function (data) {
+            return (
+                "Combination = " + data.combination +
+                ", Type = " + data.type +
+                ", Entity = " + data.entity +
+                ", Attribute = " + data.attribute +
+                ", Value = " + data.value
+            );
+        });
+}
+
+/**
+ * Controls the operations for appending additional query steps to the query
+ * queue and executing these steps.
  * @param {Array<Object>} queue Details for steps in the query's queue.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
 function controlQuery(queue, model) {
 
-    console.log("-------------------------")
-    console.log("initial queue")
-    console.log(queue);
+    // TODO: Enable user to remove a single step from the query queue.
+    // TODO: Set complete flag to false for all steps downstream of the modification.
+
+
+    // TODO: Enable user to remove all steps from the query by a reset.
 
     // Confirm that the query assembly interface is complete with all necessary
     // details.
@@ -449,10 +593,6 @@ function controlQuery(queue, model) {
     // Extract information from query assembly interface.
     var queryStepDetails = extractQueryAssemblyDetails();
     var newQueue = [].concat(queue, queryStepDetails);
-    //console.log("query step details");
-    //console.log(queryStepDetails);
-    console.log("new queue");
-    console.log(newQueue);
 
     // Remove contents of query assembly interface.
     removeRadioGroupSelection(
@@ -470,27 +610,8 @@ function controlQuery(queue, model) {
     // Execute all steps in query and store summaries of query results for each
     // step within the queue.
 
-    var {queueResults, collection} = executeQuery(newQueue, model);
-
-    // TODO: Will function executeQuery need to be recursive?
-    // TODO: Can I use reduce instead?
-
-    // TODO: I will also need to figure out an immutable way to change the results within the objects...
-
-    var collection1 = collectProcessReactionsMetabolites({
-        process: process,
-        combination: "and",
-        collection: extractInitialCollectionFromModel(model),
-        model: model
-    });
-    var collection2 = collectCompartmentReactionsMetabolites({
-        compartment: compartment,
-        combination: "and",
-        collection: collection1,
-        model: model
-    });
-    console.log(collection2);
-    visualizeNetwork(collection2, model);
+    var queueResults = executeQuery(newQueue, model);
+    console.log(queueResults);
 
     // After each execution of controlQuery in the event handler, remove the
     // previous event listener and add a new event listener with new parameters.
@@ -499,14 +620,14 @@ function controlQuery(queue, model) {
         .addEventListener("click", function handler(event) {
             // Element on which the event originated is event.currentTarget.
             // Execute operation.
-            controlQuery(newQueue, model);
+            controlQuery(queueResults, model);
             // Remove event listener after first execution of operation.
             event.currentTarget.removeEventListener(event.type, handler);
         });
 
     // Append a new step element to the query queue with representations for the
     // details of the query step.
-    appendQueryStep();
+    appendQueryStep(queueResults);
     // TODO: This function will involve some D3.
 }
 

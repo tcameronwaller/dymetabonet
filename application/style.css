@@ -220,6 +220,8 @@ h3 {
 
 .query-step {
     background-color: rgba(150, 100, 150, 1);
+    border-style: solid;
+    border-width: medium;
 }
 
 

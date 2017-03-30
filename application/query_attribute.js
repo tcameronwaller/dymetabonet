@@ -59,11 +59,11 @@ function combineElements({newElements, oldElements, strategy} = {}) {
                     newElements.includes(element)
                 );
             });
-    } else if (combination === "or") {
+    } else if (strategy === "or") {
         // Combination strategy or includes elements that exist either in the
         // old elements or in the new elements.
         var finalCombination = initialCombination;
-    } else if (combination === "not") {
+    } else if (strategy === "not") {
         // Combination strategy not includes elements that exist in the old
         // elements but not in the new elements.
         var finalCombination = oldElements.filter(function (element) {

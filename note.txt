@@ -4,7 +4,47 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+3 April 2017
+
+----------
+Meet with Alexander Lex
+Progress
+
+Program Functionality
+
+Complete
+1. Select file to assemble a new model.
+2. Select file to load a previous model assembly.
+3. Assemble a step to add to the query queue for query by attribute.
+4. Execute all steps in query queue.
+5. Display summary of each step in query queue.
+6. Visualize the network.
+
+Incomplete
+-Display a summary of the model (count reactions, metabolites) in query queue.
+--Treat this summary as an initial step in the query queue.
+--Create an actual record in the data for the queue?
+--That would be tricky to initiate...
+-Assemble a step to add to the query queue for query by topology.
+-Remove any individual step from query queue.
+
+
+
+
+
+--------------------------------------------------
 30 March 2017
+
+----------
+Plan
+
+Figure out how to use D3 to append elements nested within the div's for the query steps.
+
+Enable removal of individual steps from the query.
+
+Visualize the network from the query.
+
+Include more query functions, especially topological queries.
 
 ----------
 Query Execution
