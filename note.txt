@@ -29,8 +29,30 @@ Incomplete
 -Remove any individual step from query queue.
 
 
+--------------------------------------------------
+31 March 2017
 
+----------
+Plan
 
+Control all behavior in the interface in JavaScript.
+Control collapse and reveal of control panels in JavaScript.
+
+Create interface for Query panel after loading model.
+Give summary of model at top of query interface.
+
+----------
+D3 Content and Child Elements
+
+Setting the content of an element in the Document Object Model replaces any child elements within that parent element.
+Relevant functions in D3 include selection.text() and selection.html().
+
+In order to have child elements and content, I think it is necessary to set content first and append child elements second.
+
+A solution is to store all content within child elements.
+
+Reference
+https://github.com/d3/d3-selection/blob/master/README.md#selection_text
 
 --------------------------------------------------
 30 March 2017

@@ -51,75 +51,70 @@ function removeRadioGroupSelection(radios) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Query Interface
+// General Interface
 ////////////////////////////////////////////////////////////////////////////////
 
-
 /**
- * Use D3 to create elements in DOM with associative data.
- * @param {d3 selection} selection D3 selection of HTML element within which to create elements with associative data.
- * @param {string} element Type of HTML element to create with associative data.
- * @param {array or accessor function} accessData Accessible data in array or accessor function for these values in
- * the selection.
- * @return {d3 selection} D3 selection of elements that the function created with associative data.
+ * Initializes the interface to support behavior independent of data for
+ * metabolic model.
  */
-function createDataElements(selection, element, accessData) {
-    var elements = selection.selectAll(element)
-        .data(accessData);
-    elements
-        .exit()
-        .remove();
-    var elementsEnter = elements
-        .enter()
-        .append(element);
-    elements = elementsEnter
-        .merge(elements);
-    return elements;
+function initializeInterface() {
+    // Activate elements of the Document Object Model for all behavior that is
+    // independent of the model data.
+
+    // Activate button for assembly of metabolic model from data in file.
+    document
+        .getElementById("assemble-model")
+        .addEventListener("click", controlModelAssembly);
+    // Activate button for load of metabolic model from assembly in file.
+    document
+        .getElementById("load-model")
+        .addEventListener("click", controlModelLoad);
 }
 
 /**
- * Script for query portion.
- * Use an immediately-invoked function expression (IIFE) to establish scope in a convenient container.
- * An alternative style would be to declare the function and subsequently call it.
+ * Initializes the interface to support behavior dependent on data for metabolic
+ * model.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
  */
-function initializeQueryInterface() {
-    // Create single instance objects of each view's class.
-    // Pass instance objects as arguments to classes that need to interact with them.
-    // This strategy avoids creation of replicate instances of each class and enables instances to communicate together.
-    //var explorationView = new ExplorationView();
-    //var navigationView = new NavigationView(explorationView);
-    //var queryView = new QueryView(navigationView);
+function initializeInterfaceForModel(model) {
 
-    // TODO: Allow the user to select the directory path and file of the metabolic model.
-    // TODO: readdirSync from Node.js might work.
-    createDataElements(
-        d3.select("#selector"),
-        "option",
-        ["model_h-sapiens_recon-2.json"]
+    // TODO: Maybe change classes and styles of elements once I activate them.
+    // Initialize query interface.
+    initializeQueryInterface(model);
+
+    Array.from(
+        document
+            .getElementById("query-assembly")
+            .getElementsByClassName("query-type-radio")
     )
-        .text(function (d) {
-            return d
+        .forEach(function (radio) {
+            radio.addEventListener("change", function (event) {
+                // Element on which the event originated is event.currentTarget.
+                updateQueryAssembly(model);
+            });
         });
-
-    d3.select("#assemble")
-        .on("click", function () {
-            //console.log(d3.event);
-            //console.log(d3.event.srcElement.value);
-            //console.log(d3.event.target.value);
-            //self.dataFile = d3.event.target.value;
-            //console.log(this.node().value);
-            var dataFile = d3.select("#selector").node().value;
-
-            // Load data from file in JSON format.
-            // Create objects that associate with these data.
-            d3.json(("../model/homo-sapiens/" + dataFile),
-                function (error, modelInitial) {
-                    if (error) throw error;
-                    // Call function to assemble model.
-                    assembleModel(modelInitial);
-                });
+    document
+        .getElementById("control-query")
+        .addEventListener("click", function handler(event) {
+            // Element on which the event originated is event.currentTarget.
+            // Execute operation.
+            controlQuery([], model);
+            // Remove event listener after first execution of operation.
+            event.currentTarget.removeEventListener(event.type, handler);
+        });
+    document
+        .getElementById("submit-query")
+        .addEventListener("click", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // controlQuery(model);
         });
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Model Interface
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Controls model assembly in response to user interaction.
@@ -171,82 +166,85 @@ function controlModelLoad(event) {
     reader.readAsText(file);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Query Interface
+////////////////////////////////////////////////////////////////////////////////
+
+
 /**
- * Initializes the interface to support behavior independent of data for
- * metabolic model.
+ * Use D3 to create elements in DOM with associative data.
+ * @param {d3 selection} selection D3 selection of HTML element within which to create elements with associative data.
+ * @param {string} element Type of HTML element to create with associative data.
+ * @param {array or accessor function} accessData Accessible data in array or accessor function for these values in
+ * the selection.
+ * @return {d3 selection} D3 selection of elements that the function created with associative data.
  */
-function initializeInterface() {
-
-    // TODO: Activate all DOM behavior that is independent of the model data.
-    // TODO: Make it obvious (styling) which aspects of the interface are inactive prior to loading model data.
-    // TODO: Maybe change classes once I activate these elements in initializeInterfaceForModel().
-
-    // Activate button for assembly of metabolic model from data in file.
-    document
-        .getElementById("assemble-model")
-        .addEventListener("click", controlModelAssembly);
-    // Activate button for load of metabolic model from assembly in file.
-    document
-        .getElementById("load-model")
-        .addEventListener("click", controlModelLoad);
-}
-
-function testElementIteration(event) {
-    // Select all steps in the query's queue.
-    var collection = document
-        .getElementById("query_temporary")
-        .getElementsByClassName("test-iteration");
-    var result = Array.prototype.reduce.call(collection, function (accumulator, element) {
-        if (!accumulator.includes(element.textContent)) {
-            // Method concat does not modify the original array.
-            // Method concat returns a new array.
-            // It is necessary to store this new array or return it
-            // directly.
-            return accumulator.concat(element.textContent);
-        } else {
-            return accumulator;
-        }
-    }, []);
-    console.log(result);
+function createDataElements(selection, element, accessData) {
+    var elements = selection.selectAll(element)
+        .data(accessData);
+    elements
+        .exit()
+        .remove();
+    var elementsEnter = elements
+        .enter()
+        .append(element);
+    elements = elementsEnter
+        .merge(elements);
+    return elements;
 }
 
 /**
- * Initializes the interface to support behavior dependent on data for metabolic
- * model.
+ * Script for query portion.
+ * Use an immediately-invoked function expression (IIFE) to establish scope in a convenient container.
+ * An alternative style would be to declare the function and subsequently call it.
+ */
+function initializeQueryInterfaceOld() {
+    // Create single instance objects of each view's class.
+    // Pass instance objects as arguments to classes that need to interact with them.
+    // This strategy avoids creation of replicate instances of each class and enables instances to communicate together.
+    //var explorationView = new ExplorationView();
+    //var navigationView = new NavigationView(explorationView);
+    //var queryView = new QueryView(navigationView);
+
+    // TODO: Allow the user to select the directory path and file of the metabolic model.
+    // TODO: readdirSync from Node.js might work.
+    createDataElements(
+        d3.select("#selector"),
+        "option",
+        ["model_h-sapiens_recon-2.json"]
+    )
+        .text(function (d) {
+            return d
+        });
+
+    d3.select("#assemble")
+        .on("click", function () {
+            //console.log(d3.event);
+            //console.log(d3.event.srcElement.value);
+            //console.log(d3.event.target.value);
+            //self.dataFile = d3.event.target.value;
+            //console.log(this.node().value);
+            var dataFile = d3.select("#selector").node().value;
+
+            // Load data from file in JSON format.
+            // Create objects that associate with these data.
+            d3.json(("../model/homo-sapiens/" + dataFile),
+                function (error, modelInitial) {
+                    if (error) throw error;
+                    // Call function to assemble model.
+                    assembleModel(modelInitial);
+                });
+        });
+}
+
+/**
+ * Determines all possible attribute selections from a metabolic model.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function initializeInterfaceForModel(model) {
+function initializeQueryInterface(model) {}
 
-    // TODO: Maybe change classes and styles of elements once I activate them.
 
-    Array.from(
-        document
-            .getElementById("query-assembly")
-            .getElementsByClassName("query-type-radio")
-    )
-        .forEach(function (radio) {
-            radio.addEventListener("change", function (event) {
-                // Element on which the event originated is event.currentTarget.
-                updateQueryAssembly(model);
-            });
-        });
-    document
-        .getElementById("control-query")
-        .addEventListener("click", function handler(event) {
-            // Element on which the event originated is event.currentTarget.
-            // Execute operation.
-            controlQuery([], model);
-            // Remove event listener after first execution of operation.
-            event.currentTarget.removeEventListener(event.type, handler);
-        });
-    document
-        .getElementById("submit-query")
-        .addEventListener("click", function (event) {
-            // Element on which the event originated is event.currentTarget.
-            // controlQuery(model);
-        });
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Query Assembly Interface
@@ -547,26 +545,49 @@ function appendQueryStep(queue) {
     // TODO: Once the user can remove steps, I'll need to handle the exit selection.
     var steps = d3
         .select("#query-queue")
-        .selectAll("div")
+        .selectAll("div.query-step")
         .data(queue)
         .enter()
-        .append("div");
-    steps
+        .append("div")
         .attr("class", "query-step");
-    steps
-        .append("p")
+    var count = steps
+        .append("div")
+        .attr("class", "query-step-count");
+    count
+        .append("h3")
         .text(function (data, index) {
-            return "Step";
-            //return "Step " + index.toString();
+            return "Step " + (index + 1).toString();
         });
-    steps.text(function (data) {
-            return (
-                "Combination = " + data.combination +
-                ", Type = " + data.type +
-                ", Entity = " + data.entity +
-                ", Attribute = " + data.attribute +
-                ", Value = " + data.value
-            );
+    var detail = steps
+        .append("div")
+        .attr("class", "query-step-detail");
+    detail
+        .append("div")
+        .text(function (data) {
+            return "... " + data.combination;
+        });
+    detail
+        .append("div")
+        .text(function (data) {
+            return data.type;
+        });
+    detail
+        .append("div")
+        .text(function (data) {
+            return data.entity + " " + data.attribute + "= " + data.value;
+        });
+    var summary = steps
+        .append("div")
+        .attr("class", "query-step-summary");
+    summary
+        .append("div")
+        .text(function (data) {
+            return "metabolites: " + data.collection.metabolites.length;
+        });
+    summary
+        .append("div")
+        .text(function (data) {
+            return "reactions: " + data.collection.reactions.length;
         });
 }
 
