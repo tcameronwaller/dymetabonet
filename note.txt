@@ -42,6 +42,15 @@ Create interface for Query panel after loading model.
 Give summary of model at top of query interface.
 
 ----------
+JavaScript Control Class
+
+element.className
+Returns string of class names with space separation.
+
+element.classList
+Returns array-like collection of class names.
+
+----------
 D3 Content and Child Elements
 
 Setting the content of an element in the Document Object Model replaces any child elements within that parent element.

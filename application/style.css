@@ -167,9 +167,10 @@ h3 {
 
 /******************************************************************************/
 /* Control Panel */
+/******************************************************************************/
 
 #control {
-    background-color: rgba(255, 255, 255, 1);
+    background-color: rgba(225, 225, 225, 1);
     display: block;
     flex-basis: 7.5 cm;
     flex-grow: 1;
@@ -178,26 +179,34 @@ h3 {
     resize: horizontal;
 }
 
-#control .control-tab {
-    /* background-color: rgba(100, 100, 100, 1); */
-}
-
-#control .control-tab > input {
-    display: none;
-}
-
-#control .control-tab label h2 {
-    background-color: rgba(200, 200, 200, 1);
+#control .tab {
+    background-color: rgba(100, 200, 200, 1);
     color: rgba(0, 0, 0, 1);
 }
 
-#control .control-tab label h2:hover {
-    background-color: rgba(150, 150, 150, 1);
+#control .tab:hover {
+    background-color: rgba(200, 100, 200, 1);
 }
 
-#control .control-tab > div {
+#control .tab .panel {
+    background-color: rgba(225, 225, 225, 1);
+}
+
+#control .tab.emphasize {
+    background-color: rgba(200, 100, 200, 1);
+}
+
+
+.show {
+    display: block;
+}
+
+.hide {
     display: none;
 }
+
+
+/* Old stuff from the CSS accordion. */
 
 #control .control-tab input:checked ~ label h2 {
     background-color: rgba(200, 100, 100, 1);
@@ -206,6 +215,18 @@ h3 {
 #control .control-tab input:checked ~ div {
     display:block;
 }
+
+/******************************************************************************/
+/* Query Interface */
+/******************************************************************************/
+
+
+
+
+
+
+
+/* Old stuff from the CSS accordion. */
 
 #exploration {
     background-color: rgba(255, 255, 255, 1);

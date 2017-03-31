@@ -50,6 +50,36 @@ function removeRadioGroupSelection(radios) {
     });
 }
 
+/**
+ * Emphasizes or deemphasizes an element of class tab.
+ * @param {Object} element Element of class tab in the Document Object Model.
+ */
+function emphasizeDeemphasizeTab(tab) {
+    // Toggle display style of the tab.
+    if (!tab.classList.contains("emphasize")) {
+        tab.classList.add("emphasize");
+    } else if (tab.classList.contains("emphasize")) {
+        tab.classList.remove("emphasize");
+    }
+}
+
+/**
+ * Displays or hides the child element of class panel of a parent element of
+ * class tab.
+ * @param {Object} element Element of class tab in the Document Object Model.
+ */
+function displayHideChildPanel(tab) {
+    var panel = tab.getElementsByClassName("panel").item(0);
+    // Toggle display style of the panel.
+    if (panel.classList.contains("hide")) {
+        panel.classList.remove("hide");
+        panel.classList.add("show");
+    } else if (panel.classList.contains("show")) {
+        panel.classList.remove("show");
+        panel.classList.add("hide");
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // General Interface
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,6 +91,20 @@ function removeRadioGroupSelection(radios) {
 function initializeInterface() {
     // Activate elements of the Document Object Model for all behavior that is
     // independent of the model data.
+
+    // Activate behavior of accordion tabs and panels in control panel.
+    Array.from(
+        document
+            .getElementById("control")
+            .getElementsByClassName("tab")
+    )
+        .forEach(function (tab) {
+            tab.addEventListener("click", function (event) {
+                // Element on which the event originated is event.currentTarget.
+                emphasizeDeemphasizeTab(event.currentTarget);
+                displayHideChildPanel(event.currentTarget);
+            });
+        });
 
     // Activate button for assembly of metabolic model from data in file.
     document

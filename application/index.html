@@ -50,21 +50,18 @@
             <!-- Create control panel. -->
             <div id="control">
                 <!-- Create model panel. -->
-                <div id="model" class="control-tab">
-                    <input type="checkbox" id="model-tab">
-                    <label for="model-tab"><h2>Model</h2></label>
-                    <div>
-                        Select a model.
+                <div id="model-tab" class="tab">
+                    <h2>Model</h2>
+                    <div id="model-planel" class="panel hide">
                         <input id="file-selector" type="file"><br>
                         <button id="assemble-model">Assemble</button>
                         <button id="load-model">Load</button>
                     </div>
                 </div>
                 <!-- Create query panel. -->
-                <div id="query" class="control-tab">
-                    <input type="checkbox" id="query-tab">
-                    <label for="query-tab"><h2>Query</h2></label>
-                    <div>
+                <div id="query-tab" class="tab">
+                    <h2>Query</h2>
+                    <div id="query-panel" class="panel hide">
                         <div id="query-source">
                             <h3>Step 0</h3>
                             Entire Metabolic Model<br>
@@ -108,11 +105,10 @@
                     </div>
                 </div>
                 <!-- Create navigation panel. -->
-                <div id="navigation" class="control-tab">
-                    <input type="checkbox" id="navigation-tab">
-                    <label for="navigation-tab"><h2>Navigation</h2></label>
-                    <div>
-                        This is the Navigation div.
+                <div id="navigation-tab" class="tab">
+                    <h2>Navigation</h2>
+                    <div id="navigation-panel" class="panel hide">
+                        This is the Navigation Panel.
                     </div>
                     <!-- <table id="degree-table">
                         <thead>
@@ -130,11 +126,10 @@
                     </table> -->
                 </div>
                 <!-- Create detail panel. -->
-                <div id="detail" class="control-tab">
-                    <input type="checkbox" id="detail-tab">
-                    <label for="detail-tab"><h2>Detail</h2></label>
-                    <div>
-                        This is the Detail div.
+                <div id="detail-tab" class="tab">
+                    <h2>Detail</h2>
+                    <div id="detail-panel" class="panel hide">
+                        This is the Detail Panel.
                     </div>
                 </div>
             </div>
