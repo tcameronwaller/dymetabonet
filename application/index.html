@@ -52,85 +52,78 @@
                 <!-- Create model panel. -->
                 <div id="model-tab" class="tab">
                     <h2>Model</h2>
-                    <div id="model-planel" class="panel hide">
-                        <input id="file-selector" type="file"><br>
-                        <button id="assemble-model">Assemble</button>
-                        <button id="load-model">Load</button>
-                    </div>
                 </div>
+                <div id="model-panel" class="panel hide">
+                    <input id="file-selector" type="file"><br>
+                    <button id="assemble-model">Assemble</button>
+                    <button id="load-model">Load</button>
+                </div>
+
                 <!-- Create query panel. -->
                 <div id="query-tab" class="tab">
                     <h2>Query</h2>
-                    <div id="query-panel" class="panel hide">
-                        <div id="query-source">
-                            <h3>Step 0</h3>
-                            Entire Metabolic Model<br>
-                            Eventually I want to show the count <br>
-                            of metabolite and reaction nodes <br>
-                            at each query step.
+                </div>
+                <div id="query-panel" class="panel hide">
+                    <div id="query-summary"></div>
+                    <div id="query-queue"></div>
+                    <div id="query-builder">
+                        <div>
+                            <label>
+                                <input class="query-combination-radio" name="combination" type="radio" value="and">
+                                and
+                            </label>
+                            <label>
+                                <input class="query-combination-radio" name="combination" type="radio" value="or">
+                                or
+                            </label>
+                            <label>
+                                <input class="query-combination-radio" name="combination" type="radio" value="not">
+                                not
+                            </label>
                         </div>
-                        <div id="query-queue"></div>
-                        <div id="query-assembly">
-                            <h3>Create Query Step</h3>
-                            <div>
-                                Select combination strategy...<br>
-                                <label>
-                                    <input class="query-combination-radio" name="combination" type="radio" value="and">
-                                    and
-                                </label>
-                                <label>
-                                    <input class="query-combination-radio" name="combination" type="radio" value="or">
-                                    or
-                                </label>
-                                <label>
-                                    <input class="query-combination-radio" name="combination" type="radio" value="not">
-                                    not
-                                </label>
-                            </div>
-                            <div>
-                                Select query step type...<br>
-                                <label>
-                                    <input class="query-type-radio" name="type" type="radio" value="attribute">
-                                    attribute
-                                </label>
-                                <label>
-                                    <input class="query-type-radio" name="type" type="radio" value="topology">
-                                    topology
-                                </label>
-                            </div>
-                            <div id="query-assembly-details"></div>
-                            <button id="control-query" type="button">+</button>
-                            <button id="submit-query" type="button">Submit</button>
+                        <div>
+                            Select query step type...<br>
+                            <label>
+                                <input class="query-type-radio" name="type" type="radio" value="attribute">
+                                attribute
+                            </label>
+                            <label>
+                                <input class="query-type-radio" name="type" type="radio" value="topology">
+                                topology
+                            </label>
                         </div>
+                        <div id="query-assembly-details"></div>
+                        <button id="control-query" type="button">+</button>
+                        <button id="submit-query" type="button">Submit</button>
                     </div>
                 </div>
                 <!-- Create navigation panel. -->
                 <div id="navigation-tab" class="tab">
                     <h2>Navigation</h2>
-                    <div id="navigation-panel" class="panel hide">
-                        This is the Navigation Panel.
-                    </div>
-                    <!-- <table id="degree-table">
-                        <thead>
-                        <tr>
-                            <th>Identifier</th>
-                            <th>Degree</th>
-                            <th>Replicate</th>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td id="degree-scale"></td>
-                        </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table> -->
                 </div>
+                <div id="navigation-panel" class="panel hide">
+                    This is the Navigation Panel.
+                </div>
+                <!-- <table id="degree-table">
+                    <thead>
+                    <tr>
+                        <th>Identifier</th>
+                        <th>Degree</th>
+                        <th>Replicate</th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td id="degree-scale"></td>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table> -->
                 <!-- Create detail panel. -->
                 <div id="detail-tab" class="tab">
                     <h2>Detail</h2>
-                    <div id="detail-panel" class="panel hide">
-                        This is the Detail Panel.
-                    </div>
+                </div>
+                <div id="detail-panel" class="panel hide">
+                    This is the Detail Panel.
                 </div>
             </div>
             <!-- Create element for exploration view. -->

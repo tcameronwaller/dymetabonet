@@ -69,7 +69,7 @@ function emphasizeDeemphasizeTab(tab) {
  * @param {Object} element Element of class tab in the Document Object Model.
  */
 function displayHideChildPanel(tab) {
-    var panel = tab.getElementsByClassName("panel").item(0);
+    var panel = document.getElementById(tab.id.split("-")[0] + "-panel");
     // Toggle display style of the panel.
     if (panel.classList.contains("hide")) {
         panel.classList.remove("hide");
@@ -128,32 +128,6 @@ function initializeInterfaceForModel(model) {
     // Initialize query interface.
     initializeQueryInterface(model);
 
-    Array.from(
-        document
-            .getElementById("query-assembly")
-            .getElementsByClassName("query-type-radio")
-    )
-        .forEach(function (radio) {
-            radio.addEventListener("change", function (event) {
-                // Element on which the event originated is event.currentTarget.
-                updateQueryAssembly(model);
-            });
-        });
-    document
-        .getElementById("control-query")
-        .addEventListener("click", function handler(event) {
-            // Element on which the event originated is event.currentTarget.
-            // Execute operation.
-            controlQuery([], model);
-            // Remove event listener after first execution of operation.
-            event.currentTarget.removeEventListener(event.type, handler);
-        });
-    document
-        .getElementById("submit-query")
-        .addEventListener("click", function (event) {
-            // Element on which the event originated is event.currentTarget.
-            // controlQuery(model);
-        });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -282,16 +256,161 @@ function initializeQueryInterfaceOld() {
 }
 
 /**
+ * Creates a summary of the metabolic model in the query interface.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function createQueryModelSummary(model) {
+    // Create summary of the metabolic model.
+    var summary = document.getElementById("query-summary");
+    var summaryHead = document.createElement("h3");
+    summaryHead.textContent = "Model Summary";
+    summary.appendChild(summaryHead);
+
+    var summaryDetails = document.createElement("ul");
+
+    var metaboliteDetail = document.createElement("li");
+    metaboliteDetail.textContent = "Metabolites: " +
+        Object.keys(model.network.nodes.metabolites).length;
+    summaryDetails.appendChild(metaboliteDetail);
+
+    var reactionDetail = document.createElement("li");
+    reactionDetail.textContent = "Reactions: " +
+        Object.keys(model.network.nodes.reactions).length;
+    summaryDetails.appendChild(reactionDetail);
+
+    // TODO: Consider adding summary for count of links, metabolite sets, process sets, compartment sets, etc...
+
+    summary.appendChild(summaryDetails);
+}
+
+/**
  * Determines all possible attribute selections from a metabolic model.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function initializeQueryInterface(model) {}
+function initializeQueryInterface(model) {
+    // Create model summary.
+    createQueryModelSummary(model);
+
+    // Create query builder.
+    createQueryBuilder(model);
+
+    //textField.setAttribute("list", "attribute-options");
+    //textField.setAttribute("type", "search");
+    //queryAssemblyDetails.appendChild(textField);
+
+
+    // Activate event listeners.
+    Array.from(
+        document
+            .getElementById("query-builder")
+            .getElementsByClassName("query-type-radio")
+    )
+        .forEach(function (radio) {
+            radio.addEventListener("change", function (event) {
+                // Element on which the event originated is event.currentTarget.
+                updateQueryAssembly(model);
+            });
+        });
+    document
+        .getElementById("control-query")
+        .addEventListener("click", function handler(event) {
+            // Element on which the event originated is event.currentTarget.
+            // Execute operation.
+            controlQuery([], model);
+            // Remove event listener after first execution of operation.
+            event.currentTarget.removeEventListener(event.type, handler);
+        });
+    document
+        .getElementById("submit-query")
+        .addEventListener("click", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // controlQuery(model);
+        });
+}
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Query Assembly Interface
+// Query Builder Interface
+
+/**
+ * Creates a radio button with a label for a step in a queue.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.className Name of the class.
+ * @param {string} parameters.name Name of the radio button's group.
+ * @param {string} parameters.value Value for the radio button.
+ * @param {string} parameters.text Text for the radio button's label.
+ * @returns {Object} Label element with a radio button input element.
+ */
+function createLabelRadioButton({className, name, value, text} = {}) {
+    var label = document.createElement("label");
+    var input = document.createElement("input");
+    input.setAttribute("class", className);
+    input.setAttribute("name", name);
+    input.setAttribute("type", "radio");
+    input.setAttribute("value", value);
+    label.appendChild(input);
+    label.appendChild(
+        document.createTextNode(text)
+    );
+    return label;
+}
+
+
+
+var newCollection = collectCompartmentReactionsMetabolites({
+    compartment: identifier,
+    combination: step.combination,
+    collection: oldCollection,
+    model: model
+});
+
+
+/**
+ * Creates elements to build queries in the query interface.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function createQueryBuilder(model) {
+    // Create interface to build queries.
+    var builder = document.getElementById("query-builder");
+    // Create header.
+    var builderHead = document.createElement("h3");
+    builderHead.textContent = "Query Builder";
+    builder.appendChild(builderHead);
+    // Create options for combination strategy.
+    var combination = document.createElement("div");
+    // Create radio buttons for combination strategy.
+    combination.appendChild(
+        createLabelRadioButton({
+            className: "query-combination-radio",
+            name: "combination",
+            value: "and",
+            text: "and"
+        })
+    );
+    combination.appendChild(
+        createLabelRadioButton({
+            className: "query-combination-radio",
+            name: "combination",
+            value: "or",
+            text: "or"
+        })
+    );
+    combination.appendChild(
+        createLabelRadioButton({
+            className: "query-combination-radio",
+            name: "combination",
+            value: "not",
+            text: "not"
+        })
+    );
+    builder.appendChild(combination);
+    // Create options for query type.
+    // TODO: Create radio buttons for query type.
+}
 
 /**
  * Determines all possible attribute selections from a metabolic model.
@@ -332,11 +451,11 @@ function determineAttributeReference(model) {
 function appendQueryAssembly(model) {
     var queryType = determineRadioGroupValue(
         document
-            .getElementById("query-assembly")
+            .getElementById("query-builder")
             .getElementsByClassName("query-type-radio")
     );
     var queryAssemblyDetails = document
-        .getElementById("query-assembly-details");
+        .getElementById("query-builder-details");
     if (queryType === "attribute") {
         // Append elements to interface for assembly of query by attribute.
         // Determine list of attributes for reference.
@@ -372,7 +491,7 @@ function appendQueryAssembly(model) {
  */
 function updateQueryAssembly(model) {
     // Remove any existing components of the interface for query assembly.
-    removeChildElements(document.getElementById("query-assembly-details"));
+    removeChildElements(document.getElementById("query-builder-details"));
     // Append elements to query assembly interface according to the type of
     // query.
     appendQueryAssembly(model);
@@ -393,7 +512,7 @@ function confirmQueryAssembly() {}
  * interface.
  */
 function extractQueryAssemblyDetails() {
-    var queryAssembly = document.getElementById("query-assembly");
+    var queryAssembly = document.getElementById("query-builder");
     var combination = determineRadioGroupValue(
         queryAssembly.getElementsByClassName("query-combination-radio")
     );
@@ -662,15 +781,15 @@ function controlQuery(queue, model) {
     // Remove contents of query assembly interface.
     removeRadioGroupSelection(
         document
-            .getElementById("query-assembly")
+            .getElementById("query-builder")
             .getElementsByClassName("query-combination-radio")
     );
     removeRadioGroupSelection(
         document
-            .getElementById("query-assembly")
+            .getElementById("query-builder")
             .getElementsByClassName("query-type-radio")
     );
-    removeChildElements(document.getElementById("query-assembly-details"));
+    removeChildElements(document.getElementById("query-builder-details"));
 
     // Execute all steps in query and store summaries of query results for each
     // step within the queue.
@@ -838,31 +957,6 @@ function controlProcessQuery(event, model) {
 
 /**
  * Controls the execution of all steps in the queue for the query.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
- */
-function controlQueryOld(event, model) {
-    var queryDetails = extractQueryDetails();
-
-    // TODO: I will need to determine whether the user enters a value for a process, a compartment, or a reaction type (transport, reaction).
-
-    // Apply a control function to each step in the queue for the query.
-    //applyToDocumentCollection(queryQueueSteps, controlQueryStep);
-
-    // Call recursive function to act on each member of the queue.
-    //controlQueryStep({
-    //    queue: queryQueue,
-    //    collection: extractInitialCollectionFromModel(model),
-    //    model: model
-    //});
-}
-
-
-
-
-
-/**
- * Controls the execution of all steps in the queue for the query.
  * @param {Object} parameters Destructured object of parameters.
  * @param {string} parameters.queue Elements that remain in the queue for
  * recursive iteration.
@@ -878,30 +972,6 @@ function controlQueryQueueStep({queue, collection, model} = {}) {}
 // TODO: Use this function to organize the functionality for handling a single step from the query.
 // TODO: Use this function to execute a single step right after adding it to the queue.
 function controlQueryStep() {}
-
-/**
- * Creates a radio button with a label for a step in a queue.
- * @param {string} className Name of the class.
- * @param {string} name Name of the radio button's group.
- * @param {string} value Value for the radio button.
- * @param {string} text Text for the radio button's label.
- * @returns {Object} Label element with a radio button input element.
- */
-function createLabelRadioButton(className, name, value, text) {
-    var label = document.createElement("label");
-    var input = document.createElement("input");
-    input.setAttribute("class", className);
-    input.setAttribute("name", name);
-    input.setAttribute("type", "radio");
-    input.setAttribute("value", value);
-    label.appendChild(input);
-    label.appendChild(
-        document.createTextNode(text)
-    );
-    return label;
-}
-
-
 
 
 // TODO: Keep this function for now for the sake of reference.
@@ -925,6 +995,7 @@ function addQueryStep(event) {
     var header = document.createElement("h3");
     header.appendChild(document.createTextNode("Step " + stepCount));
     step.appendChild(header);
+
     // Create radio buttons for combination strategy.
     step.appendChild(
         createLabelRadioButton(

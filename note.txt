@@ -42,6 +42,17 @@ Create interface for Query panel after loading model.
 Give summary of model at top of query interface.
 
 ----------
+Conference ISMB-ECCB 2017
+
+Authors submit abstracts for consideration within several specific subject domains.
+
+BioVis only accepts submissions for publication in BMC Biotechnology, oral presentations of published work, and posters.
+BioVis does not accept submissions for oral presentations of unpublished work.
+Consider submitting an abstract for a poster to BioVis.
+
+Consider submitting an abstract for an oral presentation and poster to NetBio and SysMod.
+
+----------
 JavaScript Control Class
 
 element.className
