@@ -248,12 +248,8 @@ h3 {
     float: top;
 }
 
-#query-source {
-    background-color: rgba(150, 100, 150, 1);
-}
-
 .query-step {
-    background-color: rgba(150, 100, 150, 1);
+    background-color: rgba(200, 200, 200, 1);
     border-style: solid;
     border-width: medium;
     float: top;

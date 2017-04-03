@@ -7,6 +7,21 @@ Research With Alexander Lex
 3 April 2017
 
 ----------
+Plan
+
+If the network from the query is below a threshold that allows sufficient interactivity, then visualize the network by default.
+
+The user needs to be able to reset the query without refreshing the entire interface.
+Include a "Reset" button on the query builder.
+In response to this button, remove all steps from the query and reset the underlying queue data.
+
+Eventually, I would still like to have buttons to remove individual steps from the queue.
+
+Design the interface to create and/or initialize aspects of the interface as they are usable.
+This dynamic creation/activation might make the interface easier to use.
+The Query Builder needs work in this regard.
+
+----------
 Meet with Alexander Lex
 Progress
 
@@ -15,19 +30,21 @@ Program Functionality
 Complete
 1. Select file to assemble a new model.
 2. Select file to load a previous model assembly.
-3. Assemble a step to add to the query queue for query by attribute.
-4. Execute all steps in query queue.
-5. Display summary of each step in query queue.
-6. Visualize the network.
+3. Display a summary of the model (count reactions, metabolites) in query queue.
+4. Assemble a step to add to the query queue for query by attribute.
+5. Execute all steps in query queue.
+6. Display summary of each step in query queue.
+7. Visualize the network.
 
 Incomplete
--Display a summary of the model (count reactions, metabolites) in query queue.
---Treat this summary as an initial step in the query queue.
---Create an actual record in the data for the queue?
---That would be tricky to initiate...
 -Assemble a step to add to the query queue for query by topology.
 -Remove any individual step from query queue.
 
+Plan
+
+If the network from the query is below a threshold that allows sufficient interactivity, then visualize the network by default.
+
+----------
 
 --------------------------------------------------
 31 March 2017

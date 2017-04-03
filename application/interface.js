@@ -256,11 +256,11 @@ function initializeQueryInterfaceOld() {
 }
 
 /**
- * Creates a summary of the metabolic model in the query interface.
+ * Appends a summary of the metabolic model in the query interface.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function createQueryModelSummary(model) {
+function appendQueryModelSummary(model) {
     // Create summary of the metabolic model.
     var summary = document.getElementById("query-summary");
     var summaryHead = document.createElement("h3");
@@ -291,42 +291,20 @@ function createQueryModelSummary(model) {
  */
 function initializeQueryInterface(model) {
     // Create model summary.
-    createQueryModelSummary(model);
+    appendQueryModelSummary(model);
 
     // Create query builder.
-    createQueryBuilder(model);
-
-    //textField.setAttribute("list", "attribute-options");
-    //textField.setAttribute("type", "search");
-    //queryAssemblyDetails.appendChild(textField);
-
+    appendQueryBuilderCombination(model);
 
     // Activate event listeners.
-    Array.from(
-        document
-            .getElementById("query-builder")
-            .getElementsByClassName("query-type-radio")
-    )
-        .forEach(function (radio) {
-            radio.addEventListener("change", function (event) {
-                // Element on which the event originated is event.currentTarget.
-                updateQueryAssembly(model);
-            });
-        });
     document
         .getElementById("control-query")
-        .addEventListener("click", function handler(event) {
+        .addEventListener("click", function handleEvent(event) {
             // Element on which the event originated is event.currentTarget.
             // Execute operation.
             controlQuery([], model);
             // Remove event listener after first execution of operation.
-            event.currentTarget.removeEventListener(event.type, handler);
-        });
-    document
-        .getElementById("submit-query")
-        .addEventListener("click", function (event) {
-            // Element on which the event originated is event.currentTarget.
-            // controlQuery(model);
+            event.currentTarget.removeEventListener(event.type, handleEvent);
         });
 }
 
@@ -358,22 +336,13 @@ function createLabelRadioButton({className, name, value, text} = {}) {
     return label;
 }
 
-
-
-var newCollection = collectCompartmentReactionsMetabolites({
-    compartment: identifier,
-    combination: step.combination,
-    collection: oldCollection,
-    model: model
-});
-
-
 /**
- * Creates elements to build queries in the query interface.
+ * Appends elements to specify combination strategy to build queries in the
+ * query interface.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function createQueryBuilder(model) {
+function appendQueryBuilderCombination(model) {
     // Create interface to build queries.
     var builder = document.getElementById("query-builder");
     // Create header.
@@ -408,8 +377,67 @@ function createQueryBuilder(model) {
         })
     );
     builder.appendChild(combination);
+
+    // Activate event listeners.
+    Array.from(
+        document
+            .getElementById("query-builder")
+            .getElementsByClassName("query-combination-radio")
+    )
+        .forEach(function (radio) {
+            radio.addEventListener("change", function handleEvent(event) {
+                // Element on which the event originated is event.currentTarget.
+                appendQueryBuilderType(model);
+                // Remove event listener after first execution of operation.
+                event
+                    .currentTarget
+                    .removeEventListener(event.type, handleEvent);
+            });
+        });
+}
+
+/**
+ * Appends elements to specify query type to build queries in the query
+ * interface.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function appendQueryBuilderType(model) {
+    // Create interface to build queries.
+    var builder = document.getElementById("query-builder");
     // Create options for query type.
-    // TODO: Create radio buttons for query type.
+    var type = document.createElement("div");
+    // Create radio buttons for query type.
+    type.appendChild(
+        createLabelRadioButton({
+            className: "query-type-radio",
+            name: "type",
+            value: "attribute",
+            text: "attribute"
+        })
+    );
+    type.appendChild(
+        createLabelRadioButton({
+            className: "query-type-radio",
+            name: "type",
+            value: "topology",
+            text: "topology"
+        })
+    );
+    builder.appendChild(type);
+
+    // Activate event listeners.
+    Array.from(
+        document
+            .getElementById("query-builder")
+            .getElementsByClassName("query-type-radio")
+    )
+        .forEach(function (radio) {
+            radio.addEventListener("change", function handleEvent(event) {
+                // Element on which the event originated is event.currentTarget.
+                appendQueryBuilderDetail(model);
+            });
+        });
 }
 
 /**
@@ -448,14 +476,19 @@ function determineAttributeReference(model) {
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function appendQueryAssembly(model) {
+function appendQueryBuilderDetail(model) {
+    // Remove any existing components of the interface for query builder detail.
+    removeChildElements(document.getElementById("query-builder-detail"));
+    // Create interface to build queries.
+    var builder = document.getElementById("query-builder");
     var queryType = determineRadioGroupValue(
-        document
-            .getElementById("query-builder")
+        builder
             .getElementsByClassName("query-type-radio")
     );
-    var queryAssemblyDetails = document
-        .getElementById("query-builder-details");
+    var queryBuilderDetail = document
+        .getElementById("query-builder-detail");
+    // Append elements to query assembly interface according to the type of
+    // query.
     if (queryType === "attribute") {
         // Append elements to interface for assembly of query by attribute.
         // Determine list of attributes for reference.
@@ -469,7 +502,7 @@ function appendQueryAssembly(model) {
             option.setAttribute("value", element);
             attributeList.appendChild(option);
         });
-        queryAssemblyDetails.appendChild(attributeList);
+        queryBuilderDetail.appendChild(attributeList);
         // Create text field.
         var textField = document.createElement("input");
         textField.setAttribute("autocomplete", "off");
@@ -477,11 +510,18 @@ function appendQueryAssembly(model) {
         textField.setAttribute("id", "attribute-text");
         textField.setAttribute("list", "attribute-options");
         textField.setAttribute("type", "search");
-        queryAssemblyDetails.appendChild(textField);
-        queryAssemblyDetails.appendChild(document.createElement("br"));
+        queryBuilderDetail.appendChild(textField);
+        queryBuilderDetail.appendChild(document.createElement("br"));
     } else if (queryType === "topology") {
         // TODO: Eventually fill in the interface for topological queries.
     }
+
+    // Create button to add query step to queue.
+    //var add = document.createElement("button");
+    //add.setAttribute("id", "control-query");
+    //add.setAttribute("type", "button");
+    //add.textContent = "+";
+    //builder.appendChild(add);
 }
 
 /**
@@ -490,11 +530,6 @@ function appendQueryAssembly(model) {
  * model.
  */
 function updateQueryAssembly(model) {
-    // Remove any existing components of the interface for query assembly.
-    removeChildElements(document.getElementById("query-builder-details"));
-    // Append elements to query assembly interface according to the type of
-    // query.
-    appendQueryAssembly(model);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -789,7 +824,7 @@ function controlQuery(queue, model) {
             .getElementById("query-builder")
             .getElementsByClassName("query-type-radio")
     );
-    removeChildElements(document.getElementById("query-builder-details"));
+    removeChildElements(document.getElementById("query-builder-detail"));
 
     // Execute all steps in query and store summaries of query results for each
     // step within the queue.
@@ -829,6 +864,8 @@ function controlQuery(queue, model) {
 
 
 
+////////////////////////////////////////////////////////////////////////////////
+// Temporary Scrap
 
 
 /**
