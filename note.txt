@@ -9,6 +9,43 @@ Research With Alexander Lex
 ----------
 Plan
 
+-Remove existing network from interface before visualization of new network.
+
+-Automatically determine if network is below practical threshold for useful and efficient visualization.
+
+-Reset the query, along with the entire queue.
+
+-Remove individual steps from the query queue.
+
+----------
+Query Options
+
+The options available in specifying a new query step depend on the current collection and on the combination strategy.
+
+And
+Combination strategy "and" considers only nodes that are part of the current collection.
+
+Or
+Combination strategy "or" considers all nodes available in the model.
+
+Not
+Combination strategy "not" considers only nodes that are part of the current collection.
+
+I need to figure out how to accommodate the proper options for each query step.
+I need to pass the current collection (queue, probably) to the function that generates the options.
+
+----------
+High-Degree Nodes
+
+I need to provide some way to avoid the complexity of high-degree nodes.
+I think that I should enable the user to remove the relevant nodes from the network.
+The user will still be able to see mention of these nodes in reaction summaries.
+
+I think that removing these nodes is probably more simple than replicating them.
+
+----------
+Plan
+
 If the network from the query is below a threshold that allows sufficient interactivity, then visualize the network by default.
 
 The user needs to be able to reset the query without refreshing the entire interface.

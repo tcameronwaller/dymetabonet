@@ -285,7 +285,7 @@ function appendQueryModelSummary(model) {
 }
 
 /**
- * Determines all possible attribute selections from a metabolic model.
+ * Initializes the query interface.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
@@ -294,21 +294,12 @@ function initializeQueryInterface(model) {
     appendQueryModelSummary(model);
 
     // Create query builder.
-    appendQueryBuilderCombination(model);
-
-    // Activate event listeners.
-    document
-        .getElementById("control-query")
-        .addEventListener("click", function handleEvent(event) {
-            // Element on which the event originated is event.currentTarget.
-            // Execute operation.
-            controlQuery([], model);
-            // Remove event listener after first execution of operation.
-            event.currentTarget.removeEventListener(event.type, handleEvent);
-        });
+    appendQueryBuilderCombination();
+    appendQueryBuilderType();
+    activateQueryBuilderType(model);
+    appendQueryBuilderAdd();
+    activateQueryBuilderAdd([], model);
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Query Builder Interface
@@ -337,17 +328,13 @@ function createLabelRadioButton({className, name, value, text} = {}) {
 }
 
 /**
- * Appends elements to specify combination strategy to build queries in the
- * query interface.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
+ * Appends elements to specify combination strategy to build queries.
  */
-function appendQueryBuilderCombination(model) {
-    // Create interface to build queries.
-    var builder = document.getElementById("query-builder");
+function appendQueryBuilderCombination() {
     // Create header.
     var builderHead = document.createElement("h3");
     builderHead.textContent = "Query Builder";
+    var builder = document.getElementById("query-builder")
     builder.appendChild(builderHead);
     // Create options for combination strategy.
     var combination = document.createElement("div");
@@ -377,34 +364,12 @@ function appendQueryBuilderCombination(model) {
         })
     );
     builder.appendChild(combination);
-
-    // Activate event listeners.
-    Array.from(
-        document
-            .getElementById("query-builder")
-            .getElementsByClassName("query-combination-radio")
-    )
-        .forEach(function (radio) {
-            radio.addEventListener("change", function handleEvent(event) {
-                // Element on which the event originated is event.currentTarget.
-                appendQueryBuilderType(model);
-                // Remove event listener after first execution of operation.
-                event
-                    .currentTarget
-                    .removeEventListener(event.type, handleEvent);
-            });
-        });
 }
 
 /**
- * Appends elements to specify query type to build queries in the query
- * interface.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
+ * Appends elements to specify query type to build queries.
  */
-function appendQueryBuilderType(model) {
-    // Create interface to build queries.
-    var builder = document.getElementById("query-builder");
+function appendQueryBuilderType() {
     // Create options for query type.
     var type = document.createElement("div");
     // Create radio buttons for query type.
@@ -424,8 +389,15 @@ function appendQueryBuilderType(model) {
             text: "topology"
         })
     );
-    builder.appendChild(type);
+    document.getElementById("query-builder").appendChild(type);
+}
 
+/**
+ * Activates interactive elements to specify query type.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function activateQueryBuilderType(model) {
     // Activate event listeners.
     Array.from(
         document
@@ -433,7 +405,7 @@ function appendQueryBuilderType(model) {
             .getElementsByClassName("query-type-radio")
     )
         .forEach(function (radio) {
-            radio.addEventListener("change", function handleEvent(event) {
+            radio.addEventListener("change", function (event) {
                 // Element on which the event originated is event.currentTarget.
                 appendQueryBuilderDetail(model);
             });
@@ -468,25 +440,34 @@ function determineAttributeReference(model) {
         "irreversible (reaction direction)",
         "reversible (reaction direction)"
     ];
-    return [].concat(metabolites, reactions, compartments, processes, extras);
+    // TODO: Include metabolites and reactions as they become relevant.
+    return [].concat(compartments, processes, extras);
 }
 
 /**
- * Appends elements to the interface for assembly of query steps.
+ * Appends elements to build specific query steps.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
 function appendQueryBuilderDetail(model) {
-    // Remove any existing components of the interface for query builder detail.
-    removeChildElements(document.getElementById("query-builder-detail"));
-    // Create interface to build queries.
     var builder = document.getElementById("query-builder");
+    // Remove any existing components of the interface for query builder detail.
+    if (document.getElementById("query-builder-detail")) {
+        var queryBuilderDetail = document
+            .getElementById("query-builder-detail");
+        removeChildElements(queryBuilderDetail);
+    } else {
+        var queryBuilderDetail = document.createElement("div");
+        queryBuilderDetail.setAttribute("id", "query-builder-detail");
+        builder.insertBefore(
+            queryBuilderDetail, document.getElementById("control-query")
+        );
+    }
+    // Determine type of query.
     var queryType = determineRadioGroupValue(
         builder
             .getElementsByClassName("query-type-radio")
     );
-    var queryBuilderDetail = document
-        .getElementById("query-builder-detail");
     // Append elements to query assembly interface according to the type of
     // query.
     if (queryType === "attribute") {
@@ -515,21 +496,38 @@ function appendQueryBuilderDetail(model) {
     } else if (queryType === "topology") {
         // TODO: Eventually fill in the interface for topological queries.
     }
-
-    // Create button to add query step to queue.
-    //var add = document.createElement("button");
-    //add.setAttribute("id", "control-query");
-    //add.setAttribute("type", "button");
-    //add.textContent = "+";
-    //builder.appendChild(add);
 }
 
 /**
- * Updates the interface for assembly of query steps by the type of step.
+ * Appends elements to add a new query step to the queue.
+ */
+function appendQueryBuilderAdd() {
+    var builder = document.getElementById("query-builder");
+    // Create button to add query step to queue.
+    var add = document.createElement("button");
+    add.setAttribute("id", "control-query");
+    add.setAttribute("type", "button");
+    add.textContent = "+";
+    builder.appendChild(add);
+}
+
+/**
+ * Activates interactive elements to add a new query step to the queue.
+ * @param {Array<Object>} queue Details for steps in the query's queue.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function updateQueryAssembly(model) {
+function activateQueryBuilderAdd(queue, model) {
+    // Activate event listeners.
+    document
+        .getElementById("control-query")
+        .addEventListener("click", function handleEvent(event) {
+            // Element on which the event originated is event.currentTarget.
+            // Execute operation.
+            controlQuery(queue, model);
+            // Remove event listener after first execution of operation.
+            event.currentTarget.removeEventListener(event.type, handleEvent);
+        });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -539,7 +537,9 @@ function updateQueryAssembly(model) {
  * Confirms that the query assembly interface is complete with all necessary
  * details.
  */
-function confirmQueryAssembly() {}
+function confirmQueryAssembly() {
+    // TODO: Return true/false whether or not the query step has complete/appropriate parameters.
+}
 
 /**
  * Extracts details from the query assembly interface.
@@ -804,6 +804,8 @@ function controlQuery(queue, model) {
 
     // TODO: Enable user to remove all steps from the query by a reset.
 
+    // TODO: Implement query step confirmation.
+    // TODO: Only execute the entire controlQuery process if the query step is complete.
     // Confirm that the query assembly interface is complete with all necessary
     // details.
     // If not then display an error message using alert.
@@ -828,26 +830,19 @@ function controlQuery(queue, model) {
 
     // Execute all steps in query and store summaries of query results for each
     // step within the queue.
-
     var queueResults = executeQuery(newQueue, model);
     console.log(queueResults);
 
     // After each execution of controlQuery in the event handler, remove the
     // previous event listener and add a new event listener with new parameters.
-    document
-        .getElementById("control-query")
-        .addEventListener("click", function handler(event) {
-            // Element on which the event originated is event.currentTarget.
-            // Execute operation.
-            controlQuery(queueResults, model);
-            // Remove event listener after first execution of operation.
-            event.currentTarget.removeEventListener(event.type, handler);
-        });
+    activateQueryBuilderAdd(queueResults, model);
 
     // Append a new step element to the query queue with representations for the
     // details of the query step.
     appendQueryStep(queueResults);
-    // TODO: This function will involve some D3.
+
+    // Visualize the network that the query produces.
+    visualizeNetwork(queueResults[queueResults.length - 1].collection, model);
 }
 
 
