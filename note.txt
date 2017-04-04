@@ -4,6 +4,25 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+4 April 2017
+
+----------
+Reference to Network Instance in CytoScape.js
+
+Eventually, I think that I will need a way to reference the instance of the network in memory for CytoScape.js or any other tool that I use.
+
+I will need to pass the reference to this network instance in memory around between relevant functions.
+
+----------
+Functional Programming
+
+An object class provides a sort of environment or scope in which variables or attributes are accessible to all methods.
+
+It is possible to manage the Document Object Model without object classes, but it is necessary to pass variable references between functions that need them.
+
+----------
+
+--------------------------------------------------
 3 April 2017
 
 ----------

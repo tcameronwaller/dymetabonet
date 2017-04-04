@@ -74,8 +74,10 @@ function assembleModel(data) {
  * model.
  */
 function visualizeNetwork(collection, model) {
+    var exploration = document.getElementById("exploration");
+    // Create new instance of network in CytoScape.js.
     cytoscape({
-        container: document.getElementById("exploration"),
+        container: exploration,
         //elements: collection.jsons(),
         elements: collectElementsForCytoScapeNetwork(collection, model),
         layout: {
