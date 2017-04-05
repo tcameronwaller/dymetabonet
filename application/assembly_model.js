@@ -74,48 +74,54 @@ function assembleModel(data) {
  * model.
  */
 function visualizeNetwork(collection, model) {
-    var exploration = document.getElementById("exploration");
-    // Create new instance of network in CytoScape.js.
-    cytoscape({
-        container: exploration,
-        //elements: collection.jsons(),
-        elements: collectElementsForCytoScapeNetwork(collection, model),
-        layout: {
-            animate: true,
-            name: "cose",
-            fit: true,
-            idealEdgeLength: 10,
-            nodeOverlap: 5,
-            nodeRepulsion: 500000,
-            padding: 10,
-            randomize: true
-        },
-        style: [
-            {
-                selector: "node",
-                style: {
-                    "background-color": "rgb(255, 0, 255)",
-                    "background-opacity": 1,
-                    "color": "rgb(0, 0, 0)",
-                    "font-size": "25px",
-                    "label": "data(id)",
-                    "text-halign": "center",
-                    "text-opacity": 1,
-                    "text-valign": "center"
-                }
+    // Only visualize network if it is sufficiently small.
+    if (
+        collection.metabolites.length < 150 &&
+        collection.reactions.length < 150
+    ) {
+        var exploration = document.getElementById("exploration");
+        // Create new instance of network in CytoScape.js.
+        cytoscape({
+            container: exploration,
+            //elements: collection.jsons(),
+            elements: collectElementsForCytoScapeNetwork(collection, model),
+            layout: {
+                animate: true,
+                name: "cose",
+                fit: true,
+                idealEdgeLength: 10,
+                nodeOverlap: 5,
+                nodeRepulsion: 500000,
+                padding: 10,
+                randomize: true
             },
-            {
-                selector: "edge",
-                style: {
-                    "line-color": "rgb(50, 50, 50)",
-                    "line-style": "solid",
-                    "mid-target-arrow-color": "black",
-                    "mid-target-arrow-shape": "triangle",
-                    "width": 7
+            style: [
+                {
+                    selector: "node",
+                    style: {
+                        "background-color": "rgb(255, 0, 255)",
+                        "background-opacity": 1,
+                        "color": "rgb(0, 0, 0)",
+                        "font-size": "25px",
+                        "label": "data(id)",
+                        "text-halign": "center",
+                        "text-opacity": 1,
+                        "text-valign": "center"
+                    }
+                },
+                {
+                    selector: "edge",
+                    style: {
+                        "line-color": "rgb(50, 50, 50)",
+                        "line-style": "solid",
+                        "mid-target-arrow-color": "black",
+                        "mid-target-arrow-shape": "triangle",
+                        "width": 7
+                    }
                 }
-            }
-        ]
-    });
+            ]
+        });
+    }
 }
 
 /**

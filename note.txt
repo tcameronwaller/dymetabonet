@@ -4,7 +4,52 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+5 April 2017
+
+----------
+Meet with Alexander Lex
+
+Plan
+Improve the visual representation of the network.
+Develop enhancing interactivity with the network.
+Develop more versatility in queries on the network.
+Deal with nodes with extremely high degrees.
+
+Progress
+
+
+----------
+High-Degree Nodes
+
+1.
+Allow the user to include or exclude individual metabolites and reactions from the query.
+This specific inclusion or exclusion in the query will not be the most convenient way to deal with high-degree nodes, however.
+
+2.
+For topological queries, allow the user to exclude individual metabolites and reactions from consideration in traversal.
+Offer a set of common metabolites with especially high degrees.
+
+3.
+After query completion, allow the user to replicate nodes with high degrees.
+This functionality might be appropriate for the navigation panel.
+Example: h2o --> h2o_1, h2o_2, h2o_3.
+
+----------
+Visual Representation of Network
+
+Represent nodes differently for metabolites and reactions.
+
+I wonder if it would be reasonable to use D3 for the network visualization.
+A network with >200 nodes would be useless anyway.
+
+--------------------------------------------------
 4 April 2017
+
+----------
+Plan
+
+Before visualizing the network, check how many nodes are in the network.
+Only visualize networks that are below some threshold, such as 250.
 
 ----------
 Reference to Network Instance in CytoScape.js
