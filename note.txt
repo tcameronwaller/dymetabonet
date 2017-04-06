@@ -12,6 +12,25 @@ Progress
 -The program now loads the assembly of the human metabolic model by default.
 
 
+----------
+Query Queue
+
+-Organize the query queue as a table.
+-Include a head row.
+-The first body row should be for step 0 and give initial counts of metabolites and reactions.
+-Subsequent rows will give concise information on the query step.
+-These subsequent rows will also have buttons to remove the step from the queue.
+
+-Do not summarize count of links, metabolite sets, process sets, compartment sets, or other attributes in the query queue.
+-I think those details would be more appropriate for the detail panel.
+
+-During development of this query queue table, keep the current model summary.
+
+-Do not treat the first row (step 0, initial) much differently than other rows.
+-Initialize the query queue with the complete set of metabolitesa and reactions from the model.
+-Use D3 to create the first row in the table.
+
+
 --------------------------------------------------
 5 April 2017
 
@@ -45,7 +64,7 @@ Advice
 -Indicate on these bar charts the threshold for visualization.
 3) Network Representation
 -If the network has enough elements to be problematic in Scalable Vector Graphics (SVG), then the network will probably be unreadable anyway.
--SVG can probably sustain up to about 1000 nodes and links.
+-SVG can probably sustain up to about 1000 nodes, links, and labels.
 -Even a network with 100 nodes is large and complex.
 -The project needs extensive customization of the visual representation of the network.
 -Consider the versatility of CytoScape.js and whether or not it is sufficient for customization in this project.

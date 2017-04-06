@@ -232,6 +232,19 @@ function loadDefaultModel() {
 }
 
 /**
+ * Creates a new element with text content.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.text Text content for the child element.
+ * @param {string} parameters.type Type of new element.
+ * @returns {Object} Element with text content.
+ */
+function createElementWithText({text, type} = {}) {
+    var element = document.createElement(type);
+    element.textContent = text;
+    return element;
+}
+
+/**
  * Appends a summary of the metabolic model in the query interface.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
@@ -258,6 +271,26 @@ function appendQueryModelSummary(model) {
     // TODO: Consider adding summary for count of links, metabolite sets, process sets, compartment sets, etc...
 
     summary.appendChild(summaryDetails);
+
+    // TODO: Create header and first row of the table for the query queue.
+    // TODO: Give all the subsequent rows (after step 0) a different class.
+
+    // Create query queue table.
+    var queryQueue = document.getElementById("query-queue");
+    var queryQueueTable = document.createElement("table");
+    // Create header row.
+    var head = document.createElement("thead");
+    var headRow = document.createElement("tr");
+    headRow.appendChild(createElementWithText({text: "", type: "th"}));
+    headRow.appendChild(createElementWithText({text: "+/-/x", type: "th"}));
+    headRow.appendChild(createElementWithText({text: "criterion", type: "th"}));
+    headRow
+        .appendChild(createElementWithText({text: "metabolites", type: "th"}));
+    headRow.appendChild(createElementWithText({text: "reactions", type: "th"}));
+    headRow.appendChild(createElementWithText({text: "", type: "th"}));
+    head.appendChild(headRow);
+    queryQueueTable.appendChild(head);
+    queryQueue.appendChild(queryQueueTable);
 }
 
 /**
@@ -320,7 +353,7 @@ function appendQueryBuilderCombination() {
             className: "query-combination-radio",
             name: "combination",
             value: "and",
-            text: "and"
+            text: "and (-)"
         })
     );
     combination.appendChild(
@@ -328,7 +361,7 @@ function appendQueryBuilderCombination() {
             className: "query-combination-radio",
             name: "combination",
             value: "or",
-            text: "or"
+            text: "or (+)"
         })
     );
     combination.appendChild(
@@ -336,7 +369,7 @@ function appendQueryBuilderCombination() {
             className: "query-combination-radio",
             name: "combination",
             value: "not",
-            text: "not"
+            text: "not (x)"
         })
     );
     builder.appendChild(combination);
