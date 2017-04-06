@@ -114,6 +114,8 @@ function initializeInterface() {
     document
         .getElementById("load-model")
         .addEventListener("click", controlModelLoad);
+    // Temporarily during development, load default model.
+    loadDefaultModel();
 }
 
 /**
@@ -212,47 +214,21 @@ function createDataElements(selection, element, accessData) {
 }
 
 /**
- * Script for query portion.
- * Use an immediately-invoked function expression (IIFE) to establish scope in a convenient container.
- * An alternative style would be to declare the function and subsequently call it.
+ * Load model by default.
  */
-function initializeQueryInterfaceOld() {
-    // Create single instance objects of each view's class.
-    // Pass instance objects as arguments to classes that need to interact with them.
-    // This strategy avoids creation of replicate instances of each class and enables instances to communicate together.
-    //var explorationView = new ExplorationView();
-    //var navigationView = new NavigationView(explorationView);
-    //var queryView = new QueryView(navigationView);
-
-    // TODO: Allow the user to select the directory path and file of the metabolic model.
-    // TODO: readdirSync from Node.js might work.
-    createDataElements(
-        d3.select("#selector"),
-        "option",
-        ["model_h-sapiens_recon-2.json"]
-    )
-        .text(function (d) {
-            return d
-        });
-
-    d3.select("#assemble")
-        .on("click", function () {
-            //console.log(d3.event);
-            //console.log(d3.event.srcElement.value);
-            //console.log(d3.event.target.value);
-            //self.dataFile = d3.event.target.value;
-            //console.log(this.node().value);
-            var dataFile = d3.select("#selector").node().value;
-
-            // Load data from file in JSON format.
-            // Create objects that associate with these data.
-            d3.json(("../model/homo-sapiens/" + dataFile),
-                function (error, modelInitial) {
-                    if (error) throw error;
-                    // Call function to assemble model.
-                    assembleModel(modelInitial);
-                });
-        });
+function loadDefaultModel() {
+    // Load data from file in JSON format.
+    d3.json(
+        ("../model/homo-sapiens/model_sets_network.json"),
+        function (error, model) {
+            if (error) {
+                throw error;
+            }
+            // Call function to assemble model.
+            summarizeModel(model);
+            initializeInterfaceForModel(model);
+        }
+    );
 }
 
 /**

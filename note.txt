@@ -4,7 +4,25 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+6 April 2017
+
+----------
+Progress
+
+-The program now loads the assembly of the human metabolic model by default.
+
+
+--------------------------------------------------
 5 April 2017
+
+----------
+Plan
+
+Visual Representation of Network
+Include a control panel for the visual representation of the network.
+Allow the user to control color representations of attributes such as compartments and pathways.
+Allow the user to control node replication.
+Allow the user to control node highlighting.
 
 ----------
 Meet with Alexander Lex
@@ -17,6 +35,46 @@ Deal with nodes with extremely high degrees.
 
 Progress
 
+Advice
+1) Model Interface
+-For efficiency in development, set program to load model by default.
+2) Query Interface
+-Make query interface and queue more concise and aesthetic.
+-Abbreviate details of query steps.
+-Represent counts of metabolites and reactions visually in bars.
+-Indicate on these bar charts the threshold for visualization.
+3) Network Representation
+-If the network has enough elements to be problematic in Scalable Vector Graphics (SVG), then the network will probably be unreadable anyway.
+-SVG can probably sustain up to about 1000 nodes and links.
+-Even a network with 100 nodes is large and complex.
+-The project needs extensive customization of the visual representation of the network.
+-Consider the versatility of CytoScape.js and whether or not it is sufficient for customization in this project.
+-Consider using D3 for visual representation of the network.
+-D3 has extensive versatility.
+-Position nodes in spatial groups by cellular compartment.
+-Make labels concise.
+-Make rectangular nodes fit labels.
+4) High-Degree Nodes
+-Allow user to control replication of high-degree nodes.
+
+----------
+Topological Traversal
+
+I can use JSNetworkX for topological traversal.
+
+For an ego graph, use "singleSourceShortestPathLength" from JSNetworkX and build it into a compound function like "ego_graph" in NetworkX.
+
+For k shortest simple paths, I might need to develop my own implementation, following the pattern of "shortest_simple_paths" in NetworkX.
+
+Especially if I want to be able to ignore specific nodes, then I might need to implement my own versions of ego graph and shortest simple paths.
+
+Reference
+
+http://jsnetworkx.org/api/#/v/v0.3.4/singleSourceShortestPathLength
+
+https://networkx.github.io/documentation/networkx-1.10/reference/generated/networkx.generators.ego.ego_graph.html
+
+http://networkx.readthedocs.io/en/stable/reference/generated/networkx.algorithms.simple_paths.shortest_simple_paths.html
 
 ----------
 High-Degree Nodes
