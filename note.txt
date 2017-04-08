@@ -4,6 +4,32 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+7 April 2017
+
+----------
+Plan
+
+initializeQueryInterface
+Call initializeQueryQueue.
+
+initializeQueryQueue
+Make object for first step (step 0) in query queue.
+Give this object the identifiers for all metabolite and reaction nodes.
+Call appendQueryStep and pass it the new query queue.
+
+appendQueryStep
+Append a row to the query queue table for each step object in the query queue array.
+Handle the first step (name it step 0) differently than all subsequent steps.
+Or, handle it identically but just leave blank the fields that are undefined for the first step (preferrable).
+
+executeQuery
+I might need to handle the first query queue step differently now.
+
+controlQuery
+I need to activate the button for control query from initializeQueryQueue.
+I need to pass the initial queue to the function.
+
+--------------------------------------------------
 6 April 2017
 
 ----------

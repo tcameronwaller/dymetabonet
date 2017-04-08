@@ -4,6 +4,19 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * Creates a new element with text content.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.text Text content for the child element.
+ * @param {string} parameters.type Type of new element.
+ * @returns {Object} Element with text content.
+ */
+function createElementWithText({text, type} = {}) {
+    var element = document.createElement(type);
+    element.textContent = text;
+    return element;
+}
+
+/**
  * Removes an element's parent element.
  * @param {Object} element Element in the Document Object Model.
  */
@@ -56,10 +69,10 @@ function removeRadioGroupSelection(radios) {
  */
 function emphasizeDeemphasizeTab(tab) {
     // Toggle display style of the tab.
-    if (!tab.classList.contains("emphasize")) {
-        tab.classList.add("emphasize");
-    } else if (tab.classList.contains("emphasize")) {
-        tab.classList.remove("emphasize");
+    if (!tab.classList.contains("emphasis")) {
+        tab.classList.add("emphasis");
+    } else if (tab.classList.contains("emphasis")) {
+        tab.classList.remove("emphasis");
     }
 }
 
@@ -78,6 +91,29 @@ function displayHideChildPanel(tab) {
         panel.classList.remove("show");
         panel.classList.add("hide");
     }
+}
+
+/**
+ * Creates a radio button with a label for a step in a queue.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.className Name of the class.
+ * @param {string} parameters.name Name of the radio button's group.
+ * @param {string} parameters.value Value for the radio button.
+ * @param {string} parameters.text Text for the radio button's label.
+ * @returns {Object} Label element with a radio button input element.
+ */
+function createLabelRadioButton({className, name, value, text} = {}) {
+    var label = document.createElement("label");
+    var input = document.createElement("input");
+    input.setAttribute("class", className);
+    input.setAttribute("name", name);
+    input.setAttribute("type", "radio");
+    input.setAttribute("value", value);
+    label.appendChild(input);
+    label.appendChild(
+        document.createTextNode(text)
+    );
+    return label;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -186,10 +222,27 @@ function controlModelLoad(event) {
     reader.readAsText(file);
 }
 
+/**
+ * Load model by default.
+ */
+function loadDefaultModel() {
+    // Load data from file in JSON format.
+    d3.json(
+        ("../model/homo-sapiens/model_sets_network.json"),
+        function (error, model) {
+            if (error) {
+                throw error;
+            }
+            // Call function to assemble model.
+            summarizeModel(model);
+            initializeInterfaceForModel(model);
+        }
+    );
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Query Interface
 ////////////////////////////////////////////////////////////////////////////////
-
 
 /**
  * Use D3 to create elements in DOM with associative data.
@@ -214,93 +267,13 @@ function createDataElements(selection, element, accessData) {
 }
 
 /**
- * Load model by default.
- */
-function loadDefaultModel() {
-    // Load data from file in JSON format.
-    d3.json(
-        ("../model/homo-sapiens/model_sets_network.json"),
-        function (error, model) {
-            if (error) {
-                throw error;
-            }
-            // Call function to assemble model.
-            summarizeModel(model);
-            initializeInterfaceForModel(model);
-        }
-    );
-}
-
-/**
- * Creates a new element with text content.
- * @param {Object} parameters Destructured object of parameters.
- * @param {string} parameters.text Text content for the child element.
- * @param {string} parameters.type Type of new element.
- * @returns {Object} Element with text content.
- */
-function createElementWithText({text, type} = {}) {
-    var element = document.createElement(type);
-    element.textContent = text;
-    return element;
-}
-
-/**
- * Appends a summary of the metabolic model in the query interface.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
- */
-function appendQueryModelSummary(model) {
-    // Create summary of the metabolic model.
-    var summary = document.getElementById("query-summary");
-    var summaryHead = document.createElement("h3");
-    summaryHead.textContent = "Model Summary";
-    summary.appendChild(summaryHead);
-
-    var summaryDetails = document.createElement("ul");
-
-    var metaboliteDetail = document.createElement("li");
-    metaboliteDetail.textContent = "Metabolites: " +
-        Object.keys(model.network.nodes.metabolites).length;
-    summaryDetails.appendChild(metaboliteDetail);
-
-    var reactionDetail = document.createElement("li");
-    reactionDetail.textContent = "Reactions: " +
-        Object.keys(model.network.nodes.reactions).length;
-    summaryDetails.appendChild(reactionDetail);
-
-    // TODO: Consider adding summary for count of links, metabolite sets, process sets, compartment sets, etc...
-
-    summary.appendChild(summaryDetails);
-
-    // TODO: Create header and first row of the table for the query queue.
-    // TODO: Give all the subsequent rows (after step 0) a different class.
-
-    // Create query queue table.
-    var queryQueue = document.getElementById("query-queue");
-    var queryQueueTable = document.createElement("table");
-    // Create header row.
-    var head = document.createElement("thead");
-    var headRow = document.createElement("tr");
-    headRow.appendChild(createElementWithText({text: "", type: "th"}));
-    headRow.appendChild(createElementWithText({text: "+/-/x", type: "th"}));
-    headRow.appendChild(createElementWithText({text: "criterion", type: "th"}));
-    headRow
-        .appendChild(createElementWithText({text: "metabolites", type: "th"}));
-    headRow.appendChild(createElementWithText({text: "reactions", type: "th"}));
-    headRow.appendChild(createElementWithText({text: "", type: "th"}));
-    head.appendChild(headRow);
-    queryQueueTable.appendChild(head);
-    queryQueue.appendChild(queryQueueTable);
-}
-
-/**
  * Initializes the query interface.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
 function initializeQueryInterface(model) {
-    // Create model summary.
-    appendQueryModelSummary(model);
+    // Create query queue.
+    initializeQueryQueue(model);
 
     // Create query builder.
     appendQueryBuilderCombination();
@@ -312,29 +285,6 @@ function initializeQueryInterface(model) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Query Builder Interface
-
-/**
- * Creates a radio button with a label for a step in a queue.
- * @param {Object} parameters Destructured object of parameters.
- * @param {string} parameters.className Name of the class.
- * @param {string} parameters.name Name of the radio button's group.
- * @param {string} parameters.value Value for the radio button.
- * @param {string} parameters.text Text for the radio button's label.
- * @returns {Object} Label element with a radio button input element.
- */
-function createLabelRadioButton({className, name, value, text} = {}) {
-    var label = document.createElement("label");
-    var input = document.createElement("input");
-    input.setAttribute("class", className);
-    input.setAttribute("name", name);
-    input.setAttribute("type", "radio");
-    input.setAttribute("value", value);
-    label.appendChild(input);
-    label.appendChild(
-        document.createTextNode(text)
-    );
-    return label;
-}
 
 /**
  * Appends elements to specify combination strategy to build queries.
@@ -541,6 +491,74 @@ function activateQueryBuilderAdd(queue, model) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Query Queue Interface
+
+/**
+ * Initializes the query queue in the query interface.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function initializeQueryQueue(model) {
+    // Create query queue table.
+    var queryQueue = document.getElementById("query-queue");
+    var queryQueueTable = document.createElement("table");
+    // Create header.
+    var head = document.createElement("thead");
+    var headRow = document.createElement("tr");
+    headRow.appendChild(createElementWithText({text: "", type: "th"}));
+    headRow.appendChild(createElementWithText({text: "+/-/x", type: "th"}));
+    headRow.appendChild(createElementWithText({text: "criterion", type: "th"}));
+    headRow
+        .appendChild(createElementWithText({text: "metabolites", type: "th"}));
+    headRow.appendChild(createElementWithText({text: "reactions", type: "th"}));
+    headRow.appendChild(createElementWithText({text: "", type: "th"}));
+    head.appendChild(headRow);
+    queryQueueTable.appendChild(head);
+    // Create body.
+    var body = document.createElement("tbody");
+    queryQueueTable.appendChild(body);
+    queryQueue.appendChild(queryQueueTable);
+
+    // Initialize query queue.
+    var step = {
+        collection: extractInitialCollectionFromModel(model),
+        complete: true,
+        type: "source",
+        value: "model"
+    };
+    var queue = [].concat(step);
+    // Append row for first step of query queue.
+    appendQueryStep(queue);
+
+    // TODO: Activate button for controlQuery and pass queue to controlQuery.
+
+
+
+    // TODO: I need to get rid of the stuff below, I think.
+    // TODO: Consider if it's useful.
+
+    // Create summary of the metabolic model.
+    var summary = document.getElementById("query-summary");
+    var summaryHead = document.createElement("h3");
+    summaryHead.textContent = "Model Summary";
+    summary.appendChild(summaryHead);
+
+    var summaryDetails = document.createElement("ul");
+
+    var metaboliteDetail = document.createElement("li");
+    metaboliteDetail.textContent = "Metabolites: " +
+        Object.keys(model.network.nodes.metabolites).length;
+    summaryDetails.appendChild(metaboliteDetail);
+
+    var reactionDetail = document.createElement("li");
+    reactionDetail.textContent = "Reactions: " +
+        Object.keys(model.network.nodes.reactions).length;
+    summaryDetails.appendChild(reactionDetail);
+
+    // TODO: Consider adding summary for count of links, metabolite sets, process sets, compartment sets, etc...
+
+    summary.appendChild(summaryDetails);
+
+}
 
 /**
  * Confirms that the query assembly interface is complete with all necessary
@@ -750,6 +768,23 @@ function executeQuery(queue, model) {
  */
 function appendQueryStep(queue) {
     // TODO: Once the user can remove steps, I'll need to handle the exit selection.
+
+    // TODO: Create data-driven rows in the query queue table...
+    // TODO: Then figure out how to create data-driven cells within those rows.
+
+    // Select query queue table body.
+    var queryQueueTableBody = d3
+        .select("#query-queue")
+        .select("table")
+        .select("tbody");
+    var steps = queryQueueTableBody
+        .selectAll("tr")
+        .data(queue)
+        .enter()
+        .append("tr");
+    steps
+        .attr("class", "query-step");
+
     var steps = d3
         .select("#query-queue")
         .selectAll("div.query-step")
