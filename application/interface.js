@@ -505,7 +505,7 @@ function initializeQueryQueue(model) {
     var head = document.createElement("thead");
     var headRow = document.createElement("tr");
     headRow.appendChild(createElementWithText({text: "", type: "th"}));
-    headRow.appendChild(createElementWithText({text: "+/-/x", type: "th"}));
+    headRow.appendChild(createElementWithText({text: "-/+/x", type: "th"}));
     headRow.appendChild(createElementWithText({text: "criterion", type: "th"}));
     headRow
         .appendChild(createElementWithText({text: "metabolites", type: "th"}));
@@ -523,7 +523,7 @@ function initializeQueryQueue(model) {
         collection: extractInitialCollectionFromModel(model),
         complete: true,
         type: "source",
-        value: "model"
+        criterion: "model"
     };
     var queue = [].concat(step);
     // Append row for first step of query queue.
@@ -592,6 +592,7 @@ function extractQueryAssemblyDetails() {
             attribute: attribute,
             combination: combination,
             complete: false,
+            criterion: value,
             entity: entity,
             type: type,
             value: value
@@ -734,6 +735,7 @@ function executeQuery(queue, model) {
                     collection: newCollection,
                     combination: step.combination,
                     complete: true,
+                    criterion: step.criterion,
                     entity: step.entity,
                     type: step.type,
                     value: step.value
@@ -750,6 +752,7 @@ function executeQuery(queue, model) {
                     collection: step.collection,
                     combination: step.combination,
                     complete: step.complete,
+                    criterion: step.criterion,
                     entity: step.entity,
                     type: step.type,
                     value: step.value
@@ -758,6 +761,34 @@ function executeQuery(queue, model) {
                 // TODO: Return a copy of the object for a topology query step.
             }
         }
+    });
+}
+
+/**
+ * Extracts a summary of each query queue step for the query queue table.
+ * @param {Array<Object>} queue Details for steps in the query's queue.
+ * @returns {Array<Object>} Summary of each step in query queue.
+ */
+function extractQueueSummary(queue) {
+    var combinationSymbol = {
+        and: "-",
+        or: "+",
+        not: "x"
+    };
+    // Extract information from query queue for query queue table.
+    return queue.map(function (step, index) {
+        if (step.combination) {
+            var combination = combinationSymbol[step.combination];
+        } else {
+            var combination = "";
+        }
+        return {
+            combination: combination,
+            countMetabolites: step.collection.metabolites.length,
+            countReactions: step.collection.reactions.length,
+            countStep: index,
+            criterion: step.criterion,
+        };
     });
 }
 
@@ -773,17 +804,28 @@ function appendQueryStep(queue) {
     // TODO: Then figure out how to create data-driven cells within those rows.
 
     // Select query queue table body.
-    var queryQueueTableBody = d3
+    var body = d3
         .select("#query-queue")
         .select("table")
         .select("tbody");
-    var steps = queryQueueTableBody
+    // Append query queue table rows.
+    var rows = body
         .selectAll("tr")
-        .data(queue)
+        .data(extractQueueSummary(queue))
         .enter()
         .append("tr");
-    steps
+    rows
         .attr("class", "query-step");
+    // Append query queue table cells.
+
+    // TODO: Complete accessor function for the values for each cell of a row.
+    // TODO: CURRENT
+
+    var cells = rows
+        .selectAll("td")
+        .data(function (data, index) {})
+        .enter()
+        .append("td");
 
     var steps = d3
         .select("#query-queue")
