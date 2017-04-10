@@ -662,16 +662,9 @@ function executeQuery(queue, model) {
             // Query step is not complete.
             // Execute query step and record collection and summary.
             // Determine previous collection.
-
-            if (index === 0) {
-                // Step is first in query queue.
-                // Extract initial collection from metabolic model.
-                var oldCollection = extractInitialCollectionFromModel(model);
-            } else if (index > 0) {
-                // Step is not first in query queue.
-                // Use collection from previous step.
-                var oldCollection = queue[index - 1].collection;
-            }
+            // Use collection from previous step.
+            var oldCollection = queue[index - 1].collection;
+            // Determine type of query step.
             if (step.type === "attribute") {
                 // Determine identifier from entity name.
                 var identifier = determineEntityIdentifierFromName({
@@ -725,7 +718,14 @@ function executeQuery(queue, model) {
         } else {
             // Query step is complete.
             // Return copy of query step.
-            if (step.type === "attribute") {
+            if (step.type === "source") {
+                return {
+                    collection: step.collection,
+                    complete: step.complete,
+                    type: step.type,
+                    criterion: step.criterion
+                };
+            } else if (step.type === "attribute") {
                 return {
                     attribute: step.attribute,
                     collection: step.collection,
@@ -808,7 +808,7 @@ function appendQueryStep(queue) {
                 {type: "queue-cell-text", value: step.criterion},
                 {type: "queue-cell-bar", value: step.countMetabolites},
                 {type: "queue-cell-bar", value: step.countReactions},
-                {type: removeType, value: ""};
+                {type: removeType, value: ""});
         })
         .enter()
         .append("td");
@@ -817,11 +817,17 @@ function appendQueryStep(queue) {
             return data.type;
         });
     var textCells = body
-        .selectAll(".queue-cell-text")
+        .selectAll(".queue-cell-text");
+    textCells
         .text(function (data) {
             return data.value;
         });
-    // TODO: Now that I have "td"s, I need to set their textContent.
+    var barCells = body
+        .selectAll(".queue-cell-bar");
+    barCells
+        .text(function (data) {
+            return data.value;
+        });
 }
 
 /**
