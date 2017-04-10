@@ -3,11 +3,96 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
-6 April 2017
+10 April 2017
 
 ----------
 
+function initializeVisualQueryQueue(queue) {
+    // TODO: I need to get rid of the stuff below, I think.
+    // TODO: Consider if it's useful.
 
+    // Create summary of the metabolic model.
+    var summary = document.getElementById("query-summary");
+    var summaryHead = document.createElement("h3");
+    summaryHead.textContent = "Model Summary";
+    summary.appendChild(summaryHead);
+
+    var summaryDetails = document.createElement("ul");
+
+    var metaboliteDetail = document.createElement("li");
+    metaboliteDetail.textContent = "Metabolites: " +
+        Object.keys(model.network.nodes.metabolites).length;
+    summaryDetails.appendChild(metaboliteDetail);
+
+    var reactionDetail = document.createElement("li");
+    reactionDetail.textContent = "Reactions: " +
+        Object.keys(model.network.nodes.reactions).length;
+    summaryDetails.appendChild(reactionDetail);
+
+    // TODO: Consider adding summary for count of links, metabolite sets, process sets, compartment sets, etc...
+
+    summary.appendChild(summaryDetails);
+
+}
+
+----------
+
+function appendQueryStep(queue) {
+    
+    // TODO: Old stuff...
+    
+    var steps = d3
+        .select("#query-queue")
+        .selectAll("div.query-step")
+        .data(queue)
+        .enter()
+        .append("div")
+        .attr("class", "query-step");
+    var count = steps
+        .append("div")
+        .attr("class", "query-step-count");
+    count
+        .append("h3")
+        .text(function (data, index) {
+            return "Step " + (index + 1).toString();
+        });
+    var detail = steps
+        .append("div")
+        .attr("class", "query-step-detail");
+    detail
+        .append("div")
+        .text(function (data) {
+            return "... " + data.combination;
+        });
+    detail
+        .append("div")
+        .text(function (data) {
+            return data.type;
+        });
+    detail
+        .append("div")
+        .text(function (data) {
+            return data.entity + " " + data.attribute + "= " + data.value;
+        });
+    var summary = steps
+        .append("div")
+        .attr("class", "query-step-summary");
+    summary
+        .append("div")
+        .text(function (data) {
+            return "metabolites: " + data.collection.metabolites.length;
+        });
+    summary
+        .append("div")
+        .text(function (data) {
+            return "reactions: " + data.collection.reactions.length;
+        });
+}
+
+--------------------------------------------------
+6 April 2017
+
+----------
 
 ----------
 /**

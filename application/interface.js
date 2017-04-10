@@ -161,11 +161,9 @@ function initializeInterface() {
  * model.
  */
 function initializeInterfaceForModel(model) {
-
     // TODO: Maybe change classes and styles of elements once I activate them.
     // Initialize query interface.
     initializeQueryInterface(model);
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -273,14 +271,15 @@ function createDataElements(selection, element, accessData) {
  */
 function initializeQueryInterface(model) {
     // Create query queue.
-    initializeQueryQueue(model);
+    var queue = initializeQueryQueue(model)
+    initializeVisualQueryQueue(queue);
 
     // Create query builder.
     appendQueryBuilderCombination();
     appendQueryBuilderType();
     activateQueryBuilderType(model);
     appendQueryBuilderAdd();
-    activateQueryBuilderAdd([], model);
+    activateQueryBuilderAdd(queue, model);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -493,13 +492,30 @@ function activateQueryBuilderAdd(queue, model) {
 // Query Queue Interface
 
 /**
- * Initializes the query queue in the query interface.
+ * Initializes the query queue.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
+ * @returns {Array<Object>} queue Details for steps in the query's queue.
  */
 function initializeQueryQueue(model) {
+    // Initialize query queue.
+    var step = {
+        collection: extractInitialCollectionFromModel(model),
+        complete: true,
+        type: "source",
+        criterion: "model"
+    };
+    // Return initial query queue for use in query assembly and execution.
+    return [].concat(step);
+}
+
+/**
+ * Initializes the visual representation of the query queue in the query
+ * interface.
+ * @param {Array<Object>} queue Details for steps in the query's queue.
+ */
+function initializeVisualQueryQueue(queue) {
     // Create query queue table.
-    var queryQueue = document.getElementById("query-queue");
     var queryQueueTable = document.createElement("table");
     // Create header.
     var head = document.createElement("thead");
@@ -516,48 +532,11 @@ function initializeQueryQueue(model) {
     // Create body.
     var body = document.createElement("tbody");
     queryQueueTable.appendChild(body);
+    // Append query queue table to query queue.
+    var queryQueue = document.getElementById("query-queue");
     queryQueue.appendChild(queryQueueTable);
-
-    // Initialize query queue.
-    var step = {
-        collection: extractInitialCollectionFromModel(model),
-        complete: true,
-        type: "source",
-        criterion: "model"
-    };
-    var queue = [].concat(step);
     // Append row for first step of query queue.
     appendQueryStep(queue);
-
-    // TODO: Activate button for controlQuery and pass queue to controlQuery.
-
-
-
-    // TODO: I need to get rid of the stuff below, I think.
-    // TODO: Consider if it's useful.
-
-    // Create summary of the metabolic model.
-    var summary = document.getElementById("query-summary");
-    var summaryHead = document.createElement("h3");
-    summaryHead.textContent = "Model Summary";
-    summary.appendChild(summaryHead);
-
-    var summaryDetails = document.createElement("ul");
-
-    var metaboliteDetail = document.createElement("li");
-    metaboliteDetail.textContent = "Metabolites: " +
-        Object.keys(model.network.nodes.metabolites).length;
-    summaryDetails.appendChild(metaboliteDetail);
-
-    var reactionDetail = document.createElement("li");
-    reactionDetail.textContent = "Reactions: " +
-        Object.keys(model.network.nodes.reactions).length;
-    summaryDetails.appendChild(reactionDetail);
-
-    // TODO: Consider adding summary for count of links, metabolite sets, process sets, compartment sets, etc...
-
-    summary.appendChild(summaryDetails);
-
 }
 
 /**
@@ -780,7 +759,7 @@ function extractQueueSummary(queue) {
         if (step.combination) {
             var combination = combinationSymbol[step.combination];
         } else {
-            var combination = "";
+            var combination = "...";
         }
         return {
             combination: combination,
@@ -800,9 +779,6 @@ function extractQueueSummary(queue) {
 function appendQueryStep(queue) {
     // TODO: Once the user can remove steps, I'll need to handle the exit selection.
 
-    // TODO: Create data-driven rows in the query queue table...
-    // TODO: Then figure out how to create data-driven cells within those rows.
-
     // Select query queue table body.
     var body = d3
         .select("#query-queue")
@@ -817,62 +793,35 @@ function appendQueryStep(queue) {
     rows
         .attr("class", "query-step");
     // Append query queue table cells.
-
-    // TODO: Complete accessor function for the values for each cell of a row.
     // TODO: CURRENT
-
     var cells = rows
         .selectAll("td")
-        .data(function (data, index) {})
+        .data(function (step, index) {
+            if (index === 0) {
+                var removeType = "queue-cell-empty";
+            } else if (index > 0) {
+                var removeType = "queue-cell-button";
+            }
+            return [].concat(
+                {type: "queue-cell-text", value: step.countStep.toString()},
+                {type: "queue-cell-text", value: step.combination},
+                {type: "queue-cell-text", value: step.criterion},
+                {type: "queue-cell-bar", value: step.countMetabolites},
+                {type: "queue-cell-bar", value: step.countReactions},
+                {type: removeType, value: ""};
+        })
         .enter()
         .append("td");
-
-    var steps = d3
-        .select("#query-queue")
-        .selectAll("div.query-step")
-        .data(queue)
-        .enter()
-        .append("div")
-        .attr("class", "query-step");
-    var count = steps
-        .append("div")
-        .attr("class", "query-step-count");
-    count
-        .append("h3")
-        .text(function (data, index) {
-            return "Step " + (index + 1).toString();
-        });
-    var detail = steps
-        .append("div")
-        .attr("class", "query-step-detail");
-    detail
-        .append("div")
-        .text(function (data) {
-            return "... " + data.combination;
-        });
-    detail
-        .append("div")
-        .text(function (data) {
+    cells
+        .attr("class", function (data) {
             return data.type;
         });
-    detail
-        .append("div")
+    var textCells = body
+        .selectAll(".queue-cell-text")
         .text(function (data) {
-            return data.entity + " " + data.attribute + "= " + data.value;
+            return data.value;
         });
-    var summary = steps
-        .append("div")
-        .attr("class", "query-step-summary");
-    summary
-        .append("div")
-        .text(function (data) {
-            return "metabolites: " + data.collection.metabolites.length;
-        });
-    summary
-        .append("div")
-        .text(function (data) {
-            return "reactions: " + data.collection.reactions.length;
-        });
+    // TODO: Now that I have "td"s, I need to set their textContent.
 }
 
 /**
@@ -930,20 +879,6 @@ function controlQuery(queue, model) {
     // Visualize the network that the query produces.
     visualizeNetwork(queueResults[queueResults.length - 1].collection, model);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Temporary Scrap

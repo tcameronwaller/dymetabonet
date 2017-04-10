@@ -4,13 +4,18 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+10 April 2017
+
+----------
+Query Queue
+Create an SVG element within the cells for metabolites and reactions.
+Create bars within these SVG elements that scale according to the count of metabolites and reactions.
+
+--------------------------------------------------
 9 April 2017
 
 ----------
 step | -/+/x | criterion | metabolites | reactions | remove
-
-var stepCount = 
-
 
 --------------------------------------------------
 7 April 2017
