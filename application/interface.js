@@ -793,22 +793,39 @@ function appendQueryStep(queue) {
     rows
         .attr("class", "query-step");
     // Append query queue table cells.
-    // TODO: CURRENT
     var cells = rows
         .selectAll("td")
         .data(function (step, index) {
-            if (index === 0) {
-                var removeType = "queue-cell-empty";
-            } else if (index > 0) {
-                var removeType = "queue-cell-button";
+            if (step.countStep === 0) {
+                var removeType = "query-queue-table-cell-empty";
+            } else if (step.countStep > 0) {
+                var removeType = "query-queue-table-cell-button";
             }
             return [].concat(
-                {type: "queue-cell-text", value: step.countStep.toString()},
-                {type: "queue-cell-text", value: step.combination},
-                {type: "queue-cell-text", value: step.criterion},
-                {type: "queue-cell-bar", value: step.countMetabolites},
-                {type: "queue-cell-bar", value: step.countReactions},
-                {type: removeType, value: ""});
+                {
+                    type: "query-queue-table-cell-text",
+                    value: step.countStep.toString()
+                },
+                {
+                    type: "query-queue-table-cell-text",
+                    value: step.combination
+                },
+                {
+                    type: "query-queue-table-cell-text",
+                    value: step.criterion
+                },
+                {
+                    type: "query-queue-table-cell-bar",
+                    value: step.countMetabolites
+                },
+                {
+                    type: "query-queue-table-cell-bar",
+                    value: step.countReactions
+                },
+                {
+                    type: removeType,
+                    value: ""
+                });
         })
         .enter()
         .append("td");
@@ -816,18 +833,40 @@ function appendQueryStep(queue) {
         .attr("class", function (data) {
             return data.type;
         });
-    var textCells = body
-        .selectAll(".queue-cell-text");
+    // Append text content of cells.
+    var textCells = cells
+        .filter(".query-queue-table-cell-text");
     textCells
         .text(function (data) {
             return data.value;
         });
-    var barCells = body
-        .selectAll(".queue-cell-bar");
-    barCells
-        .text(function (data) {
-            return data.value;
-        });
+    // Append chart content of bar cells.
+    var barCells = cells
+        .filter(".query-queue-table-cell-bar");
+    var barCellSVGs = barCells
+        .append("svg");
+    barCellSVGs
+        .attr("class", "query-queue-table-cell-svg");
+    var barCellBars = barCellSVGs
+        .append("rect");
+    barCellBars
+        .attr("class", "query-queue-table-bars");
+
+    // TODO: Create a D3 scale function for the bars.
+    // TODO: I will need a separate scale function for metabolites and reactions.
+    // TODO: Also, give different classes to bars for metabolites and reactions.
+    // TODO: Format these differently, probably with different colors.
+
+    // Append button content of remove cells.
+    var removeCells = cells
+        .filter(".query-queue-table-cell-button");
+    var removeCellButtons = removeCells
+        .append("button");
+    removeCellButtons
+        .text("x");
+    // TODO: Activate event listeners for the remove buttons on each row.
+    // TODO: Handle the removal properly, updating the table by D3.
+
 }
 
 /**

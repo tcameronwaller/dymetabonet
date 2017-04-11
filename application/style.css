@@ -172,7 +172,7 @@ h3 {
 #control {
     background-color: rgba(225, 225, 225, 1);
     display: block;
-    flex-basis: 7.5 cm;
+    flex-basis: 5cm;
     flex-grow: 1;
     flex-shrink: 1;
     overflow: auto;
@@ -224,7 +224,16 @@ h3 {
     background-color: rgba(200, 200, 200, 1);
 }
 
+#query-queue .query-queue-table-cell-svg {
+    height: 20px;
+    width: 100px;
+}
 
+#query-queue .query-queue-table-bars {
+    fill: red;
+    height: 15px;
+    width: 75px;
+}
 
 
 
@@ -232,7 +241,7 @@ h3 {
 
 #exploration {
     background-color: rgba(255, 255, 255, 1);
-    flex-grow: 5;
+    flex-grow: 7;
     flex-shrink: 1;
     overflow: auto;
 }

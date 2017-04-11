@@ -7,9 +7,32 @@ Research With Alexander Lex
 10 April 2017
 
 ----------
+Plan
+
+Query Queue Table
+Create scale function for metabolites and reactions.
+Set the width of the bars according to the scale of the count of metabolites or reactions.
+Color the bars differently for metabolites and reactions.
+Activate event listeners and handlers for the remove buttons.
+Handle the removal of rows properly using exit selections in D3.
+
+----------
+Progress
+
+I implemented creation of Scalable Vector Graphics (SVG) elements in query queue table cells for metabolites and reactions.
+I also implemented creation of bars in these cells.
+These bars will eventually represent the count of metabolites and reactions.
+
+I also implemented creation of buttons in the remove column of the query queue table.
+
+----------
 Query Queue
 Create an SVG element within the cells for metabolites and reactions.
 Create bars within these SVG elements that scale according to the count of metabolites and reactions.
+
+----------
+Progress
+The new table version of the query queue updates as the user constructs and submits multiple query steps.
 
 --------------------------------------------------
 9 April 2017
