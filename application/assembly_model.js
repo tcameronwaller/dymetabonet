@@ -76,13 +76,13 @@ function assembleModel(data) {
 function visualizeNetwork(collection, model) {
     // Only visualize network if it is sufficiently small.
     if (
-        collection.metabolites.length < 250 &&
-        collection.reactions.length < 250
+        collection.metabolites.length < 500 &&
+        collection.reactions.length < 500
     ) {
-        var exploration = document.getElementById("exploration");
+        var networkView = document.getElementById("network");
         // Create new instance of network in CytoScape.js.
         cytoscape({
-            container: exploration,
+            container: networkView,
             //elements: collection.jsons(),
             elements: collectElementsForCytoScapeNetwork(collection, model),
             layout: {

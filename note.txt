@@ -4,6 +4,15 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+11 April 2017
+
+----------
+Plan
+Activate event listeners and handlers for the remove buttons.
+Handle the removal of rows properly using exit selections in D3.
+Develop visual representation of network.
+
+--------------------------------------------------
 10 April 2017
 
 ----------

@@ -32,50 +32,202 @@
 }
 */
 
-/* Elements */
-
-html {
-    margin: 0;
-}
-
-body {
-    background-color: rgba(255, 255, 255, 1);
-    border: 0;
-    margin: 0;
-}
-
-header {
-    background-color: rgba(200, 200, 200, 1);
-    color: red;
-    height: 1cm;
-    width: 100%;
-}
+/******************************************************************************/
+/* Interface */
+/******************************************************************************/
 
 h1 {
-    font-family: sans-serif;
     font-size: medium;
 }
 
 h2 {
-    font-family: sans-serif;
-    font-size: small;
+    font-size: medium;
 }
 
 h3 {
-    font-family: sans-serif;
     font-size: small;
 }
 
-/* Classes */
-
-.view {
-    display: inline;
-    float: left;
-    margin: 3px;
-    border: 3px solid black;
-    padding: 3px;
-    font-family: sans-serif;
+#view {
+    background-color: rgba(255, 255, 255, 1);
+    display: block;
+    height: 97vh;
+    margin: 0;
+    width: 97vw;
 }
+
+#header {
+    background-color: rgba(200, 200, 200, 1);
+    color: rgba(225, 225, 225, 1);
+    display: block;
+    font-family: sans-serif;
+    height: 0.5cm;
+    width: 100%;
+}
+
+#interface {
+    /*display: block;*/
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+/******************************************************************************/
+/* Control Panel */
+/******************************************************************************/
+
+#control {
+    background-color: rgba(225, 225, 225, 1);
+    /*display: inline;*/
+    /*float: left;*/
+    font-family: sans-serif;
+    height: 100%;
+    /*overflow: auto;*/
+    width: 10cm;
+}
+
+#control .tab {
+    background-color: rgba(100, 200, 200, 1);
+    color: rgba(0, 0, 0, 1);
+}
+
+#control .tab:hover {
+    background-color: rgba(200, 100, 200, 1);
+}
+
+#control .tab .panel {
+    background-color: rgba(225, 225, 225, 1);
+}
+
+#control .tab.emphasis {
+    background-color: rgba(200, 100, 200, 1);
+}
+
+
+.show {
+    display: block;
+}
+
+.hide {
+    display: none;
+}
+
+/******************************************************************************/
+/* Query Interface */
+/******************************************************************************/
+
+#query-panel {
+    width: 100%;
+}
+
+#query-queue {
+    background-color: rgba(200, 200, 200, 1);
+    width: 100%;
+}
+
+#query-queue table {
+    border-collapse: collapse;
+    width: 97%;
+    table-layout: fixed;
+    text-align: left;
+}
+
+#query-queue table thead {
+    background-color: rgba(225, 225, 225, 1);
+    font-size: small;
+}
+
+#query-queue table thead th {
+    border-color: rgba(225, 225, 225, 1);
+    border-style: solid;
+    border-width: 1mm;
+    padding: 1mm;
+}
+
+#query-queue table tbody {
+    background-color: rgba(200, 200, 200, 1);
+    font-size: small;
+}
+
+#query-queue table tbody tr {
+    height: 0.5cm;
+    vertical-align: middle;
+}
+
+#query-queue table tbody td {
+    border-color: rgba(225, 225, 225, 1);
+    border-style: solid;
+    border-width: 1mm;
+    overflow: hidden;
+    padding: 1mm;
+    white-space: nowrap;
+}
+
+#query-queue table tbody button {
+    height: 0.4cm;
+    padding: 0mm;
+    text-align: center;
+    width: 0.4cm;
+}
+
+#query-queue-table-head-step {
+    width: 0.2cm;
+}
+
+#query-queue-table-head-combination {
+    width: 0.75cm;
+}
+
+#query-queue-table-head-criterion {
+    width: 1.9cm;
+}
+
+#query-queue-table-head-metabolites,
+#query-queue-table-head-reactions {
+    width: 2.5cm;
+}
+
+#query-queue-table-head-remove {
+    width: 0.4cm;
+}
+
+#query-queue .query-queue-table-cell-svg {
+    height: 0.35cm;
+    width: 2.5cm;
+}
+
+#query-queue .query-queue-table-cell-bars-metabolite {
+    fill: rgba(50, 150, 150, 1);
+    height: 0.35cm;
+}
+
+#query-queue .query-queue-table-cell-bars-reaction {
+    fill: rgba(150, 50, 50, 1);
+    height: 0.35cm;
+}
+
+#query-builder {
+    background-color: rgba(200, 200, 200, 1);
+}
+
+/******************************************************************************/
+/* Network Interface */
+/******************************************************************************/
+
+#network {
+    background-color: rgba(255, 255, 255, 1);
+    /*display: inline;*/
+    /*float: left;*/
+    flex: 1;
+    height: 100%;
+    /*overflow: scroll;*/
+}
+
+/******************************************************************************/
+/* Scrap */
+/******************************************************************************/
+
+/*
 
 .degree-bar {
     fill: darkmagenta;
@@ -87,12 +239,12 @@ h3 {
     font-size: xx-small;
 }
 
-/*.panel {
+.panel {
     fill: black;
     fill-opacity: 0.25;
     stroke: black;
     stroke-width: 5;
-}*/
+}
 
 .node-metabolite {
     r: 7;
@@ -142,146 +294,6 @@ h3 {
     marker-end: url(#marker);
 }
 
-.emphasis-link {
-    stroke: orange;
-    stroke-width: 5;
-}
-
-.emphasis-row {
-    background-color: orange;
-}
-
-/* Identifiers */
-
-#view {
-    height: 97vh;
-    margin: 0;
-    width: 97vw;
-}
-
-#interface {
-    display: flex;
-    height: 100%;
-    width: 100%;
-}
-
-/******************************************************************************/
-/* Control Panel */
-/******************************************************************************/
-
-#control {
-    background-color: rgba(225, 225, 225, 1);
-    display: block;
-    flex-basis: 5cm;
-    flex-grow: 1;
-    flex-shrink: 1;
-    overflow: auto;
-    resize: horizontal;
-}
-
-#control .tab {
-    background-color: rgba(100, 200, 200, 1);
-    color: rgba(0, 0, 0, 1);
-}
-
-#control .tab:hover {
-    background-color: rgba(200, 100, 200, 1);
-}
-
-#control .tab .panel {
-    background-color: rgba(225, 225, 225, 1);
-}
-
-#control .tab.emphasis {
-    background-color: rgba(200, 100, 200, 1);
-}
-
-
-.show {
-    display: block;
-}
-
-.hide {
-    display: none;
-}
-
-
-/* Old stuff from the CSS accordion. */
-
-#control .control-tab input:checked ~ label h2 {
-    background-color: rgba(200, 100, 100, 1);
-}
-
-#control .control-tab input:checked ~ div {
-    display:block;
-}
-
-/******************************************************************************/
-/* Query Interface */
-/******************************************************************************/
-
-#query-summary {
-    background-color: rgba(200, 200, 200, 1);
-}
-
-#query-queue .query-queue-table-cell-svg {
-    height: 20px;
-    width: 100px;
-}
-
-#query-queue .query-queue-table-bars {
-    fill: red;
-    height: 15px;
-    width: 75px;
-}
-
-
-
-/* Old stuff from the CSS accordion. */
-
-#exploration {
-    background-color: rgba(255, 255, 255, 1);
-    flex-grow: 7;
-    flex-shrink: 1;
-    overflow: auto;
-}
-
-#exploration-network {
-    background-color: rgba(255, 255, 255, 1);
-    flex-grow: 5;
-    flex-shrink: 1;
-    overflow: auto;
-}
-
-
-#query {
-    display: inline;
-    float: top;
-    width: 100%;
-    height: 10%;
-}
-
-#query > div > div {
-    float: top;
-}
-
-.query-step {
-    background-color: rgba(200, 200, 200, 1);
-    border-style: solid;
-    border-width: medium;
-    float: top;
-}
-
-.query-step .query-step-count,
-.query-step .query-step-detail,
-.query-step .query-step-summary {
-    float: top;
-}
-
-#query-assembly {
-    float: top;
-}
-
 #selector-div {
     font-size: x-small;
 }
@@ -319,17 +331,16 @@ h3 {
     font-size: small;
 }
 
-/*#degree-table > .svg-bar {
+#degree-table > .svg-bar {
     width: 100px;
     height: 50px;
-} */
+}
 
-/*
-#exploration > svg {
+
+#network > svg {
     width: 100%;
     height: 100%;
 }
-*/
 
 #caption {
     margin-top: 1cm;
@@ -346,3 +357,4 @@ h3 {
 #caption h3{
     font-size: medium;
 }
+*/

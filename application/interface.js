@@ -291,7 +291,7 @@ function initializeQueryInterface(model) {
 function appendQueryBuilderCombination() {
     // Create header.
     var builderHead = document.createElement("h3");
-    builderHead.textContent = "Query Builder";
+    builderHead.textContent = "Builder";
     var builder = document.getElementById("query-builder")
     builder.appendChild(builderHead);
     // Create options for combination strategy.
@@ -515,28 +515,43 @@ function initializeQueryQueue(model) {
  * @param {Array<Object>} queue Details for steps in the query's queue.
  */
 function initializeVisualQueryQueue(queue) {
+    // Create header.
+    var queueHead = document.createElement("h3");
+    queueHead.textContent = "Queue";
+    var queryQueue = document.getElementById("query-queue")
+    queryQueue.appendChild(queueHead);
     // Create query queue table.
     var queryQueueTable = document.createElement("table");
     // Create header.
     var head = document.createElement("thead");
     var headRow = document.createElement("tr");
-    headRow.appendChild(createElementWithText({text: "", type: "th"}));
-    headRow.appendChild(createElementWithText({text: "-/+/x", type: "th"}));
-    headRow.appendChild(createElementWithText({text: "criterion", type: "th"}));
     headRow
-        .appendChild(createElementWithText({text: "metabolites", type: "th"}));
-    headRow.appendChild(createElementWithText({text: "reactions", type: "th"}));
-    headRow.appendChild(createElementWithText({text: "", type: "th"}));
+        .appendChild(createElementWithText({text: "", type: "th"}))
+        .setAttribute("id", "query-queue-table-head-step");
+    headRow
+        .appendChild(createElementWithText({text: "-/+/x", type: "th"}))
+        .setAttribute("id", "query-queue-table-head-combination");
+    headRow
+        .appendChild(createElementWithText({text: "criterion", type: "th"}))
+        .setAttribute("id", "query-queue-table-head-criterion");
+    headRow
+        .appendChild(createElementWithText({text: "metabolites", type: "th"}))
+        .setAttribute("id", "query-queue-table-head-metabolites");
+    headRow
+        .appendChild(createElementWithText({text: "reactions", type: "th"}))
+        .setAttribute("id", "query-queue-table-head-reactions");
+    headRow
+        .appendChild(createElementWithText({text: "", type: "th"}))
+        .setAttribute("id", "query-queue-table-head-remove");
     head.appendChild(headRow);
     queryQueueTable.appendChild(head);
     // Create body.
     var body = document.createElement("tbody");
     queryQueueTable.appendChild(body);
     // Append query queue table to query queue.
-    var queryQueue = document.getElementById("query-queue");
     queryQueue.appendChild(queryQueueTable);
     // Append row for first step of query queue.
-    appendQueryStep(queue);
+    appendQueryStep(extractQueueSummary(queue));
 }
 
 /**
@@ -774,7 +789,8 @@ function extractQueueSummary(queue) {
 /**
  * Appends an additional query step to the query queue according to details from
  * the query assembly interface.
- * @param {Array<Object>} queue Details for steps in the query's queue.
+ * @param {Array<Object>} queue Summary of details for steps in the query's
+ * queue.
  */
 function appendQueryStep(queue) {
     // TODO: Once the user can remove steps, I'll need to handle the exit selection.
@@ -787,42 +803,49 @@ function appendQueryStep(queue) {
     // Append query queue table rows.
     var rows = body
         .selectAll("tr")
-        .data(extractQueueSummary(queue))
+        .data(queue)
         .enter()
         .append("tr");
-    rows
-        .attr("class", "query-step");
     // Append query queue table cells.
     var cells = rows
         .selectAll("td")
         .data(function (step, index) {
+            // Organize data for table columns.
             if (step.countStep === 0) {
-                var removeType = "query-queue-table-cell-empty";
+                var removeType = "empty";
             } else if (step.countStep > 0) {
-                var removeType = "query-queue-table-cell-button";
+                var removeType = "button";
             }
             return [].concat(
                 {
-                    type: "query-queue-table-cell-text",
+                    class: "query-queue-table-column-step",
+                    type: "text",
                     value: step.countStep.toString()
                 },
                 {
-                    type: "query-queue-table-cell-text",
+                    class: "query-queue-table-column-combination",
+                    type: "text",
                     value: step.combination
                 },
                 {
-                    type: "query-queue-table-cell-text",
+                    class: "query-queue-table-column-criterion",
+                    type: "text",
                     value: step.criterion
                 },
                 {
-                    type: "query-queue-table-cell-bar",
+                    class: "query-queue-table-column-metabolites",
+                    subtype: "metabolite",
+                    type: "bar",
                     value: step.countMetabolites
                 },
                 {
-                    type: "query-queue-table-cell-bar",
+                    class: "query-queue-table-column-reactions",
+                    subtype: "reaction",
+                    type: "bar",
                     value: step.countReactions
                 },
                 {
+                    class: "query-queue-table-column-remove",
                     type: removeType,
                     value: ""
                 });
@@ -831,35 +854,75 @@ function appendQueryStep(queue) {
         .append("td");
     cells
         .attr("class", function (data) {
-            return data.type;
+            return data.class;
         });
     // Append text content of cells.
     var textCells = cells
-        .filter(".query-queue-table-cell-text");
+        .filter(function (data, index) {
+            return (data.type === "text");
+        });
     textCells
         .text(function (data) {
             return data.value;
         });
-    // Append chart content of bar cells.
+    // Append graphical container for bar cells.
     var barCells = cells
-        .filter(".query-queue-table-cell-bar");
+        .filter(function (data, index) {
+            return (data.type === "bar");
+        });
     var barCellSVGs = barCells
         .append("svg");
     barCellSVGs
         .attr("class", "query-queue-table-cell-svg");
-    var barCellBars = barCellSVGs
+    // Determine the width of graphical container.
+    var svgWidth = parseFloat(
+        window.getComputedStyle(
+            document.getElementsByClassName("query-queue-table-cell-svg")
+                .item(0)
+        )
+            .width
+            .replace("px", "")
+    );
+    // Define scale functions for bar chart for metabolites.
+    var metaboliteScale = d3
+        .scaleLinear()
+        .domain([0, queue[0].countMetabolites])
+        .range([0, 0.99*svgWidth]);
+    // Append bar chart for metabolites.
+    var metaboliteBarCellSVGs = barCellSVGs
+        .filter(function (data, index) {
+            return (data.subtype === "metabolite");
+        });
+    var metaboliteBars = metaboliteBarCellSVGs
         .append("rect");
-    barCellBars
-        .attr("class", "query-queue-table-bars");
-
-    // TODO: Create a D3 scale function for the bars.
-    // TODO: I will need a separate scale function for metabolites and reactions.
-    // TODO: Also, give different classes to bars for metabolites and reactions.
-    // TODO: Format these differently, probably with different colors.
+    metaboliteBars
+        .attr("width", function (data, index) {
+            return metaboliteScale(data.value);
+        })
+        .attr("class", "query-queue-table-cell-bars-metabolite");
+    // Define scale functions for bar chart for reactions.
+    var reactionScale = d3
+        .scaleLinear()
+        .domain([0, queue[0].countReactions])
+        .range([0, 0.99*svgWidth]);
+    // Append bar chart for reactions.
+    var reactionBarCellSVGs = barCellSVGs
+        .filter(function (data, index) {
+            return (data.subtype === "reaction");
+        });
+    var reactionBars = reactionBarCellSVGs
+        .append("rect");
+    reactionBars
+        .attr("width", function (data, index) {
+            return reactionScale(data.value);
+        })
+        .attr("class", "query-queue-table-cell-bars-reaction");
 
     // Append button content of remove cells.
     var removeCells = cells
-        .filter(".query-queue-table-cell-button");
+        .filter(function (data, index) {
+            return (data.type === "button");
+        });
     var removeCellButtons = removeCells
         .append("button");
     removeCellButtons
@@ -919,7 +982,7 @@ function controlQuery(queue, model) {
 
     // Append a new step element to the query queue with representations for the
     // details of the query step.
-    appendQueryStep(queueResults);
+    appendQueryStep(extractQueueSummary(queueResults));
 
     // Visualize the network that the query produces.
     visualizeNetwork(queueResults[queueResults.length - 1].collection, model);
