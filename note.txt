@@ -4,6 +4,117 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+12 April 2017
+
+----------
+Meet with Alexander Lex
+
+Plan
+For now, keep the old design of the query interface.
+It is probably sufficient at least for development.
+The higher priority is to work on the visualization of the aggregate network.
+
+
+Query Interface
+The new design for the query interface is an improvement.
+It an option for giving overview and context in the query process.
+Alex described the approach of my design as a faceted approach.
+The query interface still would not support complex hierarchical queries, but this level of complexity might not be necessary.
+
+Aggregate Network
+Specify aggregates by individual attributes (compartments, processes) or combinations thereof.
+Show properties of these aggregates and relations between them.
+Maybe show multiple relations between aggregates simultaneously.
+The user can interact with the aggregate network to gain more detail about more specific portions of the network.
+
+----------
+Design
+
+Prototype 1
+
+I consider the current implementation of the tool to be an initial prototype, Prototype 1.
+While this prototype is incomplete, I consider it to be sufficiently functional to exemplify the capabilities and limitations of its design.
+
+Problem
+
+Prototype 1 offers very little access to information on the high-level context/summary/overview of the entire metabolic model.
+Instead it concentrates entirely on selecting sufficiently-small portions of the model to represent information in detail.
+That representation in detail is a node-link diagram of the network.
+Without high-level information about the entire metabolic model, exploration is tedious and selecting portions of the model is difficult.
+Also, it is very difficult to select a sufficiently small portion of the network in order for the node-link diagram to be readable.
+
+Summary
+-Little context/summary/overview
+-Exploration and selection is tedious
+-Difficult to select small enough portions for readable detail
+
+Solution
+
+"Overview first, zoom and filter, then details-on-demand" (Shneiderman, 1996)
+(http://www.infovis-wiki.net/index.php/Visual_Information-Seeking_Mantra)
+Provide access to high-level information about the context/summary/overview of the entire metabolic model.
+Through interactive exploration starting at this complete context, provide access to information in more detail.
+The high-level summary will communicate relevant information to give context.
+This complete context of the model will help the user to make rational selections for more detail.
+The node-link diagram of a portion of the network will probably be the dimension of the most detail.
+
+In the metabolic network, nodes for metabolites and reactions have attributes.
+Common attributes define sets of nodes.
+Attributes of a specific type (reaction type, compartment, process) are exclusive.
+For example, the compartment is either the cytosol or the mitochondrial matrix.
+The hierarchy of sets is ambiguous.
+Neither compartment nor process is explicity superior.
+Metabolites and reactions within a single compartment, further belong to multiple processes.
+Metabolites and reactions within a single process similarly belong to multiple compartments.
+There is extensive overlap or relation between sets.
+It is reasonable to impose a hierarchy.
+
+I conceived a design for a query interface that gives a summary of the attribute sets for the context of the metabolic model.
+The design uses stacked bar charts and a sense of hierarchy.
+It is somewhat similar to a sunburst chart.
+
+I also think that visualizations of aggregate sets would be beneficial.
+Examples include sketch_2016-12-20_1, sketch_2016-12-20_2, sketch_2017-01-02_3, and sketch_2017-01-02_4.
+The user could interact with aspects of these aggregate visual representations to gain information in more detail.
+For example, from sketch_2016-12-20_1, the user might want to know which processes are common between the cytosolic and mitochondrial compartments.
+
+Topological queries would somehow incorporate.
+
+----------
+Article
+"Multivariate Network Exploration and Presentation: From Detail to Overview via Selections and Aggregations" (http://ieeexplore.ieee.org/document/6875972/)
+
+Authors describe a strategy for exploration and analysis of large networks with multivariate attributes for nodes and links.
+The idea is to access both attributes and topology.
+Some explorations and analyses require consideration of attributes and topology together, simultaneously.
+The idea is also to provide a high-level overview or summary that is clear and provide more detail according to selections of interest.
+
+--------------------------------------------------
+12 April 2017
+
+----------
+Design
+
+I considered the current design of the project.
+I also considered options for alternative designs.
+I drew sketch 2017-04-12_1 to represent an idea for a query interface that gives an overview context of the metabolic model.
+
+----------
+Meet with Alexander Lex
+
+Alex and I discussed limitations in the current interface for building queries.
+The current interface gives no sense of or control over hierarchy between query steps.
+For example, adding a step with "or" logic could draw more nodes either from the current collection or from the entire model.
+
+Alex and I also discussed ideas for higher-level overviews or summaries of the metabolic model.
+The model and network are too large and complex to visualize in explicit detail unless the selections are very small.
+Alex recommended visual representation of relations within and between sets.
+Attributes define sets, and there are various types of relations within and between these sets.
+
+Alex recommended a research article.
+"Multivariate Network Exploration and Presentation: From Detail to Overview via Selections and Aggregations" (http://ieeexplore.ieee.org/document/6875972/)
+
+--------------------------------------------------
 11 April 2017
 
 ----------
