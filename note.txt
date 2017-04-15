@@ -4,25 +4,121 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
-12 April 2017
+14 April 2017
+
+----------
+Idea/Question
+
+Maybe I should structure the model data differently for my new approach.
+I do not even need to determine nodes and links of the network until after the query process.
+Then I can determine nodes and links differently according to user desire for compartmental metabolites or otherwise.
+
+Rather than committing to structure the data as a network with nodes for compartmental metabolites, organize relational records.
+Reactions can keep track of metabolites that participate, as well as what compartment they are in.
+Reaction
+-Reactant
+--metabolite
+---pyruvate
+---cytosol
+Then I can create nodes for either compartmental or general metabolites on the fly.
+
+----------
+Attributes
+
+With attributes for compartments and pathways, accommodate both compartmental and general metabolites.
+Count compartmental metabolites (in a pathway)
+Count chemically-unique metabolites (in a pathway)
+
+----------
+Program Organization
+
+Metabolic Model
+-Sets of attributes
+-Network of nodes and links
+--->
+Query or Filter by Attributes
+-Sets of nodes by attributes
+--->
+Sets of Nodes by Attributes
+-Individual attributes or combinations
+-Properties of sets
+-Relations within sets
+-Relations between sets
+--->
+Individual Nodes
+-Properties of individual nodes (degree, centrality)
+-Relations (links) between nodes
+-Topological traversals
+
+----------
+Query Collection Data Structure
+
+In Prototype 1, my primary entity for queries and collections was a node for either a metabolite or a reaction.
+In Prototype 2, the fundamental entity is still a node, but I want to organize nodes by attribute sets.
+
+--------------------------------------------------
+13 April 2017
+
+----------
+Plan
+
+Do I need to change the way the program handles queries?
+Is it still effective to only collect node identifiers for metabolites and reactions?
+Do I need to keep track of attributes and sets differently?
+
+Option 1
+Collect identifiers of nodes for metabolites and reactions.
+Extract set attributes from those nodes.
+
+Option 2
+Collect attributes.
+Collect sets of nodes for those attributes.
+
+I do not know which option will be more efficient.
+
+Also, I will need a new structure for the collection.
+I will need to keep track of a hierarchy of sets.
+For example, an object for compartment will include identifiers for all nodes in each compartment.
+The object for each compartment will also include identifiers for all nodes in each process within that compartment.
+That seems like a very redundant data encoding.
+
+In my current encoding the entities (metabolites, reactions) themselves know to which sets they belong.
+I suppose the question is which strategy is best for handling both the set-based queries and the set-aggregate visualization.
+
+----------
+Plan
+
+Query Interface
+Filter metabolites and reactions by attributes.
+
+Aggregate Network
+Specify attributes and combinations thereof to define aggregates.
+Specify attributes to define relations between aggregates.
+Specify which attributes (count of metabolites, reactions, or pathways) to use in scaling the aggregate nodes.
 
 ----------
 Meet with Alexander Lex
+
+"If you build it, they will come."
+Technology preceeds scientific experimentation.
+Developing a tool to explore and analyze metabolic networks in new ways might permit new uses and tasks.
+
+The novelty of our project is the strategy of exploring the metabolic model by set aggregation.
 
 Plan
 For now, keep the old design of the query interface.
 It is probably sufficient at least for development.
 The higher priority is to work on the visualization of the aggregate network.
 
-
 Query Interface
 The new design for the query interface is an improvement.
 It an option for giving overview and context in the query process.
+There are also other potential options.
 Alex described the approach of my design as a faceted approach.
-The query interface still would not support complex hierarchical queries, but this level of complexity might not be necessary.
+The new design for the query interface still will not support complex hierarchical queries, but this level of complexity might not be necessary.
 
 Aggregate Network
-Specify aggregates by individual attributes (compartments, processes) or combinations thereof.
+Specify aggregates by individual attributes (compartments, processes) or combinations thereof (compartment (cytosol) x process (glycolysis, pentose) = cytosol_glycolysis, cytosol_pentose).
 Show properties of these aggregates and relations between them.
 Maybe show multiple relations between aggregates simultaneously.
 The user can interact with the aggregate network to gain more detail about more specific portions of the network.
