@@ -4,6 +4,113 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+17 April 2017
+
+----------
+New Plan for Query, Selection
+
+Interface will provide visual representation of comprehensive list of reaction types, compartments, and processes that remain at each level.
+It is important to give the user access to this comprehensive list.
+
+Inclusion and exclusion filters act at the level of fundamental entities (metabolites and reactions) and follow an "any" type of logic.
+
+And Logic
+User clicks an attribute's bar once, and the bar changes color to green.
+This selection specifies the attribute for inclusion.
+Inclusion filters only retain fundamental entities if they have any attributes that satisfy the criteria.
+1) For example, an inclusion filter retains a metabolite if it occurs in the specific compartment or process in any reaction.
+2) For example, an inclusion filter retains a reaction if any of its metabolites occur in the specific compartment.
+Subordinate attribute sets only include the portions of their entities that satisfied the superior attribute set criterion.
+For example, only those metabolites of glycolysis that also occur in the cytosol remain in the selection.
+
+Or Logic
+Selection of multiple attributes within a single level constitutes an "or" logical combinator.
+
+Not Logic
+User clicks an attribute's bar twice, and the bar changes color to red.
+This selection specifies the attribute for exclusion.
+Exclusion filters only disgard fundamental entities if they have any attributes that satisfy the criteria.
+1) For example, an exclusion filter disgards a metabolite if it occurs in the specific compartment or process in any reaction.
+2) For example, an exclusion filter disgards a reaction if any of its metabolites occur in the specific compartment.
+
+Limitations
+-Mixture of attribute types at top level.
+--Select all metabolites and reactions in the cytosolic compartment or in fat oxidation in any compartment.
+---User must select all subordinate processes within cytosol and only select fat oxidation within all other compartments.
+---That query would be ridiculously large anyway.
+
+----------
+Visual Query Builder
+The interface needs to be simple, informative, and dynamic.
+Many visual query builders are probably too complex, I imagine.
+Examples
+SQLeo
+datapine WISTIA (https://www.datapine.com/)
+
+Reference
+https://www.quora.com/What-are-some-good-visual-SQL-query-builders
+
+----------
+Query, Selection
+
+Plan
+And Logic
+
+Summary
+I evaluate the strategy for queries and selections that I represented in sketch 2017-04-12_1 and 2017-04-14_1.
+This strategy selects fundamental entities, metabolites and reactions, by criteria of attributes.
+This strategy supports simple selections by hierarchies of attributes.
+Of all available attributes at the top level, it is possible to select the specific attributes to include.
+Then it is possible to select specific child or nested attributes to include.
+For example, the selection includes those entities within a process that satisfy higher-level criteria, such as compartment.
+
+Inadequate Support
+The relationship between compartments and processes is many-to-many.
+These relationships allow more complex or compound selection criteria.
+My strategy does not support complex or compound selections.
+It is only possible to select specific attributes by name to include in the selection.
+The strategy essentially only provides inclusion criteria.
+
+Examples of Inadequate Support
+1. Select a process that involves both cytosolic and mitochondrial compartments but not the peroxisomal compartment.
+-Work-Around
+-User selects cytosolic and mitochondrial compartments.
+-User manually inspects all processes for those that do not include peroxisomal compartment.
+2. Select metabolites that participate in glycolysis and fat oxidation but not in the citrate cycle.
+-Work-Around
+-User selects glycolysis and fat oxidation processes.
+-User manually inspects all metabolites for those that do not participate in the citrate cycle.
+
+----------
+Entities, Attributes, Sets
+
+Entity
+Metabolites and Reactions are the fundamental entities of the system.
+I think that I will try to separate queries or selections by attributes and entities.
+Maybe queries can involve attributes and selections can involve entities.
+
+Entity: Metabolite
+A metabolite is a fundamental entity of the system.
+This metabolite is chemically unique.
+A compartmental metabolite (cytosolic pyruvate) is a compound entity that depends on an attribute or set.
+A compartmental metabolite is not a fundamental entity of the system.
+A single metabolite participates in many reactions, many processes, and many compartments.
+To represent distribution, such as in query, I will show the count of metabolites in each reaction, process, or compartment.
+As a result, the total count will involve replicate counts of many metabolites.
+I will also represent common metabolites that multiple sets share.
+
+Entity: Reaction
+A single reaction participates in a single compartment if it is a conversion type.
+A single reaction participates in multiple compartments if it is a transport type.
+A single reaction participates in a single process.
+A single reaction has a single type.
+To represent distribution, include a reaction in a set if any part of it, such as a single metabolite, satisfies the criteria.
+
+Attributes, Sets
+Compartment, process, reaction type
+All of these attributes and sets are potentially not mutually exclusive.
+
+--------------------------------------------------
 14 April 2017
 
 ----------
