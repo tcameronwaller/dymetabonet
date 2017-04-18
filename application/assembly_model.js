@@ -1,9 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Assembly of Model
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// Assembly of Model
 
 /**
  * Prints summary information to console about a metabolic model.
@@ -35,29 +31,31 @@ function summarizeModel(model) {
     );
 }
 
-
-
-// TODO: This documentation misrepresents the new format of the metabolic model.
 /**
  * Assembles a practical and concise model to represent information of a
  * metabolic model.
- * @param {Object} data Information of a metabolic model from systems biology,
- * conversion from SBML to JSON formats by COBRApy and libSBML.
- * @param {Object<string>} data.compartments Abbreviations and names of
+ * @param {Object} data Information about a metabolic model from systems
+ * biology, conversion from SBML to JSON formats by COBRApy and libSBML.
+ * @param {Object<string>} data.compartments Identifiers and names of
  * compartments in the model.
- * @param {Array<Object<string>>} data.genes Information for genes in the model.
- * @param {Array<Object>} data.metabolites Information for compartment-specific
- * metabolites in the model.
- * @param {Array<Object>} data.reactions Information for reactions in the model.
+ * @param {Array<Object<string>>} data.genes Identifiers and names of genes in
+ * the model.
+ * @param {Array<Object<string>>} data.metabolites Information about
+ * compartment-specific metabolites in the model.
+ * @param {Array<Object<string>>} data.reactions Information about reactions in
+ * the model.
  * @returns {Object} Information about entities and relations in a metabolic
  * model.
  */
 function assembleModel(data) {
-    var sets = assembleSets(data);
-    var network = assembleNetwork(data, sets.sets);
-    var model = Object.assign({}, sets, network);
-    downloadJSON(model, "model_sets_network.json");
-    return model;
+    console.log(data);
+    var dataClean = checkCleanRecon2(data);
+    console.log(dataClean);
+    //var sets = assembleSets(data);
+    //var entities = assembleEntities(data, sets.sets);
+    //var model = Object.assign({}, entities, sets);
+    //downloadJSON(model, "model_sets_network.json");
+    //return model;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -6,35 +6,34 @@
 // Creation of records for compartments
 
 /**
- * Creates a record for a single compartment from a metabolic model.
- * @param {Object} compartments Information for all compartments of a metabolic
- * model.
- * @param {string} compartmentIdentifier Unique identifier of a compartment.
+ * Creates a record for a single compartment in a metabolic model.
+ * @param {string} identifier Identifier of a single compartment.
+ * @param {string} name Name of a single compartment.
  * @returns {Object} Record for a compartment.
  */
-function createCompartmentRecord(compartments, compartmentIdentifier) {
+function createCompartmentRecord(identifier, name) {
     return {
-        [compartmentIdentifier]: {
-            id: compartmentIdentifier,
-            name: compartments[compartmentIdentifier]
+        [identifier]: {
+            identifier: identifier,
+            name: name
         }
     };
 }
 
 /**
- * Creates records for all compartments from a metabolic model.
- * @param {Object} compartments Information for all compartments of a metabolic
- * model.
+ * Creates records for all compartments in a metabolic model.
+ * @param {Object} compartments Information about all compartments in a
+ * metabolic model.
  * @returns {Object} Records for compartments.
  */
 function createCompartmentRecords(compartments) {
     // Create records for compartments.
     return Object.keys(compartments)
-        .reduce(function (collection, compartmentIdentifier) {
+        .reduce(function (collection, identifier) {
             return Object.assign(
                 {},
                 collection,
-                createCompartmentRecord(compartments, compartmentIdentifier)
+                createCompartmentRecord(identifier, compartments[identifier])
             );
         }, {});
 }
@@ -43,77 +42,26 @@ function createCompartmentRecords(compartments) {
 // Creation of records for genes
 
 /**
- * Checks to ensure that a gene participates in at least one reaction in the
- * metabolic model.
- * @param {string} geneIdentifier Identifier for a gene.
- * @param {Array<Object>} reactions Information for all reactions of a metabolic
- * model.
- * @returns {boolean} Whether or not the gene participates in a reaction.
- */
-function checkGeneReactions(geneIdentifier, reactions) {
-    // Confirm that gene participates in at least one reaction.
-    if (countGeneReactions(geneIdentifier, reactions) >= 1) {
-        return true;
-    } else {
-        console.log(
-            "Check Genes: " + gene.id +
-            " failed reaction check."
-        );
-        return false;
-    }
-}
-
-/**
- * Checks a single gene from a metabolic model.
- * @param {string} geneIdentifier Identifier for a gene.
- * @param {Array<Object>} reactions Information for all reactions of a
- * metabolic model.
- */
-function checkGene(geneIdentifier, reactions) {
-    checkGeneReactions(geneIdentifier, reactions);
-}
-
-/**
- * Determines the identifier of a single gene from a metabolic model.
- * @param {string} geneIdentifier Identifier for a gene.
- * @param {string} Identifier for a gene.
- */
-function determineGeneIdentifier(geneIdentifier) {
-    if (!geneIdentifier.includes("HGNC:HGNC:")) {
-        return geneIdentifier;
-    } else {
-        return geneIdentifier.replace("HGNC:", "");
-    }
-}
-
-
-/**
- * Creates a record for a single gene from a metabolic model.
- * @param {string} processName Name of a metabolic subsystem or process.
- * @returns {Object} Record for a process.
+ * Creates a record for a single gene in a metabolic model.
+ * @param {Object<string>} gene Information about a single gene.
+ * @returns {Object} Record for a gene.
  */
 function createGeneRecord(gene) {
     return {
-        [determineGeneIdentifier(gene.id)]: {
-            id: determineGeneIdentifier(gene.id),
+        [gene.id]: {
+            identifier: gene.id,
             name: gene.name
         }
     };
 }
 
 /**
- * Creates records for all genes from a metabolic model.
+ * Creates records for all genes in a metabolic model.
  * @param {Array<Object>} genes Information for all genes of a metabolic
- * model.
- * @param {Array<Object>} reactions Information for all reactions of a metabolic
  * model.
  * @returns {Object} Records for genes.
  */
-function createGeneRecords(genes, reactions) {
-    // Check genes.
-    genes.map(function (gene) {
-        return checkGene(gene.id, reactions);
-    });
+function createGeneRecords(genes) {
     // Create records for genes.
     return genes.reduce(function (collection, gene) {
         return Object.assign({}, collection, createGeneRecord(gene));
@@ -367,19 +315,22 @@ function createProcessRecords(reactions) {
 ////////////////////////////////////////////////////////////////////////////////
 // Assembly of relational tables for sets
 
+// TODO: Follow the new data structure, including "identifier" instead of "id".
+
 /**
- * Creates relational tables for information about sets of nodes of a
+ * Assembles relational tables for information about sets of entities in a
  * metabolic model.
- * @param {Object} model Information of a metabolic model from systems biology.
+ * @param {Object} data Information about a metabolic model from systems
+ * biology.
  * @returns {Object} Information about sets of nodes.
  */
-function assembleSets(model) {
+function assembleSets(data) {
     return {
         sets: {
-            compartments: createCompartmentRecords(model.compartments),
-            genes: createGeneRecords(model.genes, model.reactions),
-            metabolites: createMetaboliteRecords(model.metabolites),
-            processes: createProcessRecords(model.reactions)
+            compartments: createCompartmentRecords(data.compartments),
+            genes: createGeneRecords(data.genes),
+            //metabolites: createMetaboliteRecords(data.metabolites),
+            processes: createProcessRecords(data.reactions)
         }
     }
 }

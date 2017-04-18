@@ -82,6 +82,77 @@ function filterCompartmentalMetabolitesByMetabolite(
 // Reactions
 
 /**
+ * Extracts identifiers of genes from a reaction's gene reaction rule.
+ * @param {string} geneReactionRule Rule for a reaction's gene requirements.
+ * @returns {Array<string>} Identifiers of genes that participate in the
+ * reaction.
+ */
+function extractGenesFromRule(geneReactionRule) {
+    return replaceAllString(
+        replaceAllString(
+            geneReactionRule, "(", ""
+        ), ")", ""
+    )
+        .split(" ")
+        .filter(function (element) {
+            return element.includes(":");
+        });
+}
+
+/**
+ * Extracts identifiers of genes from reactions.
+ * @param {Array<Object<string>>} reactions Information about all reactions in a
+ * metabolic model.
+ * @returns {Array<string>} Identifiers of genes from reactions.
+ */
+function extractGenesFromReactions(reactions) {
+    return reactions.reduce(function (collection, reaction) {
+        if (reaction.gene_reaction_rule) {
+            // Reaction has a non-empty gene reaction rule.
+            var geneIdentifiers = extractGenesFromRule(
+                reaction.gene_reaction_rule
+            );
+            return collection.concat(geneIdentifiers);
+        } else {
+            // Reaction has an empty gene reaction rule.
+            return collection;
+        }
+    }, []);
+}
+
+
+
+
+/**
+ * Filters a model's reactions by their inclusion of a gene.
+ * @param {string} geneIdentifier Identifier of a gene.
+ * @param {Array<Object>} reactions Information for reactions in the model.
+ * @returns {Array<string>} Identifiers for reactions in which the gene
+ * participates.
+ */
+function filterReactionsByGene(geneIdentifier, reactions) {
+    return reactions.filter(function (reaction) {
+        return extractGenesFromRule(reaction.gene_reaction_rule)
+            .includes(geneIdentifier);
+    });
+}
+
+/**
+ * Counts the unique reactions in which a gene participates.
+ * @param {string} geneIdentifier Identifier for a metabolite.
+ * @param {Array<Object>} reactions Information for reactions in the model.
+ * @returns {number} Count of unique reactions.
+ */
+function countGeneReactions(geneIdentifier, reactions) {
+    return collectUniqueElements(
+        filterReactionsByGene(
+            geneIdentifier, reactions
+        )
+    )
+        .length;
+}
+
+/**
  * Determines the value for a reaction's process.
  * @param {Object} reaction Information for a reaction.
  * @returns {string} The name of the process.
@@ -168,20 +239,6 @@ function filterReactionsByCompartmentalMetabolite(
 }
 
 /**
- * Filters a model's reactions by their inclusion of a gene.
- * @param {string} geneIdentifier Identifier of a gene.
- * @param {Array<Object>} reactions Information for reactions in the model.
- * @returns {Array<string>} Identifiers for reactions in which the gene
- * participates.
- */
-function filterReactionsByGene(geneIdentifier, reactions) {
-    return reactions.filter(function (reaction) {
-        return extractGeneIdentifiers(reaction.gene_reaction_rule)
-            .includes(geneIdentifier);
-    });
-}
-
-/**
  * Counts the unique reactions in which a compartmental metabolite participates.
  * @param {string} metaboliteIdentifier Identifier of a compartmental
  * metabolite.
@@ -194,21 +251,6 @@ function countCompartmentalMetaboliteReactions(
     return collectUniqueElements(
         filterReactionsByCompartmentalMetabolite(
             metaboliteIdentifier, reactions
-        )
-    )
-        .length;
-}
-
-/**
- * Counts the unique reactions in which a gene participates.
- * @param {string} geneIdentifier Identifier for a metabolite.
- * @param {Array<Object>} reactions Information for reactions in the model.
- * @returns {number} Count of unique reactions.
- */
-function countGeneReactions(geneIdentifier, reactions) {
-    return collectUniqueElements(
-        filterReactionsByGene(
-            geneIdentifier, reactions
         )
     )
         .length;
@@ -290,25 +332,5 @@ function determineChangeChemicals(reaction) {
         compareArraysByInclusion(reactantIdentifiers, productIdentifiers) &&
         compareArraysByInclusion(productIdentifiers, reactantIdentifiers) &&
         (reactantIdentifiers.length === productIdentifiers.length)
-    );
-}
-
-/**
- * Determines gene identifiers from a reaction's gene reaction rule.
- * @param {string} geneReactionRule Rule for a reaction's gene requirements.
- * @returns {Array<string>} Identifiers for genes that participate in the
- * reaction.
- */
-function extractGeneIdentifiers(geneReactionRule) {
-    return collectUniqueElements(
-        replaceAllString(
-            replaceAllString(
-                geneReactionRule, "(", ""
-            ), ")", ""
-        )
-            .split(" ")
-            .filter(function (element) {
-                return element.includes(":");
-            })
     );
 }

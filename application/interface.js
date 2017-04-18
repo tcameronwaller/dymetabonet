@@ -151,7 +151,7 @@ function initializeInterface() {
         .getElementById("load-model")
         .addEventListener("click", controlModelLoad);
     // Temporarily during development, load default model.
-    loadDefaultModel();
+    //loadDefaultModel();
 }
 
 /**

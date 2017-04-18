@@ -198,11 +198,13 @@ function checkReactionMetabolites(reaction, metabolites) {
 function checkReactionGenes(reaction, genes) {
     // Confirm that a reaction's genes have corresponding records.
     if (
-        extractGeneIdentifiers(reaction.gene_reaction_rule)
+        collectUniqueElements(
+            extractGenesFromRule(reaction.gene_reaction_rule)
+        )
             .every(function (geneIdentifier) {
                 return genes.find(function (gene) {
-                        return gene.id === geneIdentifier;
-                    }) != undefined;
+                    return gene.id === geneIdentifier;
+                }) != undefined;
             })
     ) {
         return true;

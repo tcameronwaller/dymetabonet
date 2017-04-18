@@ -11,7 +11,7 @@
     "reactions": {
       "identifier": {
         "identifier": "\"reaction identifier\"",
-        "genes": "\"gene reaction rule\"",
+        "genes": "\"array of gene identifiers that participate in the reaction\"",
         "metabolites": [
           {
             "identifier": "\"identifier for metabolite that participates in reaction\"",
