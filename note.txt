@@ -4,6 +4,42 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+18 April 2017
+
+----------
+Data Structure
+
+I composed two outlines for data structure.
+
+Sketch 2017-04-18_2
+I attempted to compose a structure to organize the information of a set-based hierarchical query.
+I am not confident that this structure is a good option.
+
+Sketch 2017-04-18_3
+I composed a structure for the information about entities and sets in the metabolic model.
+I will not define nodes and links of a network until after the query process.
+During or after the query process, the user will specify whether to construct the network with nodes for compartmental metabolites or general metabolites.
+
+----------
+Query Design
+
+Sketch 2017-04-14_1, depicts the representation of sets in horizontal stacks of bars.
+I like the idea of expanding the bars to represent the distribution of the current selection between the sets that it includes.
+In sketch 2017-04-14_1, bars for selected attributes (such as compartments cytosol, mitochondrion, and peroxisome) expand to occupy the entire horizontal width in their respective proportions.
+There are two options.
+
+Option 1
+Modify the representation of all attribute sets to represent the distribution of the current selection.
+
+Option 2
+For each attribute, make bars represent the distribution within that attribute type, ignoring all other attributes.
+
+I prefer Option 1.
+
+Make the bars update with each change to the selection.
+The bars will represent the distribution between sets in the current selection.
+
+--------------------------------------------------
 17 April 2017
 
 ----------

@@ -1,0 +1,58 @@
+{
+  "entities": {
+    "metabolites": {
+      "identifier": {
+        "charge": "\"chemical charge\"",
+        "formula": "\"chemical formula\"",
+        "identifier": "\"metabolite identifier\"",
+        "name": "\"metabolite name\""
+      }
+    },
+    "reactions": {
+      "identifier": {
+        "identifier": "\"reaction identifier\"",
+        "genes": "\"gene reaction rule\"",
+        "metabolites": [
+          {
+            "identifier": "\"identifier for metabolite that participates in reaction\"",
+            "role": "\"reactant or product\"",
+            "compartment": "\"compartment in which metabolite participates in the reaction\""
+          }
+        ],
+        "name": "\"reaction name\"",
+        "process": "\"identifier for process of which reaction is a part\"",
+        "reversibility": "\"true or false\""
+      }
+    }
+  },
+  "sets": {
+    "compartments": {
+      "identifier": {
+        "identifier": "\"compartment identifier\"",
+        "name": "\"compartment name\""
+      }
+    },
+    "processes": {
+      "identifier": {
+        "identifier": "\"process identifier\"",
+        "name": "\"process name\""
+      }
+    },
+    "genes": {
+      "identifier": {
+        "identifier": "\"gene identifier\"",
+        "name": "\"gene name\""
+      }
+    }
+  },
+  "network": {
+    "explanation": "\"definition of nodes and links in network will occur after selection of sets\"",
+    "links": {},
+    "nodes": {
+      "metabolites": {
+        "explanation": "\"either compartmental metabolites or general metabolites may constitute nodes\""
+      },
+      "reactions": {}
+    }
+  }
+}
