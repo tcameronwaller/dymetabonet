@@ -1,0 +1,119 @@
+<!--
+ Profondeur supports visual exploration and analysis of metabolic networks.
+ Copyright (C) 2016  Thomas Cameron Waller
+
+ Author email: tcameronwaller@gmail.com
+
+ This file is part of Profondeur.
+
+ Profondeur is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Profondeur</title>
+    <meta name="author" content="T Cameron Waller">
+    <meta name="description" content="Profondeur is a tool for the visual
+    exploration and analysis of metabolic networks.">
+    <link rel="stylesheet" href="style.css"/>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="./cytoscape.js-2.7.13/cytoscape.js"></script>
+</head>
+
+<body>
+    <!-- Create container for entire view. -->
+    <div id="view">
+
+        <!-- Create container for header. -->
+        <div id="header">
+            <h1 title="Profondeur: Visual Exploration and Analysis of Metabolic Networks">Profondeur</h1>
+        </div>
+
+        <!-- Create container for main interface. -->
+        <div id="interface">
+            <!-- TODO: Per Google HTML/CSS Style Guide, change to control behavior in JavaScript. -->
+            <!-- Create control panel. -->
+            <!-- TODO: Make the control panel collapsible, like the panels within it. -->
+            <div id="control">
+                <!-- Create model panel. -->
+                <div id="model-tab" class="tab">
+                    <h2>Model</h2>
+                </div>
+                <div id="model-panel" class="panel hide">
+                    <input id="file-selector" type="file"><br>
+                    <button id="assemble-model">Assemble</button>
+                    <button id="load-model">Load</button>
+                </div>
+
+                <!-- Create query panel. -->
+                <div id="query-tab" class="tab">
+                    <h2>Query</h2>
+                </div>
+                <div id="query-panel" class="panel hide">
+                    <div id="query-queue"></div>
+                    <div id="query-builder"></div>
+                </div>
+                <!-- Create navigation panel. -->
+                <div id="navigation-tab" class="tab">
+                    <h2>Navigation</h2>
+                </div>
+                <div id="navigation-panel" class="panel hide">
+                    This is the Navigation Panel.
+                </div>
+                <!-- <table id="degree-table">
+                    <thead>
+                    <tr>
+                        <th>Identifier</th>
+                        <th>Degree</th>
+                        <th>Replicate</th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td id="degree-scale"></td>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table> -->
+                <!-- Create detail panel. -->
+                <div id="detail-tab" class="tab">
+                    <h2>Detail</h2>
+                </div>
+                <div id="detail-panel" class="panel hide">
+                    This is the Detail Panel.
+                </div>
+            </div>
+            <!-- Create element for exploration view. -->
+            <div id="network"></div>
+        </div>
+    </div>
+
+    <!-- Call scripts. -->
+    <script type="application/javascript" src="general_utility.js"></script>
+    <script type="application/javascript" src="assembly_utility.js"></script>
+    <script type="application/javascript" src="assembly_sets.js"></script>
+    <script type="application/javascript" src="assembly_network.js"></script>
+    <script type="application/javascript" src="assembly_model.js"></script>
+    <script type="application/javascript" src="query_attribute.js"></script>
+    <script type="application/javascript" src="query_topology.js"></script>
+    <script type="application/javascript" src="test.js"></script>
+    <script type="application/javascript" src="interface.js"></script>
+    <script type="application/javascript" src="main.js"></script>
+
+</body>
+
+</html>
