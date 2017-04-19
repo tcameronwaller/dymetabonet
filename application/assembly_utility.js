@@ -33,15 +33,15 @@ function extractCompartmentIdentifiers(metaboliteIdentifiers) {
 // Metabolites
 
 /**
- * Determines general metabolite identifier from compartmental metabolite
- * identifier.
- * @param {string} compartmentalMetaboliteIdentifier Unique identifier of
+ * Extracts the identifier of a general metabolite from the identifier of a
  * compartmental metabolite.
- * @returns {string} Unique identifier of general metabolite.
+ * @param {string} compartmentalMetaboliteIdentifier Identifier of a
+ * compartmental metabolite.
+ * @returns {string} Identifier of a general metabolite.
  */
 function extractMetaboliteIdentifier(compartmentalMetaboliteIdentifier) {
     // Select the portion of the compartmental metabolite identifier before the
-    // underscore to obtain the general metabolite identifier.
+    // last underscore to obtain the general metabolite identifier.
     return compartmentalMetaboliteIdentifier
         .substring(0, compartmentalMetaboliteIdentifier.lastIndexOf("_"));
 }
@@ -60,6 +60,7 @@ function extractMetaboliteIdentifiers(compartmentalMetaboliteIdentifiers) {
         .map(extractMetaboliteIdentifier);
 }
 
+// TODO: Use of this filter function's algorithm is extremely inefficient if applying to a large array of metaboliteIdentifiers.
 /**
  * Filters a model's compartmental metabolites by their identity to a general
  * metabolite.
@@ -119,6 +120,20 @@ function extractGenesFromReactions(reactions) {
         }
     }, []);
 }
+
+/**
+ * Extracts identifiers of metabolites from reactions.
+ * @param {Array<Object<string>>} reactions Information about all reactions in a
+ * metabolic model.
+ * @returns {Array<string>} Identifiers of metabolites from reactions.
+ */
+function extractMetabolitesFromReactions(reactions) {
+    return reactions.reduce(function (collection, reaction) {
+        var metaboliteIdentifiers = Object.keys(reaction.metabolites);
+        return collection.concat(metaboliteIdentifiers);
+    }, []);
+}
+
 
 
 
