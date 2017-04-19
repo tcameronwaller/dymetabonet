@@ -3,7 +3,7 @@
 // Check and Clean Information about Compartments
 
 /**
- * Checks and cleans information about a single compartment from a metabolic
+ * Checks and cleans information about a single compartment in a metabolic
  * model.
  * @param {string} identifier Identifier of a single compartment.
  * @param {string} name Name of a single compartment.
@@ -94,7 +94,7 @@ function cleanGeneIdentifier(identifier) {
 }
 
 /**
- * Creates a record for a single gene from a metabolic model.
+ * Checks and cleans information about a single gene in a metabolic model.
  * @param {Object<string>} gene Information about a single gene.
  * @param {Array<string>} genesFromReactions Unique identifiers of all genes
  * that participate in reactions.
@@ -179,13 +179,27 @@ function checkMetabolite(identifier, metabolitesFromReactions) {
 }
 
 /**
- * Creates a record for a single gene from a metabolic model.
- * @param {Object<string>} gene Information about a single gene.
- * @param {Array<string>} genesFromReactions Unique identifiers of all genes
- * that participate in reactions.
- * @returns {Object<string>} Information about a gene.
+ * Checks and cleans information about a single general metabolite in a
+ * metabolic model.
+ * @param {Object<string>} metaboliteInformation Information about a single
+ * general metabolite.
+ * @returns {Object<string>} Information about a metabolite.
  */
-function checkCleanMetabolite(metabolite, metabolitesFromReactions) {
+function checkCleanMetabolite(metaboliteInformation) {
+    // Identifier.
+    metaboliteInformation.ids.map()
+
+    // Charge.
+
+
+    // Formula.
+
+
+    // Name.
+
+
+
+
     // Clean metabolite identifier.
     //var identifier = cleanGeneIdentifier(gene.id);
     // Check metabolite.
@@ -197,14 +211,14 @@ function checkCleanMetabolite(metabolite, metabolitesFromReactions) {
 }
 
 /**
- * Extracts records for compartmental metabolites and organizes these within
- * records for general metabolites.
+ * Extracts attributes from records for compartmental metabolites and organizes
+ * these within records for general metabolites.
  * @param {Array<Object<string>>} metabolites Information about all metabolites
  * in a metabolic model.
- * @returns {Object<Object<string>>} Records for compartmental metabolites
+ * @returns {Object<Array<string>>} Attributes of compartmental metabolites
  * within records for general metabolites.
  */
-function extractMetaboliteSets(metabolites) {
+function extractMetaboliteSetInformation(metabolites) {
     // The metabolic model has separate records for compartmental metabolites.
     // Split the array of metabolite records into collections of records for the
     // same chemical metabolite.
@@ -215,33 +229,41 @@ function extractMetaboliteSets(metabolites) {
         if (!Object.keys(collection).includes(metaboliteIdentifier)) {
             // The collection does not yet have a record for the general
             // metabolite.
-            // Create a new record for the general metabolite and create a new
-            // record for the compartmental metabolite within it.
-            var newMetaboliteSet = {
+            // Create a new record for the general metabolite with attributes
+            // from the compartmental metabolite within the record for the
+            // general metabolite.
+            var newMetabolite = {
                 [metaboliteIdentifier]: {
-                    [metabolite.id]: metabolite
+                    charges: [].concat(metabolite.charge),
+                    compartments: [].concat(metabolite.compartment),
+                    formulas: [].concat(metabolite.formula),
+                    ids: [].concat(metabolite.id),
+                    names: [].concat(metabolite.name)
                 }
             };
-            return Object.assign({}, collection, newMetaboliteSet);
+            return Object.assign({}, collection, newMetabolite);
         } else {
             // The collection already has a record for the general metabolite.
-            // Include a record for the compartmental metabolite within the
+            // Include the attributes from the compartmental metabolite within the
             // record for the general metabolite.
             // The new record for the general metabolite will write over the
             // previous record.
-
-            // TODO: I think there is some problem in the way I handle adding new compartmental records to a general record.
-
+            var oldMetabolite = collection[metaboliteIdentifier];
             var newMetabolite = {
-                [metabolite.id]: metabolite
+                [metaboliteIdentifier]: {
+                    charges: oldMetabolite.charges.concat(metabolite.charge),
+                    compartments: oldMetabolite
+                        .compartments
+                        .concat(metabolite.compartment),
+                    formulas: oldMetabolite.formulas.concat(metabolite.formula),
+                    ids: oldMetabolite.ids.concat(metabolite.id),
+                    names: oldMetabolite.names.concat(metabolite.name)
+                }
             };
-            var newMetaboliteSet = Object
-                .assign({}, collection[metaboliteIdentifier], newMetabolite);
-            return Object.assign({}, collection, newMetaboliteSet);
+            return Object.assign({}, collection, newMetabolite);
         }
     }, {});
 }
-
 
 /**
  * Checks and cleans information about metabolites in a metabolic model.
@@ -263,8 +285,22 @@ function checkCleanMetabolites(metabolites, reactions) {
     // eliminate discrepancies in attributes that should be identical.
     // Split the array of metabolite records into collections of records for the
     // same chemical metabolite.
-    var metaboliteSets = extractMetaboliteSets(metabolites);
-    console.log(metaboliteSets);
+    var metaboliteSetsInformation = extractMetaboliteSetInformation(metabolites);
+
+    // TODO: Take this metabolite information and use it to re-create the records for compartmental metabolites.
+    var metabolitesInformation = metaboliteSetsInformation
+        .map(function (metaboliteInformation) {
+            return checkCleanMetabolite(
+                metaboliteInformation, metabolitesFromReactions
+            );
+        });
+    console.log(metaboliteSetInformation);
+    console.log(metabolitesInformation);
+
+
+
+
+
     // Check and clean all metabolites.
     //return metabolites.map(function (metabolite) {
     //    return checkCleanMetabolite(metabolite, metabolitesFromReactions);

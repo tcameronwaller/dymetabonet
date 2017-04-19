@@ -151,6 +151,7 @@ function initializeInterface() {
         .getElementById("load-model")
         .addEventListener("click", controlModelLoad);
     // Temporarily during development, load default model.
+    assembleDefaultModel();
     //loadDefaultModel();
 }
 
@@ -218,6 +219,25 @@ function controlModelLoad(event) {
     };
     // Read file as text.
     reader.readAsText(file);
+}
+
+/**
+ * Assemble model by default.
+ */
+function assembleDefaultModel() {
+    // Load data from file in JSON format.
+    d3.json(
+        ("../model/homo-sapiens/model_h-sapiens_recon-2.json"),
+        function (error, data) {
+            if (error) {
+                throw error;
+            }
+            // Call function to assemble model.
+            var model = assembleModel(data);
+            summarizeModel(model);
+            initializeInterfaceForModel(model);
+        }
+    );
 }
 
 /**

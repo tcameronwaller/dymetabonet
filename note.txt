@@ -4,6 +4,16 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+19 April 2017
+
+----------
+Model Data Check and Clean
+
+Recon 2.2 model of human metabolism includes a record for the metabolite "cocaine(1+)".
+That seems odd.
+I did not realize that this model included xenobiotics.
+
+--------------------------------------------------
 18 April 2017
 
 ----------
