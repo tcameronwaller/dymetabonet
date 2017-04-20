@@ -102,59 +102,6 @@ function checkMetaboliteSet(setMetabolites, metaboliteIdentifier) {
 }
 
 /**
- * Determines a consensus name for a set of metabolites.
- * @param {Array<Object>} setMetabolites Information for all compartmental
- * metabolites that are chemically identical.
- * @returns {string} Consensus name for the set of metabolites.
- */
-function determineMetaboliteSetName(setMetabolites) {
-    var names = collectValuesFromObjects(setMetabolites, "name");
-    if (collectUniqueElements(names).length <= 1) {
-        return collectUniqueElements(names)[0];
-    } else if (
-        (setMetabolites.every(function (metabolite) {
-            return (metabolite.name.includes("_")) &&
-                (metabolite.compartment ===
-                extractCompartmentIdentifier(metabolite.name));
-        })) &&
-        (
-            collectUniqueElements(
-                extractMetaboliteIdentifiers(names)
-            ).length === 1
-        )
-    ) {
-        // Names for some metabolites in the model might include compartment
-        // identifiers.
-        // Inclusion of these compartment identifiers in the names can impart
-        // discrepancies in separate records fro the same metabolite.
-        return collectUniqueElements(extractMetaboliteIdentifiers(names))[0];
-    } else if (
-        (names.find(function (name) {
-            return name.includes("(R)") || name.includes("(S)");
-        }) != undefined) &&
-        (collectUniqueElements(names.map(function (name) {
-            return name.replace("(R)", "(R/S)");
-        }).map(function (name) {
-            return name.replace("(S)", "(R/S)");
-        })).length === 1)
-    ) {
-        // Names for some metabolites in the model might include designations of
-        // stereoisomers around chirality centers.
-        // While these stereoisomers are chemically distinct, the model might
-        // give them the same identifier.
-        return collectUniqueElements(names.map(function (name) {
-            return name.replace("(R)", "(R/S)");
-        }).map(function (name) {
-            return name.replace("(S)", "(R/S)");
-        }))[0];
-    } else {
-        //console.log("name discrepancy");
-        //console.log(setMetabolites);
-        return names[0];
-    }
-}
-
-/**
  * Creates a record for a single metabolite from a metabolic model.
  * @param {string} metaboliteIdentifier Unique identifier of general metabolite.
  * @param {Array<Object>} metabolites Information for all metabolites of a

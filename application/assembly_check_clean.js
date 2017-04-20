@@ -137,7 +137,6 @@ function checkCleanGenes(genes, reactions) {
 // TODO: Change (R) and (S) in names to (R/S) IF the metabolites otherwise have identical identifiers.
 // TODO: Remove compartment designators from names of metabolites.
 // TODO: Change "pentenoyl" to "pentaenoyl"... see notes.
-// TODO: Make sure that all metabolites in set have identical name, formula, charge, etc...
 // TODO: Try to preserve information?
 
 /**
@@ -174,6 +173,7 @@ function checkCleanMetaboliteCharge(identifier, charges) {
     var uniqueCharges = collectUniqueElements(charges.filter(function (charge) {
         return !!charge;
     }));
+    // Determine consensus charge.
     if (uniqueCharges.length <= 1) {
         // There is not a discrepancy in the charges.
         return uniqueCharges[0];
@@ -200,38 +200,164 @@ function checkCleanMetaboliteFormula(identifier, formulas) {
             return !!formula;
         })
     );
+    // There is a discrepancy in the formulas.
+    // Chemical formulas for some metabolites in the model might include an
+    // "R" character to denote an ambiguous alkyl substituent.
+    // The "R" character does not denote any specific chemical element.
+    // Inclusion of this nonspecific formula can impart discrepancies.
+    var specificFormulas = uniqueFormulas.filter(function (formula) {
+        return !formula.includes("R");
+    });
+    // Determine consensus formula.
     if (uniqueFormulas.length <= 1) {
         // There is not a discrepancy in the formulas.
         return uniqueFormulas[0];
+    } else if (specificFormulas.length === 1) {
+        // There is a single specific formula.
+        return specificFormulas[0];
+    } else if (specificFormulas.length > 1) {
+        // There is a discrepancy between multiple specific formulas.
+        return specificFormulas[0];
+    } else if (specificFormulas.length < 1) {
+        // There are zero specific formulas.
+        return uniqueFormulas[0];
     } else {
-        // There is a discrepancy in the formulas.
-        // Chemical formulas for some metabolites in the model might include an
-        // "R" character to denote an ambiguous alkyl substituent.
-        // The "R" character does not denote any specific chemical element.
-        // Inclusion of this nonspecific formula can impart discrepancies.
-        var specificFormulas = uniqueFormulas.filter(function (formula) {
-            return !formula.includes("R");
-        });
-        if (specificFormulas.length === 1) {
-            // There is a single specific formula.
-            return specificFormulas[0];
-        } else if (specificFormulas.length > 1) {
-            // There is a discrepancy between multiple specific formulas.
-            return specificFormulas[0];
-        } else if (specificFormulas.length < 1) {
-            // There are zero specific formulas.
-            return uniqueFormulas[0];
-        } else {
-            console.log(
-                "Model Assembly, Check Metabolites: " + identifier +
-                " failed formula check."
-            );
-        }
+        console.log(
+            "Model Assembly, Check Metabolites: " + identifier +
+            " failed formula check."
+        );
+        return uniqueFormulas[0];
     }
 }
 
-// TODO: checkCleanMetaboliteName
+/**
+ * Checks and cleans the name of a metabolite.
+ * @param {string} identifier Identifier of a single general metabolite.
+ * @param {Array<string>} names Names from all compartmental occurrences of the
+ * general metabolite.
+ * @param {Array<string>} compartments Compartments from all compartmental
+ * occurrences of the general metabolite.
+ * @returns {string} Consensus name for the metabolite.
+ */
+function checkCleanMetaboliteName(identifier, names, compartments) {
+    // Filter falsy values from names and collect unique elements.
+    var uniqueNames = collectUniqueElements(
+        names.filter(function (name) {
+            return !!name;
+        })
+    );
+    // Names for some metabolites in the model might include identifiers of
+    // the compartment in which the metabolite occurs.
+    // Inclusion of these compartmental identifiers in the names can impart
+    // discrepancies.
+    var simpleNames = collectUniqueElements(
+        names.map(function (name, index) {
+            if (
+                (extractCompartmentIdentifier(name)) &&
+                (extractCompartmentIdentifier(name) === compartments[index])
+            ) {
+                // The name includes a non-falsy identifier that matches the
+                // compartment.
+                return extractMetaboliteIdentifier(name);
+            } else {
+                return name;
+            }
+        })
+    );
+    // Names for some metabolites in the model might include designations of
+    // stereoisomers around chirality centers.
+    // While these stereoisomers are chemically distinct, the model might
+    // give them the same identifier.
+    // Inclusion of these designations of stereosymmetry without distinct
+    // identifiers can impart discrepancies.
+    var stereoNames = collectUniqueElements(
+        names.map(function (name) {
+            if ((name.includes("(R)")) || (name.includes("(S)"))) {
+                // The name includes a designator of stereochemistry.
+                var newName = name.replace("(R)", "(R-S)");
+                return newName.replace("(S)", "(R-S)");
+            } else {
+                return name;
+            }
+        })
+    );
+    // Determine consensus name.
+    if (uniqueNames.length <= 1) {
+        // There is not a discrepancy in the names.
+        return uniqueNames[0];
+    } else if (simpleNames.length === 1) {
+        // There is a discrepancy in the names.
+        // Removal of identifiers of compartments resolves the discrepancy.
+        return simpleNames[0];
+    } else if (stereoNames.length === 1) {
+        // There is a discrepancy in the names.
+        // Removal of designations of stereosymmetry resolves the discrepancy.
+        return stereoNames[0];
+    } else {
+        // Neither the correction for compartments nor stereosymmetry resolves
+        // the discrepancy.
+        console.log(
+            "Model Assembly, Check Metabolites: " + identifier +
+            " failed name check."
+        );
+        return uniqueNames[0];
+    }
+}
 
+// TODO: This is the old implementation...
+// TODO: Check this and then get rid of it.
+/**
+ * Determines a consensus name for a set of metabolites.
+ * @param {Array<Object>} setMetabolites Information for all compartmental
+ * metabolites that are chemically identical.
+ * @returns {string} Consensus name for the set of metabolites.
+ */
+function determineMetaboliteSetName(setMetabolites) {
+    var names = collectValuesFromObjects(setMetabolites, "name");
+    if (collectUniqueElements(names).length <= 1) {
+        return collectUniqueElements(names)[0];
+    } else if (
+        (setMetabolites.every(function (metabolite) {
+            return (metabolite.name.includes("_")) &&
+                (metabolite.compartment ===
+                extractCompartmentIdentifier(metabolite.name));
+        })) &&
+        (
+            collectUniqueElements(
+                extractMetaboliteIdentifiers(names)
+            ).length === 1
+        )
+    ) {
+        // Names for some metabolites in the model might include compartment
+        // identifiers.
+        // Inclusion of these compartment identifiers in the names can impart
+        // discrepancies in separate records fro the same metabolite.
+        return collectUniqueElements(extractMetaboliteIdentifiers(names))[0];
+    } else if (
+        (names.find(function (name) {
+            return name.includes("(R)") || name.includes("(S)");
+        }) != undefined) &&
+        (collectUniqueElements(names.map(function (name) {
+            return name.replace("(R)", "(R/S)");
+        }).map(function (name) {
+            return name.replace("(S)", "(R/S)");
+        })).length === 1)
+    ) {
+        // Names for some metabolites in the model might include designations of
+        // stereoisomers around chirality centers.
+        // While these stereoisomers are chemically distinct, the model might
+        // give them the same identifier.
+        return collectUniqueElements(names.map(function (name) {
+            return name.replace("(R)", "(R/S)");
+        }).map(function (name) {
+            return name.replace("(S)", "(R/S)");
+        }))[0];
+    } else {
+        //console.log("name discrepancy");
+        //console.log(setMetabolites);
+        return names[0];
+    }
+}
 
 /**
  * Checks and cleans information about a single general metabolite in a
@@ -258,8 +384,9 @@ function checkCleanMetabolite(metaboliteSet, metabolitesFromReactions) {
     );
     // Name.
     var name = checkCleanMetaboliteName(
-        metaboliteSet.id, metaboliteSet.names
+        metaboliteSet.id, metaboliteSet.names, metaboliteSet.compartments
     );
+    // TODO: Now put all the pieces together to return the consensus attributes.
 }
 
 /**
@@ -348,17 +475,13 @@ function checkCleanMetabolites(metabolites, reactions) {
                 metaboliteSet, metabolitesFromReactions
             );
         });
+    // TODO: Now expand the information to multiple compartmental records for each metabolite.
     console.log(metaboliteSets);
     console.log(metabolitesInformation);
-
-
-
-
-
     // Check and clean all metabolites.
-    //return metabolites.map(function (metabolite) {
-    //    return checkCleanMetabolite(metabolite, metabolitesFromReactions);
-    //});
+    return metabolites.map(function (metabolite) {
+        return checkCleanMetabolite(metabolite, metabolitesFromReactions);
+    });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
