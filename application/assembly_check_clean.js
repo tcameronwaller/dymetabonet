@@ -133,13 +133,8 @@ function checkCleanGenes(genes, reactions) {
 ////////////////////////////////////////////////////////////////////////////////
 // Check and Clean Information about Metabolites
 
-// TODO: From "assembly_network"...
-// TODO: Check that metabolite participates in at least 1 reaction.
-// TODO: Use the genes code as a sort of template.
-
 // TODO: From "assembly_sets"...
 // TODO: Change (R) and (S) in names to (R/S) IF the metabolites otherwise have identical identifiers.
-// TODO: Change less specific formulas (with Rs) to more specific.
 // TODO: Remove compartment designators from names of metabolites.
 // TODO: Change "pentenoyl" to "pentaenoyl"... see notes.
 // TODO: Make sure that all metabolites in set have identical name, formula, charge, etc...
@@ -155,7 +150,7 @@ function checkCleanGenes(genes, reactions) {
  * reaction.
  */
 function checkMetaboliteReactions(identifier, metabolitesFromReactions) {
-    // Confirm that gene participates in at least one reaction.
+    // Confirm that metabolite participates in at least one reaction.
     if (metabolitesFromReactions.includes(identifier)) {
         return true;
     } else {
@@ -168,46 +163,103 @@ function checkMetaboliteReactions(identifier, metabolitesFromReactions) {
 }
 
 /**
- * Checks a single metabolite from a metabolic model.
- * @param {string} identifier Identifier of a single metabolite.
- * @param {Array<string>} metabolitesFromReactions Unique identifiers of all
- * metabolites that participate in reactions.
+ * Checks and cleans the charge of a metabolite.
+ * @param {string} identifier Identifier of a single general metabolite.
+ * @param {Array<number>} charges Charges from all compartmental occurrences of
+ * the general metabolite.
+ * @returns {number} Consensus charge for the metabolite.
  */
-function checkMetabolite(identifier, metabolitesFromReactions) {
-    // Check metabolite association to reactions.
-    checkMetaboliteReactions(identifier, metabolitesFromReactions);
+function checkCleanMetaboliteCharge(identifier, charges) {
+    // Filter falsy values from charges and collect unique elements.
+    var uniqueCharges = collectUniqueElements(charges.filter(function (charge) {
+        return !!charge;
+    }));
+    if (uniqueCharges.length <= 1) {
+        // There is not a discrepancy in the charges.
+        return uniqueCharges[0];
+    } else {
+        console.log(
+            "Model Assembly, Check Metabolites: " + identifier +
+            " failed charge check."
+        );
+        return uniqueCharges[0];
+    }
 }
+
+/**
+ * Checks and cleans the formula of a metabolite.
+ * @param {string} identifier Identifier of a single general metabolite.
+ * @param {Array<string>} formulas Formulas from all compartmental occurrences
+ * of the general metabolite.
+ * @returns {string} Consensus formula for the metabolite.
+ */
+function checkCleanMetaboliteFormula(identifier, formulas) {
+    // Filter falsy values from formulas and collect unique elements.
+    var uniqueFormulas = collectUniqueElements(
+        formulas.filter(function (formula) {
+            return !!formula;
+        })
+    );
+    if (uniqueFormulas.length <= 1) {
+        // There is not a discrepancy in the formulas.
+        return uniqueFormulas[0];
+    } else {
+        // There is a discrepancy in the formulas.
+        // Chemical formulas for some metabolites in the model might include an
+        // "R" character to denote an ambiguous alkyl substituent.
+        // The "R" character does not denote any specific chemical element.
+        // Inclusion of this nonspecific formula can impart discrepancies.
+        var specificFormulas = uniqueFormulas.filter(function (formula) {
+            return !formula.includes("R");
+        });
+        if (specificFormulas.length === 1) {
+            // There is a single specific formula.
+            return specificFormulas[0];
+        } else if (specificFormulas.length > 1) {
+            // There is a discrepancy between multiple specific formulas.
+            return specificFormulas[0];
+        } else if (specificFormulas.length < 1) {
+            // There are zero specific formulas.
+            return uniqueFormulas[0];
+        } else {
+            console.log(
+                "Model Assembly, Check Metabolites: " + identifier +
+                " failed formula check."
+            );
+        }
+    }
+}
+
+// TODO: checkCleanMetaboliteName
+
 
 /**
  * Checks and cleans information about a single general metabolite in a
  * metabolic model.
- * @param {Object<string>} metaboliteInformation Information about a single
- * general metabolite.
+ * @param {Object<string>} metaboliteSet Information about a single general
+ * metabolite and all of its compartmental occurrences.
+ * @param {Array<string>} metabolitesFromReactions Unique identifiers of all
+ * metabolites that participate in reactions.
  * @returns {Object<string>} Information about a metabolite.
  */
-function checkCleanMetabolite(metaboliteInformation) {
+function checkCleanMetabolite(metaboliteSet, metabolitesFromReactions) {
     // Identifier.
-    metaboliteInformation.ids.map()
-
+    // Check metabolite association to reactions.
+    metaboliteSet.ids.forEach(function (identifier) {
+        checkMetaboliteReactions(identifier, metabolitesFromReactions);
+    });
     // Charge.
-
-
+    var charge = checkCleanMetaboliteCharge(
+        metaboliteSet.id, metaboliteSet.charges
+    );
     // Formula.
-
-
+    var formula = checkCleanMetaboliteFormula(
+        metaboliteSet.id, metaboliteSet.formulas
+    );
     // Name.
-
-
-
-
-    // Clean metabolite identifier.
-    //var identifier = cleanGeneIdentifier(gene.id);
-    // Check metabolite.
-    checkMetabolite(identifier, metabolitesFromReactions);
-    return {
-        id: identifier,
-        name: gene.name
-    };
+    var name = checkCleanMetaboliteName(
+        metaboliteSet.id, metaboliteSet.names
+    );
 }
 
 /**
@@ -218,7 +270,7 @@ function checkCleanMetabolite(metaboliteInformation) {
  * @returns {Object<Array<string>>} Attributes of compartmental metabolites
  * within records for general metabolites.
  */
-function extractMetaboliteSetInformation(metabolites) {
+function extractMetaboliteSetAttributes(metabolites) {
     // The metabolic model has separate records for compartmental metabolites.
     // Split the array of metabolite records into collections of records for the
     // same chemical metabolite.
@@ -237,6 +289,7 @@ function extractMetaboliteSetInformation(metabolites) {
                     charges: [].concat(metabolite.charge),
                     compartments: [].concat(metabolite.compartment),
                     formulas: [].concat(metabolite.formula),
+                    id: metaboliteIdentifier,
                     ids: [].concat(metabolite.id),
                     names: [].concat(metabolite.name)
                 }
@@ -256,6 +309,7 @@ function extractMetaboliteSetInformation(metabolites) {
                         .compartments
                         .concat(metabolite.compartment),
                     formulas: oldMetabolite.formulas.concat(metabolite.formula),
+                    id: metaboliteIdentifier,
                     ids: oldMetabolite.ids.concat(metabolite.id),
                     names: oldMetabolite.names.concat(metabolite.name)
                 }
@@ -285,16 +339,16 @@ function checkCleanMetabolites(metabolites, reactions) {
     // eliminate discrepancies in attributes that should be identical.
     // Split the array of metabolite records into collections of records for the
     // same chemical metabolite.
-    var metaboliteSetsInformation = extractMetaboliteSetInformation(metabolites);
+    var metaboliteSets = extractMetaboliteSetAttributes(metabolites);
 
     // TODO: Take this metabolite information and use it to re-create the records for compartmental metabolites.
-    var metabolitesInformation = metaboliteSetsInformation
-        .map(function (metaboliteInformation) {
+    var metabolitesInformation = Object.values(metaboliteSets)
+        .map(function (metaboliteSet) {
             return checkCleanMetabolite(
-                metaboliteInformation, metabolitesFromReactions
+                metaboliteSet, metabolitesFromReactions
             );
         });
-    console.log(metaboliteSetInformation);
+    console.log(metaboliteSets);
     console.log(metabolitesInformation);
 
 

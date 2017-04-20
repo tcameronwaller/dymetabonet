@@ -102,51 +102,6 @@ function checkMetaboliteSet(setMetabolites, metaboliteIdentifier) {
 }
 
 /**
- * Determines a consensus charge for a set of metabolites.
- * @param {Array<Object>} setMetabolites Information for all compartmental
- * metabolites that are chemically identical.
- * @returns {string} Consensus charge for the set of metabolites.
- */
-function determineMetaboliteSetCharge(setMetabolites) {
-    var charges = collectValuesFromObjects(setMetabolites, "charge");
-    if (collectUniqueElements(charges).length <= 1) {
-        return collectUniqueElements(charges)[0];
-    } else {
-        console.log("charge discrepancy");
-        console.log(setMetabolites);
-    }
-}
-
-/**
- * Determines a consensus formula for a set of metabolites.
- * @param {Array<Object>} setMetabolites Information for all compartmental
- * metabolites that are chemically identical.
- * @returns {string} Consensus formula for the set of metabolites.
- */
-function determineMetaboliteSetFormula(setMetabolites) {
-    var formulas = collectValuesFromObjects(setMetabolites, "formula");
-    if (collectUniqueElements(formulas).length <= 1) {
-        return collectUniqueElements(formulas)[0];
-    } else {
-        // Chemical formulas for some metabolites in the model might include an
-        // R character to denote a nonspecific alkyl substituent.
-        // Inclusion of these nonspecific formulas can impart discrepancies in
-        // separate records for the same metabolite.
-        var formulasSpecific = formulas.filter(function (formula) {
-            return !formula.includes("R");
-        });
-        if (collectUniqueElements(formulasSpecific).length === 1) {
-            return collectUniqueElements(formulasSpecific)[0];
-            //else if (collectUniqueElements(formulasSpecific).length > 1) {}
-        } else {
-            console.log("formula discrepancy");
-            console.log(setMetabolites);
-            return formulas[0];
-        }
-    }
-}
-
-/**
  * Determines a consensus name for a set of metabolites.
  * @param {Array<Object>} setMetabolites Information for all compartmental
  * metabolites that are chemically identical.

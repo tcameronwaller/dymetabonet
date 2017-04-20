@@ -235,6 +235,7 @@ function filterReactionMetabolitesByRole(reaction, role) {
         });
 }
 
+// TODO: Horribly inefficient when applied to a long array of identifiers.
 /**
  * Filters a model's reactions by their inclusion of a compartmental metabolite.
  * @param {string} metaboliteIdentifier Identifier of a compartmental
@@ -253,6 +254,7 @@ function filterReactionsByCompartmentalMetabolite(
     });
 }
 
+// TODO: Horribly inefficient when applied to a long array of identifiers.
 /**
  * Counts the unique reactions in which a compartmental metabolite participates.
  * @param {string} metaboliteIdentifier Identifier of a compartmental

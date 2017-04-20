@@ -3,39 +3,6 @@
 // Creation of Metabolite Nodes
 
 /**
- * Checks to ensure that a metabolite participates in at least one reaction in
- * the metabolic model.
- * @param {string} metaboliteIdentifier Identifier for a metabolite.
- * @param {Array<Object>} reactions Information for all reactions of a metabolic
- * model.
- * @returns {boolean} Whether or not the metabolite participates in a reaction.
- */
-function checkMetaboliteReactions(metaboliteIdentifier, reactions) {
-    // Confirm that metabolite participates in at least one reaction.
-    if (countCompartmentalMetaboliteReactions(
-            metaboliteIdentifier, reactions
-        ) >= 1) {
-        return true;
-    } else {
-        console.log(
-            "Check Metabolites: " + metabolite.id +
-            " failed reaction check."
-        );
-        return false;
-    }
-}
-
-/**
- * Checks a single metabolite from a metabolic model.
- * @param {Object} metabolite Information for a metabolite.
- * @param {Array<Object>} reactions Information for all reactions of a metabolic
- * model.
- */
-function checkMetabolite(metaboliteIdentifier, reactions) {
-    checkMetaboliteReactions(metaboliteIdentifier, reactions);
-}
-
-/**
  * Creates a record for a network node for a single compartmental metabolite
  * from a metabolic model.
  * @param {Object} metabolite Information for a compartmental metabolite.
