@@ -134,8 +134,6 @@ function checkCleanGenes(genes, reactions) {
 // Check and Clean Information about Metabolites
 
 // TODO: From "assembly_sets"...
-// TODO: Change (R) and (S) in names to (R/S) IF the metabolites otherwise have identical identifiers.
-// TODO: Remove compartment designators from names of metabolites.
 // TODO: Change "pentenoyl" to "pentaenoyl"... see notes.
 // TODO: Try to preserve information?
 
@@ -240,9 +238,17 @@ function checkCleanMetaboliteFormula(identifier, formulas) {
  * @returns {string} Consensus name for the metabolite.
  */
 function checkCleanMetaboliteName(identifier, names, compartments) {
+    // Correct individual errors.
+    var newNames = names.map(function (name) {
+        if (name === "2,4,7,10,13-hexadecapentenoylcoa") {
+            return "2,4,7,10,13-hexadecapentaenoylcoa";
+        } else {
+            return name;
+        }
+    });
     // Filter falsy values from names and collect unique elements.
     var uniqueNames = collectUniqueElements(
-        names.filter(function (name) {
+        newNames.filter(function (name) {
             return !!name;
         })
     );
@@ -251,7 +257,7 @@ function checkCleanMetaboliteName(identifier, names, compartments) {
     // Inclusion of these compartmental identifiers in the names can impart
     // discrepancies.
     var simpleNames = collectUniqueElements(
-        names.map(function (name, index) {
+        newNames.map(function (name, index) {
             if (
                 (extractCompartmentIdentifier(name)) &&
                 (extractCompartmentIdentifier(name) === compartments[index])
@@ -271,7 +277,7 @@ function checkCleanMetaboliteName(identifier, names, compartments) {
     // Inclusion of these designations of stereosymmetry without distinct
     // identifiers can impart discrepancies.
     var stereoNames = collectUniqueElements(
-        names.map(function (name) {
+        newNames.map(function (name) {
             if ((name.includes("(R)")) || (name.includes("(S)"))) {
                 // The name includes a designator of stereochemistry.
                 var newName = name.replace("(R)", "(R-S)");
@@ -366,12 +372,15 @@ function determineMetaboliteSetName(setMetabolites) {
  * metabolite and all of its compartmental occurrences.
  * @param {Array<string>} metabolitesFromReactions Unique identifiers of all
  * metabolites that participate in reactions.
- * @returns {Object<string>} Information about a metabolite.
+ * @returns {Array<Object<string>>} Information about a metabolite.
  */
 function checkCleanMetabolite(metaboliteSet, metabolitesFromReactions) {
     // Identifier.
     // Check metabolite association to reactions.
-    metaboliteSet.ids.forEach(function (identifier) {
+    var identifiers = metaboliteSet.compartments.map(function (compartment) {
+        return metaboliteSet.id + "_" + compartment;
+    });
+    identifiers.forEach(function (identifier) {
         checkMetaboliteReactions(identifier, metabolitesFromReactions);
     });
     // Charge.
@@ -386,7 +395,16 @@ function checkCleanMetabolite(metaboliteSet, metabolitesFromReactions) {
     var name = checkCleanMetaboliteName(
         metaboliteSet.id, metaboliteSet.names, metaboliteSet.compartments
     );
-    // TODO: Now put all the pieces together to return the consensus attributes.
+    // Create records for compartmental metabolites.
+    return metaboliteSet.compartments.map(function (compartment) {
+        var identifier = metaboliteSet.id + "_" + compartment;
+        return {
+            charge: charge,
+            id: identifier,
+            formula: formula,
+            name: name
+        };
+    });
 }
 
 /**
@@ -469,19 +487,19 @@ function checkCleanMetabolites(metabolites, reactions) {
     var metaboliteSets = extractMetaboliteSetAttributes(metabolites);
 
     // TODO: Take this metabolite information and use it to re-create the records for compartmental metabolites.
-    var metabolitesInformation = Object.values(metaboliteSets)
-        .map(function (metaboliteSet) {
-            return checkCleanMetabolite(
+    var metabolites = Object.values(metaboliteSets)
+        .reduce(function (collection, metaboliteSet) {
+            return collection.concat(checkCleanMetabolite(
                 metaboliteSet, metabolitesFromReactions
-            );
-        });
+            ));
+        }, []);
     // TODO: Now expand the information to multiple compartmental records for each metabolite.
     console.log(metaboliteSets);
-    console.log(metabolitesInformation);
+    console.log(metabolites);
     // Check and clean all metabolites.
-    return metabolites.map(function (metabolite) {
-        return checkCleanMetabolite(metabolite, metabolitesFromReactions);
-    });
+    //return metabolites.map(function (metabolite) {
+    //    return checkCleanMetabolite(metabolite, metabolitesFromReactions);
+    //});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
