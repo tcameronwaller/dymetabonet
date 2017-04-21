@@ -48,48 +48,28 @@ function checkCleanCompartments(compartments) {
 // Check and Clean Information about Genes
 
 /**
- * Checks to ensure that a gene participates in at least one reaction in the
- * metabolic model.
+ * Checks and cleans the identifier of a gene.
  * @param {string} identifier Identifier of a single gene.
  * @param {Array<string>} genesFromReactions Unique identifiers of all genes
  * that participate in reactions.
- * @returns {boolean} Whether or not the gene participates in at least one
- * reaction.
+ * @returns {string} Identifier of a gene.
  */
-function checkGeneReactions(identifier, genesFromReactions) {
+function checkCleanGeneIdentifier(identifier, genesFromReactions) {
+    // Correct errors in gene identifier.
+    if (!identifier.includes("HGNC:HGNC:")) {
+        var newIdentifier = identifier;
+    } else {
+        var newIdentifier = replaceAllString(identifier, "HGNC:HGNC:", "HGNC:");
+    }
     // Confirm that gene participates in at least one reaction.
-    if (genesFromReactions.includes(identifier)) {
-        return true;
+    if (genesFromReactions.includes(newIdentifier)) {
+        return newIdentifier;
     } else {
         console.log(
-            "Model Assembly, Check Genes: " + identifier +
+            "Model Assembly, Check Genes: " + newIdentifier +
             " failed reaction check."
         );
-        return false;
-    }
-}
-
-/**
- * Checks a single gene from a metabolic model.
- * @param {string} identifier Identifier of a single gene.
- * @param {Array<string>} genesFromReactions Unique identifiers of all genes
- * that participate in reactions.
- */
-function checkGene(identifier, genesFromReactions) {
-    // Check gene association to reactions.
-    checkGeneReactions(identifier, genesFromReactions);
-}
-
-/**
- * Cleans the identifier of a single gene from a metabolic model.
- * @param {string} identifier Identifier of a single gene.
- * @param {string} Identifier of a gene.
- */
-function cleanGeneIdentifier(identifier) {
-    if (!identifier.includes("HGNC:HGNC:")) {
-        return identifier;
-    } else {
-        return identifier.replace("HGNC:", "");
+        return newIdentifier;
     }
 }
 
@@ -102,9 +82,7 @@ function cleanGeneIdentifier(identifier) {
  */
 function checkCleanGene(gene, genesFromReactions) {
     // Clean gene identifier.
-    var identifier = cleanGeneIdentifier(gene.id);
-    // Check gene.
-    checkGene(identifier, genesFromReactions);
+    var identifier = checkCleanGeneIdentifier(gene.id, genesFromReactions);
     return {
             id: identifier,
             name: gene.name
@@ -132,10 +110,6 @@ function checkCleanGenes(genes, reactions) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Check and Clean Information about Metabolites
-
-// TODO: From "assembly_sets"...
-// TODO: Change "pentenoyl" to "pentaenoyl"... see notes.
-// TODO: Try to preserve information?
 
 /**
  * Checks to ensure that a metabolite participates in at least one reaction in
@@ -310,61 +284,6 @@ function checkCleanMetaboliteName(identifier, names, compartments) {
     }
 }
 
-// TODO: This is the old implementation...
-// TODO: Check this and then get rid of it.
-/**
- * Determines a consensus name for a set of metabolites.
- * @param {Array<Object>} setMetabolites Information for all compartmental
- * metabolites that are chemically identical.
- * @returns {string} Consensus name for the set of metabolites.
- */
-function determineMetaboliteSetName(setMetabolites) {
-    var names = collectValuesFromObjects(setMetabolites, "name");
-    if (collectUniqueElements(names).length <= 1) {
-        return collectUniqueElements(names)[0];
-    } else if (
-        (setMetabolites.every(function (metabolite) {
-            return (metabolite.name.includes("_")) &&
-                (metabolite.compartment ===
-                extractCompartmentIdentifier(metabolite.name));
-        })) &&
-        (
-            collectUniqueElements(
-                extractMetaboliteIdentifiers(names)
-            ).length === 1
-        )
-    ) {
-        // Names for some metabolites in the model might include compartment
-        // identifiers.
-        // Inclusion of these compartment identifiers in the names can impart
-        // discrepancies in separate records fro the same metabolite.
-        return collectUniqueElements(extractMetaboliteIdentifiers(names))[0];
-    } else if (
-        (names.find(function (name) {
-            return name.includes("(R)") || name.includes("(S)");
-        }) != undefined) &&
-        (collectUniqueElements(names.map(function (name) {
-            return name.replace("(R)", "(R/S)");
-        }).map(function (name) {
-            return name.replace("(S)", "(R/S)");
-        })).length === 1)
-    ) {
-        // Names for some metabolites in the model might include designations of
-        // stereoisomers around chirality centers.
-        // While these stereoisomers are chemically distinct, the model might
-        // give them the same identifier.
-        return collectUniqueElements(names.map(function (name) {
-            return name.replace("(R)", "(R/S)");
-        }).map(function (name) {
-            return name.replace("(S)", "(R/S)");
-        }))[0];
-    } else {
-        //console.log("name discrepancy");
-        //console.log(setMetabolites);
-        return names[0];
-    }
-}
-
 /**
  * Checks and cleans information about a single general metabolite in a
  * metabolic model.
@@ -372,7 +291,7 @@ function determineMetaboliteSetName(setMetabolites) {
  * metabolite and all of its compartmental occurrences.
  * @param {Array<string>} metabolitesFromReactions Unique identifiers of all
  * metabolites that participate in reactions.
- * @returns {Array<Object<string>>} Information about a metabolite.
+ * @returns {Object<string>} Information about a metabolite.
  */
 function checkCleanMetabolite(metaboliteSet, metabolitesFromReactions) {
     // Identifier.
@@ -400,8 +319,9 @@ function checkCleanMetabolite(metaboliteSet, metabolitesFromReactions) {
         var identifier = metaboliteSet.id + "_" + compartment;
         return {
             charge: charge,
-            id: identifier,
+            compartment: compartment,
             formula: formula,
+            id: identifier,
             name: name
         };
     });
@@ -485,28 +405,282 @@ function checkCleanMetabolites(metabolites, reactions) {
     // Split the array of metabolite records into collections of records for the
     // same chemical metabolite.
     var metaboliteSets = extractMetaboliteSetAttributes(metabolites);
-
-    // TODO: Take this metabolite information and use it to re-create the records for compartmental metabolites.
-    var metabolites = Object.values(metaboliteSets)
+    // Reproduce records for compartmental metabolites using consensus
+    // attributes.
+    var consensusMetabolites = Object.values(metaboliteSets)
         .reduce(function (collection, metaboliteSet) {
             return collection.concat(checkCleanMetabolite(
                 metaboliteSet, metabolitesFromReactions
             ));
         }, []);
-    // TODO: Now expand the information to multiple compartmental records for each metabolite.
-    console.log(metaboliteSets);
-    console.log(metabolites);
-    // Check and clean all metabolites.
-    //return metabolites.map(function (metabolite) {
-    //    return checkCleanMetabolite(metabolite, metabolitesFromReactions);
-    //});
+    return consensusMetabolites;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Check and Clean Information about Reactions
 
+// TODO: Check that every reaction...
 // TODO: Check that every reaction associates with metabolites AND that those metabolites are in the model.
 
+/**
+ * Checks to ensure that a reaction has annotations for metabolites and that
+ * these metabolties have corresponding records in the metabolic model.
+ * @param {Object} reaction Information for a reaction.
+ * @param {Array<Object>} metabolites Information for all metabolites of a
+ * metabolic model.
+ * @returns {boolean} Whether or not the reaction's metabolites have records.
+ */
+function checkReactionMetabolites(reaction, metabolites) {
+    // Confirm that a reaction's metabolites have corresponding records.
+    if (
+        (Object.keys(reaction.metabolites).length >= 1) &&
+        (Object.keys(reaction.metabolites)
+            .every(function (metaboliteIdentifier) {
+                return metabolites.find(function (metabolite) {
+                        return metabolite.id === metaboliteIdentifier;
+                    }) != undefined;
+            }))
+    ) {
+        return true;
+    } else {
+        console.log(
+            "Check Reactions: " + reaction.id +
+            " failed metabolite check."
+        );
+        return false;
+    }
+}
+
+/**
+ * Checks to confirm that a reaction has an annotation for its metabolic
+ * subsystem or process.
+ * @param {Object} reaction Information for a reaction.
+ * @returns {boolean} Whether or not the reaction has an annotation for its
+ * metabolic process.
+ */
+function checkReactionProcess(reaction) {
+    // Confirm that reaction has an annotation for a metabolic process.
+    if (
+        reaction.subsystem != undefined
+    ) {
+        return true;
+    } else {
+        console.log(
+            "Check Reactions: " + reaction.id + " failed process check."
+        );
+        return false;
+    }
+}
+
+/**
+ * Checks a single reaction from a metabolic model.
+ * @param {Object} reaction Information for a reaction.
+ * @param {Array<Object>} metabolites Information for all metabolites of a
+ * metabolic model.
+ * @param {Array<Object>} genes Information for all genes of a metabolic model.
+ */
+function checkReaction(reaction, metabolites, genes) {
+    checkReactionBoundsValues(reaction);
+    checkReactionBoundsRanges(reaction);
+    checkReactionBoundsDirection(reaction);
+    checkReactionMetabolites(reaction, metabolites);
+    checkReactionGenes(reaction, genes);
+    //checkReactionProcess(reaction);
+}
+
+
+
+
+
+
+
+
+
+
+/**
+ * Checks and cleans the gene rule of a reaction.
+ * @param {string} identifier Identifier of a single reaction.
+ * @param {string} geneRule Requirements of a reaction for genes.
+ * @param {Array<string>} geneIdentifiers Identifiers of all genes in a
+ * metabolic model.
+ * @returns {string} Gene rule for the reaction.
+ */
+function checkCleanReactionGenes(identifier, geneRule, geneIdentifiers) {
+    // Correct errors in gene rule.
+    if (!geneRule.includes("HGNC:HGNC:")) {
+        var newGeneRule = geneRule;
+    } else {
+        var newGeneRule = replaceAllString(geneRule, "HGNC:HGNC:", "HGNC:");
+    }
+    // Extract gene identifiers from gene rule.
+    var genes = extractGenesFromRule(newGeneRule);
+    // Confirm that gene participates in at least one reaction.
+    if (genes.every(function (gene) {
+        return geneIdentifiers.includes(gene);
+    })) {
+        return newGeneRule;
+    } else {
+        console.log(
+            "Model Assembly, Check Reactions: " + identifier +
+            " failed genes check."
+        );
+        return newGeneRule;
+    }
+}
+
+// TODO: Complete this function to handle bounds appropriately.
+/**
+ * Checks and cleans the gene rule of a reaction.
+ * @param {string} identifier Identifier of a single reaction.
+ * @param {number} lowBound Lower boundary of reaction.
+ * @param {number} upBound Upper boundary of reaction.
+ * @returns {Object<number>} Boundaries for the reaction.
+ */
+function checkCleanReactionBounds(identifier, lowBound, upBound) {
+}
+
+/**
+ * Checks bounds values of a single reaction from a metabolic model.
+ * @param {Object} reaction Information for a reaction.
+ * @returns {boolean} Whether or not the reaction's bounds match expectations.
+ */
+function checkReactionBoundsValues(reaction) {
+    // Confirm that lower_bound and upper_bound properties only have values
+    // of -1000, 0, or 1000.
+    // According to this situation, the bounds primarily only signify the
+    // direction of the reaction.
+    if (
+        (
+            reaction.lower_bound === -1000 ||
+            reaction.lower_bound === 0 ||
+            reaction.lower_bound === 1000
+        ) && (
+            reaction.upper_bound === -1000 ||
+            reaction.upper_bound === 0 ||
+            reaction.upper_bound === 1000
+        )
+    ) {
+        return true;
+    } else {
+        console.log(
+            "Check Reactions: " + reaction.id + " failed bounds values check."
+        );
+        return false;
+    }
+}
+
+/**
+ * Checks bounds ranges of a single reaction from a metabolic model.
+ * @param {Object} reaction Information for a reaction.
+ * @returns {boolean} Whether or not the reaction's bounds match expectations.
+ */
+function checkReactionBoundsRanges(reaction) {
+    // Confirm that lower_bound values are less than or equal to zero and
+    // upper_bound values are greater than or equal to zero.
+    if (
+        (reaction.lower_bound <= 0) && (reaction.upper_bound >= 0)
+    ) {
+        return true;
+    } else {
+        console.log(
+            "Check Reactions: " + reaction.id + " failed bounds ranges check."
+        );
+        return false;
+    }
+}
+
+/**
+ * Checks bounds directionality of a single reaction from a metabolic model.
+ * @param {Object} reaction Information for a reaction.
+ * @returns {boolean} Whether or not the reaction's bounds match expectations.
+ */
+function checkReactionBoundsDirection(reaction) {
+    // Confirm from lower_bound and upper_bound properties the primary direction
+    // of the reaction.
+    // Confirm that upper_bound is never zero.
+    // That situation might imply that the reaction proceeds only in the reverse
+    // direction.
+    // Confirm that both lower_bound and upper_bound do not have values of
+    // zero simultaneously.
+    // That situation would imply that the reaction that proceeds in neither
+    // direction.
+    if (
+        ((reaction.lower_bound < 0) && (reaction.upper_bound > 0)) ||
+        ((reaction.lower_bound === 0) && (reaction.upper_bound > 0))
+    ) {
+        return true;
+    } else {
+        console.log(
+            "Check Reactions: " + reaction.id +
+            " failed bounds directionality check."
+        );
+        return false;
+    }
+}
+
+/**
+ * Checks and cleans information about a single reaction in a metabolic model.
+ * @param {Object<string>} reaction Information about a single reaction.
+ * @param {Array<string>} metaboliteIdentifiers Identifiers of all metabolites
+ * in a metabolic model.
+ * @param {Array<string>} geneIdentifiers Identifiers of all genes in a
+ * metabolic model.
+ * @returns {Object<string>} Information about a reaction.
+ */
+function checkCleanReaction(reaction, metaboliteIdentifiers, geneIdentifiers) {
+    // Genes.
+    var genes = checkCleanReactionGenes(
+        reaction.id, reaction.gene_reaction_rule, geneIdentifiers
+    );
+    // Identifier.
+    var identifier = reaction.id;
+    // Bounds.
+    var bounds = checkCleanReactionBounds(
+        identifier, reaction.lower_bound, reaction.upper_bound
+    );
+    // Metabolites.
+    var metabolites = checkCleanReactionMetabolites(identifier, reaction.metabolites, metaboliteIdentifiers);
+    // Name.
+    var name = reaction.name;
+    // Process
+    var process = reaction.subsystem;
+    // TODO: Prepare all of the variables necessary for the reaction record below...
+    // Create record for reaction.
+    return {
+        gene_reaction_rule: genes,
+        id: identifier,
+        lower_bound: bounds.lower,
+        metabolites: metabolites,
+        name: name,
+        subsystem: process,
+        upper_bound: bounds.upper
+    };
+}
+
+/**
+ * Checks and cleans information about reactions in a metabolic model.
+ * @param {Array<Object<string>>} reactions Information about all reactions in a
+ * metabolic model.
+ * @param {Array<Object<string>>} metabolites Information about all metabolites
+ * in a metabolic model.
+ * @param {Array<Object<string>>} genes Information about all genes in a
+ * metabolic model.
+ * @returns {Array<Object<string>>} Information about metabolites.
+ */
+function checkCleanReactions(reactions, metabolites, genes) {
+    // Collect identifiers of all metabolites in the model.
+    var metaboliteIdentifiers = metabolites.map(function (metabolite) {
+        return metabolite.id;
+    });
+    // Collect identifiers of all genes in the model.
+    var geneIdentifiers = genes.map(function (gene) {
+        return gene.id;
+    });
+    var newReactions = reactions.map(function (reaction) {
+        return checkCleanReaction(reaction, metaboliteIdentifiers, geneIdentifiers);
+    });
+    return newReactions;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Cleaning of Data for Model
@@ -522,15 +696,13 @@ function checkCleanRecon2(data) {
     var compartments = checkCleanCompartments(data.compartments);
     var genes = checkCleanGenes(data.genes, data.reactions);
     var metabolites = checkCleanMetabolites(data.metabolites, data.reactions);
-    //var reactions = checkCleanReactions(data.reactions, metabolites, genes);
+    var reactions = checkCleanReactions(data.reactions, metabolites, genes);
     return {
-        sets: {
-            compartments: compartments,
-            genes: genes,
-            id: data.id,
-            metabolites: metabolites,
-            //reactions: reactions,
-            version: data.version
-        }
-    }
+        compartments: compartments,
+        genes: genes,
+        id: data.id,
+        metabolites: metabolites,
+        //reactions: reactions,
+        version: data.version
+    };
 }

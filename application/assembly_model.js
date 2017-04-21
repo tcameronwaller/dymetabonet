@@ -48,8 +48,10 @@ function summarizeModel(model) {
  * model.
  */
 function assembleModel(data) {
+    console.log("initial data...");
     console.log(data);
     var dataClean = checkCleanRecon2(data);
+    console.log("cleaned data...");
     console.log(dataClean);
     //var sets = assembleSets(data);
     //var entities = assembleEntities(data, sets.sets);

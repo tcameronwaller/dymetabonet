@@ -72,36 +72,6 @@ function createGeneRecords(genes) {
 // Creation of records for metabolites
 
 /**
- * Checks a single metabolite from a metabolic model to ensure that all
- * compartmental records for a metabolite share identical properties.
- * @param {Array<Object>} setMetabolites Information for all compartmental
- * metabolites that are chemically identical.
- * @param {string} metaboliteIdentifier Unique identifier of general metabolite.
- * @returns {boolean} Whether or not all compartmental records for the
- * metabolite share identical properties.
- */
-function checkMetaboliteSet(setMetabolites, metaboliteIdentifier) {
-    // Confirm that all compartmental records have identical values for relevant
-    // properties.
-    ["charge", "formula", "name"].map(function (property) {
-        if (
-            collectUniqueElements(
-                collectValuesFromObjects(setMetabolites, property)
-            ).length <= 1
-        ) {
-            return true;
-        } else {
-            console.log(
-                "Check Metabolite Sets: " + metaboliteIdentifier +
-                " failed common properties check."
-            );
-            console.log(setMetabolites);
-            return false;
-        }
-    });
-}
-
-/**
  * Creates a record for a single metabolite from a metabolic model.
  * @param {string} metaboliteIdentifier Unique identifier of general metabolite.
  * @param {Array<Object>} metabolites Information for all metabolites of a
