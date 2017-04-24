@@ -419,84 +419,6 @@ function checkCleanMetabolites(metabolites, reactions) {
 ////////////////////////////////////////////////////////////////////////////////
 // Check and Clean Information about Reactions
 
-// TODO: Check that every reaction...
-// TODO: Check that every reaction associates with metabolites AND that those metabolites are in the model.
-
-/**
- * Checks to ensure that a reaction has annotations for metabolites and that
- * these metabolties have corresponding records in the metabolic model.
- * @param {Object} reaction Information for a reaction.
- * @param {Array<Object>} metabolites Information for all metabolites of a
- * metabolic model.
- * @returns {boolean} Whether or not the reaction's metabolites have records.
- */
-function checkReactionMetabolites(reaction, metabolites) {
-    // Confirm that a reaction's metabolites have corresponding records.
-    if (
-        (Object.keys(reaction.metabolites).length >= 1) &&
-        (Object.keys(reaction.metabolites)
-            .every(function (metaboliteIdentifier) {
-                return metabolites.find(function (metabolite) {
-                        return metabolite.id === metaboliteIdentifier;
-                    }) != undefined;
-            }))
-    ) {
-        return true;
-    } else {
-        console.log(
-            "Check Reactions: " + reaction.id +
-            " failed metabolite check."
-        );
-        return false;
-    }
-}
-
-/**
- * Checks to confirm that a reaction has an annotation for its metabolic
- * subsystem or process.
- * @param {Object} reaction Information for a reaction.
- * @returns {boolean} Whether or not the reaction has an annotation for its
- * metabolic process.
- */
-function checkReactionProcess(reaction) {
-    // Confirm that reaction has an annotation for a metabolic process.
-    if (
-        reaction.subsystem != undefined
-    ) {
-        return true;
-    } else {
-        console.log(
-            "Check Reactions: " + reaction.id + " failed process check."
-        );
-        return false;
-    }
-}
-
-/**
- * Checks a single reaction from a metabolic model.
- * @param {Object} reaction Information for a reaction.
- * @param {Array<Object>} metabolites Information for all metabolites of a
- * metabolic model.
- * @param {Array<Object>} genes Information for all genes of a metabolic model.
- */
-function checkReaction(reaction, metabolites, genes) {
-    checkReactionBoundsValues(reaction);
-    checkReactionBoundsRanges(reaction);
-    checkReactionBoundsDirection(reaction);
-    checkReactionMetabolites(reaction, metabolites);
-    checkReactionGenes(reaction, genes);
-    //checkReactionProcess(reaction);
-}
-
-
-
-
-
-
-
-
-
-
 /**
  * Checks and cleans the gene rule of a reaction.
  * @param {string} identifier Identifier of a single reaction.
@@ -528,93 +450,82 @@ function checkCleanReactionGenes(identifier, geneRule, geneIdentifiers) {
     }
 }
 
-// TODO: Complete this function to handle bounds appropriately.
 /**
- * Checks and cleans the gene rule of a reaction.
+ * Checks and cleans the lower and upper boundaries of a reaction.
  * @param {string} identifier Identifier of a single reaction.
  * @param {number} lowBound Lower boundary of reaction.
  * @param {number} upBound Upper boundary of reaction.
  * @returns {Object<number>} Boundaries for the reaction.
  */
 function checkCleanReactionBounds(identifier, lowBound, upBound) {
-}
-
-/**
- * Checks bounds values of a single reaction from a metabolic model.
- * @param {Object} reaction Information for a reaction.
- * @returns {boolean} Whether or not the reaction's bounds match expectations.
- */
-function checkReactionBoundsValues(reaction) {
-    // Confirm that lower_bound and upper_bound properties only have values
-    // of -1000, 0, or 1000.
-    // According to this situation, the bounds primarily only signify the
-    // direction of the reaction.
-    if (
-        (
-            reaction.lower_bound === -1000 ||
-            reaction.lower_bound === 0 ||
-            reaction.lower_bound === 1000
-        ) && (
-            reaction.upper_bound === -1000 ||
-            reaction.upper_bound === 0 ||
-            reaction.upper_bound === 1000
-        )
-    ) {
-        return true;
-    } else {
-        console.log(
-            "Check Reactions: " + reaction.id + " failed bounds values check."
-        );
-        return false;
-    }
-}
-
-/**
- * Checks bounds ranges of a single reaction from a metabolic model.
- * @param {Object} reaction Information for a reaction.
- * @returns {boolean} Whether or not the reaction's bounds match expectations.
- */
-function checkReactionBoundsRanges(reaction) {
-    // Confirm that lower_bound values are less than or equal to zero and
-    // upper_bound values are greater than or equal to zero.
-    if (
-        (reaction.lower_bound <= 0) && (reaction.upper_bound >= 0)
-    ) {
-        return true;
-    } else {
-        console.log(
-            "Check Reactions: " + reaction.id + " failed bounds ranges check."
-        );
-        return false;
-    }
-}
-
-/**
- * Checks bounds directionality of a single reaction from a metabolic model.
- * @param {Object} reaction Information for a reaction.
- * @returns {boolean} Whether or not the reaction's bounds match expectations.
- */
-function checkReactionBoundsDirection(reaction) {
-    // Confirm from lower_bound and upper_bound properties the primary direction
-    // of the reaction.
-    // Confirm that upper_bound is never zero.
+    // The lower and upper bounds of the reaction indicate the directionality
+    // and reversibility of the reaction.
+    // The upper bound should never be zero.
     // That situation might imply that the reaction proceeds only in the reverse
     // direction.
-    // Confirm that both lower_bound and upper_bound do not have values of
-    // zero simultaneously.
-    // That situation would imply that the reaction that proceeds in neither
+    // Both the lower and upper bounds should not have values of zero
+    // simultaneously.
+    // That situation might imply that the reaction proceeds in neither
     // direction.
-    if (
-        ((reaction.lower_bound < 0) && (reaction.upper_bound > 0)) ||
-        ((reaction.lower_bound === 0) && (reaction.upper_bound > 0))
-    ) {
-        return true;
+    if ((lowBound <= 0) && (upBound > 0)) {
+        return {
+            lower: lowBound,
+            upper: upBound
+        };
     } else {
         console.log(
-            "Check Reactions: " + reaction.id +
-            " failed bounds directionality check."
+            "Model Assembly, Check Reactions: " + identifier +
+            " failed bounds check."
         );
-        return false;
+        return {
+            lower: lowBound,
+            upper: upBound
+        };
+    }
+}
+
+/**
+ * Checks and cleans the metabolites of a reaction.
+ * @param {string} identifier Identifier of a single reaction.
+ * @param {Object<number>} metabolites Metabolites of a reaction.
+ * @param {Array<string>} metaboliteIdentifiers Identifiers of all metabolites
+ * in a metabolic model.
+ * @returns {Object<number>} Metabolites of the reaction.
+ */
+function checkCleanReactionMetabolites(
+    identifier, metabolites, metaboliteIdentifiers
+) {
+    // Confirm that metabolites participate in the reaction.
+    if ((metabolites) && (Object.keys(metabolites).length > 0)) {
+        // Extract metabolite identifiers and role indicators from reaction.
+        var reactionMetaboliteIdentifiers = Object.keys(metabolites);
+        var reactionMetaboliteRoles = Object.values(metabolites);
+        // Confirm that every metabolite has a record and participates as either
+        // a reactant or a product in the reaction.
+        var record = reactionMetaboliteIdentifiers
+            .every(function (metaboliteIdentifier) {
+            return metaboliteIdentifiers.includes(metaboliteIdentifier);
+        });
+        // The role indicator is not only an integer of -1 or 1.
+        // It is sometimes a float of < 0 or > 0.
+        var role = reactionMetaboliteRoles.every(function (roleValue) {
+            return (roleValue < 0) || (roleValue > 0);
+        });
+        if (record && role) {
+            return Object.assign({}, metabolites);
+        } else {
+            console.log(
+                "Model Assembly, Check Reactions: " + identifier +
+                " failed metabolites check."
+            );
+            return Object.assign({}, metabolites);
+        }
+    } else {
+        console.log(
+            "Model Assembly, Check Reactions: " + identifier +
+            " failed metabolites check."
+        );
+        return Object.assign({}, metabolites);
     }
 }
 
@@ -639,12 +550,13 @@ function checkCleanReaction(reaction, metaboliteIdentifiers, geneIdentifiers) {
         identifier, reaction.lower_bound, reaction.upper_bound
     );
     // Metabolites.
-    var metabolites = checkCleanReactionMetabolites(identifier, reaction.metabolites, metaboliteIdentifiers);
+    var metabolites = checkCleanReactionMetabolites(
+        identifier, reaction.metabolites, metaboliteIdentifiers
+    );
     // Name.
     var name = reaction.name;
     // Process
     var process = reaction.subsystem;
-    // TODO: Prepare all of the variables necessary for the reaction record below...
     // Create record for reaction.
     return {
         gene_reaction_rule: genes,
@@ -702,7 +614,7 @@ function checkCleanRecon2(data) {
         genes: genes,
         id: data.id,
         metabolites: metabolites,
-        //reactions: reactions,
+        reactions: reactions,
         version: data.version
     };
 }

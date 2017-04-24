@@ -53,8 +53,8 @@ function assembleModel(data) {
     var dataClean = checkCleanRecon2(data);
     console.log("cleaned data...");
     console.log(dataClean);
-    //var sets = assembleSets(data);
-    //var entities = assembleEntities(data, sets.sets);
+    var sets = assembleSets(data);
+    var entities = assembleEntities(data, sets.sets);
     //var model = Object.assign({}, entities, sets);
     //downloadJSON(model, "model_sets_network.json");
     //return model;
