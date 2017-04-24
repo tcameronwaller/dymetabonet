@@ -4,10 +4,29 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
-20 April 2017
+24 April 2017
 
 ----------
+Meet with Alexander Lex
 
+Query Interface
+
+The problem with Sketch 2017-04-18_1 is that the hierarchical faceting approach interferes with readability.
+For every level of sets it is necessary to replicate subordinate attributes.
+For example, the user selects the cytosolic and peroxisomal compartments at the top level.
+Then the interface must replicate all subordinate processes for each of these compartments.
+This replication introduces excessive clutter to the interface, as in the bottom query interface in Sketch 2017-04-18_1.
+
+Temporarily, Alex recommends ignoring hierarchy in the query.
+The user will select compartments.
+The interface will show all processes within this new selection, without splitting the processes by compartment.
+
+Query Data
+
+Organize information for the query within a single table.
+The table will have a row for each metabolite or reaction.
+The table will have columns for identifier, type (metabolite or reaction) and all attributes.
+It will be simple to filter rows by multiple columns.
 
 --------------------------------------------------
 19 April 2017

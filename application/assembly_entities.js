@@ -4,7 +4,6 @@
 
 // TODO: Follow the new data structure, including "identifier" instead of "id".
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Creation of records for metabolites
 
@@ -67,6 +66,66 @@ function createMetaboliteRecords(metabolites) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Creation of Reaction Nodes
+
+/**
+ * Determines the identifier for a reaction's process.
+ * @param {Object} reaction Information for a reaction.
+ * @param {Object} processes Information about processes in a metabolic model.
+ * @returns {string} Identifier for the reaction's process.
+ */
+function determineReactionProcessIdentifier(reaction, processes) {
+    if (reaction.subsystem != undefined) {
+        return Object.keys(processes).filter(function (key) {
+            return processes[key].name === reaction.subsystem;
+        })[0];
+    } else {
+        return undefined;
+    }
+}
+
+/**
+ * Creates a record for a network node for a single reaction from a metabolic
+ * model.
+ * @param {Object} reaction Information for a reaction.
+ * @param {Object} processes Information about processes in a metabolic model.
+ * @returns {Object} Record for a node for a reaction.
+ */
+function createReactionNodeRecord(reaction, processes) {
+    return {
+        [reaction.id]: {
+            gene_reaction_rule: reaction.gene_reaction_rule,
+            id: reaction.id,
+            name: reaction.name,
+            process: determineReactionProcessIdentifier(reaction, processes),
+            products: filterReactionMetabolitesByRole(reaction, "product"),
+            reactants: filterReactionMetabolitesByRole(reaction, "reactant"),
+            reversibility: determineReversibility(reaction),
+            type: "reaction"
+        }
+    };
+}
+
+/**
+ * Creates records for network nodes for all reactions from a metabolic model.
+ * @param {Array<Object>} reactions Information for all reactions of a metabolic
+ * model.
+ * @param {Array<Object>} metabolites Information for all metabolites of a
+ * metabolic model.
+ * @param {Array<Object>} genes Information for all genes of a metabolic model.
+ * @param {Object} processes Information about processes in a metabolic model.
+ * @returns {Object} Records for nodes for reactions.
+ */
+function createReactionRecords(reactions, processes) {
+    // Create nodes for reactions.
+    return reactions.reduce(function (collection, reaction) {
+        return Object.assign(
+            {}, collection, createReactionNodeRecord(reaction, processes)
+        );
+    }, {});
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Assembly of records for entities
 
 // TODO: Follow the new data structure, including "identifier" instead of "id".
@@ -82,8 +141,8 @@ function createMetaboliteRecords(metabolites) {
 function assembleEntities(data, sets) {
     return {
         entities: {
-            //metabolites: createMetaboliteRecords(data.metabolites),
-            //reactions: createReactionRecords()
+            metabolites: createMetaboliteRecords(data.metabolites),
+            reactions: createReactionRecords(data.reactions, sets.processes)
         }
     }
 }

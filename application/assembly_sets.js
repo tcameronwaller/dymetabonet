@@ -92,6 +92,9 @@ function createProcessRecord(processName, collection) {
 // TODO: Create unique identifiers for metabolic subsystems or processes.
 // TODO: Use these identifiers as keys for a dictionary-like object.
 
+
+
+// TODO: Complete this function.
 /**
  * Creates records for all processes from a metabolic model.
  * @param {Array<Object>} reactions Information for all reactions of a metabolic
@@ -102,23 +105,24 @@ function createProcessRecords(reactions) {
     // Create records for processes.
     // Assume that according to their annotation, all reactions in the metabolic
     // model participate in only a single metabolic process.
+    // Include a set for undefined processes.
     return reactions.reduce(function (collection, reaction) {
+        if (reaction.subsystem) {
+            var name = reaction.subsystem;
+        } else {
+            var name = "other";
+        }
         // Determine if the reaction has an annotation for process.
         // Determine if a record already exists for the process.
-        if (
-            (reaction.subsystem != undefined) &&
-            (Object.keys(collection).find(function (key) {
-                return collection[key].name === reaction.subsystem;
-            }) === undefined)
-        ) {
+        if (Object.keys(collection).includes(name)) {
+            return collection;
+        } else {
             // Create record for the process.
             return Object.assign(
                 {},
                 collection,
                 createProcessRecord(reaction.subsystem, collection)
             );
-        } else {
-            return collection;
         }
     }, {});
 }
