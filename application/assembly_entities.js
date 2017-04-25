@@ -25,7 +25,7 @@ function createMetaboliteRecord(metabolite) {
  * Creates records for all metabolites from a metabolic model.
  * @param {Array<Object>} metabolites Information for all metabolites of a
  * metabolic model.
- * @returns {Object} Records for metabolites.
+ * @returns {Object<string>} Records for metabolites.
  */
 function createMetaboliteRecords(metabolites) {
     // Create records for general metabolites, without consideration for
@@ -89,8 +89,7 @@ function createReactionProcessIdentifier(subsystem, processes) {
 }
 
 /**
- * Creates a record for a network node for a single reaction from a metabolic
- * model.
+ * Creates a record for a single reaction from a metabolic model.
  * @param {Object} reaction Information for a reaction.
  * @param {Object} processes Information about processes in a metabolic model.
  * @returns {Object} Record for a node for a reaction.
@@ -117,7 +116,7 @@ function createReactionRecord(reaction, processes) {
  * model.
  * @param {Object<string>} processes Information about all processes in a
  * metabolic model.
- * @returns {Object} Records for reactions.
+ * @returns {Object<string>} Records for reactions.
  */
 function createReactionRecords(reactions, processes) {
     // Create records for reactions.

@@ -4,7 +4,51 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+26 April 2017
+
+----------
+Meet with Alexander Lex
+
+Rationale for data structure in query process
+
+--------------------------------------------------
+25 April 2017
+
+----------
+Query Data, Metabolites and Reactions
+
+Store indices for metabolites and reactions within a single table.
+Hence filtration steps will apply to both metabolites and reactions simultaneously.
+It will only be necessary to apply each filter to the single table.
+From that single table it will be simple to obtain metabolite or reaction entities.
+It will also be simple to filter to obtain the counts of entities in each attribute set.
+
+----------
+Query Data, Attributes of Entities
+
+Option 1
+Determine attributes of entities a single time.
+Store this information in an index table, and use this table in the query filteration process.
+After filteration, it will be simple to study the collection in terms of attribute sets, because the attributes will already be available.
+
+Option 2
+Determine attributes of entities multiple times, whenever they are necessary.
+Determine these attributes for each filtration step.
+After filtration, determine these attributes again to study the collection in terms of attribute sets.
+
+Option 1 is more efficient.
+
+--------------------------------------------------
 24 April 2017
+
+----------
+Plan, Index
+
+Immediately after loading model data, assembly the index table for the query process.
+
+/identifier/   /entity/     /compartment/   /process/     /operation/                    /reversibility/
+identifier     metabolite   [compartments]  [processes]   [conversion and/or transport]  true or false
+identifier     reaction     [compartments]  [processes]   [conversion and/or transport]  true or false
 
 ----------
 Progress, Model Assembly

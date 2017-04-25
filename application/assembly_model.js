@@ -56,6 +56,9 @@ function assembleModel(data) {
     return model;
 }
 
+
+
+// TODO: Stuff below here is scrap...
 ////////////////////////////////////////////////////////////////////////////////
 // Select nodes and links from network
 

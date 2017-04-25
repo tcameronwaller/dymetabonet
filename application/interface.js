@@ -155,14 +155,20 @@ function initializeInterface() {
     loadDefaultModel();
 }
 
+
 /**
  * Initializes the interface to support behavior dependent on data for metabolic
  * model.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function initializeInterfaceForModel(model) {
+function controlInterface(model) {
     // TODO: Maybe change classes and styles of elements once I activate them.
+
+    // Assembly query index.
+
+
+
     // Initialize query interface.
     initializeQueryInterface(model);
 }
@@ -190,7 +196,7 @@ function controlModelAssembly(event) {
         var model = assembleModel(JSON.parse(event.currentTarget.result));
         summarizeModel(model);
         // Initialize interface for metabolic model.
-        initializeInterfaceForModel(model);
+        controlInterface(model);
     };
     // Read file as text.
     reader.readAsText(file);
@@ -215,7 +221,7 @@ function controlModelLoad(event) {
         var model = JSON.parse(event.currentTarget.result);
         summarizeModel(model);
         // Initialize interface for metabolic model.
-        initializeInterfaceForModel(model);
+        controlInterface(model);
     };
     // Read file as text.
     reader.readAsText(file);
@@ -235,7 +241,7 @@ function assembleDefaultModel() {
             // Call function to assemble model.
             var model = assembleModel(data);
             summarizeModel(model);
-            initializeInterfaceForModel(model);
+            controlInterface(model);
         }
     );
 }
@@ -253,7 +259,7 @@ function loadDefaultModel() {
             }
             // Call function to assemble model.
             summarizeModel(model);
-            initializeInterfaceForModel(model);
+            controlInterface(model);
         }
     );
 }
