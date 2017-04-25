@@ -1,37 +1,22 @@
-/**
- * Created by Cameron on 4/18/2017.
- */
-
-// TODO: Follow the new data structure, including "identifier" instead of "id".
-
 ////////////////////////////////////////////////////////////////////////////////
 // Creation of records for metabolites
 
 /**
  * Creates a record for a single metabolite from a metabolic model.
- * @param {string} metaboliteIdentifier Unique identifier of general metabolite.
- * @param {Array<Object>} metabolites Information for all metabolites of a
- * metabolic model.
+ * @param {Object<string>} metabolite Information about a single metabolite.
  * @returns {Object} Record for a metabolite.
  */
-function createMetaboliteRecord(metaboliteIdentifier, metabolites) {
-    // Collect all compartmental versions of the metabolite.
-    var setMetabolites = filterCompartmentalMetabolitesByMetabolite(
-        metabolites, metaboliteIdentifier
-    );
-    // Confirm that all compartmental records have identical values for relevant
-    // properties.
-    //checkMetaboliteSet(setMetabolites, metaboliteIdentifier);
-    // Optionally introduce a conditional clause here to print the record for
-    // specific metabolite sets and confirm proper correction for discrepancies.
-    //if (metaboliteIdentifier === "CE7081") {}
-    // Collect consensus properties from all metabolites in set.
+function createMetaboliteRecord(metabolite) {
+    // Previous checks and cleans of the data ensure that attributes specific to
+    // general metabolites are consistent without discrepancies between records
+    // for compartmental metabolites.
+    var identifier = extractMetaboliteIdentifier(metabolite.id);
     return {
-        [metaboliteIdentifier]: {
-            charge: determineMetaboliteSetCharge(setMetabolites),
-            formula: determineMetaboliteSetFormula(setMetabolites),
-            id: metaboliteIdentifier,
-            name: determineMetaboliteSetName(setMetabolites)
+        [identifier]: {
+            charge: metabolite.charge,
+            formula: metabolite.formula,
+            identifier: identifier,
+            name: metabolite.name
         }
     };
 }
@@ -43,45 +28,64 @@ function createMetaboliteRecord(metaboliteIdentifier, metabolites) {
  * @returns {Object} Records for metabolites.
  */
 function createMetaboliteRecords(metabolites) {
-    // Check metabolites.
+    // Create records for general metabolites, without consideration for
+    // compartmental occurrence.
     // Create records for metabolites.
     return metabolites.reduce(function (collection, metabolite) {
         // Determine if a record already exists for the metabolite.
-        if (
-            collection[extractMetaboliteIdentifier(metabolite.id)] ===
-            undefined
-        ) {
-            // Create record for the metabolite.
+        if (collection[extractMetaboliteIdentifier(metabolite.id)]) {
+            // A record exists for the metabolite.
+            return collection;
+        } else {
+            // A record does not exist for the metabolite.
+            // Create a new record for the metabolite.
             return Object.assign(
                 {},
                 collection,
-                createMetaboliteRecord(
-                    extractMetaboliteIdentifier(metabolite.id), metabolites
-                )
+                createMetaboliteRecord(metabolite)
             );
-        } else {
-            return collection;
         }
     }, {});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Creation of Reaction Nodes
+// Creation of records for reactions
 
 /**
- * Determines the identifier for a reaction's process.
- * @param {Object} reaction Information for a reaction.
- * @param {Object} processes Information about processes in a metabolic model.
+ * Creates records for the metabolites that participate in a reaction.
+ * @param {Object<number>} reactionMetabolites Information about metabolites
+ * that participate in a reaction.
+ * @returns {Object<string>} Information about metabolites that participate in a
+ * reaction.
+ */
+function createReactionMetabolites(reactionMetabolites) {
+    return Object.keys(reactionMetabolites).map(function (identifier) {
+        return {
+            identifier: extractMetaboliteIdentifier(identifier),
+            role: determineReactionMetaboliteRole(
+                reactionMetabolites[identifier]
+            ),
+            compartment: extractCompartmentIdentifier(identifier)
+        };
+    });
+}
+
+/**
+ * Creates the identifier for a reaction's process.
+ * @param {string} subsystem Name for a reaction's process.
+ * @param {Object} processes Information about all processes in a metabolic
+ * model.
  * @returns {string} Identifier for the reaction's process.
  */
-function determineReactionProcessIdentifier(reaction, processes) {
-    if (reaction.subsystem != undefined) {
-        return Object.keys(processes).filter(function (key) {
-            return processes[key].name === reaction.subsystem;
-        })[0];
+function createReactionProcessIdentifier(subsystem, processes) {
+    if (subsystem) {
+        var name = subsystem;
     } else {
-        return undefined;
+        var name = "other";
     }
+    return Object.keys(processes).filter(function (key) {
+        return processes[key].name === name;
+    })[0];
 }
 
 /**
@@ -91,44 +95,41 @@ function determineReactionProcessIdentifier(reaction, processes) {
  * @param {Object} processes Information about processes in a metabolic model.
  * @returns {Object} Record for a node for a reaction.
  */
-function createReactionNodeRecord(reaction, processes) {
+function createReactionRecord(reaction, processes) {
+    var identifier = reaction.id;
     return {
-        [reaction.id]: {
-            gene_reaction_rule: reaction.gene_reaction_rule,
-            id: reaction.id,
+        [identifier]: {
+            genes: extractGenesFromRule(reaction.gene_reaction_rule),
+            identifier: identifier,
+            metabolites: createReactionMetabolites(reaction.metabolites),
             name: reaction.name,
-            process: determineReactionProcessIdentifier(reaction, processes),
-            products: filterReactionMetabolitesByRole(reaction, "product"),
-            reactants: filterReactionMetabolitesByRole(reaction, "reactant"),
-            reversibility: determineReversibility(reaction),
-            type: "reaction"
+            process: createReactionProcessIdentifier(
+                reaction.subsystem, processes
+            ),
+            reversibility: determineReversibility(reaction)
         }
     };
 }
 
 /**
- * Creates records for network nodes for all reactions from a metabolic model.
- * @param {Array<Object>} reactions Information for all reactions of a metabolic
+ * Creates records for all reactions from a metabolic model.
+ * @param {Array<Object>} reactions Information for all reactions in a metabolic
  * model.
- * @param {Array<Object>} metabolites Information for all metabolites of a
+ * @param {Object<string>} processes Information about all processes in a
  * metabolic model.
- * @param {Array<Object>} genes Information for all genes of a metabolic model.
- * @param {Object} processes Information about processes in a metabolic model.
- * @returns {Object} Records for nodes for reactions.
+ * @returns {Object} Records for reactions.
  */
 function createReactionRecords(reactions, processes) {
-    // Create nodes for reactions.
+    // Create records for reactions.
     return reactions.reduce(function (collection, reaction) {
         return Object.assign(
-            {}, collection, createReactionNodeRecord(reaction, processes)
+            {}, collection, createReactionRecord(reaction, processes)
         );
     }, {});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Assembly of records for entities
-
-// TODO: Follow the new data structure, including "identifier" instead of "id".
 
 /**
  * Assembles relational records for information about entities in a metabolic

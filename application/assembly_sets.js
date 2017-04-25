@@ -74,27 +74,19 @@ function createGeneRecords(genes) {
 /**
  * Creates a record for a single metabolic process from a metabolic model.
  * @param {string} processName Name of a metabolic subsystem or process.
- * @param {Object} collection Records for processes.
+ * @param {number} length Length of collection of records for processes.
  * @returns {Object} Record for a process.
  */
-function createProcessRecord(processName, collection) {
-    var processIdentifier = "process_" +
-        (Object.keys(collection).length + 1).toString();
+function createProcessRecord(processName, length) {
+    var processIdentifier = "process_" + (length + 1).toString();
     return {
         [processIdentifier]: {
-            id: processIdentifier,
+            identifier: processIdentifier,
             name: processName
         }
     };
 }
 
-
-// TODO: Create unique identifiers for metabolic subsystems or processes.
-// TODO: Use these identifiers as keys for a dictionary-like object.
-
-
-
-// TODO: Complete this function.
 /**
  * Creates records for all processes from a metabolic model.
  * @param {Array<Object>} reactions Information for all reactions of a metabolic
@@ -107,21 +99,23 @@ function createProcessRecords(reactions) {
     // model participate in only a single metabolic process.
     // Include a set for undefined processes.
     return reactions.reduce(function (collection, reaction) {
+        // Determine if the reaction has an annotation for process.
         if (reaction.subsystem) {
             var name = reaction.subsystem;
         } else {
             var name = "other";
         }
-        // Determine if the reaction has an annotation for process.
         // Determine if a record already exists for the process.
-        if (Object.keys(collection).includes(name)) {
+        if (Object.keys(collection).find(function (key) {
+            return collection[key].name === name;
+        })) {
             return collection;
         } else {
             // Create record for the process.
             return Object.assign(
                 {},
                 collection,
-                createProcessRecord(reaction.subsystem, collection)
+                createProcessRecord(name, Object.keys(collection).length)
             );
         }
     }, {});
@@ -129,8 +123,6 @@ function createProcessRecords(reactions) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Assembly of records for sets
-
-// TODO: Follow the new data structure, including "identifier" instead of "id".
 
 /**
  * Assembles relational records for information about sets of entities in a

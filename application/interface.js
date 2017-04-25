@@ -150,9 +150,9 @@ function initializeInterface() {
     document
         .getElementById("load-model")
         .addEventListener("click", controlModelLoad);
-    // Temporarily during development, load default model.
-    assembleDefaultModel();
-    //loadDefaultModel();
+    // Temporarily during development, assemble or load model by default.
+    //assembleDefaultModel();
+    loadDefaultModel();
 }
 
 /**

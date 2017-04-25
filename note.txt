@@ -7,6 +7,25 @@ Research With Alexander Lex
 24 April 2017
 
 ----------
+Progress, Model Assembly
+
+I completed the new process for model assembly.
+Assembly of the new version of the model requires about 1 minute of time on my computer.
+The file for the new version of the model in JSON format has a size of 3.538 Megabytes.
+
+----------
+Plan
+
+I think that I will need three different collections of data.
+1. Entire Index Table
+-The index table with attributes of all entities.
+2. Working Narrow Index Table
+-The index table with progressive filtration and selection.
+3. Data for Query Visualization
+-Extraction of counts of entities (either metabolites or reactions) from the working narrow index table.
+-These counts determine properties such as widths of bars in the query interface.
+
+----------
 Meet with Alexander Lex
 
 Query Interface
@@ -20,6 +39,9 @@ This replication introduces excessive clutter to the interface, as in the bottom
 Temporarily, Alex recommends ignoring hierarchy in the query.
 The user will select compartments.
 The interface will show all processes within this new selection, without splitting the processes by compartment.
+
+Eventually, we might decide to introduce hierarchy to the query process.
+Alex mentioned an icicle plot for this purpose.
 
 Query Data
 

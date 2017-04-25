@@ -10,20 +10,20 @@ function summarizeModel(model) {
     // Print the model and metrics to the console.
     console.log(model);
     console.log(
-        "Count of nodes for reactions: " +
-        Object.keys(model.network.nodes.reactions).length
-    );
-    console.log(
-        "Count of nodes for compartmental metabolites: " +
-        Object.keys(model.network.nodes.metabolites).length
-    );
-    console.log(
-        "Count of links: " +
-        Object.keys(model.network.links).length
-    );
-    console.log(
         "Count of metabolites: " +
-        Object.keys(model.sets.metabolites).length
+        Object.keys(model.entities.metabolites).length
+    );
+    console.log(
+        "Count of reactions: " +
+        Object.keys(model.entities.reactions).length
+    );
+    console.log(
+        "Count of compartments: " +
+        Object.keys(model.sets.compartments).length
+    );
+    console.log(
+        "Count of genes: " +
+        Object.keys(model.sets.genes).length
     );
     console.log(
         "Count of processes: " +
@@ -48,16 +48,12 @@ function summarizeModel(model) {
  * model.
  */
 function assembleModel(data) {
-    console.log("initial data...");
-    console.log(data);
     var dataClean = checkCleanRecon2(data);
-    console.log("cleaned data...");
-    console.log(dataClean);
     var sets = assembleSets(dataClean);
     var entities = assembleEntities(dataClean, sets.sets);
-    //var model = Object.assign({}, entities, sets);
-    //downloadJSON(model, "model_sets_network.json");
-    //return model;
+    var model = Object.assign({}, entities, sets);
+    downloadJSON(model, "model_sets_network.json");
+    return model;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

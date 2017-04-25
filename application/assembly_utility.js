@@ -204,16 +204,14 @@ function determineReversibility(reaction) {
 /**
  * Determines the role of a metabolite in a reaction, either as a reactant or a
  * product.
- * @param {Object} reaction Information for a reaction.
- * @param {string} metaboliteIdentifier Unique identifier of a metabolite that
- * participates in the reaction.
+ * @param {number} code Code designator for metabolite role in reaction.
  * @returns {string} The metabolite's role as a reactant or product in the
  * reaction.
  */
-function determineReactionMetaboliteRole(reaction, metaboliteIdentifier) {
-    if (reaction.metabolites[metaboliteIdentifier] === -1) {
+function determineReactionMetaboliteRole(code) {
+    if (code < 0) {
         return "reactant";
-    } else if (reaction.metabolites[metaboliteIdentifier] === 1) {
+    } else if (code > 0) {
         return "product";
     }
 }
