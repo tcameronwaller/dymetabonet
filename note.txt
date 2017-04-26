@@ -28,8 +28,8 @@ Query Data, Attributes of Entities
 
 Option 1
 Determine attributes of entities a single time.
-Store this information in an index table, and use this table in the query filteration process.
-After filteration, it will be simple to study the collection in terms of attribute sets, because the attributes will already be available.
+Store this information in an index table, and use this table in the query filtration process.
+After filtration, it will be simple to study the collection in terms of attribute sets, because the attributes will already be available.
 
 Option 2
 Determine attributes of entities multiple times, whenever they are necessary.

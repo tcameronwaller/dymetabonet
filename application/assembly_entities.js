@@ -33,7 +33,10 @@ function createMetaboliteRecords(metabolites) {
     // Create records for metabolites.
     return metabolites.reduce(function (collection, metabolite) {
         // Determine if a record already exists for the metabolite.
-        if (collection[extractMetaboliteIdentifier(metabolite.id)]) {
+        if (
+            collection
+                .hasOwnProperty(extractMetaboliteIdentifier(metabolite.id))
+        ) {
             // A record exists for the metabolite.
             return collection;
         } else {
@@ -71,13 +74,13 @@ function createReactionMetabolites(reactionMetabolites) {
 }
 
 /**
- * Creates the identifier for a reaction's process.
+ * Determines the identifier for a reaction's process.
  * @param {string} subsystem Name for a reaction's process.
  * @param {Object} processes Information about all processes in a metabolic
  * model.
  * @returns {string} Identifier for the reaction's process.
  */
-function createReactionProcessIdentifier(subsystem, processes) {
+function determineReactionProcessIdentifier(subsystem, processes) {
     if (subsystem) {
         var name = subsystem;
     } else {
@@ -102,7 +105,7 @@ function createReactionRecord(reaction, processes) {
             identifier: identifier,
             metabolites: createReactionMetabolites(reaction.metabolites),
             name: reaction.name,
-            process: createReactionProcessIdentifier(
+            process: determineReactionProcessIdentifier(
                 reaction.subsystem, processes
             ),
             reversibility: determineReversibility(reaction)

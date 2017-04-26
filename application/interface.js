@@ -128,20 +128,6 @@ function initializeInterface() {
     // Activate elements of the Document Object Model for all behavior that is
     // independent of the model data.
 
-    // Activate behavior of accordion tabs and panels in control panel.
-    Array.from(
-        document
-            .getElementById("control")
-            .getElementsByClassName("tab")
-    )
-        .forEach(function (tab) {
-            tab.addEventListener("click", function (event) {
-                // Element on which the event originated is event.currentTarget.
-                emphasizeDeemphasizeTab(event.currentTarget);
-                displayHideChildPanel(event.currentTarget);
-            });
-        });
-
     // Activate button for assembly of metabolic model from data in file.
     document
         .getElementById("assemble-model")
@@ -165,12 +151,11 @@ function initializeInterface() {
 function controlInterface(model) {
     // TODO: Maybe change classes and styles of elements once I activate them.
 
-    // Assembly query index.
-
-
+    // Assemble set index.
+    var setIndex = createSetIndex(model.entities.reactions);
 
     // Initialize query interface.
-    initializeQueryInterface(model);
+    controlSetInterface(setIndex, model);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -265,6 +250,88 @@ function loadDefaultModel() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Set Interface
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Controls the set interface.
+ * @param {Array<Object<string>>} setIndex Attribute set index for metabolites
+ * and reactions.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function controlSetInterface(setIndex, model) {
+    // TODO: Move setIndex creation here...
+
+    console.log("setIndex");
+    console.log(setIndex);
+
+    // Create information summary for set menu.
+    // TODO: Eventually I will need to differentiate between quantifying by metabolites or reactions.
+    var setSummary = createSetSummary(setIndex);
+
+    // Create set menu.
+    //var setMenu = createSetMenu(setSummary);
+}
+
+
+
+
+
+// TODO: Complete this function...
+function determineAttributeValueCounts(attribute, setIndex) {
+    // Use an object to efficiently organize counts of records with specific
+    // values of the attribute.
+    var tally = setIndex.reduce(function (collection, record) {
+        var entity = record.entity;
+        var values = record[attribute];
+        values.forEach(function (value) {
+            // TODO: How can I do this in a functional way?
+            if (collection.hasOwnProperty(value)) {
+                // A record in the tally exists for the value of the attribute.
+                // Increment the count for the appropriate entity.
+                collection[value][entity] = collection[value][entity] + 1;
+            } else {
+                // A record does not exist in the tally for the value of the
+                // attibute.
+                // Create a new record and increment the count for the appropriate
+                // entity.
+
+                // The new record will replace the previous record.
+                //Object.assign({}, collection, newMetabolite)
+            }
+        });
+    }, {});
+    // TODO: Now translate the tally object to an appropriate array.
+    // TODO: Each element in the array will be an object.
+    // TODO: The object will store the specific value of the attribute.
+    // TODO: The object will also store the counts of metabolites and reactions with that value of the attribute.
+}
+
+function createSetSummary(setIndex) {
+    // Determine the attributes in the attribute set index.
+    var attributes = Object.keys(setIndex[0]).filter(function (key) {
+        return (key !== "identifier" && key !== "entity");
+    });
+    var summary = attributes.map(function (attribute) {
+        return {
+            attribute: attribute,
+            values: determineAttributeValueCounts(attribute, setIndex)
+        }
+    });
+}
+
+
+
+// TODO: Before I can create the set menu, I need to create the necessary data structure to associate with it.
+function createSetMenu(setIndex) {}
+
+
+
+
+// TODO: Scrap... maybe usable
+
+////////////////////////////////////////////////////////////////////////////////
 // Query Interface
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -295,7 +362,7 @@ function createDataElements(selection, element, accessData) {
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function initializeQueryInterface(model) {
+function controlQueryInterface(model) {
     // Create query queue.
     var queue = initializeQueryQueue(model)
     initializeVisualQueryQueue(queue);

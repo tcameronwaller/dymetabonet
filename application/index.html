@@ -44,61 +44,24 @@
             <h1 title="Profondeur: Visual Exploration and Analysis of Metabolic Networks">Profondeur</h1>
         </div>
 
-        <!-- Create container for main interface. -->
+        <!-- Create container for interface. -->
         <div id="interface">
-            <!-- TODO: Per Google HTML/CSS Style Guide, change to control behavior in JavaScript. -->
-            <!-- Create control panel. -->
-            <!-- TODO: Make the control panel collapsible, like the panels within it. -->
-            <div id="control">
-                <!-- Create model panel. -->
-                <div id="model-tab" class="tab">
-                    <h2>Model</h2>
-                </div>
-                <div id="model-panel" class="panel hide">
+            <!-- TODO: Per Google HTML/CSS Style Guide, control behavior in JavaScript. -->
+            <!-- Create container for attribute view. -->
+            <div id="attribute">
+                <!-- Create container for model view. -->
+                <div id="model">
                     <input id="file-selector" type="file"><br>
                     <button id="assemble-model">Assemble</button>
                     <button id="load-model">Load</button>
                 </div>
-
-                <!-- Create query panel. -->
-                <div id="query-tab" class="tab">
-                    <h2>Query</h2>
-                </div>
-                <div id="query-panel" class="panel hide">
-                    <div id="query-queue"></div>
-                    <div id="query-builder"></div>
-                </div>
-                <!-- Create navigation panel. -->
-                <div id="navigation-tab" class="tab">
-                    <h2>Navigation</h2>
-                </div>
-                <div id="navigation-panel" class="panel hide">
-                    This is the Navigation Panel.
-                </div>
-                <!-- <table id="degree-table">
-                    <thead>
-                    <tr>
-                        <th>Identifier</th>
-                        <th>Degree</th>
-                        <th>Replicate</th>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td id="degree-scale"></td>
-                    </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table> -->
-                <!-- Create detail panel. -->
-                <div id="detail-tab" class="tab">
-                    <h2>Detail</h2>
-                </div>
-                <div id="detail-panel" class="panel hide">
-                    This is the Detail Panel.
-                </div>
+                <!-- Create container for set view. -->
+                <div id="set"></div>
+                <!-- Create container for relation view. -->
+                <div id="relation"></div>
             </div>
-            <!-- Create element for exploration view. -->
-            <div id="network"></div>
+            <!-- Create container for topology view. -->
+            <div id="topology"></div>
         </div>
     </div>
 

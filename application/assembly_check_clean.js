@@ -343,7 +343,7 @@ function extractMetaboliteSetAttributes(metabolites) {
         // Extract the identifier of the general metabolite from the identifier
         // of the compartmental metabolite.
         var metaboliteIdentifier = extractMetaboliteIdentifier(metabolite.id);
-        if (!collection[metaboliteIdentifier]) {
+        if (!collection.hasOwnProperty(metaboliteIdentifier)) {
             // The collection does not yet have a record for the general
             // metabolite.
             // Create a new record for the general metabolite with attributes

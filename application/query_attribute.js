@@ -60,7 +60,11 @@ function createReactionIndices(reactions) {
  * model.
  * @param {Object} reactions Information for all reactions in a metabolic
  * model.
- * @returns {Array<Object<string>>} Indices for metabolites and reactions.
+ * @returns {Array<Object<string>>} Attribute set index for metabolites and
+ * reactions.
  */
-function createQueryIndex(reactions) {
+function createSetIndex(reactions) {
+    // TODO: Combine indices for both reactions and metabolites here.
+    // Temporarily, just assemble the index for reactions.
+    return createReactionIndices(reactions);
 }

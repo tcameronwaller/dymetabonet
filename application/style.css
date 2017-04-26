@@ -66,295 +66,55 @@ h3 {
 }
 
 #interface {
-    /*display: block;*/
-    display: flex;
+    display: block;
     height: 100%;
     width: 100%;
 }
 
 /******************************************************************************/
-/* Control Panel */
+/* Attribute View */
 /******************************************************************************/
 
-#control {
-    background-color: rgba(225, 225, 225, 1);
-    /*display: inline;*/
-    /*float: left;*/
+#attribute {
+    display: inline;
+    float: left;
     font-family: sans-serif;
     height: 100%;
     /*overflow: auto;*/
-    width: 10cm;
+    width: 50%;
 }
 
-#control .tab {
-    background-color: rgba(100, 200, 200, 1);
-    color: rgba(0, 0, 0, 1);
-}
+/******************************************************************************/
+/* Set View */
+/******************************************************************************/
 
-#control .tab:hover {
-    background-color: rgba(200, 100, 200, 1);
-}
-
-#control .tab .panel {
-    background-color: rgba(225, 225, 225, 1);
-}
-
-#control .tab.emphasis {
-    background-color: rgba(200, 100, 200, 1);
-}
-
-
-.show {
+#set {
+    background-color: rgba(200, 200, 200, 1);
     display: block;
-}
-
-.hide {
-    display: none;
-}
-
-/******************************************************************************/
-/* Query Interface */
-/******************************************************************************/
-
-#query-panel {
+    height: 50%;
     width: 100%;
 }
 
-#query-queue {
-    background-color: rgba(200, 200, 200, 1);
-    width: 100%;
-}
+/******************************************************************************/
+/* Relation View */
+/******************************************************************************/
 
-#query-queue table {
-    border-collapse: collapse;
-    width: 97%;
-    table-layout: fixed;
-    text-align: left;
-}
-
-#query-queue table thead {
+#relation {
     background-color: rgba(225, 225, 225, 1);
-    font-size: small;
-}
-
-#query-queue table thead th {
-    border-color: rgba(225, 225, 225, 1);
-    border-style: solid;
-    border-width: 1mm;
-    padding: 1mm;
-}
-
-#query-queue table tbody {
-    background-color: rgba(200, 200, 200, 1);
-    font-size: small;
-}
-
-#query-queue table tbody tr {
-    height: 0.5cm;
-    vertical-align: middle;
-}
-
-#query-queue table tbody td {
-    border-color: rgba(225, 225, 225, 1);
-    border-style: solid;
-    border-width: 1mm;
-    overflow: hidden;
-    padding: 1mm;
-    white-space: nowrap;
-}
-
-#query-queue table tbody button {
-    height: 0.4cm;
-    padding: 0mm;
-    text-align: center;
-    width: 0.4cm;
-}
-
-#query-queue-table-head-step {
-    width: 0.2cm;
-}
-
-#query-queue-table-head-combination {
-    width: 0.75cm;
-}
-
-#query-queue-table-head-criterion {
-    width: 1.9cm;
-}
-
-#query-queue-table-head-metabolites,
-#query-queue-table-head-reactions {
-    width: 2.5cm;
-}
-
-#query-queue-table-head-remove {
-    width: 0.4cm;
-}
-
-#query-queue .query-queue-table-cell-svg {
-    height: 0.35cm;
-    width: 2.5cm;
-}
-
-#query-queue .query-queue-table-cell-bars-metabolite {
-    fill: rgba(50, 150, 150, 1);
-    height: 0.35cm;
-}
-
-#query-queue .query-queue-table-cell-bars-reaction {
-    fill: rgba(150, 50, 50, 1);
-    height: 0.35cm;
-}
-
-#query-builder {
-    background-color: rgba(200, 200, 200, 1);
+    display: block;
+    height: 50%;
+    width: 100%;
 }
 
 /******************************************************************************/
-/* Network Interface */
+/* Topology View */
 /******************************************************************************/
 
-#network {
+#topology {
     background-color: rgba(255, 255, 255, 1);
-    /*display: inline;*/
-    /*float: left;*/
-    flex: 1;
+    display: inline;
+    float: left;
     height: 100%;
+    width: 50%;
     /*overflow: scroll;*/
 }
-
-/******************************************************************************/
-/* Scrap */
-/******************************************************************************/
-
-/*
-
-.degree-bar {
-    fill: darkmagenta;
-}
-
-.degree-label {
-    fill: chartreuse;
-    font-family: sans-serif;
-    font-size: xx-small;
-}
-
-.panel {
-    fill: black;
-    fill-opacity: 0.25;
-    stroke: black;
-    stroke-width: 5;
-}
-
-.node-metabolite {
-    r: 7;
-    fill: blue;
-    cursor: move;
-}
-
-.node-metabolite-replication {
-    r: 7;
-    fill: red;
-    cursor: move;
-}
-
-.node-metabolite.fixed {
-    fill: purple;
-    cursor: move;
-}
-
-.node-reaction {
-    r: 5;
-    fill: grey;
-    cursor: move;
-}
-
-.node-reaction.fixed {
-    fill: black;
-    cursor:move;
-}
-
-.emphasis-node {
-    stroke: orange;
-    stroke-width: 5;
-}
-
-.link {
-    stroke-opacity: 1;
-}
-
-.link-metabolite {
-    stroke: grey;
-    stroke-width: 1;
-}
-
-.link-reaction {
-    stroke: black;
-    stroke-width: 3;
-    marker-end: url(#marker);
-}
-
-#selector-div {
-    font-size: x-small;
-}
-
-#selector {
-    font-size: x-small;
-}
-
-#submit {
-    font-size: x-small;
-}
-
-#navigation {
-    display: inline;
-    float: top;
-    width: 100%;
-    height: 83%;
-}
-
-#degree-table {
-    width: 100%;
-    height: 90%;
-    border-collapse: collapse;
-    border-width: 2px;
-    border-color: black;
-}
-
-#degree-table > thead {
-    font-family: sans-serif;
-    font-size: small;
-}
-
-#degree-table td {
-    padding: 2px;
-    font-size: small;
-}
-
-#degree-table > .svg-bar {
-    width: 100px;
-    height: 50px;
-}
-
-
-#network > svg {
-    width: 100%;
-    height: 100%;
-}
-
-#caption {
-    margin-top: 1cm;
-}
-
-#caption h1{
-    font-size: x-large;
-}
-
-#caption h2{
-    font-size: large;
-}
-
-#caption h3{
-    font-size: medium;
-}
-*/
