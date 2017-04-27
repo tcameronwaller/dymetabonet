@@ -4,13 +4,21 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+27 April 2017
+
+----------
+Progress, Set Summary
+
+I completed creation of the set summary.
+The set summary is a collection of counts of entities with each value of each attribute.
+
+--------------------------------------------------
 26 April 2017
 
 ----------
 Meet with Alexander Lex
 
 Rationale for data structure in query process
-
 
 ----------
 Problem, Assembly of Summary of Attribute Set Index
