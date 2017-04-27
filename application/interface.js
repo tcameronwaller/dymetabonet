@@ -265,6 +265,13 @@ function controlSetInterface(setIndex, model) {
 
     console.log("setIndex");
     console.log(setIndex);
+    console.log("attributeSummary");
+    var testAttributes = {
+        compartment: ["c", "m", "p"],
+        process: ["process_1", "process_2"],
+        reversibility: [false],
+    }
+    console.log(collectAttributeSummary(testAttributes, "metabolite"));
 
     // Create information summary for set menu.
     // TODO: Eventually I will need to differentiate between quantifying by metabolites or reactions.
@@ -274,6 +281,188 @@ function controlSetInterface(setIndex, model) {
     //var setMenu = createSetMenu(setSummary);
 }
 
+/**
+ * Collects a summary of counts of each of several values.
+ * @param {Array<string>} values Values of a single attribute.
+ * @param {string} currentEntity The entity, metabolite or reaction, of the
+ * current record.
+ * @param {string} otherEntity The entity, metabolite or reaction, that is not
+ * of the current record.
+ * @returns {Object<string>} Summary of counts of each value.
+ */
+function collectValueSummary(values, currentEntity, otherEntity) {
+    return values.reduce(function (valueCollection, value) {
+        if (valueCollection.hasOwnProperty(value)) {
+            // The collection includes a record for the value.
+            // Replace the current record with a new record.
+            // Increment the count for the current entity.
+            // Preserve the current count for the other entity.
+            var newRecord = {
+                [value]: {
+                    value: value,
+                    [currentEntity]: valueCollection[value][currentEntity] + 1,
+                    [otherEntity]: valueCollection[otherEntity]
+                }
+            };
+            // New record will replace previous record in collection.
+            return Object.assign({}, valueCollection, newRecord);
+        } else {
+            // The collection does not include a record for the value.
+            // Create a new record for the value.
+            // Initiate the count for the current entity to one.
+            // Initiate the count for the other entity to zero.
+            var newRecord = {
+                [value]: {
+                    value: value,
+                    [currentEntity]: 1,
+                    [otherEntity]: 0
+                }
+            };
+            // New record will replace previous record in collection.
+            return Object.assign({}, valueCollection, newRecord);
+        }
+    }, {});
+}
+
+/**
+ * Collects a summary of values for each of several attributes.
+ * @param {Object<Array<string>>} attributes Attributes and values of a single
+ * record.
+ * @param {string} entity The entity, metabolite or reaction, of the
+ * current record.
+ * @returns {Object<Object<string>>} Summary of values for each attribute.
+ */
+function collectAttributeSummary(attributes, entity) {
+    // Assume that the attributes are unique without replicates.
+    return Object
+        .keys(attributes)
+        .reduce(function (attributeCollection, attribute) {
+            // Create a new record for the attribute.
+            var newRecord = {
+                [attribute]: {
+                    attribute: attribute,
+                    values: collectValueSummary(attributes[attribute], currentEntity, otherEntity)
+                }
+            };
+            return Object.assign({}, attributeCollection, newRecord);
+        }, {});
+}
+
+function scrap() {
+    // Determine the entities of the current record.
+    var currentEntity = record.entity;
+    if (currentEntity === "metabolite") {
+        var otherEntity = "reaction";
+    } else {
+        var otherEntity = "metabolite";
+    }
+
+}
+
+
+
+/**
+ * Collects a summary of records.
+ * @param {Array<Object<string>>} records Records of attributes and values of
+ * entities.
+ * @returns {Object<string>} Summary of records.
+ */
+function collectRecordSummary(records) {
+    // Iterate on each record in the set index.
+    return records.reduce(function (recordCollection, record) {
+        // Collect values of all attributes in the record.
+        // Partition values by entity.
+        var attributes = Object.keys(record).filter(function (key) {
+            return (key !== "identifier" && key !== "entity");
+        });
+        var attributeSummary = attributes
+            .reduce(function (attributeCollection, attribute) {
+                var newRecord = {
+                    [attribute]: {
+                        attribute: attribute,
+                        values: record[attribute]
+                    }
+                };
+                // New record will replace previous record in collection.
+                return Object.assign({}, recordCollection, newRecord);
+
+
+            // Create a new record for the attribute.
+                var newRecord = {
+                    [attribute]: {
+                        attribute: attribute,
+                        values: record[attribute]
+                    }
+                };
+                return Object.assign({}, attributeCollection, newRecord);
+            }, {});
+        // TODO: I will eventually reduce
+
+        // Iterate on each attribute in the record.
+        return attributes.reduce(function (attributeCollection, attribute) {
+            var values = record[attribute];
+
+            // Iterate on each value in the attribute.
+            return values.reduce(function (valueCollection, value) {}, {});
+        }, {});
+    }, {});
+}
+
+
+
+
+/**
+ * Creates a summary of the information in the set index.
+ * @param {Array<Object<string>>} setIndex Attribute set index for metabolites
+ * and reactions.
+ * @returns {Array<Object<string>>} Summary of set index.
+ */
+function createSetSummary(setIndex) {
+
+    // TODO: Define a function to handle the extraction for a variable entity... then apply it using both "metabolite" and "reaction".
+    var metaboliteSetIndex = setIndex.filter(function (record) {
+        return (record.entity === "metabolite");
+    });
+    var reactionSetIndex = setIndex.filter(function (record) {
+        return (record.entity === "reaction");
+    });
+
+
+    // Set index is a table, an array of objects.
+    // All objects in the array have the same keys.
+    // Determine attributes in set index.
+    var attributes = Object.keys(setIndex[0]).filter(function (key) {
+        return (key !== "identifier" && key !== "entity");
+    });
+    // Iterate on attributes, the columns in the table.
+    var setSummary = attributes.map(function (attribute) {
+        var metaboliteAttributeValues = metaboliteSetIndex
+            .reduce(function (collection, record) {
+                return [].concat(collection, record[attribute]);
+            }, []);
+        return {
+            attribute: attribute,
+            values: ...
+        };
+    });
+
+
+
+    //return collectRecordSummary(setIndex);
+}
+
+// TODO: Stuff below here might be useless...
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -282,15 +471,12 @@ function controlSetInterface(setIndex, model) {
 function determineAttributeValueCounts(attribute, setIndex) {
     // Use an object to efficiently organize counts of records with specific
     // values of the attribute.
-    var tally = setIndex.reduce(function (collection, record) {
-        var entity = record.entity;
+    var recordSummary = setIndex.reduce(function (recordCollection, record) {
+        // Determine values.
         var values = record[attribute];
-        values.forEach(function (value) {
+        var valueSummary = values.reduce(function (valueCollection, value) {
             // TODO: How can I do this in a functional way?
-            if (collection.hasOwnProperty(value)) {
-                // A record in the tally exists for the value of the attribute.
-                // Increment the count for the appropriate entity.
-                collection[value][entity] = collection[value][entity] + 1;
+            if (valueCollection.hasOwnProperty(value)) {
             } else {
                 // A record does not exist in the tally for the value of the
                 // attibute.
@@ -300,20 +486,27 @@ function determineAttributeValueCounts(attribute, setIndex) {
                 // The new record will replace the previous record.
                 //Object.assign({}, collection, newMetabolite)
             }
-        });
+        }, {});
     }, {});
-    // TODO: Now translate the tally object to an appropriate array.
-    // TODO: Each element in the array will be an object.
-    // TODO: The object will store the specific value of the attribute.
-    // TODO: The object will also store the counts of metabolites and reactions with that value of the attribute.
+    return Object.values(recordSummary);
 }
 
 function createSetSummary(setIndex) {
-    // Determine the attributes in the attribute set index.
+    var recordSummary = setIndex.reduce(function (recordCollection, record) {
+        return collectAttributeSummary(recordCollection, record)
+        return Object.assign({}, recordCollection, newRecordCollection);
+    }, {});
+}
+
+
+// TODO: Scrap...
+function createSetSummary_MapStyle(setIndex) {
+    // Determine the attributes in the record.
+    // Assume that all records in the set index have identical keys.
     var attributes = Object.keys(setIndex[0]).filter(function (key) {
         return (key !== "identifier" && key !== "entity");
     });
-    var summary = attributes.map(function (attribute) {
+    var setSummary = attributes.map(function (attribute) {
         return {
             attribute: attribute,
             values: determineAttributeValueCounts(attribute, setIndex)

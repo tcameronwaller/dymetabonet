@@ -38,7 +38,7 @@ function createReactionIndex(reaction) {
         ),
         process: [reaction.process],
         //operation: determineReactionOperation(reaction),
-        reversibility: reaction.reversibility
+        reversibility: [reaction.reversibility]
     };
 }
 

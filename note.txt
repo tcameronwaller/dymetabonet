@@ -11,6 +11,28 @@ Meet with Alexander Lex
 
 Rationale for data structure in query process
 
+
+----------
+Problem, Assembly of Summary of Attribute Set Index
+
+Option 1
+Use three separate reduce operations.
+1. Use reduce to iterate over records in the set index.
+2. Use reduce to iterate over attributes within a single record.
+3. Use reduce to iterate over values of a single attribute.
+It is simple to count instances of each value in the third reduce operation.
+The challenge is in the first and second reduce operations.
+These operations must access matching attributes and values if they exist in order to increment them.
+I would need to use a for each loop to iterate over all values.
+I would need to test if each value exists in the current collection before incrementing the count.
+This strategy is very complex due to the many levels of the data.
+
+I was trying to partition and count multiple values of multiple attributes in multiple records in my set index.
+I was trying to use a hierarchy of three reduce operations for records, attributes, and values respectively.
+I decided that strategy was too complex.
+
+Option 2
+
 --------------------------------------------------
 25 April 2017
 
