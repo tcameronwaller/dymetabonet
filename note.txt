@@ -7,6 +7,13 @@ Research With Alexander Lex
 27 April 2017
 
 ----------
+Plan, Attribute Set Relations
+
+I will eventually need to extract both the membership and relations between attribute sets.
+I will need those relations when I get to the relations view.
+Before extracting membership and relations, the user will need to define the sets by either individual attributes and values or combinations thereof.
+
+----------
 Progress, Set Summary
 
 I completed creation of the set summary.

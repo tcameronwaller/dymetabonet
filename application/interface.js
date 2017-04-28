@@ -274,52 +274,69 @@ function controlSetInterface(setIndex, model) {
     console.log(setSummary);
 
     // Create set menu.
-    var setMenu = createSetMenu(setSummary, setIndex, model);
+    var setMenu = controlSetMenu(setSummary, setIndex, model);
 }
 
 // TODO: Before I can create the set menu, I need to create the necessary data structure to associate with it.
-function createSetMenu(setSummary, setIndex, model) {}
+function controlSetMenu(setSummary, setIndex, model) {
+    initializeSetMenu();
+    updateSetMenu(setSummary, model);
+}
 
 /**
  * Initializes the visual representation of the attribute set summary.
- * @param {Array<Object>} queue Details for steps in the query's queue.
  */
-function initializeSetMenu(queue) {
-    // Create query queue table.
-    var queryQueueTable = document.createElement("table");
+function initializeSetMenu() {
+    // Create container for set menu.
+    var setView = document.getElementById("set");
+    var setMenu = document.createElement("div");
+    setMenu.setAttribute("id", "set-menu");
+    setView.appendChild(setMenu);
+    // Create set menu table.
+    var setMenuTable = document.createElement("table");
+    setMenuTable.setAttribute("id", "set-menu-table");
     // Create header.
     var head = document.createElement("thead");
     var headRow = document.createElement("tr");
     headRow
-        .appendChild(createElementWithText({text: "", type: "th"}))
-        .setAttribute("id", "query-queue-table-head-step");
-    headRow
-        .appendChild(createElementWithText({text: "-/+/x", type: "th"}))
-        .setAttribute("id", "query-queue-table-head-combination");
-    headRow
-        .appendChild(createElementWithText({text: "criterion", type: "th"}))
-        .setAttribute("id", "query-queue-table-head-criterion");
-    headRow
-        .appendChild(createElementWithText({text: "metabolites", type: "th"}))
-        .setAttribute("id", "query-queue-table-head-metabolites");
-    headRow
-        .appendChild(createElementWithText({text: "reactions", type: "th"}))
-        .setAttribute("id", "query-queue-table-head-reactions");
-    headRow
-        .appendChild(createElementWithText({text: "", type: "th"}))
-        .setAttribute("id", "query-queue-table-head-remove");
+        .appendChild(createElementWithText({text: "Attribute", type: "th"}))
+        .setAttribute("class", "set-menu-table-column-attribute");
+    // TODO: Introduce buttons to the head row to select between reactions or metabolites.
+    // TODO: Also display the total count of reactions or metabolites... that'll be different than the total of the counts for each property.
+    var summaryHead = document.createElement("th");
+    summaryHead.setAttribute("class", "set-menu-table-column-summary");
+    // Metabolite entity label.
+    var metaboliteLabel = document.createElement("span");
+    metaboliteLabel.textContent = "metabolites";
+    metaboliteLabel.setAttribute("id", "set-menu-table-entity-metabolites");
+    // TODO: I'll need some sort of toggle event handler for the the selection of entities.
+    metaboliteLabel.setAttribute("class", "set-menu-table-entity-selection");
+    summaryHead.appendChild(metaboliteLabel);
+    // Spacer.
+    summaryHead
+        .appendChild(createElementWithText({text: "...or...", type: "span"}));
+    // Reaction entity label.
+    var reactionLabel = document.createElement("span");
+    reactionLabel.textContent = "reactions";
+    reactionLabel.setAttribute("id", "set-menu-table-entity-reactions");
+    summaryHead.appendChild(reactionLabel);
+    // Append header to table.
+    headRow.appendChild(summaryHead);
     head.appendChild(headRow);
-    queryQueueTable.appendChild(head);
+    setMenuTable.appendChild(head);
     // Create body.
     var body = document.createElement("tbody");
-    queryQueueTable.appendChild(body);
-    // Append query queue table to query queue.
-    queryQueue.appendChild(queryQueueTable);
+    setMenuTable.appendChild(body);
+    // Append set menu table to set menu.
+    setMenu.appendChild(setMenuTable);
+
     // Append row for first step of query queue.
-    appendQueryStep(extractQueueSummary(queue));
+    //appendQueryStep(extractQueueSummary(queue));
 }
 
-
+// TODO: User interaction will modify the setSummary and the value of the entity.
+// TODO: According to these values, create the set menu.
+function updateSetMenu(setSummary, entity, model) {}
 
 
 
