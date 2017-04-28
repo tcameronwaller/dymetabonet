@@ -336,7 +336,100 @@ function initializeSetMenu() {
 
 // TODO: User interaction will modify the setSummary and the value of the entity.
 // TODO: According to these values, create the set menu.
-function updateSetMenu(setSummary, entity, model) {}
+function updateSetMenu(setSummary, entity, model) {
+
+    // Select body of set menu table.
+    var body = d3
+        .select("#set-menu-table")
+        .select("tbody");
+    // Append rows to table.
+    var rows = body
+        .selectAll("tr")
+        .data(setSummary)
+        .enter()
+        .append("tr");
+    // Append cells to table.
+    var cells = rows
+        .selectAll("td")
+        .data(function (element, index) {
+            // Organize data for table columns.
+            // TODO: Maybe customize the data a little to simplify selection?
+            // TODO: Introduce some sort of flag for the columns?
+            return [].concat(
+                {
+                    class: "set-menu-table-column-attribute",
+                    type: "attribute",
+                    value: element.attribute
+                },
+                {
+                    class: "set-menu-table-column-summary",
+                    type: "summary",
+                    value: element.values
+                });
+        })
+        .enter()
+        .append("td");
+    // Assign class to cells.
+    cells
+        .attr("class", function (data) {
+            return data.class;
+        });
+    // Append text content of cells in attribute column.
+    var attributeCells = cells
+        .filter(function (data, index) {
+            return data.type === "attribute";
+        });
+    attributeCells
+        .text(function (data) {
+            return data.value;
+        });
+    // Append graphical containers in cells in summary column.
+    var summaryCells = cells
+        .filter(function (data, index) {
+            return data.type === "summary";
+        });
+    var summaryCellGraphs = summaryCells
+        .append("svg");
+    summaryCellGraphs
+        .attr("class", "set-menu-table-cell-graph");
+    // Determine the width of graphical containers.
+    var graphWidth = parseFloat(
+        window.getComputedStyle(
+            document.getElementsByClassName("set-menu-table-cell-graph")
+                .item(0)
+        )
+            .width
+            .replace("px", "")
+    );
+    console.log("graphWidth");
+    console.log(graphWidth);
+    // TODO: Define scale function(s)... I'll need a separate scale for each row.
+    // TODO: Append rectangles for each value of the data.
+    // TODO: Format rectangles according to data... I'll need to set both x positions and widths.
+    // TODO: https://github.com/d3/d3/blob/master/API.md#stacks
+
+    // Define scale functions for bar charts.
+    var metaboliteScale = d3
+        .scaleLinear()
+        .domain([0, queue[0].countMetabolites])
+        .range([0, 0.99*svgWidth]);
+    // Append bar chart for metabolites.
+    var metaboliteBarCellSVGs = barCellSVGs
+        .filter(function (data, index) {
+            return (data.subtype === "metabolite");
+        });
+    var metaboliteBars = metaboliteBarCellSVGs
+        .append("rect");
+    metaboliteBars
+        .attr("width", function (data, index) {
+            return metaboliteScale(data.value);
+        })
+        .attr("class", "query-queue-table-cell-bars-metabolite");
+
+
+
+
+}
 
 
 

@@ -95,6 +95,76 @@ h3 {
     width: 100%;
 }
 
+#set-menu {
+    height: 100%;
+    width: 100%;
+}
+
+#set-menu table {
+    border-collapse: collapse;
+    border-style: hidden;
+    width: 100%;
+    table-layout: auto;
+    text-align: left;
+}
+
+#set-menu table thead {
+    background-color: rgba(50, 50, 50, 1);
+    color: rgba(255, 255, 255, 1);
+    font-size: medium;
+    font-weight: bold;
+}
+
+#set-menu table thead tr {
+    height: 1cm;
+    vertical-align: middle;
+}
+
+#set-menu table thead th {
+    border-color: rgba(200, 200, 200, 1);
+    border-style: solid;
+    border-width: 1mm;
+    padding: 1mm;
+}
+
+#set-menu table tbody {
+}
+
+#set-menu table tbody tr {
+    height: 1cm;
+    vertical-align: middle;
+}
+
+#set-menu table tbody td {
+    border-color: rgba(200, 200, 200, 1);
+    border-style: solid;
+    border-width: 1mm;
+    height: 1cm;
+    overflow: hidden;
+    padding: 1mm;
+    white-space: nowrap;
+}
+
+.set-menu-table-column-attribute {
+    background-color: rgba(50, 50, 50, 1);
+    color: rgba(255, 255, 255, 1);
+    font-size: medium;
+    font-weight: bold;
+    width: 3cm;
+}
+
+#set-menu table tbody td.set-menu-table-column-summary {
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.set-menu-table-column-summary svg {
+    height: 1cm;
+    width: 100%;
+}
+
+
+
+
 /******************************************************************************/
 /* Relation View */
 /******************************************************************************/
