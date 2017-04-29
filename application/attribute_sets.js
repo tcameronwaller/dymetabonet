@@ -229,7 +229,7 @@ function accessAttributeValueName(indicator, attribute, model) {
     if (model.sets.hasOwnProperty(attributeName)) {
         // The attribute defines a set in the model.
         // The indicator is an identifier of an attribute set in the model.
-        return model.sets[attributeName][indicator].name;
+        return model.sets[attributeName][indicator].name.toLowerCase();
     } else {
         return indicator;
     }
@@ -263,8 +263,11 @@ function createSetSummary(setIndex, model) {
         var entityValueCounts = countEntityAttributeValues(entityValues);
         // Determine names of values of the attributes for clarity in the set
         // summary.
+        // Include the attribute in the value record for use in association of
+        // data with elements in the document.
         var summaryValues = Object.keys(entityValueCounts).map(function (key) {
             return {
+                attribute: attribute,
                 metabolite: entityValueCounts[key].metabolite,
                 reaction: entityValueCounts[key].reaction,
                 value: accessAttributeValueName(

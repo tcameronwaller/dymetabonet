@@ -280,7 +280,7 @@ function controlSetInterface(setIndex, model) {
 // TODO: Before I can create the set menu, I need to create the necessary data structure to associate with it.
 function controlSetMenu(setSummary, setIndex, model) {
     initializeSetMenu();
-    updateSetMenu(setSummary, model);
+    updateSetMenu(setSummary, "reaction", model);
 }
 
 /**
@@ -334,18 +334,99 @@ function initializeSetMenu() {
     //appendQueryStep(extractQueueSummary(queue));
 }
 
+/**
+ * Sorts the set summary by values of attributes for a specific entity.
+ * @param {Array<Object<string>>} setSummary Summary of set index with counts of
+ * entities with each value of each attribute.
+ * @param {string} entity The entity, metabolite or reaction, of the current
+ * selection.
+ * @returns {Array<Object<string>>} Summary of set index with values in
+ * ascending order.
+ */
+function sortSetSummary(setSummary, entity) {
+    return setSummary.map(function (attributeRecord) {
+        return {
+            attribute: attributeRecord.attribute,
+            values: attributeRecord
+                .values
+                .slice()
+                .sort(function (value1, value2) {
+                    return value1[entity] - value2[entity];
+                })
+        };
+    });
+}
+
+/**
+ * Counts incremental sums of entity counts for each value of each attribute.
+ * @param {Array<Object<string>>} setSummary Summary of set index with counts of
+ * entities with each value of each attribute.
+ * @param {string} entity The entity, metabolite or reaction, of the current
+ * selection.
+ * @returns {Array<Object<string>>} Summary of set index with incremental
+ * counts.
+ */
+function countIncrementalEntityAttributeValues(setSummary, entity) {
+    return setSummary.map(function (attributeRecord) {
+        var incrementalValues = attributeRecord
+            .values
+            .reduce(function (collection, record, index) {
+            // Calculate incremental count.
+            if (index > 0) {
+                // Current record is not the first of the collection.
+                // Increment the count from the previous record.
+                var base = collection[index - 1].base +
+                    collection[index - 1][entity];
+            } else {
+                // Current record is the first of the collection.
+                // Initialize the incremental count from zero.
+                var base = 0;
+            }
+            // The only value to change in the record is the base.
+            var newBase = {
+                //attribute: record.attribute,
+                base: base
+                //metabolite: record.metabolite,
+                //reaction: record.reaction,
+                //value: record.value
+            };
+            // Copy existing values in the record and introduce new value.
+            var newRecord = Object.assign({}, record, newBase);
+            return [].concat(collection, newRecord);
+        }, []);
+        return {
+            attribute: attributeRecord.attribute,
+            values: incrementalValues
+        }
+    });
+}
+
 // TODO: User interaction will modify the setSummary and the value of the entity.
 // TODO: According to these values, create the set menu.
+/**
+ * Creates visual representation of set summary.
+ * @param {Array<Object<string>>} setSummary Summary of set index with counts of
+ * entities with each value of each attribute.
+ * @param {string} entity The entity, metabolite or reaction, of the current
+ * selection.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
 function updateSetMenu(setSummary, entity, model) {
-
-    // TODO: Translate the setSummary so that it is ready for creating the bar charts.
-    // TODO: Maybe in the initial preparation of setSummary, use names of compartments and processes, not identifiers.
-    // TODO: In order to do that, I'll probably need to iterate over the attributes and values separately after the initial counting and such.
-
-    // TODO: Sort the attributes and values (probably put smallest values first for ease in readability.
-    // TODO: Determine the incremental sums of counts for the stacked bar charts.
-
-
+    // Prepare the set summary for visual representation.
+    // Sort attribute values by counts of the specific entity.
+    // For readability, place values with lesser counts before values with
+    // greater counts.
+    // As the sort depends on the entity selection, it is necessary to sort with
+    // each update.
+    var setSummarySort = sortSetSummary(setSummary, entity);
+    // Calculate incremental sums of counts in set summary.
+    // These sums are necessary for positions of bar stacks.
+    var setSummaryIncrement = countIncrementalEntityAttributeValues(
+        setSummarySort, entity
+    );
+    console.log("setSummaryIncrement");
+    console.log(setSummaryIncrement);
     // Select body of set menu table.
     var body = d3
         .select("#set-menu-table")
@@ -353,7 +434,7 @@ function updateSetMenu(setSummary, entity, model) {
     // Append rows to table.
     var rows = body
         .selectAll("tr")
-        .data(setSummary)
+        .data(setSummaryIncrement)
         .enter()
         .append("tr");
     // Append cells to table.
@@ -361,8 +442,6 @@ function updateSetMenu(setSummary, entity, model) {
         .selectAll("td")
         .data(function (element, index) {
             // Organize data for table columns.
-            // TODO: Maybe customize the data a little to simplify selection?
-            // TODO: Introduce some sort of flag for the columns?
             return [].concat(
                 {
                     class: "set-menu-table-column-attribute",
@@ -411,11 +490,29 @@ function updateSetMenu(setSummary, entity, model) {
     );
     console.log("graphWidth");
     console.log(graphWidth);
-    // TODO: Define scale function(s)... I'll need a separate scale for each row.
+    // Append rectangles to graphical containers in summary column.
+    var summaryCellBars = summaryCellGraphs
+        .selectAll("rect")
+        .data(function (record, index) {
+            // Organize data for rectangles.
+            console.log(record.value);
+            return record.value;
+        })
+        .enter()
+        .append("rect");
+    // Assign position and dimension to rectangles.
+    // TODO: Each attribute (compartment, process) needs its own scale function.
+    // TODO: In order to determine the appropriate scale function, each element needs to know its attribute.
+    // TODO: Define all scale functions separately (such as earlier within this function).
+    // TODO: It will be necessary to access the complete information for each row... so don't try to use data bound to the table rows or cells.
+    // TODO: Define a function that returns the appropriate scale function according to the attribute (passed as a parameter).
+    // TODO: Or... Define variables for the domain of each attribute (within an object), then define scale functions within the d3 data handlers where they're necessary.
+
+
+
     // TODO: Append rectangles for each value of the data.
     // TODO: Format rectangles according to data... I'll need to set both x positions and widths.
-    // TODO: https://github.com/d3/d3/blob/master/API.md#stacks
-    // TODO: http://www.adeveloperdiary.com/d3-js/create-stacked-bar-chart-using-d3-js/
+
 
     // Define scale functions for bar charts.
     //var metaboliteScale = d3

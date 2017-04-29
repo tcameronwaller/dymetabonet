@@ -364,7 +364,7 @@ function extractMetaboliteSetAttributes(metabolites) {
             // The collection already has a record for the general metabolite.
             // Include the attributes from the compartmental metabolite within
             // the record for the general metabolite.
-            // The new record for the general metabolite will write over the
+            // The new record for the general metabolite will replace the
             // previous record.
             var oldMetabolite = collection[metaboliteIdentifier];
             var newMetabolite = {
