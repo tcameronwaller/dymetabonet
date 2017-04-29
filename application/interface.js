@@ -269,7 +269,7 @@ function controlSetInterface(setIndex, model) {
 
     // Create information summary for set menu.
     // TODO: Eventually store information about user interaction/selection within the setSummary. Record information about selections for inclusion or exclusion.
-    var setSummary = createSetSummary(setIndex);
+    var setSummary = createSetSummary(setIndex, model);
     console.log("setSummary");
     console.log(setSummary);
 

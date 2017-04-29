@@ -169,7 +169,6 @@ function countEntityAttributeValues(entityValues) {
         } else {
             var otherEntity = "metabolite";
         }
-
         if (valueCollection.hasOwnProperty(entityValue.value)) {
             // The collection includes a record for the value.
             // Replace the current record with a new record.
@@ -208,11 +207,43 @@ function countEntityAttributeValues(entityValues) {
 
 /**
  * Creates a summary of the information in the set index.
+ * @param {string} indicator Indicator of the value of the attribute.
+ * @param {string} attribute Attribute of which to collect value name.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ * @returns {string} Name of value of the attribute.
+ */
+function accessAttributeValueName(indicator, attribute, model) {
+    // Determine attribute name to match records in model.
+    if (attribute === "compartment") {
+        var attributeName = "compartments";
+    } else if (attribute === "process") {
+        var attributeName = "processes";
+    } else {
+        var attributeName = attribute;
+    }
+    // Determine if the attribute defines a set in the model.
+    // Determine if the indicator is an identifier of an attribute set in the
+    // model.
+    //
+    if (model.sets.hasOwnProperty(attributeName)) {
+        // The attribute defines a set in the model.
+        // The indicator is an identifier of an attribute set in the model.
+        return model.sets[attributeName][indicator].name;
+    } else {
+        return indicator;
+    }
+}
+
+/**
+ * Creates a summary of the information in the set index.
  * @param {Array<Object<string>>} setIndex Attribute set index for metabolites
  * and reactions.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
  * @returns {Array<Object<string>>} Summary of set index.
  */
-function createSetSummary(setIndex) {
+function createSetSummary(setIndex, model) {
     // Determine attributes in set index.
     var attributes = Object.keys(setIndex[0]).filter(function (key) {
         return (key !== "identifier" && key !== "entity");
@@ -229,9 +260,21 @@ function createSetSummary(setIndex) {
             entityAttributeValues.reaction, "reaction"
         );
         var entityValues = [].concat(metaboliteValues, reactionValues);
+        var entityValueCounts = countEntityAttributeValues(entityValues);
+        // Determine names of values of the attributes for clarity in the set
+        // summary.
+        var summaryValues = Object.keys(entityValueCounts).map(function (key) {
+            return {
+                metabolite: entityValueCounts[key].metabolite,
+                reaction: entityValueCounts[key].reaction,
+                value: accessAttributeValueName(
+                    entityValueCounts[key].value, attribute, model
+                )
+            };
+        });
         return {
             attribute: attribute,
-            values: Object.values(countEntityAttributeValues(entityValues))
+            values: summaryValues
         };
     });
 }
