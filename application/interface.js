@@ -338,6 +338,14 @@ function initializeSetMenu() {
 // TODO: According to these values, create the set menu.
 function updateSetMenu(setSummary, entity, model) {
 
+    // TODO: Translate the setSummary so that it is ready for creating the bar charts.
+    // TODO: Maybe in the initial preparation of setSummary, use names of compartments and processes, not identifiers.
+    // TODO: In order to do that, I'll probably need to iterate over the attributes and values separately after the initial counting and such.
+
+    // TODO: Sort the attributes and values (probably put smallest values first for ease in readability.
+    // TODO: Determine the incremental sums of counts for the stacked bar charts.
+
+
     // Select body of set menu table.
     var body = d3
         .select("#set-menu-table")
@@ -407,28 +415,25 @@ function updateSetMenu(setSummary, entity, model) {
     // TODO: Append rectangles for each value of the data.
     // TODO: Format rectangles according to data... I'll need to set both x positions and widths.
     // TODO: https://github.com/d3/d3/blob/master/API.md#stacks
+    // TODO: http://www.adeveloperdiary.com/d3-js/create-stacked-bar-chart-using-d3-js/
 
     // Define scale functions for bar charts.
-    var metaboliteScale = d3
-        .scaleLinear()
-        .domain([0, queue[0].countMetabolites])
-        .range([0, 0.99*svgWidth]);
+    //var metaboliteScale = d3
+    //    .scaleLinear()
+    //    .domain([0, queue[0].countMetabolites])
+    //    .range([0, 0.99*svgWidth]);
     // Append bar chart for metabolites.
-    var metaboliteBarCellSVGs = barCellSVGs
-        .filter(function (data, index) {
-            return (data.subtype === "metabolite");
-        });
-    var metaboliteBars = metaboliteBarCellSVGs
-        .append("rect");
-    metaboliteBars
-        .attr("width", function (data, index) {
-            return metaboliteScale(data.value);
-        })
-        .attr("class", "query-queue-table-cell-bars-metabolite");
-
-
-
-
+    //var metaboliteBarCellSVGs = barCellSVGs
+    //    .filter(function (data, index) {
+    //        return (data.subtype === "metabolite");
+    //    });
+    //var metaboliteBars = metaboliteBarCellSVGs
+    //    .append("rect");
+    //metaboliteBars
+    //    .attr("width", function (data, index) {
+    //        return metaboliteScale(data.value);
+    //    })
+    //    .attr("class", "query-queue-table-cell-bars-metabolite");
 }
 
 
