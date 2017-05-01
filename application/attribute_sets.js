@@ -33,7 +33,7 @@ function extractReactionMetaboliteCompartments(reactionMetabolites) {
 }
 
 /**
- * Creates an index for attributes of a single reaction from a metabolic model.
+ * Creates an index of attributes of a single reaction from a metabolic model.
  * @param {Object} reaction Record for a reaction.
  * @returns {Object} Index for a reaction.
  */
@@ -51,7 +51,7 @@ function createReactionIndex(reaction) {
 }
 
 /**
- * Creates indices for attributes of all reactions in a metabolic model.
+ * Creates indices of attributes of all reactions in a metabolic model.
  * @param {Object} reactions Information for all reactions in a metabolic
  * model.
  * @returns {Array<Object<string>>} Indices for reactions.
@@ -64,15 +64,15 @@ function createReactionIndices(reactions) {
 }
 
 /**
- * Creates index for attributes of all metabolites and reactions in a metabolic
+ * Creates index of attributes of all metabolites and reactions in a metabolic
  * model.
  * @param {Object} reactions Information for all reactions in a metabolic
  * model.
- * @returns {Array<Object<string>>} Attribute set index for metabolites and
+ * @returns {Array<Object<string>>} Index of attributes of metabolites and
  * reactions.
  */
-function createSetIndex(reactions) {
-    // Set index is analogous to a table.
+function createAttributeIndex(reactions) {
+    // Attribute index is analogous to a table.
     // It is an array of objects.
     // Individual objects, analogous to rows in the table, represent individual
     // entities, either metabolites or reactions.
@@ -95,16 +95,16 @@ function createSetIndex(reactions) {
 /**
  * Collects attribute values of entities.
  * @param {string} attribute Attribute of which to collect values.
- * @param {Array<Object<string>>} setIndex Attribute set index for metabolites
- * and reactions.
+ * @param {Array<Object<string>>} attributeIndex Index of attributes of
+ * metabolites and reactions.
  * @returns {Object<Array<string>>} Collection of values of the attribute for
  * each entity.
  */
-function collectEntityAttributeValues(attribute, setIndex) {
-    // Iterate on records in the set index, the rows in the table.
+function collectEntityAttributeValues(attribute, attributeIndex) {
+    // Iterate on records in the attribute index, the rows in the table.
     // Collect all values of the attribute.
     // Partition values by entity.
-    return setIndex.reduce(function (collection, record) {
+    return attributeIndex.reduce(function (collection, record) {
         // Determine the entities of the current record.
         var currentEntity = record.entity;
         if (currentEntity === "metabolite") {
@@ -206,7 +206,7 @@ function countEntityAttributeValues(entityValues) {
 }
 
 /**
- * Creates a summary of the information in the set index.
+ * Creates a summary of the information in the attribute index.
  * @param {string} indicator Indicator of the value of the attribute.
  * @param {string} attribute Attribute of which to collect value name.
  * @param {Object} model Information about entities and relations in a metabolic
@@ -236,22 +236,22 @@ function accessAttributeValueName(indicator, attribute, model) {
 }
 
 /**
- * Creates a summary of the information in the set index.
- * @param {Array<Object<string>>} setIndex Attribute set index for metabolites
- * and reactions.
+ * Creates a summary of the information in the attribute index.
+ * @param {Array<Object<string>>} attributeIndex Index of attributes of
+ * metabolites and reactions.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
- * @returns {Array<Object<string>>} Summary of set index.
+ * @returns {Array<Object<string>>} Summary of attribute index.
  */
-function createSetSummary(setIndex, model) {
-    // Determine attributes in set index.
-    var attributes = Object.keys(setIndex[0]).filter(function (key) {
+function createAttributeSummary(attributeIndex, model) {
+    // Determine attributes in attribute index.
+    var attributes = Object.keys(attributeIndex[0]).filter(function (key) {
         return (key !== "identifier" && key !== "entity");
     });
-    // Iterate on attributes in the set index, the columns in the table.
+    // Iterate on attributes in the attribute index, the columns in the table.
     return attributes.map(function (attribute) {
         var entityAttributeValues = collectEntityAttributeValues(
-            attribute, setIndex
+            attribute, attributeIndex
         );
         var metaboliteValues = translateEntityAttributeValues(
             entityAttributeValues.metabolite, "metabolite"
@@ -261,7 +261,7 @@ function createSetSummary(setIndex, model) {
         );
         var entityValues = [].concat(metaboliteValues, reactionValues);
         var entityValueCounts = countEntityAttributeValues(entityValues);
-        // Determine names of values of the attributes for clarity in the set
+        // Determine names of values of the attributes for clarity in the attribute
         // summary.
         // Include the attribute in the value record for use in association of
         // data with elements in the document.

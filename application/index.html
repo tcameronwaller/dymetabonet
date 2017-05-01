@@ -47,21 +47,25 @@
         <!-- Create container for interface. -->
         <div id="interface">
             <!-- TODO: Per Google HTML/CSS Style Guide, control behavior in JavaScript. -->
-            <!-- Create container for attribute view. -->
-            <div id="attribute">
-                <!-- Create container for model view. -->
-                <div id="model">
+            <!-- Create container for model views. -->
+            <div id="model">
+                <!-- Create container for source view. -->
+                <div id="source">
                     <input id="file-selector" type="file"><br>
-                    <button id="assemble-model">Assemble</button>
+                    <label for="file-selector">File</label><br>
+                    <button id="assemble-model">Assemble</button><br>
                     <button id="load-model">Load</button>
                 </div>
+                <!-- Create container for attribute view -->
+                <div id="attribute"></div>
+            </div>
+            <!-- Create container for relation views. -->
+            <div id="relation">
                 <!-- Create container for set view. -->
                 <div id="set"></div>
-                <!-- Create container for relation view. -->
-                <div id="relation"></div>
+                <!-- Create container for entity view. -->
+                <div id="entity"></div>
             </div>
-            <!-- Create container for topology view. -->
-            <div id="topology"></div>
         </div>
     </div>
 

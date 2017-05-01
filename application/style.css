@@ -67,8 +67,28 @@ h3 {
 
 #interface {
     display: block;
-    height: 100%;
+    height: 95%;
     width: 100%;
+}
+
+/******************************************************************************/
+/* Model View */
+/******************************************************************************/
+
+#model {
+    display: flex;
+    width: 100%;
+}
+
+#file-selector {
+    display: none;
+}
+
+#source {
+    background-color: rgba(255, 255, 255, 1);
+    /*display: inline;*/
+    /*float: left;*/
+    flex-basis: content;
 }
 
 /******************************************************************************/
@@ -76,31 +96,23 @@ h3 {
 /******************************************************************************/
 
 #attribute {
-    display: inline;
-    float: left;
+    /*display: inline;*/
+    /*float: left;*/
+    flex: 1;
     font-family: sans-serif;
-    height: 100%;
     /*overflow: auto;*/
-    width: 50%;
 }
 
-/******************************************************************************/
-/* Set View */
-/******************************************************************************/
-
-#set {
+#attribute {
     background-color: rgba(200, 200, 200, 1);
-    display: block;
-    height: 50%;
-    width: 100%;
 }
 
-#set-menu {
+#attribute-menu {
     height: 100%;
     width: 100%;
 }
 
-#set-menu table {
+#attribute-menu table {
     border-collapse: collapse;
     border-style: hidden;
     width: 100%;
@@ -108,34 +120,34 @@ h3 {
     text-align: left;
 }
 
-#set-menu table thead {
+#attribute-menu table thead {
     background-color: rgba(50, 50, 50, 1);
     color: rgba(255, 255, 255, 1);
     font-size: medium;
     font-weight: bold;
 }
 
-#set-menu table thead tr {
+#attribute-menu table thead tr {
     height: 1cm;
     vertical-align: middle;
 }
 
-#set-menu table thead th {
+#attribute-menu table thead th {
     border-color: rgba(200, 200, 200, 1);
     border-style: solid;
     border-width: 1mm;
     padding: 1mm;
 }
 
-#set-menu table tbody {
+#attribute-menu table tbody {
 }
 
-#set-menu table tbody tr {
+#attribute-menu table tbody tr {
     height: 1cm;
     vertical-align: middle;
 }
 
-#set-menu table tbody td {
+#attribute-menu table tbody td {
     border-color: rgba(200, 200, 200, 1);
     border-style: solid;
     border-width: 1mm;
@@ -145,7 +157,7 @@ h3 {
     white-space: nowrap;
 }
 
-.set-menu-table-column-attribute {
+.attribute-menu-table-column-attribute {
     background-color: rgba(50, 50, 50, 1);
     color: rgba(255, 255, 255, 1);
     font-size: medium;
@@ -153,28 +165,27 @@ h3 {
     width: 3cm;
 }
 
-#set-menu table tbody td.set-menu-table-column-summary {
+#attribute-menu table tbody td.attribute-menu-table-column-summary {
     background-color: rgba(255, 255, 255, 1);
 }
 
-.set-menu-table-column-summary svg {
+.attribute-menu-table-column-summary svg {
     height: 1cm;
     width: 100%;
 }
 
-.set-menu-table-cell-bar {
+.attribute-menu-table-cell-bar {
     /*fill: rgba(200, 20, 20, 1);*/
     height: 1cm;
 }
 
-.set-menu-table-cell-bar:nth-child(odd) {
+.attribute-menu-table-cell-bar:nth-child(odd) {
     fill: rgba(200, 20, 20, 1);
 }
 
-.set-menu-table-cell-bar:nth-child(even) {
+.attribute-menu-table-cell-bar:nth-child(even) {
     fill: rgba(20, 100, 20, 1);
 }
-
 
 /******************************************************************************/
 /* Relation View */
@@ -183,19 +194,18 @@ h3 {
 #relation {
     background-color: rgba(225, 225, 225, 1);
     display: block;
-    height: 50%;
     width: 100%;
 }
 
-/******************************************************************************/
-/* Topology View */
-/******************************************************************************/
-
-#topology {
-    background-color: rgba(255, 255, 255, 1);
+#set {
     display: inline;
     float: left;
-    height: 100%;
     width: 50%;
-    /*overflow: scroll;*/
 }
+
+#entity {
+    display:inline;
+    float: left;
+    width: 50%;
+}
+

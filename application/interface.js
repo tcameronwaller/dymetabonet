@@ -150,13 +150,13 @@ function initializeInterface() {
 function controlInterface(model) {
     // TODO: Maybe change classes and styles of elements once I activate them.
 
-    // Assemble set index.
-    // The set index will be a means of data exchange between the views for
+    // Assemble attribute index.
+    // The attribute index will be a means of data exchange between the views for
     // attribute sets and attribute relations.
-    var setIndex = createSetIndex(model.entities.reactions);
+    var attributeIndex = createAttributeIndex(model.entities.reactions);
 
     // Initialize query interface.
-    controlSetInterface(setIndex, model);
+    controlAttributeInterface(attributeIndex, model);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -251,66 +251,66 @@ function loadDefaultModel() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Set Interface
+// Attribute Interface
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Controls the set interface.
- * @param {Array<Object<string>>} setIndex Attribute set index for metabolites
- * and reactions.
+ * Controls the attribute interface.
+ * @param {Array<Object<string>>} attributeIndex Index of attributes of
+ * metabolites and reactions.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function controlSetInterface(setIndex, model) {
-    // TODO: Move setIndex creation here...
+function controlAttributeInterface(attributeIndex, model) {
+    // TODO: Move attributeIndex creation here...
 
-    console.log("setIndex");
-    console.log(setIndex);
+    console.log("attributeIndex");
+    console.log(attributeIndex);
 
-    // Create information summary for set menu.
-    // TODO: Eventually store information about user interaction/selection within the setSummary. Record information about selections for inclusion or exclusion.
-    var setSummary = createSetSummary(setIndex, model);
-    console.log("setSummary");
-    console.log(setSummary);
+    // Create information summary for attribute menu.
+    // TODO: Eventually store information about user interaction/selection within the attributeSummary. Record information about selections for inclusion or exclusion.
+    var attributeSummary = createAttributeSummary(attributeIndex, model);
+    console.log("attributeSummary");
+    console.log(attributeSummary);
 
-    // Create set menu.
-    var setMenu = controlSetMenu(setSummary, setIndex, model);
+    // Create attribute menu.
+    var attributeMenu = controlAttributeMenu(attributeSummary, attributeIndex, model);
 }
 
-// TODO: Before I can create the set menu, I need to create the necessary data structure to associate with it.
-function controlSetMenu(setSummary, setIndex, model) {
-    initializeSetMenu();
-    updateSetMenu(setSummary, "reaction", model);
+// TODO: Before I can create the attribute menu, I need to create the necessary data structure to associate with it.
+function controlAttributeMenu(attributeSummary, attributeIndex, model) {
+    initializeAttributeMenu();
+    updateAttributeMenu(attributeSummary, "reaction", model);
 }
 
 /**
  * Initializes the visual representation of the attribute set summary.
  */
-function initializeSetMenu() {
-    // Create container for set menu.
-    var setView = document.getElementById("set");
-    var setMenu = document.createElement("div");
-    setMenu.setAttribute("id", "set-menu");
-    setView.appendChild(setMenu);
-    // Create set menu table.
-    var setMenuTable = document.createElement("table");
-    setMenuTable.setAttribute("id", "set-menu-table");
+function initializeAttributeMenu() {
+    // Create container for attribute menu.
+    var attributeView = document.getElementById("attribute");
+    var attributeMenu = document.createElement("div");
+    attributeMenu.setAttribute("id", "attribute-menu");
+    attributeView.appendChild(attributeMenu);
+    // Create attribute menu table.
+    var attributeMenuTable = document.createElement("table");
+    attributeMenuTable.setAttribute("id", "attribute-menu-table");
     // Create header.
     var head = document.createElement("thead");
     var headRow = document.createElement("tr");
     headRow
         .appendChild(createElementWithText({text: "Attribute", type: "th"}))
-        .setAttribute("class", "set-menu-table-column-attribute");
+        .setAttribute("class", "attribute-menu-table-column-attribute");
     // TODO: Introduce buttons to the head row to select between reactions or metabolites.
     // TODO: Also display the total count of reactions or metabolites... that'll be different than the total of the counts for each property.
     var summaryHead = document.createElement("th");
-    summaryHead.setAttribute("class", "set-menu-table-column-summary");
+    summaryHead.setAttribute("class", "attribute-menu-table-column-summary");
     // Metabolite entity label.
     var metaboliteLabel = document.createElement("span");
     metaboliteLabel.textContent = "metabolites";
-    metaboliteLabel.setAttribute("id", "set-menu-table-entity-metabolites");
+    metaboliteLabel.setAttribute("id", "attribute-menu-table-entity-metabolites");
     // TODO: I'll need some sort of toggle event handler for the the selection of entities.
-    metaboliteLabel.setAttribute("class", "set-menu-table-entity-selection");
+    metaboliteLabel.setAttribute("class", "attribute-menu-table-entity-selection");
     summaryHead.appendChild(metaboliteLabel);
     // Spacer.
     summaryHead
@@ -318,33 +318,33 @@ function initializeSetMenu() {
     // Reaction entity label.
     var reactionLabel = document.createElement("span");
     reactionLabel.textContent = "reactions";
-    reactionLabel.setAttribute("id", "set-menu-table-entity-reactions");
+    reactionLabel.setAttribute("id", "attribute-menu-table-entity-reactions");
     summaryHead.appendChild(reactionLabel);
     // Append header to table.
     headRow.appendChild(summaryHead);
     head.appendChild(headRow);
-    setMenuTable.appendChild(head);
+    attributeMenuTable.appendChild(head);
     // Create body.
     var body = document.createElement("tbody");
-    setMenuTable.appendChild(body);
-    // Append set menu table to set menu.
-    setMenu.appendChild(setMenuTable);
+    attributeMenuTable.appendChild(body);
+    // Append attribute menu table to attribute menu.
+    attributeMenu.appendChild(attributeMenuTable);
 
     // Append row for first step of query queue.
     //appendQueryStep(extractQueueSummary(queue));
 }
 
 /**
- * Sorts the set summary by values of attributes for a specific entity.
- * @param {Array<Object<string>>} setSummary Summary of set index with counts of
+ * Sorts the attribute summary by values of attributes for a specific entity.
+ * @param {Array<Object<string>>} attributeSummary Summary of attribute index with counts of
  * entities with each value of each attribute.
  * @param {string} entity The entity, metabolite or reaction, of the current
  * selection.
- * @returns {Array<Object<string>>} Summary of set index with values in
+ * @returns {Array<Object<string>>} Summary of attribute index with values in
  * ascending order.
  */
-function sortSetSummary(setSummary, entity) {
-    return setSummary.map(function (attributeRecord) {
+function sortAttributeSummary(attributeSummary, entity) {
+    return attributeSummary.map(function (attributeRecord) {
         return {
             attribute: attributeRecord.attribute,
             values: attributeRecord
@@ -359,15 +359,15 @@ function sortSetSummary(setSummary, entity) {
 
 /**
  * Counts incremental sums of entity counts for each value of each attribute.
- * @param {Array<Object<string>>} setSummary Summary of set index with counts of
+ * @param {Array<Object<string>>} attributeSummary Summary of attribute index with counts of
  * entities with each value of each attribute.
  * @param {string} entity The entity, metabolite or reaction, of the current
  * selection.
- * @returns {Array<Object<string>>} Summary of set index with incremental
+ * @returns {Array<Object<string>>} Summary of attribute index with incremental
  * counts.
  */
-function countIncrementalEntityAttributeValues(setSummary, entity) {
-    return setSummary.map(function (attributeRecord) {
+function countIncrementalEntityAttributeValues(attributeSummary, entity) {
+    return attributeSummary.map(function (attributeRecord) {
         var incrementalValues = attributeRecord
             .values
             .reduce(function (collection, record, index) {
@@ -412,47 +412,78 @@ function countIncrementalEntityAttributeValues(setSummary, entity) {
     });
 }
 
-// TODO: User interaction will modify the setSummary and the value of the entity.
-// TODO: According to these values, create the set menu.
 /**
- * Creates visual representation of set summary.
- * @param {Array<Object<string>>} setSummary Summary of set index with counts of
+ * Sorts the attribute summary by values of attributes for a specific entity.
+ * @param {Array<Object<string>>} attributeSummary Summary of attribute index with counts of
+ * entities with each value of each attribute.
+ * @param {string} entity The entity, metabolite or reaction, of the current
+ * selection.
+ * @returns {Array<Object<string>>} Summary of attribute index with values in
+ * ascending order.
+ */
+function prepareAttributeSummary(attributeSummary, entity) {
+    return attributeSummary.map(function (attributeRecord) {
+        // Determine count value according to current selection of entity.
+        var countValues = attributeRecord.values.map(function (valueRecord) {
+            var newCount = {
+                count: valueRecord[entity]
+            };
+            // Copy existing values in the record and introduce new value.
+            var newRecord = Object.assign({}, valueRecord, newCount);
+            return newRecord;
+        });
+        return {
+            attribute: attributeRecord.attribute,
+            values: countValues
+        }
+    });
+}
+
+
+// TODO: User interaction will modify the attributeSummary and the value of the entity.
+// TODO: According to these values, create the attribute menu.
+/**
+ * Creates visual representation of attribute summary.
+ * @param {Array<Object<string>>} attributeSummary Summary of attribute index with counts of
  * entities with each value of each attribute.
  * @param {string} entity The entity, metabolite or reaction, of the current
  * selection.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function updateSetMenu(setSummary, entity, model) {
+function updateAttributeMenu(attributeSummary, entity, model) {
 
-    // TODO: Rather than having to reference [entity] in the d3 block for setting width, set some sort of "count" value within the setSummaryIncrement so that...
+    // TODO: Rather than having to reference [entity] in the d3 block for setting width, set some sort of "count" value within the attributeSummaryIncrement so that...
     // TODO: I can just reference the same "count" value for everything.
     // TODO: Hence, use the entity variable to determine the appropriate count value once and only once.
 
-    // Prepare the set summary for visual representation.
+    // Prepare the attribute summary for visual representation.
     // Sort attribute values by counts of the specific entity.
     // For readability, place values with lesser counts before values with
     // greater counts.
     // As the sort depends on the entity selection, it is necessary to sort with
     // each update.
-    var setSummarySort = sortSetSummary(setSummary, entity);
-    // Calculate incremental sums of counts in set summary.
+
+    //var prepareAttributeSummary = prepareAttributeSummary(attributeSummary, entity);
+
+    var attributeSummarySort = sortAttributeSummary(attributeSummary, entity);
+    // Calculate incremental sums of counts in attribute summary.
     // These sums are necessary for positions of bar stacks.
-    var setSummaryIncrement = countIncrementalEntityAttributeValues(
-        setSummarySort, entity
+    var attributeSummaryIncrement = countIncrementalEntityAttributeValues(
+        attributeSummarySort, entity
     );
 
 
-    console.log("setSummaryIncrement");
-    console.log(setSummaryIncrement);
-    // Select body of set menu table.
+    console.log("attributeSummaryIncrement");
+    console.log(attributeSummaryIncrement);
+    // Select body of attribute menu table.
     var body = d3
-        .select("#set-menu-table")
+        .select("#attribute-menu-table")
         .select("tbody");
     // Append rows to table.
     var rows = body
         .selectAll("tr")
-        .data(setSummaryIncrement)
+        .data(attributeSummaryIncrement)
         .enter()
         .append("tr");
     // Append cells to table.
@@ -462,12 +493,12 @@ function updateSetMenu(setSummary, entity, model) {
             // Organize data for table columns.
             return [].concat(
                 {
-                    class: "set-menu-table-column-attribute",
+                    class: "attribute-menu-table-column-attribute",
                     type: "attribute",
                     value: element.attribute
                 },
                 {
-                    class: "set-menu-table-column-summary",
+                    class: "attribute-menu-table-column-summary",
                     type: "summary",
                     value: element.values
                 });
@@ -496,11 +527,11 @@ function updateSetMenu(setSummary, entity, model) {
     var summaryCellGraphs = summaryCells
         .append("svg");
     summaryCellGraphs
-        .attr("class", "set-menu-table-cell-graph");
+        .attr("class", "attribute-menu-table-cell-graph");
     // Determine the width of graphical containers.
     var graphWidth = parseFloat(
         window.getComputedStyle(
-            document.getElementsByClassName("set-menu-table-cell-graph")
+            document.getElementsByClassName("attribute-menu-table-cell-graph")
                 .item(0)
         )
             .width
@@ -540,7 +571,7 @@ function updateSetMenu(setSummary, entity, model) {
                 .range([0, graphWidth]);
             return scale(data[entity]);
         })
-        .attr("class", "set-menu-table-cell-bar");
+        .attr("class", "attribute-menu-table-cell-bar");
 
     //metaboliteBars
     //    .attr("width", function (data, index) {
