@@ -4,6 +4,22 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+30 April 2017
+
+----------
+Plan
+
+Enable interactivity with the set menu.
+
+----------
+Progress, Set Menu
+
+The set menu now has bar stacks with widths that are proportional to counts of entities for each value.
+There are very many bars for processes, and it is difficult to distinguish between adjacent bars.
+I wonder if it would be beneficial to draw the set menu across the entire width of the view to maximize width of this menu.
+Then the lower portion of the screen could split evenly between the view for relations between sets and the view for individual entities.
+
+--------------------------------------------------
 27 April 2017
 
 ----------

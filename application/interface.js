@@ -394,9 +394,20 @@ function countIncrementalEntityAttributeValues(setSummary, entity) {
             var newRecord = Object.assign({}, record, newBase);
             return [].concat(collection, newRecord);
         }, []);
+        // Determine total sum of counts of all values of the attribute.
+        var total = incrementalValues[incrementalValues.length - 1].base +
+                incrementalValues[incrementalValues.length - 1][entity];
+        var incrementalTotalValues = incrementalValues.map(function (record) {
+            var newTotal = {
+                total: total
+            };
+            // Copy existing values in the record and introduce new value.
+            var newRecord = Object.assign({}, record, newTotal);
+            return newRecord;
+        });
         return {
             attribute: attributeRecord.attribute,
-            values: incrementalValues
+            values: incrementalTotalValues
         }
     });
 }
@@ -413,6 +424,11 @@ function countIncrementalEntityAttributeValues(setSummary, entity) {
  * model.
  */
 function updateSetMenu(setSummary, entity, model) {
+
+    // TODO: Rather than having to reference [entity] in the d3 block for setting width, set some sort of "count" value within the setSummaryIncrement so that...
+    // TODO: I can just reference the same "count" value for everything.
+    // TODO: Hence, use the entity variable to determine the appropriate count value once and only once.
+
     // Prepare the set summary for visual representation.
     // Sort attribute values by counts of the specific entity.
     // For readability, place values with lesser counts before values with
@@ -425,6 +441,8 @@ function updateSetMenu(setSummary, entity, model) {
     var setSummaryIncrement = countIncrementalEntityAttributeValues(
         setSummarySort, entity
     );
+
+
     console.log("setSummaryIncrement");
     console.log(setSummaryIncrement);
     // Select body of set menu table.
@@ -507,6 +525,28 @@ function updateSetMenu(setSummary, entity, model) {
     // TODO: It will be necessary to access the complete information for each row... so don't try to use data bound to the table rows or cells.
     // TODO: Define a function that returns the appropriate scale function according to the attribute (passed as a parameter).
     // TODO: Or... Define variables for the domain of each attribute (within an object), then define scale functions within the d3 data handlers where they're necessary.
+    summaryCellBars
+        .attr("x", function (data, index) {
+            var scale = d3
+                .scaleLinear()
+                .domain([0, data.total])
+                .range([0, graphWidth]);
+            return scale(data.base);
+        })
+        .attr("width", function (data, index) {
+            var scale = d3
+                .scaleLinear()
+                .domain([0, data.total])
+                .range([0, graphWidth]);
+            return scale(data[entity]);
+        })
+        .attr("class", "set-menu-table-cell-bar");
+
+    //metaboliteBars
+    //    .attr("width", function (data, index) {
+    //        return metaboliteScale(data.value);
+    //    })
+    //    .attr("class", "query-queue-table-cell-bars-metabolite");
 
 
 
@@ -526,11 +566,6 @@ function updateSetMenu(setSummary, entity, model) {
     //    });
     //var metaboliteBars = metaboliteBarCellSVGs
     //    .append("rect");
-    //metaboliteBars
-    //    .attr("width", function (data, index) {
-    //        return metaboliteScale(data.value);
-    //    })
-    //    .attr("class", "query-queue-table-cell-bars-metabolite");
 }
 
 

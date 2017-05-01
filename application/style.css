@@ -162,7 +162,18 @@ h3 {
     width: 100%;
 }
 
+.set-menu-table-cell-bar {
+    /*fill: rgba(200, 20, 20, 1);*/
+    height: 1cm;
+}
 
+.set-menu-table-cell-bar:nth-child(odd) {
+    fill: rgba(200, 20, 20, 1);
+}
+
+.set-menu-table-cell-bar:nth-child(even) {
+    fill: rgba(20, 100, 20, 1);
+}
 
 
 /******************************************************************************/
