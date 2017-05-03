@@ -4,6 +4,69 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+2 May 2017
+
+----------
+Recursive Interface Structure
+
+Control Attribute Menu
+Initialize: Start-up, Reset
+Recurse until: Reset
+Subordinate process: Control Attribute Menu Selection
+
+Control Attribute Menu Selection
+Initialize: New Menu
+Recurse until: Submit
+
+----------
+Dynamic Interface Recursion
+
+Control an interface by recursion.
+With each interaction, update the interface appropriately.
+Model the interface in terms of levels of recursion.
+Some events recurse lower levels, and others recurse higher levels.
+
+----------
+Plan, Data from Selection and Filtration
+
+Store information about user interaction within an object in memory, not in the elements of the Document Object Model (DOM).
+When an event requires the data from an element in the DOM, use D3 event listeners at least to initiate the event and pass the relevant data.
+
+When user selects a rectangle, perform two operations.
+1. Update selection information in filter queue.
+-Determine attribute and value from data of rectangle.
+-If a record for the attribute and value already exists in the filter queue, update the queue appropriately.
+2. Update style class of rectangle.
+-Determine current classes and update accordingly.
+
+----------
+Plan, Attribute Menu Interaction
+
+Selection of Bars
+The user can click on individual bars to select them.
+Clicks on bars will toggle between selection for inclusion and selection for exclusion.
+The user can also click and drag the cursor to select multiple bars at a time.
+This drag technique will be useful to zoom in on many small bars, such as those for processes.
+
+Eventually
+User can select the name of the attribute ("compartment", "process", etc).
+Upon selection, an auto-completion search text field will appear below the name of the attribute.
+The user can enter the name of the value of the attribute.
+Upon selection of an option from the list, the corresponding rectangle in the bar stack will have a highlight and become selected.
+
+Submit
+A submit button will allow the user to update the attribute menu to reflect her or his selections.
+The user will be able to select multiple values of multiple attributes at a time.
+The submission process will filter the attribute index according to the user's selections for inclusion or exclusion.
+The process will then update the attribute summary and the attribute menu according to the new attribute index.
+
+----------
+Functional Programming
+
+https://bethallchurch.github.io/JavaScript-and-Functional-Programming/
+http://jrsinclair.com/articles/2016/gentle-introduction-to-functional-javascript-style/
+
+--------------------------------------------------
 30 April 2017
 
 ----------

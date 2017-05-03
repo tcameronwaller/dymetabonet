@@ -150,13 +150,8 @@ function initializeInterface() {
 function controlInterface(model) {
     // TODO: Maybe change classes and styles of elements once I activate them.
 
-    // Assemble attribute index.
-    // The attribute index will be a means of data exchange between the views for
-    // attribute sets and attribute relations.
-    var attributeIndex = createAttributeIndex(model.entities.reactions);
-
-    // Initialize query interface.
-    controlAttributeInterface(attributeIndex, model);
+    // Initialize and control attribute interface.
+    controlAttributeInterface(model);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -256,31 +251,28 @@ function loadDefaultModel() {
 
 /**
  * Controls the attribute interface.
- * @param {Array<Object<string>>} attributeIndex Index of attributes of
- * metabolites and reactions.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function controlAttributeInterface(attributeIndex, model) {
-    // TODO: Move attributeIndex creation here...
+function controlAttributeInterface(model) {
+    // This function initializes the attribute interface, including the
+    // attribute menu and attribute menu table.
+
+    // Assemble attribute index.
+    // Attribute index will change with user selection.
+    // Reset of attribute menu will call function controlAttributeInterface to
+    // create a new attribute index from the model.
+    // The attribute index will be a means of data exchange between the views
+    // for attribute sets and attribute relations.
+    var attributeIndex = createAttributeIndex(model.entities.reactions);
+
 
     console.log("attributeIndex");
     console.log(attributeIndex);
 
-    // Create information summary for attribute menu.
-    // TODO: Eventually store information about user interaction/selection within the attributeSummary. Record information about selections for inclusion or exclusion.
-    var attributeSummary = createAttributeSummary(attributeIndex, model);
-    console.log("attributeSummary");
-    console.log(attributeSummary);
-
     // Create attribute menu.
-    var attributeMenu = controlAttributeMenu(attributeSummary, attributeIndex, model);
-}
-
-// TODO: Before I can create the attribute menu, I need to create the necessary data structure to associate with it.
-function controlAttributeMenu(attributeSummary, attributeIndex, model) {
     initializeAttributeMenu();
-    updateAttributeMenu(attributeSummary, "reaction", model);
+    controlAttributeMenu(attributeIndex, model);
 }
 
 /**
@@ -329,21 +321,35 @@ function initializeAttributeMenu() {
     attributeMenuTable.appendChild(body);
     // Append attribute menu table to attribute menu.
     attributeMenu.appendChild(attributeMenuTable);
-
-    // Append row for first step of query queue.
-    //appendQueryStep(extractQueueSummary(queue));
+    // Return attribute menu.
+    return attributeMenu;
 }
 
 /**
- * Sorts the attribute summary by values of attributes for a specific entity.
- * @param {Array<Object<string>>} attributeSummary Summary of attribute index with counts of
- * entities with each value of each attribute.
- * @param {string} entity The entity, metabolite or reaction, of the current
- * selection.
+ * Controls the attribute menu.
+ * @param {Array<Object<string>>} attributeIndex Index of attributes of
+ * metabolites and reactions.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function controlAttributeMenu(attributeIndex, model) {
+    // Create attribute summary from attribute index.
+    // TODO: Eventually store information about user interaction/selection within the attributeSummary. Record information about selections for inclusion or exclusion.
+    var attributeSummary = createAttributeSummary(attributeIndex, model);
+    console.log("attributeSummary");
+    console.log(attributeSummary);
+
+    updateAttributeMenu(attributeSummary, "reaction", model);
+}
+
+/**
+ * Sorts the attribute summary by magnitudes of values of attributes.
+ * @param {Array<Object<string>>} attributeSummary Summary of attribute index
+ * with counts of entities with each value of each attribute.
  * @returns {Array<Object<string>>} Summary of attribute index with values in
  * ascending order.
  */
-function sortAttributeSummary(attributeSummary, entity) {
+function sortAttributeValueMagnitudes(attributeSummary) {
     return attributeSummary.map(function (attributeRecord) {
         return {
             attribute: attributeRecord.attribute,
@@ -351,22 +357,20 @@ function sortAttributeSummary(attributeSummary, entity) {
                 .values
                 .slice()
                 .sort(function (value1, value2) {
-                    return value1[entity] - value2[entity];
+                    return value1.magnitude - value2.magnitude;
                 })
         };
     });
 }
 
 /**
- * Counts incremental sums of entity counts for each value of each attribute.
- * @param {Array<Object<string>>} attributeSummary Summary of attribute index with counts of
- * entities with each value of each attribute.
- * @param {string} entity The entity, metabolite or reaction, of the current
- * selection.
+ * Counts incremental sums of magnitudes for each value of each attribute.
+ * @param {Array<Object<string>>} attributeSummary Summary of attribute index
+ * with counts of entities with each value of each attribute.
  * @returns {Array<Object<string>>} Summary of attribute index with incremental
  * counts.
  */
-function countIncrementalEntityAttributeValues(attributeSummary, entity) {
+function countIncrementalEntityAttributeValues(attributeSummary) {
     return attributeSummary.map(function (attributeRecord) {
         var incrementalValues = attributeRecord
             .values
@@ -374,12 +378,12 @@ function countIncrementalEntityAttributeValues(attributeSummary, entity) {
             // Calculate incremental count.
             if (index > 0) {
                 // Current record is not the first of the collection.
-                // Increment the count from the previous record.
+                // Increment the magnitude on the base from the previous record.
                 var base = collection[index - 1].base +
-                    collection[index - 1][entity];
+                    collection[index - 1].magnitude;
             } else {
                 // Current record is the first of the collection.
-                // Initialize the incremental count from zero.
+                // Initialize the increment at zero.
                 var base = 0;
             }
             // The only value to change in the record is the base.
@@ -396,7 +400,7 @@ function countIncrementalEntityAttributeValues(attributeSummary, entity) {
         }, []);
         // Determine total sum of counts of all values of the attribute.
         var total = incrementalValues[incrementalValues.length - 1].base +
-                incrementalValues[incrementalValues.length - 1][entity];
+                incrementalValues[incrementalValues.length - 1].magnitude;
         var incrementalTotalValues = incrementalValues.map(function (record) {
             var newTotal = {
                 total: total
@@ -408,12 +412,43 @@ function countIncrementalEntityAttributeValues(attributeSummary, entity) {
         return {
             attribute: attributeRecord.attribute,
             values: incrementalTotalValues
+        };
+    });
+}
+
+/**
+ * Determines the magnitudes of attribute values from the counts of entities
+ * with those values.
+ * @param {Array<Object<string>>} attributeSummary Summary of attribute index
+ * with counts of entities with each value of each attribute.
+ * @param {string} entity The entity, metabolite or reaction, of the current
+ * selection.
+ * @returns {Array<Object<string>>} Summary of attribute index with general
+ * magnitudes from counts of entities.
+ */
+function determineEntityValueMagnitudes(attributeSummary, entity) {
+    return attributeSummary.map(function (attributeRecord) {
+        // Determine magnitude according to current selection of entity.
+        var magnitudeValues = attributeRecord
+            .values
+            .map(function (valueRecord) {
+                var newMagnitude = {
+                    magnitude: valueRecord[entity]
+                };
+                // Copy existing values in the record and introduce new value.
+                var newRecord = Object.assign({}, valueRecord, newMagnitude);
+                return newRecord;
+            });
+        return {
+            attribute: attributeRecord.attribute,
+            values: magnitudeValues
         }
     });
 }
 
 /**
- * Sorts the attribute summary by values of attributes for a specific entity.
+ * Prepares the attribute summary for immediate visual representation according
+ * to user selection of entity.
  * @param {Array<Object<string>>} attributeSummary Summary of attribute index with counts of
  * entities with each value of each attribute.
  * @param {string} entity The entity, metabolite or reaction, of the current
@@ -422,21 +457,26 @@ function countIncrementalEntityAttributeValues(attributeSummary, entity) {
  * ascending order.
  */
 function prepareAttributeSummary(attributeSummary, entity) {
-    return attributeSummary.map(function (attributeRecord) {
-        // Determine count value according to current selection of entity.
-        var countValues = attributeRecord.values.map(function (valueRecord) {
-            var newCount = {
-                count: valueRecord[entity]
-            };
-            // Copy existing values in the record and introduce new value.
-            var newRecord = Object.assign({}, valueRecord, newCount);
-            return newRecord;
-        });
-        return {
-            attribute: attributeRecord.attribute,
-            values: countValues
-        }
-    });
+    // Prepare the attribute summary for visual representation.
+    // Determine magnitudes for visualization from the counts of the specific
+    // entity from selection.
+    var attributeSummaryMagnitudes = determineEntityValueMagnitudes(
+        attributeSummary, entity
+    );
+    // Sort attribute values by magnitudes.
+    // For readability, place values with lesser magnitudes before values with
+    // greater magnitudes.
+    // As the sort depends on the entity selection, it is necessary to sort with
+    // each update.
+    var attributeSummarySort = sortAttributeValueMagnitudes(
+        attributeSummaryMagnitudes
+    );
+    // Calculate incremental sums of magnitudes in attribute summary.
+    // These sums are necessary for positions of bar stacks.
+    var attributeSummaryIncrement = countIncrementalEntityAttributeValues(
+        attributeSummarySort
+    );
+    return attributeSummaryIncrement;
 }
 
 
@@ -457,25 +497,12 @@ function updateAttributeMenu(attributeSummary, entity, model) {
     // TODO: I can just reference the same "count" value for everything.
     // TODO: Hence, use the entity variable to determine the appropriate count value once and only once.
 
-    // Prepare the attribute summary for visual representation.
-    // Sort attribute values by counts of the specific entity.
-    // For readability, place values with lesser counts before values with
-    // greater counts.
-    // As the sort depends on the entity selection, it is necessary to sort with
-    // each update.
-
-    //var prepareAttributeSummary = prepareAttributeSummary(attributeSummary, entity);
-
-    var attributeSummarySort = sortAttributeSummary(attributeSummary, entity);
-    // Calculate incremental sums of counts in attribute summary.
-    // These sums are necessary for positions of bar stacks.
-    var attributeSummaryIncrement = countIncrementalEntityAttributeValues(
-        attributeSummarySort, entity
+    var readyAttributeSummary = prepareAttributeSummary(
+        attributeSummary, entity
     );
 
-
-    console.log("attributeSummaryIncrement");
-    console.log(attributeSummaryIncrement);
+    console.log("readyAttributeSummary");
+    console.log(readyAttributeSummary);
     // Select body of attribute menu table.
     var body = d3
         .select("#attribute-menu-table")
@@ -483,7 +510,7 @@ function updateAttributeMenu(attributeSummary, entity, model) {
     // Append rows to table.
     var rows = body
         .selectAll("tr")
-        .data(attributeSummaryIncrement)
+        .data(readyAttributeSummary)
         .enter()
         .append("tr");
     // Append cells to table.
@@ -537,8 +564,6 @@ function updateAttributeMenu(attributeSummary, entity, model) {
             .width
             .replace("px", "")
     );
-    console.log("graphWidth");
-    console.log(graphWidth);
     // Append rectangles to graphical containers in summary column.
     var summaryCellBars = summaryCellGraphs
         .selectAll("rect")
@@ -550,14 +575,9 @@ function updateAttributeMenu(attributeSummary, entity, model) {
         .enter()
         .append("rect");
     // Assign position and dimension to rectangles.
-    // TODO: Each attribute (compartment, process) needs its own scale function.
-    // TODO: In order to determine the appropriate scale function, each element needs to know its attribute.
-    // TODO: Define all scale functions separately (such as earlier within this function).
-    // TODO: It will be necessary to access the complete information for each row... so don't try to use data bound to the table rows or cells.
-    // TODO: Define a function that returns the appropriate scale function according to the attribute (passed as a parameter).
-    // TODO: Or... Define variables for the domain of each attribute (within an object), then define scale functions within the d3 data handlers where they're necessary.
     summaryCellBars
         .attr("x", function (data, index) {
+            // Determine scale according to attribute total.
             var scale = d3
                 .scaleLinear()
                 .domain([0, data.total])
@@ -565,13 +585,28 @@ function updateAttributeMenu(attributeSummary, entity, model) {
             return scale(data.base);
         })
         .attr("width", function (data, index) {
+            // Determine scale according to attribute total.
             var scale = d3
                 .scaleLinear()
                 .domain([0, data.total])
                 .range([0, graphWidth]);
-            return scale(data[entity]);
+            return scale(data.magnitude);
+        });
+    // Assign style to rectangles.
+    summaryCellBars
+        .attr("title", function (data, index) {
+            return data.value;
         })
         .attr("class", "attribute-menu-table-cell-bar");
+    // TODO: I think that the event handling should be in another function.
+    // TODO: I'll need to re-call this function after every interaction (so that the filter queue updates properly).
+    // Assign event listeners and handlers to bars.
+    summaryCellBars
+        .on("click", function (data, index, nodes) {
+            var attribute = data.attribute;
+            var value = data.value;
+            //updateFilterQueue(value, attribute, filterQueue);
+        });
 
     //metaboliteBars
     //    .attr("width", function (data, index) {
