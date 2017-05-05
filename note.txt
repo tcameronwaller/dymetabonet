@@ -4,6 +4,134 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+5 May 2017
+
+----------
+Plan, Event Executions of Attribute Menu
+
+1) Start-Up
+-Create comprehensive, original attribute index from metabolic model.
+-Extract comprehensive, original attribute summary from attribute index.
+-Initialize attribute menu.
+-Create attribute menu table on basis of current attribute summary.
+
+2) User Selection in Attribute Menu
+-Set new selection status in attribute summary.
+-Assign new style classes to appropriate elements in attribute menu.
+-Extract filter details from all selections from attribute summary.
+-Filter original attribute index according to filter details.
+-Pass new, filtered attribute index to other views.
+-Create attribute menu table on basis of current attribute summary.
+
+----------
+Plan, Implementation of Attribute Menu
+
+1) Attribute Menu Selection
+-Record selection status within attribute summary data for attribute menu table.
+-Determine classes and styles of bars in attribute menu table according to their selection status.
+-Upon user selection, determine selection status from attribute summary and update new attribute summary accordingly.
+-Upon user selection, extract selection details from new attribute summary and use these to filter the attribute index, passing new attribute index to other views.
+-Always filter the original attribute index (not derivations) in order to allow the user to deselect an attribute value (regress).
+-Upon user selection, recreate the attribute menu with the new attribute summary in order to update style classes for the new selection.
+
+2) Attribute Menu Filter
+-Filter operation should be a one-time button event rather than a persistent option check box.
+-That dynamic makes more sense for user interaction to allow user to select multiple values at a time before eliminating all others.
+-Upon user selection of the "filter" button, extract a new attribute summary from the current attribute index.
+-This attribute summary becomes the persistent version, and user can only revert to original by resetting the entire attribute menu and attribute index.
+-Eliminate all indications of selections, since every bar in the new table represents a selection.
+
+3) Attribute Menu Search Selection
+-Include value identifier and value name in attribute summary data.
+-Determine document identifiers for bars from value identifiers ("attribute-menu-value-c").
+-Determine document identifiers for attribute headers from attribute names ("attribute-menu-attribute-compartment").
+-Upon user selection of attribute header, create automatic-completion-search-field with names of all values of the attribute that are currently in the attribute menu.
+-Options indicate selection status of each value of the attribute in the menu.
+-Selection of a value causes a selection (updating appropriately) of the value.
+-I wonder if the search field should have a "+" button or something to actually select the option from the search field.
+-Selection of the attribute header again causes the search field to disappear.
+
+--------------------------------------------------
+4 May 2017
+
+----------
+Plan
+
+Data that associates with bars for attribute values needs to include value identifier and value name.
+
+Bars for attribute values need identifiers so that it is possible to select them by looking them up in an automatic completion search field.
+
+I need to store information about selections in the data for the attribute menu.
+Upon each selection, I need to extract this selection information and apply all filters to the attribute index.
+I think it will be simplest to always filter against the original version of the attribute index, as long as this filtration is not a resource limitation.
+That way the user can deselect a bar whenever.
+I will need to store the original version of the attribute index.
+
+----------
+Attribute Menu, New Design
+
+Some details of this design are temporary to simplify development.
+
+Attribute menu displays stacks of bars for all values of all attributes that are currently in the attribute index.
+User clicks on a bar to select its attribute value for inclusion in the collection of interest.
+The attribute menu does not change directly in response to this user selection.
+It is necessary to keep all options available for "or" selections.
+Eventually provide a "filter" button to update the attribute menu (similar to my original plan for a "submit" button).
+The user can click the bar again to remove the selection.
+In response to user selection or deselection of an attribute value, the attribute index experiences a filtration, and the results automatically update the set relation view.
+
+User can click the row header for an attribute ("compartment", "process").
+Upon click, an automatic-completion search field appears, enabling the user to identify an attribute value by name.
+
+--------------------------------------------------
+3 May 2017
+
+----------
+Meet with Alexander Lex
+
+Alex recommended a new design for user interaction with the attribute menu.
+
+----------
+TODO
+
+Create table and assign classes to bars according to their selection status.
+Upon click of a bar, determine what type of selection (none, inclusion, exclusion) and make a record in the newAttributeSummary.
+Call controlAttributeTable with the newAttributeSummary.
+
+----------
+Bar Selection, Filter Queue
+
+User selection needs to do two things.
+1) Somehow convey information about the selection eventually to filter the attribute index when the user clicks submit.
+2) Change the visual representation of the bar or bars to represent the selection visually.
+
+My original plan was as follows.
+1) Store information about the selection in a filter queue that was separate from the attribute summary information on which the attribute table is based.
+2) Change the classes of the bar to represent the selection.
+
+There are problems with that original plan.
+1) The user might change the entity selection from "metabolite" to "reaction" or vice versa during assembly of a query.
+If the entity changes, then bars will no longer necessarily represent the same value of the attribute.
+
+Here is my new plan to handle user selection of a bar for a value of an attribute.
+Include a record of the selection in a new version of the attribute summary.
+Call the table-creation function again with the new version of the attribute summary.
+The table-creation function will reset the classes of all bars according to whether or not the data has a record of a selection.
+
+Maybe I should pass around two versions of the attributeSummary.
+Otherwise, I wonder if it will be a problem to prepare the attribute summary each time the user makes a selection.
+
+----------
+Recursive Interface Structure
+
+Follow principles of recursion to support iterative or incremental user interaction with the interface.
+As interaction changes values or data, update the interface by a recursive call to an update function.
+
+Unlike typical recursion, this sort of recursion does not depend on if then conditions.
+Rather, this sort of recursion depends on events of user interaction.
+For this reason, the recursion will probably be indirect, through another function.
+
+--------------------------------------------------
 2 May 2017
 
 ----------
@@ -22,7 +150,7 @@ Recurse until: Submit
 Dynamic Interface Recursion
 
 Control an interface by recursion.
-With each interaction, update the interface appropriately.
+With each interaction, update the interface appropriately, passing the new version of whatever data it associates with.
 Model the interface in terms of levels of recursion.
 Some events recurse lower levels, and others recurse higher levels.
 

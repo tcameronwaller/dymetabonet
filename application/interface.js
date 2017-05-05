@@ -151,7 +151,7 @@ function controlInterface(model) {
     // TODO: Maybe change classes and styles of elements once I activate them.
 
     // Initialize and control attribute interface.
-    controlAttributeInterface(model);
+    initializeAttributeInterface(model);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -250,33 +250,7 @@ function loadDefaultModel() {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Controls the attribute interface.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
- */
-function controlAttributeInterface(model) {
-    // This function initializes the attribute interface, including the
-    // attribute menu and attribute menu table.
-
-    // Assemble attribute index.
-    // Attribute index will change with user selection.
-    // Reset of attribute menu will call function controlAttributeInterface to
-    // create a new attribute index from the model.
-    // The attribute index will be a means of data exchange between the views
-    // for attribute sets and attribute relations.
-    var attributeIndex = createAttributeIndex(model.entities.reactions);
-
-
-    console.log("attributeIndex");
-    console.log(attributeIndex);
-
-    // Create attribute menu.
-    initializeAttributeMenu();
-    controlAttributeMenu(attributeIndex, model);
-}
-
-/**
- * Initializes the visual representation of the attribute set summary.
+ * Initializes the attribute menu and attribute menu table.
  */
 function initializeAttributeMenu() {
     // Create container for attribute menu.
@@ -312,6 +286,16 @@ function initializeAttributeMenu() {
     reactionLabel.textContent = "reactions";
     reactionLabel.setAttribute("id", "attribute-menu-table-entity-reactions");
     summaryHead.appendChild(reactionLabel);
+    // Submit button.
+    var submitButton = document.createElement("button");
+    submitButton.textContent = "Submit";
+    submitButton.setAttribute("id", "attribute-menu-submit");
+    summaryHead.appendChild(submitButton);
+    // Reset button.
+    var resetButton = document.createElement("button");
+    resetButton.textContent = "Reset";
+    resetButton.setAttribute("id", "attribute-menu-reset");
+    summaryHead.appendChild(resetButton);
     // Append header to table.
     headRow.appendChild(summaryHead);
     head.appendChild(headRow);
@@ -321,25 +305,101 @@ function initializeAttributeMenu() {
     attributeMenuTable.appendChild(body);
     // Append attribute menu table to attribute menu.
     attributeMenu.appendChild(attributeMenuTable);
-    // Return attribute menu.
-    return attributeMenu;
 }
 
 /**
- * Controls the attribute menu.
+ * Initializes aspects of the attribute interface that do not change recursively
+ * with user interaction and initiates those operations that do recurse with
+ * user interaction.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function initializeAttributeInterface(model) {
+    // This function executes upon initial program execution.
+    // Initialize aspects of the attribute interface that do not change
+    // recursively with user interaction.
+    // Create attribute menu.
+    initializeAttributeMenu();
+    // Activate reset button.
+    document
+        .getElementById("attribute-menu-reset")
+        .addEventListener("click", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // Execute operation.
+            controlAttributeInterface(model);
+        });
+    // Initiate those operations that do recurse with user interaction.
+    // Initiate recursive control of attribute menu with user interaction.
+    controlAttributeInterface(model);
+    testD3EventListeners([]);
+}
+
+// TODO: This works!
+function testD3EventListeners(queue) {
+    var submit = d3
+        .select("#attribute-menu-submit");
+    // Remove any existing event listeners and handlers from bars.
+    submit
+        .on("click", null);
+    // Assign event listeners and handlers to bars.
+    submit
+        .on("click", function (data, index, nodes) {
+            var newQueue = [].concat(queue, "a");
+            console.log("queue");
+            console.log(newQueue);
+            testD3EventListeners(newQueue);
+        });
+}
+
+/**
+ * Controls the attribute interface recursively with user interaction.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function controlAttributeInterface(model) {
+    // This function executes upon initial program execution and upon reset of
+    // the attribute interface.
+    // The model parameter of this function does not change with user
+    // interaction.
+    // Hence this function always restores the attribute index to its initial
+    // state and restores the attribute menu to a correspondingly initial state.
+
+    // Assemble attribute index.
+    // Attribute index will change with user selection in the attribute menu.
+    // Reset of attribute menu will call function controlAttributeInterface to
+    // create a new attribute index from the model.
+    // The attribute index will be a means of data exchange between the views
+    // for attribute sets and attribute relations.
+    var attributeIndex = createAttributeIndex(model.entities.reactions);
+    // Initiate recursive operations that control the attribute menu with user
+    // interaction.
+    controlAttributeMenu(attributeIndex, model);
+}
+
+// TODO: Make the name of this function more specific to what it does.
+// TODO: Consider a name like controlAttributeIndex.
+/**
+ * Controls the attribute menu recursively with user interaction.
  * @param {Array<Object<string>>} attributeIndex Index of attributes of
  * metabolites and reactions.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
 function controlAttributeMenu(attributeIndex, model) {
-    // Create attribute summary from attribute index.
-    // TODO: Eventually store information about user interaction/selection within the attributeSummary. Record information about selections for inclusion or exclusion.
-    var attributeSummary = createAttributeSummary(attributeIndex, model);
-    console.log("attributeSummary");
-    console.log(attributeSummary);
+    // This function executes upon initial program execution and upon a change
+    // to the attribute index when the user submits a selection.
+    // The purpose of this function is to support iterative modifications to the
+    // attribute index through fitration operations.
+    // TODO: Eventually this function will return the new attribute index from
+    // TODO: each round of user selection so that it can be useful in other views.
 
-    updateAttributeMenu(attributeSummary, "reaction", model);
+    // Create attribute summary from attribute index.
+    var attributeSummary = createAttributeSummary(attributeIndex, model);
+
+    controlAttributeTable([], "reaction", attributeSummary);
+    // TODO: Eventually, I think that controlAttributeTable should return information about user selection.
+    // TODO: Then controlAttributeMenu will take that information and use it to filter the attributeIndex.
+    // TODO: Then controlAttributeMenu will call itself with the new attributeIndex.
 }
 
 /**
@@ -388,11 +448,7 @@ function countIncrementalEntityAttributeValues(attributeSummary) {
             }
             // The only value to change in the record is the base.
             var newBase = {
-                //attribute: record.attribute,
                 base: base
-                //metabolite: record.metabolite,
-                //reaction: record.reaction,
-                //value: record.value
             };
             // Copy existing values in the record and introduce new value.
             var newRecord = Object.assign({}, record, newBase);
@@ -419,14 +475,14 @@ function countIncrementalEntityAttributeValues(attributeSummary) {
 /**
  * Determines the magnitudes of attribute values from the counts of entities
  * with those values.
- * @param {Array<Object<string>>} attributeSummary Summary of attribute index
- * with counts of entities with each value of each attribute.
  * @param {string} entity The entity, metabolite or reaction, of the current
  * selection.
+ * @param {Array<Object<string>>} attributeSummary Summary of attribute index
+ * with counts of entities with each value of each attribute.
  * @returns {Array<Object<string>>} Summary of attribute index with general
  * magnitudes from counts of entities.
  */
-function determineEntityValueMagnitudes(attributeSummary, entity) {
+function determineEntityValueMagnitudes(entity, attributeSummary) {
     return attributeSummary.map(function (attributeRecord) {
         // Determine magnitude according to current selection of entity.
         var magnitudeValues = attributeRecord
@@ -449,19 +505,20 @@ function determineEntityValueMagnitudes(attributeSummary, entity) {
 /**
  * Prepares the attribute summary for immediate visual representation according
  * to user selection of entity.
- * @param {Array<Object<string>>} attributeSummary Summary of attribute index with counts of
- * entities with each value of each attribute.
  * @param {string} entity The entity, metabolite or reaction, of the current
  * selection.
- * @returns {Array<Object<string>>} Summary of attribute index with values in
- * ascending order.
+ * @param {Array<Object<string>>} attributeSummary Summary of attribute index
+ * with counts of entities with each value of each attribute.
+ * @returns {Array<Object<string>>} Summary of attribute index with
+ * entity-specific magnitudes, records in ascending order of magnitude,
+ * incremental sums of magnitudes, and total sums of magnitudes.
  */
-function prepareAttributeSummary(attributeSummary, entity) {
+function prepareAttributeSummary(entity, attributeSummary) {
     // Prepare the attribute summary for visual representation.
     // Determine magnitudes for visualization from the counts of the specific
     // entity from selection.
     var attributeSummaryMagnitudes = determineEntityValueMagnitudes(
-        attributeSummary, entity
+        entity, attributeSummary
     );
     // Sort attribute values by magnitudes.
     // For readability, place values with lesser magnitudes before values with
@@ -479,40 +536,52 @@ function prepareAttributeSummary(attributeSummary, entity) {
     return attributeSummaryIncrement;
 }
 
-
-// TODO: User interaction will modify the attributeSummary and the value of the entity.
-// TODO: According to these values, create the attribute menu.
 /**
- * Creates visual representation of attribute summary.
- * @param {Array<Object<string>>} attributeSummary Summary of attribute index with counts of
- * entities with each value of each attribute.
+ * Prepares the attribute summary for immediate visual representation according
+ * to user selection of entity.
  * @param {string} entity The entity, metabolite or reaction, of the current
  * selection.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
+ * @param {Array<Object<string>>} filterQueue Queue of filters to apply to the
+ * attribute index.
+ * @returns {Array<Object<string>>} Queue of filters to apply to the attribute
+ * index.
  */
-function updateAttributeMenu(attributeSummary, entity, model) {
+function composeFilterQueue(value, attribute, filterQueue) {
+    var selection = "temporary...";
+    var newFilter = {
+        attribute: attribute,
+        selection: selection,
+        value: value
+    };
+    var newFilterQueue = [].concat(filterQueue, newFilter);
+    return newFilterQueue;
+}
 
-    // TODO: Rather than having to reference [entity] in the d3 block for setting width, set some sort of "count" value within the attributeSummaryIncrement so that...
-    // TODO: I can just reference the same "count" value for everything.
-    // TODO: Hence, use the entity variable to determine the appropriate count value once and only once.
+/**
+ * Creates and activates the attribute table for user interaction.
+ * @param {Array<Object<string>>} filterQueue Queue of filters to apply to the
+ * attribute index.
+ * @param {string} entity The entity, metabolite or reaction, of the current
+ * selection.
+ * @param {Array<Object<string>>} attributeSummary Summary of attribute index
+ * with counts of entities with each value of each attribute.
+ */
+function createAttributeSummaryTable(filterQueue, entity, attributeSummary) {
 
-    var readyAttributeSummary = prepareAttributeSummary(
-        attributeSummary, entity
-    );
+    // TODO: I need to initialize the classes of all rects with each run of createAttributeSummaryTable.
+    // TODO: ... yeah, I think that'll be necessary.
 
-    console.log("readyAttributeSummary");
-    console.log(readyAttributeSummary);
+    console.log("attributeSummary in createAttributeSummaryTable");
+    console.log(attributeSummary);
     // Select body of attribute menu table.
     var body = d3
         .select("#attribute-menu-table")
         .select("tbody");
     // Append rows to table.
-    var rows = body
-        .selectAll("tr")
-        .data(readyAttributeSummary)
-        .enter()
-        .append("tr");
+    var rows = body.selectAll("tr").data(attributeSummary);
+    rows.exit().remove();
+    var rowsEnter = rows.enter().append("tr");
+    rows = rowsEnter.merge(rows);
     // Append cells to table.
     var cells = rows
         .selectAll("td")
@@ -529,9 +598,15 @@ function updateAttributeMenu(attributeSummary, entity, model) {
                     type: "summary",
                     value: element.values
                 });
-        })
+        });
+    cells
+        .exit()
+        .remove();
+    var cellsEnter = cells
         .enter()
         .append("td");
+    cells = cellsEnter
+        .merge(cells);
     // Assign class to cells.
     cells
         .attr("class", function (data) {
@@ -569,7 +644,6 @@ function updateAttributeMenu(attributeSummary, entity, model) {
         .selectAll("rect")
         .data(function (record, index) {
             // Organize data for rectangles.
-            console.log(record.value);
             return record.value;
         })
         .enter()
@@ -600,21 +674,52 @@ function updateAttributeMenu(attributeSummary, entity, model) {
         .attr("class", "attribute-menu-table-cell-bar");
     // TODO: I think that the event handling should be in another function.
     // TODO: I'll need to re-call this function after every interaction (so that the filter queue updates properly).
+    // Remove any existing event listeners and handlers from bars.
+    summaryCellBars
+        .on("click", null);
     // Assign event listeners and handlers to bars.
     summaryCellBars
         .on("click", function (data, index, nodes) {
-            var attribute = data.attribute;
-            var value = data.value;
-            //updateFilterQueue(value, attribute, filterQueue);
+            // TODO: Create newAttributeSummary with indicator of the new selection.
+            //var newAttributeSummary =
+            //var attribute = data.attribute;
+            //var value = data.value;
+            //var newFilterQueue = composeFilterQueue(
+            //    value, attribute, filterQueue
+            //);
+            //console.log("filter queue");
+            //console.log(newFilterQueue);
+            //controlAttributeTable(newFilterQueue, entity, attributeSummary);
         });
+}
 
-    //metaboliteBars
-    //    .attr("width", function (data, index) {
-    //        return metaboliteScale(data.value);
-    //    })
-    //    .attr("class", "query-queue-table-cell-bars-metabolite");
+// TODO: Make the name of this function more specific to what it does.
+// TODO: Consider a name like controlAttributeSelection.
+/**
+ * Controls the attribute table recursively with user interaction.
+ * @param {Array<Object<string>>} filterQueue Queue of filters to apply to the
+ * attribute index.
+ * @param {string} entity The entity, metabolite or reaction, of the current
+ * selection.
+ * @param {Array<Object<string>>} attributeSummary Summary of attribute index
+ * with counts of entities with each value of each attribute.
+ */
+function controlAttributeTable(filterQueue, entity, attributeSummary) {
 
+    // This function executes upon initial program execution, upon a change to
+    // the selection of entity, and upon a change to the attribute index and
+    // attribute summary.
+    // The purpose of this function is to support iterative user interaction to
+    // select values of attributes from the attribute menu.
+    // These selections compose the filter queue.
 
+    // Prepare attribute summary for visualization according to the current
+    // entity selection.
+    var readyAttributeSummary = prepareAttributeSummary(
+        entity, attributeSummary
+    );
+    // Create visual representation of attribute summary.
+    createAttributeSummaryTable(filterQueue, entity, readyAttributeSummary);
 
     // TODO: Append rectangles for each value of the data.
     // TODO: Format rectangles according to data... I'll need to set both x positions and widths.
@@ -632,6 +737,13 @@ function updateAttributeMenu(attributeSummary, entity, model) {
     //    });
     //var metaboliteBars = metaboliteBarCellSVGs
     //    .append("rect");
+
+
+    // TODO: Activate the submit button with the current version of the filterQueue.
+    // TODO: The submit button should call a separate filter function that then calls controlAttributeMenu with the new attribute index.
+    // TODO: I'm not sure it'll work to return the filterQueue from this function directly.
+
+
 }
 
 
