@@ -7,21 +7,39 @@ Research With Alexander Lex
 5 May 2017
 
 ----------
+Control element classes with D3
+
+https://jaketrent.com/post/d3-class-operations/
+
+----------
 Plan, Event Executions of Attribute Menu
 
-1) Start-Up
--Create comprehensive, original attribute index from metabolic model.
--Extract comprehensive, original attribute summary from attribute index.
--Initialize attribute menu.
--Create attribute menu table on basis of current attribute summary.
+This plan for interaction is very helpful.
+It clarifies how to structure functionality in the program and to which parameters each function needs access.
 
-2) User Selection in Attribute Menu
+1) Initialization of Attribute Menu
+-Initialize attribute menu with invariant aspects of table and control buttons.
+-Create comprehensive, original attribute index from metabolic model.
+-Extract comprehensive, original attribute summary from original attribute index.
+-Create and activate attribute menu table on basis of current attribute summary, with consideration of entity selection and filter option.
+
+2) User Selection of Value in Attribute Menu
 -Set new selection status in attribute summary.
 -Assign new style classes to appropriate elements in attribute menu.
 -Extract filter details from all selections from attribute summary.
 -Filter original attribute index according to filter details.
 -Pass new, filtered attribute index to other views.
--Create attribute menu table on basis of current attribute summary.
+-Create and activate attribute menu table on basis of current attribute summary, with consideration of entity selection and filter option.
+
+3) User Selection of Entity in Attribute Menu
+-Create and activate attribute menu table on basis of current attribute summary, with consideration of entity selection and filter option.
+
+4) User Change to Filter Option Check Box
+-Create and activate attribute menu table on basis of current attribute summary, with consideration of entity selection and filter option.
+
+5) User Selection of Reset
+-Extract comprehensive, original attribute summary from original attribute index.
+-Create and activate attribute menu table on basis of current attribute summary, with consideration of entity selection and filter option.
 
 ----------
 Plan, Implementation of Attribute Menu
@@ -35,11 +53,12 @@ Plan, Implementation of Attribute Menu
 -Upon user selection, recreate the attribute menu with the new attribute summary in order to update style classes for the new selection.
 
 2) Attribute Menu Filter
--Filter operation should be a one-time button event rather than a persistent option check box.
--That dynamic makes more sense for user interaction to allow user to select multiple values at a time before eliminating all others.
--Upon user selection of the "filter" button, extract a new attribute summary from the current attribute index.
--This attribute summary becomes the persistent version, and user can only revert to original by resetting the entire attribute menu and attribute index.
--Eliminate all indications of selections, since every bar in the new table represents a selection.
+-In order to represent only current entities in the attribute menu, it will be necessary to derive a new attribute summary from a new, filtered version of the attribute index.
+-Each user selection will generate a new, filtered version of the attribute index.
+-If the filter option is true, derive the attribute summary from the filtered version of the attribute index and ignore any selections in the attribute summary.
+-If the filter option is false, derive the attribute summary from the original version of the attribute index and preserve selections in the attribute summary.
+-Upon change to the "filter" option check box, re-call the appropriate control function.
+-Eliminate all indications (highlighting) of selections, since every bar in the new table represents a selection.
 
 3) Attribute Menu Search Selection
 -Include value identifier and value name in attribute summary data.

@@ -112,6 +112,11 @@ h3 {
     width: 100%;
 }
 
+.attribute-menu-entity-selection {
+    background-color: rgba(255, 150, 0, 1);
+}
+
+
 #attribute-menu table {
     border-collapse: collapse;
     border-style: hidden;

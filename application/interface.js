@@ -94,21 +94,25 @@ function displayHideChildPanel(tab) {
 }
 
 /**
- * Creates a radio button with a label for a step in a queue.
+ * Creates an input element with a label.
  * @param {Object} parameters Destructured object of parameters.
  * @param {string} parameters.className Name of the class.
- * @param {string} parameters.name Name of the radio button's group.
- * @param {string} parameters.value Value for the radio button.
- * @param {string} parameters.text Text for the radio button's label.
- * @returns {Object} Label element with a radio button input element.
+ * @param {string} parameters.identifier Identifier of the input element.
+ * @param {string} parameters.name Name of the group.
+ * @param {string} parameters.value Value for the element.
+ * @param {string} parameters.text Text for the label.
+ * @param {string} parameters.type Type of the input element.
+ * @returns {Object} Label element with an input element.
  */
-function createLabelRadioButton({className, name, value, text} = {}) {
-    var label = document.createElement("label");
+function createLabelInputElement({className, identifier, name, value, text, type} = {}) {
     var input = document.createElement("input");
     input.setAttribute("class", className);
+    input.setAttribute("id", identifier);
     input.setAttribute("name", name);
-    input.setAttribute("type", "radio");
+    input.setAttribute("type", type);
     input.setAttribute("value", value);
+    var label = document.createElement("label");
+    label.setAttribute("for", identifier);
     label.appendChild(input);
     label.appendChild(
         document.createTextNode(text)
@@ -253,6 +257,12 @@ function loadDefaultModel() {
  * Initializes the attribute menu and attribute menu table.
  */
 function initializeAttributeMenu() {
+    // This function executes upon initialization of the program after assembly
+    // or load of a metabolic model.
+
+    // This function does not activate some control elements, because the
+    // handlers for these control elements require data objects.
+
     // Create container for attribute menu.
     var attributeView = document.getElementById("attribute");
     var attributeMenu = document.createElement("div");
@@ -271,27 +281,36 @@ function initializeAttributeMenu() {
     // TODO: Also display the total count of reactions or metabolites... that'll be different than the total of the counts for each property.
     var summaryHead = document.createElement("th");
     summaryHead.setAttribute("class", "attribute-menu-table-column-summary");
-    // Metabolite entity label.
-    var metaboliteLabel = document.createElement("span");
-    metaboliteLabel.textContent = "metabolites";
-    metaboliteLabel.setAttribute("id", "attribute-menu-table-entity-metabolites");
-    // TODO: I'll need some sort of toggle event handler for the the selection of entities.
-    metaboliteLabel.setAttribute("class", "attribute-menu-table-entity-selection");
-    summaryHead.appendChild(metaboliteLabel);
-    // Spacer.
-    summaryHead
-        .appendChild(createElementWithText({text: "...or...", type: "span"}));
-    // Reaction entity label.
-    var reactionLabel = document.createElement("span");
-    reactionLabel.textContent = "reactions";
-    reactionLabel.setAttribute("id", "attribute-menu-table-entity-reactions");
-    summaryHead.appendChild(reactionLabel);
-    // Submit button.
-    var submitButton = document.createElement("button");
-    submitButton.textContent = "Submit";
-    submitButton.setAttribute("id", "attribute-menu-submit");
-    summaryHead.appendChild(submitButton);
-    // Reset button.
+    // Create entity selector.
+    var metaboliteRadioLabel = createLabelInputElement({
+        className: "attribute-menu-entity",
+        identifier: "attribute-menu-entity-metabolite",
+        name: "attribute-menu-entity",
+        value: "metabolite",
+        text: "Metabolite",
+        type: "radio"
+    });
+    summaryHead.appendChild(metaboliteRadioLabel);
+    var reactionRadioLabel = createLabelInputElement({
+        className: "attribute-menu-entity",
+        identifier: "attribute-menu-entity-reaction",
+        name: "attribute-menu-entity",
+        value: "reaction",
+        text: "Reaction",
+        type: "radio"
+    });
+    summaryHead.appendChild(reactionRadioLabel);
+    // Create filter check box.
+    var filterCheckLabel = createLabelInputElement({
+        className: "attribute-menu-filter",
+        identifier: "attribute-menu-filter",
+        name: "attribute-menu-filter",
+        value: "filter",
+        text: "Filter",
+        type: "checkbox"
+    });
+    summaryHead.appendChild(filterCheckLabel);
+    // Create reset button.
     var resetButton = document.createElement("button");
     resetButton.textContent = "Reset";
     resetButton.setAttribute("id", "attribute-menu-reset");
@@ -308,30 +327,50 @@ function initializeAttributeMenu() {
 }
 
 /**
- * Initializes aspects of the attribute interface that do not change recursively
- * with user interaction and initiates those operations that do recurse with
- * user interaction.
+ * Initializes the attribute interface.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
 function initializeAttributeInterface(model) {
-    // This function executes upon initial program execution.
-    // Initialize aspects of the attribute interface that do not change
-    // recursively with user interaction.
+    // This function executes upon initialization of the program after assembly
+    // or load of a metabolic model.
+    // Initialize attribute menu.
     // Create attribute menu.
     initializeAttributeMenu();
+    // Assemble attribute index.
+    // The attribute index will mediate information exchange between the views
+    // for attribute menu, sets, and entities.
+    var attributeIndex = createAttributeIndex(model.entities.reactions);
+    console.log("attributeIndex");
+    console.log(attributeIndex);
+    // Create attribute summary from attribute index.
+    var attributeSummary = createAttributeSummary(attributeIndex, model);
+    // Initiate control of attribute menu.
+    // TODO: Change the initial entity to "metabolites" once the index is available for these entities.
+    controlAttributeMenu({
+        entity: "reactions",
+        filter: false,
+        originalAttributeSummary: attributeSummary,
+        currentAttributeIndex: attributeIndex,
+        originalAttributeIndex: attributeIndex,
+        model: model
+    });
     // Activate reset button.
     document
         .getElementById("attribute-menu-reset")
         .addEventListener("click", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Execute operation.
-            controlAttributeInterface(model);
+            controlAttributeMenu({
+                entity: "reactions",
+                filter: false,
+                originalAttributeSummary: attributeSummary,
+                currentAttributeIndex: attributeIndex,
+                originalAttributeIndex: attributeIndex,
+                model: model
+            });
         });
-    // Initiate those operations that do recurse with user interaction.
-    // Initiate recursive control of attribute menu with user interaction.
-    controlAttributeInterface(model);
-    testD3EventListeners([]);
+    //testD3EventListeners([]);
 }
 
 // TODO: This works!
@@ -349,57 +388,6 @@ function testD3EventListeners(queue) {
             console.log(newQueue);
             testD3EventListeners(newQueue);
         });
-}
-
-/**
- * Controls the attribute interface recursively with user interaction.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
- */
-function controlAttributeInterface(model) {
-    // This function executes upon initial program execution and upon reset of
-    // the attribute interface.
-    // The model parameter of this function does not change with user
-    // interaction.
-    // Hence this function always restores the attribute index to its initial
-    // state and restores the attribute menu to a correspondingly initial state.
-
-    // Assemble attribute index.
-    // Attribute index will change with user selection in the attribute menu.
-    // Reset of attribute menu will call function controlAttributeInterface to
-    // create a new attribute index from the model.
-    // The attribute index will be a means of data exchange between the views
-    // for attribute sets and attribute relations.
-    var attributeIndex = createAttributeIndex(model.entities.reactions);
-    // Initiate recursive operations that control the attribute menu with user
-    // interaction.
-    controlAttributeMenu(attributeIndex, model);
-}
-
-// TODO: Make the name of this function more specific to what it does.
-// TODO: Consider a name like controlAttributeIndex.
-/**
- * Controls the attribute menu recursively with user interaction.
- * @param {Array<Object<string>>} attributeIndex Index of attributes of
- * metabolites and reactions.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
- */
-function controlAttributeMenu(attributeIndex, model) {
-    // This function executes upon initial program execution and upon a change
-    // to the attribute index when the user submits a selection.
-    // The purpose of this function is to support iterative modifications to the
-    // attribute index through fitration operations.
-    // TODO: Eventually this function will return the new attribute index from
-    // TODO: each round of user selection so that it can be useful in other views.
-
-    // Create attribute summary from attribute index.
-    var attributeSummary = createAttributeSummary(attributeIndex, model);
-
-    controlAttributeTable([], "reaction", attributeSummary);
-    // TODO: Eventually, I think that controlAttributeTable should return information about user selection.
-    // TODO: Then controlAttributeMenu will take that information and use it to filter the attributeIndex.
-    // TODO: Then controlAttributeMenu will call itself with the new attributeIndex.
 }
 
 /**
@@ -435,28 +423,28 @@ function countIncrementalEntityAttributeValues(attributeSummary) {
         var incrementalValues = attributeRecord
             .values
             .reduce(function (collection, record, index) {
-            // Calculate incremental count.
-            if (index > 0) {
-                // Current record is not the first of the collection.
-                // Increment the magnitude on the base from the previous record.
-                var base = collection[index - 1].base +
-                    collection[index - 1].magnitude;
-            } else {
-                // Current record is the first of the collection.
-                // Initialize the increment at zero.
-                var base = 0;
-            }
-            // The only value to change in the record is the base.
-            var newBase = {
-                base: base
-            };
-            // Copy existing values in the record and introduce new value.
-            var newRecord = Object.assign({}, record, newBase);
-            return [].concat(collection, newRecord);
-        }, []);
+                // Calculate incremental count.
+                if (index > 0) {
+                    // Current record is not the first of the collection.
+                    // Increment the magnitude on the base from the previous record.
+                    var base = collection[index - 1].base +
+                        collection[index - 1].magnitude;
+                } else {
+                    // Current record is the first of the collection.
+                    // Initialize the increment at zero.
+                    var base = 0;
+                }
+                // The only value to change in the record is the base.
+                var newBase = {
+                    base: base
+                };
+                // Copy existing values in the record and introduce new value.
+                var newRecord = Object.assign({}, record, newBase);
+                return [].concat(collection, newRecord);
+            }, []);
         // Determine total sum of counts of all values of the attribute.
         var total = incrementalValues[incrementalValues.length - 1].base +
-                incrementalValues[incrementalValues.length - 1].magnitude;
+            incrementalValues[incrementalValues.length - 1].magnitude;
         var incrementalTotalValues = incrementalValues.map(function (record) {
             var newTotal = {
                 total: total
@@ -537,28 +525,7 @@ function prepareAttributeSummary(entity, attributeSummary) {
 }
 
 /**
- * Prepares the attribute summary for immediate visual representation according
- * to user selection of entity.
- * @param {string} entity The entity, metabolite or reaction, of the current
- * selection.
- * @param {Array<Object<string>>} filterQueue Queue of filters to apply to the
- * attribute index.
- * @returns {Array<Object<string>>} Queue of filters to apply to the attribute
- * index.
- */
-function composeFilterQueue(value, attribute, filterQueue) {
-    var selection = "temporary...";
-    var newFilter = {
-        attribute: attribute,
-        selection: selection,
-        value: value
-    };
-    var newFilterQueue = [].concat(filterQueue, newFilter);
-    return newFilterQueue;
-}
-
-/**
- * Creates and activates the attribute table for user interaction.
+ * Creates and activates the attribute summary table for user interaction.
  * @param {Array<Object<string>>} filterQueue Queue of filters to apply to the
  * attribute index.
  * @param {string} entity The entity, metabolite or reaction, of the current
@@ -566,7 +533,7 @@ function composeFilterQueue(value, attribute, filterQueue) {
  * @param {Array<Object<string>>} attributeSummary Summary of attribute index
  * with counts of entities with each value of each attribute.
  */
-function createAttributeSummaryTable(filterQueue, entity, attributeSummary) {
+function createActivateAttributeSummaryTable(filterQueue, entity, attributeSummary) {
 
     // TODO: I need to initialize the classes of all rects with each run of createAttributeSummaryTable.
     // TODO: ... yeah, I think that'll be necessary.
@@ -693,6 +660,121 @@ function createAttributeSummaryTable(filterQueue, entity, attributeSummary) {
         });
 }
 
+function activateAttributeMenuEntitySelector({
+    filter,
+    originalAttributeSummary,
+    currentAttributeIndex,
+    originalAttributeIndex,
+    model
+} = {}) {
+    // TODO: Change the entity selector to a group of radio buttons.
+    // TODO: Then trigger on change.
+}
+
+function activateAttributeMenuFilterSelector({
+    entity,
+    originalAttributeSummary,
+    currentAttributeIndex,
+    originalAttributeIndex,
+    model
+} = {}) {}
+
+/**
+ * Controls the attribute menu with user interaction.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.entity The entity, metabolite or reaction, of the
+ * current selection.
+ * @param {boolean} parameters.filter Option to represent in attribute menu only
+ * those entities that pass current filters on the attribute index.
+ * @param {Array<Object<string>>} parameters.originalAttributeSummary Summary of
+ * attribute index with counts of entities with each value of each attribute.
+ * @param {Array<Object<string>>} parameters.currentAttributeIndex Index of
+ * attributes of metabolites and reactions, including only those entities that
+ * pass current filters on the attribute index.
+ * @param {Array<Object<string>>} parameters.originalAttributeIndex Index of
+ * attributes of metabolites and reactions.
+ * @param {Object<Object>>} parameters.model Information about entities and
+ * relations in a metabolic model.
+ */
+function controlAttributeMenu({
+        entity,
+        filter,
+        originalAttributeSummary,
+        currentAttributeIndex,
+        originalAttributeIndex,
+        model
+    } = {}) {
+    // This function executes upon initialization of the program after assembly
+    // or load of a metabolic model, upon change to entity selection, upon
+    // change to filter selection, upon selection of a value from the attribute
+    // menu, and upon reset of the attribute menu.
+    // Prepare attribute summary according to selection of filter option.
+    if (!filter) {
+        // The filter selection is to represent in the attribute menu all
+        // entities, regardless of whether or not they pass current filters on the
+        // attribute index.
+        var currentAttributeSummary = originalAttributeSummary;
+    } else {
+        // The filter selection is to represent in the attribute menu only those
+        // entities that pass current filters on the attribute index.
+        var currentAttributeSummary = createAttributeSummary(
+            currentAttributeIndex, model
+        );
+    }
+    // Prepare attribute summary for visualization according to the current
+    // entity selection.
+    var readyAttributeSummary = prepareAttributeSummary(
+        entity, currentAttributeSummary
+    );
+    // Create visual representation of attribute summary.
+    // TODO: Determine what parameters to pass to create and activate the table... I assume do both simultaneously.
+    //createActivateAttributeSummaryTable();
+
+
+
+    // TODO: Activate the entity selector and filter selector within this function.
+    // Activate entity selector.
+    //activateAttributeMenuEntitySelector();
+    // Activate filter selector.
+    //activateAttributeMenuFilterSelector();
+
+
+    ////////////////////////////////////////////////////////////////////////////
+    // TODO: Scrap code below here...
+    // This function executes upon initial program execution and upon a change
+    // to the attribute index when the user submits a selection.
+    // The purpose of this function is to support iterative modifications to the
+    // attribute index through fitration operations.
+    // TODO: Eventually this function will return the new attribute index from
+    // TODO: each round of user selection so that it can be useful in other views.
+    //controlAttributeTable([], "reaction", attributeSummary);
+    // TODO: Eventually, I think that controlAttributeTable should return information about user selection.
+    // TODO: Then controlAttributeMenu will take that information and use it to filter the attributeIndex.
+    // TODO: Then controlAttributeMenu will call itself with the new attributeIndex.
+}
+
+/**
+ * Prepares the attribute summary for immediate visual representation according
+ * to user selection of entity.
+ * @param {string} entity The entity, metabolite or reaction, of the current
+ * selection.
+ * @param {Array<Object<string>>} filterQueue Queue of filters to apply to the
+ * attribute index.
+ * @returns {Array<Object<string>>} Queue of filters to apply to the attribute
+ * index.
+ */
+function composeFilterQueue(value, attribute, filterQueue) {
+    var selection = "temporary...";
+    var newFilter = {
+        attribute: attribute,
+        selection: selection,
+        value: value
+    };
+    var newFilterQueue = [].concat(filterQueue, newFilter);
+    return newFilterQueue;
+}
+
+
 // TODO: Make the name of this function more specific to what it does.
 // TODO: Consider a name like controlAttributeSelection.
 /**
@@ -713,13 +795,6 @@ function controlAttributeTable(filterQueue, entity, attributeSummary) {
     // select values of attributes from the attribute menu.
     // These selections compose the filter queue.
 
-    // Prepare attribute summary for visualization according to the current
-    // entity selection.
-    var readyAttributeSummary = prepareAttributeSummary(
-        entity, attributeSummary
-    );
-    // Create visual representation of attribute summary.
-    createAttributeSummaryTable(filterQueue, entity, readyAttributeSummary);
 
     // TODO: Append rectangles for each value of the data.
     // TODO: Format rectangles according to data... I'll need to set both x positions and widths.
