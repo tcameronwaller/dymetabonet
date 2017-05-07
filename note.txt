@@ -4,6 +4,18 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+7 May 2017
+
+----------
+Avoid Replication of Event Listeners and Handlers
+
+When defining event listeners and handlers with anonymous functions (not in global name space) it is possible to create replicate listeners and handlers if the activation operation executes multiple times.
+There are various ways to avoid this problem.
+For a single element, it is possible to set the once option to true so that the handler only executes once before removal.
+
+https://triangle717.wordpress.com/2015/12/14/js-avoid-duplicate-listeners/
+
+--------------------------------------------------
 5 May 2017
 
 ----------

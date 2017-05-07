@@ -104,7 +104,14 @@ function displayHideChildPanel(tab) {
  * @param {string} parameters.type Type of the input element.
  * @returns {Object} Label element with an input element.
  */
-function createLabelInputElement({className, identifier, name, value, text, type} = {}) {
+function createLabelInputElement({
+    className,
+    identifier,
+    name,
+    value,
+    text,
+    type
+} = {}) {
     var input = document.createElement("input");
     input.setAttribute("class", className);
     input.setAttribute("id", identifier);
@@ -281,7 +288,7 @@ function initializeAttributeMenu() {
     // TODO: Also display the total count of reactions or metabolites... that'll be different than the total of the counts for each property.
     var summaryHead = document.createElement("th");
     summaryHead.setAttribute("class", "attribute-menu-table-column-summary");
-    // Create entity selector.
+    // Create entity selector with default value of metabolite.
     var metaboliteRadioLabel = createLabelInputElement({
         className: "attribute-menu-entity",
         identifier: "attribute-menu-entity-metabolite",
@@ -290,6 +297,8 @@ function initializeAttributeMenu() {
         text: "Metabolite",
         type: "radio"
     });
+    var metaboliteRadio = metaboliteRadioLabel.getElementsByTagName("input")[0];
+    metaboliteRadio.setAttribute("checked", true);
     summaryHead.appendChild(metaboliteRadioLabel);
     var reactionRadioLabel = createLabelInputElement({
         className: "attribute-menu-entity",
@@ -346,9 +355,8 @@ function initializeAttributeInterface(model) {
     // Create attribute summary from attribute index.
     var attributeSummary = createAttributeSummary(attributeIndex, model);
     // Initiate control of attribute menu.
-    // TODO: Change the initial entity to "metabolites" once the index is available for these entities.
     controlAttributeMenu({
-        entity: "reactions",
+        entity: "metabolite",
         filter: false,
         originalAttributeSummary: attributeSummary,
         currentAttributeIndex: attributeIndex,
@@ -362,7 +370,7 @@ function initializeAttributeInterface(model) {
             // Element on which the event originated is event.currentTarget.
             // Execute operation.
             controlAttributeMenu({
-                entity: "reactions",
+                entity: "metabolite",
                 filter: false,
                 originalAttributeSummary: attributeSummary,
                 currentAttributeIndex: attributeIndex,
@@ -524,22 +532,165 @@ function prepareAttributeSummary(entity, attributeSummary) {
     return attributeSummaryIncrement;
 }
 
+
+
+// TODO: I think I need to remove event handlers right after first execution...
+// TODO: Otherwise they're multiplying.
+
+/**
+ * Activates interactive elements to specify entity for attribute menu.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {boolean} parameters.filter Option to represent in attribute menu only
+ * those entities that pass current filters on the attribute index.
+ * @param {Array<Object<string>>} parameters.originalAttributeSummary Summary of
+ * attribute index with counts of entities with each value of each attribute.
+ * @param {Array<Object<string>>} parameters.currentAttributeIndex Index of
+ * attributes of metabolites and reactions, including only those entities that
+ * pass current filters on the attribute index.
+ * @param {Array<Object<string>>} parameters.originalAttributeIndex Index of
+ * attributes of metabolites and reactions.
+ * @param {Object<Object>>} parameters.model Information about entities and
+ * relations in a metabolic model.
+ */
+function activateAttributeMenuEntitySelectors({
+    filter,
+    originalAttributeSummary,
+    currentAttributeIndex,
+    originalAttributeIndex,
+    model
+} = {}) {
+    // It is necessary to restore the event listeners and handlers for the
+    // entity selectors every time the parameters change.
+    // Due to this iterative activation, it is necessary to remove the listeners
+    // and handlers after each execution to avoid replication of listeners and
+    // handlers.
+    // Activate event listeners and handlers.
+    var entitySelectors = document
+        .getElementById("attribute-menu")
+        .getElementsByClassName("attribute-menu-entity");
+    Array.from(entitySelectors).forEach(function (radio) {
+        radio.addEventListener("change", function handleEvent(event) {
+            // Element on which the event originated is event.currentTarget.
+            // Classes of this element are event.currentTarget.className.
+            // Determine entity selection.
+            var entity = determineRadioGroupValue(entitySelectors);
+            // Restore attribute menu with current entity selection.
+            controlAttributeMenu({
+                entity: entity,
+                filter: filter,
+                originalAttributeSummary: originalAttributeSummary,
+                currentAttributeIndex: currentAttributeIndex,
+                originalAttributeIndex: originalAttributeIndex,
+                model: model
+            });
+            // Remove event listeners and handlers for all elements in the
+            // group after first execution of the operation.
+            Array.from(entitySelectors).forEach(function (radio) {
+                console.log(radio.checked);
+                // TODO: I think this doesn't work because the reference to handleEvent is only valid for the current target of the event.
+                // TODO: I guess I can't reference handleEvent for any other radio buttons in the group.
+                // TODO: Maybe I need to define the handler function as a global function so that I can access it for all radio buttons, not just the current event trigger.
+                // TODO: Alternatively, is there a way to remove all event listeners for a give type?
+
+                // TODO: Option... remove all event listeners from an element by cloning the element.
+                // TODO: This would avoid the necessity of putting the handler function in the global namespace.
+                // http://stackoverflow.com/questions/9251837/how-to-remove-all-listeners-in-an-element
+                // http://stackoverflow.com/questions/19469881/remove-all-event-listeners-of-specific-type
+                // var oldElement = radio;
+                // var newElement = oldElement.cloneNode(true);
+                // oldElement.parentNode.replaceChild(newElement, oldElement);
+
+                radio.removeEventListener(event.type, handleEvent);
+            });
+        });
+    });
+}
+
+/**
+ * Activates interactive elements to specify filter for attribute menu.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.entity The entity, metabolite or reaction, of the
+ * current selection.
+ * @param {Array<Object<string>>} parameters.originalAttributeSummary Summary of
+ * attribute index with counts of entities with each value of each attribute.
+ * @param {Array<Object<string>>} parameters.currentAttributeIndex Index of
+ * attributes of metabolites and reactions, including only those entities that
+ * pass current filters on the attribute index.
+ * @param {Array<Object<string>>} parameters.originalAttributeIndex Index of
+ * attributes of metabolites and reactions.
+ * @param {Object<Object>>} parameters.model Information about entities and
+ * relations in a metabolic model.
+ */
+function activateAttributeMenuFilterSelector({
+    entity,
+    originalAttributeSummary,
+    currentAttributeIndex,
+    originalAttributeIndex,
+    model
+} = {}) {
+    // It is necessary to restore the event listener and handler for the filter
+    // selector every time the parameters change.
+    // Due to this iterative activation, it is necessary to remove the listeners
+    // and handlers after each execution to avoid replication of listeners and
+    // handlers.
+    // Activate event listener and handler.
+    var filterSelector = document.getElementById("attribute-menu-filter");
+    filterSelector.addEventListener("change", function handleEvent(event) {
+        // Element on which the event originated is event.currentTarget.
+        // Determine filter selection.
+        var filter = filterSelector.checked;
+        // Restore attribute menu with current filter selection.
+        controlAttributeMenu({
+            entity: entity,
+            filter: filter,
+            originalAttributeSummary: originalAttributeSummary,
+            currentAttributeIndex: currentAttributeIndex,
+            originalAttributeIndex: originalAttributeIndex,
+            model: model
+        });
+        // Remove event listener and handler after first execution of
+        // operation.
+        event.currentTarget.removeEventListener(event.type, handleEvent);
+    });
+}
+
 /**
  * Creates and activates the attribute summary table for user interaction.
- * @param {Array<Object<string>>} filterQueue Queue of filters to apply to the
- * attribute index.
- * @param {string} entity The entity, metabolite or reaction, of the current
- * selection.
- * @param {Array<Object<string>>} attributeSummary Summary of attribute index
- * with counts of entities with each value of each attribute.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.entity The entity, metabolite or reaction, of the
+ * current selection.
+ * @param {boolean} parameters.filter Option to represent in attribute menu only
+ * those entities that pass current filters on the attribute index.
+ * @param {Array<Object<string>>} parameters.currentAttributeSummary Summary of
+ * attribute index with counts of entities with each value of each attribute.
+ * @param {Array<Object<string>>} parameters.originalAttributeSummary Summary of
+ * attribute index with counts of entities with each value of each attribute.
+ * @param {Array<Object<string>>} parameters.currentAttributeIndex Index of
+ * attributes of metabolites and reactions, including only those entities that
+ * pass current filters on the attribute index.
+ * @param {Array<Object<string>>} parameters.originalAttributeIndex Index of
+ * attributes of metabolites and reactions.
+ * @param {Object<Object>>} parameters.model Information about entities and
+ * relations in a metabolic model.
  */
-function createActivateAttributeSummaryTable(filterQueue, entity, attributeSummary) {
+function createActivateAttributeSummaryTable({
+    entity,
+    filter,
+    currentAttributeSummary,
+    originalAttributeSummary,
+    currentAttributeIndex,
+    originalAttributeIndex,
+    model
+} = {}) {
 
     // TODO: I need to initialize the classes of all rects with each run of createAttributeSummaryTable.
     // TODO: ... yeah, I think that'll be necessary.
 
-    console.log("attributeSummary in createAttributeSummaryTable");
-    console.log(attributeSummary);
+    console.log("currentAttributeSummary");
+    console.log(currentAttributeSummary);
+}
+
+function temporaryContainerTableCode() {
     // Select body of attribute menu table.
     var body = d3
         .select("#attribute-menu-table")
@@ -660,24 +811,8 @@ function createActivateAttributeSummaryTable(filterQueue, entity, attributeSumma
         });
 }
 
-function activateAttributeMenuEntitySelector({
-    filter,
-    originalAttributeSummary,
-    currentAttributeIndex,
-    originalAttributeIndex,
-    model
-} = {}) {
-    // TODO: Change the entity selector to a group of radio buttons.
-    // TODO: Then trigger on change.
-}
 
-function activateAttributeMenuFilterSelector({
-    entity,
-    originalAttributeSummary,
-    currentAttributeIndex,
-    originalAttributeIndex,
-    model
-} = {}) {}
+
 
 /**
  * Controls the attribute menu with user interaction.
@@ -704,6 +839,9 @@ function controlAttributeMenu({
         originalAttributeIndex,
         model
     } = {}) {
+
+    console.log("called controlAttributeMenu");
+
     // This function executes upon initialization of the program after assembly
     // or load of a metabolic model, upon change to entity selection, upon
     // change to filter selection, upon selection of a value from the attribute
@@ -727,31 +865,49 @@ function controlAttributeMenu({
         entity, currentAttributeSummary
     );
     // Create visual representation of attribute summary.
-    // TODO: Determine what parameters to pass to create and activate the table... I assume do both simultaneously.
-    //createActivateAttributeSummaryTable();
+    // TODO: Create table on basis of the currentAttributeSummary...
+    createActivateAttributeSummaryTable({
+        entity: entity,
+        filter: filter,
+        currentAttributeSummary: readyAttributeSummary,
+        originalAttributeSummary: originalAttributeSummary,
+        currentAttributeIndex: currentAttributeIndex,
+        originalAttributeIndex: originalAttributeIndex,
+        model: model
+    });
 
 
-
-    // TODO: Activate the entity selector and filter selector within this function.
     // Activate entity selector.
-    //activateAttributeMenuEntitySelector();
+    activateAttributeMenuEntitySelectors({
+        filter: filter,
+        originalAttributeSummary: originalAttributeSummary,
+        currentAttributeIndex: currentAttributeIndex,
+        originalAttributeIndex: originalAttributeIndex,
+        model: model
+    });
     // Activate filter selector.
-    //activateAttributeMenuFilterSelector();
-
-
-    ////////////////////////////////////////////////////////////////////////////
-    // TODO: Scrap code below here...
-    // This function executes upon initial program execution and upon a change
-    // to the attribute index when the user submits a selection.
-    // The purpose of this function is to support iterative modifications to the
-    // attribute index through fitration operations.
-    // TODO: Eventually this function will return the new attribute index from
-    // TODO: each round of user selection so that it can be useful in other views.
-    //controlAttributeTable([], "reaction", attributeSummary);
-    // TODO: Eventually, I think that controlAttributeTable should return information about user selection.
-    // TODO: Then controlAttributeMenu will take that information and use it to filter the attributeIndex.
-    // TODO: Then controlAttributeMenu will call itself with the new attributeIndex.
+    activateAttributeMenuFilterSelector({
+        entity: entity,
+        originalAttributeSummary: originalAttributeSummary,
+        currentAttributeIndex: currentAttributeIndex,
+        originalAttributeIndex: originalAttributeIndex,
+        model: model
+    });
 }
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Scrap?
+
+
 
 /**
  * Prepares the attribute summary for immediate visual representation according
