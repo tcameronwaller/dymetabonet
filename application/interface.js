@@ -572,6 +572,22 @@ function activateAttributeMenuEntitySelectors({
         radio.addEventListener("change", function handleEvent(event) {
             // Element on which the event originated is event.currentTarget.
             // Classes of this element are event.currentTarget.className.
+            // Remove event listeners and handlers for all elements in the
+            // group after first execution of the operation.
+            // Since the selector involves multiple individual radio buttons, it
+            // is necessary to remove event listeners and handlers for all of
+            // these.
+            // Only the current target of the event has access to the handler
+            // function by name when the function's name is not in the global
+            // scope.
+            // An option is to declare the handler function in the global scope.
+            // Another option is to clone each element, discarding all event
+            // listeners and handlers.
+            Array.from(entitySelectors).forEach(function (radio) {
+                var oldElement = radio;
+                var newElement = oldElement.cloneNode(true);
+                oldElement.parentNode.replaceChild(newElement, oldElement);
+            });
             // Determine entity selection.
             var entity = determineRadioGroupValue(entitySelectors);
             // Restore attribute menu with current entity selection.
@@ -582,25 +598,6 @@ function activateAttributeMenuEntitySelectors({
                 currentAttributeIndex: currentAttributeIndex,
                 originalAttributeIndex: originalAttributeIndex,
                 model: model
-            });
-            // Remove event listeners and handlers for all elements in the
-            // group after first execution of the operation.
-            Array.from(entitySelectors).forEach(function (radio) {
-                console.log(radio.checked);
-                // TODO: I think this doesn't work because the reference to handleEvent is only valid for the current target of the event.
-                // TODO: I guess I can't reference handleEvent for any other radio buttons in the group.
-                // TODO: Maybe I need to define the handler function as a global function so that I can access it for all radio buttons, not just the current event trigger.
-                // TODO: Alternatively, is there a way to remove all event listeners for a give type?
-
-                // TODO: Option... remove all event listeners from an element by cloning the element.
-                // TODO: This would avoid the necessity of putting the handler function in the global namespace.
-                // http://stackoverflow.com/questions/9251837/how-to-remove-all-listeners-in-an-element
-                // http://stackoverflow.com/questions/19469881/remove-all-event-listeners-of-specific-type
-                // var oldElement = radio;
-                // var newElement = oldElement.cloneNode(true);
-                // oldElement.parentNode.replaceChild(newElement, oldElement);
-
-                radio.removeEventListener(event.type, handleEvent);
             });
         });
     });
@@ -633,6 +630,8 @@ function activateAttributeMenuFilterSelector({
     // Due to this iterative activation, it is necessary to remove the listeners
     // and handlers after each execution to avoid replication of listeners and
     // handlers.
+    // I think an alternative option might be to use the once option of
+    // addEventListener.
     // Activate event listener and handler.
     var filterSelector = document.getElementById("attribute-menu-filter");
     filterSelector.addEventListener("change", function handleEvent(event) {
