@@ -127,6 +127,28 @@ function createLabelInputElement({
     return label;
 }
 
+/**
+ * Use D3 to create elements in DOM with associative data.
+ * @param {d3 selection} selection D3 selection of HTML element within which to create elements with associative data.
+ * @param {string} element Type of HTML element to create with associative data.
+ * @param {array or accessor function} accessData Accessible data in array or accessor function for these values in
+ * the selection.
+ * @return {d3 selection} D3 selection of elements that the function created with associative data.
+ */
+function createDataElements(selection, element, accessData) {
+    var elements = selection.selectAll(element)
+        .data(accessData);
+    elements
+        .exit()
+        .remove();
+    var elementsEnter = elements
+        .enter()
+        .append(element);
+    elements = elementsEnter
+        .merge(elements);
+    return elements;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // General Interface
 ////////////////////////////////////////////////////////////////////////////////
@@ -682,17 +704,25 @@ function createActivateAttributeSummaryTable({
     model
 } = {}) {
 
+    // TODO: Attribute Summary
     // TODO: Modify data included in attribute summary.
     // TODO: Include both identifier and name in records for values of attributes.
     // TODO: Record information about selections in the attribute summary.
+    // TODO: Consider current status before changing in order to toggle selection on and off.
+    // TODO: Record selection at both the attribute level and the value level to facilitate subsequent parsing.
 
     // TODO: Filter attribute index.
     // TODO: Extract selection details from attribute summary.
+    // TODO: Filter original attribute index (always) according to selection details.
 
     // TODO: Value Bars
     // TODO: Bars need identifiers so they are selectable.
+    // TODO: Construct these identifiers from the id of the value... something like "attribute-menu-attribute-compartment" or
+    // TODO: "attribute-menu-value-c"/"attribute-menu-value-cytosol"... I think use the id so that process is more concise.
     // TODO: Determine style classes of bars according to their selection status in the attribute summary.
 
+    // TODO: Attribute Search
+    // TODO: Upon selection of attribute headers, create auto-complete search fields.
 
     // TODO: I need to initialize the classes of all rects with each run of createAttributeSummaryTable.
     // TODO: ... yeah, I think that'll be necessary.
@@ -716,33 +746,27 @@ function createActivateAttributeSummaryTable({
     // Append rows to table.
     var rows = body.selectAll("tr").data(currentAttributeSummary);
     rows.exit().remove();
-    var rowsEnter = rows.enter().append("tr");
-    rows = rowsEnter.merge(rows);
+    var newRows = rows.enter().append("tr");
+    rows = newRows.merge(rows);
     // Append cells to table.
-    var cells = rows
-        .selectAll("td")
-        .data(function (element, index) {
-            // Organize data for table columns.
-            return [].concat(
-                {
-                    class: "attribute-menu-table-column-attribute",
-                    type: "attribute",
-                    value: element.attribute
-                },
-                {
-                    class: "attribute-menu-table-column-summary",
-                    type: "summary",
-                    value: element.values
-                });
-        });
-    cells
-        .exit()
-        .remove();
-    var cellsEnter = cells
-        .enter()
-        .append("td");
-    cells = cellsEnter
-        .merge(cells);
+    var cells = rows.selectAll("td").data(function (element, index) {
+        // Organize data for table columns.
+        return [].concat(
+            {
+                class: "attribute-menu-table-column-attribute",
+                type: "attribute",
+                value: element.attribute
+            },
+            {
+                class: "attribute-menu-table-column-summary",
+                type: "summary",
+                value: element.values
+            }
+        );
+    });
+    cells.exit().remove();
+    var newCells = cells.enter().append("td");
+    cells = newCells.merge(cells);
     // Assign class to cells.
     cells
         .attr("class", function (data) {
@@ -758,12 +782,22 @@ function createActivateAttributeSummaryTable({
             return data.value;
         });
     // Append graphical containers in cells in summary column.
+    // The graphical containers need access to the same data as their parent
+    // cells without any transformation.
+    // Append graphical containers to the enter selection to avoid replication
+    // of these containers upon restorations to the table.
     var summaryCells = cells
         .filter(function (data, index) {
             return data.type === "summary";
         });
     var summaryCellGraphs = summaryCells
-        .append("svg");
+        .selectAll("svg")
+        .data(function (element, index) {
+            return [element];
+        });
+    summaryCellGraphs.exit().remove();
+    var newSummaryCellGraphs = summaryCellGraphs.enter().append("svg");
+    summaryCellGraphs = newSummaryCellGraphs.merge(summaryCellGraphs);
     summaryCellGraphs
         .attr("class", "attribute-menu-table-cell-graph");
     // Determine the width of graphical containers.
@@ -778,12 +812,13 @@ function createActivateAttributeSummaryTable({
     // Append rectangles to graphical containers in summary column.
     var summaryCellBars = summaryCellGraphs
         .selectAll("rect")
-        .data(function (record, index) {
+        .data(function (element, index) {
             // Organize data for rectangles.
-            return record.value;
-        })
-        .enter()
-        .append("rect");
+            return element.value;
+        });
+    summaryCellBars.exit().remove();
+    var newSummaryCellBars = summaryCellBars.enter().append("rect");
+    summaryCellBars = newSummaryCellBars.merge(summaryCellBars);
     // Assign position and dimension to rectangles.
     summaryCellBars
         .attr("x", function (data, index) {
@@ -1017,28 +1052,6 @@ function controlAttributeTable(filterQueue, entity, attributeSummary) {
 ////////////////////////////////////////////////////////////////////////////////
 // Query Interface
 ////////////////////////////////////////////////////////////////////////////////
-
-/**
- * Use D3 to create elements in DOM with associative data.
- * @param {d3 selection} selection D3 selection of HTML element within which to create elements with associative data.
- * @param {string} element Type of HTML element to create with associative data.
- * @param {array or accessor function} accessData Accessible data in array or accessor function for these values in
- * the selection.
- * @return {d3 selection} D3 selection of elements that the function created with associative data.
- */
-function createDataElements(selection, element, accessData) {
-    var elements = selection.selectAll(element)
-        .data(accessData);
-    elements
-        .exit()
-        .remove();
-    var elementsEnter = elements
-        .enter()
-        .append(element);
-    elements = elementsEnter
-        .merge(elements);
-    return elements;
-}
 
 /**
  * Initializes the query interface.
