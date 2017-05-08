@@ -682,20 +682,39 @@ function createActivateAttributeSummaryTable({
     model
 } = {}) {
 
+    // TODO: Modify data included in attribute summary.
+    // TODO: Include both identifier and name in records for values of attributes.
+    // TODO: Record information about selections in the attribute summary.
+
+    // TODO: Filter attribute index.
+    // TODO: Extract selection details from attribute summary.
+
+    // TODO: Value Bars
+    // TODO: Bars need identifiers so they are selectable.
+    // TODO: Determine style classes of bars according to their selection status in the attribute summary.
+
+
     // TODO: I need to initialize the classes of all rects with each run of createAttributeSummaryTable.
     // TODO: ... yeah, I think that'll be necessary.
 
+
+    // Parameters
+    // While entity and filter parameters are no longer necessary to create the
+    // attribute menu table, it is necessary to pass the current values of these
+    // parameters to restore the attribute menu.
+    // Create the table on the basis of the current attribute summary.
+    // Record information from user selection within the original attribute
+    // summary.
+
     console.log("currentAttributeSummary");
     console.log(currentAttributeSummary);
-}
 
-function temporaryContainerTableCode() {
     // Select body of attribute menu table.
     var body = d3
         .select("#attribute-menu-table")
         .select("tbody");
     // Append rows to table.
-    var rows = body.selectAll("tr").data(attributeSummary);
+    var rows = body.selectAll("tr").data(currentAttributeSummary);
     rows.exit().remove();
     var rowsEnter = rows.enter().append("tr");
     rows = rowsEnter.merge(rows);
@@ -810,9 +829,6 @@ function temporaryContainerTableCode() {
         });
 }
 
-
-
-
 /**
  * Controls the attribute menu with user interaction.
  * @param {Object} parameters Destructured object of parameters.
@@ -840,11 +856,27 @@ function controlAttributeMenu({
     } = {}) {
 
     console.log("called controlAttributeMenu");
-
+    // Execution
     // This function executes upon initialization of the program after assembly
     // or load of a metabolic model, upon change to entity selection, upon
     // change to filter selection, upon selection of a value from the attribute
     // menu, and upon reset of the attribute menu.
+    // Parameters
+    // The original attribute index specifies the attributes of all metabolites
+    // and reactions in the metabolic model.
+    // The original attribute summary is always a comprehensive summary of the
+    // original attribute index.
+    // The original attribute summary also stores information about all user
+    // selections from the attribute menu.
+    // The current attribute index includes only those records from the original
+    // attribute index that pass filters of current selections.
+    // The current attribute index passes information from selections in the
+    // attribute menu to other views.
+    // If the filter option is true, then the attribute menu only represents
+    // entities from the current attribute index.
+    // The current attribute summary is a summary of the current attribute
+    // index.
+    // Procedure
     // Prepare attribute summary according to selection of filter option.
     if (!filter) {
         // The filter selection is to represent in the attribute menu all
@@ -874,8 +906,6 @@ function controlAttributeMenu({
         originalAttributeIndex: originalAttributeIndex,
         model: model
     });
-
-
     // Activate entity selector.
     activateAttributeMenuEntitySelectors({
         filter: filter,
