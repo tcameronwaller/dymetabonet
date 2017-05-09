@@ -206,14 +206,14 @@ function countEntityAttributeValues(entityValues) {
 }
 
 /**
- * Creates a summary of the information in the attribute index.
+ * Determines the name of a value of an attribute.
  * @param {string} indicator Indicator of the value of the attribute.
  * @param {string} attribute Attribute of which to collect value name.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  * @returns {string} Name of value of the attribute.
  */
-function accessAttributeValueName(indicator, attribute, model) {
+function determineAttributeValueName(indicator, attribute, model) {
     // Determine attribute name to match records in model.
     if (attribute === "compartment") {
         var attributeName = "compartments";
@@ -225,13 +225,25 @@ function accessAttributeValueName(indicator, attribute, model) {
     // Determine if the attribute defines a set in the model.
     // Determine if the indicator is an identifier of an attribute set in the
     // model.
-    //
     if (model.sets.hasOwnProperty(attributeName)) {
         // The attribute defines a set in the model.
         // The indicator is an identifier of an attribute set in the model.
         return model.sets[attributeName][indicator].name.toLowerCase();
     } else {
-        return indicator;
+        if (attributeName === "operation") {
+            if (indicator === "c") {
+                var name = "conversion";
+            } else if (indicator === "t") {
+                var name = "transport";
+            }
+        } else if (attributeName === "reversibility") {
+            if (indicator === true) {
+                var name = "reversible";
+            } else if (indicator === false) {
+                var name = "irreversible";
+            }
+        }
+        return name;
     }
 }
 
@@ -265,18 +277,23 @@ function createAttributeSummary(attributeIndex, model) {
         // summary.
         // Include the attribute in the value record for use in association of
         // data with elements in the document.
+        // Initialize the selection status to false for all attribute values.
         var summaryValues = Object.keys(entityValueCounts).map(function (key) {
             return {
                 attribute: attribute,
+                identifier: entityValueCounts[key].value,
                 metabolite: entityValueCounts[key].metabolite,
-                reaction: entityValueCounts[key].reaction,
-                value: accessAttributeValueName(
+                name: determineAttributeValueName(
                     entityValueCounts[key].value, attribute, model
-                )
+                ),
+                reaction: entityValueCounts[key].reaction,
+                selection: false
             };
         });
+        // Initialize the selection status to false for all attributes.
         return {
             attribute: attribute,
+            selection: false,
             values: summaryValues
         };
     });

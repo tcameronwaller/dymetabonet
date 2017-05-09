@@ -554,11 +554,6 @@ function prepareAttributeSummary(entity, attributeSummary) {
     return attributeSummaryIncrement;
 }
 
-
-
-// TODO: I think I need to remove event handlers right after first execution...
-// TODO: Otherwise they're multiplying.
-
 /**
  * Activates interactive elements to specify entity for attribute menu.
  * @param {Object} parameters Destructured object of parameters.
@@ -706,7 +701,6 @@ function createActivateAttributeSummaryTable({
 
     // TODO: Attribute Summary
     // TODO: Modify data included in attribute summary.
-    // TODO: Include both identifier and name in records for values of attributes.
     // TODO: Record information about selections in the attribute summary.
     // TODO: Consider current status before changing in order to toggle selection on and off.
     // TODO: Record selection at both the attribute level and the value level to facilitate subsequent parsing.
@@ -753,12 +747,10 @@ function createActivateAttributeSummaryTable({
         // Organize data for table columns.
         return [].concat(
             {
-                class: "attribute-menu-table-column-attribute",
                 type: "attribute",
                 value: element.attribute
             },
             {
-                class: "attribute-menu-table-column-summary",
                 type: "summary",
                 value: element.values
             }
@@ -767,29 +759,34 @@ function createActivateAttributeSummaryTable({
     cells.exit().remove();
     var newCells = cells.enter().append("td");
     cells = newCells.merge(cells);
-    // Assign class to cells.
-    cells
-        .attr("class", function (data) {
-            return data.class;
-        });
-    // Append text content of cells in attribute column.
+    // Assign attributes to cells in attribute column.
     var attributeCells = cells
         .filter(function (data, index) {
             return data.type === "attribute";
         });
     attributeCells
+        .attr("id", function (data, index) {
+            console.log("data within attributeCells");
+            console.log(data);
+            var attribute = data.attribute;
+            return "attribute-menu-attribute-" + attribute;
+        })
+        .classed("attribute-menu-table-cells-column-attribute", true)
         .text(function (data) {
             return data.value;
         });
+    // Assign attributes to cells in summary column.
+    var summaryCells = cells
+        .filter(function (data, index) {
+            return data.type === "summary";
+        });
+    summaryCells
+        .classed("attribute-menu-table-cells-column-summary", true);
     // Append graphical containers in cells in summary column.
     // The graphical containers need access to the same data as their parent
     // cells without any transformation.
     // Append graphical containers to the enter selection to avoid replication
     // of these containers upon restorations to the table.
-    var summaryCells = cells
-        .filter(function (data, index) {
-            return data.type === "summary";
-        });
     var summaryCellGraphs = summaryCells
         .selectAll("svg")
         .data(function (element, index) {
@@ -819,6 +816,24 @@ function createActivateAttributeSummaryTable({
     summaryCellBars.exit().remove();
     var newSummaryCellBars = summaryCellBars.enter().append("rect");
     summaryCellBars = newSummaryCellBars.merge(summaryCellBars);
+    // Assign attributes to rectangles.
+    summaryCellBars
+        .attr("id", function (data, index) {
+            return "attribute-menu-attribute-" +
+                data.attribute +
+                "-value-" +
+                data.identifier;
+        })
+        .classed("attribute-menu-attribute-value-bar", true)
+        .classed(
+            "attribute-menu-attribute-value-bar-selection",
+            function (data, index) {
+                return data.selection;
+            }
+            )
+        .attr("title", function (data, index) {
+            return data.value;
+        });
     // Assign position and dimension to rectangles.
     summaryCellBars
         .attr("x", function (data, index) {
@@ -837,12 +852,6 @@ function createActivateAttributeSummaryTable({
                 .range([0, graphWidth]);
             return scale(data.magnitude);
         });
-    // Assign style to rectangles.
-    summaryCellBars
-        .attr("title", function (data, index) {
-            return data.value;
-        })
-        .attr("class", "attribute-menu-table-cell-bar");
     // TODO: I think that the event handling should be in another function.
     // TODO: I'll need to re-call this function after every interaction (so that the filter queue updates properly).
     // Remove any existing event listeners and handlers from bars.
@@ -853,8 +862,14 @@ function createActivateAttributeSummaryTable({
         .on("click", function (data, index, nodes) {
             // TODO: Create newAttributeSummary with indicator of the new selection.
             //var newAttributeSummary =
-            //var attribute = data.attribute;
-            //var value = data.value;
+            var attribute = data.attribute;
+            var value = data.identifier;
+
+            // TODO: Compose function to copy the entire originalAttributeSummary but indicate selection of the specific
+            // TODO: attribute and value.
+
+            //originalAttributeSummary[attribute]
+
             //var newFilterQueue = composeFilterQueue(
             //    value, attribute, filterQueue
             //);

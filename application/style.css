@@ -162,7 +162,7 @@ h3 {
     white-space: nowrap;
 }
 
-.attribute-menu-table-column-attribute {
+.attribute-menu-table-cells-column-attribute {
     background-color: rgba(50, 50, 50, 1);
     color: rgba(255, 255, 255, 1);
     font-size: medium;
@@ -174,33 +174,27 @@ h3 {
     background-color: rgba(255, 255, 255, 1);
 }
 
-.attribute-menu-table-column-summary svg {
+.attribute-menu-table-cells-column-summary svg {
     height: 1cm;
     width: 100%;
 }
 
-.attribute-menu-table-cell-bar {
+.attribute-menu-attribute-value-bar {
     /*fill: rgba(200, 20, 20, 1);*/
     height: 1cm;
 }
 
-.attribute-menu-table-cell-bar:nth-child(odd) {
+.attribute-menu-attribute-value-bar:nth-child(odd) {
     fill: rgba(0, 255, 100, 1);
 }
 
-.attribute-menu-table-cell-bar:nth-child(even) {
+.attribute-menu-attribute-value-bar:nth-child(even) {
     fill: rgba(0, 100, 255, 1);
 }
 
-.attribute-menu-table-cell-bar .selection-inclusion {
+.attribute-menu-attribute-value-bar-selection {
     fill: rgba(255, 150, 0, 1);
 }
-
-.attribute-menu-table-cell-bar .selection-exclusion {
-    fill: rgba(255, 50, 0, 1);
-}
-
-
 
 /******************************************************************************/
 /* Relation View */
