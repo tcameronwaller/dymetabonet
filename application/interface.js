@@ -306,7 +306,6 @@ function initializeAttributeMenu() {
     headRow
         .appendChild(createElementWithText({text: "Attribute", type: "th"}))
         .setAttribute("class", "attribute-menu-table-column-attribute");
-    // TODO: Introduce buttons to the head row to select between reactions or metabolites.
     // TODO: Also display the total count of reactions or metabolites... that'll be different than the total of the counts for each property.
     var summaryHead = document.createElement("th");
     summaryHead.setAttribute("class", "attribute-menu-table-column-summary");
@@ -483,10 +482,11 @@ function countIncrementalEntityAttributeValues(attributeSummary) {
             var newRecord = Object.assign({}, record, newTotal);
             return newRecord;
         });
-        return {
-            attribute: attributeRecord.attribute,
+        var newValues = {
             values: incrementalTotalValues
         };
+        // Copy existing values in the record and introduce new value.
+        return Object.assign({}, attributeRecord, newValues);
     });
 }
 
@@ -510,13 +510,13 @@ function determineEntityValueMagnitudes(entity, attributeSummary) {
                     magnitude: valueRecord[entity]
                 };
                 // Copy existing values in the record and introduce new value.
-                var newRecord = Object.assign({}, valueRecord, newMagnitude);
-                return newRecord;
+                return Object.assign({}, valueRecord, newMagnitude);
             });
-        return {
-            attribute: attributeRecord.attribute,
+        var newValues = {
             values: magnitudeValues
-        }
+        };
+        // Copy existing values in the record and introduce new value.
+        return Object.assign({}, attributeRecord, newValues);
     });
 }
 
@@ -730,7 +730,7 @@ function createActivateAttributeSummaryTable({
     // Record information from user selection within the original attribute
     // summary.
 
-    console.log("currentAttributeSummary");
+    console.log("currentAttributeSummary within create table");
     console.log(currentAttributeSummary);
 
     // Select body of attribute menu table.
@@ -864,6 +864,17 @@ function createActivateAttributeSummaryTable({
             //var newAttributeSummary =
             var attribute = data.attribute;
             var value = data.identifier;
+            var selection = data.selection;
+            console.log("selection");
+            console.log(attribute);
+            console.log(value);
+            console.log(selection);
+            // Record new selection in attribute summary.
+            selectAttributeMenu({
+                value: value,
+                attribute: attribute,
+                attributeSummary: originalAttributeSummary
+            });
 
             // TODO: Compose function to copy the entire originalAttributeSummary but indicate selection of the specific
             // TODO: attribute and value.
@@ -877,6 +888,94 @@ function createActivateAttributeSummaryTable({
             //console.log(newFilterQueue);
             //controlAttributeTable(newFilterQueue, entity, attributeSummary);
         });
+}
+
+/**
+ * Selects a single value of an attribute and returns a deep copy of the
+ * remainder of the attribute summary.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.value The identifier of a value of an attribute of
+ * the current selection.
+ * @param {string} parameters.attribute The attribute of the current selection.
+ * @param {Array<Object<string>>} parameters.attributeSummary Summary of
+ * attribute index with counts of entities with each value of each attribute.
+ */
+function selectAttributeMenu({value, attribute, attributeSummary} = {}) {
+    return attributeSummary.map(function (attributeRecord) {
+        // Change the selection statuses of the attribute and the value of the
+        // current selection in the new version of the attribute summary.
+        if (!attributeRecord.attribute === attribute) {
+            // Current attribute record does not match the attribute of the
+            // current selection.
+            // Copy the attribute record and records for all of its values.
+            var attributeValues = attributeRecord
+                .values
+                .map(function (valueRecord) {
+                    // Copy existing values in the record.
+                    return Object.assign({}, valueRecord);
+                });
+            var newRecord = {
+                values: attributeValues
+            };
+            // Copy existing values in the record and introduce new value.
+            return Object.assign({}, attributeRecord, newRecord);
+        } else {
+            // Current attribute record matches the attribute of the current
+            // selection.
+            // Copy the value records of the attribute, changing the selection
+            // status of the value that matches the current selection.
+            var attributeValues = attributeRecord
+                .values
+                .map(function (valueRecord) {
+                    // Change the selection status of the value of the current
+                    // selection.
+                    if (!valueRecord.identifier === value) {
+                        // Current value record does not match the value of the
+                        // current selection.
+                        // Copy existing values in the record.
+                        return Object.assign({}, valueRecord);
+                    } else {
+                        // Current value record matches the value of the current
+                        // selection.
+                        if (!valueRecord.selection) {
+                            // Status of old selection is false.
+                            var selection = true;
+                        } else {
+                            // Status of old selection is true.
+                            var selection = false;
+                        }
+                        var newSelection = {
+                            selection: selection
+                        };
+                        // Copy existing values in the record and introduce new
+                        // value.
+                        var newRecord = Object
+                            .assign({}, valueRecord, newSelection);
+                        return newRecord;
+                    }
+                });
+            // Copy the attribute record, changing its selection status if
+            // appropriate.
+            // The selection status of the attribute record is true if any of
+            // its values have a selection status of true.
+            // TODO: The selection status of the attribute record is more complex...
+            // TODO: Attribute record needs a true selection status if any of its values have a true selection status.
+            // TODO: Use an array.any? probably to check all values in the attribute.
+            // Current attribute record matches the attribute of the current
+            // selection.
+            // Change the selection status of the attribute.
+            if (!attributeRecord.selection) {
+                // Status of selection in the old record is false.
+                var attributeSelection
+            }
+            var newRecord = {
+                values: attributeValues
+            };
+            // Copy existing values in the record and introduce new value.
+            return Object.assign({}, attributeRecord, newRecord);
+
+        }
+    };
 }
 
 /**
@@ -906,6 +1005,8 @@ function controlAttributeMenu({
     } = {}) {
 
     console.log("called controlAttributeMenu");
+    console.log("originalAttributeSummary within control menu");
+    console.log(originalAttributeSummary);
     // Execution
     // This function executes upon initialization of the program after assembly
     // or load of a metabolic model, upon change to entity selection, upon
@@ -946,7 +1047,6 @@ function controlAttributeMenu({
         entity, currentAttributeSummary
     );
     // Create visual representation of attribute summary.
-    // TODO: Create table on basis of the currentAttributeSummary...
     createActivateAttributeSummaryTable({
         entity: entity,
         filter: filter,
