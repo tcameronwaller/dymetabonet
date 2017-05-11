@@ -428,8 +428,7 @@ function testD3EventListeners(queue) {
  */
 function sortAttributeValueMagnitudes(attributeSummary) {
     return attributeSummary.map(function (attributeRecord) {
-        return {
-            attribute: attributeRecord.attribute,
+        var newValues = {
             values: attributeRecord
                 .values
                 .slice()
@@ -437,6 +436,8 @@ function sortAttributeValueMagnitudes(attributeSummary) {
                     return value1.magnitude - value2.magnitude;
                 })
         };
+        // Copy existing values in the record and introduce new value.
+        return Object.assign({}, attributeRecord, newValues);
     });
 }
 
@@ -730,9 +731,6 @@ function createActivateAttributeSummaryTable({
     // Record information from user selection within the original attribute
     // summary.
 
-    console.log("currentAttributeSummary within create table");
-    console.log(currentAttributeSummary);
-
     // Select body of attribute menu table.
     var body = d3
         .select("#attribute-menu-table")
@@ -766,8 +764,6 @@ function createActivateAttributeSummaryTable({
         });
     attributeCells
         .attr("id", function (data, index) {
-            console.log("data within attributeCells");
-            console.log(data);
             var attribute = data.attribute;
             return "attribute-menu-attribute-" + attribute;
         })
@@ -860,21 +856,14 @@ function createActivateAttributeSummaryTable({
     // Assign event listeners and handlers to bars.
     summaryCellBars
         .on("click", function (data, index, nodes) {
-            // TODO: Create newAttributeSummary with indicator of the new selection.
-            //var newAttributeSummary =
-            var attribute = data.attribute;
-            var value = data.identifier;
-            var selection = data.selection;
-            console.log("selection");
-            console.log(attribute);
-            console.log(value);
-            console.log(selection);
             // Record new selection in attribute summary.
-            selectAttributeMenu({
-                value: value,
-                attribute: attribute,
+            var attributeMenuSelection = recordAttributeMenuSelection({
+                value: data.identifier,
+                attribute: data.attribute,
                 attributeSummary: originalAttributeSummary
             });
+            console.log(attributeMenuSelection);
+            // TODO: Now call controlAttributeMenu with the new attributeSummary
 
             // TODO: Compose function to copy the entire originalAttributeSummary but indicate selection of the specific
             // TODO: attribute and value.
@@ -891,7 +880,7 @@ function createActivateAttributeSummaryTable({
 }
 
 /**
- * Selects a single value of an attribute and returns a deep copy of the
+ * Records selection of a single value of an attribute and returns a copy of the
  * remainder of the attribute summary.
  * @param {Object} parameters Destructured object of parameters.
  * @param {string} parameters.value The identifier of a value of an attribute of
@@ -900,14 +889,18 @@ function createActivateAttributeSummaryTable({
  * @param {Array<Object<string>>} parameters.attributeSummary Summary of
  * attribute index with counts of entities with each value of each attribute.
  */
-function selectAttributeMenu({value, attribute, attributeSummary} = {}) {
+function recordAttributeMenuSelection(
+    {value, attribute, attributeSummary} = {}
+    ) {
+    // Change the selection statuses of the attribute and the value in the
+    // new version of the attribute summary to represent the current
+    // selection.
     return attributeSummary.map(function (attributeRecord) {
-        // Change the selection statuses of the attribute and the value of the
-        // current selection in the new version of the attribute summary.
         if (!attributeRecord.attribute === attribute) {
             // Current attribute record does not match the attribute of the
             // current selection.
-            // Copy the attribute record and records for all of its values.
+            // Copy the record for the attribute and the records for all of its
+            // values.
             var attributeValues = attributeRecord
                 .values
                 .map(function (valueRecord) {
@@ -922,7 +915,7 @@ function selectAttributeMenu({value, attribute, attributeSummary} = {}) {
         } else {
             // Current attribute record matches the attribute of the current
             // selection.
-            // Copy the value records of the attribute, changing the selection
+            // Copy the records for values of the attribute, changing the selection
             // status of the value that matches the current selection.
             var attributeValues = attributeRecord
                 .values
@@ -949,33 +942,31 @@ function selectAttributeMenu({value, attribute, attributeSummary} = {}) {
                         };
                         // Copy existing values in the record and introduce new
                         // value.
-                        var newRecord = Object
-                            .assign({}, valueRecord, newSelection);
-                        return newRecord;
+                        return Object.assign({}, valueRecord, newSelection);
                     }
                 });
             // Copy the attribute record, changing its selection status if
             // appropriate.
             // The selection status of the attribute record is true if any of
             // its values have a selection status of true.
-            // TODO: The selection status of the attribute record is more complex...
-            // TODO: Attribute record needs a true selection status if any of its values have a true selection status.
-            // TODO: Use an array.any? probably to check all values in the attribute.
-            // Current attribute record matches the attribute of the current
-            // selection.
-            // Change the selection status of the attribute.
-            if (!attributeRecord.selection) {
-                // Status of selection in the old record is false.
-                var attributeSelection
+            // Consider the new records of values in order to consider the
+            // current selection.
+            var anySelection = attributeValues.some(function (valueRecord) {
+                return valueRecord.selection;
+            });
+            if (!anySelection) {
+                var selection = false;
+            } else {
+                var selection = true;
             }
             var newRecord = {
+                selection: selection,
                 values: attributeValues
             };
             // Copy existing values in the record and introduce new value.
             return Object.assign({}, attributeRecord, newRecord);
-
         }
-    };
+    });
 }
 
 /**
