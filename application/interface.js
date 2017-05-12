@@ -371,8 +371,6 @@ function initializeAttributeInterface(model) {
     // The attribute index will mediate information exchange between the views
     // for attribute menu, sets, and entities.
     var attributeIndex = createAttributeIndex(model.entities.reactions);
-    console.log("attributeIndex");
-    console.log(attributeIndex);
     // Create attribute summary from attribute index.
     var attributeSummary = createAttributeSummary(attributeIndex, model);
     // Initiate control of attribute menu.
@@ -822,6 +820,12 @@ function createActivateAttributeSummaryTable({
         })
         .classed("attribute-menu-attribute-value-bar", true)
         .classed(
+            "attribute-menu-attribute-value-bar-option",
+            function (data, index) {
+                return !data.selection;
+            }
+        )
+        .classed(
             "attribute-menu-attribute-value-bar-selection",
             function (data, index) {
                 return data.selection;
@@ -848,35 +852,117 @@ function createActivateAttributeSummaryTable({
                 .range([0, graphWidth]);
             return scale(data.magnitude);
         });
-    // TODO: I think that the event handling should be in another function.
-    // TODO: I'll need to re-call this function after every interaction (so that the filter queue updates properly).
     // Remove any existing event listeners and handlers from bars.
     summaryCellBars
         .on("click", null);
     // Assign event listeners and handlers to bars.
     summaryCellBars
         .on("click", function (data, index, nodes) {
+            // TODO: Maybe put all of this functionality in a separate function to manage selection... controlAttributeMenuSelection() or something like that.
+            // TODO: This function should receive all necessary parameters... probably all the parameters that controlAttributemenu() requires.
+            // TODO: It will then be convenient to call this function when making a selection with the optional auto-completion search fields.
             // Record new selection in attribute summary.
-            var attributeMenuSelection = recordAttributeMenuSelection({
+            var attributeSummarySelection = recordAttributeMenuSelection({
                 value: data.identifier,
                 attribute: data.attribute,
                 attributeSummary: originalAttributeSummary
             });
-            console.log(attributeMenuSelection);
-            // TODO: Now call controlAttributeMenu with the new attributeSummary
+            // TODO: Filter the attribute index before calling controlAttributeMenu again...
+            // TODO: Parse the attribute summary to extract all details of the current selection.
+            // TODO: Then apply all of these sequentially on the original attribute index.
+            // TODO: Then return the new, filtered version of the attribute index ("currentAttributeIndex").
+            // Extract filters from selection details in attribute summary.
+            var filters = extractFilterAttributesValues(
+                attributeSummarySelection
+            );
+            console.log("current filters");
+            console.log(filters);
+            // Filter the attribute index.
+            // Always filter the original attribute index in order to
+            // accommodate any changes to selections from the attribute menu.
 
-            // TODO: Compose function to copy the entire originalAttributeSummary but indicate selection of the specific
-            // TODO: attribute and value.
 
-            //originalAttributeSummary[attribute]
+            var newAttributeIndex = filterAttributeIndex(filters, originalAttributeIndex);
+            //var newAttributeIndex = currentAttributeIndex;
 
-            //var newFilterQueue = composeFilterQueue(
-            //    value, attribute, filterQueue
-            //);
-            //console.log("filter queue");
-            //console.log(newFilterQueue);
-            //controlAttributeTable(newFilterQueue, entity, attributeSummary);
+
+            // Restore attribute menu with new version of attribute summary.
+            controlAttributeMenu({
+                entity: entity,
+                filter: filter,
+                originalAttributeSummary: attributeSummarySelection,
+                currentAttributeIndex: newAttributeIndex,
+                originalAttributeIndex: originalAttributeIndex,
+                model: model
+            });
         });
+}
+
+/**
+ * Filters the records in the attribute index.
+ * @param {Array<Object<Array<string>>>} attributeFilters Values of attributes
+ * to apply as filters to the attribute index.
+ * @param {Array<Object<string>>} attributeIndex Index of attributes of
+ * metabolites and reactions.
+ * @returns {Array<Object<string>>} Index of attributes of metabolites and
+ * reactions that match filters.
+ */
+function filterAttributeIndex(attributeFilters, attributeIndex) {
+    // Filter records in attribute index by values of attributes.
+    // Combine criteria between different attributes by and logic.
+    // Combine criteria within the same attribute by or logic.
+    return attributeIndex.filter(function (record) {
+        // Keep record if it matches criteria for all attributes.
+        return attributeFilters.every(function (attributeFilter) {
+            // Keep record if any of its values of the attribute match any of
+            // the value criteria for the attribute.
+            return attributeFilter.values.some(function (valueFilter) {
+                return record[attributeFilter.attribute].includes(valueFilter);
+            });
+        });
+    });
+}
+
+/**
+ * Extracts from the attribute summary the values of attributes to use to filter
+ * the attribute index.
+ * @param {Array<Object<string>>} attributeSummary Summary of attribute index
+ * with counts of entities with each value of each attribute.
+ * @returns {Array<Object<Array<string>>>} Values of attributes to apply as
+ * filters to the attribute index.
+ */
+function extractFilterAttributesValues(attributeSummary) {
+    return attributeSummary
+        .reduce(function (attributeCollection, attributeRecord) {
+        if (!attributeRecord.selection) {
+            // The attribute has a selection status of false.
+            // Ignore the attribute and proceed to the next attribute.
+            return attributeCollection;
+        } else {
+            // The attribute has a selection status of true.
+            // Collect the value or values of the attribute that have a
+            // selection status of true.
+            var attributeValues = attributeRecord
+                .values
+                .reduce(function (valueCollection, valueRecord) {
+                    if (!valueRecord.selection) {
+                        // The value has a selection status of false.
+                        // Ignore the value and proceed to the next value.
+                        return valueCollection;
+                    } else {
+                        // The value has a selection status of true.
+                        // Create a filter for the value of the attribute.
+                        var value = valueRecord.identifier;
+                        return [].concat(valueCollection, value);
+                    }
+                }, []);
+            var newAttributeRecord = {
+                attribute: attributeRecord.attribute,
+                values: attributeValues
+            };
+            return [].concat(attributeCollection, newAttributeRecord);
+        }
+    }, []);
 }
 
 /**
@@ -896,10 +982,10 @@ function recordAttributeMenuSelection(
     // new version of the attribute summary to represent the current
     // selection.
     return attributeSummary.map(function (attributeRecord) {
-        if (!attributeRecord.attribute === attribute) {
+        if (attributeRecord.attribute !== attribute) {
             // Current attribute record does not match the attribute of the
             // current selection.
-            // Copy the record for the attribute and the records for all of its
+            // Copy the record for the attribute with the records for all of its
             // values.
             var attributeValues = attributeRecord
                 .values
@@ -907,22 +993,22 @@ function recordAttributeMenuSelection(
                     // Copy existing values in the record.
                     return Object.assign({}, valueRecord);
                 });
-            var newRecord = {
+            var newValues = {
                 values: attributeValues
             };
             // Copy existing values in the record and introduce new value.
-            return Object.assign({}, attributeRecord, newRecord);
+            return Object.assign({}, attributeRecord, newValues);
         } else {
             // Current attribute record matches the attribute of the current
             // selection.
-            // Copy the records for values of the attribute, changing the selection
-            // status of the value that matches the current selection.
+            // Copy the records for values of the attribute, changing the
+            // selection status of the value that matches the current selection.
             var attributeValues = attributeRecord
                 .values
                 .map(function (valueRecord) {
                     // Change the selection status of the value of the current
                     // selection.
-                    if (!valueRecord.identifier === value) {
+                    if (valueRecord.identifier !== value) {
                         // Current value record does not match the value of the
                         // current selection.
                         // Copy existing values in the record.
@@ -930,11 +1016,12 @@ function recordAttributeMenuSelection(
                     } else {
                         // Current value record matches the value of the current
                         // selection.
+                        // Change the status of the value's selection.
                         if (!valueRecord.selection) {
-                            // Status of old selection is false.
+                            // Status of value's old selection is false.
                             var selection = true;
                         } else {
-                            // Status of old selection is true.
+                            // Status of value's old selection is true.
                             var selection = false;
                         }
                         var newSelection = {
@@ -994,10 +1081,9 @@ function controlAttributeMenu({
         originalAttributeIndex,
         model
     } = {}) {
+    console.log("currentAttributeIndex.length");
+    console.log(currentAttributeIndex.length);
 
-    console.log("called controlAttributeMenu");
-    console.log("originalAttributeSummary within control menu");
-    console.log(originalAttributeSummary);
     // Execution
     // This function executes upon initialization of the program after assembly
     // or load of a metabolic model, upon change to entity selection, upon

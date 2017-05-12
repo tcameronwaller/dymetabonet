@@ -184,11 +184,11 @@ h3 {
     height: 1cm;
 }
 
-.attribute-menu-attribute-value-bar:nth-child(odd) {
+.attribute-menu-attribute-value-bar-option:nth-child(odd) {
     fill: rgba(0, 255, 100, 1);
 }
 
-.attribute-menu-attribute-value-bar:nth-child(even) {
+.attribute-menu-attribute-value-bar-option:nth-child(even) {
     fill: rgba(0, 100, 255, 1);
 }
 

@@ -4,6 +4,56 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+11 May 2017
+
+----------
+Filter Attribute Index
+Query Logic
+Observation
+
+A single entity (metabolite or reaction) can have multiple values of the same attribute.
+For this reason, selecting a single value of an attribute does not mean that all other values will be excluded from the new attribute index.
+The effect in the attribute menu is very confusing.
+
+Of course, this problem is only apparent when the filter option is true.
+Maybe just deal with the problem as part of the filter option.
+
+What if I replicated records for entities for each value of each attribute?
+That does not seem like an efficient or orderly solution.
+
+I like this solution.
+Keep an entity record if any of its values of an attribute match the selection filter.
+After this filter, ignore all the other values of that entity, if and only if the filter option is true.
+Do not change the original attribute index, but just consider the selection when determining which attribute values to consider in the current attribute index and the attribute menu.
+
+----------
+Filter Attribute Index
+Query Logic
+
+Also refer to notes of 17 April 2017.
+
+This program simplifies the metabolic network in terms of sets of common attributes.
+While different attributes, such as compartment and process, have a many-to-many relationship, this program artificially imposes some level of hierarchy.
+
+The supreme hierarchical level of the filter query is the attribute.
+(attribute 1: criteria 1 or 2) AND (attribute 2: criteria 1 or 2)
+My strategy does not support mixing attribute types at the top level.
+I think this simplification is reasonable.
+
+Use OR logic between values of a single attribute.
+It is true that AND logic is relevant between values of a single attribute.
+For example, it might be interesting to consider metabolites that appear in both the cytosolic and mitochondrial compartments.
+For example, it might be interesting to consider reactions that participate in both glycolysis and the citrate cycle.
+From a set-based perspective, this AND logic constitutes relations between values of a single attribute.
+Relations between sets will give access to this AND logic.
+
+Use AND logic between values of different attributes.
+This strategy seems most reasonable in order to support specific selections.
+Using OR logic would allow filters for one attribute to over-ride filters for another attribute.
+I worry that using OR logic between attribute types would be unruly and difficult to use or understand.
+For example, even if cytosol was the only selected compartment, a process might introduce entities from other compartments.
+
+--------------------------------------------------
 7 May 2017
 
 ----------
