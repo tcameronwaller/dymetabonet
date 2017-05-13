@@ -4,6 +4,38 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+12 May 2017
+
+----------
+Filter Attribute Index
+Implementation
+
+For each record in the attribute index, I need to determine whether or not it matches the filters.
+If the record matches the filters, I need to reduce the attribute values of the record to include only those values that match the filters.
+
+I could perform both operations in the same iteration, or I could perform them in separate iterations.
+The choice depends on computational performance and clarity of the code.
+
+I think that performing both operations in the same iteration will probably be preferrable.
+
+----------
+Filter Attribute Index
+Design, Strategy
+
+On 11 May 2017 I made a note about a confusion in the process of filtering the attribute index.
+Entities can have multiple values of a single attribute.
+The problem is whether or not to consider those attribute values of an entity that do not match filters.
+I think that the solution is to only consider those attribute values that match the filter.
+
+When filtering the original attribute index (always filter the original attribute index), only keep an entity's attribute values that match filters.
+That reduction of attribute values is necessary for the attribute menu and set relations to make sense.
+If a user selects only 3 compartments, those should be the only 3 compartments in consideration.
+
+The filter operation for the attribute menu will still behave the in the same way.
+If filter is false, attribute menu will represent the original attribute index without any filtration.
+If filter is true, attribute menu will represent the current attribute index with filtration.
+
+--------------------------------------------------
 11 May 2017
 
 ----------

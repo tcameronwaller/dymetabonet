@@ -698,16 +698,6 @@ function createActivateAttributeSummaryTable({
     model
 } = {}) {
 
-    // TODO: Attribute Summary
-    // TODO: Modify data included in attribute summary.
-    // TODO: Record information about selections in the attribute summary.
-    // TODO: Consider current status before changing in order to toggle selection on and off.
-    // TODO: Record selection at both the attribute level and the value level to facilitate subsequent parsing.
-
-    // TODO: Filter attribute index.
-    // TODO: Extract selection details from attribute summary.
-    // TODO: Filter original attribute index (always) according to selection details.
-
     // TODO: Value Bars
     // TODO: Bars need identifiers so they are selectable.
     // TODO: Construct these identifiers from the id of the value... something like "attribute-menu-attribute-compartment" or
@@ -875,18 +865,14 @@ function createActivateAttributeSummaryTable({
             var filters = extractFilterAttributesValues(
                 attributeSummarySelection
             );
-            console.log("current filters");
-            console.log(filters);
             // Filter the attribute index.
             // Always filter the original attribute index in order to
             // accommodate any changes to selections from the attribute menu.
-
-
-            var newAttributeIndex = filterAttributeIndex(filters, originalAttributeIndex);
-            //var newAttributeIndex = currentAttributeIndex;
-
-
-            // Restore attribute menu with new version of attribute summary.
+            var newAttributeIndex = filterAttributeIndex(
+                filters, originalAttributeIndex
+            );
+            // Restore attribute menu with new versions of the original
+            // attribute summary and the current attribute index.
             controlAttributeMenu({
                 entity: entity,
                 filter: filter,
@@ -900,8 +886,8 @@ function createActivateAttributeSummaryTable({
 
 /**
  * Filters the records in the attribute index.
- * @param {Array<Object<Array<string>>>} attributeFilters Values of attributes
- * to apply as filters to the attribute index.
+ * @param {Object<Array<string>>} attributeFilters Values of attributes to apply
+ * as filters to the attribute index.
  * @param {Array<Object<string>>} attributeIndex Index of attributes of
  * metabolites and reactions.
  * @returns {Array<Object<string>>} Index of attributes of metabolites and
@@ -911,16 +897,62 @@ function filterAttributeIndex(attributeFilters, attributeIndex) {
     // Filter records in attribute index by values of attributes.
     // Combine criteria between different attributes by and logic.
     // Combine criteria within the same attribute by or logic.
-    return attributeIndex.filter(function (record) {
+    return attributeIndex.reduce(function (filterAttributeIndex, record, recordIndex) {
         // Keep record if it matches criteria for all attributes.
-        return attributeFilters.every(function (attributeFilter) {
-            // Keep record if any of its values of the attribute match any of
-            // the value criteria for the attribute.
-            return attributeFilter.values.some(function (valueFilter) {
-                return record[attributeFilter.attribute].includes(valueFilter);
+        var filterMatch = Object
+            .keys(attributeFilters)
+            .every(function (attribute) {
+                // Keep record if any of its values of the attribute match any
+                // of the value criteria for the attribute.
+                return attributeFilters[attribute].some(function (valueFilter) {
+                    return record[attribute].includes(valueFilter);
+                });
             });
-        });
-    });
+        if (!filterMatch) {
+            // Record does not match criteria for all attributes.
+            // Omit record from filter version of attribute index.
+            return filterAttributeIndex;
+        } else {
+            // Record matches filter criteria.
+            // Collect attribute values of the record that match filters.
+            var newRecord = Object
+                .keys(record)
+                .reduce(function (recordAttributes, attribute) {
+                    // Determine if there is a filter for the attribute.
+                    if (!attributeFilters.hasOwnProperty(attribute)) {
+                        // There is not a filter for the current attribute.
+                        // Copy the attribute along with its values and include
+                        // in the new record.
+                        var newAttributeRecord = {
+                            [attribute]: record[attribute]
+                        };
+                        // Copy existing values in the record and introduce new
+                        // value.
+                        return Object
+                            .assign({}, recordAttributes, newAttributeRecord);
+                    } else {
+                        // There is a filter for the current attribute.
+                        // Include in the new record only those values of the
+                        // attribute that match the filter.
+                        var attributeValues = record[attribute]
+                            .filter(function (value) {
+                                return attributeFilters[attribute]
+                                    .includes(value);
+                        });
+                        var newAttributeRecord = {
+                            [attribute]: attributeValues
+                        };
+                        // Copy existing values in the record and introduce new
+                        // value.
+                        return Object
+                            .assign({}, recordAttributes, newAttributeRecord);
+                    }
+                }, {});
+            // Include new record in the new attribute index.
+            return [].concat(filterAttributeIndex, newRecord);
+        }
+        // Only need to change the attributes of the record that are in the attributeFilters.
+    }, []);
 }
 
 /**
@@ -928,8 +960,8 @@ function filterAttributeIndex(attributeFilters, attributeIndex) {
  * the attribute index.
  * @param {Array<Object<string>>} attributeSummary Summary of attribute index
  * with counts of entities with each value of each attribute.
- * @returns {Array<Object<Array<string>>>} Values of attributes to apply as
- * filters to the attribute index.
+ * @returns {Object<Array<string>>} Values of attributes to apply as filters to
+ * the attribute index.
  */
 function extractFilterAttributesValues(attributeSummary) {
     return attributeSummary
@@ -957,12 +989,12 @@ function extractFilterAttributesValues(attributeSummary) {
                     }
                 }, []);
             var newAttributeRecord = {
-                attribute: attributeRecord.attribute,
-                values: attributeValues
+                [attributeRecord.attribute]: attributeValues
             };
-            return [].concat(attributeCollection, newAttributeRecord);
+            // Copy existing values in the record and introduce new value.
+            return Object.assign({}, attributeCollection, newAttributeRecord);
         }
-    }, []);
+    }, {});
 }
 
 /**
@@ -1081,9 +1113,6 @@ function controlAttributeMenu({
         originalAttributeIndex,
         model
     } = {}) {
-    console.log("currentAttributeIndex.length");
-    console.log(currentAttributeIndex.length);
-
     // Execution
     // This function executes upon initialization of the program after assembly
     // or load of a metabolic model, upon change to entity selection, upon
@@ -1150,15 +1179,6 @@ function controlAttributeMenu({
         model: model
     });
 }
-
-
-
-
-
-
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Scrap?
