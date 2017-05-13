@@ -680,9 +680,6 @@ function activateAttributeMenuFilterSelector({
  * attribute index with counts of entities with each value of each attribute.
  * @param {Array<Object<string>>} parameters.originalAttributeSummary Summary of
  * attribute index with counts of entities with each value of each attribute.
- * @param {Array<Object<string>>} parameters.currentAttributeIndex Index of
- * attributes of metabolites and reactions, including only those entities that
- * pass current filters on the attribute index.
  * @param {Array<Object<string>>} parameters.originalAttributeIndex Index of
  * attributes of metabolites and reactions.
  * @param {Object<Object>>} parameters.model Information about entities and
@@ -693,7 +690,6 @@ function createActivateAttributeSummaryTable({
     filter,
     currentAttributeSummary,
     originalAttributeSummary,
-    currentAttributeIndex,
     originalAttributeIndex,
     model
 } = {}) {
@@ -848,40 +844,72 @@ function createActivateAttributeSummaryTable({
     // Assign event listeners and handlers to bars.
     summaryCellBars
         .on("click", function (data, index, nodes) {
-            // TODO: Maybe put all of this functionality in a separate function to manage selection... controlAttributeMenuSelection() or something like that.
-            // TODO: This function should receive all necessary parameters... probably all the parameters that controlAttributemenu() requires.
-            // TODO: It will then be convenient to call this function when making a selection with the optional auto-completion search fields.
-            // Record new selection in attribute summary.
-            var attributeSummarySelection = recordAttributeMenuSelection({
+            // TODO: It will be convenient to call this function when making a selection with the optional auto-completion search fields.
+            controlAttributeMenuSelection({
                 value: data.identifier,
                 attribute: data.attribute,
-                attributeSummary: originalAttributeSummary
-            });
-            // TODO: Filter the attribute index before calling controlAttributeMenu again...
-            // TODO: Parse the attribute summary to extract all details of the current selection.
-            // TODO: Then apply all of these sequentially on the original attribute index.
-            // TODO: Then return the new, filtered version of the attribute index ("currentAttributeIndex").
-            // Extract filters from selection details in attribute summary.
-            var filters = extractFilterAttributesValues(
-                attributeSummarySelection
-            );
-            // Filter the attribute index.
-            // Always filter the original attribute index in order to
-            // accommodate any changes to selections from the attribute menu.
-            var newAttributeIndex = filterAttributeIndex(
-                filters, originalAttributeIndex
-            );
-            // Restore attribute menu with new versions of the original
-            // attribute summary and the current attribute index.
-            controlAttributeMenu({
                 entity: entity,
                 filter: filter,
                 originalAttributeSummary: attributeSummarySelection,
-                currentAttributeIndex: newAttributeIndex,
                 originalAttributeIndex: originalAttributeIndex,
                 model: model
             });
         });
+}
+
+/**
+ * Controls the process for selection of a value of an attribute in the
+ * attribute menu.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.value The identifier of a value of an attribute of
+ * the current selection.
+ * @param {string} parameters.attribute The attribute of the current selection.
+ * @param {string} parameters.entity The entity, metabolite or reaction, of the
+ * current selection.
+ * @param {boolean} parameters.filter Option to represent in attribute menu only
+ * those entities that pass current filters on the attribute index.
+ * @param {Array<Object<string>>} parameters.originalAttributeSummary Summary of
+ * attribute index with counts of entities with each value of each attribute.
+ * @param {Array<Object<string>>} parameters.originalAttributeIndex Index of
+ * attributes of metabolites and reactions.
+ * @param {Object<Object>>} parameters.model Information about entities and
+ * relations in a metabolic model.
+ */
+function controlAttributeMenuSelection({
+                                           value,
+                                           attribute,
+                                           entity,
+                                           filter,
+                                           originalAttributeSummary,
+                                           originalAttributeIndex,
+                                           model
+} = {}) {
+    // Record new selection in attribute summary.
+    var attributeSummarySelection = recordAttributeMenuSelection({
+        value: value,
+        attribute: attribute,
+        attributeSummary: originalAttributeSummary
+    });
+    // Extract filters from selection details in attribute summary.
+    var filters = extractFilterAttributesValues(
+        attributeSummarySelection
+    );
+    // Filter the attribute index.
+    // Always filter the original attribute index in order to
+    // accommodate any changes to selections from the attribute menu.
+    var currentAttributeIndex = filterAttributeIndex(
+        filters, originalAttributeIndex
+    );
+    // Restore attribute menu with new versions of the original
+    // attribute summary and the current attribute index.
+    controlAttributeMenu({
+        entity: entity,
+        filter: filter,
+        originalAttributeSummary: attributeSummarySelection,
+        currentAttributeIndex: currentAttributeIndex,
+        originalAttributeIndex: originalAttributeIndex,
+        model: model
+    });
 }
 
 /**
@@ -897,6 +925,9 @@ function filterAttributeIndex(attributeFilters, attributeIndex) {
     // Filter records in attribute index by values of attributes.
     // Combine criteria between different attributes by and logic.
     // Combine criteria within the same attribute by or logic.
+    // In addition to selecting which records to preserve in the attribute
+    // index, the filtration process also selects which values of an attribute
+    // to preserve in those records.
     return attributeIndex.reduce(function (filterAttributeIndex, record, recordIndex) {
         // Keep record if it matches criteria for all attributes.
         var filterMatch = Object
@@ -1106,13 +1137,13 @@ function recordAttributeMenuSelection(
  * relations in a metabolic model.
  */
 function controlAttributeMenu({
-        entity,
-        filter,
-        originalAttributeSummary,
-        currentAttributeIndex,
-        originalAttributeIndex,
-        model
-    } = {}) {
+                                  entity,
+                                  filter,
+                                  originalAttributeSummary,
+                                  currentAttributeIndex,
+                                  originalAttributeIndex,
+                                  model
+} = {}) {
     // Execution
     // This function executes upon initialization of the program after assembly
     // or load of a metabolic model, upon change to entity selection, upon
