@@ -694,18 +694,8 @@ function createActivateAttributeSummaryTable({
     model
 } = {}) {
 
-    // TODO: Value Bars
-    // TODO: Bars need identifiers so they are selectable.
-    // TODO: Construct these identifiers from the id of the value... something like "attribute-menu-attribute-compartment" or
-    // TODO: "attribute-menu-value-c"/"attribute-menu-value-cytosol"... I think use the id so that process is more concise.
-    // TODO: Determine style classes of bars according to their selection status in the attribute summary.
-
     // TODO: Attribute Search
     // TODO: Upon selection of attribute headers, create auto-complete search fields.
-
-    // TODO: I need to initialize the classes of all rects with each run of createAttributeSummaryTable.
-    // TODO: ... yeah, I think that'll be necessary.
-
 
     // Parameters
     // While entity and filter parameters are no longer necessary to create the
@@ -754,6 +744,60 @@ function createActivateAttributeSummaryTable({
         .classed("attribute-menu-table-cells-column-attribute", true)
         .text(function (data) {
             return data.value;
+        });
+    // Remove any existing event listeners and handlers from cells.
+    attributeCells
+        .on("click", null);
+    // Assign event listeners and handlers to cells.
+    attributeCells
+        .on("click", function (data, index, nodes) {
+            // TODO: Create an auto-completion search field with all current (those currently visible in attribute menu) values of the attribute.
+            // TODO: Will need to have access to data of the cell to determine attribute, then retrieve attribute and values from currentAttributeSummary.
+
+            // TODO: With each click, check to see if the search div exists in the element.
+            // TODO: If it does, remove it, if not, create and activate it.
+
+
+            // TODO: Or... maybe break away from D3 a little? Just get the attribute id from the data and then pass that to another function.
+
+            // TODO: Do use D3 to append the options to the search field... maybe...
+
+            var attributeHead = this;
+            var attribute = data.value;
+
+            // TODO: Determine whether or not the attribute head already has a search field.
+            if (!attributeHead.querySelector(".attribute-menu-search")) {
+                // Attribute head does not have a search field.
+                // Create and activate a search field.
+                console.log("element does not have search div");
+            } else {
+                // Attribute head has a search field.
+                // Remove the search field.
+            }
+
+
+            //function appendQueryBuilderAdd() {
+            //    var builder = document.getElementById("query-builder");
+            //    // Create button to add query step to queue.
+            //    var add = document.createElement("button");
+            //    add.setAttribute("id", "control-query");
+            //    add.setAttribute("type", "button");
+            //    add.textContent = "+";
+            //    builder.appendChild(add);
+            //}
+
+
+
+            // TODO: It will be convenient to call this function when making a selection with the optional auto-completion search fields.
+            //controlAttributeMenuSelection({
+            //    value: data.identifier,
+            //    attribute: data.attribute,
+            //    entity: entity,
+            //    filter: filter,
+            //    originalAttributeSummary: attributeSummarySelection,
+            //    originalAttributeIndex: originalAttributeIndex,
+            //    model: model
+            //});
         });
     // Assign attributes to cells in summary column.
     var summaryCells = cells
