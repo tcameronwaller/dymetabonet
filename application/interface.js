@@ -77,12 +77,12 @@ function emphasizeDeemphasizeTab(tab) {
 }
 
 /**
- * Displays or hides the child element of class panel of a parent element of
+ * Displays or hides the sibling element of class panel of a sibling element of
  * class tab.
  * @param {Object} element Element of class tab in the Document Object Model.
  */
-function displayHideChildPanel(tab) {
-    var panel = document.getElementById(tab.id.split("-")[0] + "-panel");
+function displayHideSiblingPanel(tab) {
+    var panel = tab.parentElement.querySelector(".panel");
     // Toggle display style of the panel.
     if (panel.classList.contains("hide")) {
         panel.classList.remove("hide");
@@ -160,6 +160,14 @@ function createDataElements(selection, element, accessData) {
 function initializeInterface() {
     // Activate elements of the Document Object Model for all behavior that is
     // independent of the model data.
+
+    // TODO: This show/hide functionality doesn't work...
+    // Activate behavior of accordion tab and panel for source menu.
+    var sourceTab = document.getElementById("source").querySelector(".tab");
+    sourceTab.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        displayHideSiblingPanel(event.currentTarget);
+    });
 
     // Activate button for assembly of metabolic model from data in file.
     document
@@ -299,19 +307,18 @@ function initializeAttributeMenu() {
     attributeView.appendChild(attributeMenu);
     // Create attribute menu table.
     var attributeMenuTable = document.createElement("table");
-    attributeMenuTable.setAttribute("id", "attribute-menu-table");
     // Create header.
     var head = document.createElement("thead");
     var headRow = document.createElement("tr");
     headRow
         .appendChild(createElementWithText({text: "Attribute", type: "th"}))
-        .setAttribute("class", "attribute-menu-table-column-attribute");
+        .setAttribute("class", "attribute");
     // TODO: Also display the total count of reactions or metabolites... that'll be different than the total of the counts for each property.
-    var summaryHead = document.createElement("th");
-    summaryHead.setAttribute("class", "attribute-menu-table-column-summary");
+    var valueHead = document.createElement("th");
+    valueHead.setAttribute("class", "value");
     // Create entity selector with default value of metabolite.
     var metaboliteRadioLabel = createLabelInputElement({
-        className: "attribute-menu-entity",
+        className: "entity",
         identifier: "attribute-menu-entity-metabolite",
         name: "attribute-menu-entity",
         value: "metabolite",
@@ -320,33 +327,33 @@ function initializeAttributeMenu() {
     });
     var metaboliteRadio = metaboliteRadioLabel.getElementsByTagName("input")[0];
     metaboliteRadio.setAttribute("checked", true);
-    summaryHead.appendChild(metaboliteRadioLabel);
+    valueHead.appendChild(metaboliteRadioLabel);
     var reactionRadioLabel = createLabelInputElement({
-        className: "attribute-menu-entity",
+        className: "entity",
         identifier: "attribute-menu-entity-reaction",
         name: "attribute-menu-entity",
         value: "reaction",
         text: "Reaction",
         type: "radio"
     });
-    summaryHead.appendChild(reactionRadioLabel);
+    valueHead.appendChild(reactionRadioLabel);
     // Create filter check box.
     var filterCheckLabel = createLabelInputElement({
-        className: "attribute-menu-filter",
+        className: "filter",
         identifier: "attribute-menu-filter",
         name: "attribute-menu-filter",
         value: "filter",
         text: "Filter",
         type: "checkbox"
     });
-    summaryHead.appendChild(filterCheckLabel);
+    valueHead.appendChild(filterCheckLabel);
     // Create reset button.
     var resetButton = document.createElement("button");
     resetButton.textContent = "Reset";
     resetButton.setAttribute("id", "attribute-menu-reset");
-    summaryHead.appendChild(resetButton);
+    valueHead.appendChild(resetButton);
     // Append header to table.
-    headRow.appendChild(summaryHead);
+    headRow.appendChild(valueHead);
     head.appendChild(headRow);
     attributeMenuTable.appendChild(head);
     // Create body.
@@ -553,6 +560,7 @@ function prepareAttributeSummary(entity, attributeSummary) {
     return attributeSummaryIncrement;
 }
 
+// TODO: Remove current listeners/handlers from the selector before adding new ones.
 /**
  * Activates interactive elements to specify entity for attribute menu.
  * @param {Object} parameters Destructured object of parameters.
@@ -583,7 +591,7 @@ function activateAttributeMenuEntitySelectors({
     // Activate event listeners and handlers.
     var entitySelectors = document
         .getElementById("attribute-menu")
-        .getElementsByClassName("attribute-menu-entity");
+        .getElementsByClassName("entity");
     Array.from(entitySelectors).forEach(function (radio) {
         radio.addEventListener("change", function handleEvent(event) {
             // Element on which the event originated is event.currentTarget.
@@ -619,6 +627,7 @@ function activateAttributeMenuEntitySelectors({
     });
 }
 
+// TODO: Remove current listeners/handlers from the selector before adding new ones.
 /**
  * Activates interactive elements to specify filter for attribute menu.
  * @param {Object} parameters Destructured object of parameters.
@@ -652,8 +661,12 @@ function activateAttributeMenuFilterSelector({
     var filterSelector = document.getElementById("attribute-menu-filter");
     filterSelector.addEventListener("change", function handleEvent(event) {
         // Element on which the event originated is event.currentTarget.
+        // Remove event listener and handler after first execution of
+        // operation.
+        event.currentTarget.removeEventListener(event.type, handleEvent);
         // Determine filter selection.
         var filter = filterSelector.checked;
+        console.log("filter selector changed to " + filter);
         // Restore attribute menu with current filter selection.
         controlAttributeMenu({
             entity: entity,
@@ -663,9 +676,6 @@ function activateAttributeMenuFilterSelector({
             originalAttributeIndex: originalAttributeIndex,
             model: model
         });
-        // Remove event listener and handler after first execution of
-        // operation.
-        event.currentTarget.removeEventListener(event.type, handleEvent);
     });
 }
 
@@ -697,6 +707,10 @@ function createActivateAttributeSummaryTable({
     // TODO: Attribute Search
     // TODO: Upon selection of attribute headers, create auto-complete search fields.
 
+    // TODO: Include metabolites in the attribute index and attribute summary.
+
+    console.log("called create table");
+
     // Parameters
     // While entity and filter parameters are no longer necessary to create the
     // attribute menu table, it is necessary to pass the current values of these
@@ -707,49 +721,70 @@ function createActivateAttributeSummaryTable({
 
     // Select body of attribute menu table.
     var body = d3
-        .select("#attribute-menu-table")
+        .select("#attribute-menu")
+        .select("table")
         .select("tbody");
-    // Append rows to table.
+    // Append rows to table with association to data.
     var rows = body.selectAll("tr").data(currentAttributeSummary);
     rows.exit().remove();
     var newRows = rows.enter().append("tr");
     rows = newRows.merge(rows);
-    // Append cells to table.
+    // Append cells to table with association to data.
     var cells = rows.selectAll("td").data(function (element, index) {
-        // Organize data for table columns.
+        // Organize data for table cells in each row.
         return [].concat(
             {
                 type: "attribute",
-                value: element.attribute
+                attribute: element.attribute,
+                values: element.values
             },
             {
-                type: "summary",
-                value: element.values
+                type: "value",
+                attribute: element.attribute,
+                values: element.values
             }
         );
     });
     cells.exit().remove();
     var newCells = cells.enter().append("td");
     cells = newCells.merge(cells);
-    // Assign attributes to cells in attribute column.
+
+    // Cells for attributes.
+    // Assign attributes to cells for attributes.
     var attributeCells = cells
         .filter(function (data, index) {
             return data.type === "attribute";
         });
     attributeCells
         .attr("id", function (data, index) {
-            var attribute = data.attribute;
-            return "attribute-menu-attribute-" + attribute;
+            return "attribute-menu-attribute-" + data.attribute;
         })
-        .classed("attribute-menu-table-cells-column-attribute", true)
-        .text(function (data) {
-            return data.value;
+        .classed("attribute", true);
+    // Append label containers to cells for attributes.
+    // These label containers need access to the same data as their parent
+    // cells without any transformation.
+    // Append label containers to the enter selection to avoid replication
+    // of these containers upon restorations to the table.
+    var attributeCellLabels = attributeCells
+        .selectAll("div")
+        .data(function (element, index) {
+            return [element];
         });
+    attributeCellLabels.exit().remove();
+    var newAttributeCellLabels = attributeCellLabels.enter().append("div");
+    attributeCellLabels = newAttributeCellLabels.merge(attributeCellLabels);
+    // Append text content to labels.
+    attributeCellLabels
+        .text(function (data) {
+            return data.attribute;
+        });
+    // TODO: If the search fields change the width of the attribute menu cells, it will be necessary to redraw the menu altogether...
+    // TODO: Maybe fix the width of the cells?
     // Remove any existing event listeners and handlers from cells.
-    attributeCells
+    attributeCellLabels
         .on("click", null);
     // Assign event listeners and handlers to cells.
-    attributeCells
+    attributeCellLabels
         .on("click", function (data, index, nodes) {
             // TODO: Create an auto-completion search field with all current (those currently visible in attribute menu) values of the attribute.
             // TODO: Will need to have access to data of the cell to determine attribute, then retrieve attribute and values from currentAttributeSummary.
@@ -762,17 +797,23 @@ function createActivateAttributeSummaryTable({
 
             // TODO: Do use D3 to append the options to the search field... maybe...
 
-            var attributeHead = this;
+            var attributeCell = this.parentElement;
             var attribute = data.value;
 
             // TODO: Determine whether or not the attribute head already has a search field.
-            if (!attributeHead.querySelector(".attribute-menu-search")) {
+            if (!attributeCell.querySelector(".attribute-menu-search")) {
                 // Attribute head does not have a search field.
                 // Create and activate a search field.
-                console.log("element does not have search div");
+                var attributeMenuSearch = document.createElement("div");
+                attributeMenuSearch.classList.add("attribute-menu-search");
+                attributeMenuSearch.textContent = "You just clicked me!";
+                attributeCell.appendChild(attributeMenuSearch);
             } else {
                 // Attribute head has a search field.
                 // Remove the search field.
+                var attributeMenuSearch = attributeCell
+                    .querySelector(".attribute-menu-search");
+                attributeCell.removeChild(attributeMenuSearch);
             }
 
 
@@ -799,64 +840,64 @@ function createActivateAttributeSummaryTable({
             //    model: model
             //});
         });
-    // Assign attributes to cells in summary column.
-    var summaryCells = cells
+    // Assign attributes to cells in value column.
+    var valueCells = cells
         .filter(function (data, index) {
-            return data.type === "summary";
+            return data.type === "value";
         });
-    summaryCells
-        .classed("attribute-menu-table-cells-column-summary", true);
-    // Append graphical containers in cells in summary column.
+    valueCells
+        .classed("value", true);
+    // Append graphical containers to cells for values.
     // The graphical containers need access to the same data as their parent
     // cells without any transformation.
     // Append graphical containers to the enter selection to avoid replication
     // of these containers upon restorations to the table.
-    var summaryCellGraphs = summaryCells
+    var valueCellGraphs = valueCells
         .selectAll("svg")
         .data(function (element, index) {
             return [element];
         });
-    summaryCellGraphs.exit().remove();
-    var newSummaryCellGraphs = summaryCellGraphs.enter().append("svg");
-    summaryCellGraphs = newSummaryCellGraphs.merge(summaryCellGraphs);
-    summaryCellGraphs
-        .attr("class", "attribute-menu-table-cell-graph");
+    valueCellGraphs.exit().remove();
+    var newSummaryCellGraphs = valueCellGraphs.enter().append("svg");
+    valueCellGraphs = newSummaryCellGraphs.merge(valueCellGraphs);
+    valueCellGraphs
+        .attr("class", "graph");
     // Determine the width of graphical containers.
     var graphWidth = parseFloat(
         window.getComputedStyle(
-            document.getElementsByClassName("attribute-menu-table-cell-graph")
+            document
+                .getElementById("attribute-menu")
+                .getElementsByClassName("graph")
                 .item(0)
-        )
-            .width
-            .replace("px", "")
+        ).width.replace("px", "")
     );
-    // Append rectangles to graphical containers in summary column.
-    var summaryCellBars = summaryCellGraphs
+    // Append rectangles to graphical containers in cells for values.
+    var valueCellBars = valueCellGraphs
         .selectAll("rect")
         .data(function (element, index) {
             // Organize data for rectangles.
-            return element.value;
+            return element.values;
         });
-    summaryCellBars.exit().remove();
-    var newSummaryCellBars = summaryCellBars.enter().append("rect");
-    summaryCellBars = newSummaryCellBars.merge(summaryCellBars);
+    valueCellBars.exit().remove();
+    var newSummaryCellBars = valueCellBars.enter().append("rect");
+    valueCellBars = newSummaryCellBars.merge(valueCellBars);
     // Assign attributes to rectangles.
-    summaryCellBars
+    valueCellBars
         .attr("id", function (data, index) {
             return "attribute-menu-attribute-" +
                 data.attribute +
                 "-value-" +
                 data.identifier;
         })
-        .classed("attribute-menu-attribute-value-bar", true)
+        .classed("bar", true)
         .classed(
-            "attribute-menu-attribute-value-bar-option",
+            "normal",
             function (data, index) {
                 return !data.selection;
             }
         )
         .classed(
-            "attribute-menu-attribute-value-bar-selection",
+            "emphasis",
             function (data, index) {
                 return data.selection;
             }
@@ -865,7 +906,7 @@ function createActivateAttributeSummaryTable({
             return data.value;
         });
     // Assign position and dimension to rectangles.
-    summaryCellBars
+    valueCellBars
         .attr("x", function (data, index) {
             // Determine scale according to attribute total.
             var scale = d3
@@ -883,10 +924,10 @@ function createActivateAttributeSummaryTable({
             return scale(data.magnitude);
         });
     // Remove any existing event listeners and handlers from bars.
-    summaryCellBars
+    valueCellBars
         .on("click", null);
     // Assign event listeners and handlers to bars.
-    summaryCellBars
+    valueCellBars
         .on("click", function (data, index, nodes) {
             // TODO: It will be convenient to call this function when making a selection with the optional auto-completion search fields.
             controlAttributeMenuSelection({
@@ -894,7 +935,7 @@ function createActivateAttributeSummaryTable({
                 attribute: data.attribute,
                 entity: entity,
                 filter: filter,
-                originalAttributeSummary: attributeSummarySelection,
+                originalAttributeSummary: originalAttributeSummary,
                 originalAttributeIndex: originalAttributeIndex,
                 model: model
             });
@@ -1237,6 +1278,7 @@ function controlAttributeMenu({
         originalAttributeIndex: originalAttributeIndex,
         model: model
     });
+    // TODO: In this current implementation, every time I execute controlAttributeMenu, I attach new event handlers both to the entity selectors and the filter selector.
     // Activate entity selector.
     activateAttributeMenuEntitySelectors({
         filter: filter,

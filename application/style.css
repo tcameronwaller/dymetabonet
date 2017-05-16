@@ -71,6 +71,14 @@ h3 {
     width: 100%;
 }
 
+.show-inline {
+    display: inline;
+}
+
+.hide {
+    display: none;
+}
+
 /******************************************************************************/
 /* Model View */
 /******************************************************************************/
@@ -89,6 +97,19 @@ h3 {
     /*display: inline;*/
     /*float: left;*/
     flex-basis: content;
+    height: 100%;
+}
+
+#source .tab {
+    display: inline;
+    float: left;
+    height: 100%;
+}
+
+#source .panel {
+    display: inline;
+    float: right;
+    height: 100%;
 }
 
 /******************************************************************************/
@@ -111,11 +132,6 @@ h3 {
     height: 100%;
     width: 100%;
 }
-
-.attribute-menu-entity-selection {
-    background-color: rgba(255, 150, 0, 1);
-}
-
 
 #attribute-menu table {
     border-collapse: collapse;
@@ -144,9 +160,6 @@ h3 {
     padding: 1mm;
 }
 
-#attribute-menu table tbody {
-}
-
 #attribute-menu table tbody tr {
     height: 1cm;
     vertical-align: middle;
@@ -162,7 +175,7 @@ h3 {
     white-space: nowrap;
 }
 
-.attribute-menu-table-cells-column-attribute {
+#attribute-menu table tbody td.attribute {
     background-color: rgba(50, 50, 50, 1);
     color: rgba(255, 255, 255, 1);
     font-size: medium;
@@ -170,29 +183,29 @@ h3 {
     width: 3cm;
 }
 
-#attribute-menu table tbody td.attribute-menu-table-column-summary {
+#attribute-menu table tbody td.value {
     background-color: rgba(255, 255, 255, 1);
 }
 
-.attribute-menu-table-cells-column-summary svg {
+#attribute-menu table tbody td.value svg {
     height: 1cm;
     width: 100%;
 }
 
-.attribute-menu-attribute-value-bar {
+#attribute-menu table tbody td.value .bar {
     /*fill: rgba(200, 20, 20, 1);*/
     height: 1cm;
 }
 
-.attribute-menu-attribute-value-bar-option:nth-child(odd) {
+#attribute-menu table tbody td.value .bar.normal:nth-child(odd) {
     fill: rgba(0, 255, 100, 1);
 }
 
-.attribute-menu-attribute-value-bar-option:nth-child(even) {
+#attribute-menu table tbody td.value .bar.normal:nth-child(even) {
     fill: rgba(0, 100, 255, 1);
 }
 
-.attribute-menu-attribute-value-bar-selection {
+#attribute-menu table tbody td.value .bar.emphasis {
     fill: rgba(255, 150, 0, 1);
 }
 
