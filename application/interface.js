@@ -28,6 +28,18 @@ function removeParentElement(element) {
 }
 
 /**
+ * Clones and replaces an element in the Document Object Model.
+ * @param {Object} oldElement Element in the Document Object Model.
+ * @returns {Object} Element in the Document Object Model.
+ */
+function cloneReplaceElement(oldElement) {
+    var newElement = oldElement.cloneNode(true);
+    oldElement.parentNode.replaceChild(newElement, oldElement);
+    return newElement;
+}
+
+
+/**
  * Removes an element's child elements.
  * @param {Object} element Element in the Document Object Model.
  */
@@ -346,6 +358,7 @@ function initializeAttributeMenu() {
         text: "Filter",
         type: "checkbox"
     });
+    filterCheckLabel.setAttribute("checked", false);
     valueHead.appendChild(filterCheckLabel);
     // Create reset button.
     var resetButton = document.createElement("button");
@@ -395,6 +408,15 @@ function initializeAttributeInterface(model) {
         .addEventListener("click", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Execute operation.
+            // Set entity selector default.
+            var metaboliteEntitySelector = document
+                .getElementById("attribute-menu-entity-metabolite");
+            metaboliteEntitySelector.checked = true;
+            // Set filter selector default.
+            var filterSelector = document
+                .getElementById("attribute-menu-filter");
+            filterSelector.checked = false;
+            // Restore attribute menu with default selections.
             controlAttributeMenu({
                 entity: "metabolite",
                 filter: false,
@@ -403,24 +425,6 @@ function initializeAttributeInterface(model) {
                 originalAttributeIndex: attributeIndex,
                 model: model
             });
-        });
-    //testD3EventListeners([]);
-}
-
-// TODO: This works!
-function testD3EventListeners(queue) {
-    var submit = d3
-        .select("#attribute-menu-submit");
-    // Remove any existing event listeners and handlers from bars.
-    submit
-        .on("click", null);
-    // Assign event listeners and handlers to bars.
-    submit
-        .on("click", function (data, index, nodes) {
-            var newQueue = [].concat(queue, "a");
-            console.log("queue");
-            console.log(newQueue);
-            testD3EventListeners(newQueue);
         });
 }
 
@@ -560,7 +564,6 @@ function prepareAttributeSummary(entity, attributeSummary) {
     return attributeSummaryIncrement;
 }
 
-// TODO: Remove current listeners/handlers from the selector before adding new ones.
 /**
  * Activates interactive elements to specify entity for attribute menu.
  * @param {Object} parameters Destructured object of parameters.
@@ -584,36 +587,34 @@ function activateAttributeMenuEntitySelectors({
     model
 } = {}) {
     // It is necessary to restore the event listeners and handlers for the
-    // entity selectors every time the parameters change.
-    // Due to this iterative activation, it is necessary to remove the listeners
-    // and handlers after each execution to avoid replication of listeners and
-    // handlers.
-    // Activate event listeners and handlers.
-    var entitySelectors = document
+    // entity selectors every time the parameters of the attribute menu change.
+    // These parameters change in response to user interaction with the entity
+    // selectors.
+    // They also change in response to user interaction with other elements.
+    // It is thus necessary to remove former event listeners and handlers before
+    // creating new listeners and handlers in order to avoid replication.
+    // Since the selector involves multiple individual radio button elements, it
+    // is necessary to replace event listeners and handlers for all of these.
+    // Select old elements.
+    var oldEntitySelectors = document
         .getElementById("attribute-menu")
         .getElementsByClassName("entity");
-    Array.from(entitySelectors).forEach(function (radio) {
-        radio.addEventListener("change", function handleEvent(event) {
+    // Remove all event handlers and listeners from elements.
+    // Cloning elements in the document does not clone their event handlers and
+    // listeners.
+    Array.from(oldEntitySelectors).forEach(function (oldElement) {
+        cloneReplaceElement(oldElement);
+    });
+    // Select new elements.
+    var newEntitySelectors = document
+        .getElementById("attribute-menu")
+        .getElementsByClassName("entity");
+    // Activate event listeners and handlers.
+    Array.from(newEntitySelectors).forEach(function (element) {
+        element.addEventListener("change", function (event) {
             // Element on which the event originated is event.currentTarget.
-            // Classes of this element are event.currentTarget.className.
-            // Remove event listeners and handlers for all elements in the
-            // group after first execution of the operation.
-            // Since the selector involves multiple individual radio buttons, it
-            // is necessary to remove event listeners and handlers for all of
-            // these.
-            // Only the current target of the event has access to the handler
-            // function by name when the function's name is not in the global
-            // scope.
-            // An option is to declare the handler function in the global scope.
-            // Another option is to clone each element, discarding all event
-            // listeners and handlers.
-            Array.from(entitySelectors).forEach(function (radio) {
-                var oldElement = radio;
-                var newElement = oldElement.cloneNode(true);
-                oldElement.parentNode.replaceChild(newElement, oldElement);
-            });
             // Determine entity selection.
-            var entity = determineRadioGroupValue(entitySelectors);
+            var entity = determineRadioGroupValue(newEntitySelectors);
             // Restore attribute menu with current entity selection.
             controlAttributeMenu({
                 entity: entity,
@@ -627,7 +628,6 @@ function activateAttributeMenuEntitySelectors({
     });
 }
 
-// TODO: Remove current listeners/handlers from the selector before adding new ones.
 /**
  * Activates interactive elements to specify filter for attribute menu.
  * @param {Object} parameters Destructured object of parameters.
@@ -650,23 +650,25 @@ function activateAttributeMenuFilterSelector({
     originalAttributeIndex,
     model
 } = {}) {
-    // It is necessary to restore the event listener and handler for the filter
-    // selector every time the parameters change.
-    // Due to this iterative activation, it is necessary to remove the listeners
-    // and handlers after each execution to avoid replication of listeners and
-    // handlers.
-    // I think an alternative option might be to use the once option of
-    // addEventListener.
+    // It is necessary to restore the event listeners and handlers for the
+    // filter selector every time the parameters of the attribute menu change.
+    // These parameters change in response to user interaction with the filter
+    // selectors.
+    // They also change in response to user interaction with other elements.
+    // It is thus necessary to remove former event listeners and handlers before
+    // creating new listeners and handlers in order to avoid replication.
+    // Select old element.
+    var oldFilterSelector = document.getElementById("attribute-menu-filter");
+    // Remove all event handlers and listeners from elements.
+    // Cloning elements in the document does not clone their event handlers and
+    // listeners.
+    // Select new element.
+    var newFilterSelector = cloneReplaceElement(oldFilterSelector);
     // Activate event listener and handler.
-    var filterSelector = document.getElementById("attribute-menu-filter");
-    filterSelector.addEventListener("change", function handleEvent(event) {
+    newFilterSelector.addEventListener("change", function (event) {
         // Element on which the event originated is event.currentTarget.
-        // Remove event listener and handler after first execution of
-        // operation.
-        event.currentTarget.removeEventListener(event.type, handleEvent);
         // Determine filter selection.
-        var filter = filterSelector.checked;
-        console.log("filter selector changed to " + filter);
+        var filter = newFilterSelector.checked;
         // Restore attribute menu with current filter selection.
         controlAttributeMenu({
             entity: entity,
@@ -1278,7 +1280,6 @@ function controlAttributeMenu({
         originalAttributeIndex: originalAttributeIndex,
         model: model
     });
-    // TODO: In this current implementation, every time I execute controlAttributeMenu, I attach new event handlers both to the entity selectors and the filter selector.
     // Activate entity selector.
     activateAttributeMenuEntitySelectors({
         filter: filter,

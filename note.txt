@@ -4,6 +4,59 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+16 May 2017
+
+----------
+Event Handlers
+Avoid Replication With Change to Parameters
+
+The state of a program changes in response to user interaction.
+In an object-oriented programming paradigm, event handlers can always access the current state of the program through class-level variables.
+In a functional programming paradigm, event handlers require reactivation when the relevant state of the program changes.
+This reactivation is necessary to give the event handler the new parameters that correspond to the current state of the program.
+To avoid replication of event handlers, it is necessary to ensure the removal of previous event handlers before addition of new event handlers.
+
+Several strategies are available.
+
+1.
+Define function with name for event handler in the global scope and subsequently remove it by name.
+If the event handler's functional definition is in the global scope, then its name is accessible for subsequent removal.
+Also, it is possible to set options of addEventListener to avoid replication.
+Example:
+element.addEventListener(eventType, eventHandler(event));
+...
+element.removeEventListener(eventType, eventHandler);
+
+2.
+Define function with name for event handler in local scope and subsequently remove it after first execution within same local scope.
+If the event handler's functional definition is in the local scope, then its name is accessible for removal only within this scope.
+It is important to realize that by this strategy it will not be possible to remove event listeners for all radio buttons in a group when a single radio button changes.
+The problem is that the name of the event handler function for each separate radio button is only accessible within its own individual scope.
+Example:
+element.addEventListener(eventType, function handleEvent(event) {
+  // Execute some process.
+  // Remove event listener and handler after first execution of process.
+  event.currentTarget.removeEventListener(event.type, handleEvent);
+});
+
+3.
+Define anonymous function for event handler in local scope and subsequently remove all event handlers in any scope.
+If the event handler's functional definition is in the local scope, then its name is accessible for removal only within this scope.
+The Document Object Model does not support subsequent access to event handlers unless these have a name that is accessible in the current scope.
+The Document Object Model does not support subsequent removal of all event handlers from an element.
+It is only possible to clone the element and remove the original element with its event handlers.
+The original element eventually exits the document by garbage collection.
+Example:
+oldElement.addEventListener(eventType, function (event) {
+  // Execute some process.
+});
+...
+// Clone element without its event handlers.
+// Remove original element with all of its event handlers.
+var newElement = oldElement.cloneNode(true);
+oldElement.parentNode.replaceChild(newElement, oldElement);
+
+--------------------------------------------------
 12 May 2017
 
 ----------
