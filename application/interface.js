@@ -711,8 +711,6 @@ function createActivateAttributeSummaryTable({
 
     // TODO: Include metabolites in the attribute index and attribute summary.
 
-    console.log("called create table");
-
     // Parameters
     // While entity and filter parameters are no longer necessary to create the
     // attribute menu table, it is necessary to pass the current values of these
@@ -762,6 +760,8 @@ function createActivateAttributeSummaryTable({
             return "attribute-menu-attribute-" + data.attribute;
         })
         .classed("attribute", true);
+    // Remove search menus from any previous user interaction.
+    attributeCells.selectAll(".search").remove();
     // Append label containers to cells for attributes.
     // These label containers need access to the same data as their parent
     // cells without any transformation.
@@ -789,33 +789,35 @@ function createActivateAttributeSummaryTable({
     attributeCellLabels
         .on("click", function (data, index, nodes) {
             // TODO: Create an auto-completion search field with all current (those currently visible in attribute menu) values of the attribute.
-            // TODO: Will need to have access to data of the cell to determine attribute, then retrieve attribute and values from currentAttributeSummary.
 
-            // TODO: With each click, check to see if the search div exists in the element.
-            // TODO: If it does, remove it, if not, create and activate it.
+            // TODO: Append search menu and options using D3.
+
+            var attributeCell = d3.select(this.parentElement);
+            console.log("data bound to attribute cell");
+            console.log(attributeCell.data());
+
+            console.log(attributeCell.select("div").empty());
+
+            var attribute = data.attribute;
 
 
-            // TODO: Or... maybe break away from D3 a little? Just get the attribute id from the data and then pass that to another function.
-
-            // TODO: Do use D3 to append the options to the search field... maybe...
-
-            var attributeCell = this.parentElement;
-            var attribute = data.value;
-
-            // TODO: Determine whether or not the attribute head already has a search field.
-            if (!attributeCell.querySelector(".attribute-menu-search")) {
+            // TODO: http://stackoverflow.com/questions/9857752/correct-way-to-tell-if-my-selection-caught-any-existing-elements
+            // Determine whether or not the attribute head already has a search
+            // menu.
+            if (attributeCell.select(".search").empty()) {
                 // Attribute head does not have a search field.
                 // Create and activate a search field.
+                console.log("it doesn't have the search child");
                 var attributeMenuSearch = document.createElement("div");
-                attributeMenuSearch.classList.add("attribute-menu-search");
+                attributeMenuSearch.classList.add("search");
                 attributeMenuSearch.textContent = "You just clicked me!";
                 attributeCell.appendChild(attributeMenuSearch);
             } else {
                 // Attribute head has a search field.
                 // Remove the search field.
-                var attributeMenuSearch = attributeCell
-                    .querySelector(".attribute-menu-search");
-                attributeCell.removeChild(attributeMenuSearch);
+                //var attributeMenuSearch = attributeCell
+                //    .querySelector(".search");
+                //attributeCell.removeChild(attributeMenuSearch);
             }
 
 
