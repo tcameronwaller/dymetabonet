@@ -792,11 +792,10 @@ function createActivateAttributeSummaryTable({
 
             // TODO: Append search menu and options using D3.
 
-            var attributeCell = d3.select(this.parentElement);
+            var attributeCell = d3.select(nodes[index].parentElement);
+            var attributeSearch = attributeCell.select(".search")
             console.log("data bound to attribute cell");
             console.log(attributeCell.data());
-
-            console.log(attributeCell.select("div").empty());
 
             var attribute = data.attribute;
 
@@ -804,20 +803,67 @@ function createActivateAttributeSummaryTable({
             // TODO: http://stackoverflow.com/questions/9857752/correct-way-to-tell-if-my-selection-caught-any-existing-elements
             // Determine whether or not the attribute head already has a search
             // menu.
-            if (attributeCell.select(".search").empty()) {
-                // Attribute head does not have a search field.
+            if (attributeSearch.empty()) {
+                // TODO: I probably do not need the exit().remove() and enter().append() procedure here.
+                // TODO: The search menu and its elements do need access to data, but they aren't going to replicate or anything.
+                // Attribute head does not have a search menu.
                 // Create and activate a search field.
+                // Append a search menu to the attribute cell.
+                var attributeSearch = attributeCell
+                    .select("div")
+                    .data(function (element, index) {
+                        return [element];
+                    });
+                attributeSearch.exit().remove();
+                var newAttributeSearch = attributeSearch.enter().append("div");
+                attributeSearch = newAttributeSearch.merge(attributeSearch);
+                // Append a data list to the search menu.
+                var attributeValueList = attributeSearch
+                    .select("datalist")
+                    .data(function (element, index) {
+                        return [element];
+                    });
+                attributeValueList.exit().remove();
+                var newAttributeValueList = attributeValueList
+                    .enter()
+                    .append("datalist");
+                attributeValueList = newAttributeValueList
+                    .merge(attributeValueList);
+                attributeValueList
+                    .attr("id", function (element, index) {
+                        return "attribute-" + element.attribute + "-values";
+                    });
+                // Append a data list options to the search menu.
+                var attributeValues = attributeValueList
+                    .selectAll("option")
+                    .data(function (element, index) {
+                        return [element];
+                    });
+                attributeValues.exit().remove();
+                var newAttributeValues = attributeValues
+                    .enter()
+                    .append("option");
+                attributeValues = newAttributeValues
+                    .merge(attributeValues);
+                // TODO: Now set the "value" attribute of the options as in prototype_2\interface.js
+
+
+
+
+
+
+
+
                 console.log("it doesn't have the search child");
+                // TODO: Create the search field using D3!
                 var attributeMenuSearch = document.createElement("div");
                 attributeMenuSearch.classList.add("search");
                 attributeMenuSearch.textContent = "You just clicked me!";
                 attributeCell.appendChild(attributeMenuSearch);
             } else {
-                // Attribute head has a search field.
-                // Remove the search field.
-                //var attributeMenuSearch = attributeCell
-                //    .querySelector(".search");
-                //attributeCell.removeChild(attributeMenuSearch);
+                // Attribute head has a search menu.
+                // Remove the search menu.
+                attributeSearch.remove();
             }
 
 
@@ -865,7 +911,7 @@ function createActivateAttributeSummaryTable({
     var newSummaryCellGraphs = valueCellGraphs.enter().append("svg");
     valueCellGraphs = newSummaryCellGraphs.merge(valueCellGraphs);
     valueCellGraphs
-        .attr("class", "graph");
+        .classed("graph", true);
     // Determine the width of graphical containers.
     var graphWidth = parseFloat(
         window.getComputedStyle(
