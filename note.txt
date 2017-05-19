@@ -7,9 +7,18 @@ Research With Alexander Lex
 19 May 2017
 
 ----------
+Plan, Attribute Index for Metabolites
+
+For each metabolite, consider all the reactions in which that metabolite participates.
+It might be efficient to collect identifiers of a all of a metabolite's reactions during model assembly.
+From these reactions, determine compartments (metabolite may have multiple compartments in a single reaction), processes, operations, and reversibilities for the metabolite.
+
+----------
 Plan, Attribute Menu
 
 Include metabolite entities in the attribute index and the attribute summary.
+
+Include labels on bars according to width of bars.
 
 ----------
 Plan, Attribute Search Menu
