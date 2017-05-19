@@ -4,6 +4,34 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+19 May 2017
+
+----------
+Plan, Attribute Menu
+
+Include metabolite entities in the attribute index and the attribute summary.
+
+----------
+Plan, Attribute Search Menu
+
+Fix widths of attribute headers so that the creation of the search text fields does not change these widths and change the entire attribute menu.
+Handle text overflow in the options of the search text fields.
+Consider inclusion of some indicator of selection status in the options of the search text fields.
+
+----------
+Progress
+
+Upon user selection of a header for an attribute, a search text field appears with options for all available values of that attribute.
+These options only include those values that are currently in the attribute menu, dependent on the filter option.
+User selection of an option selects the value of the attribute in the attribute menu.
+
+--------------------------------------------------
+18 May 2017
+
+----------
+D3 Selection and Data Propagation
+
+--------------------------------------------------
 16 May 2017
 
 ----------

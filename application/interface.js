@@ -706,8 +706,11 @@ function createActivateAttributeSummaryTable({
     model
 } = {}) {
 
-    // TODO: Attribute Search
-    // TODO: Upon selection of attribute headers, create auto-complete search fields.
+    // TODO: Attribute Search Menu
+    // TODO: Fix width of attribute headers so they don't change when attribute search menus appear.
+    // TODO: Handle text overflow of options in search menu.
+    // TODO: Handle scrolling through options in search menu.
+    // TODO: Include some indicator of selection status in options in search menu.
 
     // TODO: Include metabolites in the attribute index and attribute summary.
 
@@ -748,7 +751,6 @@ function createActivateAttributeSummaryTable({
     cells.exit().remove();
     var newCells = cells.enter().append("td");
     cells = newCells.merge(cells);
-
     // Cells for attributes.
     // Assign attributes to cells for attributes.
     var attributeCells = cells
@@ -782,62 +784,45 @@ function createActivateAttributeSummaryTable({
         });
     // TODO: If the search fields change the width of the attribute menu cells, it will be necessary to redraw the menu altogether...
     // TODO: Maybe fix the width of the cells?
+    // TODO: How to handle text overflow in the options for the search field?
     // Remove any existing event listeners and handlers from cells.
     attributeCellLabels
         .on("click", null);
     // Assign event listeners and handlers to cells.
     attributeCellLabels
         .on("click", function (data, index, nodes) {
-            // TODO: Create an auto-completion search field with all current (those currently visible in attribute menu) values of the attribute.
-
-            // TODO: Append search menu and options using D3.
-
+            // Restoration of attribute menu removes search menus for attribute
+            // values from any previous user interaction.
+            // Also, after creation of the search menu, subsequent selection of
+            // the attribute head removes it.
+            // There is not a risk of replication of the search menu.
+            // It is unnecessary to use D3's selectAll or data methods or enter
+            // and exit selections to append and remove elements of the search
+            // menu.
+            // D3 append method propagates data.
+            // Access data bound to selection by selection.data().
+            // Select the attribute cell.
             var attributeCell = d3.select(nodes[index].parentElement);
             var attributeSearch = attributeCell.select(".search")
-            console.log("data bound to attribute cell");
-            console.log(attributeCell.data());
-
-            var attribute = data.attribute;
-
-
-            // TODO: http://stackoverflow.com/questions/9857752/correct-way-to-tell-if-my-selection-caught-any-existing-elements
             // Determine whether or not the attribute head already has a search
             // menu.
             if (attributeSearch.empty()) {
-                // TODO: I probably do not need the exit().remove() and enter().append() procedure here.
-                // TODO: The search menu and its elements do need access to data, but they aren't going to replicate or anything.
                 // Attribute head does not have a search menu.
                 // Create and activate a search field.
                 // Append a search menu to the attribute cell.
-                var attributeSearch = attributeCell
-                    .select("div")
-                    .data(function (element, index) {
-                        return [element];
-                    });
-                attributeSearch.exit().remove();
-                var newAttributeSearch = attributeSearch.enter().append("div");
-                attributeSearch = newAttributeSearch.merge(attributeSearch);
+                var attributeSearch = attributeCell.append("div");
+                attributeSearch.classed("search", true);
                 // Append a data list to the search menu.
-                var attributeValueList = attributeSearch
-                    .select("datalist")
-                    .data(function (element, index) {
-                        return [element];
-                    });
-                attributeValueList.exit().remove();
-                var newAttributeValueList = attributeValueList
-                    .enter()
-                    .append("datalist");
-                attributeValueList = newAttributeValueList
-                    .merge(attributeValueList);
+                var attributeValueList = attributeSearch.append("datalist");
                 attributeValueList
-                    .attr("id", function (element, index) {
-                        return "attribute-" + element.attribute + "-values";
+                    .attr("id", function (data, index) {
+                        return "attribute-" + data.attribute + "-values";
                     });
-                // Append a data list options to the search menu.
+                // Append options to the data list.
                 var attributeValues = attributeValueList
                     .selectAll("option")
                     .data(function (element, index) {
-                        return [element];
+                        return element.values;
                     });
                 attributeValues.exit().remove();
                 var newAttributeValues = attributeValues
@@ -845,50 +830,56 @@ function createActivateAttributeSummaryTable({
                     .append("option");
                 attributeValues = newAttributeValues
                     .merge(attributeValues);
-                // TODO: Now set the "value" attribute of the options as in prototype_2\interface.js
-
-
-
-
-
-
-
-
-                console.log("it doesn't have the search child");
-                // TODO: Create the search field using D3!
-                var attributeMenuSearch = document.createElement("div");
-                attributeMenuSearch.classList.add("search");
-                attributeMenuSearch.textContent = "You just clicked me!";
-                attributeCell.appendChild(attributeMenuSearch);
+                attributeValues.attr("value", function (data, index) {
+                    return data.name;
+                });
+                // Append search text field to the search menu.
+                var attributeSearchField = attributeSearch.append("input");
+                attributeSearchField
+                    .attr("autocomplete", "off")
+                    .attr("id", function (data, index) {
+                        return "attribute-" + data.attribute + "-search";
+                    })
+                    .attr("list", function (data, index) {
+                        return "attribute-" + data.attribute + "-values";
+                    })
+                    .attr("type", "search");
+                // Assign event listeners and handlers to search menu.
+                // Option elements from datalist element do not report events.
+                // Respond to event on input search text field and then find
+                // relevant information from the options in the datalist.
+                attributeSearchField
+                    .on("change", function (data, index, nodes) {
+                        // TODO: Use the value of the input field and compare against the list options.
+                        // TODO: Only perform selection event if the value of the field matches an option from the datalist.
+                        // TODO: http://stackoverflow.com/questions/30022728/perform-action-when-clicking-html5-datalist-option
+                        // Assume that each attribute value has a unique name.
+                        var selection = nodes[index].value;
+                        var attributeValues = d3
+                            .select(nodes[index].list)
+                            .selectAll("option");
+                        var attributeValue = attributeValues
+                            .filter(function (data, index) {
+                                return data.name === selection;
+                            });
+                        if (!attributeValue.empty()) {
+                            controlAttributeMenuSelection({
+                                value: attributeValue.data()[0].identifier,
+                                attribute: attributeValue.data()[0].attribute,
+                                entity: entity,
+                                filter: filter,
+                                originalAttributeSummary:
+                                originalAttributeSummary,
+                                originalAttributeIndex: originalAttributeIndex,
+                                model: model
+                            });
+                        }
+                    });
             } else {
                 // Attribute head has a search menu.
                 // Remove the search menu.
                 attributeSearch.remove();
             }
-
-
-            //function appendQueryBuilderAdd() {
-            //    var builder = document.getElementById("query-builder");
-            //    // Create button to add query step to queue.
-            //    var add = document.createElement("button");
-            //    add.setAttribute("id", "control-query");
-            //    add.setAttribute("type", "button");
-            //    add.textContent = "+";
-            //    builder.appendChild(add);
-            //}
-
-
-
-            // TODO: It will be convenient to call this function when making a selection with the optional auto-completion search fields.
-            //controlAttributeMenuSelection({
-            //    value: data.identifier,
-            //    attribute: data.attribute,
-            //    entity: entity,
-            //    filter: filter,
-            //    originalAttributeSummary: attributeSummarySelection,
-            //    originalAttributeIndex: originalAttributeIndex,
-            //    model: model
-            //});
         });
     // Assign attributes to cells in value column.
     var valueCells = cells
@@ -979,7 +970,6 @@ function createActivateAttributeSummaryTable({
     // Assign event listeners and handlers to bars.
     valueCellBars
         .on("click", function (data, index, nodes) {
-            // TODO: It will be convenient to call this function when making a selection with the optional auto-completion search fields.
             controlAttributeMenuSelection({
                 value: data.identifier,
                 attribute: data.attribute,
