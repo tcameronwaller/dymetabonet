@@ -589,7 +589,9 @@ function checkCleanReactions(reactions, metabolites, genes) {
         return gene.id;
     });
     var newReactions = reactions.map(function (reaction) {
-        return checkCleanReaction(reaction, metaboliteIdentifiers, geneIdentifiers);
+        return checkCleanReaction(
+            reaction, metaboliteIdentifiers, geneIdentifiers
+        );
     });
     return newReactions;
 }

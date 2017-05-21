@@ -4,6 +4,20 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+20 May 2017
+
+----------
+Progress, References to Reactions in Metabolite Records
+
+In the assembly of the metabolic model, I included in records for metabolites references to all reactions in which the metabolites participate.
+The purpose for these references was to simplify the inclusion of metabolites in the attribute index.
+The attributes of metabolites depend on the reactions in which they participate.
+
+The process for the new assembly requires about 2 minutes.
+The file size of the new assembly of the metabolic model is 3.869 Megabytes.
+The file size of the previous assembly of the metabolic model (from 24 April 2017) was 3.538 Megabytes.
+
+--------------------------------------------------
 19 May 2017
 
 ----------

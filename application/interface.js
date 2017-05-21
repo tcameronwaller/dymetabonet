@@ -1053,7 +1053,8 @@ function filterAttributeIndex(attributeFilters, attributeIndex) {
     // In addition to selecting which records to preserve in the attribute
     // index, the filtration process also selects which values of an attribute
     // to preserve in those records.
-    return attributeIndex.reduce(function (filterAttributeIndex, record, recordIndex) {
+    return attributeIndex
+        .reduce(function (filterAttributeIndex, record, recordIndex) {
         // Keep record if it matches criteria for all attributes.
         var filterMatch = Object
             .keys(attributeFilters)
