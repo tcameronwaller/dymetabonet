@@ -33,6 +33,38 @@ function extractReactionMetaboliteCompartments(reactionMetabolites) {
 }
 
 /**
+ * Creates an index of attributes of a single metabolite from a metabolic model.
+ * @param {Object} metabolite Record for a metabolite.
+ * @returns {Object} Index for a metabolite.
+ */
+function createMetaboliteIndex(metabolite) {
+    return {
+        identifier: metabolite.identifier,
+        entity: "metabolite"//,
+        // TODO: Figure out how to determine attributes from the metabolite's reactions.
+        //compartment: extractReactionMetaboliteCompartments(
+        //    reaction.metabolites
+        //),
+        //process: [reaction.process],
+        //operation: determineReactionOperation(reaction),
+        //reversibility: [reaction.reversibility]
+    };
+}
+
+/**
+ * Creates indices of attributes of all metabolites in a metabolic model.
+ * @param {Object} metabolites Information for all metabolites in a metabolic
+ * model.
+ * @returns {Array<Object<string>>} Indices for metabolites.
+ */
+function createMetaboliteIndices(metabolites) {
+    // Create indices for reactions.
+    return Object.keys(metabolites).map(function (key) {
+        return createMetaboliteIndex(metabolites[key]);
+    });
+}
+
+/**
  * Creates an index of attributes of a single reaction from a metabolic model.
  * @param {Object} reaction Record for a reaction.
  * @returns {Object} Index for a reaction.
@@ -66,12 +98,14 @@ function createReactionIndices(reactions) {
 /**
  * Creates index of attributes of all metabolites and reactions in a metabolic
  * model.
+ * @param {Object} metabolites Information for all metabolites in a metabolic
+ * model.
  * @param {Object} reactions Information for all reactions in a metabolic
  * model.
  * @returns {Array<Object<string>>} Index of attributes of metabolites and
  * reactions.
  */
-function createAttributeIndex(reactions) {
+function createAttributeIndex(metabolites, reactions) {
     // Attribute index is analogous to a table.
     // It is an array of objects.
     // Individual objects, analogous to rows in the table, represent individual
@@ -86,7 +120,9 @@ function createAttributeIndex(reactions) {
 
     // TODO: Combine indices for both reactions and metabolites here.
     // Temporarily, just assemble the index for reactions.
-    return createReactionIndices(reactions);
+    var metaboliteIndices = createMetaboliteIndices(metabolites);
+    var reactionIndices = createReactionIndices(reactions);
+    return [].concat(metaboliteIndices, reactionIndices);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

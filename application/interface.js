@@ -390,7 +390,13 @@ function initializeAttributeInterface(model) {
     // Assemble attribute index.
     // The attribute index will mediate information exchange between the views
     // for attribute menu, sets, and entities.
-    var attributeIndex = createAttributeIndex(model.entities.reactions);
+    var attributeIndex = createAttributeIndex(
+        model.entities.metabolites, model.entities.reactions
+    );
+
+    console.log("attributeIndex in initializeAttributeInterface");
+    console.log(attributeIndex);
+
     // Create attribute summary from attribute index.
     var attributeSummary = createAttributeSummary(attributeIndex, model);
     // Initiate control of attribute menu.
