@@ -9,45 +9,116 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Assemble index of attribute sets of reactions
 
-// TODO: Prepare index...
-
-// TODO: Follow pattern of creating metabolite or reaction records...
-// TODO: Have a master function and call subordinate functions to handle specific parts or attributes.
-// TODO: I'll probably need sub functions for metabolites and reactions respectively.
-
-
-// TODO: First create table only for reactions.
-// TODO: First only determine compartments and draw the corresponding bars.
-
 /**
- * Extracts compartments in which metabolites participate in a reaction.
- * @param {Object<string>} reactionMetabolites Information about metabolites
- * that participate in a reaction.
+ * Determines unique compartments in which a single metabolite participates in
+ * multiple reactions.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.metaboliteIdentifier Identifier for a metabolite
+ * of interest.
+ * @param {Array<string>} parameters.reactionIdentifiers Identifiers for
+ * reactions of interest.
+ * @param {Object} parameters.reactions Information for all reactions in a
+ * metabolic model.
  * @returns {Array<string>} Identifiers of compartments.
  */
-function extractReactionMetaboliteCompartments(reactionMetabolites) {
-    var identifiers = reactionMetabolites.map(function (metabolite) {
-        return metabolite.compartment;
+function determineMetaboliteReactionCompartments({
+                                                    metaboliteIdentifier,
+                                                    reactionIdentifiers,
+                                                    reactions
+} = {}) {
+    // Metabolite qualifies for compartment if it participates in any reaction
+    // in the compartment.
+    var compartments = reactionIdentifiers
+        .reduce(function (collection, reactionIdentifier) {
+            var reaction = reactions[reactionIdentifier];
+            var metabolites = reaction.metabolites.filter(function (record) {
+                return record.identifier === metaboliteIdentifier;
+            });
+            var metaboliteReactionCompartments = collectValuesFromObjects(
+                metabolites, "compartment"
+            );
+            return [].concat(collection, metaboliteReactionCompartments);
+        }, []);
+    return collectUniqueElements(compartments);
+}
+
+/**
+ * Determines unique processes of the reactions in which a single metabolite
+ * participates.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.metaboliteIdentifier Identifier for a metabolite
+ * of interest.
+ * @param {Array<string>} parameters.reactionIdentifiers Identifiers for
+ * reactions of interest.
+ * @param {Object} parameters.reactions Information for all reactions in a
+ * metabolic model.
+ * @returns {Array<string>} Identifiers of compartments.
+ */
+function determineMetaboliteReactionProcesses({
+                                                     metaboliteIdentifier,
+                                                     reactionIdentifiers,
+                                                     reactions
+                                                 } = {}) {
+    var processes = reactionIdentifiers.map(function (reactionIdentifier) {
+        var reaction = reactions[reactionIdentifier];
+        return reaction.process;
     });
-    return collectUniqueElements(identifiers);
+    return collectUniqueElements(processes);
+}
+
+/**
+ * Determines unique processes of the reactions in which a single metabolite
+ * participates.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.metaboliteIdentifier Identifier for a metabolite
+ * of interest.
+ * @param {Array<string>} parameters.reactionIdentifiers Identifiers for
+ * reactions of interest.
+ * @param {Object} parameters.reactions Information for all reactions in a
+ * metabolic model.
+ * @returns {Array<string>} Identifiers of compartments.
+ */
+function determineMetaboliteReactionReversibilities({
+                                                  metaboliteIdentifier,
+                                                  reactionIdentifiers,
+                                                  reactions
+                                              } = {}) {
+    var reversibilities = reactionIdentifiers
+        .map(function (reactionIdentifier) {
+            var reaction = reactions[reactionIdentifier];
+            return reaction.reversibility;
+        });
+    return collectUniqueElements(reversibilities);
 }
 
 /**
  * Creates an index of attributes of a single metabolite from a metabolic model.
  * @param {Object} metabolite Record for a metabolite.
+ * @param {Object} reactions Information for all reactions in a metabolic
+ * model.
  * @returns {Object} Index for a metabolite.
  */
-function createMetaboliteIndex(metabolite) {
+function createMetaboliteIndex(metabolite, reactions) {
     return {
         identifier: metabolite.identifier,
-        entity: "metabolite"//,
+        entity: "metabolite",
         // TODO: Figure out how to determine attributes from the metabolite's reactions.
-        //compartment: extractReactionMetaboliteCompartments(
-        //    reaction.metabolites
-        //),
-        //process: [reaction.process],
+        compartment: determineMetaboliteReactionCompartments({
+            metaboliteIdentifier: metabolite.identifier,
+            reactionIdentifiers: metabolite.reactions,
+            reactions: reactions
+        }),
+        process: determineMetaboliteReactionProcesses({
+            metaboliteIdentifier: metabolite.identifier,
+            reactionIdentifiers: metabolite.reactions,
+            reactions: reactions
+        }),
         //operation: determineReactionOperation(reaction),
-        //reversibility: [reaction.reversibility]
+        reversibility: determineMetaboliteReactionReversibilities({
+            metaboliteIdentifier: metabolite.identifier,
+            reactionIdentifiers: metabolite.reactions,
+            reactions: reactions
+        })
     };
 }
 
@@ -55,14 +126,59 @@ function createMetaboliteIndex(metabolite) {
  * Creates indices of attributes of all metabolites in a metabolic model.
  * @param {Object} metabolites Information for all metabolites in a metabolic
  * model.
+ * @param {Object} reactions Information for all reactions in a metabolic
+ * model.
  * @returns {Array<Object<string>>} Indices for metabolites.
  */
-function createMetaboliteIndices(metabolites) {
+function createMetaboliteIndices(metabolites, reactions) {
     // Create indices for reactions.
     return Object.keys(metabolites).map(function (key) {
-        return createMetaboliteIndex(metabolites[key]);
+        return createMetaboliteIndex(metabolites[key], reactions);
     });
 }
+
+/**
+ * Extracts compartments in which metabolites participate in a reaction.
+ * @param {Array<Object<string>>} reactionMetabolites Information about
+ * metabolites that participate in a reaction.
+ * @returns {Array<string>} Identifiers of compartments.
+ */
+function extractReactionMetaboliteCompartments(reactionMetabolites) {
+    var compartments = reactionMetabolites.map(function (metabolite) {
+        return metabolite.compartment;
+    });
+    return collectUniqueElements(compartments);
+}
+
+// TODO: If the reaction involves metabolites in multiple compartments, consider it a transport reaction.
+// TODO: If the reaction involves different metabolites in reactants and products, consider it a conversion reaction.
+
+// TODO: Iterate on metabolites.
+
+/**
+ * Determines the operations, conversion or transport, that describe the effect
+ * of a reaction on its metabolites.
+ * @param {Array<Object<string>>} reactionMetabolites Information about
+ * metabolites that participate in a reaction.
+ * @returns {Array<string>} Identifiers of compartments.
+ */
+function determineReactionOperation(reactionMetabolites) {
+    // Determine if the reaction involves metabolites in multiple compartments.
+    var compartments = extractReactionMetaboliteCompartments(
+        reactionMetabolites
+    );
+    if (compartments.length > 1) {
+        var transport = [].concat("t");
+    } else {
+        var transport = [];
+    }
+    // Determine if the reaction involves different metabolites in reactants and
+    // products.
+
+    //compareArraysByInclusion(firstArray, secondArray)
+}
+
+
 
 /**
  * Creates an index of attributes of a single reaction from a metabolic model.
@@ -77,7 +193,7 @@ function createReactionIndex(reaction) {
             reaction.metabolites
         ),
         process: [reaction.process],
-        //operation: determineReactionOperation(reaction),
+        operation: determineReactionOperation(reaction.metabolites),
         reversibility: [reaction.reversibility]
     };
 }
@@ -120,7 +236,7 @@ function createAttributeIndex(metabolites, reactions) {
 
     // TODO: Combine indices for both reactions and metabolites here.
     // Temporarily, just assemble the index for reactions.
-    var metaboliteIndices = createMetaboliteIndices(metabolites);
+    var metaboliteIndices = createMetaboliteIndices(metabolites, reactions);
     var reactionIndices = createReactionIndices(reactions);
     return [].concat(metaboliteIndices, reactionIndices);
 }
@@ -292,6 +408,8 @@ function determineAttributeValueName(indicator, attribute, model) {
  * @returns {Array<Object<string>>} Summary of attribute index.
  */
 function createAttributeSummary(attributeIndex, model) {
+    // Assume that all records in the attribute index have the same properties,
+    // like rows of a table with the same columns.
     // Determine attributes in attribute index.
     var attributes = Object.keys(attributeIndex[0]).filter(function (key) {
         return (key !== "identifier" && key !== "entity");

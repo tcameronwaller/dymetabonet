@@ -4,6 +4,19 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+22 May 2017
+
+----------
+Plan
+
+----------
+Idea
+
+Set Analysis: Consider the count of metabolites that participate in any reactions in each compartment.
+
+Entity Analysis: Consider the count of reactions in which a single metabolite participates in each compartment.
+
+--------------------------------------------------
 20 May 2017
 
 ----------
