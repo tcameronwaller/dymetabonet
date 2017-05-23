@@ -43,19 +43,15 @@ function determineMetaboliteReactionCompartments({
 }
 
 /**
- * Determines unique processes of the reactions in which a single metabolite
- * participates.
+ * Determines unique processes of multiple reactions.
  * @param {Object} parameters Destructured object of parameters.
- * @param {string} parameters.metaboliteIdentifier Identifier for a metabolite
- * of interest.
  * @param {Array<string>} parameters.reactionIdentifiers Identifiers for
  * reactions of interest.
  * @param {Object} parameters.reactions Information for all reactions in a
  * metabolic model.
- * @returns {Array<string>} Identifiers of compartments.
+ * @returns {Array<string>} Identifiers of processes.
  */
-function determineMetaboliteReactionProcesses({
-                                                     metaboliteIdentifier,
+function determineReactionProcesses({
                                                      reactionIdentifiers,
                                                      reactions
                                                  } = {}) {
@@ -67,19 +63,39 @@ function determineMetaboliteReactionProcesses({
 }
 
 /**
- * Determines unique processes of the reactions in which a single metabolite
- * participates.
+ * Determines unique operations, conversion or transport, of multiple reactions.
  * @param {Object} parameters Destructured object of parameters.
- * @param {string} parameters.metaboliteIdentifier Identifier for a metabolite
- * of interest.
  * @param {Array<string>} parameters.reactionIdentifiers Identifiers for
  * reactions of interest.
  * @param {Object} parameters.reactions Information for all reactions in a
  * metabolic model.
- * @returns {Array<string>} Identifiers of compartments.
+ * @returns {Array<string>} Identifiers of operations.
  */
-function determineMetaboliteReactionReversibilities({
-                                                  metaboliteIdentifier,
+function determineReactionOperations({
+                                                     reactionIdentifiers,
+                                                     reactions
+                                                 } = {}) {
+    var operations = reactionIdentifiers
+        .reduce(function (collection, reactionIdentifier) {
+            var reaction = reactions[reactionIdentifier];
+            var reactionOperations = determineReactionOperation(
+                reaction.metabolites
+            );
+            return [].concat(collection, reactionOperations);
+        }, []);
+    return collectUniqueElements(operations);
+}
+
+/**
+ * Determines unique reversibilities of multiple reactions.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {Array<string>} parameters.reactionIdentifiers Identifiers for
+ * reactions of interest.
+ * @param {Object} parameters.reactions Information for all reactions in a
+ * metabolic model.
+ * @returns {Array<string>} Identifiers of reversibility.
+ */
+function determineReactionReversibilities({
                                                   reactionIdentifiers,
                                                   reactions
                                               } = {}) {
@@ -102,21 +118,20 @@ function createMetaboliteIndex(metabolite, reactions) {
     return {
         identifier: metabolite.identifier,
         entity: "metabolite",
-        // TODO: Figure out how to determine attributes from the metabolite's reactions.
+        process: determineReactionProcesses({
+            reactionIdentifiers: metabolite.reactions,
+            reactions: reactions
+        }),
         compartment: determineMetaboliteReactionCompartments({
             metaboliteIdentifier: metabolite.identifier,
             reactionIdentifiers: metabolite.reactions,
             reactions: reactions
         }),
-        process: determineMetaboliteReactionProcesses({
-            metaboliteIdentifier: metabolite.identifier,
+        operation: determineReactionOperations({
             reactionIdentifiers: metabolite.reactions,
             reactions: reactions
         }),
-        // TODO: I need a function to apply determineReactionOperation() on each reaction of the metabolite.
-        //operation: determineReactionOperation(reaction),
-        reversibility: determineMetaboliteReactionReversibilities({
-            metaboliteIdentifier: metabolite.identifier,
+        reversibility: determineReactionReversibilities({
             reactionIdentifiers: metabolite.reactions,
             reactions: reactions
         })
@@ -150,11 +165,6 @@ function extractReactionMetaboliteCompartments(reactionMetabolites) {
     });
     return collectUniqueElements(compartments);
 }
-
-// TODO: If the reaction involves metabolites in multiple compartments, consider it a transport reaction.
-// TODO: If the reaction involves different metabolites in reactants and products, consider it a conversion reaction.
-
-// TODO: Iterate on metabolites.
 
 /**
  * Determines the operations, conversion or transport, that describe the effect
@@ -212,10 +222,10 @@ function createReactionIndex(reaction) {
     return {
         identifier: reaction.identifier,
         entity: "reaction",
+        process: [reaction.process],
         compartment: extractReactionMetaboliteCompartments(
             reaction.metabolites
         ),
-        process: [reaction.process],
         operation: determineReactionOperation(reaction.metabolites),
         reversibility: [reaction.reversibility]
     };
@@ -256,9 +266,6 @@ function createAttributeIndex(metabolites, reactions) {
     // come in arrays of unique values.
     // As these values in arrays are unique, each instance of a value
     // corresponds to a single entity with that value.
-
-    // TODO: Combine indices for both reactions and metabolites here.
-    // Temporarily, just assemble the index for reactions.
     var metaboliteIndices = createMetaboliteIndices(metabolites, reactions);
     var reactionIndices = createReactionIndices(reactions);
     return [].concat(metaboliteIndices, reactionIndices);
