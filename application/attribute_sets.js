@@ -113,6 +113,7 @@ function createMetaboliteIndex(metabolite, reactions) {
             reactionIdentifiers: metabolite.reactions,
             reactions: reactions
         }),
+        // TODO: I need a function to apply determineReactionOperation() on each reaction of the metabolite.
         //operation: determineReactionOperation(reaction),
         reversibility: determineMetaboliteReactionReversibilities({
             metaboliteIdentifier: metabolite.identifier,
@@ -163,22 +164,43 @@ function extractReactionMetaboliteCompartments(reactionMetabolites) {
  * @returns {Array<string>} Identifiers of compartments.
  */
 function determineReactionOperation(reactionMetabolites) {
+    // Determine if the reaction involves different metabolites in reactants and
+    // products.
+    // If the reaction involves different metabolites in reactants and products,
+    // then consider the reaction to involve a chemical conversion operation.
+    var reactantIdentifiers = reactionMetabolites
+        .filter(function (metabolite) {
+            return metabolite.role === "reactant";
+        }).map(function (reactant) {
+            return reactant.identifier;
+        });
+    var productIdentifiers = reactionMetabolites
+        .filter(function (metabolite) {
+            return metabolite.role === "product";
+        }).map(function (reactant) {
+            return reactant.identifier;
+        });
+    if (
+        !compareArraysByInclusion(reactantIdentifiers, productIdentifiers) &&
+        !compareArraysByInclusion(productIdentifiers, reactantIdentifiers)
+    ) {
+        var conversion = [].concat("c");
+    } else {
+        var conversion = [];
+    }
     // Determine if the reaction involves metabolites in multiple compartments.
+    // If the reaction involves metabolites in multiple compartments, then
+    // consider the reaction to involve a transport operation.
     var compartments = extractReactionMetaboliteCompartments(
         reactionMetabolites
     );
     if (compartments.length > 1) {
-        var transport = [].concat("t");
+        var conversionTransport = conversion.concat("t");
     } else {
-        var transport = [];
+        var conversionTransport = conversion;
     }
-    // Determine if the reaction involves different metabolites in reactants and
-    // products.
-
-    //compareArraysByInclusion(firstArray, secondArray)
+    return conversionTransport;
 }
-
-
 
 /**
  * Creates an index of attributes of a single reaction from a metabolic model.
@@ -186,6 +208,7 @@ function determineReactionOperation(reactionMetabolites) {
  * @returns {Object} Index for a reaction.
  */
 function createReactionIndex(reaction) {
+    determineReactionOperation(reaction.metabolites);
     return {
         identifier: reaction.identifier,
         entity: "reaction",
