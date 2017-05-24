@@ -208,7 +208,7 @@ function controlInterface(model) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Model Interface
+// Model Source Interface
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -299,7 +299,7 @@ function loadDefaultModel() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Attribute Interface
+// Attribute Menu Interface
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -399,6 +399,10 @@ function initializeAttributeInterface(model) {
 
     // Create attribute summary from attribute index.
     var attributeSummary = createAttributeSummary(attributeIndex, model);
+
+    console.log("attributeSummary in initializeAttributeInterface");
+    console.log(attributeSummary);
+
     // Initiate control of attribute menu.
     controlAttributeMenu({
         entity: "metabolite",
@@ -1054,8 +1058,8 @@ function controlAttributeMenuSelection({
  */
 function filterAttributeIndex(attributeFilters, attributeIndex) {
     // Filter records in attribute index by values of attributes.
-    // Combine criteria between different attributes by and logic.
-    // Combine criteria within the same attribute by or logic.
+    // Combine criteria between different attributes by AND logic.
+    // Combine criteria within the same attribute by OR logic.
     // In addition to selecting which records to preserve in the attribute
     // index, the filtration process also selects which values of an attribute
     // to preserve in those records.
@@ -1341,7 +1345,92 @@ function controlAttributeMenu({
         originalAttributeIndex: originalAttributeIndex,
         model: model
     });
+    // TODO: Pass currentAttributeIndex and model to the Set Relation View.
+    var attributeValues = extractIndexAttributesValues(currentAttributeIndex);
+    console.log("extracted attribute values");
+    console.log(attributeValues);
+    console.log("set candidates");
+    console.log(determineAttributeSetCandidates(attributeValues));
+
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Set Relation Interface
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Extracts from the attribute index all values of attributes that entities in
+ * the index possess.
+ * @param {Array<Object<string>>} attributeIndex Index of attributes of
+ * metabolites and reactions.
+ * @returns {Object<Array<string>>} Values of attributes from entities in the
+ * attribute index.
+ */
+function extractIndexAttributesValues(attributeIndex) {
+    // Extract attribute values from entities within the attribute index in
+    // order to know which attribute values actually have entities.
+    // Iterate on entities with records in the attribute index.
+    return attributeIndex.reduce(function (entityCollection, entityRecord) {
+        // Iterate on attributes in the entity's record.
+        // Determine attributes in record.
+        var attributes = Object.keys(entityRecord).filter(function (key) {
+            return (key !== "identifier" && key !== "entity");
+        });
+        return attributes
+            .reduce(function (attributeCollection, attribute) {
+                if (attributeCollection.hasOwnProperty(attribute)) {
+                    var initialValues = attributeCollection[attribute];
+                } else {
+                    var initialValues = [];
+                }
+                // Iterate on values of the attribute.
+                var entityAttributeValues = entityRecord[attribute];
+                var newAttributeValues = entityAttributeValues
+                    .reduce(function (valueCollection, value) {
+                        // Determine if the collection already includes the
+                        // value.
+                        if (valueCollection.includes(value)) {
+                            return valueCollection;
+                        } else {
+                            return [].concat(valueCollection, value);
+                        }
+                    }, initialValues);
+                var newAttributeRecord = {
+                    [attribute]: newAttributeValues
+                };
+                return Object
+                    .assign({}, attributeCollection, newAttributeRecord);
+            }, entityCollection);
+    }, {});
+}
+
+/**
+ * Determines attributes that are suitable candidates to define sets.
+ * @param {Object<Array<string>>} attributeValues Values of attributes from
+ * entities in the attribute index.
+ * @returns {Array<string>} Names of attributes that are suitable candidates to
+ * define sets.
+ */
+function determineAttributeSetCandidates(attributeValues) {
+    return Object.keys(attributeValues).filter(function (key) {
+        return attributeValues[key].length > 1;
+    });
+}
+
+/**
+ * Creates and populates sets of entities and relations between these on the
+ * basis of attributes.
+ * @param {Array<string>} attributes Attributes that define the sets.
+ * @param {Array<Object<string>>} attributeIndex Index of attributes of
+ * metabolites and reactions.
+ * @returns {Object<Array<string>>} Values of attributes from entities in the
+ * attribute index.
+ */
+function createAttributeSetsRelations(attributes, attributeIndex) {}
+
+
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Scrap?

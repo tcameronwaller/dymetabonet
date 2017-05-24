@@ -4,6 +4,80 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+23 May 2017
+
+----------
+Set Relation Menu, Processes
+
+Set Relation Menu receives a current attribute index from the Attribute Menu.
+
+1) Determine all values of all attributes that current entities in the attribute index possess.
+-Derive this collection from entities in the current attribute index to ensure non-empty sets.
+-Structure these data like the filters for the attribute index in the Attribute Menu.
+
+2) Determine attribute types (process, compartment, etc) that are suitable to define sets.
+-Only attributes with multiple (> 1) non-empty values can define discriminatory sets.
+
+3) Define sets.
+-Present user with options and receive selection of attributes to define sets from user.
+-Maybe assign default parameters to define sets.
+-Name sets according to the attribute(s) that define them.
+-For example, even if there are also selections of processes and other attributes, only label sets by compartments if compartment is the defining attribute.
+
+4) Populate sets.
+-Populating all possible permutations of sets would be inefficient.
+-Populate sets after explicit definition.
+-Iterate on entities in the attribute index.
+-Include the entity's identifier or at least count if it possesses all of the attribute values that are criteria for the set.
+
+5) Populate relations between sets.
+
+----------
+Plan, Set Relation Menu
+
+Only those entities that match filters from user selection in Attribute Menu are accessible in Set Relation Menu.
+
+User selects attributes to define sets.
+Attributes are options only if the selection of entities includes multiple values.
+Otherwise, an attribute with a single value is useless for defining sets.
+For example, if user selects only entities for reversible reactions, all sets will represent entities for reversible reactions.
+
+All attribute types define sets at the top hierarchical level.
+For example, both cytosolic and mitochondrial compartments in combination cannot define a single set.
+
+Tentative Data Structure
+Store information about sets and relations between those sets separately, such as within the same object.
+
+----------
+Plan
+
+Attribute Menu
+-Temporary tool-tip labels for values of attributes on cursor hover
+-Persistent labels on bars for values of attributes
+--Adjust labels to widths of bars
+--I worry that these labels would impart excessive clutter to the menu
+-Constant widths of attribute header cells, even upon introduction of search fields
+-Persistent text search fields for attribute values
+--Maybe
+-Indication of selection status in text search fields for attribute values
+--Use text content of option elements so status appears in grey
+--Options of text search fields provide replicate view of attribute values
+
+Set Relation
+-Data structure for sets and relations between sets
+-Set relation view
+--In notes on 11 May 2017
+--Relations between sets support access to entities by AND logic within the same attribute type (example: metabolites in cytosol AND in mitochondrion)
+
+----------
+Progress
+
+The attribute index, attribute summary, and attribute menu include the attributes process, compartment, operation, and reversibility for both metabolite and reaction entities.
+
+Values of these attribute are selectable directly from the attribute menu bars or by text search.
+It is possible to filter the attribute menu to show only the values of attributes with current selection.
+
+--------------------------------------------------
 22 May 2017
 
 ----------
