@@ -1026,6 +1026,7 @@ function controlAttributeMenuSelection({
         attributeSummary: originalAttributeSummary
     });
     // Extract filters from selection details in attribute summary.
+    // TODO: I think it might make more sense to structure the filters as an array of objects... maybe, maybe not...
     var filters = extractFilterAttributesValues(
         attributeSummarySelection
     );
@@ -1416,6 +1417,9 @@ function determineAttributeSetCandidates(attributeValues) {
         return attributeValues[key].length > 1;
     });
 }
+
+// TODO: I think createAttributeSetsRelations() might benefit from knowing not only the attributes that define sets,
+// TODO: but also all available values of those attributes.
 
 /**
  * Creates and populates sets of entities and relations between these on the

@@ -4,6 +4,92 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+24 May 2017
+
+----------
+Plan, Event Executions in Set Relations View
+
+... Maybe I should just atart implementing functionality and then organize it once I need to.
+
+This plan for interaction is very helpful and follows the pattern for the Attribute Menu in notes on 5 May 2017.
+It clarifies how to structure functionality in the program and to which parameters each function needs access.
+
+1) Initialization of Set Relations View
+-Create invariant aspects of the view such as control buttons.
+-Set initial option variables, such as which type of visual representation to draw (node-link diagram or adjacency matrix).
+-...
+
+2) Restoration/Update of Attribute Menu
+-Receive current attribute index from selections and filters in Attribute Menu.
+-Determine all values of all attributes that current entities in the attribute index possess.
+-Determine attributes with multiple values that are suitable to define discriminatory sets.
+-Define sets either by current selections of attributes or by default options (ranking based on current options).
+-Populate sets and relations between sets.
+-Draw visual representation of sets and relations between sets.
+
+3) Selection of Optional Attributes to Define Sets
+
+4) Selection of Sets or Relations Between Sets
+
+----------
+Populating Sets and Relations Between Sets
+
+Provide function access both to the attributes that define sets as well as to the available values of those attributes.
+If multiple attributes define sets, the function will somehow need to determine the combinations of attribute values that define sets.
+
+To populate relations between sets, the function will need to determine all permutations of pairs of sets.
+
+Maybe I should have a separate function to determine combinations of attribute values for sets and pairs of sets.
+Then I can pass those combinations to another function to populate these.
+The function for populating will need to use appropriate AND/OR logic for each type of combination.
+
+----------
+Data Structure for Set Relations
+
+I want my data structure to be convenient both for visualization in a node-link diagram and an adjacency matrix.
+
+In D3, it is convenient to create node-link diagrams from arrays of nodes and links.
+In D3, I am not sure if a standard method or strategy exists for creating adjacency matrix layouts.
+
+----------
+Inclusion Logic for Populating Sets and Relations Between Sets
+
+In the Attribute Menu, all attributes determine which entities remain in the attribute index.
+In the Set Relation View, it is only necessary to keep track of the attributes that define the sets.
+Ignore the other attributes, as consideration of these would be redundant.
+Is that a good idea?
+That means that the Attribute Menu will remain a primary interface to influence the Set Relation View.
+
+If a single attribute defines the sets, then there will be a single set for each available value of the attribute.
+If multiple attributes define the sets, then there will be a single set for each combination of single values of each attribute.
+
+----------
+Literature Relevant to Biological Networks
+
+"Graphical Features of Functional Genes in Human Protein Interaction Network"
+https://www.ncbi.nlm.nih.gov/pubmed/26841412
+Graph-theoretical analysis of human protein interaction network.
+Atrocious Venn Diagram.
+
+"Metabolomics analysis: Finding out metabolic building blocks"
+https://www.ncbi.nlm.nih.gov/pubmed/28493998
+
+"A generative model for protein contact networks"
+https://www.ncbi.nlm.nih.gov/pubmed/26474097
+
+----------
+Visual Representations of Metabolic Network in Literature
+
+"3DScapeCS: application of three dimensional, parallel, dynamic network visualization in Cytoscape"
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3835703/
+
+"Identification of Biochemical Network Modules Based on Shortest Retroactive Distances"
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3213171/
+
+"Gene Expression Profile Change and Associated Physiological and Pathological Effects in Mouse Liver Induced by Fasting and Refeeding"
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3212576/
+
+--------------------------------------------------
 23 May 2017
 
 ----------
@@ -31,6 +117,9 @@ Set Relation Menu receives a current attribute index from the Attribute Menu.
 -Include the entity's identifier or at least count if it possesses all of the attribute values that are criteria for the set.
 
 5) Populate relations between sets.
+-Include the entity's identifier or at least count if it possesses all of the attribute values that are criteria for the two sets.
+-Only consider relations between two sets.
+-Use AND logic to determine entities in common between pairs of two sets.
 
 ----------
 Plan, Set Relation Menu
