@@ -4,6 +4,164 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+26 May 2017
+
+----------
+Method, Populate Sets and Combination Sets
+
+For each entity in Attribute Index
+
+Determine which sets the entity matches.
+Determine which combination sets the entity matches.
+To do that, compute Cartesian products for the entity according to the selected attribute criteria and the entity's attribute values.
+For combination sets, compute all pair-wise combinations of all set permutations.
+Create and initiate a record to count the entity if the set is new.
+Increment counts in a record if the set is old.
+
+If I have a variable number of attribute criteria, then how will I check for and access specific records by a variable number of attributes?
+Would it be easier to construct string identifiers?
+
+
+----------
+Plan
+
+I will need to figure out how to structure the data for the adjacency matrix in the Set Relation View.
+Maybe I should first figure out how to get these data.
+
+Only include attributes as options to define sets if they have between 2 and 10 values.
+Otherwise those attributes would define too many sets.
+
+----------
+Meet with Alex Bigelow and Sean McKenna
+
+Alex recommended not to compute all possible permutations in the Cartesian Product of attribute sets.
+Instead, Alex recommended determining the combinations from the attribute index.
+Possible permutations expand very rapidly.
+The data limit the possible permutations substantially.
+Many possible permutations would only describe empty sets anyway.
+According to the attribute that the user selects to define sets, accumulate the possible combinations from the data while populating the sets.
+
+Alex also recommended using an adjacency matrix in the Set Relations Interface.
+A node-link diagram would become far too complex and useless with more than about five sets.
+
+Alex and Sean noticed that my design only considers intersections between two sets.
+My design does not support any representation for entities that occur simultaneously in more than two sets.
+I was aware of this limitation, and I think it is a reasonable simplification in order to accommodate more than three sets.
+
+----------
+Algorithm, Cartesian Product, JavaScript
+
+I want a functional, recursive algorithm to compute the Cartesian Product of a variable count of arrays with a variable count of elements in each array.
+
+Input: [[a, b, c], [1, 2, 3], [!, #, *]]
+Output: [
+  a1!,
+  a2!,
+  a3!,
+  a1#,
+  a2#,
+  a3#,
+  a1*,
+  a2*,
+  a3*,
+  ...
+  c1*,
+  c2*,
+  c3*
+]
+
+Eventually, my input will look more like this...
+
+Input: [
+  [
+    {
+      attribute: compartment,
+      value: c
+    },
+    {
+      attribute: compartment,
+      value: m
+    }
+  ],
+  [
+    {
+      attribute: process,
+      value: process_10
+    },
+    {
+      attribute: process,
+      value: process_15
+    }
+  ]
+]
+
+References
+https://stackoverflow.com/questions/1266402/whats-a-good-mathematical-sets-implementation-in-javascript/5626737#5626737
+https://stackoverflow.com/questions/2836087/generating-all-permutations-of-character-combinations-when-of-arrays-and-lengt
+https://stackoverflow.com/questions/12303989/cartesian-product-of-multiple-arrays-in-javascript
+https://stackoverflow.com/questions/4331092/finding-all-combinations-of-javascript-array-values
+https://stackoverflow.com/questions/15298912/javascript-generating-combinations-from-n-arrays-with-m-elements
+
+----------
+Set Theory, Cartesian Product
+
+https://en.wikipedia.org/wiki/Cartesian_product
+
+User interaction with the Attribute Menu Interface selects sets of entities with specific values of specific attributes.
+In the Set Relations Interface, I want to define sets by combinations of attributes of different types.
+I want to take Cartesian Products of these sets.
+
+----------
+Attribute Sets and Set Relations
+
+At least for now, I think that the maximal count of attributes by which to define sets should be two.
+
+As I said in notes on 25 May 2017, Set Relations can be redundant, describing relations between more than two sets.
+A Set Relation for Compartment A and Processes 1 and 2 will describe relations between sets Compartment-A:Process-1 and Compartment-A:Process-2.
+A separate Set Relation for Compartment B and Processes 1 and 2 will describe relations between sets Compartment-B:Process-1 and Compartment-B:Process-2.
+
+Sets
+A-1
+A-2
+B-1
+B-2
+
+Relations (Sets)
+A-1,2 (A-1:A-2)
+B-1,2 (B-1:B-2)
+A,B-1 (A-1:B-1)
+A,B-2 (A-2:B-2)
+A,B-1,2 (A-1:B-2, A-2:B-1)
+
+--------------------------------------------------
+25 May 2017
+
+----------
+State in Set Relation View
+
+It will be necessary to keep track of state of attribute options and user selection of attribute options.
+
+If user has not made any explicit selections of attributes, I want to determine a default selection.
+If user has made an explicit selection, I want to preserve that selection even as the data change.
+Or, I could always determine a default selection when the data change and require the user to make explicit selections each time.
+
+For now, I think I should require the user to make a new selection after every change to the attribute menu.
+The program will determine a default selection.
+
+----------
+Attribute Sets and Set Relations
+
+Set Relations are really sets themselves.
+Their criteria are combinations of those from two (no more) sets.
+
+Set Relations will actually describe relations between more than two sets.
+Set Relations are redundant.
+A Set Relation for Compartments A and B and Processes 1 and 2 will describe relations between sets Compartment-A:Process-1, Compartment-A:Process-2, Compartment-B:Process-1, and Compartment-B:Process-2.
+
+I am trying to figure out if Set Relations should have some specific reference to their sets.
+I do not know if that is a good idea, especially because Set Relations are not specific to only two Sets.
+
+--------------------------------------------------
 24 May 2017
 
 ----------

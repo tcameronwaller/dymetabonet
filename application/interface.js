@@ -1346,13 +1346,12 @@ function controlAttributeMenu({
         originalAttributeIndex: originalAttributeIndex,
         model: model
     });
-    // TODO: Pass currentAttributeIndex and model to the Set Relation View.
-    var attributeValues = extractIndexAttributesValues(currentAttributeIndex);
-    console.log("extracted attribute values");
-    console.log(attributeValues);
-    console.log("set candidates");
-    console.log(determineAttributeSetCandidates(attributeValues));
-
+    // Control set relation interface.
+    controlSetRelationInterface({
+        entity: entity,
+        attributeIndex: currentAttributeIndex,
+        model: model
+    });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1362,16 +1361,23 @@ function controlAttributeMenu({
 /**
  * Extracts from the attribute index all values of attributes that entities in
  * the index possess.
+ * @param {string} entity The entity, metabolite or reaction, of the current
+ * selection.
  * @param {Array<Object<string>>} attributeIndex Index of attributes of
  * metabolites and reactions.
  * @returns {Object<Array<string>>} Values of attributes from entities in the
  * attribute index.
  */
-function extractIndexAttributesValues(attributeIndex) {
+function extractIndexAttributesValues(entity, attributeIndex) {
+    // Filter attribute index to include only records for the entity of the
+    // current selection.
+    var entityIndex = attributeIndex.filter(function (record) {
+        return record.entity === entity;
+    });
     // Extract attribute values from entities within the attribute index in
     // order to know which attribute values actually have entities.
     // Iterate on entities with records in the attribute index.
-    return attributeIndex.reduce(function (entityCollection, entityRecord) {
+    return entityIndex.reduce(function (entityCollection, entityRecord) {
         // Iterate on attributes in the entity's record.
         // Determine attributes in record.
         var attributes = Object.keys(entityRecord).filter(function (key) {
@@ -1405,6 +1411,8 @@ function extractIndexAttributesValues(attributeIndex) {
     }, {});
 }
 
+// TODO: I wonder if I should just filter the attributeValues before determining options.
+// TODO: That option seems more straight-forward than having to pass around a whole other variable.
 /**
  * Determines attributes that are suitable candidates to define sets.
  * @param {Object<Array<string>>} attributeValues Values of attributes from
@@ -1418,9 +1426,48 @@ function determineAttributeSetCandidates(attributeValues) {
     });
 }
 
+function controlSetRelationInterface(
+    {entity, attributeIndex, model} = {}
+    ) {
+    var attributeValues = extractIndexAttributesValues(entity, attributeIndex);
+    console.log("extracted attribute values");
+    console.log(attributeValues);
+    console.log("set candidates");
+    console.log(determineAttributeSetCandidates(attributeValues));
+
+    console.log("attributeIndex in controlSetRelationInterface");
+    console.log(attributeIndex);
+}
+
+/**
+ * Determines the combinations of values of attributes that define sets and
+ * relations between sets.
+ * @param {<Array<string>>} attributes Attributes to use in defining sets and
+ * relations.
+ * @param {Object<Array<string>>} attributeValues Values of attributes from
+ * entities in the attribute index.
+ * @returns {Object<Array<Object>>} Names of attributes that are suitable candidates to
+ * define sets.
+ */
+function determineSetRelationCombinations(attributes, attributeValues) {
+
+    // TODO: I think the default (if user has not made any selection) should be to use the attribute with the fewest values that is still an option.
+    // TODO: That strategy will simplify the count of sets.
+
+
+    // TODO: If there is a single attribute to define sets, then define sets by all current values of that attribute.
+    // TODO: If there are 2 (no more) attributes to define sets, then define sets by combining each value of first attribute with all values of second attribute.
+    // TODO: Of course, check for redundancy.
+
+    // TODO: Note that some relations will fill multiple roles.
+    // TODO
+}
+
+
+
+
 // TODO: I think createAttributeSetsRelations() might benefit from knowing not only the attributes that define sets,
 // TODO: but also all available values of those attributes.
-
 /**
  * Creates and populates sets of entities and relations between these on the
  * basis of attributes.
