@@ -4,6 +4,77 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+27 May 2017
+
+----------
+Algorithm, Cartesian Product, JavaScript
+
+I want a functional, immutable, recursive algorithm to compute the Cartesian Product of a variable count of arrays with a variable count of elements in each array.
+I give preference to strategies that use concise methods of native JavaScript.
+
+I patterned a preliminary solution from a function I found on Stack Overflow.
+The author of the function is Danny who submitted his function to Stack Overflow on 26 March 2016 (Reference 1).
+My version of Danny's function has different variable names but is very similar otherwise.
+
+function computeCartesianProductDannySolution(sets) {
+    return sets.reduce(function (productSets, set) {
+        return productSets.map(function (productSet) {
+            return set.map(function (element) {
+                return productSet.concat(element);
+            });
+        }).reduce(function (collection, element2) {
+            return collection.concat(element2);
+        }, [])
+    }, [[]]);
+}
+
+Danny's use of a map method on product sets requires an extra reduce method to collapse the unnecessary arrays.
+
+My final solution avoids this excessive expansion by using a reduce method in place of the map method.
+
+function computeCartesianProduct(sets) {
+    // An example of sets is
+    // [["a", "b", "c"], ["1", "2", "3"], ["!", "#", "*"]].
+    return sets.reduce(function (productSets, set) {
+        return productSets.reduce(function (setCombinations, productSet) {
+            var combination = set.map(function (element) {
+                return productSet.concat(element);
+            });
+            return setCombinations.concat(combination);
+        }, []);
+    }, [[]]);
+}
+
+References
+More Helpful
+1. https://stackoverflow.com/questions/12303989/cartesian-product-of-multiple-arrays-in-javascript
+2. https://stackoverflow.com/questions/1266402/whats-a-good-mathematical-sets-implementation-in-javascript/5626737#5626737
+3. https://stackoverflow.com/questions/15298912/javascript-generating-combinations-from-n-arrays-with-m-elements
+4. https://stackoverflow.com/questions/2836087/generating-all-permutations-of-character-combinations-when-of-arrays-and-lengt
+Less Helpful
+https://stackoverflow.com/questions/4331092/finding-all-combinations-of-javascript-array-values
+https://stackoverflow.com/questions/12152409/find-all-combinations-of-options-in-a-loop
+https://stackoverflow.com/questions/9422386/lazy-cartesian-product-of-arrays-arbitrary-nested-loops
+
+----------
+Method, Populate Sets and Combination Sets
+
+Need
+Given a record for an entity in the Attribute Index, determine all of the sets that it matches.
+
+Organize information about sets within an array of objects.
+Objects contain information about attribute-value criteria for each set.
+
+How can I access sets by a variable number of attribute criteria?
+Use the Array.every() method together with the Array.filter() method.
+Filter the array of sets using the Array.every() method.
+If the length of the resulting array in >= 1, then you have a match.
+Remove the existing set from the array.
+Update the existing record for the set (increment count).
+Concatenate the new record for the set to the array, in place of the previous record.
+Otherwise create a new set and concatenate it to the array.
+
+--------------------------------------------------
 26 May 2017
 
 ----------

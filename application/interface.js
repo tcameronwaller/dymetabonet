@@ -1359,6 +1359,28 @@ function controlAttributeMenu({
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * Computes the Cartesian product from a variable count of sets (arrays) with
+ * variable cardinalities (counts of elements) in each set.
+ * @param {Array<Array>} sets Variable count of sets with variable counts of
+ * elements in each set.
+ * @returns {Array<Array>} Cartesian product of original sets.
+ */
+function computeCartesianProduct(sets) {
+    // An example of sets is
+    // [["a", "b", "c"], ["1", "2", "3"], ["!", "#", "*"]].
+    return sets.reduce(function (productSets, set) {
+        return productSets.reduce(function (setCombinations, productSet) {
+            var combination = set.map(function (element) {
+                return productSet.concat(element);
+            });
+            return setCombinations.concat(combination);
+        }, []);
+    }, [[]]);
+}
+
+
+
+/**
  * Extracts from the attribute index all values of attributes that entities in
  * the index possess.
  * @param {string} entity The entity, metabolite or reaction, of the current
@@ -1437,6 +1459,9 @@ function controlSetRelationInterface(
 
     console.log("attributeIndex in controlSetRelationInterface");
     console.log(attributeIndex);
+
+    console.log("test computeCartesianProduct");
+    console.log(computeCartesianProduct([["a"], ["1", "2", "3"], ["!", "#", "*"]]));
 }
 
 /**
