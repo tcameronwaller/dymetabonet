@@ -7,6 +7,22 @@ Research With Alexander Lex
 31 May 2017
 
 ----------
+Meet with Alexander Lex
+
+The attribute menu needs labels on bars or at least tool tips.
+The search menus could use some indication of selection status.
+
+The summary on the basis of cardinalities of sets and pairs of sets might still be useful.
+It might also be beneficial to include paths between sets.
+The problem with paths between sets is the computational demand of computing these paths.
+
+Alex recommends focusing on the most practical aspect of the data.
+Topological information of relations between individual entities is a priority.
+It will almost certainly be useful to combine the attribute selections with topological selections.
+Allow the attribute selections to narrow the network.
+Then select individual nodes and links by proximity and path within the attribute-specific portions of the network.
+
+----------
 Plan
 
 I still need to define and populate pairs of sets.
