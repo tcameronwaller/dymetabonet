@@ -4,6 +4,23 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+31 May 2017
+
+----------
+Plan
+
+I still need to define and populate pairs of sets.
+
+----------
+Progress, Definition and Population of Sets
+
+Functions define sets from a single attribute type or a combination of multiple attribute types.
+Functions determine the cardinalities of these sets from entities in the attribute index.
+
+I confirmed that the cardinalities of sets for compartments are consistent with the counts in the attribute summary.
+I also confirmed that the functions determine cardinalities for combinations of compartment and operation.
+
+--------------------------------------------------
 30 May 2017
 
 ----------

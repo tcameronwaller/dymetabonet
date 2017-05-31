@@ -1485,7 +1485,6 @@ function createEntityAttributeValuePairs(entityRecord, setAttributes) {
  * and combination of pairs of sets.
  */
 function createAttributeSetsRelations(entity, setAttributes, attributeIndex) {
-    // TODO: Template only at this point...
     // TODO: Perform this filter operation within the control function for the view so that I only have to do it once.
     // Filter attribute index to include only records for the entity of the
     // current selection.
@@ -1504,25 +1503,49 @@ function createAttributeSetsRelations(entity, setAttributes, attributeIndex) {
         // about the attributes and values that define a set.
         // Iterate on sets to which the entity belongs.
         return sets.reduce(function (setCollection, setCriteria) {
+            // Collect criteria for the set.
+            var criteria = setCriteria
+                .reduce(function (collection, criterion) {
+                    var newCriterionRecord = {
+                        [criterion.attribute]: criterion.value
+                    };
+                    return Object
+                        .assign({}, collection, newCriterionRecord);
+                }, {});
             // Determine if the collection already has a record for the current
             // set to which the current entity belongs.
-            // TODO: I'm not sure if this works or not...
-            var setMatches = setCollection.filter(function (setRecord) {
+            // A match set has match values of all attributes that define sets.
+            // Assume that sets and their records are unique in the collection.
+            var matchIndex = setCollection.findIndex(function (setRecord) {
                 return setCriteria.every(function (setCriterion) {
                     return setRecord.criteria[setCriterion.attribute] ===
                         setCriterion.value;
                 });
             });
-
-            // How can I access sets by a variable number of attribute criteria?
-            // Use the Array.every() method together with the Array.filter() method.
-            // Filter the array of sets using the Array.every() method.
-            // If the length of the resulting array is >= 1, then you have a match.
-            // Remove the existing set from the array.
-            // Update the existing record for the set (increment count).
-            // Concatenate the new record for the set to the array, in place of the previous record.
-            // Otherwise create a new set and concatenate it to the array.
-
+            if (matchIndex !== -1) {
+                // A record for the set exists in the collection.
+                // Increment the cardinality of the set.
+                var cardinality = setCollection[matchIndex].cardinality + 1;
+                // Replace the existing record for the set in the collection.
+                var newSetCollection = [].concat(
+                    setCollection.slice(0, matchIndex),
+                    setCollection.slice(matchIndex + 1, setCollection.length)
+                );
+                var newSetRecord = {
+                    cardinality: cardinality,
+                    criteria: Object.assign({}, criteria)
+                };
+                return newSetCollection.concat(newSetRecord);
+            } else {
+                // A record for the set does not exist in the collection.
+                // Initialize cardinality for the set.
+                var cardinality = 1;
+                var newSetRecord = {
+                    cardinality: cardinality,
+                    criteria: Object.assign({}, criteria)
+                };
+                return setCollection.concat(newSetRecord);
+            }
         }, entityCollection);
         // Determine set pairs to represent common entities between pairs of
         // sets. // TODO: Worry about that later...
@@ -1573,18 +1596,20 @@ function controlSetRelationInterface(
     console.log(attributeIndex);
 
     var testEntityRecord = {
-        compartments: ["c", "m", "e"],
-        processes: ["process_1", "process_2", "process_3"],
+        compartment: ["c", "m", "e"],
+        process: ["process_1", "process_2", "process_3"],
         operation: ["c", "t"],
         reversibility: [true, false]
     };
-    var testSetAttributes = ["compartments", "processes"];
-    console.log("test determineEntitySets");
+    var testSetAttributes = ["compartment", "operation"];
     var inputSets = createEntityAttributeValuePairs(testEntityRecord, testSetAttributes);
-    console.log(inputSets);
     console.log("test computeCartesianProduct");
     var products = computeCartesianProduct(inputSets);
     console.log(products);
+
+    console.log("test createAttributeSetsRelations");
+    var setCollection = createAttributeSetsRelations(entity, testSetAttributes, attributeIndex);
+    console.log(setCollection);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
