@@ -4,6 +4,72 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+30 May 2017
+
+----------
+Plan for Meet with Alexander Lex
+
+Demonstrate Attribute Menu with interaction.
+Describe design and plan for Set View.
+Describe progress on defining and populating sets.
+Describe idea for including paths in Set View.
+Describe also design and plan for Entity View.
+
+----------
+Design Ideas
+
+Ethan Kerzner presented about his publication for the EuroVis Conference of 2017.
+Ethan used categories or sets of nodes to simplify networks and represent high-level trends in a more concise way.
+Ethan primarily focused on representing paths of a certain length between sets.
+In Ethan's network, a node only belongs to a single category or set of a specific type.
+An airport is usually only in a single state or country.
+A cell in the retina is only a single type of neuron.
+
+In the metabolic network, entities of metabolites and reactions can belong to multiple categories or sets.
+For that reason, it might be interesting to consider both the counts of entities within sets and the counts of entities in common between multiple sets.
+I wonder if it would also be interesting to incorporate paths between sets like Ethan did.
+For this purpose, it might be difficult or ambiguous to determine to which set a metabolite or reactions belongs, but it would be possible.
+Including paths between sets in this way would be a useful strategy to incorporate information about the topology or connectivity of the network.
+I also would like to somehow include information about degree and centrality of nodes in the network.
+
+--------------------------------------------------
+29 May 2017
+
+----------
+Method, Populate Sets and Combination Sets
+
+For a record of an entity in the Attribute Index, determine all of the sets that it matches.
+Determine which attributes to use in definition of sets.
+These attributes might come from user interaction, or it might be necessary to determine them automatically.
+Organize information about an entity's set attribute values within arrays of objects.
+Each array will be for a single attribute.
+Each object will include information about both the attribute and its value.
+Organize these arrays within an object for convenience.
+Pass an array of these arrays to function computeCartesianProduct and recover the new combinations of attributes and values for sets.
+
+compartmentArray: [
+  {
+    attribute: "compartment",
+    value: "c"
+  },
+  {
+    attribute: "compartment",
+    value: "m"
+  }
+]
+
+processArray: [
+  {
+    attribute: "process",
+    value: "process_10"
+  },
+  {
+    attribute: "process",
+    value: "process_15"
+  }
+]
+
+--------------------------------------------------
 27 May 2017
 
 ----------
@@ -68,7 +134,7 @@ Objects contain information about attribute-value criteria for each set.
 How can I access sets by a variable number of attribute criteria?
 Use the Array.every() method together with the Array.filter() method.
 Filter the array of sets using the Array.every() method.
-If the length of the resulting array in >= 1, then you have a match.
+If the length of the resulting array is >= 1, then you have a match.
 Remove the existing set from the array.
 Update the existing record for the set (increment count).
 Concatenate the new record for the set to the array, in place of the previous record.

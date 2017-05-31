@@ -1359,28 +1359,6 @@ function controlAttributeMenu({
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Computes the Cartesian product from a variable count of sets (arrays) with
- * variable cardinalities (counts of elements) in each set.
- * @param {Array<Array>} sets Variable count of sets with variable counts of
- * elements in each set.
- * @returns {Array<Array>} Cartesian product of original sets.
- */
-function computeCartesianProduct(sets) {
-    // An example of sets is
-    // [["a", "b", "c"], ["1", "2", "3"], ["!", "#", "*"]].
-    return sets.reduce(function (productSets, set) {
-        return productSets.reduce(function (setCombinations, productSet) {
-            var combination = set.map(function (element) {
-                return productSet.concat(element);
-            });
-            return setCombinations.concat(combination);
-        }, []);
-    }, [[]]);
-}
-
-
-
-/**
  * Extracts from the attribute index all values of attributes that entities in
  * the index possess.
  * @param {string} entity The entity, metabolite or reaction, of the current
@@ -1391,6 +1369,7 @@ function computeCartesianProduct(sets) {
  * attribute index.
  */
 function extractIndexAttributesValues(entity, attributeIndex) {
+    // TODO: Perform this filter operation within the control function for the view so that I only have to do it once.
     // Filter attribute index to include only records for the entity of the
     // current selection.
     var entityIndex = attributeIndex.filter(function (record) {
@@ -1400,11 +1379,11 @@ function extractIndexAttributesValues(entity, attributeIndex) {
     // order to know which attribute values actually have entities.
     // Iterate on entities with records in the attribute index.
     return entityIndex.reduce(function (entityCollection, entityRecord) {
-        // Iterate on attributes in the entity's record.
         // Determine attributes in record.
         var attributes = Object.keys(entityRecord).filter(function (key) {
             return (key !== "identifier" && key !== "entity");
         });
+        // Iterate on attributes in the entity's record.
         return attributes
             .reduce(function (attributeCollection, attribute) {
                 if (attributeCollection.hasOwnProperty(attribute)) {
@@ -1448,20 +1427,110 @@ function determineAttributeSetCandidates(attributeValues) {
     });
 }
 
-function controlSetRelationInterface(
-    {entity, attributeIndex, model} = {}
-    ) {
-    var attributeValues = extractIndexAttributesValues(entity, attributeIndex);
-    console.log("extracted attribute values");
-    console.log(attributeValues);
-    console.log("set candidates");
-    console.log(determineAttributeSetCandidates(attributeValues));
+/**
+ * Computes the Cartesian product from a variable count of sets (arrays) with
+ * variable cardinalities (counts of elements) in each set.
+ * @param {Array<Array>} sets Variable count of sets with variable counts of
+ * elements in each set.
+ * @returns {Array<Array>} Cartesian product of original sets.
+ */
+function computeCartesianProduct(sets) {
+    // An example of sets is
+    // [["a", "b", "c"], ["1", "2", "3"], ["!", "#", "*"]].
+    // This function returns an array of arrays.
+    // Each of the subordinate arrays constitutes a product set.
+    return sets.reduce(function (productSets, set) {
+        return productSets.reduce(function (setCombinations, productSet) {
+            var combination = set.map(function (element) {
+                return productSet.concat(element);
+            });
+            return setCombinations.concat(combination);
+        }, []);
+    }, [[]]);
+}
 
-    console.log("attributeIndex in controlSetRelationInterface");
-    console.log(attributeIndex);
+/**
+ * Creates pairs of attributes and values to use to define sets to which an
+ * entity belongs.
+ * @param {Object<Array<string>>} entityRecord Record for a single entity from
+ * the attribute index.
+ * @param {Array<string>} setAttributes Names of attributes that define sets of
+ * entities.
+ * @returns {Array<Array<Object<string>>>} Collections of attribute values that
+ * an entity possesses.
+ */
+function createEntityAttributeValuePairs(entityRecord, setAttributes) {
+    // For each attribute that defines sets, create an array of objects with
+    // information about both the attribute and its value.
+    return setAttributes.map(function (attribute) {
+        return entityRecord[attribute].map(function (value) {
+            return {
+                attribute: attribute,
+                value: value
+            };
+        });
+    });
+}
 
-    console.log("test computeCartesianProduct");
-    console.log(computeCartesianProduct([["a"], ["1", "2", "3"], ["!", "#", "*"]]));
+/**
+ * Creates and populates sets of entities and relations between these on the
+ * basis of specific attributes.
+ * @param {string} entity The entity, metabolite or reaction, of the current
+ * selection.
+ * @param {Array<string>} setAttributes Names of attributes that define sets of
+ * entities.
+ * @param {Array<Object<string>>} attributeIndex Index of attributes of
+ * metabolites and reactions.
+ * @returns {Object<Array<Object<string>>>} Criteria and cardinality of each set
+ * and combination of pairs of sets.
+ */
+function createAttributeSetsRelations(entity, setAttributes, attributeIndex) {
+    // TODO: Template only at this point...
+    // TODO: Perform this filter operation within the control function for the view so that I only have to do it once.
+    // Filter attribute index to include only records for the entity of the
+    // current selection.
+    var entityIndex = attributeIndex.filter(function (record) {
+        return record.entity === entity;
+    });
+    // Determine sets from the records for entities in the attribute index.
+    // Collect cardinalities or counts of entities that belong to each set.
+    // Iterate on entities with records in the attribute index.
+    return entityIndex.reduce(function (entityCollection, entityRecord) {
+        // Determine sets to which the entity belongs.
+        var sets = computeCartesianProduct(
+            createEntityAttributeValuePairs(entityRecord, setAttributes)
+        );
+        // Each array within the array of sets contains objects with information
+        // about the attributes and values that define a set.
+        // Iterate on sets to which the entity belongs.
+        return sets.reduce(function (setCollection, setCriteria) {
+            // Determine if the collection already has a record for the current
+            // set to which the current entity belongs.
+            // TODO: I'm not sure if this works or not...
+            var setMatches = setCollection.filter(function (setRecord) {
+                return setCriteria.every(function (setCriterion) {
+                    return setRecord.criteria[setCriterion.attribute] ===
+                        setCriterion.value;
+                });
+            });
+
+            // How can I access sets by a variable number of attribute criteria?
+            // Use the Array.every() method together with the Array.filter() method.
+            // Filter the array of sets using the Array.every() method.
+            // If the length of the resulting array is >= 1, then you have a match.
+            // Remove the existing set from the array.
+            // Update the existing record for the set (increment count).
+            // Concatenate the new record for the set to the array, in place of the previous record.
+            // Otherwise create a new set and concatenate it to the array.
+
+        }, entityCollection);
+        // Determine set pairs to represent common entities between pairs of
+        // sets. // TODO: Worry about that later...
+        // TODO: I need to determine pairs of sets... Not sure of best way? It'll be all pair permutations of the set array... basically...
+        // TODO: I think that I'll eventually use an object for the setCollection.
+        // TODO: This object will have keys for an array for "sets" and an array for "pairs".
+
+    }, []);
 }
 
 /**
@@ -1488,25 +1557,35 @@ function determineSetRelationCombinations(attributes, attributeValues) {
     // TODO
 }
 
+function controlSetRelationInterface(
+    {entity, attributeIndex, model} = {}
+    ) {
+    // TODO: Filter the attribute index to include only records for the entity of the current selection.
 
 
+    var attributeValues = extractIndexAttributesValues(entity, attributeIndex);
+    console.log("extracted attribute values");
+    console.log(attributeValues);
+    console.log("set candidates");
+    console.log(determineAttributeSetCandidates(attributeValues));
 
-// TODO: I think createAttributeSetsRelations() might benefit from knowing not only the attributes that define sets,
-// TODO: but also all available values of those attributes.
-/**
- * Creates and populates sets of entities and relations between these on the
- * basis of attributes.
- * @param {Array<string>} attributes Attributes that define the sets.
- * @param {Array<Object<string>>} attributeIndex Index of attributes of
- * metabolites and reactions.
- * @returns {Object<Array<string>>} Values of attributes from entities in the
- * attribute index.
- */
-function createAttributeSetsRelations(attributes, attributeIndex) {}
+    console.log("attributeIndex in controlSetRelationInterface");
+    console.log(attributeIndex);
 
-
-
-
+    var testEntityRecord = {
+        compartments: ["c", "m", "e"],
+        processes: ["process_1", "process_2", "process_3"],
+        operation: ["c", "t"],
+        reversibility: [true, false]
+    };
+    var testSetAttributes = ["compartments", "processes"];
+    console.log("test determineEntitySets");
+    var inputSets = createEntityAttributeValuePairs(testEntityRecord, testSetAttributes);
+    console.log(inputSets);
+    console.log("test computeCartesianProduct");
+    var products = computeCartesianProduct(inputSets);
+    console.log(products);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Scrap?
