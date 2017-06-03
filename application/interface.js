@@ -1346,16 +1346,21 @@ function controlAttributeMenu({
         originalAttributeIndex: originalAttributeIndex,
         model: model
     });
-    // Control set relation interface.
-    controlSetRelationInterface({
+    // Control set interface.
+    controlSetInterface({
         entity: entity,
+        attributeIndex: currentAttributeIndex,
+        model: model
+    });
+    // Control topology interface.
+    controlTopologyInterface({
         attributeIndex: currentAttributeIndex,
         model: model
     });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Set Relation Interface
+// Set Interface
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -1580,7 +1585,7 @@ function determineSetRelationCombinations(attributes, attributeValues) {
     // TODO
 }
 
-function controlSetRelationInterface(
+function controlSetInterface(
     {entity, attributeIndex, model} = {}
     ) {
     // TODO: Filter the attribute index to include only records for the entity of the current selection.
@@ -1611,6 +1616,24 @@ function controlSetRelationInterface(
     var setCollection = createAttributeSetsRelations(entity, testSetAttributes, attributeIndex);
     console.log(setCollection);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Topology Interface
+////////////////////////////////////////////////////////////////////////////////
+
+// TODO: Eventually I'll need to figure out how to initialize the network with an initial set of metabolites to replicate.
+
+
+// TODO: Receive attributeIndex and model from Attribute Menu.
+// TODO: Determine whether to consider general metabolites or compartmental metabolites.
+// TODO: Determine metabolites to replicate in the network.
+// TODO: Assemble network of nodes for metabolites and reactions.
+
+// TODO: Maybe I can traverse network topology without defining explicit nodes and links.
+// TODO: Maybe just define explicit nodes and links for visualization of the network.
+
+function controlTopologyInterface(attributeIndex, model) {}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Scrap?

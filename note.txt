@@ -4,6 +4,214 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+3 June 2017
+
+----------
+Plan, Assembly of Nodes and Links
+
+In order to create a network, I need collections of nodes and links.
+For nodes, create objects to store the identifier and other attributes of the node.
+Store these objects within separate arrays for metabolites and reactions.
+
+For links, create objects to store the identifier, source, and target.
+Store these objects within arrays.
+
+Assemble a network.
+Includes nodes for all entities in the Attribute Index.
+Only include the metabolites of a reaction that are also in the Attribute Index.
+Include links only between reactions and metabolites in the Attribute Index.
+Only include links for reactions that are in the Attribute Index.
+
+Method
+Metabolites derive all of their attributes in the Attribute Index from the reactions in which they participate.
+For this reason, I doubt that any metabolites will persist in the Attribute Index without the reactions that gave them their attributes.
+Iterate on reactions from the Attribute Index, and consider all metabolites that participate in each reaction.
+For each reaction...
+...If compartment is true...
+
+...If compartment is false...
+......If the reaction is a transport reaction (same metabolite as reactant and product)...
+.........Ignore reaction
+......If the reaction is not a transport reaction...
+.........Create a node for the reaction
+.........For each metabolite of the reaction...
+............If the metabolite is in the Attribute Index...
+...............If the metabolite is in the replication list...
+..................Create a reaction-specific node for the metabolite
+..................Create link(s) between the reaction and the metabolite
+...............If the metabolite is not in the replication list...
+..................Create node for the metabolite
+..................Create link(s) between the reaction and the metabolite
+
+
+----------
+Selection of Network Library
+
+I have more confidence in the capability and competence of NetworkX than I do in CytoScape.js.
+NetworkX is more versatile and capable than CytoScape.js.
+
+I looked at source code for both NetworkX and CytoScape.js.
+Source code for NetworkX seems more orderly and intuitive than source code for CytoScape.js.
+
+--------------------------------------------------
+2 June 2017
+
+----------
+Plan, Network Assembly
+
+Assemble a network in JSNetworkX from arrays of metabolites and reactions to include and information from the metabolic model.
+Replicate nodes for specific metabolites that are in an array.
+Eventually provide a menu to the user to control which metabolites are in the array for replication.
+
+----------
+Plan, Network Library
+
+CytoScape.js is more popular and current than JSNetworkX.
+CytoScape.js has contribution from more people.
+CytoScape.js is familiar to the biological community.
+
+JSNetworkX relates to NetworkX.
+NetworkX is more popular and has a broader community than CytoScape.js.
+NetworkX and even JSNetworkX are much more sophisticated and extensive than CytoScape.js.
+
+----------
+Network, Nodes with Excessive Degrees
+
+How do I want to handle metabolites with especially great abundance and degree?
+Examples include water, proton, oxygen, carbon dioxide, and adenosine phosphates.
+These metabolites are extremely abundant in the cell and promiscuous in metabolism.
+To avoid paths with nodes for these metabolites, modify the network before path searches.
+Replicate these nodes for each reaction in which they participate.
+Only include links between these nodes and their single reaction.
+After this replication of these nodes, they will not influence path traversals.
+
+Initialize a default list of abundant and promiscous metabolites for replication.
+Enable the user to see and modify the members of this list.
+
+----------
+Network, Graph Traversal Algorithms
+
+NetworkX
+http://networkx.github.io/
+http://networkx.readthedocs.io/en/latest/
+
+Yen's Algorithm for Shortest Simple Paths
+https://en.wikipedia.org/wiki/Yen%27s_algorithm
+
+PathLinker
+http://apps.cytoscape.org/apps/pathlinker
+"a novel integration of Yen's algorithm with the A* heuristic, which allows very efficient computation for very large k values, e.g., 10,000, on networks with hundreds of thousands of edges."
+
+----------
+Literature on Analysis of Metabolic Network
+
+https://www.nature.com/nature/journal/v407/n6804/full/407651a0.html
+
+----------
+Visual Representations of Metabolic Network in Literature
+
+"3DScapeCS: application of three dimensional, parallel, dynamic network visualization in Cytoscape"
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3835703/
+
+"Identification of Biochemical Network Modules Based on Shortest Retroactive Distances"
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3213171/
+
+"Gene Expression Profile Change and Associated Physiological and Pathological Effects in Mouse Liver Induced by Fasting and Refeeding"
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3212576/
+
+KEGG Atlas
+
+Metabolic Atlas
+http://www.metabolicatlas.com/atlas
+
+--------------------------------------------------
+1 June 2017
+
+----------
+Library for Graph, Network Algorithms
+
+The metabolic network in my model is a directed graph.
+It is not a multi-graph.
+The links do not have weights, so Dijkstra's Algorithm is unnecessary.
+
+Here are the algorithms that I imagine needing.
+-Network Data Organization
+--Directed Graph
+--Undirected Graph
+-Union
+-Subgraph
+-Copy
+-Link Direction Reversal
+-Betweenness Centrality
+-Degree
+-Ego or Proximity Graph
+--Single Source Shortest Paths by Length
+-Shortest Simple Paths
+--Bidirectional Shortest Paths
+
+Considering the algorithms that I need, I think it will be beneficial to use an available library to the extent that an appropriate library is available.
+
+JSNetworkX is more sophisticated that CytoScape.js, I think.
+
+JSNetworkX
+
+
+----------
+Design, Topology View
+
+I want a view to depict topology of relations between individual entities in the metabolic model.
+The Topology View is probably a greater priority than the Set View.
+
+User selections of attributes in the Attribute Menu will filter the nodes that the network includes.
+
+Be able to define the metabolic network either with or without distinct nodes for compartmental metabolites.
+Sketch 2017-02-15_1 explores some of the different representations of the network with and without distinct nodes for compartmental metabolites.
+
+Compartmental Metabolites
+
+General Metabolites
+Ignore transport reactions.
+Be careful as to which type of transport reactions to ignore.
+Multi-compartmental transport reactions are not necessarily a problem.
+Transport reactions that involve the same metabolite as reactant and product might be more messy and unnecessary in the network.
+
+Topological Search
+Enable the user to search the topology of the network by proximity (neighborhood) or by path (k shortest paths).
+Sketch 2017-04-05_1 depicts necessary parameters for topological searches and potential interface designs to control these.
+The available nodes and links in the network depend on user selections of attributes from the Attribute Menu.
+The user will select a focus node for proximity searches or origin and destination nodes for path searches.
+
+Proximity Search
+Focus node.
+Depth of search.
+Do not worry about exclusions from the network.
+Selections of attributes give sufficient control over which parts of the network to include.
+
+Path Search
+Origin node.
+Destination node.
+Whether or not to consider directionality of links.
+Count of shortest paths to consider.
+Do not worry about exclusions from the network.
+Selections of attributes give sufficient control over which parts of the network to include.
+
+Within the Topology View, I think the user should be able to select individual entities and inspect information about those entities.
+
+Notes on 5 April 2017 include information about functionality for network topological searches.
+
+----------
+Design, Set View
+
+I want a view to summarize sets in the metabolic model.
+
+Similar to Ethan Kerzner's project that I mentioned in notes on 30 May 2017, I still think that paths between sets might be interesting for the metabolic network.
+I do not consider this aspect of the Set View to be a great priority, largely due to computational complexity.
+The Topological View will give access to paths and other aspects of topology.
+If the user can identify individual entities from sets, then the user can search paths between those individual entities.
+
+I think the user should be able to search lists of entities within each set.
+
+--------------------------------------------------
 31 May 2017
 
 ----------
