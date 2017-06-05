@@ -4,6 +4,14 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+5 June 2017
+
+----------
+Assembly of Nodes and Links
+
+The reactions of the metabolic model determine the attributes of both reactions and metabolites in the attribute index.
+
+--------------------------------------------------
 3 June 2017
 
 ----------
