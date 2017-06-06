@@ -1632,7 +1632,14 @@ function controlSetInterface(
 // TODO: Maybe I can traverse network topology without defining explicit nodes and links.
 // TODO: Maybe just define explicit nodes and links for visualization of the network.
 
-function controlTopologyInterface(attributeIndex, model) {}
+function controlTopologyInterface(attributeIndex, model) {
+    // TODO: I need to extract identifiers for metabolites and reactions from the Attribute Index.
+    // TODO: I need to pass these to assembleNetwork().
+    // TODO: assembleNetwork() should return network elements.
+
+    var compartmentalization = true;
+    var replicationMetabolites = [];
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
