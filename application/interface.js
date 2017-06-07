@@ -1592,13 +1592,13 @@ function controlSetInterface(
 
 
     var attributeValues = extractIndexAttributesValues(entity, attributeIndex);
-    console.log("extracted attribute values");
-    console.log(attributeValues);
-    console.log("set candidates");
-    console.log(determineAttributeSetCandidates(attributeValues));
+    //console.log("extracted attribute values");
+    //console.log(attributeValues);
+    //console.log("set candidates");
+    //console.log(determineAttributeSetCandidates(attributeValues));
 
-    console.log("attributeIndex in controlSetRelationInterface");
-    console.log(attributeIndex);
+    //console.log("attributeIndex in controlSetRelationInterface");
+    //console.log(attributeIndex);
 
     var testEntityRecord = {
         compartment: ["c", "m", "e"],
@@ -1608,13 +1608,13 @@ function controlSetInterface(
     };
     var testSetAttributes = ["compartment", "operation"];
     var inputSets = createEntityAttributeValuePairs(testEntityRecord, testSetAttributes);
-    console.log("test computeCartesianProduct");
+    //console.log("test computeCartesianProduct");
     var products = computeCartesianProduct(inputSets);
-    console.log(products);
+    //console.log(products);
 
-    console.log("test createAttributeSetsRelations");
+    //console.log("test createAttributeSetsRelations");
     var setCollection = createAttributeSetsRelations(entity, testSetAttributes, attributeIndex);
-    console.log(setCollection);
+    //console.log(setCollection);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1632,13 +1632,63 @@ function controlSetInterface(
 // TODO: Maybe I can traverse network topology without defining explicit nodes and links.
 // TODO: Maybe just define explicit nodes and links for visualization of the network.
 
-function controlTopologyInterface(attributeIndex, model) {
+/**
+ * Extracts from the attribute index identifiers of all entities of a specific
+ * type.
+ * @param {string} entity An entity, metabolite or reaction, in the attribute
+ * index.
+ * @param {Array<Object<string>>} attributeIndex Index of attributes of
+ * metabolites and reactions.
+ * @returns {<Array<string>} Identifiers of entities in the attribute index.
+ */
+function extractIndexEntityIdentifiers(entity, attributeIndex) {
+    return attributeIndex.filter(function (record) {
+        return record.entity === entity;
+    }).map(function (record) {
+        return record.identifier;
+    });
+}
+
+function controlTopologyInterface({attributeIndex, model} = {}) {
     // TODO: I need to extract identifiers for metabolites and reactions from the Attribute Index.
     // TODO: I need to pass these to assembleNetwork().
     // TODO: assembleNetwork() should return network elements.
 
+    var metaboliteIdentifiers = extractIndexEntityIdentifiers(
+        "metabolite", attributeIndex
+    );
+    var reactionIdentifiers = extractIndexEntityIdentifiers(
+        "reaction", attributeIndex
+    );
+    console.log("metaboliteIdentifiers");
+    console.log(metaboliteIdentifiers.length);
+    console.log("reactionIdentifiers");
+    console.log(reactionIdentifiers.length);
+
     var compartmentalization = true;
-    var replicationMetabolites = [];
+    var replicationMetabolites = [
+        "ac", "accoa", "adp", "amp", "atp", "ca2", "camp", "cdp", "cl", "cmp",
+        "co", "co2", "coa", "ctp", "datp", "dcmp", "dctp", "dna", "dtdp",
+        "dtmp", "fe2", "fe3", "fmn", "gdp", "gmp", "gtp", "h", "h2", "h2o",
+        "h2o2", "hco3", "i", "idp", "imp", "itp", "k", "na1", "nad", "nadh",
+        "nadp", "nadph", "nh4", "no", "no2", "o2", "o2s", "oh1", "pi", "ppi",
+        "pppi", "so3", "so4", "udp", "ump", "utp"
+    ];
+    // 10437 nodes, 39353 links (general, no replication)
+    // 23315 nodes, 39353 links (general, replication)
+    // 29921 nodes, 44381 links (compartmental, no replication)
+    // 35520 nodes 44381 links (compartmental, replication)
+
+    // Assemble network.
+    var network = assembleNetwork({
+        compartmentalization: compartmentalization,
+        replicationMetabolites: [],
+        metaboliteIdentifiers: metaboliteIdentifiers,
+        reactionIdentifiers: reactionIdentifiers,
+        model: model
+    });
+    console.log("network");
+    console.log(network);
 }
 
 

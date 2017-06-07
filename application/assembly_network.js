@@ -208,99 +208,107 @@ function assembleNetworkMetabolites({
     return reaction
         .metabolites
         .reduce(function (metaboliteCollection, reactionMetabolite) {
-        // Determine whether or not the metabolite is in the
-        // list for inclusion in the network.
-        if (
-            metaboliteIdentifiers
-                .includes(reactionMetabolite.identifier)
-        ) {
-            // Metabolite is in list for inclusion.
-            // Create node for metabolite.
-            // Determine base identifier for metabolite node.
-            var metaboliteIdentifier =
-                determineMetaboliteNodeIdentifier({
-                    metabolite: reactionMetabolite.identifier,
-                    compartment: reactionMetabolite.compartment,
-                    compartmentalization: compartmentalization
-                });
-            // Determine whether or not to create replicate,
-            // reaction-specific nodes for the metabolite.
+            // Determine whether or not the metabolite is in the
+            // list for inclusion in the network.
             if (
-                !replicationMetabolites
+                metaboliteIdentifiers
                     .includes(reactionMetabolite.identifier)
             ) {
-                // Metabolite is not in list for
-                // reaction-specific replication.
-                var metaboliteNodeIdentifier = metaboliteIdentifier;
-            } else {
-                // Metabolite is in list for reaction-specific
-                // replication.
-                var metaboliteNodeIdentifier = (
-                    metaboliteIdentifier + "_" + reaction.identifier
-                );
-            }
-            // Determine whether or not a node already exists for the
-            // metabolite.
-            var nodeSearch = metaboliteCollection.nodes.find(function (node) {
-                return node.identifier === metaboliteNodeIdentifier;
-            });
-            if (nodeSearch !== undefined) {
-                // A node does not already exist for the metabolite.
-                // Create new node for the metabolite.
-                var metabolite = model
-                    .entities
-                    .metabolites[reactionMetabolite.identifier];
-                if (compartmentalization) {
-                    var newValues = {
+                // Metabolite is in list for inclusion.
+                // Create node for metabolite.
+                // Determine base identifier for metabolite node.
+                var metaboliteIdentifier =
+                    determineMetaboliteNodeIdentifier({
+                        metabolite: reactionMetabolite.identifier,
                         compartment: reactionMetabolite.compartment,
-                        identifier: metaboliteNodeIdentifier
-                    };
-                } else {
-                    var newValues = {
-                        identifier: metaboliteNodeIdentifier
-                    };
-                }
-                var metaboliteNode = Object.assign(metabolite, newValues);
-                var newNodes = metaboliteCollection
-                    .nodes
-                    .concat(metaboliteNode);
-            } else {
-                // A node already exists for the metabolite.
-                var newNodes = metaboliteCollection.nodes;
-            }
-            // Create links between the reaction and the metabolite.
-            var links = createReactionMetaboliteLinks({
-                metaboliteIdentifier: metaboliteNodeIdentifier,
-                role: reactionMetabolite.role,
-                reactionIdentifier: reaction.identifier,
-                reversibility: reaction.reversibility
-            });
-            var newLinks = links.reduce(function (collection, newLink) {
-                var linkSearch = metaboliteCollection
-                    .links
-                    .find(function (oldLink) {
-                        return oldLink.identifier === newLink.identifier;
+                        compartmentalization: compartmentalization
                     });
-                if (linkSearch !== undefined) {
-                    // The link does not already exist in the collection.
-                    // Include the link in the collection.
-                    return collection.concat(newLink);
+                // Determine whether or not to create replicate,
+                // reaction-specific nodes for the metabolite.
+                if (
+                    !replicationMetabolites
+                        .includes(reactionMetabolite.identifier)
+                ) {
+                    // Metabolite is not in list for
+                    // reaction-specific replication.
+                    var metaboliteNodeIdentifier = metaboliteIdentifier;
                 } else {
-                    // The link already exists in the collection.
-                    return collection;
+                    // Metabolite is in list for reaction-specific
+                    // replication.
+                    var metaboliteNodeIdentifier = (
+                        metaboliteIdentifier + "_" + reaction.identifier
+                    );
                 }
-            }, []);
-            // Restore the collection with new elements of the network.
-            return {
-                links: newLinks,
-                nodes: newNodes
-            };
-        } else {
-            // Metabolite is not in list for inclusion.
-            // Do not create node for metabolite.
-            return metaboliteCollection;
-        }
-    }, reactionCollection);
+                // Determine whether or not a node already exists for the
+                // metabolite.
+                var nodeSearch = metaboliteCollection
+                    .nodes
+                    .find(function (node) {
+                        return node.identifier === metaboliteNodeIdentifier;
+                    });
+                if (nodeSearch === undefined) {
+                    // A node does not already exist for the metabolite.
+                    // Create new node for the metabolite.
+                    var metabolite = model
+                        .entities
+                        .metabolites[reactionMetabolite.identifier];
+                    if (compartmentalization) {
+                        var newValues = {
+                            compartment: reactionMetabolite.compartment,
+                            entity: "metabolite",
+                            identifier: metaboliteNodeIdentifier
+                        };
+                    } else {
+                        var newValues = {
+                            entity: "metabolite",
+                            identifier: metaboliteNodeIdentifier
+                        };
+                    }
+                    var metaboliteNode = Object.assign(metabolite, newValues);
+                    var newNodes = metaboliteCollection
+                        .nodes
+                        .concat(metaboliteNode);
+                } else {
+                    // A node already exists for the metabolite.
+                    var newNodes = metaboliteCollection.nodes;
+                }
+
+                // TODO: Only the last link is staying around, I think...
+
+
+                // Create links between the reaction and the metabolite.
+                var links = createReactionMetaboliteLinks({
+                    metaboliteIdentifier: metaboliteNodeIdentifier,
+                    role: reactionMetabolite.role,
+                    reactionIdentifier: reaction.identifier,
+                    reversibility: reaction.reversibility
+                });
+                var newLinks = links.reduce(function (collection, newLink) {
+                    var linkSearch = metaboliteCollection
+                        .links
+                        .find(function (oldLink) {
+                            return oldLink.identifier === newLink.identifier;
+                        });
+                    if (linkSearch === undefined) {
+                        // The link does not already exist in the collection.
+                        // Include the link in the collection.
+                        return collection.concat(newLink);
+                    } else {
+                        // The link already exists in the collection.
+                        return collection;
+                    }
+                }, []);
+                // Restore the collection with new elements of the network.
+                return {
+                    links: metaboliteCollection.links.concat(newLinks),
+                    nodes: newNodes
+                };
+            } else {
+                // Metabolite is not in list for inclusion.
+                // Do not create node for metabolite.
+                return metaboliteCollection;
+            }
+        }, reactionCollection);
 }
 
 /**
@@ -336,7 +344,10 @@ function assembleNetworkReactionsMetabolites({
         .reduce(function (reactionCollection, reactionIdentifier) {
             // Create new node for the reaction.
             var reaction = model.entities.reactions[reactionIdentifier];
-            var reactionNode = reaction;
+            var newValues = {
+                entity: "reaction"
+            };
+            var reactionNode = Object.assign(reaction, newValues);
             // Create new nodes for the reaction's metabolites.
             // Create new links between the reaction and its metabolites.
             var metaboliteNodesLinks = assembleNetworkMetabolites({
