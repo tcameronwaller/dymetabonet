@@ -1654,9 +1654,12 @@ function controlTopologyInterface({attributeIndex, model} = {}) {
     // TODO: I need to pass these to assembleNetwork().
     // TODO: assembleNetwork() should return network elements.
 
+    // Extract identifiers of entities from the attribute index.
+    // The full model has 2652 metabolites.
     var metaboliteIdentifiers = extractIndexEntityIdentifiers(
         "metabolite", attributeIndex
     );
+    // The full model has 7785 reactions.
     var reactionIdentifiers = extractIndexEntityIdentifiers(
         "reaction", attributeIndex
     );
@@ -1674,21 +1677,50 @@ function controlTopologyInterface({attributeIndex, model} = {}) {
         "nadp", "nadph", "nh4", "no", "no2", "o2", "o2s", "oh1", "pi", "ppi",
         "pppi", "so3", "so4", "udp", "ump", "utp"
     ];
+    // Assemble network.
     // 10437 nodes, 39353 links (general, no replication)
     // 23315 nodes, 39353 links (general, replication)
     // 29921 nodes, 44381 links (compartmental, no replication)
     // 35520 nodes 44381 links (compartmental, replication)
+    // Only assemble network if it is below a threshold.
+    if (
+        metaboliteIdentifiers.length < 1500 &&
+        reactionIdentifiers.length < 5000
+    ) {
+        var networkElements = assembleNetwork({
+            compartmentalization: compartmentalization,
+            replicationMetabolites: replicationMetabolites,
+            metaboliteIdentifiers: metaboliteIdentifiers,
+            reactionIdentifiers: reactionIdentifiers,
+            model: model
+        });
+        console.log("networkElements");
+        console.log(networkElements);
 
-    // Assemble network.
-    var network = assembleNetwork({
-        compartmentalization: compartmentalization,
-        replicationMetabolites: [],
-        metaboliteIdentifiers: metaboliteIdentifiers,
-        reactionIdentifiers: reactionIdentifiers,
-        model: model
-    });
-    console.log("network");
-    console.log(network);
+        // Initialize an operable network from the network elements.
+        var nodes = networkElements.nodes.map(function (node) {
+            return [].concat(node.identifier, Object.assign({}, node));
+        });
+        var links = networkElements.links.map(function (link) {
+            return [].concat(link.source, link.target, Object.assign({}, link));
+        });
+        var network = new jsnx.MultiDiGraph();
+        network.addNodesFrom(nodes);
+        network.addEdgesFrom(links);
+        console.log("test network");
+        console.log("multi?" + network.isMultigraph());
+        console.log("directed?" + network.isDirected());
+        //console.log(network.nodes(optData=true));
+
+        // TODO: Now it's time to figure out some graph traversal algorithms.
+        // TODO: Start with proximity/ego graph.
+
+        // TODO: Do I need an actual node to pass to the function?
+        var pyruvateEgo = jsnx.singleSourceShortestPathLength(network, "pyr_m", 3);
+        console.log("pyruvateEgo" + pyruvateEgo);
+
+
+    }
 }
 
 

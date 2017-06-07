@@ -4,6 +4,66 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+7 June 2017
+
+----------
+Meet with Alexander Lex
+
+Alex wanted to find a design to draw nodes and links of the network dynamically from interactive selections of the model.
+He suggested separating processes from other sets or attributes in the attribute menu.
+He suggested placing processes in a separate, vertical panel.
+He suggested that user selection of a process would automatically draw the entire process in a node-link diagram.
+Alex also suggested that operation and reversibility were not useful for selecting portions of the network but might be more useful for highlighting.
+
+I do not like the idea of separating processes from other attributes in the attribute menu.
+I think this separation would be somewhat arbitrary and would complicate the interface.
+
+I prefer to draw the network for the entire selection if the selection is below some threshold of scale.
+Otherwise, I prefer to require the user to filter the selection further through topological queries (proximity or ego and paths).
+
+----------
+Plan, Graph Network Traversal
+
+Ego, Proximity Network
+
+ego_graph, NetworkX
+http://networkx.readthedocs.io/en/latest/reference/generated/networkx.generators.ego.ego_graph.html?highlight=ego%20graph
+
+The ego_graph function of NetworkX is a control function.
+For unweighted graphs, the function uses single_source_shortest_path_length.
+
+single_source_shortest_path_length, NetworkX
+http://networkx.readthedocs.io/en/latest/reference/generated/networkx.algorithms.shortest_paths.unweighted.single_source_shortest_path_length.html?highlight=shortest%20path
+
+K Shortest Simple Paths
+
+----------
+Plan, Network Initialization
+
+Now that I have network elements, I am ready to initialize an operable network.
+My current plan is to use a network in JSNetworkX.
+JSNetworkX is more transparent and seems more customizable than CytoScape.js.
+
+----------
+Design, Computational Resource
+
+The assembly of the network elements demands extensive computational resource.
+With large selections from the metabolic model, such as the entire model, network assembly interferes with live interactivity.
+Set a threshold for live updates to the network topology portion of the interface.
+If the selection exceeds the threshold, require the user to submit the selection for network assembly.
+Otherwise, update the network automatically if the selection is below some threshold.
+
+----------
+Progress
+
+As of 6 June 2017, the program successfully assembles elements (nodes and links) for the network.
+There are some neat features about the network assembly process.
+
+1. The assembly creates network elements differently for a representation of the network with or without compartmentalization.
+2. The assembly creates replicate, reaction-specific nodes for metabolites in a specific list.
+The plan is to allow the user to customize this list according to interest.
+
+--------------------------------------------------
 5 June 2017
 
 ----------
