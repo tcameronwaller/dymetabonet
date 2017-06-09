@@ -4,6 +4,28 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+8 June 2017
+
+----------
+Entity Interface
+
+Show a horizontal bar across the top of the view.
+The width of this bar corresponds to the count of nodes in the network that assembles from the user's selection of attributes.
+Include some sort of marker on this chart for the threshold at which to visualize the entire network.
+Maybe even allow the user to drag this marker to change the threshold.
+
+Create and activate menus to specify and submit (include submit button) queries for proximity and path.
+
+Visualize the network using D3.
+Maybe initially visualize using JSNetworkX functionality.
+
+----------
+Data
+
+It does not make sense to store reactions with nodes for metabolites after those nodes become specific to compartments.
+Since I do not want to update the list of reactions to be specific to the compartment, maybe I should remove this attribute from records for nodes.
+
+--------------------------------------------------
 7 June 2017
 
 ----------

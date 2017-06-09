@@ -1352,7 +1352,7 @@ function controlAttributeMenu({
         attributeIndex: currentAttributeIndex,
         model: model
     });
-    // Control topology interface.
+    // Control entity interface.
     controlTopologyInterface({
         attributeIndex: currentAttributeIndex,
         model: model
@@ -1618,19 +1618,123 @@ function controlSetInterface(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Topology Interface
+// Entity Interface
 ////////////////////////////////////////////////////////////////////////////////
 
 // TODO: Eventually I'll need to figure out how to initialize the network with an initial set of metabolites to replicate.
 
 
-// TODO: Receive attributeIndex and model from Attribute Menu.
 // TODO: Determine whether to consider general metabolites or compartmental metabolites.
 // TODO: Determine metabolites to replicate in the network.
 // TODO: Assemble network of nodes for metabolites and reactions.
 
-// TODO: Maybe I can traverse network topology without defining explicit nodes and links.
-// TODO: Maybe just define explicit nodes and links for visualization of the network.
+
+
+
+// TODO: Create and activate interace components for specifying proximity and path queries.
+
+function createActivateProximityMenu() {}
+
+function createActivatePathMenu() {}
+
+
+
+// Scrap Template //
+
+/**
+ * Initializes the attribute menu and attribute menu table.
+ */
+function initializeAttributeMenu___JustForTemplate() {
+    // This function executes upon initialization of the program after assembly
+    // or load of a metabolic model.
+
+    // This function does not activate some control elements, because the
+    // handlers for these control elements require data objects.
+
+    // Create container for attribute menu.
+    var attributeView = document.getElementById("attribute");
+    var attributeMenu = document.createElement("div");
+    attributeMenu.setAttribute("id", "attribute-menu");
+    attributeView.appendChild(attributeMenu);
+    // Create attribute menu table.
+    var attributeMenuTable = document.createElement("table");
+    // Create header.
+    var head = document.createElement("thead");
+    var headRow = document.createElement("tr");
+    headRow
+        .appendChild(createElementWithText({text: "Attribute", type: "th"}))
+        .setAttribute("class", "attribute");
+    // TODO: Also display the total count of reactions or metabolites... that'll be different than the total of the counts for each property.
+    var valueHead = document.createElement("th");
+    valueHead.setAttribute("class", "value");
+    // Create entity selector with default value of metabolite.
+    var metaboliteRadioLabel = createLabelInputElement({
+        className: "entity",
+        identifier: "attribute-menu-entity-metabolite",
+        name: "attribute-menu-entity",
+        value: "metabolite",
+        text: "Metabolite",
+        type: "radio"
+    });
+    var metaboliteRadio = metaboliteRadioLabel.getElementsByTagName("input")[0];
+    metaboliteRadio.setAttribute("checked", true);
+    valueHead.appendChild(metaboliteRadioLabel);
+    var reactionRadioLabel = createLabelInputElement({
+        className: "entity",
+        identifier: "attribute-menu-entity-reaction",
+        name: "attribute-menu-entity",
+        value: "reaction",
+        text: "Reaction",
+        type: "radio"
+    });
+    valueHead.appendChild(reactionRadioLabel);
+    // Create filter check box.
+    var filterCheckLabel = createLabelInputElement({
+        className: "filter",
+        identifier: "attribute-menu-filter",
+        name: "attribute-menu-filter",
+        value: "filter",
+        text: "Filter",
+        type: "checkbox"
+    });
+    filterCheckLabel.setAttribute("checked", false);
+    valueHead.appendChild(filterCheckLabel);
+    // Create reset button.
+    var resetButton = document.createElement("button");
+    resetButton.textContent = "Reset";
+    resetButton.setAttribute("id", "attribute-menu-reset");
+    valueHead.appendChild(resetButton);
+    // Append header to table.
+    headRow.appendChild(valueHead);
+    head.appendChild(headRow);
+    attributeMenuTable.appendChild(head);
+    // Create body.
+    var body = document.createElement("tbody");
+    attributeMenuTable.appendChild(body);
+    // Append attribute menu table to attribute menu.
+    attributeMenu.appendChild(attributeMenuTable);
+}
+
+//               //
+
+
+
+
+
+
+function initializeEntityInterface({attributeIndex, model} = {}) {
+
+
+    // Initiate control of entity interface.
+    controlTopologyInterface({
+        attributeIndex: currentAttributeIndex,
+        model: model
+    });
+
+}
+
+
+
 
 /**
  * Extracts from the attribute index identifiers of all entities of a specific
@@ -1715,14 +1819,69 @@ function controlTopologyInterface({attributeIndex, model} = {}) {
         // TODO: Now it's time to figure out some graph traversal algorithms.
         // TODO: Start with proximity/ego graph.
 
-        // TODO: Do I need an actual node to pass to the function?
-        var pyruvateEgo = jsnx.singleSourceShortestPathLength(network, "pyr_m", 3);
-        console.log("pyruvateEgo" + pyruvateEgo);
-
+        console.log("pyruvateEgo");
+        var egoNetwork = induceEgoNetwork({
+            node: "pyr_m",
+            depth: 3,
+            center: true,
+            direction: null,
+            network: network
+        });
+        console.log(egoNetwork.nodes(optData=false));
 
     }
 }
 
+/**
+ * Induces a subgraph for all nodes within a specific depth without weight of a
+ * single focal node or ego.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.node Identifier for a single node in a network.
+ * @param {number} parameters.depth Depth in count of links of traversal around
+ * focal node.
+ * @param {boolean} parameters.center Indicator of whether or not to include the
+ * central focal node in the subgraph.
+ * @param {string} parameters.direction Indicator (in, out, null) of whether or
+ * not to follow link directionality in traversal and which direction to follow.
+ * @param {Object} parameters.network Network in JSNetworkX.
+ * @returns {Object} Induced subgraph network in JSNetworkX.
+ */
+function induceEgoNetwork({node, depth, center, direction, network} = {}) {
+    // Collect nodes for the subgraph by traversal according to constraint of
+    // link directionality.
+    if (direction === "out") {
+        // Traverse along links emanating out from focal node.
+        // JSNetworkX's singleSourceShortestPathLength function accepts the
+        // identifier for the focal node.
+        // JSNetworkX's singleSourceShortestPathLength function traverses links
+        // that lead out from the focal node in a network with directional links.
+        var egoNodesMap = jsnx
+            .singleSourceShortestPathLength(network, node, depth);
+    } else if (direction === "in") {
+        // Traverse along links converging in towards focal node.
+        var egoNodesMap = jsnx
+            .singleSourceShortestPathLength(
+                network.reverse(optCopy=true), node, depth
+            );
+
+    } else if (!direction) {
+        // Traverse along any links regardless of direction.
+        var egoNodesMap = jsnx
+            .singleSourceShortestPathLength(
+                network.toUndirected(), node, depth
+            );
+    }
+    var egoNodes = Array.from(egoNodesMap.keys());
+    // Induce subgraph from nodes.
+    // JSNetworkX's subgraph method accepts an array of identifiers for
+    // nodes to include in the induced subgraph.
+    //var egoNetwork = jsnx.MultiDiGraph(network.subgraph(egoNodes));
+    var egoNetwork = network.subgraph(egoNodes);
+    if (!center) {
+        egoNetwork.removeNode(node);
+    }
+    return egoNetwork;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Scrap?
