@@ -38,7 +38,6 @@ function cloneReplaceElement(oldElement) {
     return newElement;
 }
 
-
 /**
  * Removes an element's child elements.
  * @param {Object} element Element in the Document Object Model.
@@ -165,14 +164,50 @@ function createDataElements(selection, element, accessData) {
 // General Interface
 ////////////////////////////////////////////////////////////////////////////////
 
+// TODO: Restructure the hierarchy of the program.
+// TODO: Initialize Attribute Interface, Set Interface, and Entity Interface, passing them access to Model and Attribute Index.
+// TODO: User interaction with Attribute Interface (maybe also Set Interface) passes information and updates to other interfaces.
+
 /**
- * Initializes the interface to support behavior independent of data for
- * metabolic model.
+ * Initializes the interface to support functionality that is independent of
+ * data for the metabolic model.
  */
 function initializeInterface() {
-    // Activate elements of the Document Object Model for all behavior that is
-    // independent of the model data.
+    // Initialize the model source interface.
+    initializeSourceInterface();
+}
 
+/**
+ * Initializes the interface to support functionality that is dependent on data
+ * for the metabolic model.
+ * @param {Object} model Information about entities and relations in a metabolic
+ * model.
+ */
+function initializeInterfaceData(model) {
+    // TODO: Maybe change classes and styles of elements once I activate them.
+    // Assemble attribute index from metabolic model.
+    // The attribute index will mediate information exchange between the
+    // interfaces for attributes, sets, and entities.
+    var attributeIndex = createAttributeIndex(
+        model.entities.metabolites, model.entities.reactions
+    );
+
+    // Initialize attribute interface.
+    initializeAttributeInterface(attributeIndex, model);
+    // Initialize set interface.
+    // ...
+    // Initialize entity interface.
+    initializeEntityInterface({attributeIndex: attributeIndex, model: model});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Model Source Interface
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Initializes the model source interface.
+ */
+function initializeSourceInterface() {
     // TODO: This show/hide functionality doesn't work...
     // Activate behavior of accordion tab and panel for source menu.
     var sourceTab = document.getElementById("source").querySelector(".tab");
@@ -195,23 +230,6 @@ function initializeInterface() {
 }
 
 /**
- * Initializes the interface to support behavior dependent on data for metabolic
- * model.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
- */
-function controlInterface(model) {
-    // TODO: Maybe change classes and styles of elements once I activate them.
-
-    // Initialize and control attribute interface.
-    initializeAttributeInterface(model);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Model Source Interface
-////////////////////////////////////////////////////////////////////////////////
-
-/**
  * Controls model assembly in response to user interaction.
  * @param {Object} event Record of event from Document Object Model.
  */
@@ -230,7 +248,7 @@ function controlModelAssembly(event) {
         var model = assembleModel(JSON.parse(event.currentTarget.result));
         summarizeModel(model);
         // Initialize interface for metabolic model.
-        controlInterface(model);
+        initializeInterfaceData(model);
     };
     // Read file as text.
     reader.readAsText(file);
@@ -255,7 +273,7 @@ function controlModelLoad(event) {
         var model = JSON.parse(event.currentTarget.result);
         summarizeModel(model);
         // Initialize interface for metabolic model.
-        controlInterface(model);
+        initializeInterfaceData(model);
     };
     // Read file as text.
     reader.readAsText(file);
@@ -275,7 +293,7 @@ function assembleDefaultModel() {
             // Call function to assemble model.
             var model = assembleModel(data);
             summarizeModel(model);
-            controlInterface(model);
+            initializeInterfaceData(model);
         }
     );
 }
@@ -293,7 +311,7 @@ function loadDefaultModel() {
             }
             // Call function to assemble model.
             summarizeModel(model);
-            controlInterface(model);
+            initializeInterfaceData(model);
         }
     );
 }
@@ -378,31 +396,19 @@ function initializeAttributeMenu() {
 
 /**
  * Initializes the attribute interface.
+ * @param {Array<Object<string>>} attributeIndex Index of attributes of
+ * metabolites and reactions.
  * @param {Object} model Information about entities and relations in a metabolic
  * model.
  */
-function initializeAttributeInterface(model) {
+function initializeAttributeInterface(attributeIndex, model) {
     // This function executes upon initialization of the program after assembly
     // or load of a metabolic model.
     // Initialize attribute menu.
     // Create attribute menu.
     initializeAttributeMenu();
-    // Assemble attribute index.
-    // The attribute index will mediate information exchange between the views
-    // for attribute menu, sets, and entities.
-    var attributeIndex = createAttributeIndex(
-        model.entities.metabolites, model.entities.reactions
-    );
-
-    console.log("attributeIndex in initializeAttributeInterface");
-    console.log(attributeIndex);
-
     // Create attribute summary from attribute index.
     var attributeSummary = createAttributeSummary(attributeIndex, model);
-
-    console.log("attributeSummary in initializeAttributeInterface");
-    console.log(attributeSummary);
-
     // Initiate control of attribute menu.
     controlAttributeMenu({
         entity: "metabolite",
@@ -1353,7 +1359,7 @@ function controlAttributeMenu({
         model: model
     });
     // Control entity interface.
-    controlTopologyInterface({
+    controlEntityInterface({
         attributeIndex: currentAttributeIndex,
         model: model
     });
@@ -1621,6 +1627,58 @@ function controlSetInterface(
 // Entity Interface
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Induces a subgraph for all nodes within a specific depth without weight of a
+ * single focal node or ego.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {string} parameters.node Identifier for a single node in a network.
+ * @param {number} parameters.depth Depth in count of links of traversal around
+ * focal node.
+ * @param {boolean} parameters.center Indicator of whether or not to include the
+ * central focal node in the subgraph.
+ * @param {string} parameters.direction Indicator (in, out, null) of whether or
+ * not to follow link directionality in traversal and which direction to follow.
+ * @param {Object} parameters.network Network in JSNetworkX.
+ * @returns {Object} Induced subgraph network in JSNetworkX.
+ */
+function induceEgoNetwork({node, depth, center, direction, network} = {}) {
+    // Collect nodes for the subgraph by traversal according to constraint of
+    // link directionality.
+    if (direction === "out") {
+        // Traverse along links emanating out from focal node.
+        // JSNetworkX's singleSourceShortestPathLength function accepts the
+        // identifier for the focal node.
+        // JSNetworkX's singleSourceShortestPathLength function traverses links
+        // that lead out from the focal node in a network with directional links.
+        var egoNodesMap = jsnx
+            .singleSourceShortestPathLength(network, node, depth);
+    } else if (direction === "in") {
+        // Traverse along links converging in towards focal node.
+        var egoNodesMap = jsnx
+            .singleSourceShortestPathLength(
+                network.reverse(optCopy=true), node, depth
+            );
+
+    } else if (!direction) {
+        // Traverse along any links regardless of direction.
+        var egoNodesMap = jsnx
+            .singleSourceShortestPathLength(
+                network.toUndirected(), node, depth
+            );
+    }
+    var egoNodes = Array.from(egoNodesMap.keys());
+    // Induce subgraph from nodes.
+    // JSNetworkX's subgraph method accepts an array of identifiers for
+    // nodes to include in the induced subgraph.
+    //var egoNetwork = jsnx.MultiDiGraph(network.subgraph(egoNodes));
+    var egoNetwork = network.subgraph(egoNodes);
+    if (!center) {
+        egoNetwork.removeNode(node);
+    }
+    return egoNetwork;
+}
+
+
 // TODO: Eventually I'll need to figure out how to initialize the network with an initial set of metabolites to replicate.
 
 
@@ -1631,109 +1689,79 @@ function controlSetInterface(
 
 
 
-// TODO: Create and activate interace components for specifying proximity and path queries.
+// TODO: Create and activate interface components for specifying proximity and path queries.
 
 function createActivateProximityMenu() {}
 
 function createActivatePathMenu() {}
 
 
+function initializeEntityInterface({attributeIndex, model} = {}) {
 
-// Scrap Template //
+    // Create controls for compartmentalization (check box), and metabolite node replication.
+    // Initialize these with default values.
+    // Activate these controls so that user can change them and on change it reassembles the network.
 
-/**
- * Initializes the attribute menu and attribute menu table.
- */
-function initializeAttributeMenu___JustForTemplate() {
-    // This function executes upon initialization of the program after assembly
-    // or load of a metabolic model.
-
-    // This function does not activate some control elements, because the
-    // handlers for these control elements require data objects.
-
-    // Create container for attribute menu.
-    var attributeView = document.getElementById("attribute");
-    var attributeMenu = document.createElement("div");
-    attributeMenu.setAttribute("id", "attribute-menu");
-    attributeView.appendChild(attributeMenu);
-    // Create attribute menu table.
-    var attributeMenuTable = document.createElement("table");
-    // Create header.
-    var head = document.createElement("thead");
-    var headRow = document.createElement("tr");
-    headRow
-        .appendChild(createElementWithText({text: "Attribute", type: "th"}))
-        .setAttribute("class", "attribute");
-    // TODO: Also display the total count of reactions or metabolites... that'll be different than the total of the counts for each property.
-    var valueHead = document.createElement("th");
-    valueHead.setAttribute("class", "value");
-    // Create entity selector with default value of metabolite.
-    var metaboliteRadioLabel = createLabelInputElement({
-        className: "entity",
-        identifier: "attribute-menu-entity-metabolite",
-        name: "attribute-menu-entity",
-        value: "metabolite",
-        text: "Metabolite",
-        type: "radio"
-    });
-    var metaboliteRadio = metaboliteRadioLabel.getElementsByTagName("input")[0];
-    metaboliteRadio.setAttribute("checked", true);
-    valueHead.appendChild(metaboliteRadioLabel);
-    var reactionRadioLabel = createLabelInputElement({
-        className: "entity",
-        identifier: "attribute-menu-entity-reaction",
-        name: "attribute-menu-entity",
-        value: "reaction",
-        text: "Reaction",
-        type: "radio"
-    });
-    valueHead.appendChild(reactionRadioLabel);
-    // Create filter check box.
-    var filterCheckLabel = createLabelInputElement({
-        className: "filter",
-        identifier: "attribute-menu-filter",
-        name: "attribute-menu-filter",
-        value: "filter",
-        text: "Filter",
+    // Initialize entity interface.
+    var entityInterface = document.getElementById("entity");
+    // Create interface for network assembly.
+    var networkAssemblyMenu = document.createElement("div");
+    networkAssemblyMenu.setAttribute("id", "network-assembly-menu");
+    entityInterface.appendChild(networkAssemblyMenu);
+    // Create compartmentalization check box.
+    var compartmentCheckLabel = createLabelInputElement({
+        className: "compartmentalization",
+        identifier: "network-assembly-menu-compartmentalization",
+        name: "network-assembly-menu-compartmentalization",
+        value: "compartmentalization",
+        text: "Compartmentalization",
         type: "checkbox"
     });
-    filterCheckLabel.setAttribute("checked", false);
-    valueHead.appendChild(filterCheckLabel);
-    // Create reset button.
-    var resetButton = document.createElement("button");
-    resetButton.textContent = "Reset";
-    resetButton.setAttribute("id", "attribute-menu-reset");
-    valueHead.appendChild(resetButton);
-    // Append header to table.
-    headRow.appendChild(valueHead);
-    head.appendChild(headRow);
-    attributeMenuTable.appendChild(head);
-    // Create body.
-    var body = document.createElement("tbody");
-    attributeMenuTable.appendChild(body);
-    // Append attribute menu table to attribute menu.
-    attributeMenu.appendChild(attributeMenuTable);
-}
+    compartmentCheckLabel.setAttribute("checked", false);
+    networkAssemblyMenu.appendChild(compartmentCheckLabel);
+    // Create list of metabolites for which to replicate nodes.
+    var replicationIdentifiers = [
+        "ac", "accoa", "adp", "amp", "atp", "ca2", "camp", "cdp", "cl", "cmp",
+        "co", "co2", "coa", "ctp", "datp", "dcmp", "dctp", "dna", "dtdp",
+        "dtmp", "fe2", "fe3", "fmn", "gdp", "gmp", "gtp", "h", "h2", "h2o",
+        "h2o2", "hco3", "i", "idp", "imp", "itp", "k", "na1", "nad", "nadh",
+        "nadp", "nadph", "nh4", "no", "no2", "o2", "o2s", "oh1", "pi", "ppi",
+        "pppi", "so3", "so4", "udp", "ump", "utp"
+    ];
+    var replicationMetabolites = replicationIdentifiers
+        .map(function (identifier) {
+            return {
+                identifier: identifier,
+                name: model.entities.metabolites[identifier].name
+            }
+        });
+    // Create menu for modification of list for replication
+    // TODO: Once user can interact with this list, control it in a separate function and execute function every time list changes.
+    // TODO: The menu should give access to names of all metabolites in the replication list.
+    // TODO: User should be able to remove a metabolite from the list.
+    // TODO: User should also be able to add a metabolite to the list.
+    // TODO: To add, a search menu should be available with access to all metabolites in the current collection.
+    // TODO: I'm thinking a drop-down menu with a search field at the top and little "X's" next to each metabolite in the list.
+    // TODO: For the network with nodes for compartmental metabolites, I need to display in the search list the name of the metabolite, and the compartment.
+    // TODO: Maybe I should modify the metabolite names when I assemble the network for compartmentalization.
+    networkAssemblyMenu
+        .appendChild(createElementWithText({text: "...Replicates... eventually a list of metabolites", type: "span"}));
 
-//               //
 
+    // Create some sort of over-ride button that lets user force network assembly even if selection is large.
+    // Maybe display this override button in center of view with some sort of warning message.
 
-
-
-
-
-function initializeEntityInterface({attributeIndex, model} = {}) {
+    // When network assembly completes, create buttons for "Ego" and "Path".
+    // Activate these buttons so that they create menus to construct respective queries against the network.
 
 
     // Initiate control of entity interface.
-    controlTopologyInterface({
-        attributeIndex: currentAttributeIndex,
+    controlEntityInterface({
+        attributeIndex: attributeIndex,
         model: model
     });
 
 }
-
-
 
 
 /**
@@ -1753,7 +1781,7 @@ function extractIndexEntityIdentifiers(entity, attributeIndex) {
     });
 }
 
-function controlTopologyInterface({attributeIndex, model} = {}) {
+function controlEntityInterface({attributeIndex, model} = {}) {
     // TODO: I need to extract identifiers for metabolites and reactions from the Attribute Index.
     // TODO: I need to pass these to assembleNetwork().
     // TODO: assembleNetwork() should return network elements.
@@ -1827,66 +1855,42 @@ function controlTopologyInterface({attributeIndex, model} = {}) {
             direction: null,
             network: network
         });
-        console.log(egoNetwork.nodes(optData=false));
+        drawNetwork(egoNetwork);
 
     }
 }
+
+// TODO: Figure out how to draw the ego networks in the view.
+// TODO: Pass the function an instance of a network in JSNetworkX.
+// TODO: Use getNodeAttributes and getEdgeAttributes, getting around the Map like I did for the ego graph function.
+// TODO: Pass these arrays of objects for nodes and links to the D3 stuff...
 
 /**
- * Induces a subgraph for all nodes within a specific depth without weight of a
- * single focal node or ego.
- * @param {Object} parameters Destructured object of parameters.
- * @param {string} parameters.node Identifier for a single node in a network.
- * @param {number} parameters.depth Depth in count of links of traversal around
- * focal node.
- * @param {boolean} parameters.center Indicator of whether or not to include the
- * central focal node in the subgraph.
- * @param {string} parameters.direction Indicator (in, out, null) of whether or
- * not to follow link directionality in traversal and which direction to follow.
- * @param {Object} parameters.network Network in JSNetworkX.
- * @returns {Object} Induced subgraph network in JSNetworkX.
+ * Draws a representation of a network in a node-link diagram.
+ * @param {Object} Network in JSNetworkX.
  */
-function induceEgoNetwork({node, depth, center, direction, network} = {}) {
-    // Collect nodes for the subgraph by traversal according to constraint of
-    // link directionality.
-    if (direction === "out") {
-        // Traverse along links emanating out from focal node.
-        // JSNetworkX's singleSourceShortestPathLength function accepts the
-        // identifier for the focal node.
-        // JSNetworkX's singleSourceShortestPathLength function traverses links
-        // that lead out from the focal node in a network with directional links.
-        var egoNodesMap = jsnx
-            .singleSourceShortestPathLength(network, node, depth);
-    } else if (direction === "in") {
-        // Traverse along links converging in towards focal node.
-        var egoNodesMap = jsnx
-            .singleSourceShortestPathLength(
-                network.reverse(optCopy=true), node, depth
-            );
+function drawNetwork(network) {
+    // Extract nodes and links from the network to use in visualization.
+    var nodes = network.nodes(optData=true).map(function (node) {
+        return node[1];
+    });
+    var links = network.edges(optData=true).map(function (edge) {
+        return edge[2];
+    });
+    console.log("nodes");
+    console.log(nodes);
+    console.log("links");
+    console.log(links);
 
-    } else if (!direction) {
-        // Traverse along any links regardless of direction.
-        var egoNodesMap = jsnx
-            .singleSourceShortestPathLength(
-                network.toUndirected(), node, depth
-            );
-    }
-    var egoNodes = Array.from(egoNodesMap.keys());
-    // Induce subgraph from nodes.
-    // JSNetworkX's subgraph method accepts an array of identifiers for
-    // nodes to include in the induced subgraph.
-    //var egoNetwork = jsnx.MultiDiGraph(network.subgraph(egoNodes));
-    var egoNetwork = network.subgraph(egoNodes);
-    if (!center) {
-        egoNetwork.removeNode(node);
-    }
-    return egoNetwork;
+
+
 }
+
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Scrap?
-
-
 
 /**
  * Prepares the attribute summary for immediate visual representation according
@@ -1908,7 +1912,6 @@ function composeFilterQueue(value, attribute, filterQueue) {
     var newFilterQueue = [].concat(filterQueue, newFilter);
     return newFilterQueue;
 }
-
 
 // TODO: Make the name of this function more specific to what it does.
 // TODO: Consider a name like controlAttributeSelection.
@@ -1955,14 +1958,6 @@ function controlAttributeTable(filterQueue, entity, attributeSummary) {
 
 
 }
-
-
-
-
-
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Query Interface

@@ -1,0 +1,213 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%
+
+% Chapter Proposal
+
+\section{Project Information}
+\noindent
+\textbf{Project Title:} Profondeur\newline
+\textbf{Project Website:} https://tcameronwaller.github.io/profondeur/\newline
+\textbf{Project Repository:} https://github.com/tcameronwaller/profondeur\newline
+\textbf{Author Name:} Thomas Cameron Waller\newline
+\textbf{Author EMail:} cameron.waller@biochem.utah.edu\newline
+\textbf{Author Identifier:} 00409400
+
+\section{Introduction}
+
+Metabolism sustains all of life's diverse processes, from the release of energy from food to the synthesis of genomes.
+It is an integral part of the biological system of the cell with extensive connections throughout.
+Given its central role, it is no surprise that \textbf{defects in metabolism drive the pathology of many human diseases\supercite{van_der_klaauw_hunger_2015, haslam_obesity_2005}.}
+These include obesity, diabetes, cardiovascular disease, and cancer.
+More and more studies in biological research consider metabolic phenotypes and mechanisms, and metabolic profiling is an important component of precision medicine \supercite{beebe_sharpening_2016, benson_clinical_2016, collins_new_2015, zhang_forward_2015, topol_individualized_2014}.
+For these reasons \textbf{it is necessary to study metabolism from a holistic perspective, in its true context within the entire biological system.}
+
+\textbf{The vast complexity of metabolism exceeds the ability of human investigators to consider it without supporting methods.} 
+As part of the biological system of the cell, metabolism forms an intricate network of relationships between genes, transcripts, proteins, and metabolites.
+In the human genome, approximately 70,000 genes encode 70,000 transcripts and 30,000 proteins \supercite{zhang_forward_2015}.
+About 5,000 of these proteins are enzymes or transporters \supercite{swainston_recon_2016, pornputtapong_human_2015, thiele_community-driven_2013} that either catalyze chemical reactions or transport molecules between cells and sub-cellular compartments.
+Many more proteins regulate metabolic processes via the expression and activity of relevant genes, transcripts, and proteins.
+Approximately 30,000 endogenous small molecular metabolites \supercite{wishart_hmdb_2013} complete the collection.
+All of these genes, transcripts, proteins, and metabolites relate to each other in multiple ways, forming the metabolic network.
+This network varies in different tissues throughout the human body.
+This stunning complexity makes it prohibitive to track all processes without advanced methods to organize and access the information of the metabolic network.
+We argue that \textbf{many studies certainly miss interesting biological trends because the context is too elaborate}.
+
+The author of this project has an interest in the study of metabolism.
+His primary research project as a graduate researcher is in the visual analysis of the metabolic network.
+Indeed this course project is a small-scale start to a bigger research project in collaboration with Alexander Lex, Jared Paul Rutter, and others.
+
+\section{Project Objectives}
+
+\textbf{The biological study of metabolism has potential to benefit the domains of biotechnology, pharmacology, and medicine.}
+Biology's goal is to discover and describe life's functions and processes.
+As a basic science this domain is primarily informative, and it enables applications in many other domains.
+Biotechnology alters the metabolic systems of non-human hosts to synthesize hormones, antibiotics, or other drugs.
+Pharmacology identifies effective drug targets within the biological system, considers the broad effects of drugs on this system, and even exploits subtle side-effects of available drugs for use in new therapies.
+Knowledge of processes in health enables medicine to recognize perturbations, diagnose diseases, and propose appropriate therapies.
+\textbf{The goal of this project is to develop methods that support the study of metabolism by users in these domains (biology, biotechnology, pharmacology, and medicine).}
+
+In their study of metabolism, a common task in these domains is to \textbf{access information about biological entities and the relations between them}.
+There are many different types of these \textbf{entities (genes, transcripts, proteins, metabolites)} and \textbf{relations (code, expression, regulation, transport, catalysis, reaction)}.
+They each have their own specific properties.
+In complex organisms, genes belong to chromosomes and chromosomal loci.
+In eukaryotes, proteins and metabolites localize to sub-cellular compartments called organelles.
+Many proteins have non-protein chemical cofactors that are essential for their functions.
+Reactions between metabolites belong to metabolic pathways of anabolism or catabolism and also have chemical properties such as rates and reduction or oxidation.
+A user might need to know any of this information for an entity, a relation, or combinations thereof.
+For example, a user might need to know which gene encodes a transcript and protein, which protein regulates the transcription of a gene, which metabolites react via a protein's enzymatic catalysis, or which catabolic reactions in the mitochondrial compartment involve proteins that require a specific cofactor.
+There are also many other possibilities.
+\textbf{Although much of this information is within current knowledge and is available in public databases, the scale of the biological system renders this access nontrivial.}
+
+Another common task in these domains is the \textbf{analysis of experimental data that corresponds to entities in the biological system}. Modern -omics technologies describe the biological system at nearly-comprehensive scales.
+Available information includes mutations and copy variations in genes (genomics), abundance and splice variations of transcripts (transcriptomics), abundance and post-translational modifications of proteins (proteomics), and abundance of metabolites (metabolomics) \supercite{zhang_forward_2015}.
+It is very important to analyze and interpret these data in the real context of the biological system.
+For example, biological trends may only be apparent with consideration for network topology.
+\textbf{Correct analysis and interpretation of these experimental data rely on knowledge of the biological system.}
+This analysis becomes a great challenge at nearly-comprehensive scales.
+
+The goal of this project is to develop computational methods for visual exploration and analysis of the metabolic network.
+It will address some of the specific needs of these domains.
+Many of the domain tasks correspond to queries against a database of network information.
+Analysis of experimental data in the context of network topology will require custom, probabilistic algorithms.
+Visual design will help the human user to recognize trends and patterns easily.
+
+\noindent
+\textbf{Summary}
+\newline
+\noindent
+\textbf{Goal:} Develop computational methods for visual exploration and analysis of the metabolic network.
+\newline
+\noindent
+\textbf{Users:} Research scientists and engineers in biology, biotechnology, pharmacology, and medicine
+\newline
+\noindent
+\textbf{Benefit:} Advance knowledge of human health and ability to diagnose and treat human disease.
+\newline
+\noindent
+\textbf{Domain Tasks:}
+\newline
+\noindent
+1) Access information about biological entities and the relations between them.
+\newline
+\noindent
+2) Analyze experimental data in the context of the metabolic network.
+
+\section{Data}
+
+This project involves two categories of data.
+The first category includes the current knowledge about entities and relations in the biological system and their properties.
+This information is available in multiple public databases.
+This information is enormous and complex, and it is unlikely that all of the information will be available from a single source.
+To maintain a reasonable scope, this project will use a minor subset of this information.
+The second category is experimental data from -omics technologies.
+This sort of data is available in multiple public databases.
+This sort of data often has technical complications and requires processing.
+Again, to maintain a reasonable scope, this project probably will not use this category of data.
+
+\section{Data Processing}
+
+Some aspects of this project will involve substantial data processing.
+Information on the metabolic network will come from multiple databases.
+It will be necessary to organize this information in an appropriate format and assemble an accessible database.
+Experimental data from -omics technologies is also complex and sometimes requires extensive data processing before it is informative or interpretable.
+
+\section{Visualization Design}
+
+The prospective users of this project need to access information about biological entities and the relations between them.
+This domain task of accessing information involves multiple abstract tasks.
+
+\textbf{It is necessary to access information that matches the user's interest}.
+With several types of entities, several types of relations, and many instances of each, the information of this network is vast and complex.
+The user needs to consider subsets of the metabolic system in appropriate detail (according to interest) without neglecting potentially-relevant context.
+Therein is a challenge, simplifying the information without losing important aspects.
+This process of selecting a relevant subset of the network will likely require multiple levels of user interaction.
+\textbf{Queries against a comprehensive database will allow the user to define her or his own interest in a fairly broad or general scope.}
+These queries will need to accommodate many variables in order to provide sufficient specificity.
+\textbf{A visual, interactive interface for dynamic queries will help the user to specify subsets of interest.}
+Search algorithms will then select relevant subsets of the data, ranking several possibilities according to query criteria.
+Then the user will be able to select from a list of search results.
+\textbf{A visual interface will help the user to distinguish between search results and select whichever is most appropriate.}
+After selecting a result from a query search, the user will need to refine the subset further according to her or his specific interest.
+The user will need to select which types of entities and relations to represent.
+The user might even need to select specific entities and relations to represent.
+\textbf{A visual interface for a selection menu and an interactive visualization of the network data will help the user to refine interest subsets.}
+
+\textbf{It is necessary to communicate the relevant information to the user clearly and efficiently.}
+The user may need to study small or large subsets of the metabolic network at various degrees of detail.
+These subsets will include a lot of information.
+From these subsets, users need to recognize connectivity and many properties of entities and their relations.
+\textbf{A visual representation of the network, such as a node-link diagram, will communicate this information to the user.}
+This diagram will require a dynamic layout.
+Alternative visual representations of the network might also work.
+Also, due to the complexity of the metabolic network and the limitations of available visual channels on a two-dimensional display, it will probably be necessary to represent information in multiple views.
+The user will be able to switch or scroll between views.
+Animations and other strategies will help to preserve the user's sense of context through these transitions.
+
+\textbf{It is necessary to associate experimental data with entities and relations from the metabolic network and to identify trends in these data.}
+Keys (such as names of genes, proteins, or metabolites) will associate experimental data to specific entities in the database.
+Search algorithms will then handle experimental data similarly to other properties or attributes to recognize pathways with significant differences.
+
+\section{Must-Have Features}
+
+\begin{itemize}
+\item interactive selection menu to include or remove specific types of entities and relations
+\item visual representation for subset of the metabolic network
+\item interaction with the network representation to include or remove specific elements
+\item visual representation of multiple types of properties on the network representation
+\end{itemize}
+
+\section{Optional Features}
+
+This course project only entails 6 weeks of time for 1 developer.
+To maintain a reasonable scope, several features will be optional.
+These features will be more important for a longer-term, more complete project.
+
+\begin{itemize}
+\item comprehensive database for current knowledge of the metabolic network
+\item dynamic query interface
+\item search algorithms to identify pathways between entities matching query criteria
+\item analytical algorithms to identify network aspects with interesting trends in experimental data
+\item interface for selection from list of search results
+\item visual representation of experimental data on the network representation
+\end{itemize}
+
+\section{Project Schedule}
+
+This course project entails 6 weeks of time for 1 developer.
+\newline
+\newline
+\noindent
+\textbf{Weekly Goals}
+\begin{enumerate}
+\item 24 October - 30 October
+\begin{itemize}
+\item visual design of interface, especially network representation
+\end{itemize}
+\item 31 October - 6 November
+\begin{itemize}
+\item visual design of interface, especially network representation
+\item collection, processing, and organization of network data
+\item implementation of visual interface
+\end{itemize}
+\item 7 November - 13 November
+\begin{itemize}
+\item implementation of visual interface
+\item milestone review
+\end{itemize}
+\item 14 November - 20 November
+\begin{itemize}
+\item implementation of visual interface
+\item implementation of interaction
+\end{itemize}
+\item 21 November - 27 November
+\begin{itemize}
+\item implementation of visual interface
+\item implementation of interaction
+\end{itemize}
+\item 28 November - 2 December
+\begin{itemize}
+\item screen-cast tutorial video
+\item website
+\item final submission
+\end{itemize}
+\end{enumerate}

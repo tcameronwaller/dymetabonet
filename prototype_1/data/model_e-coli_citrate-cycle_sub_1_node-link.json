@@ -1,0 +1,1832 @@
+{
+  "version": 1,
+  "reactions": [
+    {
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTa"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction A, Citrate hydro-lyase)",
+      "metabolites": {
+        "cit_c": -1,
+        "h2o_c": 1,
+        "acon_C_c": 1
+      },
+      "id": "ACONTa"
+    },
+    {
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTb"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction B, Isocitrate hydro-lyase)",
+      "metabolites": {
+        "icit_c": 1,
+        "h2o_c": -1,
+        "acon_C_c": -1
+      },
+      "id": "ACONTb"
+    },
+    {
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "CS"
+      },
+      "lower_bound": 0,
+      "gene_reaction_rule": "b0720",
+      "name": "citrate synthase",
+      "metabolites": {
+        "h_c": 1,
+        "h2o_c": -1,
+        "coa_c": 1,
+        "cit_c": 1,
+        "oaa_c": -1,
+        "accoa_c": -1
+      },
+      "id": "CS"
+    },
+    {
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ICDHyr"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b1136",
+      "name": "isocitrate dehydrogenase (NADP)",
+      "metabolites": {
+        "icit_c": -1,
+        "nadph_c": 1,
+        "co2_c": 1,
+        "nadp_c": -1,
+        "akg_c": 1
+      },
+      "id": "ICDHyr"
+    }
+  ],
+  "links": [
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTa"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction A, Citrate hydro-lyase)",
+      "metabolites": {
+        "cit_c": -1,
+        "h2o_c": 1,
+        "acon_C_c": 1
+      },
+      "source": "ACONTa_in",
+      "target": "cit_c",
+      "id": "ACONTa_cit_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTa"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction A, Citrate hydro-lyase)",
+      "metabolites": {
+        "cit_c": -1,
+        "h2o_c": 1,
+        "acon_C_c": 1
+      },
+      "source": "ACONTa_out",
+      "target": "h2o_c",
+      "id": "ACONTa_h2o_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTa"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction A, Citrate hydro-lyase)",
+      "metabolites": {
+        "cit_c": -1,
+        "h2o_c": 1,
+        "acon_C_c": 1
+      },
+      "source": "ACONTa_out",
+      "target": "acon_C_c",
+      "id": "ACONTa_acon_C_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTb"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction B, Isocitrate hydro-lyase)",
+      "metabolites": {
+        "icit_c": 1,
+        "h2o_c": -1,
+        "acon_C_c": -1
+      },
+      "source": "ACONTb_in",
+      "target": "h2o_c",
+      "id": "ACONTb_h2o_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTb"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction B, Isocitrate hydro-lyase)",
+      "metabolites": {
+        "icit_c": 1,
+        "h2o_c": -1,
+        "acon_C_c": -1
+      },
+      "source": "ACONTb_in",
+      "target": "acon_C_c",
+      "id": "ACONTb_acon_C_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTb"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction B, Isocitrate hydro-lyase)",
+      "metabolites": {
+        "icit_c": 1,
+        "h2o_c": -1,
+        "acon_C_c": -1
+      },
+      "source": "ACONTb_out",
+      "target": "icit_c",
+      "id": "ACONTb_icit_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "CS"
+      },
+      "lower_bound": 0,
+      "gene_reaction_rule": "b0720",
+      "name": "citrate synthase",
+      "metabolites": {
+        "h_c": 1,
+        "h2o_c": -1,
+        "coa_c": 1,
+        "cit_c": 1,
+        "oaa_c": -1,
+        "accoa_c": -1
+      },
+      "source": "CS_in",
+      "target": "h2o_c",
+      "id": "CS_h2o_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "CS"
+      },
+      "lower_bound": 0,
+      "gene_reaction_rule": "b0720",
+      "name": "citrate synthase",
+      "metabolites": {
+        "h_c": 1,
+        "h2o_c": -1,
+        "coa_c": 1,
+        "cit_c": 1,
+        "oaa_c": -1,
+        "accoa_c": -1
+      },
+      "source": "CS_in",
+      "target": "oaa_c",
+      "id": "CS_oaa_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "CS"
+      },
+      "lower_bound": 0,
+      "gene_reaction_rule": "b0720",
+      "name": "citrate synthase",
+      "metabolites": {
+        "h_c": 1,
+        "h2o_c": -1,
+        "coa_c": 1,
+        "cit_c": 1,
+        "oaa_c": -1,
+        "accoa_c": -1
+      },
+      "source": "CS_in",
+      "target": "accoa_c",
+      "id": "CS_accoa_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "CS"
+      },
+      "lower_bound": 0,
+      "gene_reaction_rule": "b0720",
+      "name": "citrate synthase",
+      "metabolites": {
+        "h_c": 1,
+        "h2o_c": -1,
+        "coa_c": 1,
+        "cit_c": 1,
+        "oaa_c": -1,
+        "accoa_c": -1
+      },
+      "source": "CS_out",
+      "target": "h_c",
+      "id": "CS_h_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "CS"
+      },
+      "lower_bound": 0,
+      "gene_reaction_rule": "b0720",
+      "name": "citrate synthase",
+      "metabolites": {
+        "h_c": 1,
+        "h2o_c": -1,
+        "coa_c": 1,
+        "cit_c": 1,
+        "oaa_c": -1,
+        "accoa_c": -1
+      },
+      "source": "CS_out",
+      "target": "coa_c",
+      "id": "CS_coa_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "CS"
+      },
+      "lower_bound": 0,
+      "gene_reaction_rule": "b0720",
+      "name": "citrate synthase",
+      "metabolites": {
+        "h_c": 1,
+        "h2o_c": -1,
+        "coa_c": 1,
+        "cit_c": 1,
+        "oaa_c": -1,
+        "accoa_c": -1
+      },
+      "source": "CS_out",
+      "target": "cit_c",
+      "id": "CS_cit_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ICDHyr"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b1136",
+      "name": "isocitrate dehydrogenase (NADP)",
+      "metabolites": {
+        "icit_c": -1,
+        "nadph_c": 1,
+        "co2_c": 1,
+        "nadp_c": -1,
+        "akg_c": 1
+      },
+      "source": "ICDHyr_in",
+      "target": "icit_c",
+      "id": "ICDHyr_icit_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ICDHyr"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b1136",
+      "name": "isocitrate dehydrogenase (NADP)",
+      "metabolites": {
+        "icit_c": -1,
+        "nadph_c": 1,
+        "co2_c": 1,
+        "nadp_c": -1,
+        "akg_c": 1
+      },
+      "source": "ICDHyr_in",
+      "target": "nadp_c",
+      "id": "ICDHyr_nadp_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ICDHyr"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b1136",
+      "name": "isocitrate dehydrogenase (NADP)",
+      "metabolites": {
+        "icit_c": -1,
+        "nadph_c": 1,
+        "co2_c": 1,
+        "nadp_c": -1,
+        "akg_c": 1
+      },
+      "source": "ICDHyr_out",
+      "target": "nadph_c",
+      "id": "ICDHyr_nadph_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ICDHyr"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b1136",
+      "name": "isocitrate dehydrogenase (NADP)",
+      "metabolites": {
+        "icit_c": -1,
+        "nadph_c": 1,
+        "co2_c": 1,
+        "nadp_c": -1,
+        "akg_c": 1
+      },
+      "source": "ICDHyr_out",
+      "target": "co2_c",
+      "id": "ICDHyr_co2_c"
+    },
+    {
+      "type": "metabolite",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ICDHyr"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b1136",
+      "name": "isocitrate dehydrogenase (NADP)",
+      "metabolites": {
+        "icit_c": -1,
+        "nadph_c": 1,
+        "co2_c": 1,
+        "nadp_c": -1,
+        "akg_c": 1
+      },
+      "source": "ICDHyr_out",
+      "target": "akg_c",
+      "id": "ICDHyr_akg_c"
+    },
+    {
+      "type": "reaction",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTa"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction A, Citrate hydro-lyase)",
+      "metabolites": {
+        "cit_c": -1,
+        "h2o_c": 1,
+        "acon_C_c": 1
+      },
+      "id": "ACONTa",
+      "source": "ACONTa_in",
+      "target": "ACONTa_out"
+    },
+    {
+      "type": "reaction",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTb"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction B, Isocitrate hydro-lyase)",
+      "metabolites": {
+        "icit_c": 1,
+        "h2o_c": -1,
+        "acon_C_c": -1
+      },
+      "id": "ACONTb",
+      "source": "ACONTb_in",
+      "target": "ACONTb_out"
+    },
+    {
+      "type": "reaction",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "CS"
+      },
+      "lower_bound": 0,
+      "gene_reaction_rule": "b0720",
+      "name": "citrate synthase",
+      "metabolites": {
+        "h_c": 1,
+        "h2o_c": -1,
+        "coa_c": 1,
+        "cit_c": 1,
+        "oaa_c": -1,
+        "accoa_c": -1
+      },
+      "id": "CS",
+      "source": "CS_in",
+      "target": "CS_out"
+    },
+    {
+      "type": "reaction",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ICDHyr"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b1136",
+      "name": "isocitrate dehydrogenase (NADP)",
+      "metabolites": {
+        "icit_c": -1,
+        "nadph_c": 1,
+        "co2_c": 1,
+        "nadp_c": -1,
+        "akg_c": 1
+      },
+      "id": "ICDHyr",
+      "source": "ICDHyr_in",
+      "target": "ICDHyr_out"
+    }
+  ],
+  "compartments": {
+    "c": "cytosol",
+    "e": "extracellular"
+  },
+  "genes": [
+    {
+      "name": "acnA",
+      "id": "b1276"
+    },
+    {
+      "name": "acnB",
+      "id": "b0118"
+    },
+    {
+      "name": "sucA",
+      "id": "b0726"
+    },
+    {
+      "name": "sucB",
+      "id": "b0727"
+    },
+    {
+      "name": "gltA",
+      "annotation": {
+        "ncbigi": "GI:1001122"
+      },
+      "id": "b0720"
+    },
+    {
+      "name": "frdA",
+      "annotation": {
+        "ncbigi": "GI:1652598"
+      },
+      "id": "b4154"
+    },
+    {
+      "name": "frdC",
+      "id": "b4152"
+    },
+    {
+      "name": "frdB",
+      "id": "b4153"
+    },
+    {
+      "name": "frdD",
+      "id": "b4151"
+    },
+    {
+      "name": "fumC",
+      "annotation": {
+        "ncbigi": "GI:1001573"
+      },
+      "id": "b1611"
+    },
+    {
+      "name": "fumB",
+      "id": "b4122"
+    },
+    {
+      "name": "fumA",
+      "id": "b1612"
+    },
+    {
+      "name": "icd",
+      "annotation": {
+        "ncbigi": "GI:1651909"
+      },
+      "id": "b1136"
+    },
+    {
+      "name": "mdh",
+      "id": "b3236"
+    },
+    {
+      "name": "sdhD",
+      "id": "b0722"
+    },
+    {
+      "name": "sdhB",
+      "annotation": {
+        "ncbigi": [
+          "GI:1652853",
+          "GI:1673321"
+        ]
+      },
+      "id": "b0724"
+    },
+    {
+      "name": "sdhC",
+      "id": "b0721"
+    },
+    {
+      "name": "sdhA",
+      "id": "b0723"
+    },
+    {
+      "name": "sucC",
+      "annotation": {
+        "ncbigi": "GI:1652018"
+      },
+      "id": "b0728"
+    },
+    {
+      "name": "sucD",
+      "annotation": {
+        "ncbigi": "GI:1653466"
+      },
+      "id": "b0729"
+    }
+  ],
+  "metabolites": [
+    {
+      "compartment": "c",
+      "formula": "C23H34N7O17P3S",
+      "charge": -4,
+      "name": "Acetyl-CoA",
+      "annotation": {
+        "kegg.compound": "C00024",
+        "hmdb": "HMDB01206",
+        "lipidmaps": [
+          "LMFA07050029",
+          "LMFA07050000"
+        ],
+        "unipathway.compound": "UPC00024",
+        "bigg.metabolite": "accoa",
+        "chebi": [
+          "CHEBI:13712",
+          "CHEBI:22192",
+          "CHEBI:40470",
+          "CHEBI:2408",
+          "CHEBI:57288",
+          "CHEBI:15351"
+        ],
+        "reactome": [
+          "REACT_113559",
+          "REACT_727753",
+          "REACT_113560",
+          "REACT_353123",
+          "REACT_76183"
+        ],
+        "seed.compound": "cpd00022",
+        "cas": [
+          "72-89-9",
+          "72-89-9"
+        ],
+        "pubchem.substance": "3326",
+        "biocyc": "ACETYL-COA"
+      },
+      "id": "accoa_c"
+    },
+    {
+      "compartment": "c",
+      "formula": "C6H3O6",
+      "charge": -3,
+      "name": "cis-Aconitate",
+      "annotation": {
+        "kegg.compound": "C00417",
+        "pubchem.substance": "3707",
+        "cas": [
+          "585-84-2",
+          "585-84-2"
+        ],
+        "bigg.metabolite": "acon_C"
+      },
+      "id": "acon_C_c"
+    },
+    {
+      "compartment": "c",
+      "formula": "C5H4O5",
+      "charge": -2,
+      "name": "2-Oxoglutarate",
+      "annotation": {
+        "kegg.compound": "C00026",
+        "hmdb": [
+          "HMDB02812",
+          "HMDB00208"
+        ],
+        "seed.compound": "cpd00024",
+        "unipathway.compound": "UPC00026",
+        "bigg.metabolite": "akg",
+        "chebi": [
+          "CHEBI:30915",
+          "CHEBI:40661",
+          "CHEBI:1253",
+          "CHEBI:19749",
+          "CHEBI:19748",
+          "CHEBI:16810",
+          "CHEBI:30916",
+          "CHEBI:11638"
+        ],
+        "reactome": [
+          "REACT_113594",
+          "REACT_113671",
+          "REACT_389537",
+          "REACT_561075",
+          "REACT_29406",
+          "REACT_1650779"
+        ],
+        "cas": [
+          "328-50-7",
+          "328-50-7"
+        ],
+        "pubchem.substance": "3328",
+        "biocyc": "2-KETOGLUTARATE"
+      },
+      "id": "akg_c"
+    },
+    {
+      "compartment": "c",
+      "formula": "C6H5O7",
+      "charge": -3,
+      "name": "Citrate",
+      "annotation": {
+        "kegg.compound": [
+          "C00158",
+          "C13660",
+          "C12649"
+        ],
+        "hmdb": "HMDB00094",
+        "seed.compound": [
+          "cpd00137",
+          "cpd09279"
+        ],
+        "unipathway.compound": "UPC00158",
+        "bigg.metabolite": "cit",
+        "chebi": [
+          "CHEBI:53258",
+          "CHEBI:23322",
+          "CHEBI:50744",
+          "CHEBI:23321",
+          "CHEBI:35810",
+          "CHEBI:3727",
+          "CHEBI:32142",
+          "CHEBI:30769",
+          "CHEBI:63037",
+          "CHEBI:63076",
+          "CHEBI:41523",
+          "CHEBI:35806",
+          "CHEBI:35802",
+          "CHEBI:35809",
+          "CHEBI:16947",
+          "CHEBI:13999",
+          "CHEBI:42563"
+        ],
+        "reactome": [
+          "REACT_76190",
+          "REACT_433138",
+          "REACT_29654"
+        ],
+        "pubchem.substance": "3458",
+        "cas": [
+          "77-92-9",
+          "77-92-9"
+        ],
+        "kegg.drug": [
+          "D07525",
+          "D00037",
+          "D01222",
+          "D07691"
+        ],
+        "biocyc": "CIT"
+      },
+      "id": "cit_c"
+    },
+    {
+      "compartment": "c",
+      "formula": "CO2",
+      "charge": 0,
+      "name": "CO2",
+      "annotation": {
+        "kegg.compound": "C00011",
+        "hmdb": "HMDB01967",
+        "seed.compound": "cpd00011",
+        "unipathway.compound": "UPC00011",
+        "bigg.metabolite": "co2",
+        "chebi": [
+          "CHEBI:48829",
+          "CHEBI:16526",
+          "CHEBI:13284",
+          "CHEBI:13285",
+          "CHEBI:13282",
+          "CHEBI:13283",
+          "CHEBI:23011",
+          "CHEBI:3283"
+        ],
+        "reactome": [
+          "REACT_159751",
+          "REACT_159942",
+          "REACT_1237009",
+          "REACT_29376",
+          "REACT_113528",
+          "REACT_389536",
+          "REACT_189480"
+        ],
+        "pubchem.substance": "3313",
+        "cas": [
+          "124-38-9",
+          "124-38-9"
+        ],
+        "kegg.drug": "D00004",
+        "biocyc": "CARBON-DIOXIDE"
+      },
+      "id": "co2_c"
+    },
+    {
+      "compartment": "c",
+      "formula": "C21H32N7O16P3S",
+      "charge": -4,
+      "name": "Coenzyme A",
+      "annotation": {
+        "kegg.compound": "C00010",
+        "hmdb": "HMDB01423",
+        "seed.compound": "cpd00010",
+        "unipathway.compound": "UPC00010",
+        "bigg.metabolite": "coa",
+        "chebi": [
+          "CHEBI:57287",
+          "CHEBI:13295",
+          "CHEBI:13294",
+          "CHEBI:13298",
+          "CHEBI:41631",
+          "CHEBI:41597",
+          "CHEBI:741566",
+          "CHEBI:15346",
+          "CHEBI:23355",
+          "CHEBI:3771"
+        ],
+        "reactome": [
+          "REACT_76194",
+          "REACT_193514",
+          "REACT_29374",
+          "REACT_2485002",
+          "REACT_162743"
+        ],
+        "cas": [
+          "85-61-0",
+          "85-61-0"
+        ],
+        "pubchem.substance": "3312",
+        "biocyc": "CO-A"
+      },
+      "id": "coa_c"
+    },
+    {
+      "compartment": "c",
+      "formula": "H2O",
+      "charge": 0,
+      "name": "H2O",
+      "annotation": {
+        "kegg.compound": [
+          "C01328",
+          "C00001",
+          "C18714",
+          "C18712"
+        ],
+        "hmdb": [
+          "HMDB01039",
+          "HMDB02111"
+        ],
+        "seed.compound": [
+          "cpd15275",
+          "cpd00001"
+        ],
+        "unipathway.compound": [
+          "UPC00001",
+          "UPC01328"
+        ],
+        "bigg.metabolite": "h2o",
+        "chebi": [
+          "CHEBI:15377",
+          "CHEBI:13365",
+          "CHEBI:41979",
+          "CHEBI:16234",
+          "CHEBI:36385",
+          "CHEBI:42857",
+          "CHEBI:27313",
+          "CHEBI:44819",
+          "CHEBI:29373",
+          "CHEBI:10743",
+          "CHEBI:5594",
+          "CHEBI:29356",
+          "CHEBI:53442",
+          "CHEBI:29375",
+          "CHEBI:29374",
+          "CHEBI:13419",
+          "CHEBI:43228",
+          "CHEBI:44292",
+          "CHEBI:13352",
+          "CHEBI:41981",
+          "CHEBI:29412",
+          "CHEBI:42043",
+          "CHEBI:33811",
+          "CHEBI:33813",
+          "CHEBI:35511",
+          "CHEBI:5585",
+          "CHEBI:44641",
+          "CHEBI:44701"
+        ],
+        "reactome": [
+          "REACT_947593",
+          "REACT_189422",
+          "REACT_141343",
+          "REACT_113518",
+          "REACT_1605715",
+          "REACT_109276",
+          "REACT_113521",
+          "REACT_113519",
+          "REACT_2022884",
+          "REACT_351603",
+          "REACT_29356"
+        ],
+        "pubchem.substance": "3303",
+        "cas": [
+          "7732-18-5",
+          "7732-18-5"
+        ],
+        "kegg.drug": [
+          "D00001",
+          "D06322",
+          "D03703"
+        ],
+        "biocyc": [
+          "WATER",
+          "OH",
+          "OXONIUM"
+        ]
+      },
+      "id": "h2o_c"
+    },
+    {
+      "compartment": "c",
+      "formula": "H",
+      "charge": 1,
+      "name": "H+",
+      "annotation": {
+        "kegg.compound": "C00080",
+        "pubchem.substance": "3380",
+        "seed.compound": "cpd00067",
+        "unipathway.compound": "UPC00080",
+        "bigg.metabolite": "h",
+        "chebi": [
+          "CHEBI:24636",
+          "CHEBI:15378",
+          "CHEBI:10744",
+          "CHEBI:13357",
+          "CHEBI:5584"
+        ],
+        "reactome": [
+          "REACT_194688",
+          "REACT_425978",
+          "REACT_193465",
+          "REACT_374900",
+          "REACT_74722",
+          "REACT_425999",
+          "REACT_428040",
+          "REACT_163953",
+          "REACT_372511",
+          "REACT_2000349",
+          "REACT_70106",
+          "REACT_1470067",
+          "REACT_113529",
+          "REACT_425969",
+          "REACT_428548",
+          "REACT_156540",
+          "REACT_1614597",
+          "REACT_351626",
+          "REACT_427899"
+        ],
+        "cas": [
+          "12408-02-5",
+          "12408-02-5"
+        ],
+        "biocyc": "PROTON"
+      },
+      "id": "h_c"
+    },
+    {
+      "compartment": "c",
+      "formula": "C6H5O7",
+      "charge": -3,
+      "name": "Isocitrate",
+      "annotation": {
+        "kegg.compound": "C00311",
+        "hmdb": "HMDB00193",
+        "seed.compound": "cpd00260",
+        "unipathway.compound": "UPC00311",
+        "chebi": [
+          "CHEBI:14465",
+          "CHEBI:24886",
+          "CHEBI:24884",
+          "CHEBI:36454",
+          "CHEBI:16087",
+          "CHEBI:5998",
+          "CHEBI:30887",
+          "CHEBI:36453"
+        ],
+        "cas": [
+          "30810-51-6",
+          "30810-51-6"
+        ],
+        "pubchem.substance": "3605",
+        "bigg.metabolite": "icit"
+      },
+      "id": "icit_c"
+    },
+    {
+      "compartment": "c",
+      "formula": "C21H25N7O17P3",
+      "charge": -3,
+      "name": "Nicotinamide adenine dinucleotide phosphate",
+      "annotation": {
+        "kegg.compound": "C00006",
+        "hmdb": "HMDB00217",
+        "seed.compound": "cpd00006",
+        "unipathway.compound": "UPC00006",
+        "bigg.metabolite": "nadp",
+        "chebi": [
+          "CHEBI:7424",
+          "CHEBI:13398",
+          "CHEBI:13397",
+          "CHEBI:13390",
+          "CHEBI:25524",
+          "CHEBI:25523",
+          "CHEBI:44405",
+          "CHEBI:44409",
+          "CHEBI:18009",
+          "CHEBI:58349",
+          "CHEBI:21903"
+        ],
+        "reactome": [
+          "REACT_29366",
+          "REACT_2000348",
+          "REACT_113563",
+          "REACT_113564",
+          "REACT_389556",
+          "REACT_428218",
+          "REACT_351628",
+          "REACT_194668",
+          "REACT_517495"
+        ],
+        "cas": [
+          "53-59-8",
+          "53-59-8"
+        ],
+        "pubchem.substance": "3308",
+        "biocyc": [
+          "NADP",
+          "NAD-P-OR-NOP"
+        ]
+      },
+      "id": "nadp_c"
+    },
+    {
+      "compartment": "c",
+      "formula": "C21H26N7O17P3",
+      "charge": -4,
+      "name": "Nicotinamide adenine dinucleotide phosphate - reduced",
+      "annotation": {
+        "kegg.compound": "C00005",
+        "hmdb": [
+          "HMDB00799",
+          "HMDB06341",
+          "HMDB00221"
+        ],
+        "seed.compound": "cpd00005",
+        "unipathway.compound": "UPC00005",
+        "bigg.metabolite": "nadph",
+        "chebi": [
+          "CHEBI:13400",
+          "CHEBI:16474",
+          "CHEBI:7425",
+          "CHEBI:13399",
+          "CHEBI:13392",
+          "CHEBI:57783",
+          "CHEBI:21904",
+          "CHEBI:44286"
+        ],
+        "reactome": [
+          "REACT_2000347",
+          "REACT_29364",
+          "REACT_428206",
+          "REACT_113602",
+          "REACT_113600",
+          "REACT_113601",
+          "REACT_194725",
+          "REACT_517496",
+          "REACT_351627"
+        ],
+        "cas": [
+          "2646-71-1",
+          "2646-71-1"
+        ],
+        "pubchem.substance": "3307",
+        "biocyc": [
+          "NADH-P-OR-NOP",
+          "NADPH"
+        ]
+      },
+      "id": "nadph_c"
+    },
+    {
+      "compartment": "c",
+      "formula": "C4H2O5",
+      "charge": -2,
+      "name": "Oxaloacetate",
+      "annotation": {
+        "kegg.compound": [
+          "C03981",
+          "C00036"
+        ],
+        "hmdb": "HMDB00223",
+        "lipidmaps": [
+          "LMFA01170061",
+          "LMFA01170120"
+        ],
+        "unipathway.compound": "UPC00036",
+        "bigg.metabolite": "oaa",
+        "chebi": [
+          "CHEBI:23911",
+          "CHEBI:23910",
+          "CHEBI:12810",
+          "CHEBI:10547",
+          "CHEBI:16452",
+          "CHEBI:17479",
+          "CHEBI:30744",
+          "CHEBI:7812",
+          "CHEBI:19638",
+          "CHEBI:25734",
+          "CHEBI:25731",
+          "CHEBI:12820",
+          "CHEBI:1158",
+          "CHEBI:14703",
+          "CHEBI:28394",
+          "CHEBI:24958",
+          "CHEBI:24959"
+        ],
+        "reactome": [
+          "REACT_76213",
+          "REACT_113587"
+        ],
+        "seed.compound": "cpd00032",
+        "cas": [
+          "328-42-7",
+          "328-42-7"
+        ],
+        "pubchem.substance": "3338",
+        "biocyc": [
+          "OXALACETIC_ACID",
+          "ENOL-OXALOACETATE"
+        ]
+      },
+      "id": "oaa_c"
+    }
+  ],
+  "nodes": [
+    {
+      "type": "reaction",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTa"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction A, Citrate hydro-lyase)",
+      "metabolites": {
+        "cit_c": -1,
+        "h2o_c": 1,
+        "acon_C_c": 1
+      },
+      "id": "ACONTa_in"
+    },
+    {
+      "type": "reaction",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTa"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction A, Citrate hydro-lyase)",
+      "metabolites": {
+        "cit_c": -1,
+        "h2o_c": 1,
+        "acon_C_c": 1
+      },
+      "id": "ACONTa_out"
+    },
+    {
+      "type": "reaction",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTb"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction B, Isocitrate hydro-lyase)",
+      "metabolites": {
+        "icit_c": 1,
+        "h2o_c": -1,
+        "acon_C_c": -1
+      },
+      "id": "ACONTb_in"
+    },
+    {
+      "type": "reaction",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ACONTb"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b0118 or b1276",
+      "name": "aconitase (half-reaction B, Isocitrate hydro-lyase)",
+      "metabolites": {
+        "icit_c": 1,
+        "h2o_c": -1,
+        "acon_C_c": -1
+      },
+      "id": "ACONTb_out"
+    },
+    {
+      "type": "reaction",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "CS"
+      },
+      "lower_bound": 0,
+      "gene_reaction_rule": "b0720",
+      "name": "citrate synthase",
+      "metabolites": {
+        "h_c": 1,
+        "h2o_c": -1,
+        "coa_c": 1,
+        "cit_c": 1,
+        "oaa_c": -1,
+        "accoa_c": -1
+      },
+      "id": "CS_in"
+    },
+    {
+      "type": "reaction",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "CS"
+      },
+      "lower_bound": 0,
+      "gene_reaction_rule": "b0720",
+      "name": "citrate synthase",
+      "metabolites": {
+        "h_c": 1,
+        "h2o_c": -1,
+        "coa_c": 1,
+        "cit_c": 1,
+        "oaa_c": -1,
+        "accoa_c": -1
+      },
+      "id": "CS_out"
+    },
+    {
+      "type": "reaction",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ICDHyr"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b1136",
+      "name": "isocitrate dehydrogenase (NADP)",
+      "metabolites": {
+        "icit_c": -1,
+        "nadph_c": 1,
+        "co2_c": 1,
+        "nadp_c": -1,
+        "akg_c": 1
+      },
+      "id": "ICDHyr_in"
+    },
+    {
+      "type": "reaction",
+      "upper_bound": 1000,
+      "annotation": {
+        "bigg.reaction": "ICDHyr"
+      },
+      "lower_bound": -1000,
+      "gene_reaction_rule": "b1136",
+      "name": "isocitrate dehydrogenase (NADP)",
+      "metabolites": {
+        "icit_c": -1,
+        "nadph_c": 1,
+        "co2_c": 1,
+        "nadp_c": -1,
+        "akg_c": 1
+      },
+      "id": "ICDHyr_out"
+    },
+    {
+      "type": "metabolite",
+      "compartment": "c",
+      "formula": "C23H34N7O17P3S",
+      "charge": -4,
+      "name": "Acetyl-CoA",
+      "annotation": {
+        "kegg.compound": "C00024",
+        "hmdb": "HMDB01206",
+        "lipidmaps": [
+          "LMFA07050029",
+          "LMFA07050000"
+        ],
+        "unipathway.compound": "UPC00024",
+        "bigg.metabolite": "accoa",
+        "chebi": [
+          "CHEBI:13712",
+          "CHEBI:22192",
+          "CHEBI:40470",
+          "CHEBI:2408",
+          "CHEBI:57288",
+          "CHEBI:15351"
+        ],
+        "reactome": [
+          "REACT_113559",
+          "REACT_727753",
+          "REACT_113560",
+          "REACT_353123",
+          "REACT_76183"
+        ],
+        "seed.compound": "cpd00022",
+        "cas": [
+          "72-89-9",
+          "72-89-9"
+        ],
+        "pubchem.substance": "3326",
+        "biocyc": "ACETYL-COA"
+      },
+      "id": "accoa_c"
+    },
+    {
+      "type": "metabolite",
+      "compartment": "c",
+      "formula": "C6H3O6",
+      "charge": -3,
+      "name": "cis-Aconitate",
+      "annotation": {
+        "kegg.compound": "C00417",
+        "pubchem.substance": "3707",
+        "cas": [
+          "585-84-2",
+          "585-84-2"
+        ],
+        "bigg.metabolite": "acon_C"
+      },
+      "id": "acon_C_c"
+    },
+    {
+      "type": "metabolite",
+      "compartment": "c",
+      "formula": "C5H4O5",
+      "charge": -2,
+      "name": "2-Oxoglutarate",
+      "annotation": {
+        "kegg.compound": "C00026",
+        "hmdb": [
+          "HMDB02812",
+          "HMDB00208"
+        ],
+        "seed.compound": "cpd00024",
+        "unipathway.compound": "UPC00026",
+        "bigg.metabolite": "akg",
+        "chebi": [
+          "CHEBI:30915",
+          "CHEBI:40661",
+          "CHEBI:1253",
+          "CHEBI:19749",
+          "CHEBI:19748",
+          "CHEBI:16810",
+          "CHEBI:30916",
+          "CHEBI:11638"
+        ],
+        "reactome": [
+          "REACT_113594",
+          "REACT_113671",
+          "REACT_389537",
+          "REACT_561075",
+          "REACT_29406",
+          "REACT_1650779"
+        ],
+        "cas": [
+          "328-50-7",
+          "328-50-7"
+        ],
+        "pubchem.substance": "3328",
+        "biocyc": "2-KETOGLUTARATE"
+      },
+      "id": "akg_c"
+    },
+    {
+      "type": "metabolite",
+      "compartment": "c",
+      "formula": "C6H5O7",
+      "charge": -3,
+      "name": "Citrate",
+      "annotation": {
+        "kegg.compound": [
+          "C00158",
+          "C13660",
+          "C12649"
+        ],
+        "hmdb": "HMDB00094",
+        "seed.compound": [
+          "cpd00137",
+          "cpd09279"
+        ],
+        "unipathway.compound": "UPC00158",
+        "bigg.metabolite": "cit",
+        "chebi": [
+          "CHEBI:53258",
+          "CHEBI:23322",
+          "CHEBI:50744",
+          "CHEBI:23321",
+          "CHEBI:35810",
+          "CHEBI:3727",
+          "CHEBI:32142",
+          "CHEBI:30769",
+          "CHEBI:63037",
+          "CHEBI:63076",
+          "CHEBI:41523",
+          "CHEBI:35806",
+          "CHEBI:35802",
+          "CHEBI:35809",
+          "CHEBI:16947",
+          "CHEBI:13999",
+          "CHEBI:42563"
+        ],
+        "reactome": [
+          "REACT_76190",
+          "REACT_433138",
+          "REACT_29654"
+        ],
+        "pubchem.substance": "3458",
+        "cas": [
+          "77-92-9",
+          "77-92-9"
+        ],
+        "kegg.drug": [
+          "D07525",
+          "D00037",
+          "D01222",
+          "D07691"
+        ],
+        "biocyc": "CIT"
+      },
+      "id": "cit_c"
+    },
+    {
+      "type": "metabolite",
+      "compartment": "c",
+      "formula": "CO2",
+      "charge": 0,
+      "name": "CO2",
+      "annotation": {
+        "kegg.compound": "C00011",
+        "hmdb": "HMDB01967",
+        "seed.compound": "cpd00011",
+        "unipathway.compound": "UPC00011",
+        "bigg.metabolite": "co2",
+        "chebi": [
+          "CHEBI:48829",
+          "CHEBI:16526",
+          "CHEBI:13284",
+          "CHEBI:13285",
+          "CHEBI:13282",
+          "CHEBI:13283",
+          "CHEBI:23011",
+          "CHEBI:3283"
+        ],
+        "reactome": [
+          "REACT_159751",
+          "REACT_159942",
+          "REACT_1237009",
+          "REACT_29376",
+          "REACT_113528",
+          "REACT_389536",
+          "REACT_189480"
+        ],
+        "pubchem.substance": "3313",
+        "cas": [
+          "124-38-9",
+          "124-38-9"
+        ],
+        "kegg.drug": "D00004",
+        "biocyc": "CARBON-DIOXIDE"
+      },
+      "id": "co2_c"
+    },
+    {
+      "type": "metabolite",
+      "compartment": "c",
+      "formula": "C21H32N7O16P3S",
+      "charge": -4,
+      "name": "Coenzyme A",
+      "annotation": {
+        "kegg.compound": "C00010",
+        "hmdb": "HMDB01423",
+        "seed.compound": "cpd00010",
+        "unipathway.compound": "UPC00010",
+        "bigg.metabolite": "coa",
+        "chebi": [
+          "CHEBI:57287",
+          "CHEBI:13295",
+          "CHEBI:13294",
+          "CHEBI:13298",
+          "CHEBI:41631",
+          "CHEBI:41597",
+          "CHEBI:741566",
+          "CHEBI:15346",
+          "CHEBI:23355",
+          "CHEBI:3771"
+        ],
+        "reactome": [
+          "REACT_76194",
+          "REACT_193514",
+          "REACT_29374",
+          "REACT_2485002",
+          "REACT_162743"
+        ],
+        "cas": [
+          "85-61-0",
+          "85-61-0"
+        ],
+        "pubchem.substance": "3312",
+        "biocyc": "CO-A"
+      },
+      "id": "coa_c"
+    },
+    {
+      "type": "metabolite",
+      "compartment": "c",
+      "formula": "H2O",
+      "charge": 0,
+      "name": "H2O",
+      "annotation": {
+        "kegg.compound": [
+          "C01328",
+          "C00001",
+          "C18714",
+          "C18712"
+        ],
+        "hmdb": [
+          "HMDB01039",
+          "HMDB02111"
+        ],
+        "seed.compound": [
+          "cpd15275",
+          "cpd00001"
+        ],
+        "unipathway.compound": [
+          "UPC00001",
+          "UPC01328"
+        ],
+        "bigg.metabolite": "h2o",
+        "chebi": [
+          "CHEBI:15377",
+          "CHEBI:13365",
+          "CHEBI:41979",
+          "CHEBI:16234",
+          "CHEBI:36385",
+          "CHEBI:42857",
+          "CHEBI:27313",
+          "CHEBI:44819",
+          "CHEBI:29373",
+          "CHEBI:10743",
+          "CHEBI:5594",
+          "CHEBI:29356",
+          "CHEBI:53442",
+          "CHEBI:29375",
+          "CHEBI:29374",
+          "CHEBI:13419",
+          "CHEBI:43228",
+          "CHEBI:44292",
+          "CHEBI:13352",
+          "CHEBI:41981",
+          "CHEBI:29412",
+          "CHEBI:42043",
+          "CHEBI:33811",
+          "CHEBI:33813",
+          "CHEBI:35511",
+          "CHEBI:5585",
+          "CHEBI:44641",
+          "CHEBI:44701"
+        ],
+        "reactome": [
+          "REACT_947593",
+          "REACT_189422",
+          "REACT_141343",
+          "REACT_113518",
+          "REACT_1605715",
+          "REACT_109276",
+          "REACT_113521",
+          "REACT_113519",
+          "REACT_2022884",
+          "REACT_351603",
+          "REACT_29356"
+        ],
+        "pubchem.substance": "3303",
+        "cas": [
+          "7732-18-5",
+          "7732-18-5"
+        ],
+        "kegg.drug": [
+          "D00001",
+          "D06322",
+          "D03703"
+        ],
+        "biocyc": [
+          "WATER",
+          "OH",
+          "OXONIUM"
+        ]
+      },
+      "id": "h2o_c"
+    },
+    {
+      "type": "metabolite",
+      "compartment": "c",
+      "formula": "H",
+      "charge": 1,
+      "name": "H+",
+      "annotation": {
+        "kegg.compound": "C00080",
+        "pubchem.substance": "3380",
+        "seed.compound": "cpd00067",
+        "unipathway.compound": "UPC00080",
+        "bigg.metabolite": "h",
+        "chebi": [
+          "CHEBI:24636",
+          "CHEBI:15378",
+          "CHEBI:10744",
+          "CHEBI:13357",
+          "CHEBI:5584"
+        ],
+        "reactome": [
+          "REACT_194688",
+          "REACT_425978",
+          "REACT_193465",
+          "REACT_374900",
+          "REACT_74722",
+          "REACT_425999",
+          "REACT_428040",
+          "REACT_163953",
+          "REACT_372511",
+          "REACT_2000349",
+          "REACT_70106",
+          "REACT_1470067",
+          "REACT_113529",
+          "REACT_425969",
+          "REACT_428548",
+          "REACT_156540",
+          "REACT_1614597",
+          "REACT_351626",
+          "REACT_427899"
+        ],
+        "cas": [
+          "12408-02-5",
+          "12408-02-5"
+        ],
+        "biocyc": "PROTON"
+      },
+      "id": "h_c"
+    },
+    {
+      "type": "metabolite",
+      "compartment": "c",
+      "formula": "C6H5O7",
+      "charge": -3,
+      "name": "Isocitrate",
+      "annotation": {
+        "kegg.compound": "C00311",
+        "hmdb": "HMDB00193",
+        "seed.compound": "cpd00260",
+        "unipathway.compound": "UPC00311",
+        "chebi": [
+          "CHEBI:14465",
+          "CHEBI:24886",
+          "CHEBI:24884",
+          "CHEBI:36454",
+          "CHEBI:16087",
+          "CHEBI:5998",
+          "CHEBI:30887",
+          "CHEBI:36453"
+        ],
+        "cas": [
+          "30810-51-6",
+          "30810-51-6"
+        ],
+        "pubchem.substance": "3605",
+        "bigg.metabolite": "icit"
+      },
+      "id": "icit_c"
+    },
+    {
+      "type": "metabolite",
+      "compartment": "c",
+      "formula": "C21H25N7O17P3",
+      "charge": -3,
+      "name": "Nicotinamide adenine dinucleotide phosphate",
+      "annotation": {
+        "kegg.compound": "C00006",
+        "hmdb": "HMDB00217",
+        "seed.compound": "cpd00006",
+        "unipathway.compound": "UPC00006",
+        "bigg.metabolite": "nadp",
+        "chebi": [
+          "CHEBI:7424",
+          "CHEBI:13398",
+          "CHEBI:13397",
+          "CHEBI:13390",
+          "CHEBI:25524",
+          "CHEBI:25523",
+          "CHEBI:44405",
+          "CHEBI:44409",
+          "CHEBI:18009",
+          "CHEBI:58349",
+          "CHEBI:21903"
+        ],
+        "reactome": [
+          "REACT_29366",
+          "REACT_2000348",
+          "REACT_113563",
+          "REACT_113564",
+          "REACT_389556",
+          "REACT_428218",
+          "REACT_351628",
+          "REACT_194668",
+          "REACT_517495"
+        ],
+        "cas": [
+          "53-59-8",
+          "53-59-8"
+        ],
+        "pubchem.substance": "3308",
+        "biocyc": [
+          "NADP",
+          "NAD-P-OR-NOP"
+        ]
+      },
+      "id": "nadp_c"
+    },
+    {
+      "type": "metabolite",
+      "compartment": "c",
+      "formula": "C21H26N7O17P3",
+      "charge": -4,
+      "name": "Nicotinamide adenine dinucleotide phosphate - reduced",
+      "annotation": {
+        "kegg.compound": "C00005",
+        "hmdb": [
+          "HMDB00799",
+          "HMDB06341",
+          "HMDB00221"
+        ],
+        "seed.compound": "cpd00005",
+        "unipathway.compound": "UPC00005",
+        "bigg.metabolite": "nadph",
+        "chebi": [
+          "CHEBI:13400",
+          "CHEBI:16474",
+          "CHEBI:7425",
+          "CHEBI:13399",
+          "CHEBI:13392",
+          "CHEBI:57783",
+          "CHEBI:21904",
+          "CHEBI:44286"
+        ],
+        "reactome": [
+          "REACT_2000347",
+          "REACT_29364",
+          "REACT_428206",
+          "REACT_113602",
+          "REACT_113600",
+          "REACT_113601",
+          "REACT_194725",
+          "REACT_517496",
+          "REACT_351627"
+        ],
+        "cas": [
+          "2646-71-1",
+          "2646-71-1"
+        ],
+        "pubchem.substance": "3307",
+        "biocyc": [
+          "NADH-P-OR-NOP",
+          "NADPH"
+        ]
+      },
+      "id": "nadph_c"
+    },
+    {
+      "type": "metabolite",
+      "compartment": "c",
+      "formula": "C4H2O5",
+      "charge": -2,
+      "name": "Oxaloacetate",
+      "annotation": {
+        "kegg.compound": [
+          "C03981",
+          "C00036"
+        ],
+        "hmdb": "HMDB00223",
+        "lipidmaps": [
+          "LMFA01170061",
+          "LMFA01170120"
+        ],
+        "unipathway.compound": "UPC00036",
+        "bigg.metabolite": "oaa",
+        "chebi": [
+          "CHEBI:23911",
+          "CHEBI:23910",
+          "CHEBI:12810",
+          "CHEBI:10547",
+          "CHEBI:16452",
+          "CHEBI:17479",
+          "CHEBI:30744",
+          "CHEBI:7812",
+          "CHEBI:19638",
+          "CHEBI:25734",
+          "CHEBI:25731",
+          "CHEBI:12820",
+          "CHEBI:1158",
+          "CHEBI:14703",
+          "CHEBI:28394",
+          "CHEBI:24958",
+          "CHEBI:24959"
+        ],
+        "reactome": [
+          "REACT_76213",
+          "REACT_113587"
+        ],
+        "seed.compound": "cpd00032",
+        "cas": [
+          "328-42-7",
+          "328-42-7"
+        ],
+        "pubchem.substance": "3338",
+        "biocyc": [
+          "OXALACETIC_ACID",
+          "ENOL-OXALOACETATE"
+        ]
+      },
+      "id": "oaa_c"
+    }
+  ],
+  "id": "e_coli_core"
+}

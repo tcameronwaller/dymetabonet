@@ -1,0 +1,275 @@
+--------------------------------------------------
+Notes: Scrap Code For Project Profondeur
+--------------------------------------------------
+
+--------------------------------------------------
+2 December 2016
+
+
+----------
+Also Doesn't Work
+----------
+
+class ExplorationView {
+...
+draw() {
+...
+
+}
+}
+
+----------
+Also Doesn't Work
+----------
+
+class ExplorationView {
+...
+draw() {
+...
+        // I wanted to use groups for nodes instead of circles...
+        self.nodes = self.explorationSVG
+            .append("g");
+        self.nodeGroups = self.nodes
+            .selectAll("g")
+            .data(Object.values(self.model.nodes));
+        self.nodeGroups
+            .exit()
+            .remove();
+        self.nodeGroupsEnter = self.nodeGroups
+            .enter()
+            .append("g");
+        self.nodeGroups = self.nodeGroupsEnter
+            .merge(self.nodeGroups);
+
+        self.nodeGroups
+            .call(d3.drag()
+                .on("start", dragStart)
+                .on("drag", dragged)
+                .on("end", dragEnd)
+            )
+            .on("dblclick", release);
+
+        self.nodeCircles = self.nodes
+            .selectAll("circle")
+            .data(function (d) {
+                return d;
+            });
+        self.nodeCircles
+            .exit()
+            .remove();
+        self.nodeCirclesEnter = self.nodeCircles
+            .enter()
+            .append("g");
+        self.nodeCircles = self.nodeCirclesEnter
+            .merge(self.nodeCircles);
+        self.nodeCircles
+            .attr("class", function (d) {
+                var type = d.type;
+                if (type === "metabolite") {
+                    return "node-metabolite";
+                } else if (type === "reaction") {
+                    return "node-reaction";
+                };
+            });
+
+}
+}
+
+----------
+Doesn't Work
+----------
+
+class ExplorationView {
+...
+draw() {
+...
+
+        self.nodes = self.explorationSVG
+            .append("g");
+        self.nodeGroups = self.nodes
+            .selectAll("g")
+            .data(Object.values(self.model.nodes));
+        self.nodeGroups
+            .exit()
+            .remove();
+        self.nodeGroupsEnter = self.nodeGroups
+            .enter()
+            .append("g");
+        self.nodeGroups = self.nodeGroupsEnter
+            .merge(self.nodeGroups);
+
+        self.nodeGroups
+            .call(d3.drag()
+                .on("start", dragStart)
+                .on("drag", dragged)
+                .on("end", dragEnd)
+            )
+            .on("dblclick", release);
+
+        // This strategy does not work.
+        // It starts right after creating the groups for nodes.
+        // They inherit data... but I don't think they inherit position.
+        self.nodeCircles = self.nodeGroups
+            .append("circle")
+            .attr("class", function (d) {
+                var type = d.type;
+                if (type === "metabolite") {
+                    return "node-metabolite";
+                } else if (type === "reaction") {
+                    return "node-reaction";
+                };
+            })
+
+        self.nodeLabels = self.nodeGroups
+            //.filter(function (d) {
+            //    return (d.type == "metabolite");
+            //})
+            .append("text")
+            .text(function (d) {
+                return d.identifier;
+            });
+}
+}
+
+
+
+
+----------
+Original Version
+----------
+
+class ExplorationView {
+...
+draw() {
+...
+
+        // Create nodes.
+        self.nodes = self.explorationSVG
+            .append("g")
+            .selectAll("circle")
+            .data(Object.values(self.model.nodes))
+            .enter()
+            .append("circle")
+            .attr("class", function (d) {
+                var type = d.type;
+                if (type === "metabolite") {
+                    return "node-metabolite";
+                } else if (type === "reaction") {
+                    return "node-reaction";
+                };
+            })
+            .call(d3.drag()
+                .on("start", dragStart)
+                .on("drag", dragged)
+                .on("end", dragEnd)
+            )
+            .on("dblclick", release);
+
+        // Create titles for nodes so that mouse hover will display title.
+        self.nodes.append("title")
+            .text(function (d) {
+                return d.name;
+            });
+}
+}
+
+
+--------------------------------------------------
+30 November 2016
+
+class ExplorationView {
+...
+update() {
+
+        self.node.on("mouseover", function (d) {
+            ...
+            // Display panel in top left of view with information about the node.
+            // TODO: Make this a group so that it can include text elements in addition to the rectangle.
+            self.panel = self.explorationSVG
+                .append("g");
+                //.data(d);
+            self.panel
+                .append("rect")
+                .attr("x", 5)
+                .attr("y", 5)
+                .attr("width", 250)
+                .attr("height", 125)
+                .attr("fill", "black")
+                .attr("fill-opacity", 0.25)
+                .attr("stroke", "black")
+                .attr("stroke-width", 5);
+                //.attr("class", "panel")
+            //self.panel
+            //    .append("text")
+            //    .attr("x", 25)
+            //    .attr("y", 25)
+            //    .text(function (d) {
+            //        return d.type;
+            //    })
+        }
+        self.node.on("mouseout", function (d) {
+            ...
+            // Remove panel in top left of view with information about the node.
+            self.panel.remove()
+        }
+}
+}
+
+
+
+class ExplorationView {
+...
+initialize() {
+        // Create SVG element.
+        // Set dimensions of SVG proportional to dimensions of the viewport or window.
+        // Definition of margin, border, and padding is in the style.
+        // Define padding again here since it is difficult to access element dimensions without padding.
+        // Also artificially adjust height to leave room for the selector.
+        // Select element for network view from DOM.
+        self.explorationDiv = d3.select("#exploration");
+        // Determine element dimensions.
+        self.padding = {top: 10, right: 10, bottom: 10, left: 10};
+        self.bounds = {width: (self.explorationDiv.node().clientWidth), height: (self.explorationDiv.node().clientHeight)}
+        self.svgWidth = self.bounds.width - (self.padding.left + self.padding.right);
+        self.svgHeight = self.bounds.height - (self.padding.top + self.padding.bottom);
+        // Create SVG element.
+        self.explorationSVG = self.explorationDiv.append("svg")
+            .attr("width", self.svgWidth)
+            .attr("height", self.svgHeight);
+}
+}
+
+
+--------------------------------------------------
+28 November 2016
+
+I originally used D3 in the JavaScript script to create Scalable Vector Graphics elements within my DIV elements.
+Then I decided that these SVG elements neither depend on data nor on user interaction.
+I decided instead to create these SVG elements in the HTML and style them in the CSS.
+Since I learned some neat things (such as methods to scale elements relatively), I want to keep the code.
+
+class QueryView {
+...
+initialize() {
+        // Create SVG element with a rectangle as a temporary space-filler.
+        // Set dimensions of SVG proportional to dimensions of the viewport or window.
+        // Definition of margin, border, and padding is in the style.
+        // Define padding again here since it is difficult to access element dimensions without padding.
+        // Also artificially adjust height to leave room for the selector.
+        self.padding = {top: 20, right: 10, bottom: 20, left: 10};
+        self.queryDiv = d3.select("#query");
+        self.bounds = {width: (self.queryDiv.node().clientWidth), height: (self.queryDiv.node().clientHeight)}
+        self.svgWidth = self.bounds.width - (self.padding.left + self.padding.right);
+        self.svgHeight = self.bounds.height - (self.padding.top + self.padding.bottom);
+
+        self.querySVG = self.queryDiv.append("svg")
+            .attr("width", self.svgWidth)
+            .attr("height", self.svgHeight);
+        self.querySVG.append("rect")
+            .attr("x", 0)
+            .attr("y", 5)
+            .attr("width", self.svgWidth)
+            .attr("height", self.svgHeight)
+            .attr("fill", "grey");
+}
+}

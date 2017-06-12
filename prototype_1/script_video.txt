@@ -1,0 +1,81 @@
+Video script.
+
+[00:00]
+[Visual: interesting generic network, facebook, communication network cell phone, transportation network]
+
+Networks are extremely pervasive in many forms.
+They even surround you in your daily life.
+You participate in social networks, communication networks, and transportation networks.
+All of these involve relationships between people, information, or places, respectively.
+
+[00:13]
+[Visual: Panning, zooming Google Maps, Searching for route in Google Maps, Searching for a person on Facebook]
+
+In networks that are large and complex, it can be a challenge to access specific information of interest.
+Especially for spatial networks, such as transportation networks, scanning a map is intuitive.
+Another way to find relevant information is to use queries or searches.
+This method is especially useful for non-spatial networks, for which maps are less intuitive.
+
+[00:33]
+[Visual: Slide with person and network, Slide with gene transcript protein metabolite]
+
+You are also part of a biological network, known as metabolism.
+Well, really it is a part of you.
+Metabolism sustains life and all of its diverse processes, from the release of energy in food to the synthesis of genomes.
+It is a network of relationships between genes, transcripts, proteins, and metabolites, and most of these relationships occur within the tiny cells in your body.
+
+[00:55]
+[Visual: ]
+
+Since the cellular environment is so complex, the metabolic network is not really spatial like places on a map.
+For example, image in your home was really thousands of identical homes in different places simultaneously.
+It would be difficult to find your home on a map, would it not?
+
+--------------------------
+
+[00:00]
+
+"Networks surround you.
+You participate in social networks, communication networks, and transportation networks.
+
+A biological network, known as metabolism is part of you.
+Metabolism sustains life and all of its diverse processes.
+It is a network of relationships between genes, transcripts, proteins, and metabolites, and most of these relationships occur within the tiny cells in your body."
+
+[00:28]
+"Profondeur is a web application tool for the visual exploration and analysis of metabolic networks."
+
+[00:35]
+[Demonstration: Select sub models 4, 3, 2, 1 ... 00:14]
+"The user selects a metabolic model, and the program generates a corresponding network.
+From this network, nodes representing metabolites and links representing reactions appear in a node-link diagram."
+
+[00:50]
+
+[00:52]
+[Demonstration: Hold cursor over nodes (3 metabolites and 1 reaction) ... 00:010]
+"Information from the model, such as names of metabolites and reactions, associates with corresponding nodes and links."
+
+[01:03]
+[Demonstration: Click and drag nodes to new positions (3 reactions and 1 metabolite ... 00:10]
+"The layout of this diagram is automatic and dynamic in order to represent diverse metabolic networks clearly.
+It is also possible to change the positions of nodes and links manually for a custom layout."
+
+[01:15]
+[Demonstration: Release nodes ... 00:07]
+"In the metabolic network, some metabolites participate in many reactions such that they have high degrees.
+These metabolites complicate the node-link diagram."
+
+[01:25]
+[Demonstration: Replicate water ... 00:07]
+"If a metabolite with a high degree is less interesting, it is possible to replicate its node."
+
+[01:32]
+[Demonstration: Replicate common nodes of citrate cycle ... 00:20]
+"Users who are familiar with biology will recognize metabolites that are especially prevalent in metabolism.
+These metabolites may be good candidates for replication.
+This replication can simplify the node-link diagram, clarifying relationships between other metabolites and the overall structure of the network."
+
+[01:55]
+
+

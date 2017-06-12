@@ -1,0 +1,179 @@
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+Notes about design concepts
+Name: T Cameron Waller
+Project: Profondeur
+
+--------------------------------------------------
+Date: 18 November 2016
+Number: 1
+Note:
+In this sketch I illustrated multiple ideas for relevant information that I could represent in the Detail View.
+The category of information to represent in the Detail View depends on user selection.
+Without any selection, the Detail View displays information for an overview of the entire metabolic model.
+Depending on user interest, this view can display a histogram for the degrees of metabolites in the model or a representation of the distribution of metabolites between multiple sets, such as cellular compartments.
+If the user selects a reaction, the Detail View displays more information about that reaction.
+This view could also display experimental data for proteins or transcripts.
+If the user selects a mdetabolite, the Detail View displays more information about that metabolite.
+This view can display the reactions of the metabolite in different cellular compartments.
+Alternatively, this view can display the most common reaction neighbors of the metabolite.
+This view could also display experimental data for metabolites.
+
+For the project for the Data Visualization Course, the information in the Detail View will probably either be simple overview information about the entire metabolic model (counts of metabolites and reactions) or general information about a metabolite or reaction.
+
+--------------------------------------------------
+Date: 15 November 2016
+Number: 1
+Note:
+Alexander Lex helped to inspire the ideas of this sketch.
+
+I showed Alex sketch 2016-11-11_1 and explained the idea of enabling the user to select which nodes to replicate according to their degree in the network.
+Alex recommended a long-term goal of informing the user of each node's degree in both the entire metabolic model (Recon 2.2 for example) and in the user's selection subset of the metabolic model (citrate cycle for example).
+In this sketch, I illustrated the idea of a table in the Control View that shows the user the degrees of all nodes in both the entire metabolic model and in the subset of the metabolic model.
+The user can sort this table either by node degree in the mode or by node degree in the subset.
+The user can also select nodes to replicate in the network graph.
+Maybe it would also be helpful to provide an option to automatically identify nodes that have such high degrees in the mode that they are outliers.
+Then the program would replicate those nodes by default.
+
+--------------------------------------------------
+Date: 11 November 2016
+Number: 1
+Note:
+Alexander Lex and Sean P McKenna helped to inspire the ideas of this sketch.
+
+In this sketch I illustrated the general functionality of the Profondeur application.
+
+Via the Query View, the user can select between multiple small subsets of the metabolic model.
+These subsets are in JavaScript-Object-Notation (JSON) format.
+I will convert original metabolic models from Systems-Biology-Markup-Language (SBML) format using COBRApy.
+Then I want to use the otherwise-native data of these metabolic models as input for the Profondeur application.
+In early prototypes, I will use modifications of these data that provide the necessary arrays of nodes and links.
+
+Via the Control View, the user can select whether or not to replicate nodes with great degree in the network.
+Replication of these nodes can simplify the network by reducing connectivity.
+Excessive replication of central nodes can distort the network.
+Since a balance is important and likely depends on interest, it is important to allow the user to make this decision.
+When the user hovers the mouse over a metabolite in the degree table, the corresponding row in the table and the corresponding node(s) in the network graph have a highlight.
+
+Via the Explore View, the user can see a visual representation of the network as a node-link graph with a force layout.
+Nodes with replication appear differently than other nodes to make it clear that the user modified the network with respect to these nodes.
+When the user hovers the mouse over a metabolite node or a reaction link, that element has a highlight.
+Also, a title label appears giving the name of that element.
+When the user selects a metabolite node or a reaction link, an information panel in a corner on the bottom of the Explore View appears with more information about that metabolite or reaction.
+This information panel might be a good way to represent experimental data.
+Perhaps the user could hold down "Shift" to select multiple metabolite nodes or reaction links in order to visualize experimental data for these nodes or links in a new view.
+It would also be possible, of course, to represent accumulation or depletion of node entities (metabolites, proteins, transcripts) by color value of nodes or links on the network graph.
+
+--------------------------------------------------
+Date: 8 November 2016
+Number: 5
+Note:
+Carolina Nobre and Sean P McKenna helped to inspire the ideas of this sketch.
+In this sketch I illustrated the idea of representing reactions as super edges (special nodes really) between reactant metabolites and product metabolites.
+It will be important for links from reactant and product metabolites to converge at opposite ends of the reaction's super edge.
+For that purpose, the reaction super edge will actually need to consist of two nodes.
+Then I will draw some sort of mark (preferably a shape that indicates direction) between the two reaction nodes.
+
+--------------------------------------------------
+Date: 8 November 2016
+Number: 4
+Note:
+Carolina Nobre and Sean P McKenna helped to inspire the ideas of this sketch.
+In this sketch I illustrated two options for representations of the metabolic network.
+These options are at opposite extremes of the spectrum balancing accuracy with simplicity/clarity.
+The first representation shows the network without replication of any nodes.
+Reactant and product metabolites have links that converge on a super link that represents a single reaction.
+The second representation shows the network as single, distinct reactions between super nodes of reactant and product metabolites.
+To the extent that it is reasonably interpretable and not too complex, I prefer the first option since it represents the metabolic network most accurately.
+Sketch 2016-11-08_3 represents the network in an intermediate strategy between these two extremes that has a good chance of being the best option.
+
+--------------------------------------------------
+Date: 8 November 2016
+Number: 3
+Note:
+Carolina Nobre and Sean P McKenna helped to inspire the ideas of this sketch.
+I illustrated the idea that a single metabolite can participate in multiple reactions in a single pathway and can also participate in multiple pathways.
+It is accurate to represent a single metabolite as a single node in the network in order to represent its connections accurately.
+These multiple levels of participation also make the metabolic network complex and might make the node-link diagram excessively complex with inter-connectivity.
+To simplify the network, an option is to replicate highly-connected nodes in order to simplify the network representation.
+In order to do that, there is a need for algorithms to decide which nodes to replicate and which to preserve in their true context in the network.
+In representing the metabolic network there needs to be a balance between accuracy and simplicity/clarity.
+Maybe determine the degree of every node in the network model.
+Allow the user to select a range for the degrees of metabolites to replicate in order to simplify the representation of the network.
+For example, while the original network might have a single entry for h_c (cytosolic hydrogen), the user could specify to replicate nodes with degrees greater than 10 in the network.
+Then the program could replicate h_c for each reaction in which it participates (id: h_c_1, h_c_2, h_c3, etc).
+I think that process should probably happen specifically for the subset of the network that the user selects in the query.
+
+--------------------------------------------------
+Date: 8 November 2016
+Number: 2
+Note:
+I realized that many (probably the majority) of metabolic reactions involve additional reactants that enter the pathway at intermediate reactions.
+That means that the super node of product metabolites from a reaction is not the same as the super node of reactant metabolites for the next reaction in the pathway.
+I realized that the super node strategy was likely to represent the majority of reactions as single reactions that did not connect in pathways or a meaningful network.
+This visual representation of the metabolite network would be relatively useless.
+
+--------------------------------------------------
+Date: 8 November 2016
+Number: 1
+Note:
+In a meeting with Alexander Lex, Carolina Nobre, and Asmaa AlJuahni, I described the problem of defining links between multiple reactant metabolites and multiple product metabolites in a reaction.
+Alexander Lex and Carolina Nobre recommended that I use super nodes to represent all metabolites that participate in a reaction as either reactants or products.
+By that strategy it would be possible to draw a single link for each reaction.
+In a meeting with Alexander Lex and Sean P McKenna, we also discussed goal features for the prototype of the project for 11 November 2016.
+I drew this sketch to represent the idea of super nodes and to illustrate some of the goal features.
+
+--------------------------------------------------
+Date: 7 November 2016
+Number: 1
+Note:
+Each reaction involves multiple reactant metabolites and multiple product metabolites.
+Each of these metabolites is a node.
+It would not be reasonable to treat all reactant metabolites as a super-node because that would artificially inflate the number of nodes in the network.
+Each of these metabolites has links to all other metabolites in the reaction.
+To simplify, ignore links between all reactants and all products.
+Since there are multiple links for a single reaction, it would be nice to simplify this structure visually.
+1) Distinct Links draws links as straight lines between each reactant and all products.
+2) Link Bundle draws links but bundles links from the same reaction together to simplify the network structure visually.
+Link Bundle would be more complex when each metabolite participates in multiple reactions.
+3) Super Link draws links between each reactant and product to a central super link line representing the reaction.
+Super Link is my favorite option, but it would also be more complex when each metabolite participates in multiple reactions.
+
+
+--------------------------------------------------
+Date: 2 November 2016
+Number: 1
+Note:
+In this sketch I explored several strategies for representation of different types of links between nodes.
+
+--------------------------------------------------
+Date: 1 November 2016
+Number: 1
+Note:
+Jared P Rutter drew this sketch to illustrate his idea of the minimal functional and useful tool.
+
+--------------------------------------------------
+Date: 31 October 2016
+Number: 3
+Note:
+
+
+--------------------------------------------------
+Date: 31 October 2016
+Number: 2
+Note:
+
+
+--------------------------------------------------
+Date: 31 October 2016
+Number: 1
+Note:
+
+
+
+
+--------------------------------------------------
+
+
+--------------------------------------------------
