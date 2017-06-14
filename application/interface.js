@@ -1667,6 +1667,36 @@ function induceEgoNetwork({node, depth, center, direction, network} = {}) {
             );
     }
     var egoNodes = Array.from(egoNodesMap.keys());
+    // At this point, egoNodes is an array of string identifiers for nodes.
+    // There are not any missing identifiers in the array.
+    // Nodes exist in the network for all identifiers in egoNodes.
+    // The method nbunchIter() successfully iterates over all identifiers in
+    // egoNodes.
+    // While nodes exist for all identifiers in egoNodes, not all of these nodes
+    // have data in the network.
+
+    console.log("egoNodes in induceEgoNetwork");
+    console.log(egoNodes);
+
+
+    console.log("count of nodes in induceEgoNetwork");
+    console.log(egoNodes.length);
+
+    //var egoNodesExist = egoNodes.map(function (node) {
+    //    return network.hasNode(node);
+    //});
+    //console.log("egoNodesExist");
+    //console.log(egoNodesExist);
+
+    //var nBunchIter = network.nbunchIter(egoNodes);
+    //console.log("nBunchIter");
+    //for (let n of nBunchIter) {
+    //    console.log(n);
+    //}
+
+    // TODO: For some odd reason, it seems that the subgraph operation fails to identify many of the nodes in the original network.
+    // TODO: The problem might be that some links have identical identifiers to those of reaction-specific metabolite nodes.
+
     // Induce subgraph from nodes.
     // JSNetworkX's subgraph method accepts an array of identifiers for
     // nodes to include in the induced subgraph.
@@ -1781,6 +1811,25 @@ function extractIndexEntityIdentifiers(entity, attributeIndex) {
     });
 }
 
+function checkReplicateElements(elements) {
+    // TODO: A more efficient algorithm would increment counts for each element
+    // TODO: and then only return elements with count greater than one.
+    return elements.reduce(function (collection, element) {
+        var matches = elements.filter(function (referenceElement) {
+            return referenceElement.identifier === element.identifier;
+        });
+        if (
+            (matches.length > 1) &&
+            (!collection.includes(element.identifier))
+        ) {
+            return collection.concat(element.identifier);
+        } else {
+            return collection
+        }
+    }, []);
+}
+
+
 function controlEntityInterface({attributeIndex, model} = {}) {
     // TODO: I need to extract identifiers for metabolites and reactions from the Attribute Index.
     // TODO: I need to pass these to assembleNetwork().
@@ -1809,6 +1858,51 @@ function controlEntityInterface({attributeIndex, model} = {}) {
         "nadp", "nadph", "nh4", "no", "no2", "o2", "o2s", "oh1", "pi", "ppi",
         "pppi", "so3", "so4", "udp", "ump", "utp"
     ];
+
+    // TODO: Test the new node creation operation.
+    // akg_m, pyr_m, fad_m, cit_c, icit_m, glx_c, gly_m
+    console.log("*******************");
+    console.log("testing new node creation for metabolites");
+    var test1 = createNewMetaboliteNode({
+        identifier: "cit_c",
+        compartment: "c",
+        compartmentalization: true,
+        attributes: {
+            identifier: "cit",
+            testAttribute: "happy"
+        },
+        currentNodes: [
+            {
+                identifier: "cit_c",
+                testAttributes: "sad"
+            },
+            {
+                identifier: "blah_2",
+                testAttributes: "sad"
+            },
+            {
+                identifier: "blah_3",
+                testAttributes: "sad"
+            },
+            {
+                identifier: "blah_4",
+                testAttributes: "sad"
+            },
+            {
+                identifier: "blah_5",
+                testAttributes: "sad"
+            }
+        ]
+    });
+    console.log("test1");
+    console.log(test1);
+
+
+
+
+
+
+
     // Assemble network.
     // 10437 nodes, 39353 links (general, no replication)
     // 23315 nodes, 39353 links (general, replication)
@@ -1829,6 +1923,56 @@ function controlEntityInterface({attributeIndex, model} = {}) {
         console.log("networkElements");
         console.log(networkElements);
 
+        // TODO: There seem to be problems with network assembly.
+        // TODO: Replication of nodes for "pyr_m" and "cit_c".
+        // TODO: Unavailability of data for some metabolite nodes...
+
+        var replicateNodes = checkReplicateElements(networkElements.nodes);
+        console.log("replicateNodes");
+        console.log(replicateNodes);
+
+        var replicateLinks = checkReplicateElements(networkElements.links);
+        console.log("replicateLinks");
+        console.log(replicateLinks);
+
+
+
+
+
+        //var testReactionNodes = networkElements.nodes.filter(function (node) {
+        //    var isReaction = node.entity === "reaction";
+        //    if (isReaction) {
+        //        var involvesCit = node.metabolites.find(function (metabolite) {
+        //            return metabolite.identifier === "cit";
+        //        });
+        //        return involvesCit !== undefined;
+        //    } else {
+        //        return false;
+        //    }
+        //});
+        //console.log("test reaction nodes in networkElements");
+        //console.log(testReactionNodes);
+
+
+
+
+
+
+        var duds = networkElements.nodes.filter(function (node) {
+            return !node.hasOwnProperty("identifier");
+        });
+        console.log("node duds right before initiating JSNetworkX");
+        console.log(duds);
+
+
+        var problemNodes = networkElements.nodes.filter(function (node) {
+            var problems = ["pyr_m", "cit_m", "glx_m", "lac_L_m", "nadh_m_LDH_Lm"];
+            return problems.includes(node.identifier);
+        });
+        console.log("problem nodes in networkElements");
+        console.log(problemNodes);
+
+
         // Initialize an operable network from the network elements.
         var nodes = networkElements.nodes.map(function (node) {
             return [].concat(node.identifier, Object.assign({}, node));
@@ -1836,6 +1980,9 @@ function controlEntityInterface({attributeIndex, model} = {}) {
         var links = networkElements.links.map(function (link) {
             return [].concat(link.source, link.target, Object.assign({}, link));
         });
+
+
+
         var network = new jsnx.MultiDiGraph();
         network.addNodesFrom(nodes);
         network.addEdgesFrom(links);
@@ -1850,7 +1997,7 @@ function controlEntityInterface({attributeIndex, model} = {}) {
         console.log("pyruvateEgo");
         var egoNetwork = induceEgoNetwork({
             node: "pyr_m",
-            depth: 3,
+            depth: 2,
             center: true,
             direction: null,
             network: network
@@ -1870,10 +2017,27 @@ function controlEntityInterface({attributeIndex, model} = {}) {
  * @param {Object} Network in JSNetworkX.
  */
 function drawNetwork(network) {
+    //console.log("Print out node ids with data in drawNetwork");
+    //console.log(network.nodes(optData=true));
+
+
     // Extract nodes and links from the network to use in visualization.
     var nodes = network.nodes(optData=true).map(function (node) {
         return node[1];
     });
+    var nodeIdentifiers = nodes.map(function (node) {
+        return node.identifier;
+    });
+
+    console.log("node identifiers in drawNetwork");
+    console.log(nodeIdentifiers);
+
+    var duds = nodes.filter(function (node) {
+        return !node.hasOwnProperty("identifier");
+    });
+    console.log("node duds in drawNetwork");
+    console.log(duds);
+
     var links = network.edges(optData=true).map(function (edge) {
         return edge[2];
     });
@@ -1881,6 +2045,64 @@ function drawNetwork(network) {
     console.log(nodes);
     console.log("links");
     console.log(links);
+
+    // TODO: Append a new container div and SVG before each re-draw of the network...
+
+    // Select entity interface.
+    var entityInterface = document.getElementById("entity");
+    // Create container for network visualization.
+    var networkView = document.createElement("div");
+    networkView.setAttribute("id", "network-view");
+    entityInterface.appendChild(networkView);
+    // Create graphical container for network visualization.
+    var networkGraphElement = document.createElement("svg");
+    networkGraphElement.setAttribute("id", "network-graph");
+    networkView.appendChild(networkGraphElement);
+    // TODO: Now in CSS expand the dimensions of the SVG to fill the available space... I guess...
+
+    var networkGraph = d3.select("#network-graph");
+
+    // Create links.
+    // Create links before nodes so that nodes will appear over the links.
+    var linkGroup = networkGraph.append("g")
+        .selectAll("line")
+        .data(links)
+        .enter()
+        .append("line")
+        .classed("link", true);
+
+    // Create nodes.
+    var nodeGroup = networkGraph.append("g");
+    var nodeCircles = nodeGroup
+        .selectAll("circle")
+        .data(nodes);
+    nodeCircles.exit().remove();
+    var nodeCirclesNew = nodeCircles.enter().append("circle");
+    nodeCircles = nodeCirclesNew.merge(nodeCircles);
+    nodeCircles
+        .attr("class", function (data) {
+            var type = data.type;
+            if (type === "metabolite") {
+                var replication = d.replication;
+                if (replication == true) {
+                    return "node-metabolite-replication";
+                } else if (replication == false) {
+                    return "node-metabolite";
+                };
+            } else if (type === "reaction") {
+                return "node-reaction";
+            };
+        })
+    self.nodeCircles
+        .call(d3.drag()
+            .on("start", dragStart)
+            .on("drag", dragged)
+            .on("end", dragEnd)
+        )
+        .on("dblclick", release);
+
+
+
 
 
 
