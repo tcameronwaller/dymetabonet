@@ -3,6 +3,30 @@
 // Assembly of Network Elements
 
 /**
+ * Determines whether or not the reaction involves the same metabolite as both
+ * reactant and product.
+ * @param {Array<Object>} reactionMetabolites Information about metabolites that
+ * participate in a reaction.
+ * @returns {boolean} Indicator of whether or not the reaction involves the same
+ * metabolite as both reactant and product.
+ */
+function determineReactionSameReactantProduct(reactionMetabolites) {
+    var reactants = reactionMetabolites.filter(function (metabolite) {
+        return metabolite.role === "reactant";
+    }).map(function (reactant) {
+        return reactant.identifier;
+    });
+    var products = reactionMetabolites.filter(function (metabolite) {
+        return metabolite.role === "product";
+    }).map(function (product) {
+        return product.identifier;
+    });
+    return reactants.some(function (reactant) {
+        return products.includes(reactant);
+    });
+}
+
+/**
  * Determines the identifier for a network node for a metabolite.
  * @param {Object} parameters Destructured object of parameters.
  * @param {string} parameters.metabolite Identifier of a general metabolite.
@@ -83,11 +107,7 @@ function createNewMetaboliteNode({
     attributes,
     currentNodes
 } = {}) {
-
-    // TODO: The node-creation process is changing the records for metabolites in the metabolic model...
-
-    // Determine whether or not a node already exists for the
-    // metabolite.
+    // Determine whether or not a node already exists for the metabolite.
     var nodeMatch = currentNodes.find(function (node) {
             return node.identifier === identifier;
         });
@@ -99,12 +119,14 @@ function createNewMetaboliteNode({
             var newAttributes = {
                 compartment: compartment,
                 entity: "metabolite",
-                identifier: identifier
+                identifier: identifier,
+                reactions: attributes.reactions.slice()
             };
         } else {
             var newAttributes = {
                 entity: "metabolite",
-                identifier: identifier
+                identifier: identifier,
+                reactions: attributes.reactions.slice()
             };
         }
         var newNode = Object.assign(attributes, newAttributes);
@@ -176,27 +198,27 @@ function createReactionMetaboliteLinks(
 }
 
 /**
- * Determines whether or not the reaction involves the same metabolite as both
- * reactant and product.
- * @param {Array<Object>} reactionMetabolites Information about metabolites that
- * participate in a reaction.
- * @returns {boolean} Indicator of whether or not the reaction involves the same
- * metabolite as both reactant and product.
+ * Determines which links are new to a collection for a network.
+ * @param {Object} parameters Destructured object of parameters.
+ * @param {Array<Object<string>>} parameters.currentLinks Records for links
+ * currently in the collection for the network.
+ * @param {Array<Object<string>>} parameters.links Links for a reaction.
+ * @returns {Array<Object<string>>} Collection with new links.
  */
-function determineReactionSameReactantProduct(reactionMetabolites) {
-    var reactants = reactionMetabolites.filter(function (metabolite) {
-        return metabolite.role === "reactant";
-    }).map(function (reactant) {
-        return reactant.identifier;
-    });
-    var products = reactionMetabolites.filter(function (metabolite) {
-        return metabolite.role === "product";
-    }).map(function (product) {
-        return product.identifier;
-    });
-    return reactants.some(function (reactant) {
-        return products.includes(reactant);
-    });
+function determineNewLinks({currentLinks, links} = {}) {
+    return links.reduce(function (collection, link) {
+        var linkSearch = collection.find(function (currentLink) {
+                return currentLink.identifier === link.identifier;
+            });
+        if (!linkSearch) {
+            // The link does not already exist in the collection.
+            // Include the link in the collection.
+            return collection.concat(link);
+        } else {
+            // The link already exists in the collection.
+            return collection;
+        }
+    }, currentLinks);
 }
 
 /**
@@ -244,7 +266,7 @@ function assembleNetworkMetabolites({
                     reaction: reaction.identifier,
                     replicationMetabolites: replicationMetabolites
                 });
-                // Create new metabolite node.
+                // Create new metabolite node and include in the collection.
                 // A record exists in the model for every metabolite that
                 // participates in reactions in the model.
                 // Include attributes from general metabolites in the node's
@@ -260,7 +282,6 @@ function assembleNetworkMetabolites({
                     ),
                     currentNodes: metaboliteCollection.nodes
                 });
-
                 // Create links between the reaction and the metabolite.
                 var links = createReactionMetaboliteLinks({
                     metaboliteIdentifier: nodeIdentifier,
@@ -268,25 +289,14 @@ function assembleNetworkMetabolites({
                     reactionIdentifier: reaction.identifier,
                     reversibility: reaction.reversibility
                 });
-                // TODO: Put this part in a separate function...
-                var newLinks = links.reduce(function (collection, newLink) {
-                    var linkSearch = metaboliteCollection
-                        .links
-                        .find(function (oldLink) {
-                            return oldLink.identifier === newLink.identifier;
-                        });
-                    if (linkSearch === undefined) {
-                        // The link does not already exist in the collection.
-                        // Include the link in the collection.
-                        return collection.concat(newLink);
-                    } else {
-                        // The link already exists in the collection.
-                        return collection;
-                    }
-                }, []);
+                // Include new links in the collection.
+                var newLinks = determineNewLinks({
+                    currentLinks: metaboliteCollection.links,
+                    links: links
+                });
                 // Restore the collection with new elements of the network.
                 return {
-                    links: metaboliteCollection.links.concat(newLinks),
+                    links: newLinks,
                     nodes: newNodes
                 };
             } else {
@@ -296,114 +306,6 @@ function assembleNetworkMetabolites({
             }
         }, reactionCollection);
 }
-
-/**
- * Assembles network elements, nodes and links, across all metabolites that
- * participate in a single reaction.
- * @param {Object} parameters Destructured object of parameters.
- * @param {boolean} parameters.compartmentalization Indicator of whether or not
- * to represent compartmentalization in the network.
- * @param {Array<string>} parameters.replicationMetabolites Identifiers of
- * metabolites for which to replicate nodes in the network.
- * @param {Array<string>} parameters.metaboliteIdentifiers Identifiers of
- * metabolites for which to include nodes in the network.
- * @param {Object} parameters.reaction Information for a reaction.
- * @param {Object<Array<Object>>} parameters.reactionCollection Collection of
- * network elements from reactions.
- * @param {Object<Object>>} parameters.model Information about entities and
- * relations in a metabolic model.
- * @returns {Object<Array<Object>>} Network elements.
- */
-function assembleNetworkMetabolitesTest({
-                                                compartmentalization,
-                                                replicationMetabolites,
-                                                metaboliteIdentifiers,
-                                                reaction,
-                                                reactionCollection,
-                                                model
-                                            } = {}) {
-    // Iterate on metabolites.
-    return reaction
-        .metabolites
-        .reduce(function (metaboliteCollection, reactionMetabolite) {
-
-            // Determine whether or not the metabolite is in the
-            // list for inclusion in the network.
-            // TODO: Only include the metabolite if it's record from the attributeIndex includes the compartment in which it participates in the reaction.
-            // TODO: I suppose I could also determine that information from the record for the reaction in the attributeIndex.
-
-            var metaboliteNodeIdentifier = reactionMetabolite.identifier;
-            // Determine whether or not a node already exists for the
-            // metabolite.
-            // TODO: This check doesn't seem to work...
-            var nodeSearch = metaboliteCollection
-                .nodes
-                .findIndex(function (node) {
-                    return node.identifier === metaboliteNodeIdentifier;
-                });
-            if (nodeSearch === -1) {
-                // A node does not already exist for the metabolite.
-                // Create new node for the metabolite.
-                // A record exists in the model for every metabolite that
-                // participates in reactions in the model.
-                var metabolite = model
-                    .entities
-                    .metabolites[reactionMetabolite.identifier];
-                if (compartmentalization) {
-                    var newValues = {
-                        compartment: reactionMetabolite.compartment,
-                        entity: "metabolite",
-                        identifier: metaboliteNodeIdentifier
-                    };
-                } else {
-                    var newValues = {
-                        entity: "metabolite",
-                        identifier: metaboliteNodeIdentifier
-                    };
-                }
-                var metaboliteNode = Object.assign(metabolite, newValues);
-                var newNodes = metaboliteCollection
-                    .nodes
-                    .concat(metaboliteNode);
-            } else {
-                // A node already exists for the metabolite.
-                var newNodes = metaboliteCollection.nodes;
-            }
-            // Create links between the reaction and the metabolite.
-            var links = createReactionMetaboliteLinks({
-                metaboliteIdentifier: metaboliteNodeIdentifier,
-                role: reactionMetabolite.role,
-                reactionIdentifier: reaction.identifier,
-                reversibility: reaction.reversibility
-            });
-            var newLinks = links.reduce(function (collection, newLink) {
-                var linkSearch = metaboliteCollection
-                    .links
-                    .find(function (oldLink) {
-                        return oldLink.identifier === newLink.identifier;
-                    });
-                if (linkSearch === undefined) {
-                    // The link does not already exist in the collection.
-                    // Include the link in the collection.
-                    return collection.concat(newLink);
-                } else {
-                    // The link already exists in the collection.
-                    return collection;
-                }
-            }, []);
-            // Restore the collection with new elements of the network.
-            return {
-                links: metaboliteCollection.links.concat(newLinks),
-                nodes: newNodes
-            };
-
-        }, reactionCollection);
-}
-
-
-
-
-
 
 /**
  * Assembles network elements, nodes and links, across all reactions and
