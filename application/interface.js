@@ -819,7 +819,7 @@ function createActivateAttributeSummaryTable({
             // Access data bound to selection by selection.data().
             // Select the attribute cell.
             var attributeCell = d3.select(nodes[index].parentElement);
-            var attributeSearch = attributeCell.select(".search")
+            var attributeSearch = attributeCell.select(".search");
             // Determine whether or not the attribute head already has a search
             // menu.
             if (attributeSearch.empty()) {
@@ -1848,19 +1848,19 @@ function controlEntityInterface({attributeIndex, model} = {}) {
             model: model
         });
         // Evaluate network assembly.
-        console.log("networkElements");
-        console.log(networkElements);
-        var replicateNodes = checkReplicateElements(networkElements.nodes);
-        console.log("replicate nodes");
-        console.log(replicateNodes);
-        var replicateLinks = checkReplicateElements(networkElements.links);
-        console.log("replicate links");
-        console.log(replicateLinks);
-        var emptyNodes = networkElements.nodes.filter(function (node) {
-            return !node.hasOwnProperty("identifier");
-        });
-        console.log("empty nodes");
-        console.log(emptyNodes);
+        //console.log("networkElements");
+        //console.log(networkElements);
+        //var replicateNodes = checkReplicateElements(networkElements.nodes);
+        //console.log("replicate nodes");
+        //console.log(replicateNodes);
+        //var replicateLinks = checkReplicateElements(networkElements.links);
+        //console.log("replicate links");
+        //console.log(replicateLinks);
+        //var emptyNodes = networkElements.nodes.filter(function (node) {
+        //    return !node.hasOwnProperty("identifier");
+        //});
+        //console.log("empty nodes");
+        //console.log(emptyNodes);
 
 
         // Initialize an operable network from the network elements.
@@ -1877,7 +1877,6 @@ function controlEntityInterface({attributeIndex, model} = {}) {
         // TODO: Now it's time to figure out some graph traversal algorithms.
         // TODO: Start with proximity/ego graph.
 
-        console.log("pyruvateEgo");
         var egoNetwork = induceEgoNetwork({
             node: "pyr_m",
             depth: 2,
@@ -1900,10 +1899,10 @@ function controlEntityInterface({attributeIndex, model} = {}) {
  */
 function drawNetwork(network) {
     // Extract nodes and links from the network to use in visualization.
-    var nodes = network.nodes(optData=true).map(function (node) {
+    var nodeRecords = network.nodes(optData=true).map(function (node) {
         return node[1];
     });
-    var links = network.edges(optData=true).map(function (edge) {
+    var linkRecords = network.edges(optData=true).map(function (edge) {
         return edge[2];
     });
 
@@ -1919,6 +1918,9 @@ function drawNetwork(network) {
     var networkGraphElement = document.createElement("svg");
     networkGraphElement.setAttribute("id", "network-graph");
     networkView.appendChild(networkGraphElement);
+    var testRectangle = document.createElement("rect");
+    testRectangle.setAttribute("class", "bar");
+    networkGraphElement.appendChild(testRectangle);
     // TODO: Now in CSS expand the dimensions of the SVG to fill the available space... I guess...
 
     // TODO: I need to follow the data, exit-remove, enter-append pattern for nodes and links... I think.
@@ -1926,42 +1928,43 @@ function drawNetwork(network) {
     var networkGraph = d3.select("#network-graph");
     // Create links.
     // Create links before nodes so that nodes will appear over the links.
-    var linkGroup = networkGraph.append("g")
-        .selectAll("line")
-        .data(links)
-        .enter()
-        .append("line")
-        .classed("link", true);
+    // Contain all links within a single group.
+    var linkGroup = networkGraph.append("g");
+    var links = linkGroup.selectAll("line").data(linkRecords);
+    links.exit().remove();
+    var newLinks = links.enter().append("line");
+    links = newLinks.merge(links);
+    links.classed("link", true);
 
     // Create nodes.
+    // Contain all nodes within a single group.
     var nodeGroup = networkGraph.append("g");
-    var nodeCircles = nodeGroup
-        .selectAll("circle")
-        .data(nodes);
-    nodeCircles.exit().remove();
-    var nodeCirclesNew = nodeCircles.enter().append("circle");
-    nodeCircles = nodeCirclesNew.merge(nodeCircles);
-    nodeCircles
-        .attr("class", function (data) {
-            var type = data.type;
-            if (type === "metabolite") {
-                var replication = d.replication;
-                if (replication == true) {
-                    return "node-metabolite-replication";
-                } else if (replication == false) {
-                    return "node-metabolite";
-                };
-            } else if (type === "reaction") {
-                return "node-reaction";
-            };
-        })
-    self.nodeCircles
-        .call(d3.drag()
-            .on("start", dragStart)
-            .on("drag", dragged)
-            .on("end", dragEnd)
-        )
-        .on("dblclick", release);
+    var nodes = nodeGroup.selectAll("circle").data(nodeRecords);
+    nodes.exit().remove();
+    var newNodes = nodes.enter().append("circle");
+    nodes = newNodes.merge(nodes);
+    //nodes
+    //    .attr("class", function (data) {
+    //        var entity = data.entity;
+    //        if (entity === "metabolite") {
+    //            // TODO: Maybe I should have some special style for replicate, reaction-specific metabolites.
+    //            var replication = d.replication;
+    //            if (replication == true) {
+    //                return "node-metabolite-replication";
+    //            } else if (replication == false) {
+    //                return "node-metabolite";
+    //            };
+    //        } else if (type === "reaction") {
+    //            return "node-reaction";
+    //        };
+    //    })
+    //self.nodeCircles
+    //    .call(d3.drag()
+    //        .on("start", dragStart)
+    //        .on("drag", dragged)
+    //        .on("end", dragEnd)
+    //    )
+    //    .on("dblclick", release);
 
 
 

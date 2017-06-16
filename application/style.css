@@ -215,14 +215,16 @@ h3 {
 
 #relation {
     background-color: rgba(225, 225, 225, 1);
-    display: block;
+    display: flex;
+    height: 70%;
     width: 100%;
 }
 
 #set {
-    display: inline;
-    float: left;
-    width: 50%;
+    /*display: inline;*/
+    /*float: left;*/
+    flex-basis: content;
+    width: 25%;
 }
 
 /******************************************************************************/
@@ -230,9 +232,10 @@ h3 {
 /******************************************************************************/
 
 #entity {
-    display:inline;
-    float: left;
-    width: 50%;
+    /*display:inline;*/
+    /*float: left;*/
+    flex: 1;
+    height: 100%;
 }
 
 #network-view {
@@ -244,3 +247,12 @@ h3 {
     height: 100%;
     width: 100%;
 }
+
+#network-graph rect {
+    height: 5cm;
+    width: 5cm;
+    x: 0;
+    y: 0;
+    fill: rgba(100, 100, 100, 1);
+}
+
