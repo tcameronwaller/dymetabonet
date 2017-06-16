@@ -195,7 +195,7 @@ function initializeInterfaceData(model) {
     // Initialize attribute interface.
     initializeAttributeInterface(attributeIndex, model);
     // Initialize set interface.
-    // ...
+    initializeSetInterface({attributeIndex: attributeIndex, model: model});
     // Initialize entity interface.
     initializeEntityInterface({attributeIndex: attributeIndex, model: model});
 }
@@ -1369,6 +1369,21 @@ function controlAttributeMenu({
 // Set Interface
 ////////////////////////////////////////////////////////////////////////////////
 
+function initializeSetInterface({attributeIndex, model} = {}) {
+    // Select set interface.
+    var setInterface = document.getElementById("set");
+    // Create container for graph.
+    var setView = document.createElement("div");
+    setView.setAttribute("id", "set-view");
+    setInterface.appendChild(setView);
+    // Create graphical container for graph.
+    // Create graphical container with D3 so that styles in CSS will be able to
+    // control dimensions.
+    var networkGraph = d3.select("#set-view").append("svg");
+    networkGraph.attr("id", "set-graph");
+
+}
+
 /**
  * Extracts from the attribute index all values of attributes that entities in
  * the index possess.
@@ -1915,17 +1930,10 @@ function drawNetwork(network) {
     networkView.setAttribute("id", "network-view");
     entityInterface.appendChild(networkView);
     // Create graphical container for network visualization.
-    var networkGraphElement = document.createElement("svg");
-    networkGraphElement.setAttribute("id", "network-graph");
-    networkView.appendChild(networkGraphElement);
-    var testRectangle = document.createElement("rect");
-    testRectangle.setAttribute("class", "bar");
-    networkGraphElement.appendChild(testRectangle);
-    // TODO: Now in CSS expand the dimensions of the SVG to fill the available space... I guess...
-
-    // TODO: I need to follow the data, exit-remove, enter-append pattern for nodes and links... I think.
-
-    var networkGraph = d3.select("#network-graph");
+    // Create graphical container with D3 so that styles in CSS will control
+    // dimensions.
+    var networkGraph = d3.select("#network-view").append("svg");
+    networkGraph.attr("id", "network-graph");
     // Create links.
     // Create links before nodes so that nodes will appear over the links.
     // Contain all links within a single group.
@@ -1965,11 +1973,6 @@ function drawNetwork(network) {
     //        .on("end", dragEnd)
     //    )
     //    .on("dblclick", release);
-
-
-
-
-
 
 }
 
