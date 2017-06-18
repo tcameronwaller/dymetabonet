@@ -262,3 +262,18 @@ h3 {
     fill: rgba(100, 100, 100, 1);
 }
 
+#network-graph .link {
+    stroke: rgba(100, 100, 100, 1);
+    stroke-width: 2;
+}
+
+#network-graph .node.metabolite {
+    fill: rgba(50, 0, 0, 1);
+    r: 7;
+}
+
+#network-graph .node.reaction {
+    fill: rgba(100, 0, 0, 1);
+    r: 15;
+}
+

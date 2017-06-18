@@ -107,6 +107,7 @@ function createNewMetaboliteNode({
     attributes,
     currentNodes
 } = {}) {
+    // TODO: Eventually, I think it'll be desirable to have an indication of whether or not the metabolite node is a reaction-specific replicate.
     // Determine whether or not a node already exists for the metabolite.
     var nodeMatch = currentNodes.find(function (node) {
             return node.identifier === identifier;

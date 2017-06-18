@@ -1382,6 +1382,23 @@ function initializeSetInterface({attributeIndex, model} = {}) {
     var networkGraph = d3.select("#set-view").append("svg");
     networkGraph.attr("id", "set-graph");
 
+    // Determine the width of graphical container.
+    var graphWidth = parseFloat(
+        window.getComputedStyle(
+            document
+                .getElementById("set-graph")
+        ).width.replace("px", "")
+    );
+    var graphHeight = parseFloat(
+        window.getComputedStyle(
+            document
+                .getElementById("set-graph")
+        ).height.replace("px", "")
+    );
+    //console.log("set interface graph dimensions");
+    //console.log("width: " + graphWidth + "... " + "height: " + graphHeight);
+
+
 }
 
 /**
@@ -1703,15 +1720,11 @@ function induceEgoNetwork({node, depth, center, direction, network} = {}) {
 // TODO: Determine metabolites to replicate in the network.
 // TODO: Assemble network of nodes for metabolites and reactions.
 
-
-
-
 // TODO: Create and activate interface components for specifying proximity and path queries.
 
 function createActivateProximityMenu() {}
 
 function createActivatePathMenu() {}
-
 
 function initializeEntityInterface({attributeIndex, model} = {}) {
 
@@ -1913,16 +1926,6 @@ function controlEntityInterface({attributeIndex, model} = {}) {
  * @param {Object} Network in JSNetworkX.
  */
 function drawNetwork(network) {
-    // Extract nodes and links from the network to use in visualization.
-    var nodeRecords = network.nodes(optData=true).map(function (node) {
-        return node[1];
-    });
-    var linkRecords = network.edges(optData=true).map(function (edge) {
-        return edge[2];
-    });
-
-    // TODO: Append a new container div and SVG before each re-draw of the network...
-
     // Select entity interface.
     var entityInterface = document.getElementById("entity");
     // Create container for network visualization.
@@ -1934,6 +1937,29 @@ function drawNetwork(network) {
     // dimensions.
     var networkGraph = d3.select("#network-view").append("svg");
     networkGraph.attr("id", "network-graph");
+
+    // Determine the dimensions of the graphical container.
+    var graphWidth = parseFloat(
+        window.getComputedStyle(
+            document
+                .getElementById("network-graph")
+        ).width.replace("px", "")
+    );
+    var graphHeight = parseFloat(
+        window.getComputedStyle(
+            document
+                .getElementById("network-graph")
+        ).height.replace("px", "")
+    );
+
+    // Extract nodes and links from the network to use in visualization.
+    var nodeRecords = network.nodes(optData=true).map(function (node) {
+        return node[1];
+    });
+    var linkRecords = network.edges(optData=true).map(function (edge) {
+        return edge[2];
+    });
+
     // Create links.
     // Create links before nodes so that nodes will appear over the links.
     // Contain all links within a single group.
@@ -1951,28 +1977,80 @@ function drawNetwork(network) {
     nodes.exit().remove();
     var newNodes = nodes.enter().append("circle");
     nodes = newNodes.merge(nodes);
-    //nodes
-    //    .attr("class", function (data) {
-    //        var entity = data.entity;
-    //        if (entity === "metabolite") {
-    //            // TODO: Maybe I should have some special style for replicate, reaction-specific metabolites.
-    //            var replication = d.replication;
-    //            if (replication == true) {
-    //                return "node-metabolite-replication";
-    //            } else if (replication == false) {
-    //                return "node-metabolite";
-    //            };
-    //        } else if (type === "reaction") {
-    //            return "node-reaction";
-    //        };
-    //    })
-    //self.nodeCircles
-    //    .call(d3.drag()
-    //        .on("start", dragStart)
-    //        .on("drag", dragged)
-    //        .on("end", dragEnd)
-    //    )
-    //    .on("dblclick", release);
+    nodes.classed("node", true);
+    nodes.classed("metabolite", function (data) {
+        return data.entity === "metabolite";
+    });
+    nodes.classed("reaction", function (data) {
+        return data.entity === "reaction";
+    });
+
+    // TODO: How can I accommodate networks of different scales?
+    // TODO: I think I'll need variables for node and link dimensions as well as force parameters.
+
+    // TODO: I can scale the radius of reactions by the number of metabolite nodes (in current network definition) they connect to.
+
+    // Initiate the force simulation.
+    // The force method assigns a specific force simulation to the name.
+    // Collision force prevents overlap and occlusion of nodes.
+    // The center force causes nodes to behave strangely when user repositions
+    // them manually.
+    var simulation = d3.forceSimulation()
+        .nodes(nodeRecords)
+        .force("center", d3.forceCenter()
+            .x(graphWidth / 2)
+            .y(graphHeight / 2)
+        )
+        .force("collision", d3.forceCollide()
+            .radius(function (data) {
+                if (data.entity === "metabolite") {
+                    return 10;
+                } else if (data.entity === "reaction") {
+                    return 20;
+                }
+            })
+            .strength(0.9)
+            .iterations(1)
+        )
+        .force("charge", d3.forceManyBody()
+            .strength(-250)
+            .distanceMin(1)
+            .distanceMax(200)
+        )
+        .force("link", d3.forceLink()
+            .links(linkRecords)
+            .id(function (d) {
+                return d.identifier;
+            })
+            .distance(7)
+        )
+        //.force("positionX", d3.forceX()
+        //    .x(graphWidth / 2)
+        //    .strength(0.1)
+        //)
+        //.force("positionY", d3.forceY()
+        //    .y(graphWidth / 2)
+        //    .strength(0.1)
+        //)
+        .on("tick", restoreNodePositions);
+
+    // Declare function to increment the force simulation.
+    // Impose constraints on node positions (d.x and d.y) according to dimensions of bounding SVG element.
+    var radius = 9;
+    function restoreNodePositions() {
+        nodes
+            .attr("cx", function (d) {
+                return d.x = Math.max(radius, Math.min(graphWidth - radius, d.x));
+            })
+            .attr("cy", function (d) {
+                return d.y = Math.max(radius, Math.min(graphHeight - radius, d.y));
+            });
+        links
+            .attr("x1", function (d) {return d.source.x;})
+            .attr("y1", function (d) {return d.source.y;})
+            .attr("x2", function (d) {return d.target.x;})
+            .attr("y2", function (d) {return d.target.y;});
+    };
 
 }
 

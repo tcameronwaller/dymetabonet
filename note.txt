@@ -3,6 +3,57 @@ Notes
 Research With Alexander Lex
 --------------------------------------------------
 
+
+--------------------------------------------------
+17 June 2017
+
+----------
+Network Entity Identies and Properties
+
+The user needs to access names and other properties of individual entities from the network view.
+Tool tips would be a concise strategy to make this information available.
+
+----------
+Network Attribute Visualization
+
+For a given network in the network view, I could display a custom set of attributes within that network.
+The user could select which attributes to encode by color or even position (spatial groupings).
+
+----------
+Network Scale
+
+I need to accommodate multiple scales of networks.
+The user can select greater or smaller networks to display within a permissible threshold.
+Maybe I need some sort of zoom feature for the network view.
+
+----------
+Novelty
+
+In this project we adopt strategies to make the complexity of the metabolic network at different levels according to degree of interest.
+We employ techniques of abstraction and filters to simplify the network.
+
+Abstraction of the network as sets of entities with specific attributes.
+Representation of cardinality of attribute sets and relations between these sets.
+Definition of network with or without compartmentalization.
+Definition of network with or without replication of nodes for reaction-specific metabolites, hence simplifying the network dramatically and making path traversal more relevant.
+Graph traversal algorithms, ego and path, for exploring relations between individual entities.
+Selection of attributes in order to explore relations between entities within a specific context.
+
+----------
+Network Topology
+
+My demonstration network is the ego network for mitochondrial pyruvate at a depth of 2.
+My first view of the layout for this network surprised me.
+The replication of common nodes in the definition of the network changes the topology dramatically.
+
+----------
+D3 Force Layout
+
+I need to become an expert in D3's force layout. :)
+
+https://github.com/d3/d3-force
+https://stackoverflow.com/questions/28745398/why-do-we-need-force-ontick-in-d3
+
 --------------------------------------------------
 16 June 2017
 
