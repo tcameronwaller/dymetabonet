@@ -3,12 +3,245 @@ Notes
 Research With Alexander Lex
 --------------------------------------------------
 
+--------------------------------------------------
+20 June 2017
+
+----------
+Model
+
+General
+All relevant information from the metabolic model and derivations thereof that are relevant to multiple views.
+
+Attribute View
+
+Set View
+
+Entity View
+
+----------
+Plan
+
+Design the model for the application.
+Decide which information I need and want to store within the model for the entire application.
+Consider computational burden.
+If I choose not to include some derivations of information within the model then it will be necessary to derive these with every step in the application.
+For example, store the entire attribute index within the model along with all selections of attribute values for filters.
+For each step in the application, filter the attribute index according to selections and the state of the filter control.
+
+----------
+Conversation with Alex Bigelow about Application Architecture
+
+I spoke with Alex in person about application architecture.
+Alex confidently endorses using architecture with a central model of the entire application's state.
+Alex confidently endorses using separate functionality to render the visual interface from this model.
+Alex personally uses an architecture similar to the Model View Controller (MVC) pattern.
+For simple applications like mine, Alex recommends using classes for views that control both rendering and activity, including changes to the model.
+As applications become larger and more complex, Alex recommends considering an architecture with more Separation of Concerns (SOC) between Model, View, and Control.
+In particular, greater SOC can help to determine which views of the interface need to restore after changes to part of the model.
+Rendering views of the interface is computationally expensive.
+
+My application involves some operations that are computationally expensive.
+I think I want to build the application with extensive SOC for the sake of versatility as the application becomes larger and more complex.
+
+----------
+State Action Model (SAM)
+http://sam.js.org/
+
+I decide to use the SAM pattern for the architecture of this application.
+This pattern is comparable to the Model View Controller (MVC) pattern, but it separates the aspects of the Controller between Model-View and View-Model interfaces.
+The result is a pattern with unidirectional data flow in a reactive cycle or loop.
+
+Model
+Structure: Class
+Reference: None
+Attributes for all variables of application state
+Methods for accepting new values
+Receive method receives a proposal from Action and routes the proposal to the appropriate method for evaluation and acceptance or rejection
+After each update of Model, instantiate new State
+
+State
+Structure: Class
+Reference: Model
+Adapts information from the model for the View
+Initiates new automatic actions if appropriate
+Instantiate new View
+
+View
+Structure: Class
+Reference: Model, State
+Creates elements of the interface view
+Initializes event listeners on control elements
+Event listeners point to Actions and pass Actions reference to the model
+
+Action
+Structure: Class
+Reference: None
+Utility Class of static methods
+Action only uses necessary aspects of the model
+Action only passes relevant aspects of model back to model
+Action organizes aspects of model with keys for reference in model's receive method
+
+----------
+Functional Programming in JavaScript Applications
+
+https://medium.com/javascript-scene/why-learn-functional-programming-in-javascript-composing-software-ea13afc7a257
+
+--------------------------------------------------
+19 June 2017
+
+----------
+Plan
+
+Implement something like SAM or MVC in plain JavaScript.
+
+Consider this article...
+
+https://danmartensen.svbtle.com/how-to-write-mvc-without-a-framework
+
+----------
+JavaScript Functional Application Architecture
+
+State
+-Interface (user interaction)
+-Model
+
+State Action Model (SAM)
+http://www.ebpml.org/blog15/2016/01/sam-a-functional-approach-to-ui-construction/
+https://www.infoq.com/articles/no-more-mvc-frameworks
+http://sam.js.org/
+From code examples, I think that it would be possible to organize Model, View, State, and Actions within classes rather than the global object variables of the examples.
+
+Elm Architecture
+https://github.com/paldepind/functional-frontend-architecture
+
+Scalable Single-Page Application Architecture
+http://blog.mgechev.com/2016/04/10/scalable-javascript-single-page-app-angular2-application-architecture/
+
+Model View Controller (MVC)
+https://developer.chrome.com/apps/app_frameworks
+The instructions for Google Chrome endorse the MVC architecture.
+After learning and thinking a little about the MVC architecture, I realized that it might be a little difficult with a functional programming style.
+https://medium.freecodecamp.com/is-mvc-dead-for-the-frontend-35b4d1fe39ec
+This article argues that MVC is not a good fit for client-side applications.
+https://danmartensen.svbtle.com/how-to-write-mvc-without-a-framework
+
+Various Tips (of questionable helpfulness)
+http://sandservices.com/docs/funcjsarch.html
+
+----------
+Conversation with Alex Bigelow about Programming Paradigms for Interface
+
+I also talked with Alex in person.
+My understanding is that development of an entire application requires much more structure and organization than modules of functions.
+Alex endorsed the practice of separating information about application state (data, user interaction) from application behavior.
+He endorsed storing information about application state within a separate object and passing that object to controls that render views accordingly.
+
+Conversation with Alex Bigelow
+
+T Cameron Waller
+I assume that you use a mixture of Functional Programming (FP) and Object-Oriented Programming (OOP) in your programs. Is that correct? I've been trying to use FP as much as possible, but it gets really tricky with the Interface of the Document Object Model (DOM). Side effects are necessary of course, and state management is difficult. In FP, state management of the DOM requires a lot of recursive calls to functions with many parameters. It's starting to get overwhelming, and I'm realizing that using more OOP at least for state management of the DOM might help. What do you think?
+
+Alex Bigelow
+Yeah, state management in JavaScript is... tricky. Lately, I've been doing things quite a bit more object-oriented, especially when projects get bigger. Lots of frameworks are out there (react, etc) that kind of force a certain MVC flavor on you, and that can be a good thing in some ways. I tend to follow a sort of ad-hoc MVC, where different classes are clearly in the model or view categories, and the main (functional) script acts as the controller
+
+[09:23] 
+Not sure if that answers your question...
+
+T Cameron Waller
+Thanks! Yeah... I don't understand entirely. I do understand that you use a mixture of FP and OOP. I guess the question is how to do that practically. ... What is MVC?
+
+Alex Bigelow
+It's a way of keeping things organized, so that state management is always separate from rendering... Structuring your code that way can go a long way to avoiding lots of deep callbacks / writing redundant code. Only one piece (the view) worries about the state of the DOM, and keeping it in sync with the rest of the app
+
+T Cameron Waller
+Ah! That sounds neat! I need to learn more about that, then. Hopefully I can follow that principle without a new, heavy library. ... So, here's what I was thinking... I think it's sort of what you're talking about. I'll have OOP-style classes to model and control discrete parts of my interface (view 1, view 2, view 3). These classes will manage the state and behavior of the interface (user interaction with controls and input elements). The classes will call FP-style functions (maybe organized as static methods in classes of their own) for the heavy data-crunching back-end-ish work. Does that make sense?
+
+Alex Bigelow
+Yeah, that’s definitely a way to do it. I tend to make classes for the data-crunching part too (the model part of model-view-controller), but your approach would probably be simpler, and kind of cuts out the need for a controller (which is fine).
+
+If it helps at all, I’ve started rolling what I do into a (shudder) mini framework of my own: https://github.com/alex-r-bigelow/my-mvc-library
+I’m not saying to use it. But skimming the Model and View code might be helpful (they’re pretty short files)? Unfortunately I don’t have a very good example of how to use it / wire them up together… And, as I said, your approach (functional model + controller) would probably be simpler (edited)
+
+T Cameron Waller
+Thank you very much! This conversation has been very helpful, and I think you pointed me in a good direction. I started looking at your framework and will continue to try to figure out your strategy there. As always, I've got a lot to learn. :slightly_smiling_face:
+
+Alex Bigelow
+Don’t waste too much time on it… those are things I just found myself writing over and over again. The only things it does are:
+1) code to strap custom event listeners on my models / views (your functional approach would bypass the need for this)
+2) separating views’ rendering logic into `setup` and `draw` functions (even though D3 tries to be helpful with enter/exit/update, I still find myself needing to do some initial setup a lot that isn’t data-driven)… there are examples in the readme of what a view would look like. You wouldn’t necessarily need this, but I’ve found it to be helpful when I create View classes that use D3 to render things to the DOM
+3) debouncing the views’ render functions, so that I can just call `render()` whenever / wherever I want, and not worry about whether something else just called render (rendering is expensive!)… This is another thing you don’t necessarily need, but I’ve found that it helps me avoid a lot of complicated debugging
+
+T Cameron Waller
+I stumbled upon the State Action Model (SAM) Pattern (http://sam.js.org/). In case you're interested, I'm curious what you think.
+
+Alex Bigelow
+Probably overkill for what you’re trying to do—we’re kind of going in that direction, but this seems to take it to a really formal level. For a really big / complicated system, it might be worth it, but I think the approach you described (view classes + functional models) sounds like it would be sufficient for your project
+
+T Cameron Waller
+Whew! I was having difficulty understanding SAM anyway. Thanks! :slightly_smiling_face:
+
+----------
+Program Style
+
+I still think that there are advantages to an object-oriented programming paradigm.
+Stateful objects and classes model reality well, since real objects can change state.
+
+Maybe I can use objects to control all aspects of the interface itself.
+As much as is practical, I can use functions with a functional paradigm for accessory behavior.
+
+https://stackoverflow.com/questions/42401329/functional-programming-and-dom-manipulation
+
+--------------------------------------------------
+18 June 2017
+
+----------
+Program Style
+
+Thus far in this project, or at least since Prototype 1, I have tried to use a functional programming style.
+This functional programming style is a great challenge with managing the state of the interface.
+
+I think it is time for me to change to an object-oriented programming style for those aspects of the program that directly control the interface and state.
+
+No.
+There are still advantages to a functional programming style.
+For now, I want to implement functionality using my current architectural style.
+As the functionality of the program gains complexity, I can consider alternative architectures.
+
+----------
+Plan, Network Interface
+
+I think my next goal for the Network Interface is to implement a rudimentary set of controls for the ego network function.
+
+----------
+State in the Network Interface
+
+Control Bar
+To save space, maybe include a list of tools for the interface in a bar across the top.
+New tools should become available after network assembly.
+I think that previous controls should always be accessible to back-track.
+1. Before network assembly
+-Control variables for network assembly
+-Execute assembly
+2. After network assembly
+-Control topological searches, either ego or path
+-Execute searches and visualize resulting subnetworks
+3. After subnetwork selection and visualization
+-Control visual representation of network
+
+Network Assembly
+Compartmentalization, whether or not to represent compartmentalization in network
+Metabolites for replication
+Network
+
+Network Traversal
+Details of topological query
+Subnetwork from topological search selection
 
 --------------------------------------------------
 17 June 2017
 
 ----------
-Network Entity Identies and Properties
+Network Entity Identities and Properties
 
 The user needs to access names and other properties of individual entities from the network view.
 Tool tips would be a concise strategy to make this information available.

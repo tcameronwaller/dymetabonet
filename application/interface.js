@@ -1722,7 +1722,104 @@ function induceEgoNetwork({node, depth, center, direction, network} = {}) {
 
 // TODO: Create and activate interface components for specifying proximity and path queries.
 
-function createActivateProximityMenu() {}
+/**
+ * Draws a representation of a network in a node-link diagram.
+ * @param {Object} network Network in JSNetworkX.
+ */
+function createActivateProximityMenu(network) {
+    // TODO: I need...
+    // access to the current assembly of the network
+    // list of all nodes in the network (for selection of ego node)
+
+
+    // Select entity interface.
+    var entityInterface = document.getElementById("entity");
+    // Create interface for network proximity search.
+    var proximityMenu = document.createElement("div");
+    proximityMenu.setAttribute("id", "proximity-menu");
+    entityInterface.appendChild(proximityMenu);
+    // Create search menu for selection of focal node.
+    // Create data list of options for the search menu.
+    // TODO: create options by data...
+    // TODO: Display the name of each node...
+    // TODO: Access identifier upon selection... I guess do that when you submit the actual query.
+
+    var networkGraph = d3.select("#network-view").append("svg");
+
+
+    // Extract nodes and links from the network to use in visualization.
+    var nodeRecords = network.nodes(optData=true).map(function (node) {
+        return node[1];
+    });
+
+    // Create and activate a search field.
+    // Append a search menu to the attribute cell.
+    var attributeSearch = attributeCell.append("div");
+    attributeSearch.classed("search", true);
+    // Append a data list to the search menu.
+    var attributeValueList = attributeSearch.append("datalist");
+    attributeValueList
+        .attr("id", function (data, index) {
+            return "attribute-" + data.attribute + "-values";
+        });
+    // Append options to the data list.
+    var attributeValues = attributeValueList
+        .selectAll("option")
+        .data(function (element, index) {
+            return element.values;
+        });
+    attributeValues.exit().remove();
+    var newAttributeValues = attributeValues
+        .enter()
+        .append("option");
+    attributeValues = newAttributeValues
+        .merge(attributeValues);
+    attributeValues.attr("value", function (data, index) {
+        return data.name;
+    });
+    // Append search text field to the search menu.
+    var attributeSearchField = attributeSearch.append("input");
+    attributeSearchField
+        .attr("autocomplete", "off")
+        .attr("id", function (data, index) {
+            return "attribute-" + data.attribute + "-search";
+        })
+        .attr("list", function (data, index) {
+            return "attribute-" + data.attribute + "-values";
+        })
+        .attr("type", "search");
+    // Assign event listeners and handlers to search menu.
+    // Option elements from datalist element do not report events.
+    // Respond to event on input search text field and then find
+    // relevant information from the options in the datalist.
+    attributeSearchField
+        .on("change", function (data, index, nodes) {
+            // TODO: Use the value of the input field and compare against the list options.
+            // TODO: Only perform selection event if the value of the field matches an option from the datalist.
+            // TODO: http://stackoverflow.com/questions/30022728/perform-action-when-clicking-html5-datalist-option
+            // Assume that each attribute value has a unique name.
+            var selection = nodes[index].value;
+            var attributeValues = d3
+                .select(nodes[index].list)
+                .selectAll("option");
+            var attributeValue = attributeValues
+                .filter(function (data, index) {
+                    return data.name === selection;
+                });
+            if (!attributeValue.empty()) {
+                controlAttributeMenuSelection({
+                    value: attributeValue.data()[0].identifier,
+                    attribute: attributeValue.data()[0].attribute,
+                    entity: entity,
+                    filter: filter,
+                    originalAttributeSummary:
+                    originalAttributeSummary,
+                    originalAttributeIndex: originalAttributeIndex,
+                    model: model
+                });
+            }
+        });
+}
 
 function createActivatePathMenu() {}
 
@@ -1902,6 +1999,8 @@ function controlEntityInterface({attributeIndex, model} = {}) {
         network.addNodesFrom(nodes);
         network.addEdgesFrom(links);
 
+        createActivateProximityMenu(network);
+
         // TODO: Now it's time to figure out some graph traversal algorithms.
         // TODO: Start with proximity/ego graph.
 
@@ -1923,7 +2022,7 @@ function controlEntityInterface({attributeIndex, model} = {}) {
 
 /**
  * Draws a representation of a network in a node-link diagram.
- * @param {Object} Network in JSNetworkX.
+ * @param {Object} network Network in JSNetworkX.
  */
 function drawNetwork(network) {
     // Select entity interface.
