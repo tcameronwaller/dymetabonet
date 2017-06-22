@@ -25,16 +25,11 @@
 
 /**
  * Script for network assembly portion.
- * Use an immediately-invoked function expression (IIFE) to establish scope in a
- * convenient container.
+ * Use an immediately-invoked function expression (IIFE) to establish scope in a convenient container.
  * An alternative style would be to declare the function and subsequently call it.
  */
 (function () {
 
-    //initializeInterface();
-    var model = new Model();
-    Action.initiateApplication(model);
-    // TODO: I need an action method for initializing the model... just pass it an empty bundle to get things rolling.
-
+    initializeInterface();
 
 })();

@@ -7,16 +7,110 @@ Research With Alexander Lex
 20 June 2017
 
 ----------
+State Action Model (SAM)
+http://sam.js.org/
+
+Model
+Structure: Class
+Reference: None
+Attributes: All variables that sufficiently and efficiently represent the state of the entire application
+Methods: Operations for accepting new values of attributes, instantiation of new State
+Receive method receives a proposal from Action and routes the proposal to the appropriate method for evaluation and acceptance or rejection
+
+State
+Structure: Class
+Reference: Model
+Attributes: All variables for representation of application state in View
+Methods: Operations to prepare representation of application state, initiation of automatic actions if appropriate, instantiation of new View
+Adapts information from the model for the View
+I think it also passes information from the model to the appropriate Views
+
+View
+Structure: Class, or multiple Classes (one for each view)
+Reference: Model, State
+Creates elements of the interface view
+Initializes event listeners on control elements
+Event listeners point to Actions and pass Actions reference to the model
+
+Action
+Structure: Class
+Reference: None, only needs access to specifically relevant attributes from model
+Attributes: None
+Methods:
+Utility Class of static methods
+Action only uses necessary aspects of the model
+Action only passes relevant aspects of model back to model
+Action organizes aspects of model with keys for reference in model's receive method
+
+----------
+Presentation on the Project
+
+Explain the general goal.
+Evaluate and critique the current technology.
+Explain the problems or challenges in detail that I have learned about the metabolic network.
+Give examples of challenges, such as the proximity network for pyruvate
+-Large scale of the network with many attributes
+-Interests in different aspects of the network
+-Great extent of interconnectivity due to common nodes with especially great degrees
+Explain solutions in detail that I aim to implement in my project.
+Illustrate solutions with examples of simple networks.
+-Abstract summary of the network in terms of sets of entities by attributes
+-Cardinalities and relations between sets
+-Definition of the network with or without consideration of compartmentalization
+-Replication of common nodes to reduce connectivity and simplify the network
+
+--------------------------------------------------
+20 June 2017
+
+----------
+Design, Initial Start-Up
+
+Display file selector in center or top-left corner of screen.
+Allow user to select a file.
+Allow user to...
+1. Run checks on a metabolic model from SBML
+2. Assemble working metabolic model from original
+3. Load working metabolic model
+
+----------
 Model
 
-General
+For now, just initialize the model and normal application architecture after assembly or load of data from a metabolic model.
+
+The constructor method for the Model class can accept the data for the metabolic model.
+
+General Attributes
 All relevant information from the metabolic model and derivations thereof that are relevant to multiple views.
+Entities
+-metabolites
+-reactions
+Sets
+-compartments
+-genes
+-processes
+Derivation
+-entityAttributes
 
+Interface Attributes
 Attribute View
-
+-attributeViewEntity
+-attributeViewFilter
+-attributeViewAttributeSearches
+-attributeViewAttributeValueSelections
 Set View
 
 Entity View
+-entityViewControlSelection
+-entityViewCompartmentalization
+-entityViewReplications
+-entityViewShowReplications
+-entityViewNetworkNodes
+-entityViewNetworkLinks
+-entityViewProximityFocus
+-entityViewProximityDirection
+-entityViewProximityDepth
+-entityViewSubnetworkNodes
+-entityViewSubnetworkLinks
 
 ----------
 Plan
