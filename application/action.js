@@ -16,5 +16,19 @@ class Action {
         // TODO: of the model here...
         model.restore([]);
     }
+    /**
+     * Loads default assembly file.
+     * @param {string} path Directory path and file name.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static loadDefaultAssemblyFile(path, model) {
+        // Load data for assembly from file.
+        var assembly = General.loadFileByPath(path);
+        // Extract attributes from assembly.
+        var newAttributes = General.extractAssemblyEntitiesSets(assembly);
+        // Pass attributes from assembly to model.
+        model.restore(newAttributes);
+    }
 
 }

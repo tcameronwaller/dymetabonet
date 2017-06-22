@@ -298,24 +298,6 @@ function assembleDefaultModel() {
     );
 }
 
-/**
- * Load model by default.
- */
-function loadDefaultModel() {
-    // Load data from file in JSON format.
-    d3.json(
-        ("../model/homo-sapiens/model_sets_network.json"),
-        function (error, model) {
-            if (error) {
-                throw error;
-            }
-            // Call function to assemble model.
-            summarizeModel(model);
-            initializeInterfaceData(model);
-        }
-    );
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Attribute Menu Interface
 ////////////////////////////////////////////////////////////////////////////////

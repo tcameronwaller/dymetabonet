@@ -2,12 +2,17 @@
  * Model of the comprehensive state of the application.
  * This class stores attributes that represent the entire state of the
  * application.
+ * It is the role of the model to know which attributes and which values of
+ * these attributes describe the application.
  */
 class Model {
     /**
      * Initializes an instance of class Model.
      */
     constructor() {
+        // It is the role of the model to know which attributes and which values
+        // of these attributes describe the application.
+        // Hence the model initializes itself with all relevant attributes.
         // General attributes.
         this.metabolites = null;
         this.reactions = null;

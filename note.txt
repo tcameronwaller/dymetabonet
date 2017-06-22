@@ -4,6 +4,24 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+22 June 2017
+
+----------
+Meet with Ethan Kerzner
+
+Ethan recommended establishing a strategy for persistence of the model of application state.
+This capability will be very useful during development.
+It will be possible to load a specific application state to save time.
+This capability might also be useful to the user.
+
+Organize all attributes of the model of the application's state within an object.
+Save this object in JavaScript Object Notation (JSON).
+
+Include functionality to load a representation of the model of the application's state from file.
+This strategy will be versatile and useful even in the final application.
+Enable the user to save the application in any state and then load that state from file.
+
+--------------------------------------------------
 20 June 2017
 
 ----------
