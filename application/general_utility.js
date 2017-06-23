@@ -78,19 +78,3 @@ function compareArraysByInclusion(firstArray, secondArray) {
         return firstArray.includes(element);
     });
 }
-
-/**
- * Saves to client's machine a JSON version of an object.
- * @param {Object} object Object in JavaScript memory.
- * @param {string} name Name of file.
- */
-function downloadJSON(object, name) {
-    var objectJSON = JSON.stringify(object);
-    var blob = new Blob([objectJSON], {type: "application/json"});
-    var url = URL.createObjectURL(blob);
-    var documentReference = document.createElement("a");
-    documentReference.setAttribute("href", url);
-    documentReference.setAttribute("download", name);
-    documentReference.click();
-}
-

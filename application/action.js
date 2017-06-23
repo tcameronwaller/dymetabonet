@@ -7,15 +7,86 @@
  */
 class Action {
     /**
-     * Initiates the application.
+     * Initializes the model of the application's state by assigning null values
+     * to all attributes.
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
-    static initiateApplication(model) {
-        // TODO: Instead, I wonder if I should initialize all of the attributes
-        // TODO: of the model here...
-        model.restore([]);
+    static initializeApplication(model) {
+        var newAttributes = model.attributeNames.map(function (attributeName) {
+            return {
+                attribute: attributeName,
+                value: null
+            };
+        });
+        model.restore(newAttributes);
     }
+    /**
+     * Clears the value of an attribute in the model of the application's state.
+     * @param {string} name Name of the attribute.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static clearAttribute(name, model) {
+        var newAttributes = [{
+            attribute: name,
+            value: null
+        }];
+        model.restore(newAttributes);
+    }
+    /**
+     * Creates persistent representation of the model of the application's
+     * state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static persistApplication(model) {
+        var record = model
+            .attributeNames
+            .reduce(function (collection, attributeName) {
+                var newRecord = {
+                    [attributeName]: model[attributeName]
+                };
+                return Object.assign(collection, newRecord);
+            }, {});
+        var newAttributes = [{
+            attribute: "persistence",
+            value: record
+        }];
+        model.restore(newAttributes);
+    }
+    /**
+     * Saves to client's system a representation of the application's state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static saveState(model) {
+        General.saveObject("state.json", model.persistence);
+        // Clear the persistent representation to avoid repetition.
+        Action.clearAttribute("persistence", model);
+    }
+    /**
+     * Loads from client's system a representation of the application's state.
+     * @param {Object} file File object to load.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static loadState(file, model) {
+        var data = General.loadObject(file);
+        var newAttributes = Object.keys(data).map(function (key) {
+            return {
+                attribute: key,
+                value: data[key]
+            };
+        });
+        model.restore(newAttributes);
+    }
+
+    // TODO: Now create View with buttons for saving and loading state. Just try it to make sure everything works properly.
+
+
+
+
     /**
      * Loads default assembly file.
      * @param {string} path Directory path and file name.

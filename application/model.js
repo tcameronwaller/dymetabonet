@@ -12,38 +12,20 @@ class Model {
     constructor() {
         // It is the role of the model to know which attributes and which values
         // of these attributes describe the application.
-        // Hence the model initializes itself with all relevant attributes.
-        // General attributes.
-        this.metabolites = null;
-        this.reactions = null;
-        this.compartments = null;
-        this.genes = null;
-        this.processes = null;
-        this.entityAttributes = null;
-        // Interface attributes.
-        // Source View.
-        this.checkFile = null;
-        this.rawFile = null;
-        this.assemblyFile = null;
-        // Attribute View.
-        this.attributeViewEntity = null;
-        this.attributeViewFilter = null;
-        this.attributeViewAttributeSearches = null;
-        this.attributeViewAttributeValueSelections = null;
-        // Set View.
-        // ...
-        // Entity View.
-        this.entityViewControlSelection = null;
-        this.entityViewCompartmentalization = null;
-        this.entityViewReplications = null;
-        this.entityViewShowReplications = null;
-        this.entityViewNetworkNodes = null;
-        this.entityViewNetworkLinks = null;
-        this.entityViewProximityFocus = null;
-        this.entityViewProximityDirection = null;
-        this.entityViewProximityDepth = null;
-        this.entityViewSubnetworkNodes = null;
-        this.entityViewSubnetworkLinks = null;
+        // Specify attributes for the model to expect and accept.
+        this.attributeNames = [
+            "metabolites", "reactions", "compartments", "genes", "processes",
+            "entityAttributes", "checkFile", "assemblyFile", "restoreFile",
+            "attributeViewEntity", "attributeViewFilter",
+            "attributeViewAttributeSearches",
+            "attributeViewAttributeValueSelections",
+            "entityViewControlSelection", "entityViewCompartmentalization",
+            "entityViewReplications", "entityViewShowReplications",
+            "entityViewNetworkNodes", "entityViewNetworkLinks",
+            "entityViewProximityFocus", "entityViewProximityDirection",
+            "entityViewProximityDepth", "entityViewSubnetworkNodes",
+            "entityViewSubnetworkLinks", "persistence"
+        ];
     }
     /**
      * Restores the model for changes and initializes representation of the
@@ -62,7 +44,7 @@ class Model {
                 newAttribute.hasOwnProperty("value")
             ) {
                 // Confirm that the attribute exists in the model.
-                if (this.hasOwnProperty(newAttribute.attribute)) {
+                if (this.attributeNames.includes(newAttribute.attribute)) {
                     this[newAttribute.attribute] = newAttribute.value;
                 }
             }

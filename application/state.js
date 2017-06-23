@@ -23,6 +23,12 @@ class State {
         // TODO: Store representation-specific versions of data as attributes for the class.
         // TODO: Eventually probably organize some of the control-structure within another method that still assigns attributes to the class.
     }
+    /**
+     * Determines whether or not model has a persistent representation.
+     */
+    determinePersistence() {
+        return this.model.persistence;
+    }
     determineSource() {
         return this.model.assemblyFile;
     }
@@ -38,16 +44,31 @@ class State {
     determineEntityAttributes() {
         return this.model.entityAttributes;
     }
+    /**
+     * Evaluates the context of the application's state and creates an
+     * appropriate representation in a visual interface.
+     */
     represent() {}
+    /**
+     * Evaluates the context of the application's state and executes automatic
+     * actions as appropriate.
+     */
     act() {
+        // If model has a persistent representation, then save this
+        // representation to client's system.
+        if (this.determinePersistence()) {
+            Action.saveState(this.model);
+        }
+
+
         // If model does not have records of metabolic entities and sets, then
         // load from file a default, custom assembly of a model of metabolism.
         // The intent is for this action to be temporary during development.
         // Eventually the interface will support assembly and load from file.
-        if (!this.determineMetabolicEntitiesSets()) {
-            var path = "../model/homo-sapiens/model_sets_network.json";
-            Action.loadDefaultAssemblyFile(path, this.model);
-        }
+        //if (!this.determineMetabolicEntitiesSets()) {
+        //    var path = "../model/homo-sapiens/model_sets_network.json";
+        //    Action.loadDefaultAssemblyFile(path, this.model);
+        //}
         // If model does has records of metabolic entities and sets but does not
         // have records of attributes of all entities, then derive these
         // attributes of all entities.

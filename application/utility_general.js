@@ -5,6 +5,44 @@
  */
 class General {
     /**
+     * Saves to client's system a version of an object in JavaScript Object
+     * Notation (JSON).
+     * @param {string} name Name of file.
+     * @param {Object} object Object in memory to save.
+     */
+    static saveObject(name, object) {
+    var objectJSON = JSON.stringify(object);
+    var blob = new Blob([objectJSON], {type: "application/json"});
+    var url = URL.createObjectURL(blob);
+    var reference = document.createElement("a");
+    reference.setAttribute("href", url);
+    reference.setAttribute("download", name);
+    reference.click();
+    }
+    /**
+     * Loads from client's system a version of an object in JavaScript Object
+     * Notation (JSON).
+     * @param {Object} file File object to load.
+     * @returns {Object} Object in memory.
+     */
+    static loadObject(file) {
+        // Create a file reader object.
+        var reader = new FileReader();
+        // Specify operation to perform after file loads.
+        reader.onload = function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // After load, the file reader's result attribute contains the file's
+            // contents, according to the read method.
+            return JSON.parse(event.currentTarget.result);
+        };
+        // Read file as text.
+        reader.readAsText(file);
+    }
+
+
+
+
+    /**
      * Loads file in JavaScript Object Notation (JSON) format from specific
      * path.
      * @param {string} path Directory path and file name.

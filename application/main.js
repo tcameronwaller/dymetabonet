@@ -33,7 +33,7 @@
 
     //initializeInterface();
     var model = new Model();
-    Action.initiateApplication(model);
+    Action.initializeApplication(model);
     // TODO: I need an action method for initializing the model... just pass it an empty bundle to get things rolling.
 
 
