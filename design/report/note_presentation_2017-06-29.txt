@@ -1,0 +1,244 @@
+--------------------------------------------------
+Presentation Notes
+29 June 2017
+Jared P Rutter Research Team
+--------------------------------------------------
+
+----------
+Slide
+
+Title
+"Visualization and Analysis of Sets and Entities in Metabolism"
+
+--------------------------------------------------
+Section: Introduction
+--------------------------------------------------
+
+----------
+Slide
+
+Goal of project is to understand properties and relationships in metabolism.
+Entities of interest include metabolites, reactions (genes, transcripts, proteins), processes (pathways), and compartments.
+Relations between these entities are also of interest.
+
+The term "pathway" implies linearity.
+I prefer the term "process" to represent cooperativity and nonlinearity.
+
+There are many potential directions to take in support of the study of the metabolic network.
+
+----------
+Slide
+
+A and B are processes or compartments in metabolism.
+How does A compare to B (cardinality)?
+Which compartment has more reactions, the cytosol or the mitochondrion?
+
+Figure
+Blob A < ? > Blob B
+
+----------
+Slide
+
+A and B are processes or compartments in metabolism.
+How does A relate to B (common elements)?
+How many metabolites occur in both the mitochondrion and the peroxisome?
+
+Figure
+Blob A with many blue circles and a few red circles
+Blob B with many green circles and a few red circles
+
+----------
+Slide
+
+A is a metabolite or reaction in metabolism.
+What metabolites and reactions relate to A?
+Which reactions involve pyruvate?
+
+Figure
+Ego network
+
+----------
+Slide
+
+A and B are metabolites or reactions in metabolism.
+How does A relate to B?
+What are the shortest reaction paths between pyruvate and glutamine?
+
+Figure
+Network paths between A and B
+
+--------------------------------------------------
+Section: Critique Current Technology
+--------------------------------------------------
+
+
+--------------------------------------------------
+Section: Problems, Challenges
+--------------------------------------------------
+
+----------
+Slide
+
+Exploration, specific interest
+
+In metabolism, there are many entities and sets with many properties.
+It is important to give dynamice access to different aspects of information in sufficient detail.
+
+----------
+Slide
+
+Scale
+Count of metabolites: _____
+Count of reactions: _____
+
+Figure
+Random distribution of dots for the count of metabolites and reactions
+
+----------
+Slide
+
+Connectivity
+Many-to-many
+
+Figure
+Visualization of entire metabolic network (if possible)
+
+----------
+Slide
+
+Connectivity
+-Small-world
+--Common in biological networks (evolutionary pattern), social networks, and the internet server network
+--In small-world networks, a few metabolites, genes, transcripts, proteins, people, or servers are extremely influential
+
+Figure
+Visualization of pyruvate's ego network at depth 1, 2, and 3
+
+--------------------------------------------------
+Section: Method
+--------------------------------------------------
+
+----------
+Slide
+
+Source data
+Model of human metabolism
+File in Systems Biology Markup Language (SBML), 23 MB
+Convert to JavaScript Object Notation (JSON), 4 MB
+Check, clean, and organize data, 4 MB
+
+Figure
+Native SBML --> Native JSON --> Custom JSON
+Summarize counts of entities and sets and information available for each
+
+----------
+Slide
+
+Collect and organize attributes for each entity within a table
+Table allows simple summary and filtration
+
+Figure
+Native SBML --> Native JSON --> Custom JSON --> Entity Attribute Table
+Summarize information for a generic entity in the table
+
+--------------------------------------------------
+Section: Solution
+--------------------------------------------------
+
+----------
+Slide
+
+Abstraction
+Summarize metabolism in sets of entities by attributes
+Set cardinality (count of elements)
+Selections of values of attributes define filters for entities
+
+Figure
+Sketch of attribute view
+
+----------
+Slide
+
+Abstraction
+Summarize metabolism in sets of entities by attributes
+Set relations (common elements)
+
+Cartesian product
+
+Figure
+Sketch of set view
+
+----------
+Slide
+
+Definition of network
+Replication of nodes for common metabolites
+Metabolites with most reactions in metabolism are also the most common in the cell, and probably not especially interesting
+
+Figure
+List of metabolites with greatest degrees
+Simple network illustrating node replication
+
+----------
+Slide
+
+Definition of network
+General metabolites versus compartmental metabolites
+Preference depends on interest
+Counts of general and compartmental metabolites
+
+Figure
+Simple network illustrating nodes for general or compartmental metabolites
+
+--------------------------------------------------
+Section: Method
+--------------------------------------------------
+
+----------
+Slide
+
+Definition of network
+
+Figure
+Screen shot of code for function for network assembly
+
+--------------------------------------------------
+Section: Solution
+--------------------------------------------------
+
+----------
+Slide
+
+Proximity Subnetwork
+The practicality of topological traversal relies on replication of common nodes
+
+Figure
+Simple network illustrating proximity or ego network
+
+----------
+Slide
+
+Shortest simple paths
+The practicality of topological traversal relies on replication of common nodes
+
+Figure
+Simple network illustrating shortest simple paths
+
+----------
+Slide
+
+Network topology
+Describe controls and functionality of entity view
+
+Figure
+Sketch of entity view
+
+----------
+Slide
+
+Interface
+Describe controls and functionality of interface
+
+Figure
+Sketch of interface
+
