@@ -4,6 +4,29 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+28 June 2017
+
+----------
+Design Idea
+
+Chemical formula and charge are interesting properties of metabolites.
+I wonder if it might be interesting to represent aspects of formula or charge on nodes for metabolites.
+For example, what if I set the color saturation of nodes by the count of carbon atoms in their formulas or by their formula masses?
+
+--------------------------------------------------
+27 June 2017
+
+----------
+Presentation
+
+Data Figures
+Order by priority
+
+1. List of names and degrees of metabolites with greatest degrees
+2. Ego network for pyruvate at depth 1, 2, 3
+3. Visual representation of network for entire metabolic model
+
+--------------------------------------------------
 24 June 2017
 
 ----------

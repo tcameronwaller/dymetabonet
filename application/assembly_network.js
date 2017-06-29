@@ -222,6 +222,9 @@ function determineNewLinks({currentLinks, links} = {}) {
     }, currentLinks);
 }
 
+
+// TODO: Only include the metabolite if it's record from the attributeIndex includes the compartment in which it participates in the reaction.
+// TODO: I suppose I could also determine that information from the record for the reaction in the attributeIndex.
 /**
  * Assembles network elements, nodes and links, across all metabolites that
  * participate in a single reaction.
@@ -252,10 +255,8 @@ function assembleNetworkMetabolites({
         .metabolites
         .reduce(function (metaboliteCollection, reactionMetabolite) {
 
-            // Determine whether or not the metabolite is in the
-            // list for inclusion in the network.
-            // TODO: Only include the metabolite if it's record from the attributeIndex includes the compartment in which it participates in the reaction.
-            // TODO: I suppose I could also determine that information from the record for the reaction in the attributeIndex.
+            // Determine whether or not the metabolite is in the list for
+            // inclusion in the network.
             if (metaboliteIdentifiers.includes(reactionMetabolite.identifier)) {
                 // Metabolite is in list for inclusion.
                 // Create node for metabolite.

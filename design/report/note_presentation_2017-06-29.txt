@@ -11,27 +11,42 @@ Title
 "Visualization and Analysis of Sets and Entities in Metabolism"
 
 --------------------------------------------------
-Section: Introduction
+Section: Goal, Tasks
 --------------------------------------------------
 
 ----------
 Slide
 
-Goal of project is to understand properties and relationships in metabolism.
-Entities of interest include metabolites, reactions (genes, transcripts, proteins), processes (pathways), and compartments.
-Relations between these entities are also of interest.
+Goal
+Understand properties and relationships in metabolism
+
+Entities
+Metabolites and reactions (genes, transcripts, proteins)
+
+Sets of entities
+Processes (pathways), and compartments (organelles)
+
+Relations between entities and sets
 
 The term "pathway" implies linearity.
 I prefer the term "process" to represent cooperativity and nonlinearity.
 
+Exploration, specific interest
+In metabolism, there are many entities and sets with many properties.
+It is important to give dynamic access to different aspects of information in sufficient detail.
+Dynamic representations are themselves a challenge, especially in terms of layout of the network
 There are many potential directions to take in support of the study of the metabolic network.
+
+Describe specific tasks
 
 ----------
 Slide
 
-A and B are processes or compartments in metabolism.
-How does A compare to B (cardinality)?
+A and B are sets.
+How does A compare to B (set cardinality, count of elements)?
 Which compartment has more reactions, the cytosol or the mitochondrion?
+
+Distinct metabolites or reactions
 
 Figure
 Blob A < ? > Blob B
@@ -39,28 +54,37 @@ Blob A < ? > Blob B
 ----------
 Slide
 
-A and B are processes or compartments in metabolism.
-How does A relate to B (common elements)?
+A and B are sets.
+How does A relate to B (set intersection, common elements)?
 How many metabolites occur in both the mitochondrion and the peroxisome?
 
+Distinct metabolites of interest
+
 Figure
-Blob A with many blue circles and a few red circles
-Blob B with many green circles and a few red circles
+Blob A with many black circles
+Blob B with many white circles
 
 ----------
 Slide
 
-A is a metabolite or reaction in metabolism.
-What metabolites and reactions relate to A?
+Figure
+Blob A with many black circles and a few yellow circles
+Blob B with many white circles and a few yellow circles
+
+----------
+Slide
+
+A is an entity.
+Which entities relate to A?
 Which reactions involve pyruvate?
 
 Figure
-Ego network
+Ego network around A
 
 ----------
 Slide
 
-A and B are metabolites or reactions in metabolism.
+A and B are entities.
 How does A relate to B?
 What are the shortest reaction paths between pyruvate and glutamine?
 
@@ -71,7 +95,6 @@ Network paths between A and B
 Section: Critique Current Technology
 --------------------------------------------------
 
-
 --------------------------------------------------
 Section: Problems, Challenges
 --------------------------------------------------
@@ -79,40 +102,60 @@ Section: Problems, Challenges
 ----------
 Slide
 
-Exploration, specific interest
-
-In metabolism, there are many entities and sets with many properties.
-It is important to give dynamice access to different aspects of information in sufficient detail.
-
-----------
-Slide
-
 Scale
-Count of metabolites: _____
-Count of reactions: _____
+Large counts of entities
+Count of metabolites: ~10,000
+Count of reactions: ~10,000
+Visual representation of so many nodes is difficult to interpret
 
 Figure
-Random distribution of dots for the count of metabolites and reactions
+Random distribution of dots for the counts of metabolites and reactions
 
 ----------
 Slide
 
 Connectivity
+Relations between entities
 Many-to-many
+Plural relations between entities complicate visual representation
 
 Figure
-Visualization of entire metabolic network (if possible)
+Simple network illustrating many-to-many relationships between two types of nodes
 
 ----------
 Slide
 
 Connectivity
--Small-world
---Common in biological networks (evolutionary pattern), social networks, and the internet server network
---In small-world networks, a few metabolites, genes, transcripts, proteins, people, or servers are extremely influential
+Small-world
+Common in biological networks (evolutionary pattern), social networks, and the internet's server networks
+In small-world networks, a few metabolites, genes, transcripts, proteins, people, or servers are extremely influential
+Hubs are central nodes
+
+High degree of connectivity (density) around hubs in small-world networks complicates visual representation
+Interpretation of topological traversal is also difficult
+
+Remind about goals for proximity and paths
 
 Figure
-Visualization of pyruvate's ego network at depth 1, 2, and 3
+Simple example of a small-world network
+
+----------
+Slide
+
+Figure
+Visualization of pyruvate's ego network at depth 1
+
+----------
+Slide
+
+Figure
+Visualization of pyruvate's ego network at depth 2
+
+----------
+Slide
+
+Figure
+Visualization of pyruvate's ego network at depth 3
 
 --------------------------------------------------
 Section: Method
@@ -135,11 +178,24 @@ Summarize counts of entities and sets and information available for each
 Slide
 
 Collect and organize attributes for each entity within a table
-Table allows simple summary and filtration
+Concise summary
+Convenient filtration of entities for selection
 
 Figure
 Native SBML --> Native JSON --> Custom JSON --> Entity Attribute Table
 Summarize information for a generic entity in the table
+
+----------
+Slide
+
+Definition of network
+There are a variety of ways to define entities and relations in network
+Flexibility
+Specificity
+
+Figure
+Native SBML --> Native JSON --> Custom JSON --> Network Nodes, Links
+Screen shot of code for function for network assembly
 
 --------------------------------------------------
 Section: Solution
@@ -159,11 +215,8 @@ Sketch of attribute view
 ----------
 Slide
 
-Abstraction
-Summarize metabolism in sets of entities by attributes
-Set relations (common elements)
-
-Cartesian product
+Set intersection (common elements, relations)
+Cartesian product for combinations of sets
 
 Figure
 Sketch of set view
@@ -172,11 +225,21 @@ Sketch of set view
 Slide
 
 Definition of network
-Replication of nodes for common metabolites
-Metabolites with most reactions in metabolism are also the most common in the cell, and probably not especially interesting
+Metabolites with most reactions in metabolism are also the most common in the cell
+Probably are not especially interesting
 
 Figure
 List of metabolites with greatest degrees
+
+----------
+Slide
+
+Definition of network
+Replication of nodes for common metabolites
+Replication can simplify networks
+Replication most appropriate for metabolites that are not of special interest
+
+Figure
 Simple network illustrating node replication
 
 ----------
@@ -184,27 +247,13 @@ Slide
 
 Definition of network
 General metabolites versus compartmental metabolites
+2652 general metabolites
+5324 compartmental metabolites
 Preference depends on interest
-Counts of general and compartmental metabolites
+Relevance of compartmentalization and transport
 
 Figure
 Simple network illustrating nodes for general or compartmental metabolites
-
---------------------------------------------------
-Section: Method
---------------------------------------------------
-
-----------
-Slide
-
-Definition of network
-
-Figure
-Screen shot of code for function for network assembly
-
---------------------------------------------------
-Section: Solution
---------------------------------------------------
 
 ----------
 Slide
