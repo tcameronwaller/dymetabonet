@@ -3,21 +3,6 @@
 // Compartments
 
 /**
- * Determines compartment identifier from compartmental metabolite identifier.
- * @param {string} metaboliteIdentifier Unique identifier of compartmental
- * metabolite.
- * @returns {string} Identifier of compartment.
- */
-function extractCompartmentIdentifier(metaboliteIdentifier) {
-    // Select the portion of the metabolite identifier after the underscore to
-    // obtain the compartment identifier.
-    // This function assumes that the compartment identifier is always the last
-    // part of the metabolite identifier with underscore delimiter.
-    return metaboliteIdentifier
-        .substring(metaboliteIdentifier.lastIndexOf("_") + 1);
-}
-
-/**
  * Determines compartment identifiers from compartmental metabolite identifiers.
  * @param {Array<string>} metaboliteIdentifiers Unique identifiers
  * of compartmental metabolites.
@@ -31,20 +16,6 @@ function extractCompartmentIdentifiers(metaboliteIdentifiers) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Metabolites
-
-/**
- * Extracts the identifier of a general metabolite from the identifier of a
- * compartmental metabolite.
- * @param {string} compartmentalMetaboliteIdentifier Identifier of a
- * compartmental metabolite.
- * @returns {string} Identifier of a general metabolite.
- */
-function extractMetaboliteIdentifier(compartmentalMetaboliteIdentifier) {
-    // Select the portion of the compartmental metabolite identifier before the
-    // last underscore to obtain the general metabolite identifier.
-    return compartmentalMetaboliteIdentifier
-        .substring(0, compartmentalMetaboliteIdentifier.lastIndexOf("_"));
-}
 
 /**
  * Determines general metabolite identifiers from compartmental metabolite
@@ -82,18 +53,6 @@ function filterCompartmentalMetabolitesByMetabolite(
 ////////////////////////////////////////////////////////////////////////////////
 // Reactions
 
-/**
- * Extracts identifiers of metabolites from reactions.
- * @param {Array<Object<string>>} reactions Information about all reactions in a
- * metabolic model.
- * @returns {Array<string>} Identifiers of metabolites from reactions.
- */
-function extractMetabolitesFromReactions(reactions) {
-    return reactions.reduce(function (collection, reaction) {
-        var metaboliteIdentifiers = Object.keys(reaction.metabolites);
-        return collection.concat(metaboliteIdentifiers);
-    }, []);
-}
 
 
 

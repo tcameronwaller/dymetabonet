@@ -5,6 +5,7 @@
  * This class stores methods for external utility.
  */
 class Clean {
+
     // Master control of check and clean procedure.
     /**
      * Checks information in the Recon 2.2 model of human metabolism from
@@ -32,6 +33,7 @@ class Clean {
             version: data.version
         };
     }
+
     // Check and clean compartments.
     /**
      * Checks and cleans information about compartments in a metabolic model.
@@ -73,6 +75,7 @@ class Clean {
         };
         return {[identifier]: newCompartmentNames[identifier]};
     }
+
     // Check and clean genes.
     /**
      * Checks and cleans information about genes in a metabolic model.
@@ -171,13 +174,360 @@ class Clean {
         }
     }
 
-
-
-
-
-
-
     // Check and clean metabolites.
+    /**
+     * Checks and cleans information about metabolites in a metabolic model.
+     * @param {Array<Object<string>>} metabolites Information about all
+     * metabolites in a metabolic model.
+     * @param {Array<Object<string>>} reactions Information about all reactions
+     * in a metabolic model.
+     * @returns {Array<Object<string>>} Information about metabolites.
+     */
+    static checkCleanMetabolites(metabolites, reactions) {
+        // Collect unique identifiers of all metabolites that participate in
+        // reactions.
+        var metabolitesFromReactions = General.collectUniqueElements(
+            Clean.extractMetabolitesFromReactions(reactions)
+        );
+        // The metabolic model has separate records for compartmental
+        // metabolites.
+        // Multiple distinct compartmental metabolites can be chemically
+        // identical.
+        // Clean records for all chemically-identical metabolites together to
+        // eliminate discrepancies in attributes that should be identical.
+        // Split the array of metabolite records into collections of records for
+        // the same chemical metabolite.
+        var metaboliteSets = Clean.extractMetaboliteSetAttributes(metabolites);
+        // Reproduce records for compartmental metabolites using consensus
+        // attributes.
+        var consensusMetabolites = Object.values(metaboliteSets)
+            .reduce(function (collection, metaboliteSet) {
+                return collection.concat(Clean.checkCleanMetabolite(
+                    metaboliteSet, metabolitesFromReactions
+                ));
+            }, []);
+        return consensusMetabolites;
+    }
+    /**
+     * Extracts identifiers of metabolites from reactions.
+     * @param {Array<Object<string>>} reactions Information about all reactions
+     * in a metabolic model.
+     * @returns {Array<string>} Identifiers of metabolites from reactions.
+     */
+    static extractMetabolitesFromReactions(reactions) {
+        return reactions.reduce(function (collection, reaction) {
+            var metaboliteIdentifiers = Object.keys(reaction.metabolites);
+            return collection.concat(metaboliteIdentifiers);
+        }, []);
+    }
+    /**
+     * Extracts attributes from records for compartmental metabolites and
+     * organizes these within records for general metabolites.
+     * @param {Array<Object<string>>} metabolites Information about all
+     * metabolites in a metabolic model.
+     * @returns {Object<Array<string>>} Attributes of compartmental metabolites
+     * within records for general metabolites.
+     */
+    static extractMetaboliteSetAttributes(metabolites) {
+        // The metabolic model has separate records for compartmental
+        // metabolites.
+        // Split the array of metabolite records into collections of records for
+        // the same chemical metabolite.
+        return metabolites.reduce(function (collection, metabolite) {
+            // Extract the identifier of the general metabolite from the
+            // identifier of the compartmental metabolite.
+            var metaboliteIdentifier = Clean
+                .extractMetaboliteIdentifier(metabolite.id);
+            if (!collection.hasOwnProperty(metaboliteIdentifier)) {
+                // The collection does not yet have a record for the general
+                // metabolite.
+                // Create a new record for the general metabolite with
+                // attributes from the compartmental metabolite within the
+                // record for the general metabolite.
+                var newMetabolite = {
+                    [metaboliteIdentifier]: {
+                        charges: [].concat(metabolite.charge),
+                        compartments: [].concat(metabolite.compartment),
+                        formulas: [].concat(metabolite.formula),
+                        id: metaboliteIdentifier,
+                        ids: [].concat(metabolite.id),
+                        names: [].concat(metabolite.name)
+                    }
+                };
+                return Object.assign({}, collection, newMetabolite);
+            } else {
+                // The collection already has a record for the general
+                // metabolite.
+                // Include the attributes from the compartmental metabolite
+                // within the record for the general metabolite.
+                // The new record for the general metabolite will replace the
+                // previous record.
+                var oldMetabolite = collection[metaboliteIdentifier];
+                var newMetabolite = {
+                    [metaboliteIdentifier]: {
+                        charges: oldMetabolite.charges.concat(metabolite.charge),
+                        compartments: oldMetabolite
+                            .compartments
+                            .concat(metabolite.compartment),
+                        formulas: oldMetabolite.formulas.concat(metabolite.formula),
+                        id: metaboliteIdentifier,
+                        ids: oldMetabolite.ids.concat(metabolite.id),
+                        names: oldMetabolite.names.concat(metabolite.name)
+                    }
+                };
+                return Object.assign({}, collection, newMetabolite);
+            }
+        }, {});
+    }
+    /**
+     * Extracts the identifier of a general metabolite from the identifier of a
+     * compartmental metabolite.
+     * @param {string} compartmentalMetaboliteIdentifier Identifier of a
+     * compartmental metabolite.
+     * @returns {string} Identifier of a general metabolite.
+     */
+    static extractMetaboliteIdentifier(compartmentalMetaboliteIdentifier) {
+        // Select the portion of the compartmental metabolite identifier before
+        // the last underscore to obtain the general metabolite identifier.
+        return compartmentalMetaboliteIdentifier
+            .substring(0, compartmentalMetaboliteIdentifier.lastIndexOf("_"));
+    }
+    /**
+     * Checks and cleans information about a single general metabolite in a
+     * metabolic model.
+     * @param {Object<string>} metaboliteSet Information about a single general
+     * metabolite and all of its compartmental occurrences.
+     * @param {Array<string>} metabolitesFromReactions Unique identifiers of all
+     * metabolites that participate in reactions.
+     * @returns {Object<string>} Information about a metabolite.
+     */
+    static checkCleanMetabolite(metaboliteSet, metabolitesFromReactions) {
+        // Identifier.
+        // Check metabolite association to reactions.
+        var identifiers = metaboliteSet
+            .compartments.map(function (compartment) {
+                return metaboliteSet.id + "_" + compartment;
+            });
+        identifiers.forEach(function (identifier) {
+            Clean
+                .checkMetaboliteReactions(identifier, metabolitesFromReactions);
+        });
+        // Charge.
+        var charge = Clean.checkCleanMetaboliteCharge(
+            metaboliteSet.id, metaboliteSet.charges
+        );
+        // Formula.
+        var formula = Clean.checkCleanMetaboliteFormula(
+            metaboliteSet.id, metaboliteSet.formulas
+        );
+        // Name.
+        var name = checkCleanMetaboliteName(
+            metaboliteSet.id, metaboliteSet.names, metaboliteSet.compartments
+        );
+        // Create records for compartmental metabolites.
+        return metaboliteSet.compartments.map(function (compartment) {
+            var identifier = metaboliteSet.id + "_" + compartment;
+            return {
+                charge: charge,
+                compartment: compartment,
+                formula: formula,
+                id: identifier,
+                name: name
+            };
+        });
+    }
+    /**
+     * Checks to ensure that a metabolite participates in at least one reaction
+     * in the metabolic model.
+     * @param {string} identifier Identifier of a single metabolite.
+     * @param {Array<string>} metabolitesFromReactions Unique identifiers of all
+     * metabolites that participate in reactions.
+     * @returns {boolean} Whether or not the metabolite participates in at least
+     * one reaction.
+     */
+    static checkMetaboliteReactions(identifier, metabolitesFromReactions) {
+        // Confirm that metabolite participates in at least one reaction.
+        if (metabolitesFromReactions.includes(identifier)) {
+            return true;
+        } else {
+            console.log(
+                "Model Assembly, Check Metabolites: " + identifier +
+                " failed reaction check."
+            );
+            return false;
+        }
+    }
+    /**
+     * Checks and cleans the charge of a metabolite.
+     * @param {string} identifier Identifier of a single general metabolite.
+     * @param {Array<number>} charges Charges from all compartmental occurrences
+     * of the general metabolite.
+     * @returns {number} Consensus charge for the metabolite.
+     */
+    static checkCleanMetaboliteCharge(identifier, charges) {
+        // Filter falsy values from charges and collect unique elements.
+        var uniqueCharges = General
+            .collectUniqueElements(charges.filter(function (charge) {
+                return !!charge;
+            }));
+        // Determine consensus charge.
+        if (uniqueCharges.length <= 1) {
+            // There is not a discrepancy in the charges.
+            return uniqueCharges[0];
+        } else {
+            console.log(
+                "Model Assembly, Check Metabolites: " + identifier +
+                " failed charge check."
+            );
+            return uniqueCharges[0];
+        }
+    }
+    /**
+     * Checks and cleans the formula of a metabolite.
+     * @param {string} identifier Identifier of a single general metabolite.
+     * @param {Array<string>} formulas Formulas from all compartmental
+     * occurrences of the general metabolite.
+     * @returns {string} Consensus formula for the metabolite.
+     */
+    static checkCleanMetaboliteFormula(identifier, formulas) {
+        // Filter falsy values from formulas and collect unique elements.
+        var uniqueFormulas = General.collectUniqueElements(
+            formulas.filter(function (formula) {
+                return !!formula;
+            })
+        );
+        // Chemical formulas for some metabolites in the model might include an
+        // "R" character to denote an ambiguous alkyl substituent.
+        // The "R" character does not denote any specific chemical element.
+        // Inclusion of this nonspecific formula can impart discrepancies.
+        var specificFormulas = uniqueFormulas.filter(function (formula) {
+            return !formula.includes("R");
+        });
+        // Determine consensus formula.
+        if (uniqueFormulas.length <= 1) {
+            // There is not a discrepancy in the formulas.
+            return uniqueFormulas[0];
+        } else if (specificFormulas.length === 1) {
+            // There is a single specific formula.
+            return specificFormulas[0];
+        } else if (specificFormulas.length > 1) {
+            // There is a discrepancy between multiple specific formulas.
+            return specificFormulas[0];
+        } else if (specificFormulas.length < 1) {
+            // There are zero specific formulas.
+            return uniqueFormulas[0];
+        } else {
+            console.log(
+                "Model Assembly, Check Metabolites: " + identifier +
+                " failed formula check."
+            );
+            return uniqueFormulas[0];
+        }
+    }
+    /**
+     * Checks and cleans the name of a metabolite.
+     * @param {string} identifier Identifier of a single general metabolite.
+     * @param {Array<string>} names Names from all compartmental occurrences of
+     * the general metabolite.
+     * @param {Array<string>} compartments Compartments from all compartmental
+     * occurrences of the general metabolite.
+     * @returns {string} Consensus name for the metabolite.
+     */
+    static checkCleanMetaboliteName(identifier, names, compartments) {
+        // Correct individual errors.
+        var newNames = names.map(function (name) {
+            if (name === "2,4,7,10,13-hexadecapentenoylcoa") {
+                return "2,4,7,10,13-hexadecapentaenoylcoa";
+            } else {
+                return name;
+            }
+        });
+        // Filter falsy values from names and collect unique elements.
+        var uniqueNames = General.collectUniqueElements(
+            newNames.filter(function (name) {
+                return !!name;
+            })
+        );
+        // Names for some metabolites in the model might include identifiers of
+        // the compartment in which the metabolite occurs.
+        // Inclusion of these compartmental identifiers in the names can impart
+        // discrepancies.
+        var simpleNames = General.collectUniqueElements(
+            newNames.map(function (name, index) {
+                var compartmentIdentifier = Clean
+                    .extractCompartmentIdentifier(name);
+                if (
+                    (compartmentIdentifier) &&
+                    (compartmentIdentifier === compartments[index])
+                ) {
+                    // The name includes a non-falsy identifier that matches the
+                    // compartment.
+                    return Clean.extractMetaboliteIdentifier(name);
+                } else {
+                    return name;
+                }
+            })
+        );
+        // Names for some metabolites in the model might include designations of
+        // stereoisomers around chirality centers.
+        // While these stereoisomers are chemically distinct, the model might
+        // give them the same identifier.
+        // Inclusion of these designations of stereosymmetry without distinct
+        // identifiers can impart discrepancies.
+        var stereoNames = General.collectUniqueElements(
+            newNames.map(function (name) {
+                if ((name.includes("(R)")) || (name.includes("(S)"))) {
+                    // The name includes a designator of stereochemistry.
+                    var newName = name.replace("(R)", "(R-S)");
+                    return newName.replace("(S)", "(R-S)");
+                } else {
+                    return name;
+                }
+            })
+        );
+        // Determine consensus name.
+        if (uniqueNames.length <= 1) {
+            // There is not a discrepancy in the names.
+            return uniqueNames[0];
+        } else if (simpleNames.length === 1) {
+            // There is a discrepancy in the names.
+            // Removal of identifiers of compartments resolves the discrepancy.
+            return simpleNames[0];
+        } else if (stereoNames.length === 1) {
+            // There is a discrepancy in the names.
+            // Removal of designations of stereosymmetry resolves the discrepancy.
+            return stereoNames[0];
+        } else {
+            // Neither the correction for compartments nor stereosymmetry resolves
+            // the discrepancy.
+            console.log(
+                "Model Assembly, Check Metabolites: " + identifier +
+                " failed name check."
+            );
+            return uniqueNames[0];
+        }
+    }
+    /**
+     * Determines compartment identifier from compartmental metabolite
+     * identifier.
+     * @param {string} compartmentalMetaboliteIdentifier Identifier of a
+     * compartmental metabolite.
+     * @returns {string} Identifier of compartment.
+     */
+    static extractCompartmentIdentifier(compartmentalMetaboliteIdentifier) {
+        // Select the portion of the compartmental metabolite identifier after
+        // the last underscore to obtain the compartment identifier.
+        // This function assumes that the compartment identifier is always the
+        // last part of the metabolite identifier with underscore delimiter.
+        return compartmentalMetaboliteIdentifier
+            .substring(compartmentalMetaboliteIdentifier.lastIndexOf("_") + 1);
+    }
+
+
+
+
+
+
 
     // Check and clean reactions.
 }
