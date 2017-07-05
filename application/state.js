@@ -59,17 +59,27 @@ class State {
         if (this.determinePersistence()) {
             Action.saveState(this.model);
         }
+        // If model does not have records of metabolic entities and sets, then
+        // create source interface.
+        if (!this.determineMetabolicEntitiesSets()) {
+            // Initialize instance of source interface.
+            // Pass this instance a reference to the model.
+            new SourceView(this.model);
+            console.log("creating new source view...");
 
+
+            // Load from file a default persistent state of the application.
+            // The intent is for this action to be temporary during development.
+            //var path = "../model/homo-sapiens/model_sets_network.json";
+            //Action.loadDefaultState(path, this.model);
+
+        }
 
         // If model does not have records of metabolic entities and sets, then
-        // load from file a default, custom assembly of a model of metabolism.
-        // The intent is for this action to be temporary during development.
-        // Eventually the interface will support assembly and load from file.
         //if (!this.determineMetabolicEntitiesSets()) {
-        //    var path = "../model/homo-sapiens/model_sets_network.json";
-        //    Action.loadDefaultAssemblyFile(path, this.model);
         //}
-        // If model does has records of metabolic entities and sets but does not
+
+        // If model does have records of metabolic entities and sets but does not
         // have records of attributes of all entities, then derive these
         // attributes of all entities.
         if (

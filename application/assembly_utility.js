@@ -83,45 +83,6 @@ function filterCompartmentalMetabolitesByMetabolite(
 // Reactions
 
 /**
- * Extracts identifiers of genes from a reaction's gene reaction rule.
- * @param {string} geneReactionRule Rule for a reaction's gene requirements.
- * @returns {Array<string>} Identifiers of genes that participate in the
- * reaction.
- */
-function extractGenesFromRule(geneReactionRule) {
-    return replaceAllString(
-        replaceAllString(
-            geneReactionRule, "(", ""
-        ), ")", ""
-    )
-        .split(" ")
-        .filter(function (element) {
-            return element.includes(":");
-        });
-}
-
-/**
- * Extracts identifiers of genes from reactions.
- * @param {Array<Object<string>>} reactions Information about all reactions in a
- * metabolic model.
- * @returns {Array<string>} Identifiers of genes from reactions.
- */
-function extractGenesFromReactions(reactions) {
-    return reactions.reduce(function (collection, reaction) {
-        if (reaction.gene_reaction_rule) {
-            // Reaction has a non-empty gene reaction rule.
-            var geneIdentifiers = extractGenesFromRule(
-                reaction.gene_reaction_rule
-            );
-            return collection.concat(geneIdentifiers);
-        } else {
-            // Reaction has an empty gene reaction rule.
-            return collection;
-        }
-    }, []);
-}
-
-/**
  * Extracts identifiers of metabolites from reactions.
  * @param {Array<Object<string>>} reactions Information about all reactions in a
  * metabolic model.

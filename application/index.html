@@ -38,40 +38,9 @@
 </head>
 
 <body>
-    <!-- Create container for entire view. -->
+    <!-- Create container for interface. -->
     <div id="view">
 
-        <!-- Create container for header. -->
-        <div id="header">
-            <h1 title="Profondeur: Visual Exploration and Analysis of Metabolic Networks">Profondeur</h1>
-        </div>
-
-        <!-- Create container for interface. -->
-        <div id="interface">
-            <!-- TODO: Per Google HTML/CSS Style Guide, control behavior in JavaScript. -->
-            <!-- Create container for model views. -->
-            <div id="model">
-                <!-- Create container for source view. -->
-                <div id="source">
-                    <div class="tab">...</div>
-                    <div class="panel">
-                        <input id="file-selector" type="file"><br>
-                        <label for="file-selector">File</label><br>
-                        <button id="assemble-model">Assemble</button><br>
-                        <button id="load-model">Load</button>
-                    </div>
-                </div>
-                <!-- Create container for attribute view -->
-                <div id="attribute"></div>
-            </div>
-            <!-- Create container for relation views. -->
-            <div id="relation">
-                <!-- Create container for set view. -->
-                <div id="set"></div>
-                <!-- Create container for entity view. -->
-                <div id="entity"></div>
-            </div>
-        </div>
     </div>
 
     <!-- Call scripts. -->
@@ -86,8 +55,11 @@
     <!-- <script type="application/javascript" src="test.js"></script> -->
     <!-- <script type="application/javascript" src="interface.js"></script> -->
     <script type="application/javascript" src="utility_general.js"></script>
+    <script type="application/javascript" src="utility_clean.js"></script>
+    <script type="application/javascript" src="utility_extraction.js"></script>
     <script type="application/javascript" src="model.js"></script>
     <script type="application/javascript" src="state.js"></script>
+    <script type="application/javascript" src="view.js"></script>
     <script type="application/javascript" src="action.js"></script>
     <script type="application/javascript" src="main.js"></script>
 

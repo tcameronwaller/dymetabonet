@@ -3,45 +3,6 @@
 // General Utility
 
 /**
- * Collects unique elements.
- * @param {Array} elements Array of elements.
- * @returns {Array} Unique elements.
- */
-function collectUniqueElements(elements) {
-    // Collect and return unique elements.
-    return elements
-        .reduce(function (accumulator, element) {
-            if (!accumulator.includes(element)) {
-                // Method concat does not modify the original array.
-                // Method concat returns a new array.
-                // It is necessary to store this new array or return it
-                // directly.
-                return accumulator.concat(element);
-            } else {
-                return accumulator;
-            }
-        }, []);
-}
-
-/**
- * Replaces all instances of a substring in a string.
- * @param {string} currentString The string that contains the substring for
- * replacement.
- * @param {string} target The substring for replacement.
- * @param {string} replacement The substring to substitute in place of the
- * substring for replacement.
- * @returns {string} New string after replacement of all instances.
- */
-function replaceAllString(currentString, target, replacement) {
-    if (currentString.includes(target)) {
-        var newString = currentString.replace(target, replacement);
-        return replaceAllString(newString, target, replacement);
-    } else {
-        return currentString;
-    }
-}
-
-/**
  * Collects values for identical keys from multiple objects.
  * @param {Array<Object>} objects Array of objects.
  * @param {string} key Common key for all objects.

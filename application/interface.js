@@ -4,19 +4,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Creates a new element with text content.
- * @param {Object} parameters Destructured object of parameters.
- * @param {string} parameters.text Text content for the child element.
- * @param {string} parameters.type Type of new element.
- * @returns {Object} Element with text content.
- */
-function createElementWithText({text, type} = {}) {
-    var element = document.createElement(type);
-    element.textContent = text;
-    return element;
-}
-
-/**
  * Removes an element's parent element.
  * @param {Object} element Element in the Document Object Model.
  */
@@ -36,18 +23,6 @@ function cloneReplaceElement(oldElement) {
     var newElement = oldElement.cloneNode(true);
     oldElement.parentNode.replaceChild(newElement, oldElement);
     return newElement;
-}
-
-/**
- * Removes an element's child elements.
- * @param {Object} element Element in the Document Object Model.
- */
-function removeChildElements(element) {
-    Array
-        .from(element.children)
-        .forEach(function (child) {
-            element.removeChild(child);
-        })
 }
 
 /**

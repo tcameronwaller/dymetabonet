@@ -15,7 +15,8 @@ class Model {
         // Specify attributes for the model to expect and accept.
         this.attributeNames = [
             "metabolites", "reactions", "compartments", "genes", "processes",
-            "entityAttributes", "checkFile", "assemblyFile", "restoreFile",
+            "entityAttributes", "setCardinalities",
+            "file",
             "attributeViewEntity", "attributeViewFilter",
             "attributeViewAttributeSearches",
             "attributeViewAttributeValueSelections",
@@ -34,8 +35,10 @@ class Model {
      * model.
      * @param {Array<Object>} newAttributes Collection of new attributes to
      * replace old attributes in the model.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
      */
-    restore(newAttributes) {
+    restore(newAttributes, model) {
         // Accept new attributes and assign them to the model.
         newAttributes.forEach(function (newAttribute) {
             // Confirm that the record for the new attribute value is valid.
@@ -44,14 +47,14 @@ class Model {
                 newAttribute.hasOwnProperty("value")
             ) {
                 // Confirm that the attribute exists in the model.
-                if (this.attributeNames.includes(newAttribute.attribute)) {
-                    this[newAttribute.attribute] = newAttribute.value;
+                if (model.attributeNames.includes(newAttribute.attribute)) {
+                    model[newAttribute.attribute] = newAttribute.value;
                 }
             }
         });
         // Initialize instance of state representation.
         // Pass this instance a reference to the model.
-        new State(this);
+        new State(model);
     }
 
     // TODO: I might want functionality to print a representation of the model to the console.
