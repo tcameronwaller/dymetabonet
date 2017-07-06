@@ -134,11 +134,9 @@ class Action {
      * entities and sets.
      */
     static checkCleanMetabolicEntitiesSets(file) {
-
         var data = General.loadObject(file);
-
-        General.saveObject("new_data.json", data);
-
+        var newData = Clean.checkCleanRecon2(data);
+        General.saveObject("new_data.json", newData);
     }
 
 
