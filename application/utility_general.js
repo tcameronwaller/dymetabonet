@@ -20,25 +20,6 @@ class General {
         reference.click();
     }
     /**
-     * Loads from file a version of an object in JavaScript Object Notation
-     * (JSON).
-     * @param {Object} file File object to load.
-     * @returns {Object} Object in memory.
-     */
-    static loadObject(file) {
-        // Create a file reader object.
-        var reader = new FileReader();
-        // Specify operation to perform after file loads.
-        reader.onload = function (event) {
-            // Element on which the event originated is event.currentTarget.
-            // After load, the file reader's result attribute contains the file's
-            // contents, according to the read method.
-            return JSON.parse(event.currentTarget.result);
-        };
-        // Read file as text.
-        reader.readAsText(file);
-    }
-    /**
      * Loads from a file at a specific path on client's system a version of an
      * object in JavaScript Object Notation (JSON).
      * @param {string} path Directory path and file name.
@@ -156,7 +137,7 @@ class General {
     static replaceAllString(currentString, target, replacement) {
         if (currentString.includes(target)) {
             var newString = currentString.replace(target, replacement);
-            return replaceAllString(newString, target, replacement);
+            return General.replaceAllString(newString, target, replacement);
         } else {
             return currentString;
         }

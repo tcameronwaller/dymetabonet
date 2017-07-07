@@ -24,19 +24,103 @@ class Action {
         model.restore(newAttributes, model);
     }
     /**
-     * Clears the value of an attribute in the model of the application's state
-     * by submitting a null value.
+     * Removes the value of an attribute in the model of the application's state
+     * by submitting a null value for the attribute.
      * @param {string} name Name of the attribute.
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
-    static clearAttribute(name, model) {
+    static removeAttribute(name, model) {
         var newAttributes = [{
             attribute: name,
             value: null
         }];
         model.restore(newAttributes, model);
     }
+    /**
+     * Submits a new value for the file to the model of the application's state.
+     * @param {Object} file File object.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static submitFile(file, model) {
+        var newAttributes = [{
+            attribute: "file",
+            value: file
+        }];
+        model.restore(newAttributes, model);
+    }
+    /**
+     * Loads from file a version of an object in JavaScript Object Notation
+     * (JSON) and passes this object to another function along with appropriate
+     * parameters.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Object} parameters.file File with object to load.
+     * @param {Object} parameters.call Function to call upon completion of file
+     * read.
+     * @param {Object} parameters.parameters Parameters for the function to call
+     * upon completion of file read.
+     */
+    static loadPassObject({file, call, parameters} = {}) {
+        // Create a file reader object.
+        var reader = new FileReader();
+        // Specify operation to perform after file loads.
+        reader.onload = function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // After load, the file reader's result attribute contains the
+            // file's contents, according to the read method.
+            var data = JSON.parse(event.currentTarget.result);
+            // Include the data in the parameters to pass to the call function.
+            var dataParameter = {data: data};
+            var newParameters = Object.assign({}, parameters, dataParameter);
+            // Call function with new parameters.
+            call(newParameters);
+        };
+        // Read file as text.
+        reader.readAsText(file);
+    }
+    /**
+     * Checks and cleans information about metabolic entities and sets from a
+     * file from client's system.
+     * Saves this information to a new file on client's system.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Object} parameters.data Information about metabolic entities and
+     * sets.
+     */
+    static checkCleanMetabolicEntitiesSets({data} = {}) {
+        var cleanData = Clean.checkCleanRecon2(data);
+        General.saveObject("clean_data.json", cleanData);
+    }
+
+    /**
+     * Extracts from a file from client's system information about metabolic
+     * entities and sets.
+     * Submits this information to the model of the application's state.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Object} parameters.data Information about metabolic entities and
+     * sets.
+     * @param {Object} parameters.model Model of the comprehensive state of the
+     * application.
+     */
+    static extractMetabolicEntitiesSets({data, model} = {}) {
+        // TODO: Update the extraction functionality... probably organizing it within a new utility class.
+        // TODO: Ideally return an object of all of the relevant info for entities and sets...
+
+
+        var data = General.loadObject(file);
+
+
+
+        var newAttributes = Object.keys(data).map(function (key) {
+            return {
+                attribute: key,
+                value: data[key]
+            };
+        });
+        model.restore(newAttributes, model);
+    }
+
+
     /**
      * Creates persistent representation of the model of the application's
      * state.
@@ -66,17 +150,16 @@ class Action {
      */
     static saveState(model) {
         General.saveObject("state.json", model.persistence);
-        // Clear the persistent representation to avoid repetition.
-        Action.clearAttribute("persistence", model);
     }
     /**
-     * Loads from client's system a representation of the application's state.
+     * Restores the application to a state with a persistent representation in a
+     * file from client's system.
      * @param {Object} file File object with information about application
      * state.
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
-    static loadState(file, model) {
+    static restoreState(file, model) {
         var data = General.loadObject(file);
         var newAttributes = Object.keys(data).map(function (key) {
             return {
@@ -112,65 +195,8 @@ class Action {
         // Pass attributes from assembly to model.
         //model.restore(newAttributes);
     }
-    /**
-     * Submits a new value for the file to the model of the application's state.
-     * @param {Object} file File object.
-     * @param {Object} model Model of the comprehensive state of the
-     * application.
-     */
-    static submitFile(file, model) {
-        var newAttributes = [{
-            attribute: "file",
-            value: file
-        }];
-        model.restore(newAttributes, model);
-    }
-
-    /**
-     * Checks and cleans information about metabolic entities and sets from a
-     * file from client's system.
-     * Saves this information to a new file on client's system.
-     * @param {Object} file File object with information about metabolic
-     * entities and sets.
-     */
-    static checkCleanMetabolicEntitiesSets(file) {
-        var data = General.loadObject(file);
-        var newData = Clean.checkCleanRecon2(data);
-        General.saveObject("new_data.json", newData);
-    }
 
 
 
-    /**
-     * Extracts from a file from client's system information about metabolic
-     * entities and sets.
-     * Submits this information to the model of the application's state.
-     * @param {Object} file File object with information about metabolic
-     * entities and sets.
-     * @param {Object} model Model of the comprehensive state of the
-     * application.
-     */
-    static extractMetabolicEntitiesSets(file, model) {
-        // TODO: Update the extraction functionality... probably organizing it within a new utility class.
-        // TODO: Ideally return an object of all of the relevant info for entities and sets...
-
-
-        var data = General.loadObject(file);
-
-
-
-        var newAttributes = Object.keys(data).map(function (key) {
-            return {
-                attribute: key,
-                value: data[key]
-            };
-        });
-        model.restore(newAttributes, model);
-    }
-
-
-
-
-    // TODO: Now create View with buttons for saving and loading state. Just try it to make sure everything works properly.
 
 }

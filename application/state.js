@@ -8,7 +8,7 @@
  */
 class State {
     /**
-     * Initializes an instance of class State.
+     * Initializes an instance of the class.
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
@@ -58,6 +58,8 @@ class State {
         // representation to client's system.
         if (this.determinePersistence()) {
             Action.saveState(this.model);
+            // Remove the persistent representation to avoid repetition.
+            Action.removeAttribute("persistence", this.model);
         }
         // If model does not have records of metabolic entities and sets, then
         // create source interface.

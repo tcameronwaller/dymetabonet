@@ -5,7 +5,6 @@
  * This class stores methods for external utility.
  */
 class Clean {
-
     // Master control of check and clean procedure.
     /**
      * Checks information in the Recon 2.2 model of human metabolism from
@@ -33,7 +32,6 @@ class Clean {
             version: data.version
         };
     }
-
     // Check and clean compartments.
     /**
      * Checks and cleans information about compartments in a metabolic model.
@@ -75,7 +73,6 @@ class Clean {
         };
         return {[identifier]: newCompartmentNames[identifier]};
     }
-
     // Check and clean genes.
     /**
      * Checks and cleans information about genes in a metabolic model.
@@ -173,7 +170,6 @@ class Clean {
             return newIdentifier;
         }
     }
-
     // Check and clean metabolites.
     /**
      * Checks and cleans information about metabolites in a metabolic model.
@@ -522,7 +518,6 @@ class Clean {
         return compartmentalMetaboliteIdentifier
             .substring(compartmentalMetaboliteIdentifier.lastIndexOf("_") + 1);
     }
-
     // Check and clean reactions.
     /**
      * Checks and cleans information about reactions in a metabolic model.
