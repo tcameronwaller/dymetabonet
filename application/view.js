@@ -87,8 +87,15 @@ class SourceView {
             self.extractor.textContent = "Extract";
             self.extractor.addEventListener("click", function (event) {
                 // Element on which the event originated is event.currentTarget.
-                // TODO: Call the assemble (rename extract) function and pass it the file.
-                //Action.submitFile(event.currentTarget.files[0], self.model);
+                // Extract information about metabolic entities and sets from a
+                // clean model of metabolism.
+                Action.loadPassObject({
+                    file: self.model.file,
+                    call: Action.extractMetabolicEntitiesSets,
+                    parameters: {model: self.model}
+                });
+                // Remove the current file selection from the application state.
+                Action.removeAttribute("file", self.model);
             });
             self.container.appendChild(self.extractor);
             //self.container.appendChild(self.document.createElement("br"));
@@ -98,7 +105,8 @@ class SourceView {
             self.restoration.textContent = "Restore";
             self.restoration.addEventListener("click", function (event) {
                 // Element on which the event originated is event.currentTarget.
-                Action.restoreState(self.model.file, self.model);
+                // TODO: I need to get the restore load-submit-to-model operation working... use the new loadPassObject function...
+                //Action.restoreState(self.model.file, self.model);
             });
             self.container.appendChild(self.restoration);
             //self.container.appendChild(self.document.createElement("br"));

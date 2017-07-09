@@ -67,7 +67,6 @@ class State {
             // Initialize instance of source interface.
             // Pass this instance a reference to the model.
             new SourceView(this.model);
-            console.log("creating new source view...");
 
 
             // Load from file a default persistent state of the application.

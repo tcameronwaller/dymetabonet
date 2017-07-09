@@ -80,8 +80,8 @@ class Action {
         reader.readAsText(file);
     }
     /**
-     * Checks and cleans information about metabolic entities and sets from a
-     * file from client's system.
+     * Checks and cleans information about metabolic entities and sets in a
+     * raw model of metabolism.
      * Saves this information to a new file on client's system.
      * @param {Object} parameters Destructured object of parameters.
      * @param {Object} parameters.data Information about metabolic entities and
@@ -91,10 +91,9 @@ class Action {
         var cleanData = Clean.checkCleanRecon2(data);
         General.saveObject("clean_data.json", cleanData);
     }
-
     /**
-     * Extracts from a file from client's system information about metabolic
-     * entities and sets.
+     * Extracts information about metabolic entities and sets from a clean model
+     * of metabolism.
      * Submits this information to the model of the application's state.
      * @param {Object} parameters Destructured object of parameters.
      * @param {Object} parameters.data Information about metabolic entities and
@@ -106,11 +105,7 @@ class Action {
         // TODO: Update the extraction functionality... probably organizing it within a new utility class.
         // TODO: Ideally return an object of all of the relevant info for entities and sets...
 
-
-        var data = General.loadObject(file);
-
-
-
+        var data = Extraction.extractRecon2(data);
         var newAttributes = Object.keys(data).map(function (key) {
             return {
                 attribute: key,

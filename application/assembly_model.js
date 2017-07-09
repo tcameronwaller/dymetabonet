@@ -1,66 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Assembly of Model
 
-/**
- * Prints summary information to console about a metabolic model.
- * @param {Object} model Information about entities and relations in
- * a metabolic model.
- */
-function summarizeModel(model) {
-    // Print the model and metrics to the console.
-    console.log(model);
-    console.log(
-        "Count of metabolites: " +
-        Object.keys(model.entities.metabolites).length
-    );
-    console.log(
-        "Count of reactions: " +
-        Object.keys(model.entities.reactions).length
-    );
-    console.log(
-        "Count of compartments: " +
-        Object.keys(model.sets.compartments).length
-    );
-    console.log(
-        "Count of genes: " +
-        Object.keys(model.sets.genes).length
-    );
-    console.log(
-        "Count of processes: " +
-        Object.keys(model.sets.processes).length
-    );
-}
-
-/**
- * Assembles a practical and concise model to represent information of a
- * metabolic model.
- * @param {Object} data Information about a metabolic model from systems
- * biology, conversion from SBML to JSON formats by COBRApy and libSBML.
- * @param {Object<string>} data.compartments Identifiers and names of
- * compartments in the model.
- * @param {Array<Object<string>>} data.genes Identifiers and names of genes in
- * the model.
- * @param {Array<Object<string>>} data.metabolites Information about
- * compartment-specific metabolites in the model.
- * @param {Array<Object<string>>} data.reactions Information about reactions in
- * the model.
- * @returns {Object} Information about entities and relations in a metabolic
- * model.
- */
-function assembleModel(data) {
-    var dataClean = checkCleanRecon2(data);
-    var sets = assembleSets(dataClean);
-    var entities = assembleEntities(dataClean, sets.sets);
-    var model = Object.assign({}, entities, sets);
-    downloadJSON(model, "model_sets_network.json");
-    return model;
-}
-
-
-
-// TODO: Stuff below here is scrap...
-////////////////////////////////////////////////////////////////////////////////
-// Select nodes and links from network
 
 ////////////////////////////////////////////////////////////////////////////////
 // Utility
