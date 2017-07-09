@@ -102,9 +102,6 @@ class Action {
      * application.
      */
     static extractMetabolicEntitiesSets({data, model} = {}) {
-        // TODO: Update the extraction functionality... probably organizing it within a new utility class.
-        // TODO: Ideally return an object of all of the relevant info for entities and sets...
-
         var data = Extraction.extractRecon2(data);
         var newAttributes = Object.keys(data).map(function (key) {
             return {

@@ -112,29 +112,6 @@ function determineLinkIdentifier(sourceIdentifier, targetIdentifier) {
     return (sourceIdentifier.concat("_", targetIdentifier));
 }
 
-/**
- * Determines whether or not a reaction is reversible.
- * @param {Object} reaction Information for a reaction.
- * @returns {boolean} Whether or not the reaction is reversible.
- */
-function determineReversibility(reaction) {
-    return (reaction.lower_bound < 0 && 0 < reaction.upper_bound);
-}
-
-/**
- * Determines the role of a metabolite in a reaction, either as a reactant or a
- * product.
- * @param {number} code Code designator for metabolite role in reaction.
- * @returns {string} The metabolite's role as a reactant or product in the
- * reaction.
- */
-function determineReactionMetaboliteRole(code) {
-    if (code < 0) {
-        return "reactant";
-    } else if (code > 0) {
-        return "product";
-    }
-}
 
 /**
  * Filters a reaction's metabolites by their role in the reaction as reactant or

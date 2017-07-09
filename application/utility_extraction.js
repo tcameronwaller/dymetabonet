@@ -29,7 +29,8 @@ class Extraction {
         // Extract information about entities.
         var metabolites = Extraction
             .createMetaboliteRecords(data.metabolites, data.reactions);
-        var reactions = createReactionRecords(data.reactions, processes);
+        var reactions = Extraction
+            .createReactionRecords(data.reactions, processes);
         return {
             compartments: compartments,
             genes: genes,
@@ -173,7 +174,9 @@ class Extraction {
                 // A record does not exist for the metabolite.
                 // Create a new record for the metabolite.
                 var newRecord = Extraction
-                    .createMetaboliteRecord(metabolite, metaboliteReactions);
+                    .createMetaboliteRecord(
+                        metabolite, metaboliteReactions[identifier]
+                    );
                 return Object.assign({}, collection, newRecord);
             }
         }, {});
@@ -253,8 +256,8 @@ class Extraction {
     /**
      * Creates a record for a single metabolite from a metabolic model.
      * @param {Object<string>} metabolite Information about a single metabolite.
-     * @param {Object<Array<string>>} metaboliteReactions Identifiers of
-     * reactions in which each metabolite participates.
+     * @param {Array<string>} metaboliteReactions Identifiers of reactions in
+     * which a single metabolite participates.
      * @returns {Object} Record for a metabolite.
      */
     static createMetaboliteRecord(metabolite, metaboliteReactions) {
@@ -268,9 +271,108 @@ class Extraction {
                 formula: metabolite.formula,
                 identifier: identifier,
                 name: metabolite.name,
-                reactions: metaboliteReactions[identifier]
+                reactions: metaboliteReactions
             }
         };
     }
     // Extract reactions.
+    /**
+     * Creates records for all reactions from a metabolic model.
+     * @param {Array<Object>} reactions Information for all reactions in a
+     * metabolic model.
+     * @param {Object<string>} processes Information about all processes in a
+     * metabolic model.
+     * @returns {Object<string>} Records for reactions.
+     */
+    static createReactionRecords(reactions, processes) {
+        // Create records for reactions.
+        return reactions.reduce(function (collection, reaction) {
+            var newRecord = Extraction
+                .createReactionRecord(reaction, processes);
+            return Object.assign({}, collection, newRecord);
+        }, {});
+    }
+    /**
+     * Creates a record for a single reaction from a metabolic model.
+     * @param {Object} reaction Information for a reaction.
+     * @param {Object} processes Information about all processes in a metabolic
+     * model.
+     * @returns {Object} Record for a node for a reaction.
+     */
+    static createReactionRecord(reaction, processes) {
+        return {
+            [reaction.id]: {
+                genes: Clean.extractGenesFromRule(reaction.gene_reaction_rule),
+                identifier: reaction.id,
+                metabolites: Extraction
+                    .createReactionMetabolites(reaction.metabolites),
+                name: reaction.name,
+                process: Extraction.determineReactionProcessIdentifier(
+                    reaction.subsystem, processes
+                ),
+                reversibility: Extraction
+                    .determineReversibility(
+                        reaction.lower_bound, reaction.upper_bound
+                    )
+            }
+        };
+    }
+    /**
+     * Creates records for the metabolites that participate in a reaction.
+     * @param {Object<number>} reactionMetabolites Information about metabolites
+     * that participate in a reaction.
+     * @returns {Object<string>} Information about metabolites that participate
+     * in a reaction.
+     */
+    static createReactionMetabolites(reactionMetabolites) {
+        return Object.keys(reactionMetabolites).map(function (identifier) {
+            return {
+                identifier: Clean.extractMetaboliteIdentifier(identifier),
+                role: Extraction.determineReactionMetaboliteRole(
+                    reactionMetabolites[identifier]
+                ),
+                compartment: Clean.extractCompartmentIdentifier(identifier)
+            };
+        });
+    }
+    /**
+     * Determines the role of a metabolite in a reaction, either as a reactant
+     * or a product.
+     * @param {number} code Code designator for metabolite role in reaction.
+     * @returns {string} The metabolite's role as a reactant or product in the
+     * reaction.
+     */
+    static determineReactionMetaboliteRole(code) {
+        if (code < 0) {
+            return "reactant";
+        } else if (code > 0) {
+            return "product";
+        }
+    }
+    /**
+     * Determines the identifier for a reaction's process.
+     * @param {string} subsystem Name for a reaction's process.
+     * @param {Object} processes Information about all processes in a metabolic
+     * model.
+     * @returns {string} Identifier for the reaction's process.
+     */
+    static determineReactionProcessIdentifier(subsystem, processes) {
+        if (subsystem) {
+            var name = subsystem;
+        } else {
+            var name = "other";
+        }
+        return Object.keys(processes).filter(function (key) {
+            return processes[key].name === name;
+        })[0];
+    }
+    /**
+     * Determines whether or not a reaction's boundaries indicate reversibility.
+     * @param {number} lowBound Lower boundary for reaction.
+     * @param {number} upBound Upper boundary for reaction.
+     * @returns {boolean} Whether or not the reaction is reversible.
+     */
+    static determineReversibility(lowBound, upBound) {
+        return (lowBound < 0 && 0 < upBound);
+    }
 }
