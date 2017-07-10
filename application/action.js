@@ -111,6 +111,31 @@ class Action {
         });
         model.restore(newAttributes, model);
     }
+    /**
+     * Determines attributes of metabolic entities, metabolites and reactions.
+     * Submits this information to the model of the application's state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static collectEntitiesAttributes(model) {
+        var entitiesAttributes = Attribution
+            .determineEntitiesAttributes(model.metabolites, model.reactions);
+        var newAttributes = [{
+            attribute: "entitiesAttributes",
+            value: entitiesAttributes
+        }];
+        model.restore(newAttributes, model);
+    }
+
+    // TODO: Now create the set cardinalities...
+    // TODO: Create separate data structure to store user selections for filters.
+    // TODO: Create separate data structure to store current version of set cardinalities?
+    // TODO: Create separate data structure to store current entitiesAttributes?
+
+    // TODO: Or I could filter the entitiesAttributes and the set
+    // TODO: cardinalities in real time as I update the interfaces? ... dunno
+    // TODO: depends on efficiency/speed
+    // TODO: Then initialize the attribute and entity interfaces...
 
 
     /**

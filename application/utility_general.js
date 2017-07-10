@@ -27,6 +27,11 @@ class General {
      */
     static loadObjectByPath(path) {
         // TODO: I think there's a way to do this using the File Object... see MDN info about files from client system...
+
+        // TODO: Instead of a separate load function...
+        // TODO: Just introduce a fileFromPath function to get the file object and then pass that to the appropriate load function.
+
+
         // Load data from file in JSON format.
         d3.json(path, function (error, data) {
             if (error) {
@@ -62,6 +67,80 @@ class General {
             element.removeChild(child);
         });
     }
+
+    /**
+     * Collects unique elements.
+     * @param {Array} elements Array of elements.
+     * @returns {Array} Unique elements.
+     */
+    static collectUniqueElements(elements) {
+        // Collect and return unique elements.
+        return elements.reduce(function (accumulator, element) {
+            if (!accumulator.includes(element)) {
+                // Method concat does not modify the original array.
+                // Method concat returns a new array.
+                // It is necessary to store this new array or return it
+                // directly.
+                return accumulator.concat(element);
+            } else {
+                return accumulator;
+            }
+        }, []);
+    }
+    /**
+     * Replaces all instances of a substring in a string.
+     * @param {string} currentString The string that contains the substring for
+     * replacement.
+     * @param {string} target The substring for replacement.
+     * @param {string} replacement The substring to substitute in place of the
+     * substring for replacement.
+     * @returns {string} New string after replacement of all instances.
+     */
+    static replaceAllString(currentString, target, replacement) {
+        if (currentString.includes(target)) {
+            var newString = currentString.replace(target, replacement);
+            return General.replaceAllString(newString, target, replacement);
+        } else {
+            return currentString;
+        }
+    }
+    /**
+     * Collects values for identical keys from multiple objects.
+     * @param {Array<Object>} objects Array of objects.
+     * @param {string} key Common key for all objects.
+     * @returns {Array} Values from all objects.
+     */
+    static collectValuesFromObjects(objects, key) {
+        return objects.map(function (object) {
+            return object[key];
+        });
+    }
+    /**
+     * Compares two arrays by inclusion of elements.
+     * @param {Array} firstArray Array of elements.
+     * @param {Array} secondArray Array of elements.
+     * @returns {boolean} Whether or not the first array includes all values of
+     * the second array.
+     */
+    static compareArraysByInclusion(firstArray, secondArray) {
+        return secondArray.every(function (element) {
+            return firstArray.includes(element);
+        });
+    }
+    /**
+     * Compares two arrays by values of elements at specific indices.
+     * @param {Array} firstArray Array of elements.
+     * @param {Array} secondArray Array of elements.
+     * @returns {boolean} Whether or not the arrays have identical values at
+     * every index.
+     */
+    static compareArraysByValuesIndices(firstArray, secondArray) {
+        return firstArray.every(function (element, index) {
+            return element === secondArray[index];
+        });
+    }
+
+
 
 
 
@@ -103,47 +182,5 @@ class General {
             metabolites, reactions, compartments, genes, processes
         );
     }
-
-
-
-    /**
-     * Collects unique elements.
-     * @param {Array} elements Array of elements.
-     * @returns {Array} Unique elements.
-     */
-    static collectUniqueElements(elements) {
-        // Collect and return unique elements.
-        return elements.reduce(function (accumulator, element) {
-            if (!accumulator.includes(element)) {
-                // Method concat does not modify the original array.
-                // Method concat returns a new array.
-                // It is necessary to store this new array or return it
-                // directly.
-                return accumulator.concat(element);
-            } else {
-                return accumulator;
-            }
-        }, []);
-    }
-    /**
-     * Replaces all instances of a substring in a string.
-     * @param {string} currentString The string that contains the substring for
-     * replacement.
-     * @param {string} target The substring for replacement.
-     * @param {string} replacement The substring to substitute in place of the
-     * substring for replacement.
-     * @returns {string} New string after replacement of all instances.
-     */
-    static replaceAllString(currentString, target, replacement) {
-        if (currentString.includes(target)) {
-            var newString = currentString.replace(target, replacement);
-            return General.replaceAllString(newString, target, replacement);
-        } else {
-            return currentString;
-        }
-    }
-
-
-
 
 }

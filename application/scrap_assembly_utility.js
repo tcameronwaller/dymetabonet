@@ -1,5 +1,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////
+// Most functions remaining in this file are scrap... I think at least...
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
 // Compartments
 
 /**
@@ -223,26 +229,3 @@ function determineChangeCompartments(reaction) {
     );
 }
 
-/**
- * Determines whether or not a reaction's reactant and product metabolites
- * change chemically.
- * @param {Object} reaction Information for a reaction.
- * @returns {boolean} Whether or not metabolites change chemically.
- */
-function determineChangeChemicals(reaction) {
-    var reactantIdentifiers = collectUniqueElements(
-        extractMetaboliteIdentifiers(
-            filterReactionMetabolitesByRole(reaction, "reactant")
-        )
-    );
-    var productIdentifiers = collectUniqueElements(
-        extractMetaboliteIdentifiers(
-            filterReactionMetabolitesByRole(reaction, "product")
-        )
-    );
-    return !(
-        compareArraysByInclusion(reactantIdentifiers, productIdentifiers) &&
-        compareArraysByInclusion(productIdentifiers, reactantIdentifiers) &&
-        (reactantIdentifiers.length === productIdentifiers.length)
-    );
-}

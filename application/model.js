@@ -15,7 +15,7 @@ class Model {
         // Specify attributes for the model to expect and accept.
         this.attributeNames = [
             "metabolites", "reactions", "compartments", "genes", "processes",
-            "entityAttributes", "setCardinalities",
+            "entitiesAttributes", "setCardinalities",
             "file",
             "attributeViewEntity", "attributeViewFilter",
             "attributeViewAttributeSearches",

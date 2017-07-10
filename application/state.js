@@ -41,14 +41,27 @@ class State {
             this.model.processes
         )
     }
-    determineEntityAttributes() {
-        return this.model.entityAttributes;
+    determineEntitiesAttributes() {
+        return this.model.entitiesAttributes;
     }
     /**
      * Evaluates the context of the application's state and creates an
      * appropriate representation in a visual interface.
      */
-    represent() {}
+    represent() {
+        // If model does not have records of metabolic entities and sets, then
+        // create source interface.
+        if (!this.determineMetabolicEntitiesSets()) {
+            // Initialize instance of source interface.
+            // Pass this instance a reference to the model.
+            new SourceView(this.model);
+
+            // Load from file a default persistent state of the application.
+            // The intent is for this action to be temporary during development.
+            //var path = "../model/homo-sapiens/model_sets_network.json";
+            //Action.loadDefaultState(path, this.model);
+        }
+    }
     /**
      * Evaluates the context of the application's state and executes automatic
      * actions as appropriate.
@@ -61,31 +74,17 @@ class State {
             // Remove the persistent representation to avoid repetition.
             Action.removeAttribute("persistence", this.model);
         }
-        // If model does not have records of metabolic entities and sets, then
-        // create source interface.
-        if (!this.determineMetabolicEntitiesSets()) {
-            // Initialize instance of source interface.
-            // Pass this instance a reference to the model.
-            new SourceView(this.model);
 
-
-            // Load from file a default persistent state of the application.
-            // The intent is for this action to be temporary during development.
-            //var path = "../model/homo-sapiens/model_sets_network.json";
-            //Action.loadDefaultState(path, this.model);
-
-        }
-
-        // If model does not have records of metabolic entities and sets, then
-        //if (!this.determineMetabolicEntitiesSets()) {
-        //}
-
-        // If model does have records of metabolic entities and sets but does not
-        // have records of attributes of all entities, then derive these
-        // attributes of all entities.
+        // TODO: Complete this action driver... derive entity attributes and submit to model...
+        // TODO: Then complete an representation for the entity attributes...
+        // If model has records of metabolic entities and sets but does not have
+        // records of entities' attributes, then derive records of entities'
+        // attributes.
         if (
             this.determineMetabolicEntitiesSets() &&
-            !this.determineEntityAttributes()
-        ) {}
+            !this.determineEntitiesAttributes()
+        ) {
+            Action.collectEntitiesAttributes(this.model);
+        }
     }
 }
