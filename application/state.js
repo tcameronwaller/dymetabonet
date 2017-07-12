@@ -75,8 +75,6 @@ class State {
             Action.removeAttribute("persistence", this.model);
         }
 
-        // TODO: Complete this action driver... derive entity attributes and submit to model...
-        // TODO: Then complete an representation for the entity attributes...
         // If model has records of metabolic entities and sets but does not have
         // records of entities' attributes, then derive records of entities'
         // attributes.

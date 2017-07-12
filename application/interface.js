@@ -401,6 +401,15 @@ function initializeAttributeInterface(attributeIndex, model) {
         });
 }
 
+
+
+
+
+
+
+
+
+
 /**
  * Sorts the attribute summary by magnitudes of values of attributes.
  * @param {Array<Object<string>>} attributeSummary Summary of attribute index
@@ -536,6 +545,13 @@ function prepareAttributeSummary(entity, attributeSummary) {
     );
     return attributeSummaryIncrement;
 }
+
+
+
+
+
+
+
 
 /**
  * Activates interactive elements to specify entity for attribute menu.

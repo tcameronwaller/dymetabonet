@@ -112,7 +112,7 @@ class Action {
         model.restore(newAttributes, model);
     }
     /**
-     * Determines attributes of metabolic entities, metabolites and reactions.
+     * Collects attributes of metabolic entities, metabolites and reactions.
      * Submits this information to the model of the application's state.
      * @param {Object} model Model of the comprehensive state of the
      * application.
@@ -126,6 +126,23 @@ class Action {
         }];
         model.restore(newAttributes, model);
     }
+    /**
+     * Determines cardinalities or populations of sets of metabolic entities
+     * with specific values of attributes.
+     * Submits this information to the model of the application's state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static determineSetCardinalities(model) {
+        var setCardinalities = Cardinality
+            .collectAttributeSetCardinalities(model.entitiesAttributes);
+        var newAttributes = [{
+            attribute: "setCardinalities",
+            value: setCardinalities
+        }];
+        model.restore(newAttributes, model);
+    }
+
 
     // TODO: Now create the set cardinalities...
     // TODO: Create separate data structure to store user selections for filters.
@@ -212,8 +229,5 @@ class Action {
         // Pass attributes from assembly to model.
         //model.restore(newAttributes);
     }
-
-
-
 
 }

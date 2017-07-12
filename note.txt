@@ -4,6 +4,22 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+11 July 2017
+
+----------
+Set Cardinalities
+
+It is probably best to define 2 procedures for Set Cardinalities.
+
+1. Determine Set Cardinalities
+-Upon new entitiesAttributes (upon initial data load)
+-Upon any filters against currentEntitiesAttributes
+
+2. Prepare Summary of Set Cardinalities
+-Upon any changes to Set Cardinalities
+-Upon any change to entity of interest (entity determines magnitudes, sort order, and incremental counts)
+
+--------------------------------------------------
 7 July 2017
 
 ----------

@@ -25,7 +25,9 @@ class Extraction {
         var compartments = Extraction
             .createCompartmentRecords(data.compartments);
         var genes = Extraction.createGeneRecords(data.genes);
+        var operations = Extraction.createOperationRecords();
         var processes = Extraction.createProcessRecords(data.reactions);
+        var reversibilities = Extraction.createReversibilityRecords();
         // Extract information about entities.
         var metabolites = Extraction
             .createMetaboliteRecords(data.metabolites, data.reactions);
@@ -34,7 +36,9 @@ class Extraction {
         return {
             compartments: compartments,
             genes: genes,
+            operations: operations,
             processes: processes,
+            reversibilities: reversibilities,
             metabolites: metabolites,
             reactions: reactions
         };
@@ -99,6 +103,26 @@ class Extraction {
             }
         };
     }
+    // Extract operations.
+    /**
+     * Creates records for all operations in a metabolic model.
+     * @returns {Object} Records for operations.
+     */
+    static createOperationRecords() {
+        // Reactions involve either chemical conversion or compartmental
+        // transport.
+        // Individual reactions can involve both operations.
+        return {
+            c: {
+                identifier: "c",
+                name: "conversion"
+            },
+            t: {
+                identifier: "t",
+                name: "transport"
+            }
+        };
+    }
     // Extract processes.
     /**
      * Creates records for all processes from a metabolic model.
@@ -143,6 +167,23 @@ class Extraction {
             [processIdentifier]: {
                 identifier: processIdentifier,
                 name: processName
+            }
+        };
+    }
+    // Extract reversibilities.
+    /**
+     * Creates records for all reversibilities in a metabolic model.
+     * @returns {Object} Records for reversibilities.
+     */
+    static createReversibilityRecords() {
+        return {
+            i: {
+                identifier: "i",
+                name: "irreversible"
+            },
+            r: {
+                identifier: "r",
+                name: "reversible"
             }
         };
     }
@@ -300,20 +341,25 @@ class Extraction {
      * @returns {Object} Record for a node for a reaction.
      */
     static createReactionRecord(reaction, processes) {
+        var genes = Clean.extractGenesFromRule(reaction.gene_reaction_rule);
+        var metabolites = Extraction
+            .createReactionMetabolites(reaction.metabolites);
+        var operations = Extraction.determineReactionOperations(metabolites);
+        var process = Extraction
+            .determineReactionProcessIdentifier(reaction.subsystem, processes);
+        var reversibility = Extraction
+            .determineReactionReversibility(
+                reaction.lower_bound, reaction.upper_bound
+            );
         return {
             [reaction.id]: {
-                genes: Clean.extractGenesFromRule(reaction.gene_reaction_rule),
+                genes: genes,
                 identifier: reaction.id,
-                metabolites: Extraction
-                    .createReactionMetabolites(reaction.metabolites),
+                metabolites: metabolites,
                 name: reaction.name,
-                process: Extraction.determineReactionProcessIdentifier(
-                    reaction.subsystem, processes
-                ),
-                reversibility: Extraction
-                    .determineReversibility(
-                        reaction.lower_bound, reaction.upper_bound
-                    )
+                operations: operations,
+                process: process,
+                reversibility: reversibility
             }
         };
     }
@@ -321,8 +367,8 @@ class Extraction {
      * Creates records for the metabolites that participate in a reaction.
      * @param {Object<number>} reactionMetabolites Information about metabolites
      * that participate in a reaction.
-     * @returns {Object<string>} Information about metabolites that participate
-     * in a reaction.
+     * @returns {Array<Object<string>>} Information about metabolites that
+     * participate in a reaction.
      */
     static createReactionMetabolites(reactionMetabolites) {
         return Object.keys(reactionMetabolites).map(function (identifier) {
@@ -367,12 +413,105 @@ class Extraction {
         })[0];
     }
     /**
-     * Determines whether or not a reaction's boundaries indicate reversibility.
+     * Determines the operations, conversion or transport, that describe the
+     * effect of a reaction on its metabolites.
+     * @param {Array<Object<string>>} reactionMetabolites Information about
+     * metabolites that participate in a reaction.
+     * @returns {Array<string>} Identifiers of operations.
+     */
+    static determineReactionOperations(reactionMetabolites) {
+        // Determine if the reaction involves different metabolites in reactants
+        // and products.
+        // If the reaction involves different metabolites in reactants and
+        // products, then consider the reaction to involve a chemical conversion
+        // operation.
+        if (
+            Extraction.determineReactionChemicalConversion(reactionMetabolites)
+        ) {
+            var conversion = [].concat("c");
+        } else {
+            var conversion = [];
+        }
+        // Determine if the reaction involves metabolites in multiple
+        // compartments.
+        // If the reaction involves metabolites in multiple compartments, then
+        // consider the reaction to involve a transport operation.
+        if (
+            Extraction
+                .determineReactionMultipleCompartments(reactionMetabolites)
+        ) {
+            var conversionTransport = conversion.concat("t");
+        } else {
+            var conversionTransport = conversion;
+        }
+        return conversionTransport;
+    }
+    /**
+     * Determines whether or not a reaction involves a chemical conversion
+     * between its reactant and product metabolites.
+     * @param {Array<Object<string>>} reactionMetabolites Information about
+     * metabolites that participate in a reaction.
+     * @returns {boolean} Whether or not metabolites change chemically.
+     */
+    static determineReactionChemicalConversion(reactionMetabolites) {
+        var reactants = reactionMetabolites
+            .filter(function (metabolite) {
+                return metabolite.role === "reactant";
+            }).map(function (reactant) {
+                return reactant.identifier;
+            });
+        var products = reactionMetabolites
+            .filter(function (metabolite) {
+                return metabolite.role === "product";
+            }).map(function (product) {
+                return product.identifier;
+            });
+        return (
+            !General.compareArraysByInclusion(reactants, products) &&
+            !General.compareArraysByInclusion(products, reactants)
+        );
+    }
+    /**
+     * Determines whether or not a reaction involves metabolites in multiple
+     * compartments.
+     * @param {Array<Object<string>>} reactionMetabolites Information about
+     * metabolites that participate in a reaction.
+     * @returns {boolean} Whether or not metabolites are in multiple
+     * compartments.
+     */
+    static determineReactionMultipleCompartments(reactionMetabolites) {
+        var compartments = Extraction.extractReactionMetabolitesCompartments(
+            reactionMetabolites
+        );
+        return (compartments.length > 1);
+    }
+    /**
+     * Extracts unique compartments in which metabolites participate in a
+     * reaction.
+     * @param {Array<Object<string>>} reactionMetabolites Information about
+     * metabolites that participate in a reaction.
+     * @returns {Array<string>} Identifiers of compartments.
+     */
+    static extractReactionMetabolitesCompartments(reactionMetabolites) {
+        var compartments = reactionMetabolites.map(function (metabolite) {
+            return metabolite.compartment;
+        });
+        return General.collectUniqueElements(compartments);
+    }
+    /**
+     * Determines whether a reaction's boundaries indicate reversibility or
+     * irreversibility.
      * @param {number} lowBound Lower boundary for reaction.
      * @param {number} upBound Upper boundary for reaction.
-     * @returns {boolean} Whether or not the reaction is reversible.
+     * @returns {string} Whether the reaction is reversible or irreversible.
      */
-    static determineReversibility(lowBound, upBound) {
-        return (lowBound < 0 && 0 < upBound);
+    static determineReactionReversibility(lowBound, upBound) {
+        if (lowBound < 0 && 0 < upBound) {
+            // Reaction is reversible.
+            return "r";
+        } else {
+            // Reaction is irreversible.
+            return "i";
+        }
     }
 }

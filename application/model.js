@@ -14,7 +14,9 @@ class Model {
         // of these attributes describe the application.
         // Specify attributes for the model to expect and accept.
         this.attributeNames = [
-            "metabolites", "reactions", "compartments", "genes", "processes",
+            "compartments", "genes", "operations", "processes",
+            "reversibilities",
+            "metabolites", "reactions",
             "entitiesAttributes", "setCardinalities",
             "file",
             "attributeViewEntity", "attributeViewFilter",
