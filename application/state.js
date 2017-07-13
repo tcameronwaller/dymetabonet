@@ -32,6 +32,10 @@ class State {
     determineSource() {
         return this.model.assemblyFile;
     }
+    /**
+     * Determines whether or not model has information about metabolic entities
+     * and sets.
+     */
     determineMetabolicEntitiesSets() {
         return (
             this.model.metabolites &&
@@ -41,8 +45,19 @@ class State {
             this.model.processes
         )
     }
+    /**
+     * Determines whether or not model has information about attributes of all
+     * entities.
+     */
     determineEntitiesAttributes() {
         return this.model.entitiesAttributes;
+    }
+    /**
+     * Determines whether or not model has cardinalities of all sets by
+     * entities, attributes, and values.
+     */
+    determineSetCardinalities() {
+        return this.model.setCardinalities;
     }
     /**
      * Evaluates the context of the application's state and creates an
@@ -74,7 +89,6 @@ class State {
             // Remove the persistent representation to avoid repetition.
             Action.removeAttribute("persistence", this.model);
         }
-
         // If model has records of metabolic entities and sets but does not have
         // records of entities' attributes, then derive records of entities'
         // attributes.
@@ -84,5 +98,16 @@ class State {
         ) {
             Action.collectEntitiesAttributes(this.model);
         }
+        // If model has records of metabolic entities and sets, has records of
+        // entities' attributes, but does not have cardinalities of sets, then
+        // count cardinalities of sets.
+        if (
+            this.determineMetabolicEntitiesSets() &&
+            this.determineEntitiesAttributes() &&
+            !this.determineSetCardinalities()
+        ) {
+            Action.determineSetCardinalities(this.model);
+        }
+
     }
 }

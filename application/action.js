@@ -135,7 +135,9 @@ class Action {
      */
     static determineSetCardinalities(model) {
         var setCardinalities = Cardinality
-            .collectAttributeSetCardinalities(model.entitiesAttributes);
+            .determineSetCardinalities(model.entitiesAttributes);
+        console.log("set cardinalities");
+        console.log(setCardinalities);
         var newAttributes = [{
             attribute: "setCardinalities",
             value: setCardinalities

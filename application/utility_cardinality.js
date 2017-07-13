@@ -1,3 +1,7 @@
+// TODO: I still need to organize the setSummary for use in the interface...
+// TODO: That setSummary should be specific to the entity of the current setCardinalities.
+
+
 /**
  * Functionality of utility for counting the metabolic entities that belong to
  * sets according to their values of attributes.
@@ -7,13 +11,21 @@
 class Cardinality {
     // Master control of cardinality procedure.
     /**
-     * Collects cardinalities of entities in sets for all values of all
+     * Determines cardinalities of entities in sets for all values of all
      * attributes.
      * @param {Array<Object>} entitiesAttributes Attributes of all entities.
-     * @returns {Object<Object<Object>>} Cardinalities of sets by values of
-     * attributes.
+     * @returns {Object<Object<Object<number>>>} Cardinalities of sets by
+     * entities, attributes, and values.
      */
-    static collectAttributeValueSetCardinalities(entitiesAttributes) {
+    static determineSetCardinalities(entitiesAttributes) {
+        // There are 3 dimensions of information within the table for values of
+        // attributes of entities.
+        // Dimension 1 includes the individual entities.
+        // Dimension 2 includes all attributes of each individual entity.
+        // Dimension 3 includes all values of each attribute.
+        // Collect counts of entities with each value of each attribute.
+        // Iterate separately across entities, attributes, and values.
+        // Each iteration only needs access to information about its dimension.
         return Cardinality.collectEntitiesAttributesValues({
             entitiesAttributes: entitiesAttributes
         });
@@ -23,32 +35,55 @@ class Cardinality {
      * @param {Object} parameters Destructured object of parameters.
      * @param {Array<Object>} parameters.entitiesAttributes Attributes of all
      * entities.
-     * @returns {Object<Object<Object>>} Cardinalities of sets by values of
-     * attributes.
+     * @returns {Object<Object<Object<number>>>} Cardinalities of sets by
+     * entities, attributes, and values.
      */
     static collectEntitiesAttributesValues({entitiesAttributes} = {}) {
         // Iterate on entities.
         return entitiesAttributes
             .reduce(function (entitiesCollection, entityRecord) {
-                return Cardinality.collectAttributesValues({
-                    entityRecord: entityRecord,
-                    entitiesCollection: entitiesCollection
-                });
+                // Determine entity.
+                var entity = entityRecord.entity;
+                // Collect counts of values of attributes for current entity.
+                if (entitiesCollection.hasOwnProperty(entity)) {
+                    // Collection has a record for the current entity.
+                    // Preserve existing records in the collection.
+                    var attributesCollection = Object
+                        .assign({}, entitiesCollection[entity]);
+                } else {
+                    // Collection does not have a record for the current entity.
+                    // Create a new record.
+                    var attributesCollection = {};
+                }
+                var newAttributesCollection = Cardinality
+                    .collectAttributesValues({
+                        entityRecord: entityRecord,
+                        oldAttributesCollection: attributesCollection
+                    });
+                // Include information from current entity record within the
+                // collection.
+                var newEntityRecord = {
+                    [entity]: newAttributesCollection
+                };
+                var newEntitiesCollection = Object
+                    .assign({}, entitiesCollection, newEntityRecord);
+                return newEntitiesCollection;
             }, {});
     }
     /**
-     * Collects cardinalities across attributes.
+     * Collects cardinalities across attributes of a single entity.
      * @param {Object} parameters Destructured object of parameters.
      * @param {Array<Object>} parameters.entityRecord Record with values of
      * attributes for a single entity.
-     * @param {Object<Object<Object>>} parameters.entitiesCollection Collection
-     * across entities.
-     * @returns {Object<Object<Object>>} Cardinalities of sets by values of
-     * attributes.
+     * @param {Object<Object>} parameters.oldAttributesCollection
+     * Collection of attributes for a single entity.
+     * @returns {Object<Object<number>>} Cardinalities of sets by attributes and
+     * values.
      */
-    static collectAttributesValues({entityRecord, entitiesCollection} = {}) {
-        // Determine entity.
-        var entity = entityRecord.entity;
+    static collectAttributesValues({
+                                       entityRecord,
+                                       oldAttributesCollection
+    } = {}) {
         // Determine attributes in entity record.
         var attributes = Object
             .keys(entityRecord).filter(function (key) {
@@ -57,47 +92,70 @@ class Cardinality {
         // Iterate on attributes.
         return attributes
             .reduce(function (attributesCollection, attribute) {
-                var values = entityRecord[attribute];
-                return Cardinality.collectValues({
-                    entity: entity,
-                    attribute: attribute,
-                    values: values,
-                    attributesCollection: attributesCollection
-                });
-            }, entitiesCollection);
+                // Determine attribute record.
+                var attributeRecord = entityRecord[attribute];
+                // Collect counts of values for current attribute.
+                if (attributesCollection.hasOwnProperty(attribute)) {
+                    // Collection has a record for the current attribute.
+                    // Preserve existing records in the collection.
+                    var valuesCollection = Object
+                        .assign({}, attributesCollection[attribute]);
+                } else {
+                    // Collection does not have a record for the current
+                    // attribute.
+                    // Create a new record.
+                    var valuesCollection = {};
+                }
+                var newValuesCollection = Cardinality.collectValues({
+                        attributeRecord: attributeRecord,
+                        oldValuesCollection: valuesCollection
+                    });
+                // Include information from current attribute record within the
+                // collection.
+                var newAttributeRecord = {
+                    [attribute]: newValuesCollection
+                };
+                var newAttributesCollection = Object
+                    .assign({}, attributesCollection, newAttributeRecord);
+                return newAttributesCollection;
+            }, oldAttributesCollection);
     }
     /**
      * Collects cardinalities across values.
      * @param {Object} parameters Destructured object of parameters.
-     * @param {string} parameters.entity Current entity, metabolite or reaction.
-     * @param {string} parameters.attribute Current attribute.
-     * @param {Array<Object>} parameters.values Values of a single attribute.
-     * @param {Object<Object<Object>>} parameters.attributesCollection
-     * Collection across attributes.
-     * @returns {Object<Object<Object>>} Cardinalities of sets by values of
-     * attributes.
+     * @param {Array<string>} parameters.attributeRecord Record with values of
+     * a single attribute.
+     * @param {Object<number>} parameters.oldValuesCollection Collection across
+     * values.
+     * @returns {Object<number>} Cardinalities of sets by values.
      */
     static collectValues({
-                             entity,
-                             attribute,
-                             values,
-                             attributesCollection
+                             attributeRecord,
+                             oldValuesCollection
     } = {}) {
+        // Determine values of attribute in entity record.
+        var values = attributeRecord;
         // Iterate on values.
         return values.reduce(function (valuesCollection, value) {
-            // TODO: Use Object.assign to increment the counts for the correct entity, attribute, and value...
-            // TODO: Maybe split the information at the top of the tree by entity.
-            // TODO: I need to reformat the data to prepare for the view (in entity-specific way) anyway...
-            // metabolite
-            //     compartment
-            //        cytosol
-            // reaction
-            //     compartment
-            //        cytosol
-        }, attributesCollection);
+            // Collect counts of values.
+            if (valuesCollection.hasOwnProperty(value)) {
+                // Collection has a record for the current value.
+                // Increment count in the record from the collection.
+                var count = valuesCollection[value] + 1;
+            } else {
+                // Collection does not have a record for the current
+                // attribute.
+                // Initialize count in a new record.
+                var count = 1;
+            }
+            var newValueRecord = {
+                [value]: count
+            };
+            var newValuesCollection = Object
+                .assign({}, valuesCollection, newValueRecord);
+            return newValuesCollection;
+        }, oldValuesCollection);
     }
-
-
 }
 
 /**
@@ -113,7 +171,7 @@ class CardinalityOld {
      * @param {Array<Object>} entitiesAttributes Attributes of all entities.
      * @returns {Array<Object>} Cardinalities of sets by values of attributes.
      */
-    static collectAttributeSetCardinalities(entitiesAttributes) {
+    static determineSetCardinalities(entitiesAttributes) {
         // Assume that all records for attributes of entities have the same
         // properties, like rows of a table with the same columns.
         // Determine attributes.
