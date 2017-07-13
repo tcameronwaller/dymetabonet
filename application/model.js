@@ -14,14 +14,14 @@ class Model {
         // of these attributes describe the application.
         // Specify attributes for the model to expect and accept.
         this.attributeNames = [
+            "file",
             "compartments", "genes", "operations", "processes",
             "reversibilities",
             "metabolites", "reactions",
-            "entitiesAttributes", "setCardinalities",
-            "file",
-            "attributeViewEntity", "attributeViewFilter",
-            "attributeViewAttributeSearches",
-            "attributeViewAttributeValueSelections",
+            "entitiesAttributes", "currentEntitiesAttributes",
+            "setCardinalities", "setSummary",
+            "setViewEntity", "setViewFilter", "setViewAttributeSearches",
+            "setViewAttributeValueSelections",
             "entityViewControlSelection", "entityViewCompartmentalization",
             "entityViewReplications", "entityViewShowReplications",
             "entityViewNetworkNodes", "entityViewNetworkLinks",

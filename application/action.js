@@ -144,18 +144,19 @@ class Action {
         }];
         model.restore(newAttributes, model);
     }
+    /**
+     * Prepares summary of sets according to cardinalities of sets for specific
+     * type of entity and filters.
+     * Submits this information to the model of the application's state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static prepareSetSummary(model) {}
 
-
-    // TODO: Now create the set cardinalities...
+    // TODO: Create function(s) to deep copy entitiesAttributes.
+    // TODO: Copy entitiesAttributes to currentEntitiesAttributes.
+    // TODO: Prepare setSummary from setCardinalities.
     // TODO: Create separate data structure to store user selections for filters.
-    // TODO: Create separate data structure to store current version of set cardinalities?
-    // TODO: Create separate data structure to store current entitiesAttributes?
-
-    // TODO: Or I could filter the entitiesAttributes and the set
-    // TODO: cardinalities in real time as I update the interfaces? ... dunno
-    // TODO: depends on efficiency/speed
-    // TODO: Then initialize the attribute and entity interfaces...
-
 
     /**
      * Creates persistent representation of the model of the application's

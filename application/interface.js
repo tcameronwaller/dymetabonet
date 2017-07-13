@@ -482,6 +482,7 @@ function countIncrementalEntityAttributeValues(attributeSummary) {
     });
 }
 
+// TODO: No longer necessary...
 /**
  * Determines the magnitudes of attribute values from the counts of entities
  * with those values.
@@ -530,20 +531,6 @@ function prepareAttributeSummary(entity, attributeSummary) {
     var attributeSummaryMagnitudes = determineEntityValueMagnitudes(
         entity, attributeSummary
     );
-    // Sort attribute values by magnitudes.
-    // For readability, place values with lesser magnitudes before values with
-    // greater magnitudes.
-    // As the sort depends on the entity selection, it is necessary to sort with
-    // each update.
-    var attributeSummarySort = sortAttributeValueMagnitudes(
-        attributeSummaryMagnitudes
-    );
-    // Calculate incremental sums of magnitudes in attribute summary.
-    // These sums are necessary for positions of bar stacks.
-    var attributeSummaryIncrement = countIncrementalEntityAttributeValues(
-        attributeSummarySort
-    );
-    return attributeSummaryIncrement;
 }
 
 

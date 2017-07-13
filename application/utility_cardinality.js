@@ -9,7 +9,7 @@
  * This class stores methods for external utility.
  */
 class Cardinality {
-    // Master control of cardinality procedure.
+    // Master control of procedure to count set cardinality.
     /**
      * Determines cardinalities of entities in sets for all values of all
      * attributes.
@@ -156,6 +156,71 @@ class Cardinality {
             return newValuesCollection;
         }, oldValuesCollection);
     }
+    // Master control of procedure to prepare summary of set cardinality.
+    /**
+     * Prepares summary of cardinalities of sets of entities.
+     * @param {string} entity Type of entity of current selection and interest.
+     * @param {Object<Object<Object<number>>>} setCardinalities Cardinalities of
+     * sets by entities, attributes, and values.
+     * @returns {Array<Object<Array<Object>>>} Summary of sets for a specific
+     * type of entity by attributes and values.
+     */
+    static prepareSetSummary(entity, setCardinalities) {
+        // Prepare the set summary for visual representation.
+        // Organize the basic information of set cardinalities by attributes and
+        // values.
+        var basicSetSummary = Cardinality
+            .organizeSetSummary(entity, setCardinalities);
+        // Sort attribute values by increasing cardinality counts.
+        var sortSetSummary = Cardinality.sortSetSummary(basicSetSummary);
+        // TODO: I need to introduce the incremental function... I also want to change its name...
+        // Calculate incremental sums of magnitudes in attribute summary.
+        // These sums are necessary for positions of bar stacks.
+        var incrementSetSummary = countIncrementalEntityAttributeValues(
+            attributeSummarySort
+        );
+        return attributeSummaryIncrement;
+
+    }
+    /**
+     * Organizes basic information in set summary.
+     * @param {string} entity Type of entity of current selection and interest.
+     * @param {Object<Object<Object<number>>>} setCardinalities Cardinalities of
+     * sets by entities, attributes, and values.
+     * @returns {Array<Object<Array<Object>>>} Summary of sets for a specific
+     * type of entity by attributes and values.
+     */
+    static organizeSetSummary(entity, setCardinalities) {
+        // Prepare records for attributes.
+        var attributes = Object.keys(setCardinalities[entity]);
+        return attributes.map(function (attribute) {
+            // Prepare records for values.
+            var values = Object.keys(setCardinalities[entity][attribute]);
+            var valueRecords = values.map(function (value) {
+                var count = setCardinalities[entity][attribute][value];
+                return {
+                    attribute: attribute,
+                    count: count,
+                    value: value
+                };
+            });
+            return {
+                attribute: attribute,
+                values: valueRecords
+            };
+        });
+    }
+    // TODO: I need to make sure that the sort function is working how I want it to.
+    /**
+     * Sorts records for attributes and values within set summary.
+     * @returns {Array<Object<Array<Object>>>} basicSetSummary Basic information
+     * for set summary.
+     * @returns {Array<Object<Array<Object>>>} Summary of sets for a specific
+     * type of entity by attributes and values.
+     */
+    static sortSetSummary(basicSetSummary) {}
+
+
 }
 
 /**
