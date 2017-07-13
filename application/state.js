@@ -24,13 +24,93 @@ class State {
         // TODO: Eventually probably organize some of the control-structure within another method that still assigns attributes to the class.
     }
     /**
+     * Evaluates the context of the application's state and creates an
+     * appropriate representation in a visual interface.
+     */
+    represent() {
+        // If model does not have records of metabolic entities and sets, then
+        // create source interface.
+        if (!this.determineMetabolicEntitiesSets()) {
+            // Initialize instance of source interface.
+            // Pass this instance a reference to the model.
+            new SourceView(this.model);
+
+            // Load from file a default persistent state of the application.
+            // The intent is for this action to be temporary during development.
+            //var path = "../model/homo-sapiens/model_sets_network.json";
+            //Action.loadDefaultState(path, this.model);
+        }
+        // TODO: Get rid of the source view after extraction... then the view
+        // TODO: should be blank or something until all state attributes are available for set and entity views.
+        // If model has metabolic entities and sets, has entities' attributes,
+        // has sets' cardinalities, and has sets' summary then create state
+        // interface, set interface, and entity interface.
+        // TODO: Create new interfaces...
+    }
+    /**
+     * Evaluates the context of the application's state and executes automatic
+     * actions as appropriate.
+     */
+    act() {
+        // If model has a persistent representation, then save this
+        // representation to client's system.
+        if (this.determinePersistence()) {
+            Action.saveState(this.model);
+            // Remove the persistent representation to avoid repetition.
+            Action.removeAttribute("persistence", this.model);
+        }
+        // If model has metabolic entities and sets but does not have entities'
+        // attributes, then derive entities' attributes.
+        if (
+            this.determineMetabolicEntitiesSets() &&
+            !this.determineEntitiesAttributes()
+        ) {
+            Action.collectEntitiesAttributes(this.model);
+        }
+        // If model has entities' attributes but does not have current entities'
+        // attributes, then copy entities' attributes.
+        // The current entities' attributes are useful to represent results of
+        // filters while maintaining ability to revert to original entities'
+        // attributes.
+        if (
+            this.determineEntitiesAttributes() &&
+            !this.determineCurrentEntitiesAttributes()
+        ) {
+            Action.copyEntitiesAttributes(this.model);
+        }
+        // If model has current entities' attributes but does not have sets'
+        // cardinalities, then determine sets' cardinalities.
+        if (
+            this.determineCurrentEntitiesAttributes() &&
+            !this.determineSetCardinalities()
+        ) {
+            Action.determineSetCardinalities(this.model);
+        }
+        // If model has sets' cardinalities but does not have entity
+        // specification for set view then initialize entity specification for
+        // set view.
+        if (
+            this.determineSetCardinalities() &&
+            !this.determineSetViewEntity()
+        ) {
+            Action.changeSetViewEntity(this.model);
+        }
+        // If model has sets' cardinalities, has entity specification, but does
+        // not have sets' summary, then prepare sets' summary.
+        if (
+            this.determineSetCardinalities() &&
+            this.determineSetViewEntity() &&
+            !this.determineSetSummary()
+        ) {
+            Action.prepareSetSummary(this.model);
+        }
+    }
+    // Methods to evaluate state of application.
+    /**
      * Determines whether or not model has a persistent representation.
      */
     determinePersistence() {
         return this.model.persistence;
-    }
-    determineSource() {
-        return this.model.assemblyFile;
     }
     /**
      * Determines whether or not model has information about metabolic entities
@@ -53,6 +133,13 @@ class State {
         return this.model.entitiesAttributes;
     }
     /**
+     * Determines whether or not model has information about current attributes
+     * of all entities.
+     */
+    determineCurrentEntitiesAttributes() {
+        return this.model.currentEntitiesAttributes;
+    }
+    /**
      * Determines whether or not model has cardinalities of all sets by
      * entities, attributes, and values.
      */
@@ -60,54 +147,17 @@ class State {
         return this.model.setCardinalities;
     }
     /**
-     * Evaluates the context of the application's state and creates an
-     * appropriate representation in a visual interface.
+     * Determines whether or not model has a specification of entity for the set
+     * view.
      */
-    represent() {
-        // If model does not have records of metabolic entities and sets, then
-        // create source interface.
-        if (!this.determineMetabolicEntitiesSets()) {
-            // Initialize instance of source interface.
-            // Pass this instance a reference to the model.
-            new SourceView(this.model);
-
-            // Load from file a default persistent state of the application.
-            // The intent is for this action to be temporary during development.
-            //var path = "../model/homo-sapiens/model_sets_network.json";
-            //Action.loadDefaultState(path, this.model);
-        }
+    determineSetViewEntity() {
+        return this.model.setViewEntity;
     }
     /**
-     * Evaluates the context of the application's state and executes automatic
-     * actions as appropriate.
+     * Determines whether or not model has a summary of cardinalities of sets of
+     * entities.
      */
-    act() {
-        // If model has a persistent representation, then save this
-        // representation to client's system.
-        if (this.determinePersistence()) {
-            Action.saveState(this.model);
-            // Remove the persistent representation to avoid repetition.
-            Action.removeAttribute("persistence", this.model);
-        }
-        // If model has records of metabolic entities and sets but does not have
-        // records of entities' attributes, then derive records of entities'
-        // attributes.
-        if (
-            this.determineMetabolicEntitiesSets() &&
-            !this.determineEntitiesAttributes()
-        ) {
-            Action.collectEntitiesAttributes(this.model);
-        }
-        // If model has records of metabolic entities and sets, has records of
-        // entities' attributes, but does not have cardinalities of sets, then
-        // count cardinalities of sets.
-        if (
-            this.determineMetabolicEntitiesSets() &&
-            this.determineEntitiesAttributes() &&
-            !this.determineSetCardinalities()
-        ) {
-            Action.determineSetCardinalities(this.model);
-        }
-
+    determineSetSummary() {
+        return this.model.setSummary;
     }
 }

@@ -410,77 +410,7 @@ function initializeAttributeInterface(attributeIndex, model) {
 
 
 
-/**
- * Sorts the attribute summary by magnitudes of values of attributes.
- * @param {Array<Object<string>>} attributeSummary Summary of attribute index
- * with counts of entities with each value of each attribute.
- * @returns {Array<Object<string>>} Summary of attribute index with values in
- * ascending order.
- */
-function sortAttributeValueMagnitudes(attributeSummary) {
-    return attributeSummary.map(function (attributeRecord) {
-        var newValues = {
-            values: attributeRecord
-                .values
-                .slice()
-                .sort(function (value1, value2) {
-                    return value1.magnitude - value2.magnitude;
-                })
-        };
-        // Copy existing values in the record and introduce new value.
-        return Object.assign({}, attributeRecord, newValues);
-    });
-}
 
-/**
- * Counts incremental sums of magnitudes for each value of each attribute.
- * @param {Array<Object<string>>} attributeSummary Summary of attribute index
- * with counts of entities with each value of each attribute.
- * @returns {Array<Object<string>>} Summary of attribute index with incremental
- * counts.
- */
-function countIncrementalEntityAttributeValues(attributeSummary) {
-    return attributeSummary.map(function (attributeRecord) {
-        var incrementalValues = attributeRecord
-            .values
-            .reduce(function (collection, record, index) {
-                // Calculate incremental count.
-                if (index > 0) {
-                    // Current record is not the first of the collection.
-                    // Increment the magnitude on the base from the previous record.
-                    var base = collection[index - 1].base +
-                        collection[index - 1].magnitude;
-                } else {
-                    // Current record is the first of the collection.
-                    // Initialize the increment at zero.
-                    var base = 0;
-                }
-                // The only value to change in the record is the base.
-                var newBase = {
-                    base: base
-                };
-                // Copy existing values in the record and introduce new value.
-                var newRecord = Object.assign({}, record, newBase);
-                return [].concat(collection, newRecord);
-            }, []);
-        // Determine total sum of counts of all values of the attribute.
-        var total = incrementalValues[incrementalValues.length - 1].base +
-            incrementalValues[incrementalValues.length - 1].magnitude;
-        var incrementalTotalValues = incrementalValues.map(function (record) {
-            var newTotal = {
-                total: total
-            };
-            // Copy existing values in the record and introduce new value.
-            var newRecord = Object.assign({}, record, newTotal);
-            return newRecord;
-        });
-        var newValues = {
-            values: incrementalTotalValues
-        };
-        // Copy existing values in the record and introduce new value.
-        return Object.assign({}, attributeRecord, newValues);
-    });
-}
 
 // TODO: No longer necessary...
 /**

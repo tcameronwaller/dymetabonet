@@ -6,12 +6,12 @@
 class Attribution {
     // Master control of attribution procedure.
     /**
-     * Determines attributes of metabolic entities, metabolites and reactions.
+     * Collects attributes of metabolic entities, metabolites and reactions.
      * @param {Object} metabolites Information about all metabolites.
      * @param {Object} reactions Information about all reactions.
      * @returns {Array<Object>} Attributes of all entities.
      */
-    static determineEntitiesAttributes(metabolites, reactions) {
+    static collectEntitiesAttributes(metabolites, reactions) {
         // Determine attributes of each metabolic entity.
         // Store attributes of entities within a table, an array of objects.
         // Individual objects, analogous to rows in the table, represent
@@ -180,5 +180,29 @@ class Attribution {
             processes: [reaction.process],
             reversibilities: [reaction.reversibility]
         };
+    }
+    /**
+     * Copies attributes of metabolic entities, metabolites and reactions.
+     * @param {Array<Object>} entitiesAttributes Attributes of all entities.
+     * @returns {Array<Object>} Attributes of all entities.
+     */
+    static copyEntitiesAttributes(entitiesAttributes) {
+        // Iterate on entity records.
+        return entitiesAttributes.map(function (entityRecord) {
+            // Iterate on attributes within entity record.
+            return Object
+                .keys(entityRecord).reduce(function (collection, attribute) {
+                    // Records for attributes are either arrays or strings.
+                    if (Array.isArray(entityRecord[attribute])) {
+                        var newValues = entityRecord[attribute].slice();
+                    } else {
+                        var newValues = entityRecord[attribute];
+                    }
+                    var newRecord = {
+                        [attribute]: newValues
+                    };
+                    return Object.assign({}, collection, newRecord);
+                }, {});
+        });
     }
 }

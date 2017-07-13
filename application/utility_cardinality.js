@@ -1,7 +1,3 @@
-// TODO: I still need to organize the setSummary for use in the interface...
-// TODO: That setSummary should be specific to the entity of the current setCardinalities.
-
-
 /**
  * Functionality of utility for counting the metabolic entities that belong to
  * sets according to their values of attributes.
@@ -173,14 +169,11 @@ class Cardinality {
             .organizeSetSummary(entity, setCardinalities);
         // Sort attribute values by increasing cardinality counts.
         var sortSetSummary = Cardinality.sortSetSummary(basicSetSummary);
-        // TODO: I need to introduce the incremental function... I also want to change its name...
-        // Calculate incremental sums of magnitudes in attribute summary.
+        // Calculate incremental counts in set summary.
         // These sums are necessary for positions of bar stacks.
-        var incrementSetSummary = countIncrementalEntityAttributeValues(
-            attributeSummarySort
-        );
-        return attributeSummaryIncrement;
-
+        var incrementSetSummary = Cardinality
+            .incrementSetSummary(sortSetSummary);
+        return incrementSetSummary;
     }
     /**
      * Organizes basic information in set summary.
@@ -210,17 +203,91 @@ class Cardinality {
             };
         });
     }
-    // TODO: I need to make sure that the sort function is working how I want it to.
     /**
      * Sorts records for attributes and values within set summary.
-     * @returns {Array<Object<Array<Object>>>} basicSetSummary Basic information
+     * @param {Array<Object<Array<Object>>>} basicSetSummary Basic information
      * for set summary.
      * @returns {Array<Object<Array<Object>>>} Summary of sets for a specific
      * type of entity by attributes and values.
      */
-    static sortSetSummary(basicSetSummary) {}
-
-
+    static sortSetSummary(basicSetSummary) {
+        // Sort records for attributes.
+        var sortSetAttributes = basicSetSummary
+            .slice().sort(function (value1, value2) {
+                // Sort attributes in custom order.
+                var order = {
+                    compartments: 2,
+                    processes: 1
+                };
+                return order[value1.attribute] - order[value2.attribute];
+            });
+        return sortSetAttributes.map(function (attributeRecord) {
+            // Sort records for values.
+            var newValues = {
+                values: attributeRecord
+                    .values
+                    .slice()
+                    .sort(function (value1, value2) {
+                        return value1.count - value2.count;
+                    })
+            };
+            // Copy existing values in the record and introduce new value.
+            return Object.assign({}, attributeRecord, newValues);
+        });
+    }
+    /**
+     * Increments counts of cardinalities of sets in set summary in their
+     * current order.
+     * @returns {Array<Object<Array<Object>>>} sortSetSummary Basic information
+     * for set summary in sort order.
+     * @returns {Array<Object<Array<Object>>>} Summary of sets for a specific
+     * type of entity by attributes and values.
+     */
+    static incrementSetSummary(sortSetSummary) {
+        return sortSetSummary.map(function (attributeRecord) {
+            var incrementalValues = attributeRecord
+                .values
+                .reduce(function (collection, record, index) {
+                    // Calculate incremental count.
+                    if (index > 0) {
+                        // Current record is not the first of the collection.
+                        // Increment the magnitude on the base from the previous
+                        // record.
+                        var base = collection[index - 1].base +
+                            collection[index - 1].count;
+                    } else {
+                        // Current record is the first of the collection.
+                        // Initialize the increment at zero.
+                        var base = 0;
+                    }
+                    // The only value to change in the record is the base.
+                    var newBase = {
+                        base: base
+                    };
+                    // Copy existing values in the record and introduce new
+                    // value.
+                    var newRecord = Object.assign({}, record, newBase);
+                    return [].concat(collection, newRecord);
+                }, []);
+            // Determine total sum of counts of all values of the attribute.
+            var total = incrementalValues[incrementalValues.length - 1].base +
+                incrementalValues[incrementalValues.length - 1].count;
+            var incrementalTotalValues = incrementalValues
+                .map(function (record) {
+                    var newTotal = {
+                        total: total
+                    };
+                    // Copy existing values in the record and introduce new value.
+                    var newRecord = Object.assign({}, record, newTotal);
+                    return newRecord;
+                });
+            var newValues = {
+                values: incrementalTotalValues
+            };
+            // Copy existing values in the record and introduce new value.
+            return Object.assign({}, attributeRecord, newValues);
+        });
+    }
 }
 
 /**

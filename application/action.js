@@ -9,19 +9,55 @@ class Action {
     // To call the restore method of the model, it is necessary to pass the
     // method a reference to the current instance of the model.
     /**
+     * Submits a new value for an attribute to the model of the application's
+     * state.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Object} parameters.value Value of the attribute.
+     * @param {string} parameters.attribute Name of the attribute.
+     * @param {Object} parameters.model Model of the comprehensive state of the
+     * application.
+     */
+    static submitAttribute({value, attribute, model} = {}) {
+        var newAttribute = [{
+            attribute: attribute,
+            value: value
+        }];
+        model.restore(newAttribute, model);
+    }
+    /**
+     * Submits new values for attributes to the model of the application's
+     * state.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Object} parameters.attributesValues New values of attributes.
+     * @param {Object} parameters.model Model of the comprehensive state of the
+     * application.
+     */
+    static submitAttributes({attributesValues, model} = {}) {
+        var newAttributes = Object
+            .keys(attributesValues).map(function (attribute) {
+                return {
+                    attribute: attribute,
+                    value: attributesValues[attribute]
+                };
+            });
+        model.restore(newAttributes, model);
+    }
+    /**
      * Initializes the model of the application's state by submitting null
      * values for all attributes.
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
     static initializeApplication(model) {
-        var newAttributes = model.attributeNames.map(function (attributeName) {
-            return {
-                attribute: attributeName,
-                value: null
-            };
+        var attributesValues = model
+            .attributeNames.reduce(function (collection, attributeName) {
+                var newRecord = {[attributeName]: null};
+                return Object.assign({}, collection, newRecord);
+            }, {});
+        Action.submitAttributes({
+            attributesValues: attributesValues,
+            model: model
         });
-        model.restore(newAttributes, model);
     }
     /**
      * Removes the value of an attribute in the model of the application's state
@@ -31,11 +67,11 @@ class Action {
      * application.
      */
     static removeAttribute(name, model) {
-        var newAttributes = [{
+        Action.submitAttribute({
+            value: null,
             attribute: name,
-            value: null
-        }];
-        model.restore(newAttributes, model);
+            model: model
+        });
     }
     /**
      * Submits a new value for the file to the model of the application's state.
@@ -44,11 +80,11 @@ class Action {
      * application.
      */
     static submitFile(file, model) {
-        var newAttributes = [{
+        Action.submitAttribute({
+            value: file,
             attribute: "file",
-            value: file
-        }];
-        model.restore(newAttributes, model);
+            model: model
+        });
     }
     /**
      * Loads from file a version of an object in JavaScript Object Notation
@@ -102,14 +138,11 @@ class Action {
      * application.
      */
     static extractMetabolicEntitiesSets({data, model} = {}) {
-        var data = Extraction.extractRecon2(data);
-        var newAttributes = Object.keys(data).map(function (key) {
-            return {
-                attribute: key,
-                value: data[key]
-            };
+        var data = Extraction.extractMetabolicEntitiesSetsRecon2(data);
+        Action.submitAttributes({
+            attributesValues: data,
+            model: model
         });
-        model.restore(newAttributes, model);
     }
     /**
      * Collects attributes of metabolic entities, metabolites and reactions.
@@ -119,12 +152,27 @@ class Action {
      */
     static collectEntitiesAttributes(model) {
         var entitiesAttributes = Attribution
-            .determineEntitiesAttributes(model.metabolites, model.reactions);
-        var newAttributes = [{
+            .collectEntitiesAttributes(model.metabolites, model.reactions);
+        Action.submitAttribute({
+            value: entitiesAttributes,
             attribute: "entitiesAttributes",
-            value: entitiesAttributes
-        }];
-        model.restore(newAttributes, model);
+            model: model
+        });
+    }
+    /**
+     * Copies attributes of metabolic entities, metabolites and reactions.
+     * Submits this information to the model of the application's state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static copyEntitiesAttributes(model) {
+        var copyEntitiesAttributes = Attribution
+            .copyEntitiesAttributes(model.entitiesAttributes);
+        Action.submitAttribute({
+            value: copyEntitiesAttributes,
+            attribute: "currentEntitiesAttributes",
+            model: model
+        });
     }
     /**
      * Determines cardinalities or populations of sets of metabolic entities
@@ -135,14 +183,36 @@ class Action {
      */
     static determineSetCardinalities(model) {
         var setCardinalities = Cardinality
-            .determineSetCardinalities(model.entitiesAttributes);
-        console.log("set cardinalities");
-        console.log(setCardinalities);
-        var newAttributes = [{
+            .determineSetCardinalities(model.currentEntitiesAttributes);
+        Action.submitAttribute({
+            value: setCardinalities,
             attribute: "setCardinalities",
-            value: setCardinalities
-        }];
-        model.restore(newAttributes, model);
+            model: model
+        });
+    }
+    /**
+     * Changes the specification of entity for the set view.
+     * Initializes the specification to metabolite.
+     * Submits this information to the model of the application's state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static changeSetViewEntity(model) {
+        // TODO: I'm not sure if I want to keep track of the toggle state in the DOM's radio buttons or in the model itself.
+        var currentEntity = model.setViewEntity;
+        if (currentEntity === "metabolite") {
+            var newEntity = "reaction";
+        } else if (currentEntity === "reaction") {
+            var newEntity = "metabolite";
+        } else if (!currentEntity) {
+            // Initialize set view entity.
+            var newEntity = "metabolite";
+        }
+        Action.submitAttribute({
+            value: newEntity,
+            attribute: "setViewEntity",
+            model: model
+        });
     }
     /**
      * Prepares summary of sets according to cardinalities of sets for specific
@@ -151,11 +221,18 @@ class Action {
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
-    static prepareSetSummary(model) {}
+    static prepareSetSummary(model) {
+        var setSummary = Cardinality
+            .prepareSetSummary(model.setViewEntity, model.setCardinalities);
+        console.log("set summary");
+        console.log(setSummary);
+        Action.submitAttribute({
+            value: setSummary,
+            attribute: "setSummary",
+            model: model
+        });
+    }
 
-    // TODO: Create function(s) to deep copy entitiesAttributes.
-    // TODO: Copy entitiesAttributes to currentEntitiesAttributes.
-    // TODO: Prepare setSummary from setCardinalities.
     // TODO: Create separate data structure to store user selections for filters.
 
     /**

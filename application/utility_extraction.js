@@ -20,7 +20,7 @@ class Extraction {
      * reactions.
      * @returns {Object} Information about metabolic entities and sets.
      */
-    static extractRecon2(data) {
+    static extractMetabolicEntitiesSetsRecon2(data) {
         // Extract information about sets.
         var compartments = Extraction
             .createCompartmentRecords(data.compartments);
