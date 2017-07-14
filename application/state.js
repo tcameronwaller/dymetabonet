@@ -45,7 +45,24 @@ class State {
         // If model has metabolic entities and sets, has entities' attributes,
         // has sets' cardinalities, and has sets' summary then create state
         // interface, set interface, and entity interface.
-        // TODO: Create new interfaces...
+        if (
+            this.determineMetabolicEntitiesSets() &&
+            this.determineEntitiesAttributes() &&
+            this.determineCurrentEntitiesAttributes() &&
+            this.determineSetCardinalities() &&
+            this.determineSetSummary()
+        ) {
+            // Initialize instance of state interface.
+            // Pass this instance a reference to the model.
+            new StateView(this.model);
+
+            // Initialize instance of set interface.
+            // Pass this instance a reference to the model.
+
+            // Initialize instance of entity interface.
+            // Pass this instance a reference to the model.
+
+        }
     }
     /**
      * Evaluates the context of the application's state and executes automatic

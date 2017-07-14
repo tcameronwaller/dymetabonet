@@ -1,5 +1,6 @@
 /**
- * Interface for check, conversion, and load of state of the application.
+ * Interface to select file, check and extract information about metabolic
+ * entities and sets, and restore state of the application.
  */
 class SourceView {
     /**
@@ -12,14 +13,17 @@ class SourceView {
         var self = this;
         // Reference model of application's state.
         self.model = model;
-        // Select document object model.
+        // Reference document object model.
         self.document = document;
         // Select view in document object model.
         self.view = self.document.getElementById("view");
-        // Remove any containers within view other than container for source
-        // interface.
-        General.filterDocumentElements("source", "id", self.view.children);
-        // Create container for source interface within view.
+        // Remove any extraneous containers within view.
+        General.filterDocumentElements({
+            values: ["source"],
+            attribute: "id",
+            elements: self.view.children
+        });
+        // Create container for interface within view.
         if (!self.document.getElementById("source")) {
             self.container = self.document.createElement("div");
             self.container.setAttribute("id", "source");
@@ -29,6 +33,7 @@ class SourceView {
         }
         // Remove all contents of container.
         General.removeDocumentChildren(self.container);
+        //
         // Display current file selection.
         if (!self.determineFile()) {
             // Application does not have a current file selection.
@@ -71,11 +76,7 @@ class SourceView {
             self.clean.addEventListener("click", function (event) {
                 // Element on which the event originated is event.currentTarget.
                 // Check and clean a raw model of metabolism.
-                Action.loadPassObject({
-                    file: self.model.file,
-                    call: Action.checkCleanMetabolicEntitiesSets,
-                    parameters: {}
-                });
+                Action.loadCheckMetabolicEntitiesSets(self.model);
                 // Remove the current file selection from the application state.
                 Action.removeAttribute("file", self.model);
             });
@@ -89,11 +90,7 @@ class SourceView {
                 // Element on which the event originated is event.currentTarget.
                 // Extract information about metabolic entities and sets from a
                 // clean model of metabolism.
-                Action.loadPassObject({
-                    file: self.model.file,
-                    call: Action.extractMetabolicEntitiesSets,
-                    parameters: {model: self.model}
-                });
+                Action.loadExtractMetabolicEntitiesSets(self.model);
                 // Remove the current file selection from the application state.
                 Action.removeAttribute("file", self.model);
             });
@@ -105,8 +102,10 @@ class SourceView {
             self.restoration.textContent = "Restore";
             self.restoration.addEventListener("click", function (event) {
                 // Element on which the event originated is event.currentTarget.
-                // TODO: I need to get the restore load-submit-to-model operation working... use the new loadPassObject function...
-                //Action.restoreState(self.model.file, self.model);
+                // Restore state from persistent representation.
+                Action.loadRestoreState(self.model);
+                // Remove the current file selection from the application state.
+                Action.removeAttribute("file", self.model);
             });
             self.container.appendChild(self.restoration);
             //self.container.appendChild(self.document.createElement("br"));
@@ -120,4 +119,62 @@ class SourceView {
         return this.model.file;
     }
 
+}
+
+/**
+ * Interface to save and restore the state of the application.
+ */
+class StateView {
+    /**
+     * Initializes an instance of the class.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    constructor (model) {
+        // Reference current instance of class for changes in scope.
+        var self = this;
+        // Reference model of application's state.
+        self.model = model;
+        // Reference document object model.
+        self.document = document;
+        // Select view in document object model.
+        self.view = self.document.getElementById("view");
+        // Remove any extraneous containers within view.
+        General.filterDocumentElements({
+            values: ["state", "set", "entity"],
+            attribute: "id",
+            elements: self.view.children
+        });
+        // Create container for interface within view.
+        if (!self.document.getElementById("state")) {
+            self.container = self.document.createElement("div");
+            self.container.setAttribute("id", "state");
+            self.view.appendChild(self.container);
+        } else {
+            self.container = self.document.getElementById("state");
+        }
+        // Remove all contents of container.
+        General.removeDocumentChildren(self.container);
+        //
+        // Create and activate button to restore application to initial state.
+        self.restoration = self.document.createElement("button");
+        self.restoration.textContent = "Restore";
+        self.restoration.addEventListener("click", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // Restore application to initial state.
+            Action.initializeApplication(self.model);
+        });
+        self.container.appendChild(self.restoration);
+        self.container.appendChild(self.document.createElement("br"));
+        // Create and activate button to save current state of application.
+        self.save = self.document.createElement("button");
+        self.save.textContent = "Save";
+        self.save.addEventListener("click", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // Save current state of application.
+            Action.createPersistentState(self.model);
+        });
+        self.container.appendChild(self.save);
+        //self.container.appendChild(self.document.createElement("br"));
+    }
 }

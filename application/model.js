@@ -14,7 +14,7 @@ class Model {
         // of these attributes describe the application.
         // Specify attributes for the model to expect and accept.
         this.attributeNames = [
-            "file",
+            "persistence", "file",
             "compartments", "genes", "operations", "processes",
             "reversibilities",
             "metabolites", "reactions",
@@ -27,7 +27,7 @@ class Model {
             "entityViewNetworkNodes", "entityViewNetworkLinks",
             "entityViewProximityFocus", "entityViewProximityDirection",
             "entityViewProximityDepth", "entityViewSubnetworkNodes",
-            "entityViewSubnetworkLinks", "persistence"
+            "entityViewSubnetworkLinks"
         ];
     }
     /**

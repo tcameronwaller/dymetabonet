@@ -5,8 +5,45 @@
  */
 class General {
     /**
-     * Saves to file and downloads to client's system a version of an object in
-     * JavaScript Object Notation (JSON).
+     * Accesses a file at a specific path on client's system.
+     * @param {string} path Directory path and file name.
+     * @returns {Object} File at path on client's system.
+     */
+    static accessFileByPath(path) {
+        return File.createFromFileName(path);
+    }
+    /**
+     * Loads from file a version of an object in JavaScript Object Notation
+     * (JSON) and passes this object to another function along with appropriate
+     * parameters.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Object} parameters.file File with object to load.
+     * @param {Object} parameters.call Function to call upon completion of file
+     * read.
+     * @param {Object} parameters.parameters Parameters for the function to call
+     * upon completion of file read.
+     */
+    static loadPassObject({file, call, parameters} = {}) {
+        // Create a file reader object.
+        var reader = new FileReader();
+        // Specify operation to perform after file loads.
+        reader.onload = function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // After load, the file reader's result attribute contains the
+            // file's contents, according to the read method.
+            var data = JSON.parse(event.currentTarget.result);
+            // Include the data in the parameters to pass to the call function.
+            var dataParameter = {data: data};
+            var newParameters = Object.assign({}, parameters, dataParameter);
+            // Call function with new parameters.
+            call(newParameters);
+        };
+        // Read file as text.
+        reader.readAsText(file);
+    }
+    /**
+     * Saves to file on client's system a version of an object in JavaScript
+     * Object Notation (JSON).
      * @param {string} name Name of file.
      * @param {Object} object Object in memory to save.
      */
@@ -17,41 +54,24 @@ class General {
         var reference = document.createElement("a");
         reference.setAttribute("href", url);
         reference.setAttribute("download", name);
+        document.body.appendChild(reference);
         reference.click();
-    }
-    /**
-     * Loads from a file at a specific path on client's system a version of an
-     * object in JavaScript Object Notation (JSON).
-     * @param {string} path Directory path and file name.
-     * @returns {Object} Object from file.
-     */
-    static loadObjectByPath(path) {
-        // TODO: I think there's a way to do this using the File Object... see MDN info about files from client system...
-
-        // TODO: Instead of a separate load function...
-        // TODO: Just introduce a fileFromPath function to get the file object and then pass that to the appropriate load function.
-
-
-        // Load data from file in JSON format.
-        d3.json(path, function (error, data) {
-            if (error) {
-                throw error;
-            }
-            return data;
-        });
+        document.body.removeChild(reference);
     }
     /**
      * Removes from the Document Object Model (DOM) elements that do not have a
      * specific value of a specific attribute.
-     * @param {string} value Value of attribute.
-     * @param {string} attribute Attribute of interest.
-     * @param {Object} elements Elements in the Document Object Model.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Array<string>} parameters.values Values of the attribute.
+     * @param {string} parameters.attribute Attribute of interest.
+     * @param {Object} parameters.elements Elements in the Document Object
+     * Model (DOM).
      */
-    static filterDocumentElements(value, attribute, elements) {
+    static filterDocumentElements({values, attribute, elements} = {}) {
         Array.from(elements).forEach(function (element) {
             if (
                 (!element.hasAttribute(attribute)) ||
-                (element.getAttribute(attribute) !== value)
+                (!values.includes(element.getAttribute(attribute)))
             ) {
                 element.parentElement.removeChild(element);
             }

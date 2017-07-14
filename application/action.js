@@ -87,33 +87,30 @@ class Action {
         });
     }
     /**
-     * Loads from file a version of an object in JavaScript Object Notation
-     * (JSON) and passes this object to another function along with appropriate
-     * parameters.
-     * @param {Object} parameters Destructured object of parameters.
-     * @param {Object} parameters.file File with object to load.
-     * @param {Object} parameters.call Function to call upon completion of file
-     * read.
-     * @param {Object} parameters.parameters Parameters for the function to call
-     * upon completion of file read.
+     * Loads from file information about metabolic entities and sets and passes
+     * it to a procedure for check and clean.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
      */
-    static loadPassObject({file, call, parameters} = {}) {
-        // Create a file reader object.
-        var reader = new FileReader();
-        // Specify operation to perform after file loads.
-        reader.onload = function (event) {
-            // Element on which the event originated is event.currentTarget.
-            // After load, the file reader's result attribute contains the
-            // file's contents, according to the read method.
-            var data = JSON.parse(event.currentTarget.result);
-            // Include the data in the parameters to pass to the call function.
-            var dataParameter = {data: data};
-            var newParameters = Object.assign({}, parameters, dataParameter);
-            // Call function with new parameters.
-            call(newParameters);
-        };
-        // Read file as text.
-        reader.readAsText(file);
+    static loadCheckMetabolicEntitiesSets(model) {
+        General.loadPassObject({
+            file: model.file,
+            call: Action.checkCleanMetabolicEntitiesSets,
+            parameters: {}
+        });
+    }
+    /**
+     * Loads from file information about metabolic entities and sets and passes
+     * it to a procedure for extraction.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static loadExtractMetabolicEntitiesSets(model) {
+        General.loadPassObject({
+            file: model.file,
+            call: Action.extractMetabolicEntitiesSets,
+            parameters: {model: model}
+        });
     }
     /**
      * Checks and cleans information about metabolic entities and sets in a
@@ -232,29 +229,26 @@ class Action {
             model: model
         });
     }
-
-    // TODO: Create separate data structure to store user selections for filters.
-
     /**
      * Creates persistent representation of the model of the application's
      * state.
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
-    static persistApplication(model) {
+    static createPersistentState(model) {
         var record = model
             .attributeNames
             .reduce(function (collection, attributeName) {
                 var newRecord = {
                     [attributeName]: model[attributeName]
                 };
-                return Object.assign(collection, newRecord);
+                return Object.assign({}, collection, newRecord);
             }, {});
-        var newAttributes = [{
+        Action.submitAttribute({
+            value: record,
             attribute: "persistence",
-            value: record
-        }];
-        model.restore(newAttributes, model);
+            model: model
+        });
     }
     /**
      * Saves to a new file on client's system a representation of the
@@ -266,23 +260,37 @@ class Action {
         General.saveObject("state.json", model.persistence);
     }
     /**
-     * Restores the application to a state with a persistent representation in a
-     * file from client's system.
-     * @param {Object} file File object with information about application
-     * state.
+     * Loads from file a persistent representation of the application's state
+     * and passes it to a procedure to restore the application to this state.
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
-    static restoreState(file, model) {
-        var data = General.loadObject(file);
-        var newAttributes = Object.keys(data).map(function (key) {
-            return {
-                attribute: key,
-                value: data[key]
-            };
+    static loadRestoreState(model) {
+        General.loadPassObject({
+            file: model.file,
+            call: Action.restoreState,
+            parameters: {model: model}
         });
-        model.restore(newAttributes, model);
     }
+    /**
+     * Restores the application to a state from a persistent representation.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Object} parameters.data Persistent representation of the
+     * application's state.
+     * @param {Object} parameters.model Model of the comprehensive state of the
+     * application.
+     */
+    static restoreState({data, model} = {}) {
+        Action.submitAttributes({
+            attributesValues: data,
+            model: model
+        });
+    }
+
+
+
+    // TODO: Create separate data structure to store user selections for filters.
+
     /**
      * Loads from a file at a specific path on client's system a default
      * representation of the application's state.
