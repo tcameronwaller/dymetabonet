@@ -281,28 +281,12 @@ function assembleDefaultModel() {
  * Initializes the attribute menu and attribute menu table.
  */
 function initializeAttributeMenu() {
-    // This function executes upon initialization of the program after assembly
-    // or load of a metabolic model.
-
-    // This function does not activate some control elements, because the
-    // handlers for these control elements require data objects.
-
-    // Create container for attribute menu.
-    var attributeView = document.getElementById("attribute");
-    var attributeMenu = document.createElement("div");
-    attributeMenu.setAttribute("id", "attribute-menu");
-    attributeView.appendChild(attributeMenu);
-    // Create attribute menu table.
-    var attributeMenuTable = document.createElement("table");
-    // Create header.
-    var head = document.createElement("thead");
-    var headRow = document.createElement("tr");
-    headRow
-        .appendChild(createElementWithText({text: "Attribute", type: "th"}))
-        .setAttribute("class", "attribute");
     // TODO: Also display the total count of reactions or metabolites... that'll be different than the total of the counts for each property.
     var valueHead = document.createElement("th");
     valueHead.setAttribute("class", "value");
+
+
+
     // Create entity selector with default value of metabolite.
     var metaboliteRadioLabel = createLabelInputElement({
         className: "entity",
@@ -343,12 +327,9 @@ function initializeAttributeMenu() {
     // Append header to table.
     headRow.appendChild(valueHead);
     head.appendChild(headRow);
-    attributeMenuTable.appendChild(head);
     // Create body.
     var body = document.createElement("tbody");
     attributeMenuTable.appendChild(body);
-    // Append attribute menu table to attribute menu.
-    attributeMenu.appendChild(attributeMenuTable);
 }
 
 /**
@@ -469,6 +450,9 @@ function activateAttributeMenuEntitySelectors({
     });
 }
 
+
+
+
 /**
  * Activates interactive elements to specify filter for attribute menu.
  * @param {Object} parameters Destructured object of parameters.
@@ -521,6 +505,9 @@ function activateAttributeMenuFilterSelector({
         });
     });
 }
+
+
+
 
 /**
  * Creates and activates the attribute summary table for user interaction.

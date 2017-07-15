@@ -55,10 +55,9 @@ class State {
             // Initialize instance of state interface.
             // Pass this instance a reference to the model.
             new StateView(this.model);
-
             // Initialize instance of set interface.
             // Pass this instance a reference to the model.
-
+            new SetView(this.model);
             // Initialize instance of entity interface.
             // Pass this instance a reference to the model.
 
