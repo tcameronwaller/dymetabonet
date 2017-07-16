@@ -195,8 +195,11 @@ class Action {
      * application.
      */
     static changeSetViewEntity(model) {
-        // TODO: I'm not sure if I want to keep track of the toggle state in the DOM's radio buttons or in the model itself.
+        // Manage state of entity selection within the model of the
+        // application's state.
         var currentEntity = model.setViewEntity;
+        console.log("changeSetViewEntity");
+        console.log(currentEntity);
         if (currentEntity === "metabolite") {
             var newEntity = "reaction";
         } else if (currentEntity === "reaction") {
@@ -286,6 +289,36 @@ class Action {
             model: model
         });
     }
+    /**
+     * Changes the specification of filter for the set view.
+     * Initializes the specification to false.
+     * Submits this information to the model of the application's state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static changeSetViewFilter(model) {
+        // Manage state of filter selection within the model of the
+        // application's state.
+        var currentFilter = model.setViewFilter;
+        console.log("changeSetViewFilter");
+        console.log(currentFilter);
+        if (currentFilter !== null) {
+            if (currentFilter) {
+                var newFilter = false;
+            } else {
+                var newFilter = true;
+            }
+        } else {
+            // Initialize set view filter.
+            var newFilter = false;
+        }
+        Action.submitAttribute({
+            value: newFilter,
+            attribute: "setViewFilter",
+            model: model
+        });
+    }
+
 
 
 

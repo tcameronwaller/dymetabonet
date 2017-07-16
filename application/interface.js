@@ -281,33 +281,7 @@ function assembleDefaultModel() {
  * Initializes the attribute menu and attribute menu table.
  */
 function initializeAttributeMenu() {
-    // TODO: Also display the total count of reactions or metabolites... that'll be different than the total of the counts for each property.
-    var valueHead = document.createElement("th");
-    valueHead.setAttribute("class", "value");
 
-
-
-    // Create entity selector with default value of metabolite.
-    var metaboliteRadioLabel = createLabelInputElement({
-        className: "entity",
-        identifier: "attribute-menu-entity-metabolite",
-        name: "attribute-menu-entity",
-        value: "metabolite",
-        text: "Metabolite",
-        type: "radio"
-    });
-    var metaboliteRadio = metaboliteRadioLabel.getElementsByTagName("input")[0];
-    metaboliteRadio.setAttribute("checked", true);
-    valueHead.appendChild(metaboliteRadioLabel);
-    var reactionRadioLabel = createLabelInputElement({
-        className: "entity",
-        identifier: "attribute-menu-entity-reaction",
-        name: "attribute-menu-entity",
-        value: "reaction",
-        text: "Reaction",
-        type: "radio"
-    });
-    valueHead.appendChild(reactionRadioLabel);
     // Create filter check box.
     var filterCheckLabel = createLabelInputElement({
         className: "filter",

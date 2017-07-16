@@ -119,7 +119,6 @@ class SourceView {
     determineFile() {
         return this.model.file;
     }
-
 }
 
 /**
@@ -143,11 +142,11 @@ class StateView {
         self.view = self.document.getElementById("view");
         // Remove any extraneous content within view.
         General.filterDocumentElements({
-            values: ["state", "set", "entity"],
+            values: ["top", "bottom"],
             attribute: "id",
             elements: self.view.children
         });
-        // Create container for interface within view.
+        // Create container for interfaces within top of view.
         if (!self.document.getElementById("top")) {
             self.top = self.document.createElement("div");
             self.top.setAttribute("id", "top");
@@ -155,6 +154,13 @@ class StateView {
         } else {
             self.top = self.document.getElementById("top");
         }
+        // Remove any extraneous content within top.
+        General.filterDocumentElements({
+            values: ["state", "set"],
+            attribute: "id",
+            elements: self.top.children
+        });
+        // Create container for interface within top.
         if (!self.document.getElementById("state")) {
             self.container = self.document.createElement("div");
             self.container.setAttribute("id", "state");
@@ -213,33 +219,13 @@ class SetView {
         // Create aspects of interface that do not depend on data.
         // Initialize table for summary of sets' cardinalities.
         self.initializeSummaryTable(self);
+        // Restore the table for summary of sets' cardinalitites.
+        //self.restoreSummaryTable(self);
 
-
-
-        // TODO: Scrap below here, I think...
-        // Remove all contents of container.
-        General.removeDocumentChildren(self.container);
-        //
-        // Create and activate button to restore application to initial state.
-        self.restoration = self.document.createElement("button");
-        self.restoration.textContent = "Restore";
-        self.restoration.addEventListener("click", function (event) {
-            // Element on which the event originated is event.currentTarget.
-            // Restore application to initial state.
-            Action.initializeApplication(self.model);
-        });
-        self.container.appendChild(self.restoration);
-        self.container.appendChild(self.document.createElement("br"));
-        // Create and activate button to save current state of application.
-        self.save = self.document.createElement("button");
-        self.save.textContent = "Save";
-        self.save.addEventListener("click", function (event) {
-            // Element on which the event originated is event.currentTarget.
-            // Save current state of application.
-            Action.createPersistentState(self.model);
-        });
-        self.container.appendChild(self.save);
-        //self.container.appendChild(self.document.createElement("br"));
+        console.log("entity selection");
+        console.log(self.model.setViewEntity);
+        console.log("filter selection");
+        console.log(self.model.setViewFilter);
     }
     /**
      * Initializes the container for the interface.
@@ -255,11 +241,11 @@ class SetView {
         // Initialization of the state view already removes extraneous
         // content from view.
         General.filterDocumentElements({
-            values: ["state", "set", "entity"],
+            values: ["top", "bottom"],
             attribute: "id",
             elements: self.view.children
         });
-        // Create container for interface within view.
+        // Create container for interfaces within top of view.
         // Initialization of the state view already creates the top container.
         if (!self.document.getElementById("top")) {
             self.top = self.document.createElement("div");
@@ -268,6 +254,13 @@ class SetView {
         } else {
             self.top = self.document.getElementById("top");
         }
+        // Remove any extraneous content within top.
+        General.filterDocumentElements({
+            values: ["state", "set"],
+            attribute: "id",
+            elements: self.top.children
+        });
+        // Create container for interface within top.
         if (!self.document.getElementById("set")) {
             self.container = self.document.createElement("div");
             self.container.setAttribute("id", "set");
@@ -299,20 +292,146 @@ class SetView {
             tableHeadRow.appendChild(tableHeadAttributeCell);
             tableHeadAttributeCell.textContent = "Attribute";
             tableHeadAttributeCell.classList.add("attribute");
-            var tableHeadValueCell = self.document.createElement("th");
-            tableHeadRow.appendChild(tableHeadValueCell);
-            tableHeadValueCell.classList.add("value");
+            self.tableHeadValueCell = self.document.createElement("th");
+            tableHeadRow.appendChild(self.tableHeadValueCell);
+            self.tableHeadValueCell.classList.add("value");
+            // TODO: Create entity selector, filter selector, and reset button...
+            // TODO: All of these control elements need listeners to drive actions to modify app state.
+            // Create and activate entity selector.
+            self.createActivateEntitySelector("metabolite", self);
+            self.createActivateEntitySelector("reaction", self);
+            // Create and activate filter selector.
+            self.createActivateFilterSelector(self);
 
             // Create table's body.
             var tableBody = self.document.createElement("tbody");
             self.table.appendChild(tableBody);
-
-
         }
+    }
+    /**
+     * Creates and activates selectors for the type of entity in the set view.
+     * @param {string} entity Type of entity, metabolite or reaction, for which
+     * to create and activate selector.
+     * @param {Object} setView Instance of set view interface.
+     */
+    createActivateEntitySelector(entity, setView) {
+        // Reference current instance of class to transfer across changes in
+        // scope.
+        var self = setView;
+        // Create entity selector.
+        var entitySelector = entity + "Selector";
+        var identifier = "set-view-entity-" + entity;
+        self[entitySelector] = self.document.createElement("input");
+        self.tableHeadValueCell.appendChild(self[entitySelector]);
+        self[entitySelector].setAttribute("id", identifier);
+        self[entitySelector].setAttribute("type", "radio");
+        self[entitySelector].setAttribute("value", entity);
+        self[entitySelector].setAttribute("name", "entity");
+        if (entity === self.model.setViewEntity) {
+            self[entitySelector].setAttribute("checked", true);
+        } else {
+            self[entitySelector].setAttribute("checked", false);
+        }
+        self[entitySelector].addEventListener("change", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // Change current selection of entity in application's state.
+            Action.changeSetViewEntity(self.model);
+        });
+        var entityLabel = self.document.createElement("label");
+        self.tableHeadValueCell.appendChild(entityLabel);
+        entityLabel.setAttribute("for", identifier);
+        entityLabel.textContent = entity;
+    }
+    /**
+     * Creates and activates selector for filter in the set view.
+     * @param {Object} setView Instance of set view interface.
+     */
+    createActivateFilterSelector(setView) {
+        // Reference current instance of class to transfer across changes in
+        // scope.
+        var self = setView;
+        // Create filter selector.
+        var identifier = "set-view-filter";
+        self.filterSelector = self.document.createElement("input");
+        self.tableHeadValueCell.appendChild(self.filterSelector);
+        self.filterSelector.setAttribute("id", identifier);
+        self.filterSelector.setAttribute("type", "checkbox");
+        if (self.model.setViewFilter) {
+            self.filterSelector.setAttribute("checked", true);
+        } else {
+            self.filterSelector.setAttribute("checked", false);
+        }
+        self.filterSelector.addEventListener("change", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // Change current selection of filter in application's state.
+            Action.changeSetViewFilter(self.model);
+        });
+        var filterLabel = self.document.createElement("label");
+        self.tableHeadValueCell.appendChild(filterLabel);
+        filterLabel.setAttribute("for", identifier);
+        filterLabel.textContent = "filter";
+    }
+    /**
+     * Restores the table to summarize sets' cardinalities.
+     * @param {Object} setView Instance of set view interface.
+     */
+    restoreSummaryTable(setView) {
+        // Reference current instance of class to transfer across changes in
+        // scope.
+        var self = setView;
+        // Update entity selector according to application's state.
+        console.log("entity selector status");
+        console.log(self.model.setViewEntity);
+        self
+            .metaboliteSelector
+            .setAttribute(
+                "checked", self.determineEntityMatch("metabolite", self)
+            );
+        self
+            .reactionSelector
+            .setAttribute(
+                "checked", self.determineEntityMatch("reaction", self)
+            );
+        // Update filter selector according to application's state.
+        console.log("filter selector status");
+        console.log(self.model.setViewFilter);
+        //self
+        //    .filterSelector
+        //    .setAttribute("checked", self.determineFilter(self));
+        self
+            .filterSelector
+            .setAttribute("checked", false);
 
+
+        // TODO: Create table elements for set cardinalities according to current set cardinalitites in application state...
 
 
     }
+    /**
+     * Determines whether or not the application state has a current selection
+     * of entity that matches a specific type of entity.
+     * @param {string} match Type of entity, metabolite or reaction, to find
+     * match with entity selection in application's state.
+     * @param {Object} setView Instance of set view interface.
+     */
+    determineEntityMatch(match, setView) {
+        // Reference current instance of class to transfer across changes in
+        // scope.
+        var self = setView;
+        return self.model.setViewEntity === match;
+    }
+    /**
+     * Determines the current filter selection in the application's state.
+     * @param {Object} setView Instance of set view interface.
+     */
+    determineFilter(setView) {
+        // Reference current instance of class to transfer across changes in
+        // scope.
+        var self = setView;
+        return self.model.setViewFilter;
+    }
+
+
 
 
 }

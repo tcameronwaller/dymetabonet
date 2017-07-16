@@ -43,13 +43,15 @@ class State {
         // TODO: Get rid of the source view after extraction... then the view
         // TODO: should be blank or something until all state attributes are available for set and entity views.
         // If model has metabolic entities and sets, has entities' attributes,
-        // has sets' cardinalities, and has sets' summary then create state
-        // interface, set interface, and entity interface.
+        // has sets' cardinalities, has basic selections for set summary, and
+        // has sets' summary then create state interface, set interface, and entity interface.
         if (
             this.determineMetabolicEntitiesSets() &&
             this.determineEntitiesAttributes() &&
             this.determineCurrentEntitiesAttributes() &&
             this.determineSetCardinalities() &&
+            this.determineSetViewEntity() &&
+            this.determineSetViewFilter() &&
             this.determineSetSummary()
         ) {
             // Initialize instance of state interface.
@@ -111,11 +113,23 @@ class State {
         ) {
             Action.changeSetViewEntity(this.model);
         }
-        // If model has sets' cardinalities, has entity specification, but does
-        // not have sets' summary, then prepare sets' summary.
+        // If model has sets' cardinalities and entity specification for set
+        // view but does not have filter specification for set view then
+        // initialize filter specification for set view.
         if (
             this.determineSetCardinalities() &&
             this.determineSetViewEntity() &&
+            !this.determineSetViewFilter()
+        ) {
+            Action.changeSetViewFilter(this.model);
+        }
+        // If model has sets' cardinalities, has entity specification, has
+        // filter specification, but does not have sets' summary, then prepare
+        // sets' summary.
+        if (
+            this.determineSetCardinalities() &&
+            this.determineSetViewEntity() &&
+            this.determineSetViewFilter() &&
             !this.determineSetSummary()
         ) {
             Action.prepareSetSummary(this.model);
@@ -168,6 +182,13 @@ class State {
      */
     determineSetViewEntity() {
         return this.model.setViewEntity;
+    }
+    /**
+     * Determines whether or not model has a specification of filter for the set
+     * view.
+     */
+    determineSetViewFilter() {
+        return this.model.setViewFilter !== null;
     }
     /**
      * Determines whether or not model has a summary of cardinalities of sets of
