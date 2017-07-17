@@ -25,18 +25,6 @@ function cloneReplaceElement(oldElement) {
     return newElement;
 }
 
-/**
- * Determines the value of the only active radio button in a group.
- * @param {Object} radios Live collection of radio buttons in the Document
- * Object Model (DOM).
- * @returns {string} Value of the only active radio button from the group.
- */
-function determineRadioGroupValue(radios) {
-    // Assume that only a single radio button in the group is active.
-    return Array.from(radios).filter(function (radio) {
-        return radio.checked;
-    })[0].value;
-}
 
 /**
  * Removes any selection of radio buttons in a group.

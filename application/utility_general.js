@@ -59,15 +59,15 @@ class General {
         document.body.removeChild(reference);
     }
     /**
-     * Removes from the Document Object Model (DOM) elements that do not have a
-     * specific value of a specific attribute.
+     * Removes from the Document Object Model (DOM) elements that do not have
+     * specific values of a specific attribute.
      * @param {Object} parameters Destructured object of parameters.
      * @param {Array<string>} parameters.values Values of the attribute.
      * @param {string} parameters.attribute Attribute of interest.
      * @param {Object} parameters.elements Elements in the Document Object
      * Model (DOM).
      */
-    static filterDocumentElements({values, attribute, elements} = {}) {
+    static filterRemoveDocumentElements({values, attribute, elements} = {}) {
         Array.from(elements).forEach(function (element) {
             if (
                 (!element.hasAttribute(attribute)) ||
@@ -75,6 +75,22 @@ class General {
             ) {
                 element.parentElement.removeChild(element);
             }
+        });
+    }
+    /**
+     * Filters elements from the Document Object Model (DOM) by specific values
+     * of a specific attribute.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Array<string>} parameters.values Values of the attribute.
+     * @param {string} parameters.attribute Attribute of interest.
+     * @param {Array<Object>} parameters.elements Elements in the Document
+     * Object Model (DOM).
+     */
+    static filterDocumentElements({values, attribute, elements} = {}) {
+        Array.from(elements).filter(function (element) {
+            var checkAttribute = element.hasAttribute(attribute);
+            var checkValues = values.includes(element.getAttribute(attribute));
+            return checkAttribute && checkValues;
         });
     }
     /**
@@ -159,6 +175,19 @@ class General {
             return element === secondArray[index];
         });
     }
+    /**
+     * Determines the value of the only active radio button in a group.
+     * @param {Object} radios Live collection of radio button elements in the
+     * Document Object Model (DOM).
+     * @returns {string} Value of the only active radio button from the group.
+     */
+    static determineRadioGroupValue(radios) {
+        // Assume that only a single radio button in the group is active.
+        return Array.from(radios).filter(function (radio) {
+            return radio.checked;
+        })[0].value;
+    }
+
 
 
 

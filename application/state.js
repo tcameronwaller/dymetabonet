@@ -111,7 +111,7 @@ class State {
             this.determineSetCardinalities() &&
             !this.determineSetViewEntity()
         ) {
-            Action.changeSetViewEntity(this.model);
+            Action.submitSetViewEntity("metabolite", this.model);
         }
         // If model has sets' cardinalities and entity specification for set
         // view but does not have filter specification for set view then
@@ -121,7 +121,7 @@ class State {
             this.determineSetViewEntity() &&
             !this.determineSetViewFilter()
         ) {
-            Action.changeSetViewFilter(this.model);
+            Action.submitSetViewFilter(false, this.model);
         }
         // If model has sets' cardinalities, has entity specification, has
         // filter specification, but does not have sets' summary, then prepare
