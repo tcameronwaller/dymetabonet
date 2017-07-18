@@ -78,22 +78,6 @@ class General {
         });
     }
     /**
-     * Filters elements from the Document Object Model (DOM) by specific values
-     * of a specific attribute.
-     * @param {Object} parameters Destructured object of parameters.
-     * @param {Array<string>} parameters.values Values of the attribute.
-     * @param {string} parameters.attribute Attribute of interest.
-     * @param {Array<Object>} parameters.elements Elements in the Document
-     * Object Model (DOM).
-     */
-    static filterDocumentElements({values, attribute, elements} = {}) {
-        Array.from(elements).filter(function (element) {
-            var checkAttribute = element.hasAttribute(attribute);
-            var checkValues = values.includes(element.getAttribute(attribute));
-            return checkAttribute && checkValues;
-        });
-    }
-    /**
      * Removes from the Document Object Model (DOM) all elements that are
      * children of a specific element.
      * @param {Object} element Element in the Document Object Model.

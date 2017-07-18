@@ -3,6 +3,32 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
+18 July 2017
+
+----------
+    /**
+     * Filters elements from the Document Object Model (DOM) by specific values
+     * of a specific attribute.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Array<string>} parameters.values Values of the attribute.
+     * @param {string} parameters.attribute Attribute of interest.
+     * @param {Array<Object>} parameters.elements Elements in the Document
+     * Object Model (DOM).
+     */
+    static filterDocumentElements({values, attribute, elements} = {}) {
+        // TODO: I encountered bizarre problems getting this function to work.
+        // TODO: I suspect weird things might involve the live HTML collection or something.
+        return Array.from(elements).filter(function (element) {
+            var checkAttribute = element.hasAttribute(attribute);
+            var checkValues = values.includes(element.getAttribute(attribute));
+            return checkAttribute && checkValues;
+        });
+    }
+
+
+
+
+--------------------------------------------------
 13 July 2017
 
 ----------

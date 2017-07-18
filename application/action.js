@@ -6,8 +6,32 @@
  * of the model. These methods also call external methods as necessary.
  */
 class Action {
+    // TODO: I'm not sure how to handle simultaneous/consecutive events efficiently...
+    // TODO: If I handle all consecutive events in state, then that might not be specific enough to be efficient.
+    // TODO: It seems reasonable to handle those here in action...
+    // TODO: For example, if user changes entity selection then it's also necessary to re-pepare set cardinalities and set summary... preferrably without going through app loop every time...
+
+
+
+    // There are only so many possible actions in the application...
+    // Try to limit actions herein to those possible actions.
+    // I'm not sure that I like the idea of next-action-predicate in the app state handler...
+    // Handle all that stuff simultaneously here in the Actions.
+    // That way I have more access to information about what values are changing and hence which changes/updates are necessary.
+
+    // TODO: Change the way I handle actions and multiple, coordinate changes...
+
+    // Methods herein intend to comprise discrete actions that impart changes to
+    // the application's state.
+    // Some actions necessitate changes to multiple aspects of the application
+    // that coordinate together.
+    // For efficiency, these actions impart these multiple changes
+    // simultaneously.
+    //
     // To call the restore method of the model, it is necessary to pass the
     // method a reference to the current instance of the model.
+    //
+    // Methods for general functionality relevant to application actions.
     /**
      * Submits a new value for an attribute to the model of the application's
      * state.
@@ -43,23 +67,6 @@ class Action {
         model.restore(newAttributes, model);
     }
     /**
-     * Initializes the model of the application's state by submitting null
-     * values for all attributes.
-     * @param {Object} model Model of the comprehensive state of the
-     * application.
-     */
-    static initializeApplication(model) {
-        var attributesValues = model
-            .attributeNames.reduce(function (collection, attributeName) {
-                var newRecord = {[attributeName]: null};
-                return Object.assign({}, collection, newRecord);
-            }, {});
-        Action.submitAttributes({
-            attributesValues: attributesValues,
-            model: model
-        });
-    }
-    /**
      * Removes the value of an attribute in the model of the application's state
      * by submitting a null value for the attribute.
      * @param {string} name Name of the attribute.
@@ -73,17 +80,19 @@ class Action {
             model: model
         });
     }
+    //
+    // Load information from file and call another action.
     /**
-     * Submits a new value for the file to the model of the application's state.
-     * @param {Object} file File object.
+     * Loads from file a persistent representation of the application's state
+     * and passes it to a procedure to restore the application to this state.
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
-    static submitFile(file, model) {
-        Action.submitAttribute({
-            value: file,
-            attribute: "file",
-            model: model
+    static loadRestoreState(model) {
+        General.loadPassObject({
+            file: model.file,
+            call: Action.restoreState,
+            parameters: {model: model}
         });
     }
     /**
@@ -112,6 +121,87 @@ class Action {
             parameters: {model: model}
         });
     }
+    //
+    // Actions relevant to application state.
+    /**
+     * Initializes the model of the application's state by submitting null
+     * values for all attributes.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static initializeApplication(model) {
+        var attributesValues = model
+            .attributeNames.reduce(function (collection, attributeName) {
+                var newRecord = {[attributeName]: null};
+                return Object.assign({}, collection, newRecord);
+            }, {});
+        Action.submitAttributes({
+            attributesValues: attributesValues,
+            model: model
+        });
+    }
+    /**
+     * Creates persistent representation of the model of the application's
+     * state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     * @returns {Object} Persistent representation of the application's state.
+     */
+    static createPersistentState(model) {
+        return model
+            .attributeNames
+            .reduce(function (collection, attributeName) {
+                var newRecord = {
+                    [attributeName]: model[attributeName]
+                };
+                return Object.assign({}, collection, newRecord);
+            }, {});
+    }
+    /**
+     * Saves to a new file on client's system a persistent representation of the
+     * application's state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static saveState(model) {
+        var persistence = Action.createPersistentState(model);
+        General.saveObject("state.json", persistence);
+    }
+
+
+
+    /**
+     * Restores the application to a state from a persistent representation.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Object} parameters.data Persistent representation of the
+     * application's state.
+     * @param {Object} parameters.model Model of the comprehensive state of the
+     * application.
+     */
+    static restoreState({data, model} = {}) {
+        Action.submitAttributes({
+            attributesValues: data,
+            model: model
+        });
+    }
+    /**
+     * Submits a new value for the file to the model of the application's state.
+     * @param {Object} file File object.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static submitFile(file, model) {
+        Action.submitAttribute({
+            value: file,
+            attribute: "file",
+            model: model
+        });
+    }
+
+
+
+
+
     /**
      * Checks and cleans information about metabolic entities and sets in a
      * raw model of metabolism.
@@ -141,6 +231,8 @@ class Action {
             model: model
         });
     }
+
+
     /**
      * Collects attributes of metabolic entities, metabolites and reactions.
      * Submits this information to the model of the application's state.
@@ -178,12 +270,12 @@ class Action {
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
-    static determineSetCardinalities(model) {
-        var setCardinalities = Cardinality
-            .determineSetCardinalities(model.currentEntitiesAttributes);
+    static determineSetsCardinalities(model) {
+        var setsCardinalities = Cardinality
+            .determineSetsCardinalities(model.currentEntitiesAttributes);
         Action.submitAttribute({
-            value: setCardinalities,
-            attribute: "setCardinalities",
+            value: setsCardinalities,
+            attribute: "setsCardinalities",
             model: model
         });
     }
@@ -201,6 +293,77 @@ class Action {
             model: model
         });
     }
+
+
+
+    /**
+     * Changes the set view's specification of entity.
+     * Also prepares new sets' summary.
+     * Submits new values to the model of the application's state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static changeSetViewEntity(model) {
+        // Determine new entity.
+        var oldEntity = model.setViewEntity;
+        if (oldEntity === "metabolite") {
+            var newEntity = "reaction";
+        } else if (oldEntity === "reaction") {
+            var newEntity = "metabolite";
+        }
+        // Prepare new summary of sets.
+        var setsSummary = Cardinality
+            .prepareSetsSummary(newEntity, model.setsCardinalities);
+        // Submit new values of attributes to the model of the application's
+        // state.
+        var attributesValues = {
+            setViewEntity: newEntity,
+            setsSummary: setsSummary
+        };
+        Action.submitAttributes({
+            attributesValues: attributesValues,
+            model: model
+        });
+    }
+    /**
+     * Changes the set view's specification of filter.
+     * Also determines new sets' cardinalities and prepares new sets' summary.
+     * Submits new values to the model of the application's state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static changeSetViewFilter(model) {
+        // Determine new filter.
+        var oldFilter = model.setViewFilter;
+        if (oldFilter) {
+            var newFilter = false;
+        } else {
+            var newFilter = true;
+        }
+        // Determine new sets' cardinalities.
+        var setsCardinalities = Cardinality
+            .determineSetsCardinalities({
+                filter: newFilter,
+                currentEntitiesAttributes: model.currentEntitiesAttributes,
+                allEntitiesAttributes: model.entitiesAttributes
+            });
+        // Prepare new sets' summary.
+        var setsSummary = Cardinality
+            .prepareSetsSummary(model.setViewEntity, setsCardinalities);
+        // Submit new values of attributes to the model of the application's
+        // state.
+        var attributesValues = {
+            setViewFilter: newFilter,
+            setsCardinalities: setsCardinalities,
+            setsSummary: setsSummary
+        };
+        Action.submitAttributes({
+            attributesValues: attributesValues,
+            model: model
+        });
+    }
+
+
     /**
      * Prepares summary of sets according to cardinalities of sets for specific
      * type of entity and filters.
@@ -208,71 +371,14 @@ class Action {
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
-    static prepareSetSummary(model) {
-        var setSummary = Cardinality
-            .prepareSetSummary(model.setViewEntity, model.setCardinalities);
+    static prepareSetsSummary(model) {
+        var setsSummary = Cardinality
+            .prepareSetsSummary(model.setViewEntity, model.setsCardinalities);
         console.log("set summary");
-        console.log(setSummary);
+        console.log(setsSummary);
         Action.submitAttribute({
-            value: setSummary,
-            attribute: "setSummary",
-            model: model
-        });
-    }
-    /**
-     * Creates persistent representation of the model of the application's
-     * state.
-     * @param {Object} model Model of the comprehensive state of the
-     * application.
-     */
-    static createPersistentState(model) {
-        var record = model
-            .attributeNames
-            .reduce(function (collection, attributeName) {
-                var newRecord = {
-                    [attributeName]: model[attributeName]
-                };
-                return Object.assign({}, collection, newRecord);
-            }, {});
-        Action.submitAttribute({
-            value: record,
-            attribute: "persistence",
-            model: model
-        });
-    }
-    /**
-     * Saves to a new file on client's system a representation of the
-     * application's state.
-     * @param {Object} model Model of the comprehensive state of the
-     * application.
-     */
-    static saveState(model) {
-        General.saveObject("state.json", model.persistence);
-    }
-    /**
-     * Loads from file a persistent representation of the application's state
-     * and passes it to a procedure to restore the application to this state.
-     * @param {Object} model Model of the comprehensive state of the
-     * application.
-     */
-    static loadRestoreState(model) {
-        General.loadPassObject({
-            file: model.file,
-            call: Action.restoreState,
-            parameters: {model: model}
-        });
-    }
-    /**
-     * Restores the application to a state from a persistent representation.
-     * @param {Object} parameters Destructured object of parameters.
-     * @param {Object} parameters.data Persistent representation of the
-     * application's state.
-     * @param {Object} parameters.model Model of the comprehensive state of the
-     * application.
-     */
-    static restoreState({data, model} = {}) {
-        Action.submitAttributes({
-            attributesValues: data,
+            value: setsSummary,
+            attribute: "setsSummary",
             model: model
         });
     }

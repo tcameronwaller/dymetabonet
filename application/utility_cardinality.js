@@ -9,11 +9,33 @@ class Cardinality {
     /**
      * Determines cardinalities of entities in sets for all values of all
      * attributes.
-     * @param {Array<Object>} entitiesAttributes Attributes of all entities.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {boolean} parameters.filter Current filter selection.
+     * @param {Array<Object>} parameters.currentEntitiesAttributes Attributes of
+     * all entities with application of current filters.
+     * @param {Array<Object>} parameters.allEntitiesAttributes Attributes of all
+     * entities.
      * @returns {Object<Object<Object<number>>>} Cardinalities of sets by
      * entities, attributes, and values.
      */
-    static determineSetCardinalities(entitiesAttributes) {
+    static determineSetsCardinalities({
+                                         filter,
+                                         currentEntitiesAttributes,
+                                         allEntitiesAttributes
+    } = {}) {
+        // Determine which entities' attributes to consider for sets'
+        // cardinalities.
+        if (filter) {
+            // Current filter selection is true.
+            // Determine sets' cardinalities to represent all current filters
+            // against entities's attributes.
+            var entitiesAttributes = currentEntitiesAttributes;
+        } else {
+            // Current filter selection is false.
+            // Determine sets' cardinalities to represent all entities's
+            // attributes without regard to current filters.
+            var entitiesAttributes = allEntitiesAttributes;
+        }
         // There are 3 dimensions of information within the table for values of
         // attributes of entities.
         // Dimension 1 includes the individual entities.
@@ -162,19 +184,19 @@ class Cardinality {
      * type of entity by attributes and values with records in ascending order,
      * incremental sums, and total sums.
      */
-    static prepareSetSummary(entity, setCardinalities) {
+    static prepareSetsSummary(entity, setCardinalities) {
         // Prepare the set summary for visual representation.
         // Organize the basic information of set cardinalities by attributes and
         // values.
-        var basicSetSummary = Cardinality
-            .organizeSetSummary(entity, setCardinalities);
+        var basicSetsSummary = Cardinality
+            .organizeSetsSummary(entity, setCardinalities);
         // Sort attribute values by increasing cardinality counts.
-        var sortSetSummary = Cardinality.sortSetSummary(basicSetSummary);
+        var sortSetsSummary = Cardinality.sortSetsSummary(basicSetsSummary);
         // Calculate incremental counts in set summary.
         // These sums are necessary for positions of bar stacks.
-        var incrementSetSummary = Cardinality
-            .incrementSetSummary(sortSetSummary);
-        return incrementSetSummary;
+        var incrementSetsSummary = Cardinality
+            .incrementSetsSummary(sortSetsSummary);
+        return incrementSetsSummary;
     }
     /**
      * Organizes basic information in set summary.
@@ -184,7 +206,7 @@ class Cardinality {
      * @returns {Array<Object<Array<Object>>>} Summary of sets for a specific
      * type of entity by attributes and values.
      */
-    static organizeSetSummary(entity, setCardinalities) {
+    static organizeSetsSummary(entity, setCardinalities) {
         // Prepare records for attributes.
         var attributes = Object.keys(setCardinalities[entity]);
         return attributes.map(function (attribute) {
@@ -206,14 +228,14 @@ class Cardinality {
     }
     /**
      * Sorts records for attributes and values within set summary.
-     * @param {Array<Object<Array<Object>>>} basicSetSummary Basic information
+     * @param {Array<Object<Array<Object>>>} basicSetsSummary Basic information
      * for set summary.
      * @returns {Array<Object<Array<Object>>>} Summary of sets for a specific
      * type of entity by attributes and values.
      */
-    static sortSetSummary(basicSetSummary) {
+    static sortSetsSummary(basicSetsSummary) {
         // Sort records for attributes.
-        var sortSetAttributes = basicSetSummary
+        var sortSetAttributes = basicSetsSummary
             .slice().sort(function (value1, value2) {
                 // Sort attributes in custom order.
                 var order = {
@@ -239,13 +261,13 @@ class Cardinality {
     /**
      * Increments counts of cardinalities of sets in set summary in their
      * current order.
-     * @returns {Array<Object<Array<Object>>>} sortSetSummary Basic information
+     * @returns {Array<Object<Array<Object>>>} sortSetsSummary Basic information
      * for set summary in sort order.
      * @returns {Array<Object<Array<Object>>>} Summary of sets for a specific
      * type of entity by attributes and values.
      */
-    static incrementSetSummary(sortSetSummary) {
-        return sortSetSummary.map(function (attributeRecord) {
+    static incrementSetsSummary(sortSetsSummary) {
+        return sortSetsSummary.map(function (attributeRecord) {
             var incrementalValues = attributeRecord
                 .values
                 .reduce(function (collection, record, index) {

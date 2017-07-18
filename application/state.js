@@ -49,10 +49,10 @@ class State {
             this.determineMetabolicEntitiesSets() &&
             this.determineEntitiesAttributes() &&
             this.determineCurrentEntitiesAttributes() &&
-            this.determineSetCardinalities() &&
+            this.determineSetsCardinalities() &&
             this.determineSetViewEntity() &&
             this.determineSetViewFilter() &&
-            this.determineSetSummary()
+            this.determineSetsSummary()
         ) {
             // Initialize instance of state interface.
             // Pass this instance a reference to the model.
@@ -100,15 +100,15 @@ class State {
         // cardinalities, then determine sets' cardinalities.
         if (
             this.determineCurrentEntitiesAttributes() &&
-            !this.determineSetCardinalities()
+            !this.determineSetsCardinalities()
         ) {
-            Action.determineSetCardinalities(this.model);
+            Action.determineSetsCardinalities(this.model);
         }
         // If model has sets' cardinalities but does not have entity
         // specification for set view then initialize entity specification for
         // set view.
         if (
-            this.determineSetCardinalities() &&
+            this.determineSetsCardinalities() &&
             !this.determineSetViewEntity()
         ) {
             Action.submitSetViewEntity("metabolite", this.model);
@@ -117,7 +117,7 @@ class State {
         // view but does not have filter specification for set view then
         // initialize filter specification for set view.
         if (
-            this.determineSetCardinalities() &&
+            this.determineSetsCardinalities() &&
             this.determineSetViewEntity() &&
             !this.determineSetViewFilter()
         ) {
@@ -127,12 +127,12 @@ class State {
         // filter specification, but does not have sets' summary, then prepare
         // sets' summary.
         if (
-            this.determineSetCardinalities() &&
+            this.determineSetsCardinalities() &&
             this.determineSetViewEntity() &&
             this.determineSetViewFilter() &&
-            !this.determineSetSummary()
+            !this.determineSetsSummary()
         ) {
-            Action.prepareSetSummary(this.model);
+            Action.prepareSetsSummary(this.model);
         }
     }
     // Methods to evaluate state of application.
@@ -173,8 +173,8 @@ class State {
      * Determines whether or not model has cardinalities of all sets by
      * entities, attributes, and values.
      */
-    determineSetCardinalities() {
-        return this.model.setCardinalities;
+    determineSetsCardinalities() {
+        return this.model.setsCardinalities;
     }
     /**
      * Determines whether or not model has a specification of entity for the set
@@ -194,7 +194,7 @@ class State {
      * Determines whether or not model has a summary of cardinalities of sets of
      * entities.
      */
-    determineSetSummary() {
-        return this.model.setSummary;
+    determineSetsSummary() {
+        return this.model.setsSummary;
     }
 }

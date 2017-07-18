@@ -187,7 +187,7 @@ class StateView {
         self.save.addEventListener("click", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Save current state of application.
-            Action.createPersistentState(self.model);
+            Action.saveState(self.model);
         });
         self.container.appendChild(self.save);
         //self.container.appendChild(self.document.createElement("br"));
@@ -222,10 +222,9 @@ class SetView {
         // Restore the table for summary of sets' cardinalitites.
         self.restoreSummaryTable(self);
 
-        console.log("entity selection");
-        console.log(self.model.setViewEntity);
-        console.log("filter selection");
-        console.log(self.model.setViewFilter);
+        console.log("new SetView");
+        console.log("entity: " + self.model.setViewEntity);
+        console.log("filter: " + self.model.setViewFilter);
     }
     /**
      * Initializes the container for the interface.
@@ -273,6 +272,8 @@ class SetView {
     }
     /**
      * Initializes the table to summarize sets' cardinalities.
+     * Creates new elements that do not exist and do not vary with data.
+     * Sets references to elements that already exist.
      * @param {Object} setView Instance of set view interface.
      */
     initializeSummaryTable(setView) {
@@ -283,7 +284,6 @@ class SetView {
         // Initialize table.
         // Set references to table, table's head, table's head value cell,
         // entity selectors, filter selector, and table's body.
-        // TODO: For updates to the table, I will still need references to key elements...
         if (!self.container.getElementsByTagName("table").item(0)) {
             // Interface's container does not include a table element.
             // Create table.
@@ -308,6 +308,7 @@ class SetView {
             self.createActivateEntitySelector("reaction", self);
             // Create and activate filter selector.
             self.createActivateFilterSelector(self);
+            // Create and activate reset button.
 
             // TODO: Still need reset button...
 
@@ -326,23 +327,15 @@ class SetView {
                 .tableHead.getElementsByTagName("tr").item(0);
             self.tableHeadRowCellValue = tableHeadRow
                 .getElementsByClassName("value").item(0);
-            var entitySelectors = self
-                .tableHeadRowCellValue.getElementsByClassName("entity");
-            self.metaboliteSelector = General.filterDocumentElements({
-                values: ["metabolite"],
-                attribute: "value",
-                elements: entitySelectors
-            })[0];
-            self.reactionSelector = General.filterDocumentElements({
-                values: ["reaction"],
-                attribute: "value",
-                elements: entitySelectors
-            })[0];
+            self.metaboliteSelector = self
+                .document.getElementById("set-view-entity-metabolite");
+            self.reactionSelector = self
+                .document.getElementById("set-view-entity-reaction");
             self.filterSelector = self
-                .tableHeadRowCellValue.getElementsByClassName("filter").item(0);
+                .document.getElementById("set-view-filter");
             // TODO: Still need reset button...
-            // TODO: Still need table body.
-
+            self.tableBody = self
+                .container.getElementsByTagName("tbody").item(0);
         }
     }
     /**
@@ -365,18 +358,14 @@ class SetView {
         self[entitySelector].setAttribute("value", entity);
         self[entitySelector].setAttribute("name", "entity");
         self[entitySelector].classList.add("entity");
-        if (entity === self.model.setViewEntity) {
-            self[entitySelector].setAttribute("checked", true);
-        } else {
-            self[entitySelector].setAttribute("checked", false);
-        }
         self[entitySelector].addEventListener("change", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Change current selection of entity in application's state.
-            var radios = self
-                .tableHeadValueCell.getElementsByClassName("entity");
-            var value = General.determineRadioGroupValue(radios);
-            Action.submitSetViewEntity(value, self.model);
+            //var radios = self
+            //    .tableHeadRowCellValue.getElementsByClassName("entity");
+            //var value = General.determineRadioGroupValue(radios);
+            //Action.submitSetViewEntity(value, self.model);
+            Action.changeSetViewEntity(self.model);
         });
         var entityLabel = self.document.createElement("label");
         self.tableHeadRowCellValue.appendChild(entityLabel);
@@ -399,16 +388,12 @@ class SetView {
         self.filterSelector.setAttribute("type", "checkbox");
         self.filterSelector.setAttribute("value", "filter");
         self.filterSelector.classList.add("filter");
-        if (self.model.setViewFilter) {
-            self.filterSelector.setAttribute("checked", true);
-        } else {
-            self.filterSelector.setAttribute("checked", false);
-        }
         self.filterSelector.addEventListener("change", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Change current selection of filter in application's state.
-            var value = self.filterSelector.checked;
-            Action.submitSetViewFilter(value, self.model);
+            //var value = self.filterSelector.checked;
+            //Action.submitSetViewFilter(value, self.model);
+            Action.changeSetViewFilter(self.model);
         });
         var filterLabel = self.document.createElement("label");
         self.tableHeadRowCellValue.appendChild(filterLabel);
@@ -424,40 +409,13 @@ class SetView {
         // in scope.
         var self = setView;
         // Update entity selector according to application's state.
-        // TODO: The idea is to make sure that I can access the selector elements within this function.
-        // TODO: I still like the idea of setting the "checked" attribute by the status in the app state.
-        console.log("restoreSummaryTable");
-        console.log("entity selector status in model");
-        console.log(self.model.setViewEntity);
-        console.log("entity selector in dom");
-        console.log(self.metaboliteSelector.value);
-        console.log(self.metaboliteSelector.checked);
-        //self
-        //    .metaboliteSelector
-        //    .setAttribute(
-        //        "checked", self.determineEntityMatch("metabolite", self)
-        //    );
-        //self.metaboliteSelector.setAttribute("checked", true);
-        //self
-        //    .reactionSelector
-        //    .setAttribute(
-        //        "checked", self.determineEntityMatch("reaction", self)
-        //    );
+        self.metaboliteSelector.checked = self
+            .determineEntityMatch("metabolite", self);
+        self.reactionSelector.checked = self
+            .determineEntityMatch("reaction", self);
         // Update filter selector according to application's state.
-        console.log("filter selector status in model");
-        console.log(self.model.setViewFilter);
-        console.log("filter selector in dom");
-        console.log(self.filterSelector.checked);
-
-        //self
-        //    .filterSelector
-        //    .setAttribute("checked", self.determineFilter(self));
-        //self
-        //    .filterSelector
-        //    .setAttribute("checked", false);
-
+        self.filterSelector.checked = self.determineFilter(self);
         // TODO: Create table elements for set cardinalities according to current set cardinalitites in application state...
-
 
     }
     /**
@@ -483,8 +441,5 @@ class SetView {
         var self = setView;
         return self.model.setViewFilter;
     }
-
-
-
 
 }
