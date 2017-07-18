@@ -18,7 +18,7 @@ class Model {
             "compartments", "genes", "operations", "processes",
             "reversibilities",
             "metabolites", "reactions",
-            "entitiesAttributes", "currentEntitiesAttributes",
+            "allEntitiesAttributes", "currentEntitiesAttributes",
             "setsCardinalities", "setsSummary",
             "setViewEntity", "setViewFilter", "setViewAttributeSearches",
             "setViewAttributeValueSelections",

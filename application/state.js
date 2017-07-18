@@ -18,7 +18,7 @@ class State {
         // Control representation of the state of the model.
         this.represent();
         // Control action on the state of the model.
-        this.act();
+        //this.act();
         // TODO: I need to go through the logic of what general state the app is in... Has a model been loaded yet?
         // TODO: Store representation-specific versions of data as attributes for the class.
         // TODO: Eventually probably organize some of the control-structure within another method that still assigns attributes to the class.
@@ -47,7 +47,7 @@ class State {
         // has sets' summary then create state interface, set interface, and entity interface.
         if (
             this.determineMetabolicEntitiesSets() &&
-            this.determineEntitiesAttributes() &&
+            this.determineAllEntitiesAttributes() &&
             this.determineCurrentEntitiesAttributes() &&
             this.determineSetsCardinalities() &&
             this.determineSetViewEntity() &&
@@ -81,7 +81,7 @@ class State {
         // attributes, then derive entities' attributes.
         if (
             this.determineMetabolicEntitiesSets() &&
-            !this.determineEntitiesAttributes()
+            !this.determineAllEntitiesAttributes()
         ) {
             Action.collectEntitiesAttributes(this.model);
         }
@@ -91,7 +91,7 @@ class State {
         // filters while maintaining ability to revert to original entities'
         // attributes.
         if (
-            this.determineEntitiesAttributes() &&
+            this.determineAllEntitiesAttributes() &&
             !this.determineCurrentEntitiesAttributes()
         ) {
             Action.copyEntitiesAttributes(this.model);
@@ -159,8 +159,8 @@ class State {
      * Determines whether or not model has information about attributes of all
      * entities.
      */
-    determineEntitiesAttributes() {
-        return this.model.entitiesAttributes;
+    determineAllEntitiesAttributes() {
+        return this.model.allEntitiesAttributes;
     }
     /**
      * Determines whether or not model has information about current attributes

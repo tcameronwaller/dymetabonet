@@ -7,14 +7,14 @@
 class Clean {
     // Master control of check and clean procedure.
     /**
-     * Checks information in the Recon 2.2 model of human metabolism from
-     * systems biology and cleans errors.
+     * Checks and cleans errors in information about metabolic entities and sets
+     * from the Recon 2.2 model of human metabolism from systems biology.
      * @param {Object} data Information about a metabolic model from systems
      * biology, conversion from SBML to JSON formats by COBRApy and libSBML.
      * @returns {Object} Information about a metabolic model from systems
      * biology.
      */
-    static checkCleanRecon2(data) {
+    static checkCleanMetabolicEntitiesSetsRecon2(data) {
         var compartments = Clean.checkCleanCompartments(data.compartments);
         var genes = Clean.checkCleanGenes(data.genes, data.reactions);
         var metabolites = Clean.checkCleanMetabolites(

@@ -6,27 +6,14 @@
  * of the model. These methods also call external methods as necessary.
  */
 class Action {
-    // TODO: I'm not sure how to handle simultaneous/consecutive events efficiently...
-    // TODO: If I handle all consecutive events in state, then that might not be specific enough to be efficient.
-    // TODO: It seems reasonable to handle those here in action...
-    // TODO: For example, if user changes entity selection then it's also necessary to re-pepare set cardinalities and set summary... preferrably without going through app loop every time...
-
-
-
-    // There are only so many possible actions in the application...
-    // Try to limit actions herein to those possible actions.
-    // I'm not sure that I like the idea of next-action-predicate in the app state handler...
-    // Handle all that stuff simultaneously here in the Actions.
-    // That way I have more access to information about what values are changing and hence which changes/updates are necessary.
-
-    // TODO: Change the way I handle actions and multiple, coordinate changes...
-
     // Methods herein intend to comprise discrete actions that impart changes to
     // the application's state.
     // Some actions necessitate changes to multiple aspects of the application
     // that coordinate together.
     // For efficiency, these actions impart these multiple changes
     // simultaneously.
+    // Knowledge of the event that triggered the action informs which changes to
+    // make to the application's state.
     //
     // To call the restore method of the model, it is necessary to pass the
     // method a reference to the current instance of the model.
@@ -105,19 +92,19 @@ class Action {
         General.loadPassObject({
             file: model.file,
             call: Action.checkCleanMetabolicEntitiesSets,
-            parameters: {}
+            parameters: {model: model}
         });
     }
     /**
      * Loads from file information about metabolic entities and sets and passes
-     * it to a procedure for extraction.
+     * it to a procedure for extraction and initialization.
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
-    static loadExtractMetabolicEntitiesSets(model) {
+    static loadExtractInitializeMetabolicEntitiesSets(model) {
         General.loadPassObject({
             file: model.file,
-            call: Action.extractMetabolicEntitiesSets,
+            call: Action.extractInitializeMetabolicEntitiesSets,
             parameters: {model: model}
         });
     }
@@ -167,9 +154,6 @@ class Action {
         var persistence = Action.createPersistentState(model);
         General.saveObject("state.json", persistence);
     }
-
-
-
     /**
      * Restores the application to a state from a persistent representation.
      * @param {Object} parameters Destructured object of parameters.
@@ -179,8 +163,13 @@ class Action {
      * application.
      */
     static restoreState({data, model} = {}) {
+        // Remove any current file selection from the application's state.
+        var newFile = {
+            file: null
+        };
+        var newData = Object.assign({}, data, newFile);
         Action.submitAttributes({
-            attributesValues: data,
+            attributesValues: newData,
             model: model
         });
     }
@@ -197,105 +186,93 @@ class Action {
             model: model
         });
     }
-
-
-
-
-
     /**
      * Checks and cleans information about metabolic entities and sets in a
      * raw model of metabolism.
      * Saves this information to a new file on client's system.
-     * @param {Object} parameters Destructured object of parameters.
-     * @param {Object} parameters.data Information about metabolic entities and
-     * sets.
-     */
-    static checkCleanMetabolicEntitiesSets({data} = {}) {
-        var cleanData = Clean.checkCleanRecon2(data);
-        General.saveObject("clean_data.json", cleanData);
-    }
-    /**
-     * Extracts information about metabolic entities and sets from a clean model
-     * of metabolism.
-     * Submits this information to the model of the application's state.
+     * Removes the current file selection from the application's state.
      * @param {Object} parameters Destructured object of parameters.
      * @param {Object} parameters.data Information about metabolic entities and
      * sets.
      * @param {Object} parameters.model Model of the comprehensive state of the
      * application.
      */
-    static extractMetabolicEntitiesSets({data, model} = {}) {
-        var data = Extraction.extractMetabolicEntitiesSetsRecon2(data);
-        Action.submitAttributes({
-            attributesValues: data,
-            model: model
-        });
-    }
-
-
-    /**
-     * Collects attributes of metabolic entities, metabolites and reactions.
-     * Submits this information to the model of the application's state.
-     * @param {Object} model Model of the comprehensive state of the
-     * application.
-     */
-    static collectEntitiesAttributes(model) {
-        var entitiesAttributes = Attribution
-            .collectEntitiesAttributes(model.metabolites, model.reactions);
-        Action.submitAttribute({
-            value: entitiesAttributes,
-            attribute: "entitiesAttributes",
-            model: model
-        });
+    static checkCleanMetabolicEntitiesSets({data, model} = {}) {
+        var cleanData = Clean.checkCleanMetabolicEntitiesSetsRecon2(data);
+        General.saveObject("clean_data.json", cleanData);
+        // Remove the current file selection from the application's state.
+        Action.removeAttribute("file", model);
     }
     /**
-     * Copies attributes of metabolic entities, metabolites and reactions.
-     * Submits this information to the model of the application's state.
-     * @param {Object} model Model of the comprehensive state of the
+     * Extracts information about metabolic entities and sets from a clean model
+     * of metabolism and uses this information to initialize the application.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Object} parameters.data Information about metabolic entities and
+     * sets.
+     * @param {Object} parameters.model Model of the comprehensive state of the
      * application.
      */
-    static copyEntitiesAttributes(model) {
-        var copyEntitiesAttributes = Attribution
-            .copyEntitiesAttributes(model.entitiesAttributes);
-        Action.submitAttribute({
-            value: copyEntitiesAttributes,
-            attribute: "currentEntitiesAttributes",
+    static extractInitializeMetabolicEntitiesSets({data, model} = {}) {
+        // Extract information about metabolic entities and sets.
+        var entitiesSets = Extraction.extractMetabolicEntitiesSetsRecon2(data);
+        // Initialize application from information about metabolic entities and
+        // sets.
+        Action.initializeMetabolicEntitiesSets({
+            entitiesSets: entitiesSets,
             model: model
         });
     }
     /**
-     * Determines cardinalities or populations of sets of metabolic entities
-     * with specific values of attributes.
-     * Submits this information to the model of the application's state.
-     * @param {Object} model Model of the comprehensive state of the
+     * Initializes application from information about metabolic entities and
+     * sets from a clean model of metabolism.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Object} parameters.entitiesSets Information about metabolic
+     * entities and sets.
+     * @param {Object} parameters.model Model of the comprehensive state of the
      * application.
      */
-    static determineSetsCardinalities(model) {
+    static initializeMetabolicEntitiesSets({entitiesSets, model} = {}) {
+        // Remove the current file selection from the application's state.
+        var file = null;
+        // Determine attributes of metabolic entities.
+        var allEntitiesAttributes = Attribution
+            .collectEntitiesAttributes(
+                entitiesSets.metabolites, entitiesSets.reactions
+            );
+        var currentEntitiesAttributes = Attribution
+            .copyEntitiesAttributes(allEntitiesAttributes);
+        // Specify entity option for set view.
+        var entity = "metabolite";
+        // Specify filter option for set view.
+        var filter = false;
+        // Determine cardinalities of sets of metabolic entities.
         var setsCardinalities = Cardinality
-            .determineSetsCardinalities(model.currentEntitiesAttributes);
-        Action.submitAttribute({
-            value: setsCardinalities,
-            attribute: "setsCardinalities",
+            .determineSetsCardinalities({
+                filter: filter,
+                currentEntitiesAttributes: currentEntitiesAttributes,
+                allEntitiesAttributes: allEntitiesAttributes
+            });
+        // Prepare summary of sets.
+        var setsSummary = Cardinality
+            .prepareSetsSummary(entity, setsCardinalities);
+        // Initialize filters against entities' attributes.
+        // TODO: I still need to do this...
+        // Compile values of attributes for application's state.
+        var data = {
+            file: file,
+            allEntitiesAttributes: allEntitiesAttributes,
+            currentEntitiesAttributes: currentEntitiesAttributes,
+            setViewEntity: entity,
+            setViewFilter: filter,
+            setsCardinalities: setsCardinalities,
+            setsSummary: setsSummary
+        };
+        var attributesValues = Object.assign({}, entitiesSets, data);
+        Action.submitAttributes({
+            attributesValues: attributesValues,
             model: model
         });
     }
-    /**
-     * Submits a new value for the set view's specification of entity to the
-     * model of the application's state.
-     * @param {string} value Value of current entity selection.
-     * @param {Object} model Model of the comprehensive state of the
-     * application.
-     */
-    static submitSetViewEntity(value, model) {
-        Action.submitAttribute({
-            value: value,
-            attribute: "setViewEntity",
-            model: model
-        });
-    }
-
-
-
     /**
      * Changes the set view's specification of entity.
      * Also prepares new sets' summary.
@@ -311,7 +288,7 @@ class Action {
         } else if (oldEntity === "reaction") {
             var newEntity = "metabolite";
         }
-        // Prepare new summary of sets.
+        // Prepare new sets' summary.
         var setsSummary = Cardinality
             .prepareSetsSummary(newEntity, model.setsCardinalities);
         // Submit new values of attributes to the model of the application's
@@ -345,7 +322,7 @@ class Action {
             .determineSetsCardinalities({
                 filter: newFilter,
                 currentEntitiesAttributes: model.currentEntitiesAttributes,
-                allEntitiesAttributes: model.entitiesAttributes
+                allEntitiesAttributes: model.allEntitiesAttributes
             });
         // Prepare new sets' summary.
         var setsSummary = Cardinality
@@ -362,39 +339,18 @@ class Action {
             model: model
         });
     }
-
-
     /**
-     * Prepares summary of sets according to cardinalities of sets for specific
-     * type of entity and filters.
-     * Submits this information to the model of the application's state.
+     * Restores sets' summary to its initial state.
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
-    static prepareSetsSummary(model) {
-        var setsSummary = Cardinality
-            .prepareSetsSummary(model.setViewEntity, model.setsCardinalities);
-        console.log("set summary");
-        console.log(setsSummary);
-        Action.submitAttribute({
-            value: setsSummary,
-            attribute: "setsSummary",
-            model: model
-        });
-    }
-    /**
-     * Submits a new value for the set view's specification of filter to the
-     * model of the application's state.
-     * @param {string} value Value of current filter selection.
-     * @param {Object} model Model of the comprehensive state of the
-     * application.
-     */
-    static submitSetViewFilter(value, model) {
-        Action.submitAttribute({
-            value: value,
-            attribute: "setViewFilter",
-            model: model
-        });
+    static restoreSetsSummary(model) {
+        // TODO: Use most of everything from initializeMetabolicEntitiesSets...
+
+        // TODO: Reset button should...
+        // TODO: reset default entity and filter
+        // TODO: reset currentEntitiesAttributes to copy of allEntitiesAttributes
+        // TODO: derive setsCardinalities and setsSummary
     }
 
 
@@ -428,5 +384,4 @@ class Action {
         // Pass attributes from assembly to model.
         //model.restore(newAttributes);
     }
-
 }

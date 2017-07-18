@@ -78,8 +78,6 @@ class SourceView {
                 // Element on which the event originated is event.currentTarget.
                 // Check and clean a raw model of metabolism.
                 Action.loadCheckMetabolicEntitiesSets(self.model);
-                // Remove the current file selection from the application state.
-                Action.removeAttribute("file", self.model);
             });
             self.container.appendChild(self.clean);
             //self.container.appendChild(self.document.createElement("br"));
@@ -90,10 +88,9 @@ class SourceView {
             self.extractor.addEventListener("click", function (event) {
                 // Element on which the event originated is event.currentTarget.
                 // Extract information about metabolic entities and sets from a
-                // clean model of metabolism.
-                Action.loadExtractMetabolicEntitiesSets(self.model);
-                // Remove the current file selection from the application state.
-                Action.removeAttribute("file", self.model);
+                // clean model of metabolism and use this information to
+                // initialize the application.
+                Action.loadExtractInitializeMetabolicEntitiesSets(self.model);
             });
             self.container.appendChild(self.extractor);
             //self.container.appendChild(self.document.createElement("br"));
@@ -105,8 +102,6 @@ class SourceView {
                 // Element on which the event originated is event.currentTarget.
                 // Restore state from persistent representation.
                 Action.loadRestoreState(self.model);
-                // Remove the current file selection from the application state.
-                Action.removeAttribute("file", self.model);
             });
             self.container.appendChild(self.restoration);
             //self.container.appendChild(self.document.createElement("br"));
@@ -173,23 +168,23 @@ class StateView {
         //
         // Create and activate button to restore application to initial state.
         self.restoration = self.document.createElement("button");
+        self.container.appendChild(self.restoration);
         self.restoration.textContent = "Restore";
         self.restoration.addEventListener("click", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Restore application to initial state.
             Action.initializeApplication(self.model);
         });
-        self.container.appendChild(self.restoration);
         self.container.appendChild(self.document.createElement("br"));
         // Create and activate button to save current state of application.
         self.save = self.document.createElement("button");
+        self.container.appendChild(self.save);
         self.save.textContent = "Save";
         self.save.addEventListener("click", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Save current state of application.
             Action.saveState(self.model);
         });
-        self.container.appendChild(self.save);
         //self.container.appendChild(self.document.createElement("br"));
     }
 }
@@ -277,6 +272,9 @@ class SetView {
      * @param {Object} setView Instance of set view interface.
      */
     initializeSummaryTable(setView) {
+        // As their actions do not change and they have access to the dynamic
+        // model, it is only necessary to define event handlers upon initiation
+        // of control elements.
         // Set reference to current instance of class to transfer across changes
         // in scope.
         var self = setView;
@@ -301,17 +299,13 @@ class SetView {
             self.tableHeadRowCellValue = self.document.createElement("th");
             tableHeadRow.appendChild(self.tableHeadRowCellValue);
             self.tableHeadRowCellValue.classList.add("value");
-            // TODO: Create entity selector, filter selector, and reset button...
-            // TODO: All of these control elements need listeners to drive actions to modify app state.
             // Create and activate entity selector.
             self.createActivateEntitySelector("metabolite", self);
             self.createActivateEntitySelector("reaction", self);
             // Create and activate filter selector.
             self.createActivateFilterSelector(self);
             // Create and activate reset button.
-
-            // TODO: Still need reset button...
-
+            self.createActivateReset(self);
             // Create table's body.
             self.tableBody = self.document.createElement("tbody");
             self.table.appendChild(self.tableBody);
@@ -333,7 +327,6 @@ class SetView {
                 .document.getElementById("set-view-entity-reaction");
             self.filterSelector = self
                 .document.getElementById("set-view-filter");
-            // TODO: Still need reset button...
             self.tableBody = self
                 .container.getElementsByTagName("tbody").item(0);
         }
@@ -380,7 +373,7 @@ class SetView {
         // Set reference to current instance of class to transfer across changes
         // in scope.
         var self = setView;
-        // Create filter selector.
+        // Create and activate filter selector.
         var identifier = "set-view-filter";
         self.filterSelector = self.document.createElement("input");
         self.tableHeadRowCellValue.appendChild(self.filterSelector);
@@ -399,6 +392,24 @@ class SetView {
         self.tableHeadRowCellValue.appendChild(filterLabel);
         filterLabel.setAttribute("for", identifier);
         filterLabel.textContent = "filter";
+    }
+    /**
+     * Creates and activates button to reset sets' summary for set view.
+     * @param {Object} setView Instance of set view interface.
+     */
+    createActivateReset(setView) {
+        // Set reference to current instance of class to transfer across changes
+        // in scope.
+        var self = setView;
+        // Create and activate button to restore application to initial state.
+        self.reset = self.document.createElement("button");
+        self.tableHeadRowCellValue.appendChild(self.reset);
+        self.reset.textContent = "reset";
+        self.reset.addEventListener("click", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // Restore sets' summary to initial state.
+            Action.restoreSetsSummary(self.model);
+        });
     }
     /**
      * Restores the table to summarize sets' cardinalities.
