@@ -353,6 +353,12 @@ class Action {
         // TODO: derive setsCardinalities and setsSummary
     }
 
+    // TODO: Implement representation of sets' summary in summary table.
+    // TODO: Implement direct selection of attribute values in summary table.
+    // TODO: Implement search-field selection in summary table.
+    // TODO: Implement collection of filters and filter operation.
+
+
 
 
 

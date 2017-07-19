@@ -218,8 +218,7 @@ class SetView {
         self.restoreSummaryTable(self);
 
         console.log("new SetView");
-        console.log("entity: " + self.model.setViewEntity);
-        console.log("filter: " + self.model.setViewFilter);
+        console.log(self.model.setsSummary);
     }
     /**
      * Initializes the container for the interface.
@@ -426,9 +425,26 @@ class SetView {
             .determineEntityMatch("reaction", self);
         // Update filter selector according to application's state.
         self.filterSelector.checked = self.determineFilter(self);
+
         // TODO: Create table elements for set cardinalities according to current set cardinalitites in application state...
+        // TODO: At first, just re-create the table every time... probably not too much of a problem, especially with D3.
+
+        // Create and activate data-dependent set's summary in summary table.
+        self.createActivateSummaryBody(self);
 
     }
+    /**
+     * Creates and activates body of summary table.
+     * @param {Object} setView Instance of set view interface.
+     */
+    createActivateSummaryBody(setView) {
+        // Set reference to current instance of class to transfer across changes
+        // in scope.
+        var self = setView;
+        // Select summary table's body.
+        var body = d3.select(self.tableBody);
+    }
+
     /**
      * Determines whether or not the application state has a current selection
      * of entity that matches a specific type of entity.
