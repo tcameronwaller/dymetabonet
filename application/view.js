@@ -649,6 +649,7 @@ class SetView {
         var self = setView;
 
         // TODO: Format bars according to their selection status in the model of app state.
+        // TODO: Use bar's attribute and value to look-up selection status in model.
 
 
         // Assign attributes to cells in value column.

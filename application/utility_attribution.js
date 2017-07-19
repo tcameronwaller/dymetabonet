@@ -205,4 +205,113 @@ class Attribution {
                 }, {});
         });
     }
+    /**
+     * Filters entities and their values of attributes.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Object<Array<string>>} parameters.filters Values of attributes to
+     * apply as filters.
+     * @param {Array<Object>} parameters.entitiesAttributes Attributes of all
+     * entities.
+     * @returns {Array<Object>} Entities and their values of attributes that
+     * pass filters.
+     */
+    static filterEntitiesAttributesValues({filters, entitiesAttributes} = {}) {
+        // Filter entities and their values of attributes by specific values of
+        // attributes.
+        // Combine criteria between different attributes by AND logic.
+        // Combine criteria between different values of the same attribute by OR
+        // logic.
+        // In addition to selecting which entities to preserve, the filtration
+        // procedure also selects which values of an attribute to preserve for
+        // those entities.
+        // Iterate on entities.
+        return entitiesAttributes
+            .reduce(function (entitiesCollection, entityRecord) {
+                // Determine whether or not the entity's record passes filters.
+                var passFilters = Attribution.determineEntityPassFilters({
+                    entityRecord: entityRecord,
+                    filters: filters
+                });
+                if (!passFilters) {
+                    // Entity's record does not pass filters.
+                    // Omit entity's record from the collection.
+                    return entitiesCollection;
+                } else {
+                    // Entity's record passes filters.
+                    // Collect entity's values of attributes that match filters.
+                    var newRecord = Attribution
+                        .collectAttributesValuesMatchFilters({
+                            entityRecord: entityRecord,
+                            filters: filters
+                        });
+                    // Include new record in the new attribute index.
+                    return [].concat(entitiesCollection, newRecord);
+                }
+            }, []);
+    }
+    /**
+     * Determines whether or not an entity passes filters by its values of
+     * attributes.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Object} parameters.entityRecord Record of a single
+     * entity's values of attributes.
+     * @param {Object<Array<string>>} parameters.filters Values of attributes to
+     * apply as filters.
+     * @returns {boolean} Whether or not the entity passes the filters.
+     */
+    static determineEntityPassFilters({entityRecord, filters} = {}) {
+        // Keep entity's record if it matches criteria for all attributes (AND
+        // logic).
+        return Object.keys(filters).every(function (attribute) {
+            // Keep entity's record if any of its values of the attribute match
+            // any of the value criteria for the attribute (OR logic).
+            return filters[attribute].some(function (valueFilter) {
+                return entityRecord[attribute].includes(valueFilter);
+            });
+        });
+    }
+    /**
+     * Collects values of attributes that match filters.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Array<Object>} parameters.entityRecord Record of a single
+     * entity's values of attributes.
+     * @param {Object<Array<string>>} parameters.filters Values of attributes to
+     * apply as filters.
+     * @returns {Object} Record of a single entity's values of attributes that
+     * match filters.
+     */
+    static collectAttributesValuesMatchFilters({entityRecord, filters} = {}) {
+        return Object
+            .keys(entityRecord)
+            .reduce(function (attributesCollection, attribute) {
+                // Determine if there is a filter for the attribute.
+                if (!filters.hasOwnProperty(attribute)) {
+                    // There is not a filter for the current attribute.
+                    // Copy the attribute along with its values and include in
+                    // the new record.
+                    var newAttributeRecord = {
+                        [attribute]: entityRecord[attribute]
+                    };
+                    // Copy existing values in the record and introduce new
+                    // value.
+                    return Object
+                        .assign({}, attributesCollection, newAttributeRecord);
+                } else {
+                    // There is a filter for the current attribute.
+                    // Include in the new record only those values of the
+                    // attribute that match the filter.
+                    var attributeValues = entityRecord[attribute]
+                        .filter(function (value) {
+                            return filters[attribute].includes(value);
+                        });
+                    var newAttributeRecord = {
+                        [attribute]: attributeValues
+                    };
+                    // Copy existing values in the record and introduce new
+                    // value.
+                    return Object
+                        .assign({}, attributesCollection, newAttributeRecord);
+                }
+            }, {});
+    }
 }

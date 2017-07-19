@@ -266,56 +266,6 @@ function assembleDefaultModel() {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Initializes the attribute interface.
- * @param {Array<Object<string>>} attributeIndex Index of attributes of
- * metabolites and reactions.
- * @param {Object} model Information about entities and relations in a metabolic
- * model.
- */
-function initializeAttributeInterface(attributeIndex, model) {
-    // This function executes upon initialization of the program after assembly
-    // or load of a metabolic model.
-    // Initialize attribute menu.
-    // Create attribute menu.
-    initializeAttributeMenu();
-    // Create attribute summary from attribute index.
-    var attributeSummary = createAttributeSummary(attributeIndex, model);
-    // Initiate control of attribute menu.
-    controlAttributeMenu({
-        entity: "metabolite",
-        filter: false,
-        originalAttributeSummary: attributeSummary,
-        currentAttributeIndex: attributeIndex,
-        originalAttributeIndex: attributeIndex,
-        model: model
-    });
-    // Activate reset button.
-    document
-        .getElementById("attribute-menu-reset")
-        .addEventListener("click", function (event) {
-            // Element on which the event originated is event.currentTarget.
-            // Execute operation.
-            // Set entity selector default.
-            var metaboliteEntitySelector = document
-                .getElementById("attribute-menu-entity-metabolite");
-            metaboliteEntitySelector.checked = true;
-            // Set filter selector default.
-            var filterSelector = document
-                .getElementById("attribute-menu-filter");
-            filterSelector.checked = false;
-            // Restore attribute menu with default selections.
-            controlAttributeMenu({
-                entity: "metabolite",
-                filter: false,
-                originalAttributeSummary: attributeSummary,
-                currentAttributeIndex: attributeIndex,
-                originalAttributeIndex: attributeIndex,
-                model: model
-            });
-        });
-}
-
-/**
  * Controls the process for selection of a value of an attribute in the
  * attribute menu.
  * @param {Object} parameters Destructured object of parameters.
@@ -381,70 +331,12 @@ function controlAttributeMenuSelection({
  * reactions that match filters.
  */
 function filterAttributeIndex(attributeFilters, attributeIndex) {
-    // Filter records in attribute index by values of attributes.
-    // Combine criteria between different attributes by AND logic.
-    // Combine criteria within the same attribute by OR logic.
-    // In addition to selecting which records to preserve in the attribute
-    // index, the filtration process also selects which values of an attribute
-    // to preserve in those records.
-    return attributeIndex
-        .reduce(function (filterAttributeIndex, record, recordIndex) {
-        // Keep record if it matches criteria for all attributes.
-        var filterMatch = Object
-            .keys(attributeFilters)
-            .every(function (attribute) {
-                // Keep record if any of its values of the attribute match any
-                // of the value criteria for the attribute.
-                return attributeFilters[attribute].some(function (valueFilter) {
-                    return record[attribute].includes(valueFilter);
-                });
-            });
-        if (!filterMatch) {
-            // Record does not match criteria for all attributes.
-            // Omit record from filter version of attribute index.
-            return filterAttributeIndex;
-        } else {
-            // Record matches filter criteria.
-            // Collect attribute values of the record that match filters.
-            var newRecord = Object
-                .keys(record)
-                .reduce(function (recordAttributes, attribute) {
-                    // Determine if there is a filter for the attribute.
-                    if (!attributeFilters.hasOwnProperty(attribute)) {
-                        // There is not a filter for the current attribute.
-                        // Copy the attribute along with its values and include
-                        // in the new record.
-                        var newAttributeRecord = {
-                            [attribute]: record[attribute]
-                        };
-                        // Copy existing values in the record and introduce new
-                        // value.
-                        return Object
-                            .assign({}, recordAttributes, newAttributeRecord);
-                    } else {
-                        // There is a filter for the current attribute.
-                        // Include in the new record only those values of the
-                        // attribute that match the filter.
-                        var attributeValues = record[attribute]
-                            .filter(function (value) {
-                                return attributeFilters[attribute]
-                                    .includes(value);
-                        });
-                        var newAttributeRecord = {
-                            [attribute]: attributeValues
-                        };
-                        // Copy existing values in the record and introduce new
-                        // value.
-                        return Object
-                            .assign({}, recordAttributes, newAttributeRecord);
-                    }
-                }, {});
-            // Include new record in the new attribute index.
-            return [].concat(filterAttributeIndex, newRecord);
-        }
-        // Only need to change the attributes of the record that are in the attributeFilters.
-    }, []);
 }
+
+
+
+
+
 
 /**
  * Extracts from the attribute summary the values of attributes to use to filter

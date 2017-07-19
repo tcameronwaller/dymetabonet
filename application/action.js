@@ -366,17 +366,41 @@ class Action {
     /**
      * Selects the value of an attribute in the sets' summary of the set view.
      * Submits new values to the model of the application's state.
-     * @param {Object} model Model of the comprehensive state of the
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {string} parameters.value Value of attribute in current selection.
+     * @param {string} parameters.attribute Attribute in current selection.
+     * @param {Object} parameters.model Model of the comprehensive state of the
      * application.
      */
-    static selectSetViewValue(model) {
+    static selectSetViewValue({value, attribute, model} = {}) {
         // TODO: Figure out how to manage selections of bars.
         // TODO: Selection of bar should...
         // TODO: 1) Include bar's attribute and value in collection of selections.
         // TODO: 2) Filter the entities' attributes by the selection.
         // TODO: 3) Determine sets' cardinalities.
         // TODO: 4) Prepare sets' summary.
+        // TODO: 5) Eliminate all selections for attribute search menus.
 
+        // I think that the collection of selections should be an array of objects...
+        // Objects indicate the attribute and value of the selection.
+        // At any rate, that seems pretty simple.
+        // Consider the filter operation first in deciding how to structure the collection of selections.
+        // Also consider the need to look-up attribute-value pairs to determine whether or not to highligh bars in the summary table.
+
+
+        // Determine entities and their values of attributes that pass filters
+        // from selections.
+        // Copy information about all entities' attributes.
+        var copyEntitiesAttributes = Attribution
+            .copyEntitiesAttributes(model.allEntitiesAttributes);
+        // Filter the entities' attributes.
+        // Always filter against all entities' attributes in order to
+        // accommodate any changes to selections of filters.
+        var currentEntitiesAttributes = Attribution
+            .filterEntitiesAttributesValues({
+                filters: filters,
+                entitiesAttributes: copyEntitiesAttributes
+            });
     }
 
 
