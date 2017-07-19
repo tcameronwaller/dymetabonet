@@ -56,15 +56,6 @@ h3 {
     width: 97vw;
 }
 
-#header {
-    background-color: rgba(200, 200, 200, 1);
-    color: rgba(225, 225, 225, 1);
-    display: block;
-    font-family: sans-serif;
-    height: 0.5cm;
-    width: 100%;
-}
-
 #interface {
     display: block;
     height: 95%;
@@ -87,14 +78,24 @@ h3 {
     display: none;
 }
 
-/** Old */
+/******************************************************************************/
+/* Top View */
+/******************************************************************************/
 
-#model {
+#top {
     display: flex;
     width: 100%;
 }
 
-#source {
+/******************************************************************************/
+/* State View */
+/******************************************************************************/
+
+#state button {
+    width: 2cm;
+}
+
+#state {
     background-color: rgba(255, 255, 255, 1);
     /*display: inline;*/
     /*float: left;*/
@@ -102,40 +103,20 @@ h3 {
     height: 100%;
 }
 
-#source .tab {
-    display: inline;
-    float: left;
-    height: 100%;
-}
-
-#source .panel {
-    display: inline;
-    float: right;
-    height: 100%;
-}
-
 /******************************************************************************/
-/* Attribute View */
+/* Set View */
 /******************************************************************************/
 
-#attribute {
+#set {
     /*display: inline;*/
     /*float: left;*/
+    background-color: rgba(255, 255, 255, 1);
     flex: 1;
     font-family: sans-serif;
     /*overflow: auto;*/
 }
 
-#attribute {
-    background-color: rgba(255, 255, 255, 1);
-}
-
-#attribute-menu {
-    height: 100%;
-    width: 100%;
-}
-
-#attribute-menu table {
+#set table {
     border-collapse: collapse;
     border-style: hidden;
     width: 100%;
@@ -143,31 +124,31 @@ h3 {
     text-align: left;
 }
 
-#attribute-menu table thead {
+#set table thead {
     background-color: rgba(50, 50, 50, 1);
     color: rgba(255, 255, 255, 1);
     font-size: medium;
     font-weight: bold;
 }
 
-#attribute-menu table thead tr {
+#set table thead tr {
     height: 1cm;
     vertical-align: middle;
 }
 
-#attribute-menu table thead th {
+#set table thead th {
     border-color: rgba(200, 200, 200, 1);
     border-style: solid;
     border-width: 1mm;
     padding: 1mm;
 }
 
-#attribute-menu table tbody tr {
+#set table tbody tr {
     height: 1cm;
     vertical-align: middle;
 }
 
-#attribute-menu table tbody td {
+#set table tbody td {
     border-color: rgba(200, 200, 200, 1);
     border-style: solid;
     border-width: 1mm;
@@ -177,7 +158,7 @@ h3 {
     white-space: nowrap;
 }
 
-#attribute-menu table tbody td.attribute {
+#set table tbody td.attribute {
     background-color: rgba(50, 50, 50, 1);
     color: rgba(255, 255, 255, 1);
     font-size: medium;
@@ -185,58 +166,45 @@ h3 {
     width: 3cm;
 }
 
-#attribute-menu table tbody td.value {
+#set table tbody td.value {
     background-color: rgba(255, 255, 255, 1);
 }
 
-#attribute-menu table tbody td.value svg {
+#set table tbody td.value svg {
     height: 1cm;
     width: 100%;
 }
 
-#attribute-menu table tbody td.value .bar {
+#set table tbody td.value .bar {
     /*fill: rgba(200, 20, 20, 1);*/
     height: 1cm;
 }
 
-#attribute-menu table tbody td.value .bar.normal:nth-child(odd) {
+#set table tbody td.value .bar.normal:nth-child(odd) {
     fill: rgba(0, 255, 100, 1);
 }
 
-#attribute-menu table tbody td.value .bar.normal:nth-child(even) {
+#set table tbody td.value .bar.normal:nth-child(even) {
     fill: rgba(0, 100, 255, 1);
 }
 
-#attribute-menu table tbody td.value .bar.emphasis {
+#set table tbody td.value .bar.emphasis {
     fill: rgba(255, 150, 0, 1);
 }
 
 /******************************************************************************/
-/* Relation View */
+/* Bottom View */
 /******************************************************************************/
 
-#relation {
+#bottom {
     background-color: rgba(225, 225, 225, 1);
     display: flex;
     height: 70%;
     width: 100%;
 }
 
-#set {
-    /*display: inline;*/
-    /*float: left;*/
-    flex-basis: content;
-    width: 25%;
-}
-
-#set-graph {
-    height: 100%;
-    width: 100%;
-}
-
-
 /******************************************************************************/
-/* Relation View */
+/* Entity View */
 /******************************************************************************/
 
 #entity {

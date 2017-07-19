@@ -234,11 +234,16 @@ class Action {
     static initializeMetabolicEntitiesSets({entitiesSets, model} = {}) {
         // Remove the current file selection from the application's state.
         var file = null;
-        // Determine attributes of metabolic entities.
+        // Determine all attributes of all metabolic entities.
         var allEntitiesAttributes = Attribution
             .collectEntitiesAttributes(
                 entitiesSets.metabolites, entitiesSets.reactions
             );
+        // Specify selections of attributes and values for set view.
+        var setViewValuesSelections = [];
+        // Determine attributes of metabolic entities that pass current filters.
+        // For initialization, it is sufficient to copy the attributes of
+        // metabolic entities.
         var currentEntitiesAttributes = Attribution
             .copyEntitiesAttributes(allEntitiesAttributes);
         // Specify entity option for set view.
@@ -261,6 +266,7 @@ class Action {
         var data = {
             file: file,
             allEntitiesAttributes: allEntitiesAttributes,
+            setViewValuesSelections: setViewValuesSelections,
             currentEntitiesAttributes: currentEntitiesAttributes,
             setViewEntity: entity,
             setViewFilter: filter,
@@ -353,10 +359,25 @@ class Action {
         // TODO: derive setsCardinalities and setsSummary
     }
 
-    // TODO: Implement representation of sets' summary in summary table.
     // TODO: Implement direct selection of attribute values in summary table.
     // TODO: Implement search-field selection in summary table.
     // TODO: Implement collection of filters and filter operation.
+
+    /**
+     * Selects the value of an attribute in the sets' summary of the set view.
+     * Submits new values to the model of the application's state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static selectSetViewValue(model) {
+        // TODO: Figure out how to manage selections of bars.
+        // TODO: Selection of bar should...
+        // TODO: 1) Include bar's attribute and value in collection of selections.
+        // TODO: 2) Filter the entities' attributes by the selection.
+        // TODO: 3) Determine sets' cardinalities.
+        // TODO: 4) Prepare sets' summary.
+
+    }
 
 
 

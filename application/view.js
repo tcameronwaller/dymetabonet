@@ -431,19 +431,333 @@ class SetView {
 
         // Create and activate data-dependent set's summary in summary table.
         self.createActivateSummaryBody(self);
-
     }
     /**
      * Creates and activates body of summary table.
      * @param {Object} setView Instance of set view interface.
      */
     createActivateSummaryBody(setView) {
+
+        // TODO: Attribute Search Menu
+        // TODO: Fix width of attribute headers so they don't change when attribute search menus appear.
+        // TODO: Handle text overflow of options in search menu.
+        // TODO: Handle scrolling through options in search menu.
+        // TODO: Include some indicator of selection status in options in search menu.
+
         // Set reference to current instance of class to transfer across changes
         // in scope.
         var self = setView;
         // Select summary table's body.
         var body = d3.select(self.tableBody);
+        // Append rows to table with association to data.
+        var dataRows = body.selectAll("tr").data(self.model.setsSummary);
+        dataRows.exit().remove();
+        var newRows = dataRows.enter().append("tr");
+        var rows = newRows.merge(dataRows);
+        // Append cells to table with association to data.
+        var dataCells = rows.selectAll("td").data(function (element, index) {
+            // Organize data for table cells in each row.
+            return [].concat(
+                {
+                    type: "attribute",
+                    attribute: element.attribute,
+                    values: element.values
+                },
+                {
+                    type: "value",
+                    attribute: element.attribute,
+                    values: element.values
+                }
+            );
+        });
+        dataCells.exit().remove();
+        var newCells = dataCells.enter().append("td");
+        var cells = newCells.merge(dataCells);
+
+        // Cells for data's attributes.
+        // Select cells for data's attributes.
+        self.tableBodyCellsAttributes = cells.filter(function (data, index) {
+            return data.type === "attribute";
+        });
+        self.createActivateSummaryBodyCellsAttributes(self);
+
+        // Cells for data's values.
+        // Select cells for data's values.
+        self.tableBodyCellsValues = cells.filter(function (data, index) {
+            return data.type === "value";
+        });
+        self.createActivateSummaryBodyCellsValues(self);
     }
+    /**
+     * Creates and activates cells for data's attributes in body of summary
+     * table.
+     * @param {Object} setView Instance of set view interface.
+     */
+    createActivateSummaryBodyCellsAttributes(setView) {
+        // Set reference to current instance of class to transfer across changes
+        // in scope.
+        var self = setView;
+
+        // Assign attributes to cells for attributes.
+        self.tableBodyCellsAttributes
+            .attr("id", function (data, index) {
+                return "set-view-attribute-" + data.attribute;
+            })
+            .classed("attribute", true);
+
+        // TODO: I should not do this...
+        // TODO: Instead, I want to create search menus for anything (one at a time) with a selection flag in the model of app's state.
+        // Remove search menus from any previous user interaction.
+        //self.tableBodyCellsAttributes.selectAll(".search").remove();
+
+        // Append label containers to cells for attributes.
+        // These label containers need access to the same data as their parent
+        // cells without any transformation.
+        // Append label containers to the enter selection to avoid replication
+        // of these containers upon restorations to the table.
+        var dataLabels = self.tableBodyCellsAttributes
+            .selectAll("div").data(function (element, index) {
+                return [element];
+            });
+        dataLabels.exit().remove();
+        var newLabels = dataLabels.enter().append("div");
+        self.tableBodyCellsAttributesLabels = newLabels.merge(dataLabels);
+        // Append text content to labels.
+        self.tableBodyCellsAttributesLabels.text(function (data) {
+            return data.attribute;
+        });
+        // Activate cells.
+        //self.activateSummaryBodyCellsAttributes(self);
+    }
+    /**
+     * Activates cells for data's attributes in body of summary
+     * table.
+     * @param {Object} setView Instance of set view interface.
+     */
+    activateSummaryBodyCellsAttributes(setView) {
+        // Set reference to current instance of class to transfer across changes
+        // in scope.
+        var self = setView;
+
+        // TODO: If the search fields change the width of the attribute menu cells, it will be necessary to redraw the menu altogether...
+        // TODO: Maybe fix the width of the cells?
+        // TODO: How to handle text overflow in the options for the search field?
+        // Remove any existing event listeners and handlers from cells.
+        self.tableBodyCellsAttributesLabels
+            .on("click", null);
+        // Assign event listeners and handlers to cells.
+        self.tableBodyCellsAttributesLabels
+            .on("click", function (data, index, nodes) {
+                // Restoration of attribute menu removes search menus for attribute
+                // values from any previous user interaction.
+                // Also, after creation of the search menu, subsequent selection of
+                // the attribute head removes it.
+                // There is not a risk of replication of the search menu.
+                // It is unnecessary to use D3's selectAll or data methods or enter
+                // and exit selections to append and remove elements of the search
+                // menu.
+                // D3 append method propagates data.
+                // Access data bound to selection by selection.data().
+                // Select the attribute cell.
+                var attributeCell = d3.select(nodes[index].parentElement);
+                var attributeSearch = attributeCell.select(".search");
+                // Determine whether or not the attribute head already has a search
+                // menu.
+                if (attributeSearch.empty()) {
+                    // Attribute head does not have a search menu.
+                    // Create and activate a search field.
+                    // Append a search menu to the attribute cell.
+                    var attributeSearch = attributeCell.append("div");
+                    attributeSearch.classed("search", true);
+                    // Append a data list to the search menu.
+                    var attributeValueList = attributeSearch.append("datalist");
+                    attributeValueList
+                        .attr("id", function (data, index) {
+                            return "attribute-" + data.attribute + "-values";
+                        });
+                    // Append options to the data list.
+                    var attributeValues = attributeValueList
+                        .selectAll("option")
+                        .data(function (element, index) {
+                            return element.values;
+                        });
+                    attributeValues.exit().remove();
+                    var newAttributeValues = attributeValues
+                        .enter()
+                        .append("option");
+                    attributeValues = newAttributeValues
+                        .merge(attributeValues);
+                    attributeValues.attr("value", function (data, index) {
+                        return data.name;
+                    });
+                    // Append search text field to the search menu.
+                    var attributeSearchField = attributeSearch.append("input");
+                    attributeSearchField
+                        .attr("autocomplete", "off")
+                        .attr("id", function (data, index) {
+                            return "attribute-" + data.attribute + "-search";
+                        })
+                        .attr("list", function (data, index) {
+                            return "attribute-" + data.attribute + "-values";
+                        })
+                        .attr("type", "search");
+                    // Assign event listeners and handlers to search menu.
+                    // Option elements from datalist element do not report events.
+                    // Respond to event on input search text field and then find
+                    // relevant information from the options in the datalist.
+                    attributeSearchField
+                        .on("change", function (data, index, nodes) {
+                            // TODO: Use the value of the input field and compare against the list options.
+                            // TODO: Only perform selection event if the value of the field matches an option from the datalist.
+                            // TODO: http://stackoverflow.com/questions/30022728/perform-action-when-clicking-html5-datalist-option
+                            // Assume that each attribute value has a unique name.
+                            var selection = nodes[index].value;
+                            var attributeValues = d3
+                                .select(nodes[index].list)
+                                .selectAll("option");
+                            var attributeValue = attributeValues
+                                .filter(function (data, index) {
+                                    return data.name === selection;
+                                });
+                            if (!attributeValue.empty()) {
+                                controlAttributeMenuSelection({
+                                    value: attributeValue.data()[0].identifier,
+                                    attribute: attributeValue.data()[0].attribute,
+                                    entity: entity,
+                                    filter: filter,
+                                    originalAttributeSummary:
+                                    originalAttributeSummary,
+                                    originalAttributeIndex: originalAttributeIndex,
+                                    model: model
+                                });
+                            }
+                        });
+                } else {
+                    // Attribute head has a search menu.
+                    // Remove the search menu.
+                    attributeSearch.remove();
+                }
+            });
+    }
+    /**
+     * Creates and activates cells for data's values in body of summary table.
+     * @param {Object} setView Instance of set view interface.
+     */
+    createActivateSummaryBodyCellsValues(setView) {
+        // Set reference to current instance of class to transfer across changes
+        // in scope.
+        var self = setView;
+
+        // TODO: Format bars according to their selection status in the model of app state.
+
+
+        // Assign attributes to cells in value column.
+        self.tableBodyCellsValues.classed("value", true);
+        // Append graphical containers to cells for values.
+        // The graphical containers need access to the same data as their parent
+        // cells without any transformation.
+        // Append graphical containers to the enter selection to avoid replication
+        // of these containers upon restorations to the table.
+        var dataValueCellGraphs = self.tableBodyCellsValues
+            .selectAll("svg")
+            .data(function (element, index) {
+                return [element];
+            });
+        dataValueCellGraphs.exit().remove();
+        var newValueCellGraphs = dataValueCellGraphs.enter().append("svg");
+        var valueCellGraphs = newValueCellGraphs.merge(dataValueCellGraphs);
+        valueCellGraphs.classed("graph", true);
+        // Determine the width of graphical containers.
+        var graphWidth = parseFloat(
+            window.getComputedStyle(
+                self.tableBody.getElementsByClassName("graph").item(0)
+            ).width.replace("px", "")
+        );
+        // Append rectangles to graphical containers in cells for values.
+        var dataValueCellBars = valueCellGraphs
+            .selectAll("rect")
+            .data(function (element, index) {
+                // Organize data for rectangles.
+                return element.values;
+            });
+        dataValueCellBars.exit().remove();
+        var newValueCellBars = dataValueCellBars.enter().append("rect");
+        var valueCellBars = newValueCellBars.merge(dataValueCellBars);
+        // TODO: Translate references to bar dimensions...
+        // Assign attributes to rectangles.
+        valueCellBars
+            .attr("id", function (data, index) {
+                return "set-view-attribute-" +
+                    data.attribute +
+                    "-value-" +
+                    data.identifier;
+            })
+            .classed("bar", true)
+            .classed(
+                "normal",
+                function (data, index) {
+                    return !data.selection;
+                }
+            )
+            .classed(
+                "emphasis",
+                function (data, index) {
+                    return data.selection;
+                }
+            )
+            .attr("title", function (data, index) {
+                return data.value;
+            });
+        // Assign position and dimension to rectangles.
+        valueCellBars
+            .attr("x", function (data, index) {
+                // Determine scale according to attribute total.
+                var scale = d3
+                    .scaleLinear()
+                    .domain([0, data.total])
+                    .range([0, graphWidth]);
+                return scale(data.base);
+            })
+            .attr("width", function (data, index) {
+                // Determine scale according to attribute total.
+                var scale = d3
+                    .scaleLinear()
+                    .domain([0, data.total])
+                    .range([0, graphWidth]);
+                return scale(data.count);
+            });
+
+        //activateSummaryBodyCellsValues(self);
+    }
+    /**
+     * Activates cells for data's values in body of summary table.
+     * @param {Object} setView Instance of set view interface.
+     */
+    activateSummaryBodyCellsValues(setView) {
+        // Set reference to current instance of class to transfer across changes
+        // in scope.
+        var self = setView;
+
+
+        // Remove any existing event listeners and handlers from bars.
+        valueCellBars
+            .on("click", null);
+        // Assign event listeners and handlers to bars.
+        valueCellBars
+            .on("click", function (data, index, nodes) {
+                controlAttributeMenuSelection({
+                    value: data.identifier,
+                    attribute: data.attribute,
+                    entity: entity,
+                    filter: filter,
+                    originalAttributeSummary: originalAttributeSummary,
+                    originalAttributeIndex: originalAttributeIndex,
+                    model: model
+                });
+            });
+    }
+
+
 
     /**
      * Determines whether or not the application state has a current selection
