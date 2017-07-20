@@ -739,10 +739,16 @@ class SetView {
         // in scope.
         var self = setView;
 
-
+        // TODO: I don't think it's necessary to remove old event handlers...
         // Remove any existing event listeners and handlers from bars.
         valueCellBars
             .on("click", null);
+
+        // TODO: On click call the action for selectSetViewValue.
+        // TODO: Pass this function the attribute and value of the current bar.
+
+        // TODO: After activating bars, format bars according to their selection status.
+
         // Assign event listeners and handlers to bars.
         valueCellBars
             .on("click", function (data, index, nodes) {

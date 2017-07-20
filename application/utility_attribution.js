@@ -206,16 +206,54 @@ class Attribution {
         });
     }
     /**
+     * Records new selection in collection of selections of attributes and
+     * values for filters.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {string} parameters.value Value of attribute in current selection.
+     * @param {string} parameters.attribute Attribute in current selection.
+     * @param {Array<Object<string>>} parameters.selections Values of attributes
+     * from selections.
+     */
+    static recordFilterSelection({value, attribute, selections} = {}) {
+        // Determine whether or not the collection already includes a selection
+        // for the attribute and value.
+        var match = selections.find(function (selection) {
+            return (
+                selection.attribute === attribute && selection.value === value
+            );
+        });
+        if (match) {
+            // The collection already includes a selection for the attribute and
+            // value.
+            // Remove the selection from the collection.
+            return selections.filter(function (selection) {
+                return !(
+                    selection.attribute === attribute &&
+                    selection.value === value
+                );
+            });
+        } else {
+            // The collection does not already include a selection for the
+            // attribute and value.
+            // Include the selection in the collection.
+            var newSelection = {
+                attribute: attribute,
+                value: value
+            };
+            return [].concat(selections, newSelection);
+        }
+    }
+    /**
      * Filters entities and their values of attributes.
      * @param {Object} parameters Destructured object of parameters.
-     * @param {Object<Array<string>>} parameters.filters Values of attributes to
-     * apply as filters.
+     * @param {Object<Array<string>>} parameters.selections Values of attributes
+     * to apply as filters.
      * @param {Array<Object>} parameters.entitiesAttributes Attributes of all
      * entities.
      * @returns {Array<Object>} Entities and their values of attributes that
      * pass filters.
      */
-    static filterEntitiesAttributesValues({filters, entitiesAttributes} = {}) {
+    static filterEntitiesAttributesValues({selections, entitiesAttributes} = {}) {
         // Filter entities and their values of attributes by specific values of
         // attributes.
         // Combine criteria between different attributes by AND logic.
@@ -224,6 +262,8 @@ class Attribution {
         // In addition to selecting which entities to preserve, the filtration
         // procedure also selects which values of an attribute to preserve for
         // those entities.
+        // Determine filters from selections.
+        var filters = Attribution.translateSelectionsFilters(selections);
         // Iterate on entities.
         return entitiesAttributes
             .reduce(function (entitiesCollection, entityRecord) {
@@ -248,6 +288,44 @@ class Attribution {
                     return [].concat(entitiesCollection, newRecord);
                 }
             }, []);
+    }
+    /**
+     * Translates selections of attributes and values to filters of values of
+     * attributes.
+     * @param {Array<Object<string>>} selections Values of attributes from
+     * selections.
+     * @returns {Object<Array<string>>} Values of attributes to apply as
+     * filters.
+     */
+    static translateSelectionsFilters(selections) {
+        return selections.reduce(function (collection, selection) {
+            // Determine whether or not the collection already includes a filter
+            // for the selection's attribute.
+            if (!collection.hasOwnProperty(selection.attribute)) {
+                // The collection does not already include a filter for the
+                // attribute.
+                // Introduce a new record for a filter for the selection's
+                // attribute and value.
+                var newRecord = {
+                    [selection.attribute]: [selection.value]
+                };
+                // Copy existing records in the collection and introduce new
+                // record.
+                return Object.assign({}, collection, newRecord);
+            } else {
+                // The collection already includes a filter for the attribute.
+                // Introduce the new value to the collection.
+                // Assume that there are not any redundant selections.
+                var newValues = []
+                    .concat(collection.attribute, selection.value);
+                var newRecord = {
+                    [selection.attribute]: newValues
+                };
+                // Copy existing records in the collection and introduce new
+                // record.
+                return Object.assign({}, collection, newRecord);
+            }
+        }, {});
     }
     /**
      * Determines whether or not an entity passes filters by its values of

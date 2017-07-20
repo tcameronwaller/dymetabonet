@@ -321,21 +321,6 @@ function controlAttributeMenuSelection({
     });
 }
 
-/**
- * Filters the records in the attribute index.
- * @param {Object<Array<string>>} attributeFilters Values of attributes to apply
- * as filters to the attribute index.
- * @param {Array<Object<string>>} attributeIndex Index of attributes of
- * metabolites and reactions.
- * @returns {Array<Object<string>>} Index of attributes of metabolites and
- * reactions that match filters.
- */
-function filterAttributeIndex(attributeFilters, attributeIndex) {
-}
-
-
-
-
 
 
 /**

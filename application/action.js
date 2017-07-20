@@ -239,7 +239,12 @@ class Action {
             .collectEntitiesAttributes(
                 entitiesSets.metabolites, entitiesSets.reactions
             );
-        // Specify selections of attributes and values for set view.
+        // Specify selections of attributes for set view.
+        // These selections determine which search menus to create in set view.
+        var setViewAttributesSelections = [];
+        // Specify selections of values of attributes for set view.
+        // These selections determine which attributes and values define filters
+        // against entities' attributes.
         var setViewValuesSelections = [];
         // Determine attributes of metabolic entities that pass current filters.
         // For initialization, it is sufficient to copy the attributes of
@@ -260,12 +265,11 @@ class Action {
         // Prepare summary of sets.
         var setsSummary = Cardinality
             .prepareSetsSummary(entity, setsCardinalities);
-        // Initialize filters against entities' attributes.
-        // TODO: I still need to do this...
         // Compile values of attributes for application's state.
         var data = {
             file: file,
             allEntitiesAttributes: allEntitiesAttributes,
+            setViewAttributesSelections: setViewAttributesSelections,
             setViewValuesSelections: setViewValuesSelections,
             currentEntitiesAttributes: currentEntitiesAttributes,
             setViewEntity: entity,
@@ -358,11 +362,6 @@ class Action {
         // TODO: reset currentEntitiesAttributes to copy of allEntitiesAttributes
         // TODO: derive setsCardinalities and setsSummary
     }
-
-    // TODO: Implement direct selection of attribute values in summary table.
-    // TODO: Implement search-field selection in summary table.
-    // TODO: Implement collection of filters and filter operation.
-
     /**
      * Selects the value of an attribute in the sets' summary of the set view.
      * Submits new values to the model of the application's state.
@@ -373,21 +372,18 @@ class Action {
      * application.
      */
     static selectSetViewValue({value, attribute, model} = {}) {
-        // TODO: Figure out how to manage selections of bars.
-        // TODO: Selection of bar should...
-        // TODO: 1) Include bar's attribute and value in collection of selections.
-        // TODO: 2) Filter the entities' attributes by the selection.
-        // TODO: 3) Determine sets' cardinalities.
-        // TODO: 4) Prepare sets' summary.
-        // TODO: 5) Eliminate all selections for attribute search menus.
-
-        // I think that the collection of selections should be an array of objects...
-        // Objects indicate the attribute and value of the selection.
-        // At any rate, that seems pretty simple.
-        // Consider the filter operation first in deciding how to structure the collection of selections.
-        // Also consider the need to look-up attribute-value pairs to determine whether or not to highligh bars in the summary table.
-
-
+        // Remove any selections of attributes for set view.
+        // These selections determine which search menus to create in set view.
+        var setViewAttributesSelections = [];
+        // Record current selection in collection of selections of attributes
+        // and values for set view.
+        // These selections determine which attributes and values define filters
+        // against entities' attributes.
+        var setViewValuesSelections = Attribution.recordFilterSelection({
+            value: value,
+            attribute: attribute,
+            selections: model.setViewValuesSelections
+        });
         // Determine entities and their values of attributes that pass filters
         // from selections.
         // Copy information about all entities' attributes.
@@ -398,13 +394,37 @@ class Action {
         // accommodate any changes to selections of filters.
         var currentEntitiesAttributes = Attribution
             .filterEntitiesAttributesValues({
-                filters: filters,
+                selections: model.setViewValuesSelections,
                 entitiesAttributes: copyEntitiesAttributes
             });
+        // Determine new sets' cardinalities.
+        var setsCardinalities = Cardinality
+            .determineSetsCardinalities({
+                filter: model.setViewFilter,
+                currentEntitiesAttributes: currentEntitiesAttributes,
+                allEntitiesAttributes: model.allEntitiesAttributes
+            });
+        // Prepare new sets' summary.
+        var setsSummary = Cardinality
+            .prepareSetsSummary(model.setViewEntity, setsCardinalities);
+        // Submit new values of attributes to the model of the application's
+        // state.
+        var attributesValues = {
+            setViewAttributesSelections: setViewAttributesSelections,
+            setViewValuesSelections: setViewValuesSelections,
+            currentEntitiesAttributes: currentEntitiesAttributes,
+            setsCardinalities: setsCardinalities,
+            setsSummary: setsSummary
+        };
+        Action.submitAttributes({
+            attributesValues: attributesValues,
+            model: model
+        });
     }
 
-
-
+    // TODO: Implement direct selection of attribute values in summary table.
+    // TODO: Implement search-field selection in summary table.
+    // TODO: Implement collection of filters and filter operation.
 
 
     // TODO: Create separate data structure to store user selections for filters.
