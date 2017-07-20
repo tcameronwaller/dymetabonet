@@ -218,6 +218,8 @@ class SetView {
         self.restoreSummaryTable(self);
 
         console.log("new SetView");
+        console.log(self.model.setViewValuesSelections);
+        console.log(self.model.currentEntitiesAttributes);
         console.log(self.model.setsSummary);
     }
     /**
@@ -683,10 +685,10 @@ class SetView {
             });
         dataValueCellBars.exit().remove();
         var newValueCellBars = dataValueCellBars.enter().append("rect");
-        var valueCellBars = newValueCellBars.merge(dataValueCellBars);
-        // TODO: Translate references to bar dimensions...
+        self.tableBodyCellsValuesGraphBars = newValueCellBars
+            .merge(dataValueCellBars);
         // Assign attributes to rectangles.
-        valueCellBars
+        self.tableBodyCellsValuesGraphBars
             .attr("id", function (data, index) {
                 return "set-view-attribute-" +
                     data.attribute +
@@ -694,23 +696,27 @@ class SetView {
                     data.identifier;
             })
             .classed("bar", true)
-            .classed(
-                "normal",
-                function (data, index) {
-                    return !data.selection;
-                }
-            )
-            .classed(
-                "emphasis",
-                function (data, index) {
-                    return data.selection;
-                }
-            )
+            .classed("normal", function (data, index) {
+                var match = self.determineValueAttributeMatchSelections({
+                    value: data.value,
+                    attribute: data.attribute,
+                    setView: self
+                });
+                return !match;
+            })
+            .classed("emphasis", function (data, index) {
+                var match = self.determineValueAttributeMatchSelections({
+                    value: data.value,
+                    attribute: data.attribute,
+                    setView: self
+                });
+                return match;
+            })
             .attr("title", function (data, index) {
                 return data.value;
             });
         // Assign position and dimension to rectangles.
-        valueCellBars
+        self.tableBodyCellsValuesGraphBars
             .attr("x", function (data, index) {
                 // Determine scale according to attribute total.
                 var scale = d3
@@ -727,8 +733,8 @@ class SetView {
                     .range([0, graphWidth]);
                 return scale(data.count);
             });
-
-        //activateSummaryBodyCellsValues(self);
+        // Activate cells for data's values.
+        self.activateSummaryBodyCellsValues(self);
     }
     /**
      * Activates cells for data's values in body of summary table.
@@ -739,33 +745,19 @@ class SetView {
         // in scope.
         var self = setView;
 
-        // TODO: I don't think it's necessary to remove old event handlers...
         // Remove any existing event listeners and handlers from bars.
-        valueCellBars
+        self.tableBodyCellsValuesGraphBars
             .on("click", null);
-
-        // TODO: On click call the action for selectSetViewValue.
-        // TODO: Pass this function the attribute and value of the current bar.
-
-        // TODO: After activating bars, format bars according to their selection status.
-
         // Assign event listeners and handlers to bars.
-        valueCellBars
+        self.tableBodyCellsValuesGraphBars
             .on("click", function (data, index, nodes) {
-                controlAttributeMenuSelection({
-                    value: data.identifier,
+                Action.selectSetViewValue({
+                    value: data.value,
                     attribute: data.attribute,
-                    entity: entity,
-                    filter: filter,
-                    originalAttributeSummary: originalAttributeSummary,
-                    originalAttributeIndex: originalAttributeIndex,
-                    model: model
+                    model: self.model
                 });
             });
     }
-
-
-
     /**
      * Determines whether or not the application state has a current selection
      * of entity that matches a specific type of entity.
@@ -789,5 +781,36 @@ class SetView {
         var self = setView;
         return self.model.setViewFilter;
     }
-
+    /**
+     * Determines whether or not a value and attribute match a current
+     * selection.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {string} parameters.value Value of attribute of interest.
+     * @param {string} parameters.attribute Attribute of interest.
+     * @returns {boolean} Whether or not the value and attribute match a current
+     * selection.
+     */
+    determineValueAttributeMatchSelections({value, attribute, setView}) {
+        // Set reference to current instance of class to transfer across changes
+        // in scope.
+        var self = setView;
+        // Determine whether or not current selections include a selection for
+        // the attribute and value.
+        var match = self
+            .model
+            .setViewValuesSelections
+            .find(function (selection) {
+                return (
+                    selection.attribute === attribute &&
+                    selection.value === value
+                );
+            });
+        if (match) {
+            // Current selections include the attribute and value.
+            return true;
+        } else {
+            // Current selections do not include the attribute and value.
+            return false;
+        }
+    }
 }

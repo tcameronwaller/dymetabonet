@@ -312,6 +312,11 @@ class Action {
             model: model
         });
     }
+
+    // TODO: changeSetViewFilter isn't responding properly...
+    // TODO: Supposed to represent sets' cardinalities from filtered entitiesAttributes.
+    // TODO: The problem might be in currentEntitiesAttributes... the filter process migth be a problem.
+
     /**
      * Changes the set view's specification of filter.
      * Also determines new sets' cardinalities and prepares new sets' summary.
@@ -362,6 +367,8 @@ class Action {
         // TODO: reset currentEntitiesAttributes to copy of allEntitiesAttributes
         // TODO: derive setsCardinalities and setsSummary
     }
+
+    // TODO: Selection and filtration isn't working properly...
     /**
      * Selects the value of an attribute in the sets' summary of the set view.
      * Submits new values to the model of the application's state.
@@ -394,7 +401,7 @@ class Action {
         // accommodate any changes to selections of filters.
         var currentEntitiesAttributes = Attribution
             .filterEntitiesAttributesValues({
-                selections: model.setViewValuesSelections,
+                selections: setViewValuesSelections,
                 entitiesAttributes: copyEntitiesAttributes
             });
         // Determine new sets' cardinalities.
@@ -422,12 +429,8 @@ class Action {
         });
     }
 
-    // TODO: Implement direct selection of attribute values in summary table.
     // TODO: Implement search-field selection in summary table.
     // TODO: Implement collection of filters and filter operation.
-
-
-    // TODO: Create separate data structure to store user selections for filters.
 
     /**
      * Loads from a file at a specific path on client's system a default

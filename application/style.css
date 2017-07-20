@@ -188,8 +188,12 @@ h3 {
     fill: rgba(0, 100, 255, 1);
 }
 
-#set table tbody td.value .bar.emphasis {
-    fill: rgba(255, 150, 0, 1);
+#set table tbody td.value .bar.emphasis:nth-child(odd) {
+    fill: rgba(255, 100, 0, 1);
+}
+
+#set table tbody td.value .bar.emphasis:nth-child(even) {
+    fill: rgba(255, 0, 0, 1);
 }
 
 /******************************************************************************/
