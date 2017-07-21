@@ -232,6 +232,11 @@ class Action {
      * application.
      */
     static initializeMetabolicEntitiesSets({entitiesSets, model} = {}) {
+        // TODO: It would be helpful to organize this initialization somehow to
+        // TODO: make the procedure more convenient for restore buttons for set
+        // TODO: view and entity view respectively.
+        // Initialize attributes of the application's state for information
+        // about metabolic entities and sets.
         // Remove the current file selection from the application's state.
         var file = null;
         // Determine all attributes of all metabolic entities.
@@ -239,6 +244,13 @@ class Action {
             .collectEntitiesAttributes(
                 entitiesSets.metabolites, entitiesSets.reactions
             );
+        // Determine attributes of metabolic entities that pass current filters.
+        // For initialization, it is sufficient to copy the attributes of
+        // metabolic entities.
+        var currentEntitiesAttributes = Attribution
+            .copyEntitiesAttributes(allEntitiesAttributes);
+        //
+        // Initialize application's attributes for entities' sets.
         // Specify selections of attributes for set view.
         // These selections determine which search menus to create in set view.
         var setViewAttributesSelections = [];
@@ -246,11 +258,6 @@ class Action {
         // These selections determine which attributes and values define filters
         // against entities' attributes.
         var setViewValuesSelections = [];
-        // Determine attributes of metabolic entities that pass current filters.
-        // For initialization, it is sufficient to copy the attributes of
-        // metabolic entities.
-        var currentEntitiesAttributes = Attribution
-            .copyEntitiesAttributes(allEntitiesAttributes);
         // Specify entity option for set view.
         var entity = "metabolite";
         // Specify filter option for set view.
@@ -262,9 +269,25 @@ class Action {
                 currentEntitiesAttributes: currentEntitiesAttributes,
                 allEntitiesAttributes: allEntitiesAttributes
             });
-        // Prepare summary of sets.
+        // Prepare summary of sets of metabolic entities.
         var setsSummary = Cardinality
             .prepareSetsSummary(entity, setsCardinalities);
+        //
+        // Initialize application's attributes for individual entities.
+        // TODO: I want to initialize all relevant attributes and settings for the entity view.
+        // Extract identifiers of entities.
+        // The full model has 2652 metabolites.
+        var metaboliteIdentifiers = Network.extractEntityIdentifiers(
+            "metabolite", currentEntitiesAttributes
+        );
+        // The full model has 7785 reactions.
+        var reactionIdentifiers = Network.extractEntityIdentifiers(
+            "reaction", currentEntitiesAttributes
+        );
+        // TODO: I need to re-work the network assembly procedure to access information from metabolic entities/sets in application's model...
+        //
+
+        //
         // Compile values of attributes for application's state.
         var data = {
             file: file,
@@ -312,11 +335,6 @@ class Action {
             model: model
         });
     }
-
-    // TODO: changeSetViewFilter isn't responding properly...
-    // TODO: Supposed to represent sets' cardinalities from filtered entitiesAttributes.
-    // TODO: The problem might be in currentEntitiesAttributes... the filter process migth be a problem.
-
     /**
      * Changes the set view's specification of filter.
      * Also determines new sets' cardinalities and prepares new sets' summary.
@@ -354,21 +372,6 @@ class Action {
             model: model
         });
     }
-    /**
-     * Restores sets' summary to its initial state.
-     * @param {Object} model Model of the comprehensive state of the
-     * application.
-     */
-    static restoreSetsSummary(model) {
-        // TODO: Use most of everything from initializeMetabolicEntitiesSets...
-
-        // TODO: Reset button should...
-        // TODO: reset default entity and filter
-        // TODO: reset currentEntitiesAttributes to copy of allEntitiesAttributes
-        // TODO: derive setsCardinalities and setsSummary
-    }
-
-    // TODO: Selection and filtration isn't working properly...
     /**
      * Selects the value of an attribute in the sets' summary of the set view.
      * Submits new values to the model of the application's state.
@@ -428,9 +431,21 @@ class Action {
             model: model
         });
     }
+    /**
+     * Restores sets' summary to its initial state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static restoreSetsSummary(model) {
+        // TODO: Use most of everything from initializeMetabolicEntitiesSets...
 
-    // TODO: Implement search-field selection in summary table.
-    // TODO: Implement collection of filters and filter operation.
+        // TODO: Reset button should...
+        // TODO: reset default entity and filter
+        // TODO: reset currentEntitiesAttributes to copy of allEntitiesAttributes
+        // TODO: derive setsCardinalities and setsSummary
+    }
+
+
 
     /**
      * Loads from a file at a specific path on client's system a default

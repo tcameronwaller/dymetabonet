@@ -814,3 +814,8 @@ class SetView {
         }
     }
 }
+
+
+// TODO: EntityView should give information about counts of metabolites and reactions in current selection (pass filters from SetView).
+// TODO: EntityView should display controls to define network: compartmentalization, replications, submit button (since it takes a while).
+// TODO: Don't worry about giving any sort of warning about size threshold... just tell the user counts of metabolites and reactions and let user initiate assembly.

@@ -4,6 +4,34 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+20 July 2017
+
+----------
+Plan
+
+Filter Selection
+Introduce tool tips to give names of compartments and processes in the summary.
+Introduce search menus to search for values of attributes by name.
+Organize code for the summary table and its actions.
+
+Network
+Define network from selection of entities that pass filters, if this selection is sufficiently small and manageable.
+Create interface to support topological queries against the network.
+
+----------
+Progress
+
+At this point it is possible to make rudimentary selections of values of attributes and to apply these to filter metabolic entities.
+
+----------
+Meet with Alexander Lex
+
+Alex recommended including information in URL to preserve state of the application.
+It might be practical to preserve information about selections within URL.
+
+It will still be necessary to preserve data derivation (clean raw data, extract information about metabolic entities and sets) within downloaded files.
+
+--------------------------------------------------
 11 July 2017
 
 ----------
