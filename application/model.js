@@ -19,6 +19,7 @@ class Model {
             "reversibilities",
             "metabolites", "reactions",
             "allEntitiesAttributes", "currentEntitiesAttributes",
+            "currentMetabolites", "currentReactions",
             "setViewAttributesSelections", "setViewValuesSelections",
             "setViewEntity", "setViewFilter",
             "setsCardinalities", "setsSummary",

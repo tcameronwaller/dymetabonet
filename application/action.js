@@ -249,6 +249,15 @@ class Action {
         // metabolic entities.
         var currentEntitiesAttributes = Attribution
             .copyEntitiesAttributes(allEntitiesAttributes);
+        // Extract identifiers of entities.
+        // The full model has 2652 metabolites.
+        var currentMetabolites = Attribution.extractEntityIdentifiers(
+            "metabolite", currentEntitiesAttributes
+        );
+        // The full model has 7785 reactions.
+        var currentReactions = Attribution.extractEntityIdentifiers(
+            "reaction", currentEntitiesAttributes
+        );
         //
         // Initialize application's attributes for entities' sets.
         // Specify selections of attributes for set view.
@@ -275,30 +284,39 @@ class Action {
         //
         // Initialize application's attributes for individual entities.
         // TODO: I want to initialize all relevant attributes and settings for the entity view.
-        // Extract identifiers of entities.
-        // The full model has 2652 metabolites.
-        var metaboliteIdentifiers = Network.extractEntityIdentifiers(
-            "metabolite", currentEntitiesAttributes
-        );
-        // The full model has 7785 reactions.
-        var reactionIdentifiers = Network.extractEntityIdentifiers(
-            "reaction", currentEntitiesAttributes
-        );
+
+        // TODO: Maybe storing identifiers for metabolites and reactions is redundant?
+        // Specify compartmentalization option for entity view.
+        var compartmentalization = false;
+        // Specify replication options for entity view.
+        var replications = [
+            "ac", "accoa", "adp", "amp", "atp", "ca2", "camp", "cdp", "cl",
+            "cmp", "co", "co2", "coa", "ctp", "datp", "dcmp", "dctp", "dna",
+            "dtdp", "dtmp", "fe2", "fe3", "fmn", "gdp", "gmp", "gtp", "h", "h2",
+            "h2o", "h2o2", "hco3", "i", "idp", "imp", "itp", "k", "na1", "nad",
+            "nadh", "nadp", "nadph", "nh4", "no", "no2", "o2", "o2s", "oh1",
+            "pi", "ppi", "pppi", "so3", "so4", "udp", "ump", "utp"
+        ];
         // TODO: I need to re-work the network assembly procedure to access information from metabolic entities/sets in application's model...
         //
 
         //
-        // Compile values of attributes for application's state.
+        // Submit new values of attributes to the model of the application's
+        // state.
         var data = {
             file: file,
             allEntitiesAttributes: allEntitiesAttributes,
+            currentEntitiesAttributes: currentEntitiesAttributes,
+            currentMetabolites: currentMetabolites,
+            currentReactions: currentReactions,
             setViewAttributesSelections: setViewAttributesSelections,
             setViewValuesSelections: setViewValuesSelections,
-            currentEntitiesAttributes: currentEntitiesAttributes,
             setViewEntity: entity,
             setViewFilter: filter,
             setsCardinalities: setsCardinalities,
-            setsSummary: setsSummary
+            setsSummary: setsSummary,
+            entityViewCompartmentalization: compartmentalization,
+            entityViewReplications: replications
         };
         var attributesValues = Object.assign({}, entitiesSets, data);
         Action.submitAttributes({
@@ -407,6 +425,13 @@ class Action {
                 selections: setViewValuesSelections,
                 entitiesAttributes: copyEntitiesAttributes
             });
+        // Extract identifiers of entities.
+        var currentMetabolites = Attribution.extractEntityIdentifiers(
+            "metabolite", currentEntitiesAttributes
+        );
+        var currentReactions = Attribution.extractEntityIdentifiers(
+            "reaction", currentEntitiesAttributes
+        );
         // Determine new sets' cardinalities.
         var setsCardinalities = Cardinality
             .determineSetsCardinalities({
@@ -423,6 +448,8 @@ class Action {
             setViewAttributesSelections: setViewAttributesSelections,
             setViewValuesSelections: setViewValuesSelections,
             currentEntitiesAttributes: currentEntitiesAttributes,
+            currentMetabolites: currentMetabolites,
+            currentReactions: currentReactions,
             setsCardinalities: setsCardinalities,
             setsSummary: setsSummary
         };
@@ -431,6 +458,7 @@ class Action {
             model: model
         });
     }
+    // TODO: Activate the action to restore the summary in the set view.
     /**
      * Restores sets' summary to its initial state.
      * @param {Object} model Model of the comprehensive state of the
@@ -444,6 +472,46 @@ class Action {
         // TODO: reset currentEntitiesAttributes to copy of allEntitiesAttributes
         // TODO: derive setsCardinalities and setsSummary
     }
+    /**
+     * Creates a network of nodes and links to represent metabolic entities,
+     * metabolites and reactions, and relations between them.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static createNetwork(model) {
+        // TODO: Assemble network's nodes and links...
+
+        var networkElements = Network.assembleNetworkElements({
+            currentMetabolites: Attribution
+                .extractEntityIdentifiers(
+                    Attribution
+                        .filterEntityType(
+                            "metabolite", model.currentEntitiesAttributes
+                        )
+                ),
+            currentReactions: Attribution
+                .filterEntityType(
+                    "reaction", model.currentEntitiesAttributes
+                ),
+            replications: model.entityViewReplications,
+            compartmentalization: model.entityViewCompartmentalization,
+            metabolites: model.metabolites,
+            reactions: model.reactions
+        });
+
+
+        // Submit new values of attributes to the model of the application's
+        // state.
+        var attributesValues = {
+            entityViewNetworkNodes: nodes,
+            entityViewNetworkLinks: links
+        };
+        Action.submitAttributes({
+            attributesValues: attributesValues,
+            model: model
+        });
+    }
+
 
 
 

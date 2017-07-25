@@ -40,22 +40,40 @@ class State {
         // TODO: Get rid of the source view after extraction... then the view
         // TODO: should be blank or something until all state attributes are available for set and entity views.
         // If application's model has appropriate information then create state
-        // interface, set interface, and entity interface.
+        // interface.
+        if (
+            this.determineMetabolicEntitiesSets() &&
+            this.determineEntitiesAttributes()
+        ) {
+            // Initialize instance of state interface.
+            // Pass this instance a reference to the model.
+            new StateView(this.model);
+        }
+        // If application's model has appropriate information then create set
+        // interface.
         if (
             this.determineMetabolicEntitiesSets() &&
             this.determineEntitiesAttributes() &&
             this.determineSets()
         ) {
-            // Initialize instance of state interface.
-            // Pass this instance a reference to the model.
-            new StateView(this.model);
             // Initialize instance of set interface.
             // Pass this instance a reference to the model.
             new SetView(this.model);
             // Initialize instance of entity interface.
             // Pass this instance a reference to the model.
-
         }
+        // If application's model has appropriate information then create entity
+        // interface.
+        if (
+            this.determineMetabolicEntitiesSets() &&
+            this.determineEntitiesAttributes() &&
+            this.determineEntities()
+        ) {
+            // Initialize instance of entity interface.
+            // Pass this instance a reference to the model.
+            new EntityView(this.model);
+        }
+
     }
     /**
      * Evaluates the context of the application's state and executes automatic
@@ -69,11 +87,11 @@ class State {
      */
     determineMetabolicEntitiesSets() {
         return (
-            this.model.metabolites &&
-            this.model.reactions &&
-            this.model.compartments &&
-            this.model.genes &&
-            this.model.processes
+            !(this.model.metabolites === null) &&
+            !(this.model.reactions === null) &&
+            !(this.model.compartments === null) &&
+            !(this.model.genes === null) &&
+            !(this.model.processes === null)
         );
     }
     /**
@@ -82,8 +100,10 @@ class State {
      */
     determineEntitiesAttributes() {
         return (
-            this.model.allEntitiesAttributes &&
-            this.model.currentEntitiesAttributes
+            !(this.model.allEntitiesAttributes === null) &&
+            !(this.model.currentEntitiesAttributes === null) &&
+            !(this.model.currentMetabolites === null) &&
+            !(this.model.currentReactions === null)
         );
     }
     /**
@@ -92,12 +112,22 @@ class State {
      */
     determineSets() {
         return (
-            this.model.setViewAttributesSelections &&
-            this.model.setViewValuesSelections &&
-            this.model.setViewEntity &&
-            this.model.setViewFilter &&
-            this.model.setsCardinalities &&
-            this.model.setsSummary
+            !(this.model.setViewAttributesSelections === null) &&
+            !(this.model.setViewValuesSelections === null) &&
+            !(this.model.setViewEntity === null) &&
+            !(this.model.setViewFilter === null) &&
+            !(this.model.setsCardinalities === null) &&
+            !(this.model.setsSummary === null)
+        );
+    }
+    /**
+     * Determines whether or not the application's model has information about
+     * the interface for individual metabolic entities.
+     */
+    determineEntities() {
+        return (
+            !(this.model.entityViewCompartmentalization === null) &&
+            !(this.model.entityViewReplications === null)
         );
     }
 }

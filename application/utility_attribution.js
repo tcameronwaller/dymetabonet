@@ -206,6 +206,31 @@ class Attribution {
         });
     }
     /**
+     * Extracts from a collection of entities' attributes the identifiers of all
+     * entities.
+     * @param {Array<Object<string>>} entitiesAttributes Attributes of
+     * metabolic entities, metabolites and reactions.
+     * @returns {<Array<string>} Identifiers of entities.
+     */
+    static extractEntityIdentifiers(entitiesAttributes) {
+        return entitiesAttributes.map(function (record) {
+            return record.identifier;
+        });
+    }
+    /**
+     * Filters records of entities's attributes by the type of entity,
+     * metabolite or reaction.
+     * @param {string} entity A type of entity, metabolite or reaction.
+     * @param {Array<Object<string>>} entitiesAttributes Attributes of
+     * metabolic entities, metabolites and reactions.
+     * @returns {<Array<Object<string>>} Attributes of entities of a specific type.
+     */
+    static filterEntityType(entity, entitiesAttributes) {
+        return entitiesAttributes.filter(function (record) {
+            return record.entity === entity;
+        });
+    }
+    /**
      * Records new selection in collection of selections of attributes and
      * values for filters.
      * @param {Object} parameters Destructured object of parameters.

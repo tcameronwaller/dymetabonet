@@ -4,6 +4,20 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+24 July 2017
+
+----------
+Plan
+
+User selections in the set interface define filters to apply against entities, metabolites and reactions.
+Filters modify the entities that remain in the collection of current entities' attributes.
+
+The entity interface allows the user to define a network from the current selection of entities.
+This interface provides options of compartmentalization and replication of nodes for common metabolites.
+The user selects preferences for compartmentalization and replication and then initiates network assembly.
+The only reason for an explicit submission for network assembly is that the process is computationally intensive.
+
+--------------------------------------------------
 20 July 2017
 
 ----------

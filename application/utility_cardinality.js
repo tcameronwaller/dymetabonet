@@ -12,7 +12,7 @@ class Cardinality {
      * @param {Object} parameters Destructured object of parameters.
      * @param {boolean} parameters.filter Current filter selection.
      * @param {Array<Object>} parameters.currentEntitiesAttributes Attributes of
-     * all entities with application of current filters.
+     * all entities that pass current filters.
      * @param {Array<Object>} parameters.allEntitiesAttributes Attributes of all
      * entities.
      * @returns {Object<Object<Object<number>>>} Cardinalities of sets by

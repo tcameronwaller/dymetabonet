@@ -200,8 +200,6 @@ class SetView {
      * application.
      */
     constructor (model) {
-        // TODO: Eventually, I think I'll need to organize stuff in separate methods...
-        // TODO: I'll need to manage references to "this" and "self" with these methods...
         // Set reference to current instance of class to transfer across changes
         // in scope.
         var self = this;
@@ -815,7 +813,100 @@ class SetView {
     }
 }
 
+// TODO: EntityView should give information about counts of metabolites and
+// TODO: reactions in current selection (pass filters from SetView).
+// TODO: EntityView should display controls to define network:
+// TODO: compartmentalization, replications, submit button (since it takes a while).
+// TODO: Don't worry about giving any sort of warning about size threshold...
+// TODO: just tell the user counts of metabolites and reactions and let user
+// TODO: initiate assembly.
+/**
+ * Interface to represent the network of relations between individual metabolic
+ * entities.
+ */
+class EntityView {
+    /**
+     * Initializes an instance of the class.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    constructor (model) {
+        // Set reference to current instance of class to transfer across changes
+        // in scope.
+        var self = this;
+        // Reference model of application's state.
+        self.model = model;
+        // Reference document object model.
+        self.document = document;
+        // Initialize container for interface.
+        self.initializeContainer(self);
+        // Create button for assembly.
+        self.createActivateAssembly(self);
 
-// TODO: EntityView should give information about counts of metabolites and reactions in current selection (pass filters from SetView).
-// TODO: EntityView should display controls to define network: compartmentalization, replications, submit button (since it takes a while).
-// TODO: Don't worry about giving any sort of warning about size threshold... just tell the user counts of metabolites and reactions and let user initiate assembly.
+    }
+    /**
+     * Initializes the container for the interface.
+     * @param {Object} entityView Instance of entity view interface.
+     */
+    initializeContainer(entityView) {
+        // Set reference to current instance of class to transfer across changes
+        // in scope.
+        var self = entityView;
+        // Create and set references to elements for interface.
+        // Select view in document object model.
+        self.view = self.document.getElementById("view");
+        // Remove any extraneous content within view.
+        // Initialization of the state view already removes extraneous
+        // content from view.
+        General.filterRemoveDocumentElements({
+            values: ["top", "bottom"],
+            attribute: "id",
+            elements: self.view.children
+        });
+        // Create container for interfaces within bottom of view.
+        if (!self.document.getElementById("bottom")) {
+            self.bottom = self.document.createElement("div");
+            self.view.appendChild(self.bottom);
+            self.bottom.setAttribute("id", "bottom");
+        } else {
+            self.bottom = self.document.getElementById("bottom");
+        }
+        // Remove any extraneous content within bottom.
+        General.filterRemoveDocumentElements({
+            values: ["entity"],
+            attribute: "id",
+            elements: self.bottom.children
+        });
+        // Create container for interface within bottom.
+        // Set reference to current interface's container.
+        if (!self.document.getElementById("entity")) {
+            self.container = self.document.createElement("div");
+            self.bottom.appendChild(self.container);
+            self.container.setAttribute("id", "entity");
+        } else {
+            self.container = self.document.getElementById("entity");
+        }
+    }
+    /**
+     * Creates and activates button to assemble network's nodes and links for
+     * entity view.
+     * @param {Object} entityView Instance of entity view interface.
+     */
+    createActivateAssembly(entityView) {
+        // Set reference to current instance of class to transfer across changes
+        // in scope.
+        var self = entityView;
+        // Create and activate button to assemble network's nodes and links.
+        self.assembly = self.document.createElement("button");
+        self.container.appendChild(self.assembly);
+        self.assembly.textContent = "assemble";
+        self.assembly.addEventListener("click", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // Assemble network's nodes and links.
+            Action.createNetwork(self.model);
+        });
+    }
+
+
+
+}

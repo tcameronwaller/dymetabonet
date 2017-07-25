@@ -1010,14 +1010,6 @@ function controlEntityInterface({attributeIndex, model} = {}) {
     // TODO: assembleNetwork() should return network elements.
 
     var compartmentalization = true;
-    var replicationMetabolites = [
-        "ac", "accoa", "adp", "amp", "atp", "ca2", "camp", "cdp", "cl", "cmp",
-        "co", "co2", "coa", "ctp", "datp", "dcmp", "dctp", "dna", "dtdp",
-        "dtmp", "fe2", "fe3", "fmn", "gdp", "gmp", "gtp", "h", "h2", "h2o",
-        "h2o2", "hco3", "i", "idp", "imp", "itp", "k", "na1", "nad", "nadh",
-        "nadp", "nadph", "nh4", "no", "no2", "o2", "o2s", "oh1", "pi", "ppi",
-        "pppi", "so3", "so4", "udp", "ump", "utp"
-    ];
 
     // Assemble network.
     // 10437 nodes, 39353 links (general, no replication)

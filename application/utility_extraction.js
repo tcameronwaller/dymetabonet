@@ -514,4 +514,27 @@ class Extraction {
             return "i";
         }
     }
+    /**
+     * Determines whether or not the reaction involves the same metabolite as
+     * both reactant and product.
+     * @param {Array<Object>} reactionMetabolites Information about metabolites
+     * that participate in a reaction.
+     * @returns {boolean} Indicator of whether or not the reaction involves the
+     * same metabolite as both reactant and product.
+     */
+    static determineReactionSameReactantProduct(reactionMetabolites) {
+        var reactants = reactionMetabolites.filter(function (metabolite) {
+            return metabolite.role === "reactant";
+        }).map(function (reactant) {
+            return reactant.identifier;
+        });
+        var products = reactionMetabolites.filter(function (metabolite) {
+            return metabolite.role === "product";
+        }).map(function (product) {
+            return product.identifier;
+        });
+        return reactants.some(function (reactant) {
+            return products.includes(reactant);
+        });
+    }
 }
