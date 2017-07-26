@@ -842,7 +842,12 @@ class EntityView {
         self.initializeContainer(self);
         // Create button for assembly.
         self.createActivateAssembly(self);
-
+        // TODO: I think I should have a control view and a network view...
+        // TODO: Only show the network view if all necessary info is available.
+        // Draw network (temporary)...
+        if (self.determineSubnetwork()) {
+            self.drawNetwork(self);
+        }
     }
     /**
      * Initializes the container for the interface.
@@ -897,16 +902,149 @@ class EntityView {
         // in scope.
         var self = entityView;
         // Create and activate button to assemble network's nodes and links.
-        self.assembly = self.document.createElement("button");
-        self.container.appendChild(self.assembly);
-        self.assembly.textContent = "assemble";
-        self.assembly.addEventListener("click", function (event) {
-            // Element on which the event originated is event.currentTarget.
-            // Assemble network's nodes and links.
-            Action.createNetwork(self.model);
-        });
+        // TODO: Do this however I did it before...
+        if (!self.container.getElementsByTagName("button").item(0)) {
+            self.assembly = self.document.createElement("button");
+            self.container.appendChild(self.assembly);
+            self.assembly.textContent = "assemble";
+            self.assembly.addEventListener("click", function (event) {
+                // Element on which the event originated is event.currentTarget.
+                // Assemble network's nodes and links.
+                Action.createNetwork(self.model);
+            });
+        }
     }
+    drawNetwork(entityView) {
 
+        // TODO: How can I accommodate networks of different scales?
+        // TODO: I think I'll need variables for node and link dimensions as well as force parameters.
+        // TODO: I can scale the radius of reactions by the number of metabolite nodes (in current network definition) they connect to.
+
+
+        // Set reference to current instance of class to transfer across changes
+        // in scope.
+        var self = entityView;
+
+        // Create graphical container for network visualization.
+        // Create graphical container with D3 so that styles in CSS will control
+        // dimensions.
+        if (!self.container.getElementsByTagName("svg").item(0)) {
+            var networkGraph = d3.select(self.container).append("svg");
+            self.networkGraph = self
+                .container.getElementsByTagName("svg").item(0);
+        } else {
+            self.networkGraph = self
+                .container.getElementsByTagName("svg").item(0);
+            var networkGraph = d3.select(self.networkGraph);
+        }
+
+        // Determine the dimensions of the graphical container.
+        var graphWidth = parseFloat(
+            window.getComputedStyle(self.networkGraph).width.replace("px", "")
+        );
+        var graphHeight = parseFloat(
+            window.getComputedStyle(self.networkGraph).height.replace("px", "")
+        );
+
+        // Create links.
+        // Create links before nodes so that nodes will appear over the links.
+        // Contain all links within a single group.
+        var linkGroup = networkGraph.append("g");
+        var dataLinks = linkGroup
+            .selectAll("line").data(self.model.entityViewSubNetworkLinks);
+        dataLinks.exit().remove();
+        var newLinks = dataLinks.enter().append("line");
+        var links = newLinks.merge(dataLinks);
+        links.classed("link", true);
+
+        // Create nodes.
+        // Contain all nodes within a single group.
+        var nodeGroup = networkGraph.append("g");
+        var dataNodes = nodeGroup
+            .selectAll("circle").data(self.model.entityViewSubNetworkNodes);
+        dataNodes.exit().remove();
+        var newNodes = dataNodes.enter().append("circle");
+        var nodes = newNodes.merge(dataNodes);
+        nodes.classed("node", true);
+        nodes.classed("metabolite", function (data) {
+            return data.entity === "metabolite";
+        });
+        nodes.classed("reaction", function (data) {
+            return data.entity === "reaction";
+        });
+
+        // Initiate the force simulation.
+        // The force method assigns a specific force simulation to the name.
+        // Collision force prevents overlap and occlusion of nodes.
+        // The center force causes nodes to behave strangely when user repositions
+        // them manually.
+        var simulation = d3.forceSimulation()
+            .nodes(self.model.entityViewSubNetworkNodes)
+            .force("center", d3.forceCenter()
+                .x(graphWidth / 2)
+                .y(graphHeight / 2)
+            )
+            .force("collision", d3.forceCollide()
+                .radius(function (data) {
+                    if (data.entity === "metabolite") {
+                        return 10;
+                    } else if (data.entity === "reaction") {
+                        return 20;
+                    }
+                })
+                .strength(0.9)
+                .iterations(1)
+            )
+            .force("charge", d3.forceManyBody()
+                .strength(-250)
+                .distanceMin(1)
+                .distanceMax(200)
+            )
+            .force("link", d3.forceLink()
+                .links(self.model.entityViewSubNetworkLinks)
+                .id(function (d) {
+                    return d.identifier;
+                })
+                .distance(7)
+            )
+            //.force("positionX", d3.forceX()
+            //    .x(graphWidth / 2)
+            //    .strength(0.1)
+            //)
+            //.force("positionY", d3.forceY()
+            //    .y(graphWidth / 2)
+            //    .strength(0.1)
+            //)
+            .on("tick", restoreNodePositions);
+
+        // Declare function to increment the force simulation.
+        // Impose constraints on node positions (d.x and d.y) according to dimensions of bounding SVG element.
+        var radius = 9;
+        function restoreNodePositions() {
+            nodes
+                .attr("cx", function (d) {
+                    return d.x = Math.max(radius, Math.min(graphWidth - radius, d.x));
+                })
+                .attr("cy", function (d) {
+                    return d.y = Math.max(radius, Math.min(graphHeight - radius, d.y));
+                });
+            links
+                .attr("x1", function (d) {return d.source.x;})
+                .attr("y1", function (d) {return d.source.y;})
+                .attr("x2", function (d) {return d.target.x;})
+                .attr("y2", function (d) {return d.target.y;});
+        };
+
+    }
+    /**
+     * Determines whether or not the application state has a subnetwork.
+     */
+    determineSubnetwork() {
+        return (
+            !(this.model.entityViewSubNetworkNodes === null) &&
+            !(this.model.entityViewSubNetworkLinks === null)
+        );
+    }
 
 
 }

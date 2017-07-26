@@ -148,6 +148,29 @@ class General {
         });
     }
     /**
+     * Checks objects elements for replicates by identifier.
+     * @param {Array<Object<string>>} elements Objects elements with identifiers.
+     * @returns {Array<Object<string>>} Object elements that have replicates.
+     */
+    static checkReplicateElements(elements) {
+        // A more efficient algorithm would increment counts for each element
+        // and then only return elements with counts greater than one.
+        return elements.reduce(function (collection, element) {
+            var matches = elements.filter(function (referenceElement) {
+                return referenceElement.identifier === element.identifier;
+            });
+            if (
+                (matches.length > 1) &&
+                (!collection.includes(element.identifier))
+            ) {
+                return collection.concat(element.identifier);
+            } else {
+                return collection
+            }
+        }, []);
+    }
+
+    /**
      * Compares two arrays by values of elements at specific indices.
      * @param {Array} firstArray Array of elements.
      * @param {Array} secondArray Array of elements.

@@ -4,6 +4,26 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+26 July 2017
+
+----------
+Network View
+
+It might be helpful to have a persistent control view alongside the view for network's nodes and links.
+This control view could be useful to append or remove nodes and links from the subnetwork.
+The user could use proximity and path traversals to construct a custom subnetwork.
+The control view could also give control over representation of attributes spatially and by color.
+
+--------------------------------------------------
+25 July 2017
+
+----------
+Network Assembly
+
+In entirety, there are 2652 general metabolites and 7785 reactions.
+Assembly of a general network with standard replications from all entities requires about 3 minutes.
+
+--------------------------------------------------
 24 July 2017
 
 ----------

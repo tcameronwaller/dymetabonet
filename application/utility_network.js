@@ -404,4 +404,103 @@ class Network {
             }
         }, currentLinks);
     }
+    /**
+     * Initializes an operable network in JSNetworkX.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Array<Object>} parameters.links Records for network's links.
+     * @param {Array<Object>} parameters.nodes Records for network's nodes.
+     * @returns {Object} Network in JSNetworkX.
+     */
+    static initializeNetwork({links, nodes} = {}) {
+        var readyNodes = nodes.map(function (node) {
+            return [].concat(node.identifier, Object.assign({}, node));
+        });
+        var readyLinks = links.map(function (link) {
+            return [].concat(link.source, link.target, Object.assign({}, link));
+        });
+        var network = new jsnx.MultiDiGraph();
+        network.addNodesFrom(readyNodes);
+        network.addEdgesFrom(readyLinks);
+        return network;
+    }
+    /**
+     * Induces a subnetwork for all nodes within a specific depth without weight
+     * of a single focal node or ego.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {string} parameters.focus Identifier for a single node in a
+     * network that is the focal node.
+     * @param {number} parameters.depth Depth in count of links of traversal
+     * around focal node.
+     * @param {boolean} parameters.center Indicator of whether or not to include
+     * the central focal node in the subnetwork.
+     * @param {string} parameters.direction Indicator (in, out, null) of whether
+     * or not to follow link directionality in traversal and which direction to
+     * follow.
+     * @param {Object} parameters.network Network in JSNetworkX.
+     * @returns {Object} Induced subnetwork in JSNetworkX.
+     */
+    static induceEgoNetwork({focus, depth, center, direction, network} = {}) {
+        // Collect nodes for the subnetwork by traversal according to constraint
+        // of link directionality.
+        // Disregard any weights of the network's links.
+        if (direction === "out") {
+            // Traverse along links emanating out from focal node.
+            // JSNetworkX's singleSourceShortestPathLength function accepts the
+            // identifier for the focal node.
+            // JSNetworkX's singleSourceShortestPathLength function traverses
+            // links that lead out from the focal node in a network with
+            // directional links.
+            var egoNodesMap = jsnx
+                .singleSourceShortestPathLength(network, focus, depth);
+        } else if (direction === "in") {
+            // Traverse along links converging in towards focal node.
+            var egoNodesMap = jsnx
+                .singleSourceShortestPathLength(
+                    network.reverse(optCopy=true), focus, depth
+                );
+
+        } else if (!direction) {
+            // Traverse along any links regardless of direction.
+            var egoNodesMap = jsnx
+                .singleSourceShortestPathLength(
+                    network.toUndirected(), focus, depth
+                );
+        }
+        var egoNodes = Array.from(egoNodesMap.keys());
+        // At this point, egoNodes is an array of string identifiers for nodes.
+        // There are not any missing identifiers in the array.
+        // Nodes exist in the network for all identifiers in egoNodes.
+        // Induce subnetwork from nodes.
+        // JSNetworkX's subgraph method accepts an array of identifiers for
+        // nodes to include in the induced subnetwork.
+        //var egoNetwork = jsnx.MultiDiGraph(network.subgraph(egoNodes));
+        var egoNetwork = network.subgraph(egoNodes);
+        if (!center) {
+            egoNetwork.removeNode(focus);
+        }
+        return egoNetwork;
+    }
+    /**
+     * Extracts information about nodes from a network in JSNetworkX.
+     * @param {Object} network Network in JSNetworkX.
+     * @returns {Array<Object>} Information about nodes.
+     */
+    static extractNetworkNodes(network) {
+        return network.nodes(true).map(function (node) {
+            return node[1];
+        });
+    }
+    /**
+     * Extracts information about links from a network in JSNetworkX.
+     * @param {Object} network Network in JSNetworkX.
+     * @returns {Array<Object>} Information about links.
+     */
+    static extractNetworkLinks(network) {
+        return network.edges(true).map(function (edge) {
+            return edge[2];
+        });
+    }
+
+
+
 }

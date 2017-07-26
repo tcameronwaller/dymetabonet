@@ -748,59 +748,6 @@ function controlSetInterface(
 // Entity Interface
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Induces a subgraph for all nodes within a specific depth without weight of a
- * single focal node or ego.
- * @param {Object} parameters Destructured object of parameters.
- * @param {string} parameters.node Identifier for a single node in a network.
- * @param {number} parameters.depth Depth in count of links of traversal around
- * focal node.
- * @param {boolean} parameters.center Indicator of whether or not to include the
- * central focal node in the subgraph.
- * @param {string} parameters.direction Indicator (in, out, null) of whether or
- * not to follow link directionality in traversal and which direction to follow.
- * @param {Object} parameters.network Network in JSNetworkX.
- * @returns {Object} Induced subgraph network in JSNetworkX.
- */
-function induceEgoNetwork({node, depth, center, direction, network} = {}) {
-    // Collect nodes for the subgraph by traversal according to constraint of
-    // link directionality.
-    if (direction === "out") {
-        // Traverse along links emanating out from focal node.
-        // JSNetworkX's singleSourceShortestPathLength function accepts the
-        // identifier for the focal node.
-        // JSNetworkX's singleSourceShortestPathLength function traverses links
-        // that lead out from the focal node in a network with directional links.
-        var egoNodesMap = jsnx
-            .singleSourceShortestPathLength(network, node, depth);
-    } else if (direction === "in") {
-        // Traverse along links converging in towards focal node.
-        var egoNodesMap = jsnx
-            .singleSourceShortestPathLength(
-                network.reverse(optCopy=true), node, depth
-            );
-
-    } else if (!direction) {
-        // Traverse along any links regardless of direction.
-        var egoNodesMap = jsnx
-            .singleSourceShortestPathLength(
-                network.toUndirected(), node, depth
-            );
-    }
-    var egoNodes = Array.from(egoNodesMap.keys());
-    // At this point, egoNodes is an array of string identifiers for nodes.
-    // There are not any missing identifiers in the array.
-    // Nodes exist in the network for all identifiers in egoNodes.
-    // Induce subgraph from nodes.
-    // JSNetworkX's subgraph method accepts an array of identifiers for
-    // nodes to include in the induced subgraph.
-    //var egoNetwork = jsnx.MultiDiGraph(network.subgraph(egoNodes));
-    var egoNetwork = network.subgraph(egoNodes);
-    if (!center) {
-        egoNetwork.removeNode(node);
-    }
-    return egoNetwork;
-}
 
 // TODO: Eventually I'll need to figure out how to initialize the network with an initial set of metabolites to replicate.
 
@@ -910,8 +857,6 @@ function createActivateProximityMenu(network) {
         });
 }
 
-function createActivatePathMenu() {}
-
 function initializeEntityInterface({attributeIndex, model} = {}) {
 
     // Create controls for compartmentalization (check box), and metabolite node replication.
@@ -980,237 +925,16 @@ function initializeEntityInterface({attributeIndex, model} = {}) {
 }
 
 
-
-/**
- * Checks object elements for replicates by identifier.
- * @param {Array<Object<string>>} elements Objects elements with identifiers.
- * @returns {Array<Object<string>>} Object elements that have replicates.
- */
-function checkReplicateElements(elements) {
-    // A more efficient algorithm would increment counts for each element and
-    // then only return elements with counts greater than one.
-    return elements.reduce(function (collection, element) {
-        var matches = elements.filter(function (referenceElement) {
-            return referenceElement.identifier === element.identifier;
-        });
-        if (
-            (matches.length > 1) &&
-            (!collection.includes(element.identifier))
-        ) {
-            return collection.concat(element.identifier);
-        } else {
-            return collection
-        }
-    }, []);
-}
-
 function controlEntityInterface({attributeIndex, model} = {}) {
-    // TODO: I need to extract identifiers for metabolites and reactions from the Attribute Index.
-    // TODO: I need to pass these to assembleNetwork().
-    // TODO: assembleNetwork() should return network elements.
 
-    var compartmentalization = true;
+    createActivateProximityMenu(network);
 
-    // Assemble network.
-    // 10437 nodes, 39353 links (general, no replication)
-    // 23315 nodes, 39353 links (general, replication)
-    // 29921 nodes, 44381 links (compartmental, no replication)
-    // 35520 nodes 44381 links (compartmental, replication)
-    // Only assemble network if it is below a threshold.
-    if (
-        metaboliteIdentifiers.length < 1500 &&
-        reactionIdentifiers.length < 5000
-    ) {
-        var networkElements = assembleNetwork({
-            compartmentalization: compartmentalization,
-            replicationMetabolites: replicationMetabolites,
-            metaboliteIdentifiers: metaboliteIdentifiers,
-            reactionIdentifiers: reactionIdentifiers,
-            model: model
-        });
-        // Evaluate network assembly.
-        //console.log("networkElements");
-        //console.log(networkElements);
-        //var replicateNodes = checkReplicateElements(networkElements.nodes);
-        //console.log("replicate nodes");
-        //console.log(replicateNodes);
-        //var replicateLinks = checkReplicateElements(networkElements.links);
-        //console.log("replicate links");
-        //console.log(replicateLinks);
-        //var emptyNodes = networkElements.nodes.filter(function (node) {
-        //    return !node.hasOwnProperty("identifier");
-        //});
-        //console.log("empty nodes");
-        //console.log(emptyNodes);
-
-
-        // Initialize an operable network from the network elements.
-        var nodes = networkElements.nodes.map(function (node) {
-            return [].concat(node.identifier, Object.assign({}, node));
-        });
-        var links = networkElements.links.map(function (link) {
-            return [].concat(link.source, link.target, Object.assign({}, link));
-        });
-        var network = new jsnx.MultiDiGraph();
-        network.addNodesFrom(nodes);
-        network.addEdgesFrom(links);
-
-        createActivateProximityMenu(network);
-
-        // TODO: Now it's time to figure out some graph traversal algorithms.
-        // TODO: Start with proximity/ego graph.
-
-        var egoNetwork = induceEgoNetwork({
-            node: "pyr_m",
-            depth: 2,
-            center: true,
-            direction: null,
-            network: network
-        });
-        drawNetwork(egoNetwork);
-    }
 }
 
 // TODO: Figure out how to draw the ego networks in the view.
 // TODO: Pass the function an instance of a network in JSNetworkX.
 // TODO: Use getNodeAttributes and getEdgeAttributes, getting around the Map like I did for the ego graph function.
 // TODO: Pass these arrays of objects for nodes and links to the D3 stuff...
-
-/**
- * Draws a representation of a network in a node-link diagram.
- * @param {Object} network Network in JSNetworkX.
- */
-function drawNetwork(network) {
-    // Select entity interface.
-    var entityInterface = document.getElementById("entity");
-    // Create container for network visualization.
-    var networkView = document.createElement("div");
-    networkView.setAttribute("id", "network-view");
-    entityInterface.appendChild(networkView);
-    // Create graphical container for network visualization.
-    // Create graphical container with D3 so that styles in CSS will control
-    // dimensions.
-    var networkGraph = d3.select("#network-view").append("svg");
-    networkGraph.attr("id", "network-graph");
-
-    // Determine the dimensions of the graphical container.
-    var graphWidth = parseFloat(
-        window.getComputedStyle(
-            document
-                .getElementById("network-graph")
-        ).width.replace("px", "")
-    );
-    var graphHeight = parseFloat(
-        window.getComputedStyle(
-            document
-                .getElementById("network-graph")
-        ).height.replace("px", "")
-    );
-
-    // Extract nodes and links from the network to use in visualization.
-    var nodeRecords = network.nodes(optData=true).map(function (node) {
-        return node[1];
-    });
-    var linkRecords = network.edges(optData=true).map(function (edge) {
-        return edge[2];
-    });
-
-    // Create links.
-    // Create links before nodes so that nodes will appear over the links.
-    // Contain all links within a single group.
-    var linkGroup = networkGraph.append("g");
-    var links = linkGroup.selectAll("line").data(linkRecords);
-    links.exit().remove();
-    var newLinks = links.enter().append("line");
-    links = newLinks.merge(links);
-    links.classed("link", true);
-
-    // Create nodes.
-    // Contain all nodes within a single group.
-    var nodeGroup = networkGraph.append("g");
-    var nodes = nodeGroup.selectAll("circle").data(nodeRecords);
-    nodes.exit().remove();
-    var newNodes = nodes.enter().append("circle");
-    nodes = newNodes.merge(nodes);
-    nodes.classed("node", true);
-    nodes.classed("metabolite", function (data) {
-        return data.entity === "metabolite";
-    });
-    nodes.classed("reaction", function (data) {
-        return data.entity === "reaction";
-    });
-
-    // TODO: How can I accommodate networks of different scales?
-    // TODO: I think I'll need variables for node and link dimensions as well as force parameters.
-
-    // TODO: I can scale the radius of reactions by the number of metabolite nodes (in current network definition) they connect to.
-
-    // Initiate the force simulation.
-    // The force method assigns a specific force simulation to the name.
-    // Collision force prevents overlap and occlusion of nodes.
-    // The center force causes nodes to behave strangely when user repositions
-    // them manually.
-    var simulation = d3.forceSimulation()
-        .nodes(nodeRecords)
-        .force("center", d3.forceCenter()
-            .x(graphWidth / 2)
-            .y(graphHeight / 2)
-        )
-        .force("collision", d3.forceCollide()
-            .radius(function (data) {
-                if (data.entity === "metabolite") {
-                    return 10;
-                } else if (data.entity === "reaction") {
-                    return 20;
-                }
-            })
-            .strength(0.9)
-            .iterations(1)
-        )
-        .force("charge", d3.forceManyBody()
-            .strength(-250)
-            .distanceMin(1)
-            .distanceMax(200)
-        )
-        .force("link", d3.forceLink()
-            .links(linkRecords)
-            .id(function (d) {
-                return d.identifier;
-            })
-            .distance(7)
-        )
-        //.force("positionX", d3.forceX()
-        //    .x(graphWidth / 2)
-        //    .strength(0.1)
-        //)
-        //.force("positionY", d3.forceY()
-        //    .y(graphWidth / 2)
-        //    .strength(0.1)
-        //)
-        .on("tick", restoreNodePositions);
-
-    // Declare function to increment the force simulation.
-    // Impose constraints on node positions (d.x and d.y) according to dimensions of bounding SVG element.
-    var radius = 9;
-    function restoreNodePositions() {
-        nodes
-            .attr("cx", function (d) {
-                return d.x = Math.max(radius, Math.min(graphWidth - radius, d.x));
-            })
-            .attr("cy", function (d) {
-                return d.y = Math.max(radius, Math.min(graphHeight - radius, d.y));
-            });
-        links
-            .attr("x1", function (d) {return d.source.x;})
-            .attr("y1", function (d) {return d.source.y;})
-            .attr("x2", function (d) {return d.target.x;})
-            .attr("y2", function (d) {return d.target.y;});
-    };
-
-}
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Scrap?

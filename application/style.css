@@ -218,15 +218,11 @@ h3 {
     height: 100%;
 }
 
-#network-view {
-    height: 100%;
+#entity svg {
+    height: 90%;
     width: 100%;
 }
 
-#network-graph {
-    height: 100%;
-    width: 100%;
-}
 
 #network-graph rect {
     height: 5cm;
@@ -236,17 +232,17 @@ h3 {
     fill: rgba(100, 100, 100, 1);
 }
 
-#network-graph .link {
+#entity svg .link {
     stroke: rgba(100, 100, 100, 1);
     stroke-width: 2;
 }
 
-#network-graph .node.metabolite {
+#entity svg .node.metabolite {
     fill: rgba(50, 0, 0, 1);
     r: 7;
 }
 
-#network-graph .node.reaction {
+#entity svg .node.reaction {
     fill: rgba(100, 0, 0, 1);
     r: 15;
 }

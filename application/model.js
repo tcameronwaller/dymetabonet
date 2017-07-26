@@ -19,16 +19,17 @@ class Model {
             "reversibilities",
             "metabolites", "reactions",
             "allEntitiesAttributes", "currentEntitiesAttributes",
-            "currentMetabolites", "currentReactions",
+            //"currentMetabolites", "currentReactions",
             "setViewAttributesSelections", "setViewValuesSelections",
             "setViewEntity", "setViewFilter",
             "setsCardinalities", "setsSummary",
             "entityViewControlSelection", "entityViewCompartmentalization",
             "entityViewReplications", "entityViewShowReplications",
             "entityViewNetworkNodes", "entityViewNetworkLinks",
+            "entityViewNetwork", "entityViewSubNetwork",
+            "entityViewSubNetworkNodes", "entityViewSubNetworkLinks",
             "entityViewProximityFocus", "entityViewProximityDirection",
-            "entityViewProximityDepth", "entityViewSubnetworkNodes",
-            "entityViewSubnetworkLinks"
+            "entityViewProximityDepth",
         ];
     }
     /**

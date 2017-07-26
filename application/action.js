@@ -251,13 +251,9 @@ class Action {
             .copyEntitiesAttributes(allEntitiesAttributes);
         // Extract identifiers of entities.
         // The full model has 2652 metabolites.
-        var currentMetabolites = Attribution.extractEntityIdentifiers(
-            "metabolite", currentEntitiesAttributes
-        );
+        //var currentMetabolites = ...;
         // The full model has 7785 reactions.
-        var currentReactions = Attribution.extractEntityIdentifiers(
-            "reaction", currentEntitiesAttributes
-        );
+        //var currentReactions = ...;
         //
         // Initialize application's attributes for entities' sets.
         // Specify selections of attributes for set view.
@@ -272,22 +268,22 @@ class Action {
         // Specify filter option for set view.
         var filter = false;
         // Determine cardinalities of sets of metabolic entities.
-        var setsCardinalities = Cardinality
-            .determineSetsCardinalities({
-                filter: filter,
-                currentEntitiesAttributes: currentEntitiesAttributes,
-                allEntitiesAttributes: allEntitiesAttributes
-            });
+        var setsCardinalities = Cardinality.determineSetsCardinalities({
+            filter: filter,
+            currentEntitiesAttributes: currentEntitiesAttributes,
+            allEntitiesAttributes: allEntitiesAttributes
+        });
         // Prepare summary of sets of metabolic entities.
         var setsSummary = Cardinality
             .prepareSetsSummary(entity, setsCardinalities);
         //
         // Initialize application's attributes for individual entities.
-        // TODO: I want to initialize all relevant attributes and settings for the entity view.
-
-        // TODO: Maybe storing identifiers for metabolites and reactions is redundant?
+        // There are 2652 metabolites and 7785 reactions.
+        // Assembly of network elements from all metabolic entities.
+        // General, Replication: 23315 nodes, 55058 links, 3.5 minutes
+        // Compartmental, Replication: 26997 nodes, 64710 links, 4 minutes
         // Specify compartmentalization option for entity view.
-        var compartmentalization = false;
+        var compartmentalization = true;
         // Specify replication options for entity view.
         var replications = [
             "ac", "accoa", "adp", "amp", "atp", "ca2", "camp", "cdp", "cl",
@@ -297,9 +293,6 @@ class Action {
             "nadh", "nadp", "nadph", "nh4", "no", "no2", "o2", "o2s", "oh1",
             "pi", "ppi", "pppi", "so3", "so4", "udp", "ump", "utp"
         ];
-        // TODO: I need to re-work the network assembly procedure to access information from metabolic entities/sets in application's model...
-        //
-
         //
         // Submit new values of attributes to the model of the application's
         // state.
@@ -307,8 +300,8 @@ class Action {
             file: file,
             allEntitiesAttributes: allEntitiesAttributes,
             currentEntitiesAttributes: currentEntitiesAttributes,
-            currentMetabolites: currentMetabolites,
-            currentReactions: currentReactions,
+            //currentMetabolites: currentMetabolites,
+            //currentReactions: currentReactions,
             setViewAttributesSelections: setViewAttributesSelections,
             setViewValuesSelections: setViewValuesSelections,
             setViewEntity: entity,
@@ -426,12 +419,7 @@ class Action {
                 entitiesAttributes: copyEntitiesAttributes
             });
         // Extract identifiers of entities.
-        var currentMetabolites = Attribution.extractEntityIdentifiers(
-            "metabolite", currentEntitiesAttributes
-        );
-        var currentReactions = Attribution.extractEntityIdentifiers(
-            "reaction", currentEntitiesAttributes
-        );
+        //
         // Determine new sets' cardinalities.
         var setsCardinalities = Cardinality
             .determineSetsCardinalities({
@@ -448,8 +436,6 @@ class Action {
             setViewAttributesSelections: setViewAttributesSelections,
             setViewValuesSelections: setViewValuesSelections,
             currentEntitiesAttributes: currentEntitiesAttributes,
-            currentMetabolites: currentMetabolites,
-            currentReactions: currentReactions,
             setsCardinalities: setsCardinalities,
             setsSummary: setsSummary
         };
@@ -479,8 +465,7 @@ class Action {
      * application.
      */
     static createNetwork(model) {
-        // TODO: Assemble network's nodes and links...
-
+        // Assemble network's nodes and links.
         var networkElements = Network.assembleNetworkElements({
             currentMetabolites: Attribution
                 .extractEntityIdentifiers(
@@ -498,13 +483,47 @@ class Action {
             metabolites: model.metabolites,
             reactions: model.reactions
         });
-
+        // Evaluate network's assembly.
+        console.log("network elements");
+        console.log(networkElements);
+        //var replicateNodes = General
+        //    .checkReplicateElements(networkElements.nodes);
+        //var replicateLinks = General
+        //    .checkReplicateElements(networkElements.links);
+        //var emptyNodes = networkElements.nodes.filter(function (node) {
+        //    return !node.hasOwnProperty("identifier");
+        //});
+        // Initialize an operable network in JSNetworkX from the network's
+        // elements.
+        var network = Network.initializeNetwork({
+            links: networkElements.links,
+            nodes: networkElements.nodes
+        });
+        // Induce subnetwork.
+        var subNetwork = Network.induceEgoNetwork({
+            focus: "pyr_c",
+            depth: 2,
+            center: true,
+            direction: null,
+            network: network
+        });
+        //var subNetwork = network;
+        // Extract information about nodes and links from the subnetwork.
+        var subNodes = Network.extractNetworkNodes(subNetwork);
+        var subLinks = Network.extractNetworkLinks(subNetwork);
+        console.log("subnetwork elements");
+        console.log(subNodes);
+        console.log(subLinks);
 
         // Submit new values of attributes to the model of the application's
         // state.
         var attributesValues = {
-            entityViewNetworkNodes: nodes,
-            entityViewNetworkLinks: links
+            entityViewNetworkNodes: networkElements.nodes,
+            entityViewNetworkLinks: networkElements.links,
+            entityViewNetwork: network,
+            entityViewSubNetwork: subNetwork,
+            entityViewSubNetworkNodes: subNodes,
+            entityViewSubNetworkLinks: subLinks
         };
         Action.submitAttributes({
             attributesValues: attributesValues,
