@@ -25,64 +25,74 @@ class State {
      * appropriate representation in a visual interface.
      */
     represent() {
-        // If model does not have records of metabolic entities and sets, then
-        // create source interface.
+        // If application's state has appropriate information then create
+        // interface for source.
         if (!this.determineMetabolicEntitiesSets()) {
-            // Initialize instance of source interface.
-            // Pass this instance a reference to the model.
+            // Initialize instance of interface.
+            // Pass this instance a reference to the model of the application's
+            // state.
             new SourceView(this.model);
-
             // Load from file a default persistent state of the application.
             // The intent is for this action to be temporary during development.
             //var path = "../model/homo-sapiens/model_sets_network.json";
             //Action.loadDefaultState(path, this.model);
+            // TODO: Get rid of the source view after extraction... then the view
+            // TODO: should be blank or something until all state attributes are available for set and entity views.
         }
-        // TODO: Get rid of the source view after extraction... then the view
-        // TODO: should be blank or something until all state attributes are available for set and entity views.
-        // If application's model has appropriate information then create state
-        // interface.
-        if (
-            this.determineMetabolicEntitiesSets() &&
-            this.determineEntitiesAttributes()
-        ) {
-            // Initialize instance of state interface.
-            // Pass this instance a reference to the model.
-            new StateView(this.model);
+        // If application's state has appropriate information then create
+        // interface for persistence.
+        if (this.determineMetabolicEntitiesSets()) {
+            // Initialize instance of interface.
+            // Pass this instance a reference to the model of the application's
+            // state.
+            new PersistenceView(this.model);
         }
-        // If application's model has appropriate information then create set
-        // interface.
+        // If application's state has appropriate information then create
+        // interface for set.
         if (
             this.determineMetabolicEntitiesSets() &&
             this.determineEntitiesAttributes() &&
-            this.determineSets()
+            this.determineEntitiesAttributesSets()
         ) {
-            // Initialize instance of set interface.
-            // Pass this instance a reference to the model.
+            // Initialize instance of interface.
+            // Pass this instance a reference to the model of the application's
+            // state.
             new SetView(this.model);
-            // Initialize instance of entity interface.
-            // Pass this instance a reference to the model.
         }
-        // If application's model has appropriate information then create entity
-        // interface.
+        // If application's state has appropriate information then create
+        // interface for control of network's assembly and visual
+        // representation.
         if (
             this.determineMetabolicEntitiesSets() &&
             this.determineEntitiesAttributes() &&
-            this.determineEntities()
+            this.determineNetworkAssembly()
         ) {
-            // Initialize instance of entity interface.
-            // Pass this instance a reference to the model.
-            new EntityView(this.model);
+            // Initialize instance of interface.
+            // Pass this instance a reference to the model of the application's
+            // state.
+            new ControlView(this.model);
         }
-
+        // If application's state has appropriate information then create
+        // interface for visual representation of network's topology.
+        if (
+            this.determineMetabolicEntitiesSets() &&
+            this.determineEntitiesAttributes() &&
+            this.determineNetwork()
+        ) {
+            // Initialize instance of interface.
+            // Pass this instance a reference to the model of the application's
+            // state.
+            new TopologyView(this.model);
+        }
     }
     /**
      * Evaluates the context of the application's state and executes automatic
      * actions as appropriate.
      */
     act() {}
-    // Methods to evaluate state of application.
+    // Methods to evaluate application's state.
     /**
-     * Determines whether or not the application's model has information about
+     * Determines whether or not the application's state has information about
      * metabolic entities and sets.
      */
     determineMetabolicEntitiesSets() {
@@ -95,39 +105,53 @@ class State {
         );
     }
     /**
-     * Determines whether or not the application's model has information about
+     * Determines whether or not the application's state has information about
      * values of attributes of metabolic entities.
      */
     determineEntitiesAttributes() {
         return (
             !(this.model.allEntitiesAttributes === null) &&
-            !(this.model.currentEntitiesAttributes === null) &&
-            !(this.model.currentMetabolites === null) &&
-            !(this.model.currentReactions === null)
+            !(this.model.currentEntitiesAttributes === null)
         );
     }
     /**
-     * Determines whether or not the application's model has information about
-     * the interface for sets of metabolic entities.
+     * Determines whether or not the application's state has information about
+     * sets of metabolic entities by their values of attributes.
      */
-    determineSets() {
+    determineEntitiesAttributesSets() {
         return (
-            !(this.model.setViewAttributesSelections === null) &&
-            !(this.model.setViewValuesSelections === null) &&
-            !(this.model.setViewEntity === null) &&
-            !(this.model.setViewFilter === null) &&
+            !(this.model.attributesSelections === null) &&
+            !(this.model.valuesSelections === null) &&
+            !(this.model.setsSummaryEntity === null) &&
+            !(this.model.setsSummaryFilter === null) &&
             !(this.model.setsCardinalities === null) &&
             !(this.model.setsSummary === null)
         );
     }
     /**
-     * Determines whether or not the application's model has information about
-     * the interface for individual metabolic entities.
+     * Determines whether or not the application's state has information about
+     * options for assembly of a network of relations between metabolic
+     * entities.
      */
-    determineEntities() {
+    determineNetworkAssembly() {
         return (
-            !(this.model.entityViewCompartmentalization === null) &&
-            !(this.model.entityViewReplications === null)
+            !(this.model.compartmentalization === null) &&
+            !(this.model.replications === null) &&
+            !(this.model.replicationsSummary === null)
+        );
+    }
+    /**
+     * Determines whether or not the application's state has information about
+     * a network and subnetwork of relations between metabolic entities.
+     */
+    determineNetwork() {
+        return (
+            !(this.model.network === null) &&
+            !(this.model.networkNodes === null) &&
+            !(this.model.networkLinks === null) &&
+            !(this.model.subNetwork === null) &&
+            !(this.model.subNetworkNodes === null) &&
+            !(this.model.subNetworkLinks === null)
         );
     }
 }

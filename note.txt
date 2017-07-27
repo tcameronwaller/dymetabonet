@@ -4,7 +4,75 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+27 July 2017
+
+----------
+
+
+
+--------------------------------------------------
 26 July 2017
+
+----------
+Meet with Alexander Lex
+
+Alex expressed concern over the discontinuous networks for processes.
+Even including all transport reactions for a process will be more biologically relevant than discontinuous processes.
+Continuous networks will allow topological traversals.
+
+This issue is only a problem in compartmental networks, not general networks.
+
+Maybe I should solve the issue at the level of processes of reactions.
+I might need to assign multiple processes to reactions.
+I could do that when extracting information about metabolic entities and sets.
+For every metabolite in a process, consider all of the transport (multi-compartmental) reactions in which it participates.
+Include these transport reactions in the process if they involve the same metabolite in another compartment that is relevant to the process.
+
+Alex advised me to prepare a list of features to implement for the minimal viable prototype.
+-rename interfaces to be more concise--source, persistence, set, control, topology
+-control for network's assembly (compartmentalization, replications)
+-control for building sub-networks (topological traversal)
+-control for visual representation of attributes
+-link directionality in node-link diagram
+-labels for nodes in node-link diagram
+-node scale by degree in subnetwork or entire network
+-search menus for values of attributes in sets' summary
+-labels or tool tips for values of attributes in sets' summary
+-resolve discontinuous networks for processes
+-optimize computational efficiency for interactivity
+-dark background for top interfaces--source and sets
+-dark background for control interface
+-selection of nodes in node-link diagram for removal or proximity expansion
+
+----------
+Control Interface
+
+Network Assembly
+-compartmentalization
+-replications (editable)
+--scrollable list of names
+--selectable names
+--auto-complete search menu to add new entities to list
+-summary information about assembled network
+-assemble
+-reset
+
+Subnetwork Selection
+-entire network if sufficiently small (below threshold)
+
+Traversal
+-proximity traversal (append or remove)
+-path traversal (append or remove)
+
+Entity
+-sort-able list of individual entities in network and/or subnetwork
+-selecting entity in list highlights node in node-link diagram
+-separate lists for metabolites and reactions
+-designation for replicate or compartmental metabolites
+
+Code
+-colors for attributes
+-positions for attributes
 
 ----------
 Network View

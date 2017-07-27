@@ -1,6 +1,6 @@
 /**
  * Interface to select file, check and extract information about metabolic
- * entities and sets, and restore state of the application.
+ * entities and sets, and restore application's state.
  */
 class SourceView {
     /**
@@ -35,9 +35,9 @@ class SourceView {
         // Remove all contents of container.
         General.removeDocumentChildren(self.container);
         //
-        // Display current file selection.
+        // Display current selection of file.
         if (!self.determineFile()) {
-            // Application does not have a current file selection.
+            // Application does not have a current selection of file.
             self.fileName = "Please select a file.";
         } else {
             // Application has a current file selection.
@@ -48,7 +48,8 @@ class SourceView {
         self.container.appendChild(self.fileLabel);
         self.container.appendChild(self.document.createElement("br"));
         // Create and activate file selector.
-        // File selector needs to be accessible always to change file selection.
+        // File selector needs to be accessible always to change selection of
+        // file.
         //if (!self.container.querySelector("input")) {}
         self.selector = self.document.createElement("input");
         self.selector.setAttribute("type", "file");
@@ -108,8 +109,8 @@ class SourceView {
         }
     }
     /**
-     * Determines whether or not the application state has a current file
-     * selection.
+     * Determines whether or not the application's state has information about a
+     * file.
      */
     determineFile() {
         return this.model.file;
@@ -117,9 +118,9 @@ class SourceView {
 }
 
 /**
- * Interface to save and restore the state of the application.
+ * Interface to save and restore a persistent state of the application.
  */
-class StateView {
+class PersistenceView {
     /**
      * Initializes an instance of the class.
      * @param {Object} model Model of the comprehensive state of the
@@ -151,17 +152,17 @@ class StateView {
         }
         // Remove any extraneous content within top.
         General.filterRemoveDocumentElements({
-            values: ["state", "set"],
+            values: ["persistence", "set"],
             attribute: "id",
             elements: self.top.children
         });
         // Create container for interface within top.
-        if (!self.document.getElementById("state")) {
+        if (!self.document.getElementById("persistence")) {
             self.container = self.document.createElement("div");
-            self.container.setAttribute("id", "state");
+            self.container.setAttribute("id", "persistence");
             self.top.appendChild(self.container);
         } else {
-            self.container = self.document.getElementById("state");
+            self.container = self.document.getElementById("persistence");
         }
         // Remove all contents of container.
         General.removeDocumentChildren(self.container);
@@ -200,7 +201,7 @@ class SetView {
      * application.
      */
     constructor (model) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = this;
         // Reference model of application's state.
@@ -216,7 +217,7 @@ class SetView {
         self.restoreSummaryTable(self);
 
         console.log("new SetView");
-        console.log(self.model.setViewValuesSelections);
+        console.log(self.model.valuesSelections);
         console.log(self.model.currentEntitiesAttributes);
         console.log(self.model.setsSummary);
     }
@@ -225,14 +226,14 @@ class SetView {
      * @param {Object} setView Instance of set view interface.
      */
     initializeContainer(setView) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
         // Create and set references to elements for interface.
         // Select view in document object model.
         self.view = self.document.getElementById("view");
         // Remove any extraneous content within view.
-        // Initialization of the state view already removes extraneous
+        // Initialization of the persistence view already removes extraneous
         // content from view.
         General.filterRemoveDocumentElements({
             values: ["top", "bottom"],
@@ -240,7 +241,8 @@ class SetView {
             elements: self.view.children
         });
         // Create container for interfaces within top of view.
-        // Initialization of the state view already creates the top container.
+        // Initialization of the persistence view already creates the top
+        // container.
         if (!self.document.getElementById("top")) {
             self.top = self.document.createElement("div");
             self.top.setAttribute("id", "top");
@@ -250,7 +252,7 @@ class SetView {
         }
         // Remove any extraneous content within top.
         General.filterRemoveDocumentElements({
-            values: ["state", "set"],
+            values: ["persistence", "set"],
             attribute: "id",
             elements: self.top.children
         });
@@ -274,7 +276,7 @@ class SetView {
         // As their actions do not change and they have access to the dynamic
         // model, it is only necessary to define event handlers upon initiation
         // of control elements.
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
         // Create and set references to elements for interface.
@@ -337,7 +339,7 @@ class SetView {
      * @param {Object} setView Instance of set view interface.
      */
     createActivateEntitySelector(entity, setView) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
         // Create entity selector.
@@ -369,7 +371,7 @@ class SetView {
      * @param {Object} setView Instance of set view interface.
      */
     createActivateFilterSelector(setView) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
         // Create and activate filter selector.
@@ -397,7 +399,7 @@ class SetView {
      * @param {Object} setView Instance of set view interface.
      */
     createActivateReset(setView) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
         // Create and activate button to restore application to initial state.
@@ -415,7 +417,7 @@ class SetView {
      * @param {Object} setView Instance of set view interface.
      */
     restoreSummaryTable(setView) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
         // Update entity selector according to application's state.
@@ -444,7 +446,7 @@ class SetView {
         // TODO: Handle scrolling through options in search menu.
         // TODO: Include some indicator of selection status in options in search menu.
 
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
         // Select summary table's body.
@@ -494,7 +496,7 @@ class SetView {
      * @param {Object} setView Instance of set view interface.
      */
     createActivateSummaryBodyCellsAttributes(setView) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
 
@@ -535,7 +537,7 @@ class SetView {
      * @param {Object} setView Instance of set view interface.
      */
     activateSummaryBodyCellsAttributes(setView) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
 
@@ -644,7 +646,7 @@ class SetView {
      * @param {Object} setView Instance of set view interface.
      */
     createActivateSummaryBodyCellsValues(setView) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
 
@@ -739,7 +741,7 @@ class SetView {
      * @param {Object} setView Instance of set view interface.
      */
     activateSummaryBodyCellsValues(setView) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
 
@@ -764,20 +766,20 @@ class SetView {
      * @param {Object} setView Instance of set view interface.
      */
     determineEntityMatch(match, setView) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
-        return self.model.setViewEntity === match;
+        return self.model.setsSummaryEntity === match;
     }
     /**
      * Determines the current filter selection in the application's state.
      * @param {Object} setView Instance of set view interface.
      */
     determineFilter(setView) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
-        return self.model.setViewFilter;
+        return self.model.setsSummaryFilter;
     }
     /**
      * Determines whether or not a value and attribute match a current
@@ -789,14 +791,14 @@ class SetView {
      * selection.
      */
     determineValueAttributeMatchSelections({value, attribute, setView}) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
         // Determine whether or not current selections include a selection for
         // the attribute and value.
         var match = self
             .model
-            .setViewValuesSelections
+            .valuesSelections
             .find(function (selection) {
                 return (
                     selection.attribute === attribute &&
@@ -831,7 +833,7 @@ class EntityView {
      * application.
      */
     constructor (model) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = this;
         // Reference model of application's state.
@@ -854,14 +856,14 @@ class EntityView {
      * @param {Object} entityView Instance of entity view interface.
      */
     initializeContainer(entityView) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = entityView;
         // Create and set references to elements for interface.
         // Select view in document object model.
         self.view = self.document.getElementById("view");
         // Remove any extraneous content within view.
-        // Initialization of the state view already removes extraneous
+        // Initialization of the persistence view already removes extraneous
         // content from view.
         General.filterRemoveDocumentElements({
             values: ["top", "bottom"],
@@ -898,7 +900,7 @@ class EntityView {
      * @param {Object} entityView Instance of entity view interface.
      */
     createActivateAssembly(entityView) {
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = entityView;
         // Create and activate button to assemble network's nodes and links.
@@ -921,7 +923,7 @@ class EntityView {
         // TODO: I can scale the radius of reactions by the number of metabolite nodes (in current network definition) they connect to.
 
 
-        // Set reference to current instance of class to transfer across changes
+        // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = entityView;
 

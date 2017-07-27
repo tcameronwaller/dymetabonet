@@ -14,22 +14,24 @@ class Model {
         // of these attributes describe the application.
         // Specify attributes for the model to expect and accept.
         this.attributeNames = [
+            // Source.
             "file",
+            // General.
             "compartments", "genes", "operations", "processes",
             "reversibilities",
             "metabolites", "reactions",
+            // Set.
             "allEntitiesAttributes", "currentEntitiesAttributes",
-            //"currentMetabolites", "currentReactions",
-            "setViewAttributesSelections", "setViewValuesSelections",
-            "setViewEntity", "setViewFilter",
+            "attributesSelections", "valuesSelections",
+            "setsSummaryEntity", "setsSummaryFilter",
             "setsCardinalities", "setsSummary",
-            "entityViewControlSelection", "entityViewCompartmentalization",
-            "entityViewReplications", "entityViewShowReplications",
-            "entityViewNetworkNodes", "entityViewNetworkLinks",
-            "entityViewNetwork", "entityViewSubNetwork",
-            "entityViewSubNetworkNodes", "entityViewSubNetworkLinks",
-            "entityViewProximityFocus", "entityViewProximityDirection",
-            "entityViewProximityDepth",
+            // Network.
+            "compartmentalization", "replications", "replicationsSummary",
+            "networkNodes", "networkLinks", "network",
+            // Subnetwork.
+            "proximityFocus", "proximityDirection", "proximityDepth",
+            "pathOrigin", "pathDestination", "pathDirection", "pathCount",
+            "subNetwork", "subNetworkNodes", "subNetworkLinks",
         ];
     }
     /**

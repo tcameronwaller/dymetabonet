@@ -258,11 +258,11 @@ class Action {
         // Initialize application's attributes for entities' sets.
         // Specify selections of attributes for set view.
         // These selections determine which search menus to create in set view.
-        var setViewAttributesSelections = [];
+        var attributesSelections = [];
         // Specify selections of values of attributes for set view.
         // These selections determine which attributes and values define filters
         // against entities' attributes.
-        var setViewValuesSelections = [];
+        var valuesSelections = [];
         // Specify entity option for set view.
         var entity = "metabolite";
         // Specify filter option for set view.
@@ -278,10 +278,6 @@ class Action {
             .prepareSetsSummary(entity, setsCardinalities);
         //
         // Initialize application's attributes for individual entities.
-        // There are 2652 metabolites and 7785 reactions.
-        // Assembly of network elements from all metabolic entities.
-        // General, Replication: 23315 nodes, 55058 links, 3.5 minutes
-        // Compartmental, Replication: 26997 nodes, 64710 links, 4 minutes
         // Specify compartmentalization option for entity view.
         var compartmentalization = true;
         // Specify replication options for entity view.
@@ -302,9 +298,9 @@ class Action {
             currentEntitiesAttributes: currentEntitiesAttributes,
             //currentMetabolites: currentMetabolites,
             //currentReactions: currentReactions,
-            setViewAttributesSelections: setViewAttributesSelections,
-            setViewValuesSelections: setViewValuesSelections,
-            setViewEntity: entity,
+            attributesSelections: attributesSelections,
+            valuesSelections: valuesSelections,
+            entity: entity,
             setViewFilter: filter,
             setsCardinalities: setsCardinalities,
             setsSummary: setsSummary,
@@ -326,7 +322,7 @@ class Action {
      */
     static changeSetViewEntity(model) {
         // Determine new entity.
-        var oldEntity = model.setViewEntity;
+        var oldEntity = model.setsSummaryEntity;
         if (oldEntity === "metabolite") {
             var newEntity = "reaction";
         } else if (oldEntity === "reaction") {
@@ -338,7 +334,7 @@ class Action {
         // Submit new values of attributes to the model of the application's
         // state.
         var attributesValues = {
-            setViewEntity: newEntity,
+            entity: newEntity,
             setsSummary: setsSummary
         };
         Action.submitAttributes({
@@ -355,7 +351,7 @@ class Action {
      */
     static changeSetViewFilter(model) {
         // Determine new filter.
-        var oldFilter = model.setViewFilter;
+        var oldFilter = model.setsSummaryFilter;
         if (oldFilter) {
             var newFilter = false;
         } else {
@@ -370,7 +366,7 @@ class Action {
             });
         // Prepare new sets' summary.
         var setsSummary = Cardinality
-            .prepareSetsSummary(model.setViewEntity, setsCardinalities);
+            .prepareSetsSummary(model.setsSummaryEntity, setsCardinalities);
         // Submit new values of attributes to the model of the application's
         // state.
         var attributesValues = {
@@ -395,15 +391,15 @@ class Action {
     static selectSetViewValue({value, attribute, model} = {}) {
         // Remove any selections of attributes for set view.
         // These selections determine which search menus to create in set view.
-        var setViewAttributesSelections = [];
+        var attributesSelections = [];
         // Record current selection in collection of selections of attributes
         // and values for set view.
         // These selections determine which attributes and values define filters
         // against entities' attributes.
-        var setViewValuesSelections = Attribution.recordFilterSelection({
+        var valuesSelections = Attribution.recordFilterSelection({
             value: value,
             attribute: attribute,
-            selections: model.setViewValuesSelections
+            selections: model.valuesSelections
         });
         // Determine entities and their values of attributes that pass filters
         // from selections.
@@ -415,7 +411,7 @@ class Action {
         // accommodate any changes to selections of filters.
         var currentEntitiesAttributes = Attribution
             .filterEntitiesAttributesValues({
-                selections: setViewValuesSelections,
+                selections: valuesSelections,
                 entitiesAttributes: copyEntitiesAttributes
             });
         // Extract identifiers of entities.
@@ -423,18 +419,18 @@ class Action {
         // Determine new sets' cardinalities.
         var setsCardinalities = Cardinality
             .determineSetsCardinalities({
-                filter: model.setViewFilter,
+                filter: model.setsSummaryFilter,
                 currentEntitiesAttributes: currentEntitiesAttributes,
                 allEntitiesAttributes: model.allEntitiesAttributes
             });
         // Prepare new sets' summary.
         var setsSummary = Cardinality
-            .prepareSetsSummary(model.setViewEntity, setsCardinalities);
+            .prepareSetsSummary(model.setsSummaryEntity, setsCardinalities);
         // Submit new values of attributes to the model of the application's
         // state.
         var attributesValues = {
-            setViewAttributesSelections: setViewAttributesSelections,
-            setViewValuesSelections: setViewValuesSelections,
+            attributesSelections: attributesSelections,
+            valuesSelections: valuesSelections,
             currentEntitiesAttributes: currentEntitiesAttributes,
             setsCardinalities: setsCardinalities,
             setsSummary: setsSummary
@@ -466,6 +462,10 @@ class Action {
      */
     static createNetwork(model) {
         // Assemble network's nodes and links.
+        // There are 2652 metabolites and 7785 reactions.
+        // Assembly of network elements from all metabolic entities.
+        // General, Replication: 23315 nodes, 55058 links, 3.5 minutes
+        // Compartmental, Replication: 26997 nodes, 64710 links, 4 minutes
         var networkElements = Network.assembleNetworkElements({
             currentMetabolites: Attribution
                 .extractEntityIdentifiers(

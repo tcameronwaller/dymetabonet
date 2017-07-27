@@ -88,15 +88,15 @@ h3 {
 }
 
 /******************************************************************************/
-/* State View */
+/* Persistence View */
 /******************************************************************************/
 
-#state button {
+#persistence button {
     width: 2cm;
 }
 
-#state {
-    background-color: rgba(255, 255, 255, 1);
+#persistence {
+    background-color: rgba(50, 50, 50, 1);
     /*display: inline;*/
     /*float: left;*/
     flex-basis: content;
@@ -110,7 +110,7 @@ h3 {
 #set {
     /*display: inline;*/
     /*float: left;*/
-    background-color: rgba(255, 255, 255, 1);
+    background-color: rgba(50, 50, 50, 1);
     flex: 1;
     font-family: sans-serif;
     /*overflow: auto;*/
