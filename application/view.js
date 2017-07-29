@@ -204,9 +204,9 @@ class SetView {
         // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = this;
-        // Reference model of application's state.
+        // Set reference to model of application's state.
         self.model = model;
-        // Reference document object model.
+        // Set reference to document object model (DOM).
         self.document = document;
         // Initialize container for interface.
         self.initializeContainer(self);
@@ -313,6 +313,8 @@ class SetView {
         } else {
             // Interface's container includes a table element.
             // Establish references to existing elements.
+            // References are only necessary for elements that depend on the
+            // application's state.
             self.table = self.container.getElementsByTagName("table").item(0);
             self.tableHead = self
                 .container.getElementsByTagName("thead").item(0);
@@ -359,7 +361,7 @@ class SetView {
             //    .tableHeadRowCellValue.getElementsByClassName("entity");
             //var value = General.determineRadioGroupValue(radios);
             //Action.submitSetViewEntity(value, self.model);
-            Action.changeSetViewEntity(self.model);
+            Action.changeSetsSummaryEntity(self.model);
         });
         var entityLabel = self.document.createElement("label");
         self.tableHeadRowCellValue.appendChild(entityLabel);
@@ -375,7 +377,7 @@ class SetView {
         // in scope.
         var self = setView;
         // Create and activate filter selector.
-        var identifier = "set-view-filter";
+        var identifier = "sets-summary-filter";
         self.filterSelector = self.document.createElement("input");
         self.tableHeadRowCellValue.appendChild(self.filterSelector);
         self.filterSelector.setAttribute("id", identifier);
@@ -385,9 +387,7 @@ class SetView {
         self.filterSelector.addEventListener("change", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Change current selection of filter in application's state.
-            //var value = self.filterSelector.checked;
-            //Action.submitSetViewFilter(value, self.model);
-            Action.changeSetViewFilter(self.model);
+            Action.changeSetsSummaryFilter(self.model);
         });
         var filterLabel = self.document.createElement("label");
         self.tableHeadRowCellValue.appendChild(filterLabel);
@@ -823,10 +823,10 @@ class SetView {
 // TODO: just tell the user counts of metabolites and reactions and let user
 // TODO: initiate assembly.
 /**
- * Interface to represent the network of relations between individual metabolic
- * entities.
+ * Interface to control network's assembly, selection, and visual
+ * representation.
  */
-class EntityView {
+class ControlView {
     /**
      * Initializes an instance of the class.
      * @param {Object} model Model of the comprehensive state of the
@@ -836,29 +836,31 @@ class EntityView {
         // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = this;
-        // Reference model of application's state.
+        // Set reference to model of application's state.
         self.model = model;
-        // Reference document object model.
+        // Set reference to document object model (DOM).
         self.document = document;
         // Initialize container for interface.
         self.initializeContainer(self);
-        // Create button for assembly.
-        self.createActivateAssembly(self);
-        // TODO: I think I should have a control view and a network view...
-        // TODO: Only show the network view if all necessary info is available.
-        // Draw network (temporary)...
-        if (self.determineSubnetwork()) {
-            self.drawNetwork(self);
-        }
+
+        // TODO: I'm eventually going to need to evaluate state a little to determine which controls to create...
+        // TODO: I'll need to accommodate changes in state to remove things if I need to.
+
+        // Initialize interface for control of network's assembly.
+        self.initializeAssemblyControls(self);
+        // Restore interface for control of network's assembly.
+        //self.restoreAssemblyControls(self);
+
     }
+    // TODO: Change the initializeContainer method to create everything within a control panel div...
     /**
      * Initializes the container for the interface.
-     * @param {Object} entityView Instance of entity view interface.
+     * @param {Object} view Instance of current view interface.
      */
-    initializeContainer(entityView) {
+    initializeContainer(view) {
         // Set reference to class' current instance to transfer across changes
         // in scope.
-        var self = entityView;
+        var self = view;
         // Create and set references to elements for interface.
         // Select view in document object model.
         self.view = self.document.getElementById("view");
@@ -880,42 +882,214 @@ class EntityView {
         }
         // Remove any extraneous content within bottom.
         General.filterRemoveDocumentElements({
-            values: ["entity"],
+            values: ["control", "topology"],
             attribute: "id",
             elements: self.bottom.children
         });
         // Create container for interface within bottom.
         // Set reference to current interface's container.
-        if (!self.document.getElementById("entity")) {
+        if (!self.document.getElementById("control")) {
             self.container = self.document.createElement("div");
             self.bottom.appendChild(self.container);
-            self.container.setAttribute("id", "entity");
+            self.container.setAttribute("id", "control");
         } else {
-            self.container = self.document.getElementById("entity");
+            self.container = self.document.getElementById("control");
         }
+    }
+    /**
+     * Initializes the interface for control of network's assembly.
+     * Creates new elements that do not exist and do not vary with data.
+     * Sets references to elements that already exist.
+     * @param {Object} view Instance of current view interface.
+     */
+    initializeAssemblyControls(view) {
+        // As their actions do not change and they have access to the dynamic
+        // model, it is only necessary to define event handlers upon initiation
+        // of control elements.
+        // Set reference to class' current instance to transfer across changes
+        // in scope.
+        var self = view;
+        // Create and set references to elements for interface.
+        // Initialize interface.
+        if (!self.document.getElementById("assembly")) {
+            // Interface's container does not include interface for control of
+            // network's assembly.
+            // Create interface.
+            self.assembly = self.document.createElement("div");
+            self.container.appendChild(self.assembly);
+            self.assembly.setAttribute("id", "assembly");
+            // Create and activate compartmentalization selector.
+            self.createActivateCompartmentalizationSelector(self);
+
+            // Create and activate list of replications.
+            // Temporarily make the list viewable constantly.
+
+            // Create and activate reset button.
+            self.createActivateReset(self);
+
+            // Create and activate assemble button.
+            self.createActivateAssemble(self);
+
+        } else {
+            // Interface's container includes interface for control of network's
+            // assembly.
+            // Establish references to existing elements.
+            // References are only necessary for elements that depend on the
+            // application's state.
+            self.assembly = self.document.getElementById("assembly");
+            self.compartmentalizationSelector = self
+                .document.getElementById("compartmentalization");
+        }
+    }
+    /**
+     * Creates and activates selector for compartmentalization in the network's
+     * assembly.
+     * @param {Object} view Instance of current view interface.
+     */
+    createActivateCompartmentalizationSelector(view) {
+        // Set reference to class' current instance to transfer across changes
+        // in scope.
+        var self = view;
+        // Create and activate compartmentalization selector.
+        var identifier = "compartmentalization";
+        self.compartmentalizationSelector = self
+            .document.createElement("input");
+        self.assembly.appendChild(self.compartmentalizationSelector);
+        self.compartmentalizationSelector.setAttribute("id", identifier);
+        self.compartmentalizationSelector.setAttribute("type", "checkbox");
+        self
+            .compartmentalizationSelector
+            .setAttribute("value", "compartmentalization");
+        self
+            .compartmentalizationSelector
+            .addEventListener("change", function (event) {
+                // Element on which the event originated is event.currentTarget.
+                // Change current selection of compartmentalization in
+                // application's state.
+                Action.changeCompartmentalization(self.model);
+            });
+        var label = self.document.createElement("label");
+        self.assembly.appendChild(label);
+        label.setAttribute("for", identifier);
+        label.textContent = "compartmentalization";
+    }
+    /**
+     * Creates and activates button to restore controls for network's assembly
+     * to initial state.
+     * @param {Object} view Instance of current view interface.
+     */
+    createActivateReset(view) {
+        // Set reference to class' current instance to transfer across changes
+        // in scope.
+        var self = view;
+        // Create and activate button to restore controls for network's assembly
+        // to initial state.
+        self.reset = self.document.createElement("button");
+        self.assembly.appendChild(self.reset);
+        self.reset.textContent = "reset";
+        self.reset.addEventListener("click", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // Restore controls for network's assembly to initial state.
+            Action.restoreNetworkAssembly(self.model);
+        });
     }
     /**
      * Creates and activates button to assemble network's nodes and links for
      * entity view.
-     * @param {Object} entityView Instance of entity view interface.
+     * @param {Object} view Instance of current view interface.
      */
-    createActivateAssembly(entityView) {
+    createActivateAssemble(view) {
         // Set reference to class' current instance to transfer across changes
         // in scope.
-        var self = entityView;
+        var self = view;
         // Create and activate button to assemble network's nodes and links.
-        // TODO: Do this however I did it before...
-        if (!self.container.getElementsByTagName("button").item(0)) {
-            self.assembly = self.document.createElement("button");
-            self.container.appendChild(self.assembly);
-            self.assembly.textContent = "assemble";
-            self.assembly.addEventListener("click", function (event) {
-                // Element on which the event originated is event.currentTarget.
-                // Assemble network's nodes and links.
-                Action.createNetwork(self.model);
-            });
+        self.assemble = self.document.createElement("button");
+        self.assembly.appendChild(self.assemble);
+        self.assemble.textContent = "assemble";
+        self.assemble.addEventListener("click", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // Assemble network's nodes and links.
+            Action.createNetwork(self.model);
+        });
+    }
+    /**
+     * Determines whether or not the application state has a subnetwork.
+     */
+    determineSubnetwork() {
+        return (
+            !(this.model.entityViewSubNetworkNodes === null) &&
+            !(this.model.entityViewSubNetworkLinks === null)
+        );
+    }
+
+
+}
+
+/**
+ * Interface to represent the topology of the network of relations between
+ * metabolic entities.
+ */
+class TopologyView {
+    /**
+     * Initializes an instance of the class.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    constructor (model) {
+        // Set reference to class' current instance to transfer across changes
+        // in scope.
+        var self = this;
+        // Set reference to model of application's state.
+        self.model = model;
+        // Set reference to document object model (DOM).
+        self.document = document;
+        // Initialize container for interface.
+        self.initializeContainer(self);
+    }
+    /**
+     * Initializes the container for the interface.
+     * @param {Object} topologyView Instance of entity view interface.
+     */
+    initializeContainer(topologyView) {
+        // Set reference to class' current instance to transfer across changes
+        // in scope.
+        var self = topologyView;
+        // Create and set references to elements for interface.
+        // Select view in document object model.
+        self.view = self.document.getElementById("view");
+        // Remove any extraneous content within view.
+        // Initialization of the persistence view already removes extraneous
+        // content from view.
+        General.filterRemoveDocumentElements({
+            values: ["top", "bottom"],
+            attribute: "id",
+            elements: self.view.children
+        });
+        // Create container for interfaces within bottom of view.
+        if (!self.document.getElementById("bottom")) {
+            self.bottom = self.document.createElement("div");
+            self.view.appendChild(self.bottom);
+            self.bottom.setAttribute("id", "bottom");
+        } else {
+            self.bottom = self.document.getElementById("bottom");
+        }
+        // Remove any extraneous content within bottom.
+        General.filterRemoveDocumentElements({
+            values: ["control", "topology"],
+            attribute: "id",
+            elements: self.bottom.children
+        });
+        // Create container for interface within bottom.
+        // Set reference to current interface's container.
+        if (!self.document.getElementById("topology")) {
+            self.container = self.document.createElement("div");
+            self.bottom.appendChild(self.container);
+            self.container.setAttribute("id", "topology");
+        } else {
+            self.container = self.document.getElementById("topology");
         }
     }
+
     drawNetwork(entityView) {
 
         // TODO: How can I accommodate networks of different scales?
@@ -1038,15 +1212,5 @@ class EntityView {
         };
 
     }
-    /**
-     * Determines whether or not the application state has a subnetwork.
-     */
-    determineSubnetwork() {
-        return (
-            !(this.model.entityViewSubNetworkNodes === null) &&
-            !(this.model.entityViewSubNetworkLinks === null)
-        );
-    }
-
 
 }

@@ -314,13 +314,13 @@ class Action {
         });
     }
     /**
-     * Changes the set view's specification of entity.
+     * Changes the specification of entity for the sets' summary.
      * Also prepares new sets' summary.
      * Submits new values to the model of the application's state.
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
-    static changeSetViewEntity(model) {
+    static changeSetsSummaryEntity(model) {
         // Determine new entity.
         var oldEntity = model.setsSummaryEntity;
         if (oldEntity === "metabolite") {
@@ -343,13 +343,13 @@ class Action {
         });
     }
     /**
-     * Changes the set view's specification of filter.
+     * Changes the specification of filter for the sets' summary.
      * Also determines new sets' cardinalities and prepares new sets' summary.
      * Submits new values to the model of the application's state.
      * @param {Object} model Model of the comprehensive state of the
      * application.
      */
-    static changeSetViewFilter(model) {
+    static changeSetsSummaryFilter(model) {
         // Determine new filter.
         var oldFilter = model.setsSummaryFilter;
         if (oldFilter) {
@@ -453,6 +453,40 @@ class Action {
         // TODO: reset default entity and filter
         // TODO: reset currentEntitiesAttributes to copy of allEntitiesAttributes
         // TODO: derive setsCardinalities and setsSummary
+
+        // TODO: Put all operations for this restore in a separate method and call that method both from initializeMetabolicEntitiesSets and here.
+
+    }
+    /**
+     * Changes the specification of compartmentalization for the network's
+     * assembly.
+     * Submits new values to the model of the application's state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static changeCompartmentalization(model) {
+        // Determine new compartmentalization.
+        var oldValue = model.compartmentalization;
+        if (oldValue) {
+            var newValue = false;
+        } else {
+            var newValue = true;
+        }
+        // Submit new value of attribute to the model of the application's
+        // state.
+        Action.submitAttribute({
+            value: newValue,
+            attribute: "compartmentalization",
+            model: model
+        });
+    }
+    /**
+     * Restores controls for network's assembly to initial state.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static restoreNetworkAssembly(model) {
+        // TODO: Put all operations for this restore in a separate method and call that method both from initializeMetabolicEntitiesSets and here.
     }
     /**
      * Creates a network of nodes and links to represent metabolic entities,

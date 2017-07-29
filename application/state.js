@@ -19,6 +19,13 @@ class State {
         this.represent();
         // Control action on the state of the model.
         this.act();
+
+        console.log("-----------------------");
+        console.log("state evaluation");
+        console.log(this.determineMetabolicEntitiesSets());
+        console.log(this.determineEntitiesAttributes());
+        console.log(this.determineEntitiesAttributesSets());
+
     }
     /**
      * Evaluates the context of the application's state and creates an
