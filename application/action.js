@@ -489,6 +489,66 @@ class Action {
         // TODO: Put all operations for this restore in a separate method and call that method both from initializeMetabolicEntitiesSets and here.
     }
     /**
+     * Removes the identifier for a single metabolite from the collection of
+     * replications for the network's assembly.
+     * Submits new values to the model of the application's state.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {string} parameters.identifier Identifier of a single metabolite.
+     * @param {Object} parameters.model Model of the comprehensive state of the
+     * application.
+     */
+    static removeReplication({identifier, model} = {}) {
+        // Filter replications to omit any replication for the identifier.
+        var replications = model.replications.filter(function (replication) {
+            return !(replication === identifier);
+        });
+        // Submit new value of attribute to the model of the application's
+        // state.
+        Action.submitAttribute({
+            value: replications,
+            attribute: "replications",
+            model: model
+        });
+    }
+    /**
+     * Includes the identifier for a single metabolite in the collection of
+     * replications for the network's assembly.
+     * Submits new values to the model of the application's state.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {string} parameters.name Name of a single metabolite.
+     * @param {Object} parameters.model Model of the comprehensive state of the
+     * application.
+     */
+    static includeReplication({name, model} = {}) {
+        // If name is valid for a current metabolite that is not already in the
+        // collection of replications, then include that metabolite's identifier
+        // in the collection of replications.
+        // Determine the identifier for any current, novel metabolite that
+        // matches the name.
+        var currentMetabolitesAttributes = Attribution
+            .filterEntityType("metabolite", model.currentEntitiesAttributes);
+        var currentMetabolitesIdentifiers = Attribution
+            .extractEntityIdentifiers(currentMetabolitesAttributes);
+        var matches = currentMetabolitesIdentifiers
+            .filter(function (identifier) {
+                var nameMatch = model.metabolites[identifier].name === name;
+                var novel = !model.replications.includes(identifier);
+                return nameMatch && novel;
+            });
+        if ((matches.length > 0)) {
+            var replications = [].concat(model.replications, matches[0]);
+        } else {
+            var replications = model.replications;
+        }
+        // Submit new value of attribute to the model of the application's
+        // state.
+        Action.submitAttribute({
+            value: replications,
+            attribute: "replications",
+            model: model
+        });
+    }
+    /**
      * Creates a network of nodes and links to represent metabolic entities,
      * metabolites and reactions, and relations between them.
      * @param {Object} model Model of the comprehensive state of the

@@ -205,7 +205,7 @@
 #replication {
     width: 90%;
     height: 3cm;
-    overflow: auto;
+    overflow-y: auto;
 }
 
 

@@ -215,11 +215,6 @@ class SetView {
         self.initializeSummaryTable(self);
         // Restore the table for summary of sets' cardinalitites.
         self.restoreSummaryTable(self);
-
-        console.log("new SetView");
-        console.log(self.model.valuesSelections);
-        console.log(self.model.currentEntitiesAttributes);
-        console.log(self.model.setsSummary);
     }
     /**
      * Initializes the container for the interface.
@@ -847,6 +842,9 @@ class AssemblyView {
         // Restore interface for control of network's assembly.
         self.restoreAssemblyControls(self);
 
+        // TODO: Style the replications in a way to set apart.
+        // TODO: Include search menu to add metabolites to replications.
+
     }
     /**
      * Initializes the container for the interface.
@@ -933,28 +931,78 @@ class AssemblyView {
             // Create and activate compartmentalization selector.
             self.createActivateCompartmentalizationSelector(self);
             self.container.appendChild(self.document.createElement("br"));
-            // Create and activate list of replications.
-            // Temporarily make the list viewable constantly.
-            self.replication = self.document.createElement("div");
-            self.container.appendChild(self.replication);
-            self.replication.setAttribute("id", "replication");
-            // Create table.
-            var table = self.document.createElement("table");
-            self.replication.appendChild(table);
-            // Create table's header.
-            var tableHead = self.document.createElement("thead");
-            table.appendChild(tableHead);
-            var tableHeadRow = self.document.createElement("tr");
-            tableHead.appendChild(tableHeadRow);
-            var tableHeadRowCellName = self.document.createElement("th");
-            tableHeadRow.appendChild(tableHeadRowCellName);
-            tableHeadRowCellName.textContent = "Name";
-            var tableHeadRowCellRemove = self.document.createElement("th");
-            tableHeadRow.appendChild(tableHeadRowCellRemove);
-            tableHeadRowCellRemove.textContent = "Remove";
-            // Create table's body.
-            self.replicationTableBody = self.document.createElement("tbody");
-            table.appendChild(self.replicationTableBody);
+            // Initialize interface to summarize and modify replications for
+            // network's assembly.
+            self.initializeReplicationsSummary(self);
+
+
+            ////////////////////////////////////////////
+            // Create and activate a search field.
+            var attributeSearch = attributeCell.append("div");
+            attributeSearch.classed("search", true);
+            // Append a data list to the search menu.
+            var attributeValueList = attributeSearch.append("datalist");
+            attributeValueList
+                .attr("id", function (data, index) {
+                    return "attribute-" + data.attribute + "-values";
+                });
+            // Append options to the data list.
+            var attributeValues = attributeValueList
+                .selectAll("option")
+                .data(function (element, index) {
+                    return element.values;
+                });
+            attributeValues.exit().remove();
+            var newAttributeValues = attributeValues
+                .enter()
+                .append("option");
+            attributeValues = newAttributeValues
+                .merge(attributeValues);
+            attributeValues.attr("value", function (data, index) {
+                return data.name;
+            });
+            // Append search text field to the search menu.
+            var attributeSearchField = attributeSearch.append("input");
+            attributeSearchField
+                .attr("autocomplete", "off")
+                .attr("id", function (data, index) {
+                    return "attribute-" + data.attribute + "-search";
+                })
+                .attr("list", function (data, index) {
+                    return "attribute-" + data.attribute + "-values";
+                })
+                .attr("type", "search");
+            // Assign event listeners and handlers to search menu.
+            // Option elements from datalist element do not report events.
+            // Respond to event on input search text field and then find
+            // relevant information from the options in the datalist.
+            attributeSearchField
+                .on("change", function (data, index, nodes) {
+                    if (!attributeValue.empty()) {
+                        controlAttributeMenuSelection({
+                            value: attributeValue.data()[0].identifier,
+                            attribute: attributeValue.data()[0].attribute,
+                            entity: entity,
+                            filter: filter,
+                            originalAttributeSummary:
+                            originalAttributeSummary,
+                            originalAttributeIndex: originalAttributeIndex,
+                            model: model
+                        });
+                    }
+                });
+
+
+
+
+
+
+
+
+            //////////////////////////////////////////////
+
+
+
         } else {
             // Interface's container includes interface for control of network's
             // assembly.
@@ -964,9 +1012,12 @@ class AssemblyView {
             self.compartmentalizationSelector = self
                 .document.getElementById("compartmentalization");
             self.replication = self
-                .document.getElementById("replication");
+                .document.getElementById("assembly-replication");
             self.replicationTableBody = self
                 .replication.getElementsByTagName("tbody").item(0);
+            self.replicationOptions = self
+                .replication.getElementsByTagName("datalist").item(0);
+
         }
     }
     /**
@@ -1041,6 +1092,80 @@ class AssemblyView {
         label.textContent = "compartmentalization";
     }
     /**
+     * Initializes interface to summarize and modify replications for the
+     * network's assembly.
+     * Creates new elements that do not exist and do not vary with data.
+     * @param {Object} view Instance of interface's current view.
+     */
+    initializeReplicationsSummary(view) {
+        // Set reference to class' current instance to transfer across changes
+        // in scope.
+        var self = view;
+        // Create container for the replication interface.
+        self.replication = self.document.createElement("div");
+        self.container.appendChild(self.replication);
+        self.replication.setAttribute("id", "assembly-replication");
+        // Initialize summary of current replications.
+        var table = self.document.createElement("table");
+        self.replication.appendChild(table);
+        var tableHead = self.document.createElement("thead");
+        table.appendChild(tableHead);
+        var tableHeadRow = self.document.createElement("tr");
+        tableHead.appendChild(tableHeadRow);
+        var tableHeadRowCellName = self.document.createElement("th");
+        tableHeadRow.appendChild(tableHeadRowCellName);
+        tableHeadRowCellName.textContent = "Name";
+        var tableHeadRowCellRemove = self.document.createElement("th");
+        tableHeadRow.appendChild(tableHeadRowCellRemove);
+        tableHeadRowCellRemove.textContent = "Remove";
+        self.replicationTableBody = self.document.createElement("tbody");
+        table.appendChild(self.replicationTableBody);
+        // Initialize menu to include new replications.
+        // Create list for replication options.
+        var listIdentifier = "assembly-replication-options";
+        self.replicationOptions = self.document.createElement("datalist");
+        self.replication.appendChild(self.replicationOptions);
+        self.replicationOptions.setAttribute("id", listIdentifier);
+        // Create and activate search menu.
+        self.replicationSearch = self.document.createElement("input");
+        self.replication.appendChild(self.replicationSearch);
+        self.replicationSearch.setAttribute("type", "search");
+        self.replicationSearch.setAttribute("autocomplete", "off");
+        self.replicationSearch.setAttribute("list", listIdentifier);
+        // TODO: Go ahead and activate the search  menu...
+
+        self.replicationSearch.addEventListener("change", function (event) {
+            // Element on which the event originated is event.currentTarget.
+            // Event originates on search menu, not on datalist's options.
+            // Determine metabolite's name from the value of the current
+            // selection.
+            var name = event.currentTarget.value;
+            // If current selection's value is a valid name for a current
+            // metabolite, then include the metabolite's identifier in the
+            // collection of replications.
+            Action.includeReplication({
+                name: name,
+                model: self.model
+            });
+
+
+            var attributeValues = d3
+                .select(nodes[index].list)
+                .selectAll("option");
+            var attributeValue = attributeValues
+                .filter(function (data, index) {
+                    return data.name === selection;
+                });
+
+        });
+
+
+    }
+
+
+
+
+    /**
      * Restores the interface for control of network's assembly.
      * @param {Object} view Instance of interface's current view.
      */
@@ -1080,7 +1205,7 @@ class AssemblyView {
                 },
                 {
                     type: "removal",
-                    values: element
+                    value: element
                 }
             );
         });
@@ -1088,19 +1213,11 @@ class AssemblyView {
         var newCells = dataCells.enter().append("td");
         var cells = newCells.merge(dataCells);
         self.replicationsTableBodyCells = cells;
-
         // Cells for data's name.
         self.createReplicationsSummaryNames(self);
-
         // Cells for data's values.
-        // Select cells for data's values.
-        self.replicationTableBodyCellsRemovals = cells
-            .filter(function (data, index) {
-                return data.type === "removal";
-            });
-        //self.createActivateReplicationsSummaryRemovals(self);
+        self.createActivateReplicationsSummaryRemovals(self);
     }
-
     /**
      * Creates cells for data's names in replications' summary.
      * @param {Object} view Instance of interface's current view.
@@ -1117,126 +1234,94 @@ class AssemblyView {
         // Assign attributes to cells for attributes.
         // TODO: Access the actual names of the metabolites from the records for metabolites in the app's model.
         self.replicationTableBodyCellsNames.text(function (data) {
-            return data.value;
+            return self.model.metabolites[data.value].name;
         });
     }
     /**
      * Creates and activates cells for data's values in body of summary table.
-     * @param {Object} setView Instance of set view interface.
+     * @param {Object} view Instance of interface's current view.
      */
     createActivateReplicationsSummaryRemovals(view) {
         // Set reference to class' current instance to transfer across changes
         // in scope.
-        var self = setView;
-
-        // TODO: Format bars according to their selection status in the model of app state.
-        // TODO: Use bar's attribute and value to look-up selection status in model.
-
-
-        // Assign attributes to cells in value column.
-        self.tableBodyCellsValues.classed("value", true);
-        // Append graphical containers to cells for values.
-        // The graphical containers need access to the same data as their parent
-        // cells without any transformation.
-        // Append graphical containers to the enter selection to avoid replication
-        // of these containers upon restorations to the table.
-        var dataValueCellGraphs = self.tableBodyCellsValues
-            .selectAll("svg")
+        var self = view;
+        // Select cells for data's values.
+        self.replicationTableBodyCellsRemovals = self
+            .replicationsTableBodyCells.filter(function (data, index) {
+                return data.type === "removal";
+            });
+        // Assign attributes to cells for removal.
+        // Append buttons.
+        var dataButtons = self.replicationTableBodyCellsRemovals
+            .selectAll("button")
             .data(function (element, index) {
                 return [element];
             });
-        dataValueCellGraphs.exit().remove();
-        var newValueCellGraphs = dataValueCellGraphs.enter().append("svg");
-        var valueCellGraphs = newValueCellGraphs.merge(dataValueCellGraphs);
-        valueCellGraphs.classed("graph", true);
-        // Determine the width of graphical containers.
-        var graphWidth = parseFloat(
-            window.getComputedStyle(
-                self.tableBody.getElementsByClassName("graph").item(0)
-            ).width.replace("px", "")
-        );
-        // Append rectangles to graphical containers in cells for values.
-        var dataValueCellBars = valueCellGraphs
-            .selectAll("rect")
-            .data(function (element, index) {
-                // Organize data for rectangles.
-                return element.values;
-            });
-        dataValueCellBars.exit().remove();
-        var newValueCellBars = dataValueCellBars.enter().append("rect");
-        self.tableBodyCellsValuesGraphBars = newValueCellBars
-            .merge(dataValueCellBars);
-        // Assign attributes to rectangles.
-        self.tableBodyCellsValuesGraphBars
-            .attr("id", function (data, index) {
-                return "set-view-attribute-" +
-                    data.attribute +
-                    "-value-" +
-                    data.identifier;
-            })
-            .classed("bar", true)
-            .classed("normal", function (data, index) {
-                var match = self.determineValueAttributeMatchSelections({
-                    value: data.value,
-                    attribute: data.attribute,
-                    setView: self
-                });
-                return !match;
-            })
-            .classed("emphasis", function (data, index) {
-                var match = self.determineValueAttributeMatchSelections({
-                    value: data.value,
-                    attribute: data.attribute,
-                    setView: self
-                });
-                return match;
-            })
-            .attr("title", function (data, index) {
-                return data.value;
-            });
+        dataButtons.exit().remove();
+        var newButtons = dataButtons.enter().append("button");
+        var buttons = newButtons.merge(dataButtons);
+        // Assign attributes to buttons.
+        buttons.text(function (data) {
+            return "x";
+        });
         // Assign position and dimension to rectangles.
-        self.tableBodyCellsValuesGraphBars
-            .attr("x", function (data, index) {
-                // Determine scale according to attribute total.
-                var scale = d3
-                    .scaleLinear()
-                    .domain([0, data.total])
-                    .range([0, graphWidth]);
-                return scale(data.base);
-            })
-            .attr("width", function (data, index) {
-                // Determine scale according to attribute total.
-                var scale = d3
-                    .scaleLinear()
-                    .domain([0, data.total])
-                    .range([0, graphWidth]);
-                return scale(data.count);
+        // Activate buttons.
+        // Assign event listeners and handlers to bars.
+        buttons.on("click", function (data, index, nodes) {
+            console.log("click data");
+            console.log(data.value);
+            Action.removeReplication({
+                identifier: data.value,
+                model: self.model
             });
-        // Activate cells for data's values.
-        self.activateSummaryBodyCellsValues(self);
+        });
     }
     /**
-     * Activates cells for data's values in body of summary table.
-     * @param {Object} setView Instance of set view interface.
+     * Creates and activates menu to include new replications.
+     * @param {Object} view Instance of interface's current view.
      */
-    activateSummaryBodyCellsValues(setView) {
+    createActivateNewReplicationsMenu(view) {
         // Set reference to class' current instance to transfer across changes
         // in scope.
-        var self = setView;
+        var self = view;
 
-        // Remove any existing event listeners and handlers from bars.
-        self.tableBodyCellsValuesGraphBars
-            .on("click", null);
-        // Assign event listeners and handlers to bars.
-        self.tableBodyCellsValuesGraphBars
-            .on("click", function (data, index, nodes) {
-                Action.selectSetViewValue({
-                    value: data.value,
-                    attribute: data.attribute,
-                    model: self.model
-                });
-            });
+        // TODO: New search menu...
+
+        // TODO: Reset the search menu to blank... if necessary...
+
+
+
+        // Select summary table's body.
+        var body = d3.select(self.replicationTableBody);
+        // Append rows to table with association to data.
+        var dataRows = body.selectAll("tr").data(self.model.replications);
+        dataRows.exit().remove();
+        var newRows = dataRows.enter().append("tr");
+        var rows = newRows.merge(dataRows);
+        // Append cells to table with association to data.
+        var dataCells = rows.selectAll("td").data(function (element, index) {
+            // Organize data for table cells in each row.
+            return [].concat(
+                {
+                    type: "name",
+                    value: element
+                },
+                {
+                    type: "removal",
+                    value: element
+                }
+            );
+        });
+        dataCells.exit().remove();
+        var newCells = dataCells.enter().append("td");
+        var cells = newCells.merge(dataCells);
+        self.replicationsTableBodyCells = cells;
+        // Cells for data's name.
+        self.createReplicationsSummaryNames(self);
+        // Cells for data's values.
+        self.createActivateReplicationsSummaryRemovals(self);
     }
+
 
 
 

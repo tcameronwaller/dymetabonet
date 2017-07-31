@@ -148,6 +148,18 @@ class General {
         });
     }
     /**
+     * Compares two arrays by values of elements at specific indices.
+     * @param {Array} firstArray Array of elements.
+     * @param {Array} secondArray Array of elements.
+     * @returns {boolean} Whether or not the arrays have identical values at
+     * every index.
+     */
+    static compareArraysByValuesIndices(firstArray, secondArray) {
+        return firstArray.every(function (element, index) {
+            return element === secondArray[index];
+        });
+    }
+    /**
      * Checks objects elements for replicates by identifier.
      * @param {Array<Object<string>>} elements Objects elements with identifiers.
      * @returns {Array<Object<string>>} Object elements that have replicates.
@@ -170,18 +182,6 @@ class General {
         }, []);
     }
 
-    /**
-     * Compares two arrays by values of elements at specific indices.
-     * @param {Array} firstArray Array of elements.
-     * @param {Array} secondArray Array of elements.
-     * @returns {boolean} Whether or not the arrays have identical values at
-     * every index.
-     */
-    static compareArraysByValuesIndices(firstArray, secondArray) {
-        return firstArray.every(function (element, index) {
-            return element === secondArray[index];
-        });
-    }
     /**
      * Determines the value of the only active radio button in a group.
      * @param {Object} radios Live collection of radio button elements in the
