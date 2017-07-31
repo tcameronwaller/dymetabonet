@@ -26,7 +26,7 @@ class Model {
             "setsSummaryEntity", "setsSummaryFilter",
             "setsCardinalities", "setsSummary",
             // Network.
-            "compartmentalization", "replications", "replicationsSummary",
+            "compartmentalization", "replications",
             "networkNodes", "networkLinks", "network",
             // Subnetwork.
             "proximityFocus", "proximityDirection", "proximityDepth",

@@ -20,12 +20,6 @@ class State {
         // Control action on the state of the model.
         this.act();
 
-        console.log("-----------------------");
-        console.log("state evaluation");
-        console.log(this.determineMetabolicEntitiesSets());
-        console.log(this.determineEntitiesAttributes());
-        console.log(this.determineEntitiesAttributesSets());
-
     }
     /**
      * Evaluates the context of the application's state and creates an
@@ -77,7 +71,7 @@ class State {
             // Initialize instance of interface.
             // Pass this instance a reference to the model of the application's
             // state.
-            new ControlView(this.model);
+            new AssemblyView(this.model);
         }
         // If application's state has appropriate information then create
         // interface for visual representation of network's topology.
@@ -143,8 +137,7 @@ class State {
     determineNetworkAssembly() {
         return (
             !(this.model.compartmentalization === null) &&
-            !(this.model.replications === null) &&
-            !(this.model.replicationsSummary === null)
+            !(this.model.replications === null)
         );
     }
     /**

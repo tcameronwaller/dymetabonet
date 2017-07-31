@@ -36,30 +36,13 @@
 /* Interface */
 /******************************************************************************/
 
-h1 {
-    font-size: medium;
-}
-
-h2 {
-    font-size: medium;
-}
-
-h3 {
-    font-size: small;
-}
-
 #view {
     background-color: rgba(255, 255, 255, 1);
     display: block;
+    font-size: small;
     height: 97vh;
     margin: 0;
     width: 97vw;
-}
-
-#interface {
-    display: block;
-    height: 95%;
-    width: 100%;
 }
 
 .show-inline {
@@ -83,6 +66,7 @@ h3 {
 /******************************************************************************/
 
 #top {
+    background-color: rgba(50, 50, 50, 1);
     display: flex;
     width: 100%;
 }
@@ -92,13 +76,10 @@ h3 {
 /******************************************************************************/
 
 #persistence button {
-    width: 2cm;
+    width: 1.5cm;
 }
 
 #persistence {
-    background-color: rgba(50, 50, 50, 1);
-    /*display: inline;*/
-    /*float: left;*/
     flex-basis: content;
     height: 100%;
 }
@@ -113,12 +94,11 @@ h3 {
     background-color: rgba(50, 50, 50, 1);
     flex: 1;
     font-family: sans-serif;
-    /*overflow: auto;*/
 }
 
 #set table {
     border-collapse: collapse;
-    border-style: hidden;
+    border-style: solid;
     width: 100%;
     table-layout: auto;
     text-align: left;
@@ -201,11 +181,33 @@ h3 {
 /******************************************************************************/
 
 #bottom {
-    background-color: rgba(225, 225, 225, 1);
+    background-color: rgba(255, 255, 255, 1);
     display: flex;
     height: 70%;
     width: 100%;
 }
+
+/******************************************************************************/
+/* Control View */
+/******************************************************************************/
+
+#control {
+    background-color: rgba(200, 200, 200, 1);
+    flex-basis: 5cm;
+    height: 100%;
+    overflow: auto;
+}
+
+/******************************************************************************/
+/* Assembly View */
+/******************************************************************************/
+
+#replication {
+    width: 90%;
+    height: 3cm;
+    overflow: auto;
+}
+
 
 /******************************************************************************/
 /* Entity View */

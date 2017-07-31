@@ -300,12 +300,12 @@ class Action {
             //currentReactions: currentReactions,
             attributesSelections: attributesSelections,
             valuesSelections: valuesSelections,
-            entity: entity,
-            setViewFilter: filter,
+            setsSummaryEntity: entity,
+            setsSummaryFilter: filter,
             setsCardinalities: setsCardinalities,
             setsSummary: setsSummary,
-            entityViewCompartmentalization: compartmentalization,
-            entityViewReplications: replications
+            compartmentalization: compartmentalization,
+            replications: replications
         };
         var attributesValues = Object.assign({}, entitiesSets, data);
         Action.submitAttributes({
@@ -334,7 +334,7 @@ class Action {
         // Submit new values of attributes to the model of the application's
         // state.
         var attributesValues = {
-            entity: newEntity,
+            setsSummaryEntity: newEntity,
             setsSummary: setsSummary
         };
         Action.submitAttributes({
@@ -370,7 +370,7 @@ class Action {
         // Submit new values of attributes to the model of the application's
         // state.
         var attributesValues = {
-            setViewFilter: newFilter,
+            setsSummaryFilter: newFilter,
             setsCardinalities: setsCardinalities,
             setsSummary: setsSummary
         };
