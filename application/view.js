@@ -1101,7 +1101,7 @@ class AssemblyView {
         // Create and activate data-dependent summary of replications.
         self.createActivateReplicationsSummary(self);
         // Create and activate menu to include new replications.
-        //self.createActivateNewReplicationsMenu(self);
+        self.createNewReplicationsMenu(self);
     }
     /**
      * Creates and activates body of table for replications' summary.
@@ -1199,10 +1199,10 @@ class AssemblyView {
         });
     }
     /**
-     * Creates and activates menu to include new replications.
+     * Creates menu to include new replications.
      * @param {Object} view Instance of interface's current view.
      */
-    createActivateNewReplicationsMenu(view) {
+    createNewReplicationsMenu(view) {
         // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = view;
@@ -1214,61 +1214,17 @@ class AssemblyView {
         dataOptions.exit().remove();
         var newOptions = dataOptions.enter().append("option");
         var options = newOptions.merge(dataOptions);
-        // TODO: Continue here!!!
-
-
-        // TODO: New search menu...
-
-        // TODO: Reset the search menu to blank... if necessary...
-
-        ////////////////////////////////////////////
-        // TODO: Clean up the stuff I don't need...
-        // Append options to the data list.
-        var attributeValues = attributeValueList
-            .selectAll("option")
-            .data(function (element, index) {
-                return element.values;
-            });
-        attributeValues.exit().remove();
-        var newAttributeValues = attributeValues
-            .enter()
-            .append("option");
-        attributeValues = newAttributeValues
-            .merge(attributeValues);
-        attributeValues.attr("value", function (data, index) {
-            return data.name;
+        // TODO: Pay attention to "label", "text", and "value" attributes of the options.
+        // TODO: I might be able to pass identifiers to the event handler after all.
+        options.attr("label", function (data, index) {
+            return self.model.metabolites[data].name;
         });
-        //////////////////////////////////////////////
-
-        // Select summary table's body.
-        var body = d3.select(self.replicationTableBody);
-        // Append rows to table with association to data.
-        var dataRows = body.selectAll("tr").data(self.model.replications);
-        dataRows.exit().remove();
-        var newRows = dataRows.enter().append("tr");
-        var rows = newRows.merge(dataRows);
-        // Append cells to table with association to data.
-        var dataCells = rows.selectAll("td").data(function (element, index) {
-            // Organize data for table cells in each row.
-            return [].concat(
-                {
-                    type: "name",
-                    value: element
-                },
-                {
-                    type: "removal",
-                    value: element
-                }
-            );
+        //options.text(function (data) {
+        //    return self.model.metabolites[data].name;
+        //});
+        options.attr("value", function (data, index) {
+            return data;
         });
-        dataCells.exit().remove();
-        var newCells = dataCells.enter().append("td");
-        var cells = newCells.merge(dataCells);
-        self.replicationsTableBodyCells = cells;
-        // Cells for data's name.
-        self.createReplicationsSummaryNames(self);
-        // Cells for data's values.
-        self.createActivateReplicationsSummaryRemovals(self);
     }
 
 
