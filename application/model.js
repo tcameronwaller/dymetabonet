@@ -22,6 +22,7 @@ class Model {
             "metabolites", "reactions",
             // Set.
             "allEntitiesAttributes", "currentEntitiesAttributes",
+            "currentMetabolites", "currentReactionsAttributes",
             "attributesSelections", "valuesSelections",
             "setsSummaryEntity", "setsSummaryFilter",
             "setsCardinalities", "setsSummary",

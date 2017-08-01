@@ -1100,6 +1100,8 @@ class AssemblyView {
             .determineCompartmentalization(self);
         // Create and activate data-dependent summary of replications.
         self.createActivateReplicationsSummary(self);
+        // Create and activate menu to include new replications.
+        //self.createActivateNewReplicationsMenu(self);
     }
     /**
      * Creates and activates body of table for replications' summary.
@@ -1204,6 +1206,16 @@ class AssemblyView {
         // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = view;
+        // Select list for replication options.
+        var list = d3.select(self.replicationOptions);
+        // Append options to list with association to data.
+        var dataOptions = list
+            .selectAll("option").data(self.model.currentMetabolites);
+        dataOptions.exit().remove();
+        var newOptions = dataOptions.enter().append("option");
+        var options = newOptions.merge(dataOptions);
+        // TODO: Continue here!!!
+
 
         // TODO: New search menu...
 

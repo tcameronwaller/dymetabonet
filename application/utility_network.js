@@ -15,8 +15,8 @@ class Network {
      * @param {Object} parameters Destructured object of parameters.
      * @param {Array<string>} parameters.currentMetabolites Identifiers of
      * metabolites for which to include nodes in the network.
-     * @param {Array<string>} parameters.currentReactions Attributes of
-     * reactions for which to include nodes in the network.
+     * @param {Array<string>} parameters.currentReactionsAttributes Attributes
+     * of reactions for which to include nodes in the network.
      * @param {Array<string>} parameters.replications Identifiers of metabolites
      * for which to replicate nodes in the network.
      * @param {boolean} parameters.compartmentalization Indicator of whether or
@@ -29,7 +29,7 @@ class Network {
      */
     static assembleNetworkElements({
                                          currentMetabolites,
-                                         currentReactions,
+                                         currentReactionsAttributes,
                                          replications,
                                          compartmentalization,
                                          metabolites,
@@ -46,7 +46,7 @@ class Network {
         // both reactant and product.
         return Network.assembleNetworkReactionsMetabolites({
             currentMetabolites: currentMetabolites,
-            currentReactions: currentReactions,
+            currentReactionsAttributes: currentReactionsAttributes,
             replications: replications,
             compartmentalization: compartmentalization,
             metabolites: metabolites,
@@ -59,8 +59,8 @@ class Network {
      * @param {Object} parameters Destructured object of parameters.
      * @param {Array<string>} parameters.currentMetabolites Identifiers of
      * metabolites for which to include nodes in the network.
-     * @param {Array<string>} parameters.currentReactions Attributes of
-     * reactions for which to include nodes in the network.
+     * @param {Array<string>} parameters.currentReactionsAttributes Attributes
+     * of reactions for which to include nodes in the network.
      * @param {Array<string>} parameters.replications Identifiers of metabolites
      * for which to replicate nodes in the network.
      * @param {boolean} parameters.compartmentalization Indicator of whether or
@@ -73,7 +73,7 @@ class Network {
      */
     static assembleNetworkReactionsMetabolites({
                                                      currentMetabolites,
-                                                     currentReactions,
+                                                     currentReactionsAttributes,
                                                      replications,
                                                      compartmentalization,
                                                      metabolites,
@@ -85,7 +85,7 @@ class Network {
             nodes: []
         };
         // Iterate on reactions.
-        return currentReactions
+        return currentReactionsAttributes
             .reduce(function (reactionsCollection, currentReaction) {
                 // Create new node for the reaction.
                 var reaction = reactions[currentReaction.identifier];
