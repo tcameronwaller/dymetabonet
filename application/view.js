@@ -919,7 +919,7 @@ class AssemblyView {
         var self = view;
         // Create and set references to elements for interface.
         // Initialize interface.
-        if (!self.document.getElementById("assembly").hasChildNodes()) {
+        if (!self.container.hasChildNodes()) {
             // Interface's container does not include child elements for control
             // of network's assembly.
             // Create interface.
@@ -934,81 +934,13 @@ class AssemblyView {
             // Initialize interface to summarize and modify replications for
             // network's assembly.
             self.initializeReplicationsSummary(self);
-
-
-            ////////////////////////////////////////////
-            // Create and activate a search field.
-            var attributeSearch = attributeCell.append("div");
-            attributeSearch.classed("search", true);
-            // Append a data list to the search menu.
-            var attributeValueList = attributeSearch.append("datalist");
-            attributeValueList
-                .attr("id", function (data, index) {
-                    return "attribute-" + data.attribute + "-values";
-                });
-            // Append options to the data list.
-            var attributeValues = attributeValueList
-                .selectAll("option")
-                .data(function (element, index) {
-                    return element.values;
-                });
-            attributeValues.exit().remove();
-            var newAttributeValues = attributeValues
-                .enter()
-                .append("option");
-            attributeValues = newAttributeValues
-                .merge(attributeValues);
-            attributeValues.attr("value", function (data, index) {
-                return data.name;
-            });
-            // Append search text field to the search menu.
-            var attributeSearchField = attributeSearch.append("input");
-            attributeSearchField
-                .attr("autocomplete", "off")
-                .attr("id", function (data, index) {
-                    return "attribute-" + data.attribute + "-search";
-                })
-                .attr("list", function (data, index) {
-                    return "attribute-" + data.attribute + "-values";
-                })
-                .attr("type", "search");
-            // Assign event listeners and handlers to search menu.
-            // Option elements from datalist element do not report events.
-            // Respond to event on input search text field and then find
-            // relevant information from the options in the datalist.
-            attributeSearchField
-                .on("change", function (data, index, nodes) {
-                    if (!attributeValue.empty()) {
-                        controlAttributeMenuSelection({
-                            value: attributeValue.data()[0].identifier,
-                            attribute: attributeValue.data()[0].attribute,
-                            entity: entity,
-                            filter: filter,
-                            originalAttributeSummary:
-                            originalAttributeSummary,
-                            originalAttributeIndex: originalAttributeIndex,
-                            model: model
-                        });
-                    }
-                });
-
-
-
-
-
-
-
-
-            //////////////////////////////////////////////
-
-
-
         } else {
-            // Interface's container includes interface for control of network's
-            // assembly.
-            // Establish references to existing elements.
+            // Interface's container includes child elements for control of
+            // network's assembly.
+            // Set references to existing elements.
             // References are only necessary for elements that depend on the
-            // application's state.
+            // application's state in order to restore these as the state
+            // changes.
             self.compartmentalizationSelector = self
                 .document.getElementById("compartmentalization");
             self.replication = self
@@ -1126,40 +1058,29 @@ class AssemblyView {
         self.replicationOptions = self.document.createElement("datalist");
         self.replication.appendChild(self.replicationOptions);
         self.replicationOptions.setAttribute("id", listIdentifier);
-        // Create and activate search menu.
+        // Create search menu.
         self.replicationSearch = self.document.createElement("input");
         self.replication.appendChild(self.replicationSearch);
         self.replicationSearch.setAttribute("type", "search");
         self.replicationSearch.setAttribute("autocomplete", "off");
         self.replicationSearch.setAttribute("list", listIdentifier);
-        // TODO: Go ahead and activate the search  menu...
-
+        // Activate search menu.
         self.replicationSearch.addEventListener("change", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Event originates on search menu, not on datalist's options.
-            // Determine metabolite's name from the value of the current
-            // selection.
-            var name = event.currentTarget.value;
-            // If current selection's value is a valid name for a current
-            // metabolite, then include the metabolite's identifier in the
-            // collection of replications.
-            Action.includeReplication({
-                name: name,
-                model: self.model
-            });
+            // Search menu's value is the prospective name of a metabolite to
+            // include in replications.
+            // Include metabolite in replications.
+            // TODO: Call the action!!!
 
+            console.log("called event on search menu");
+            console.log(event.currentTarget.value);
 
-            var attributeValues = d3
-                .select(nodes[index].list)
-                .selectAll("option");
-            var attributeValue = attributeValues
-                .filter(function (data, index) {
-                    return data.name === selection;
-                });
-
+            //Action.includeReplication({
+            //    name: event.currentTarget.value,
+            //    model: self.model
+            //});
         });
-
-
     }
 
 
@@ -1232,7 +1153,6 @@ class AssemblyView {
                 return data.type === "name";
             });
         // Assign attributes to cells for attributes.
-        // TODO: Access the actual names of the metabolites from the records for metabolites in the app's model.
         self.replicationTableBodyCellsNames.text(function (data) {
             return self.model.metabolites[data.value].name;
         });
@@ -1289,7 +1209,24 @@ class AssemblyView {
 
         // TODO: Reset the search menu to blank... if necessary...
 
-
+        ////////////////////////////////////////////
+        // TODO: Clean up the stuff I don't need...
+        // Append options to the data list.
+        var attributeValues = attributeValueList
+            .selectAll("option")
+            .data(function (element, index) {
+                return element.values;
+            });
+        attributeValues.exit().remove();
+        var newAttributeValues = attributeValues
+            .enter()
+            .append("option");
+        attributeValues = newAttributeValues
+            .merge(attributeValues);
+        attributeValues.attr("value", function (data, index) {
+            return data.name;
+        });
+        //////////////////////////////////////////////
 
         // Select summary table's body.
         var body = d3.select(self.replicationTableBody);
