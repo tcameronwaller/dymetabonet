@@ -202,11 +202,17 @@
 /* Assembly View */
 /******************************************************************************/
 
-#replication {
+#assembly-replication {
     width: 90%;
-    height: 3cm;
+}
+
+#assembly-replication-current {
+    width: 100%;
+    height: 5cm;
     overflow-y: auto;
 }
+
+#assembly-replication-novel input {}
 
 
 /******************************************************************************/

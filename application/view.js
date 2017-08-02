@@ -841,10 +841,6 @@ class AssemblyView {
         self.initializeAssemblyControls(self);
         // Restore interface for control of network's assembly.
         self.restoreAssemblyControls(self);
-
-        // TODO: Style the replications in a way to set apart.
-        // TODO: Include search menu to add metabolites to replications.
-
     }
     /**
      * Initializes the container for the interface.
@@ -933,7 +929,7 @@ class AssemblyView {
             self.container.appendChild(self.document.createElement("br"));
             // Initialize interface to summarize and modify replications for
             // network's assembly.
-            self.initializeReplicationsSummary(self);
+            self.initializeReplicationInterface(self);
         } else {
             // Interface's container includes child elements for control of
             // network's assembly.
@@ -945,11 +941,16 @@ class AssemblyView {
                 .document.getElementById("compartmentalization");
             self.replication = self
                 .document.getElementById("assembly-replication");
+            self.currentReplications = self
+                .document.getElementById("assembly-replication-current");
             self.replicationTableBody = self
-                .replication.getElementsByTagName("tbody").item(0);
+                .currentReplications.getElementsByTagName("tbody").item(0);
+            self.novelReplications = self
+                .document.getElementById("assembly-replication-novel");
             self.replicationOptions = self
-                .replication.getElementsByTagName("datalist").item(0);
-
+                .novelReplications.getElementsByTagName("datalist").item(0);
+            self.replicationSearch = self
+                .novelReplications.getElementsByTagName("input").item(0);
         }
     }
     /**
@@ -1029,7 +1030,7 @@ class AssemblyView {
      * Creates new elements that do not exist and do not vary with data.
      * @param {Object} view Instance of interface's current view.
      */
-    initializeReplicationsSummary(view) {
+    initializeReplicationInterface(view) {
         // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = view;
@@ -1037,9 +1038,17 @@ class AssemblyView {
         self.replication = self.document.createElement("div");
         self.container.appendChild(self.replication);
         self.replication.setAttribute("id", "assembly-replication");
+        self.replication.textContent = "Replications";
         // Initialize summary of current replications.
+        // Create container for the summary of current replications.
+        self.currentReplications = self.document.createElement("div");
+        self.replication.appendChild(self.currentReplications);
+        self
+            .currentReplications
+            .setAttribute("id", "assembly-replication-current");
+        // Create table for summary of current replications.
         var table = self.document.createElement("table");
-        self.replication.appendChild(table);
+        self.currentReplications.appendChild(table);
         var tableHead = self.document.createElement("thead");
         table.appendChild(tableHead);
         var tableHeadRow = self.document.createElement("tr");
@@ -1053,39 +1062,42 @@ class AssemblyView {
         self.replicationTableBody = self.document.createElement("tbody");
         table.appendChild(self.replicationTableBody);
         // Initialize menu to include new replications.
+        // Create container for the menu for new replications.
+        self.novelReplications = self.document.createElement("div");
+        self.replication.appendChild(self.novelReplications);
+        self
+            .novelReplications
+            .setAttribute("id", "assembly-replication-novel");
         // Create list for replication options.
         var listIdentifier = "assembly-replication-options";
         self.replicationOptions = self.document.createElement("datalist");
-        self.replication.appendChild(self.replicationOptions);
+        self.novelReplications.appendChild(self.replicationOptions);
         self.replicationOptions.setAttribute("id", listIdentifier);
         // Create search menu.
+        // Attribute "minlength" of input element does not make the drop-down
+        // list of options wait for at least the minimal length of characters.
         self.replicationSearch = self.document.createElement("input");
-        self.replication.appendChild(self.replicationSearch);
+        self.novelReplications.appendChild(self.replicationSearch);
         self.replicationSearch.setAttribute("type", "search");
         self.replicationSearch.setAttribute("autocomplete", "off");
         self.replicationSearch.setAttribute("list", listIdentifier);
+        self
+            .replicationSearch
+            .setAttribute("placeholder", "new replication...");
+        self.replicationSearch.setAttribute("size", "20");
         // Activate search menu.
         self.replicationSearch.addEventListener("change", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Event originates on search menu, not on datalist's options.
-            // Search menu's value is the prospective name of a metabolite to
-            // include in replications.
+            // Search menu's value is the prospective name of a novel metabolite
+            // to include in replications.
             // Include metabolite in replications.
-            // TODO: Call the action!!!
-
-            console.log("called event on search menu");
-            console.log(event.currentTarget.value);
-
-            //Action.includeReplication({
-            //    name: event.currentTarget.value,
-            //    model: self.model
-            //});
+            Action.includeNovelReplication({
+                name: event.currentTarget.value,
+                model: self.model
+            });
         });
     }
-
-
-
-
     /**
      * Restores the interface for control of network's assembly.
      * @param {Object} view Instance of interface's current view.
@@ -1101,10 +1113,10 @@ class AssemblyView {
         // Create and activate data-dependent summary of replications.
         self.createActivateReplicationsSummary(self);
         // Create and activate menu to include new replications.
-        self.createNewReplicationsMenu(self);
+        self.createNovelReplicationsMenu(self);
     }
     /**
-     * Creates and activates body of table for replications' summary.
+     * Creates and activates body of table for summary of current replications.
      * @param {Object} view Instance of interface's current view.
      */
     createActivateReplicationsSummary(view) {
@@ -1137,15 +1149,15 @@ class AssemblyView {
         var cells = newCells.merge(dataCells);
         self.replicationsTableBodyCells = cells;
         // Cells for data's name.
-        self.createReplicationsSummaryNames(self);
+        self.createCurrentReplicationsNames(self);
         // Cells for data's values.
-        self.createActivateReplicationsSummaryRemovals(self);
+        self.createActivateCurrentReplicationsRemovals(self);
     }
     /**
-     * Creates cells for data's names in replications' summary.
+     * Creates cells for names of current replications.
      * @param {Object} view Instance of interface's current view.
      */
-    createReplicationsSummaryNames(view) {
+    createCurrentReplicationsNames(view) {
         // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = view;
@@ -1160,10 +1172,10 @@ class AssemblyView {
         });
     }
     /**
-     * Creates and activates cells for data's values in body of summary table.
+     * Creates and activates cells for removal of current replications.
      * @param {Object} view Instance of interface's current view.
      */
-    createActivateReplicationsSummaryRemovals(view) {
+    createActivateCurrentReplicationsRemovals(view) {
         // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = view;
@@ -1190,22 +1202,22 @@ class AssemblyView {
         // Activate buttons.
         // Assign event listeners and handlers to bars.
         buttons.on("click", function (data, index, nodes) {
-            console.log("click data");
-            console.log(data.value);
-            Action.removeReplication({
+            Action.removeCurrentReplication({
                 identifier: data.value,
                 model: self.model
             });
         });
     }
     /**
-     * Creates menu to include new replications.
+     * Creates menu to include novel replications.
      * @param {Object} view Instance of interface's current view.
      */
-    createNewReplicationsMenu(view) {
+    createNovelReplicationsMenu(view) {
         // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = view;
+        // Restore search menu to empty value.
+        self.replicationSearch.value = "";
         // Select list for replication options.
         var list = d3.select(self.replicationOptions);
         // Append options to list with association to data.
@@ -1214,23 +1226,30 @@ class AssemblyView {
         dataOptions.exit().remove();
         var newOptions = dataOptions.enter().append("option");
         var options = newOptions.merge(dataOptions);
-        // TODO: Pay attention to "label", "text", and "value" attributes of the options.
-        // TODO: I might be able to pass identifiers to the event handler after all.
-        options.attr("label", function (data, index) {
+        // Set attributes of options.
+        // It is possible to assign both value and label attributes to each
+        // option.
+        // Both value and label attributes appear in the drop-down list of
+        // options for the search menu, but value attributes are most prominent.
+        // Only the value attribute remains in the search menu after selection,
+        // and only this attribute is accessible to the event handler of the
+        // search menu.
+        // A potential strategy is to assign metabolite's identifiers to values
+        // and metabolite's names to labels of options.
+        // This strategy conveniently makes metabolite's identifiers accessible
+        // to the event handler of the search menu.
+        // The disadvantage of this strategy is that the user must see and
+        // select between the sometimes meaningless identifiers of metabolites.
+        // Instead, another strategy is to assign metabolite's names to values
+        // of options and subsequently determine metabolite's identifiers from
+        // those names.
+        // This determination of metabolite's names from identifiers requires a
+        // filter operation, but this operation is reasonably quick.
+        // Metabolites have both unique identifiers and unique names.
+        options.attr("value", function (data, index) {
             return self.model.metabolites[data].name;
         });
-        //options.text(function (data) {
-        //    return self.model.metabolites[data].name;
-        //});
-        options.attr("value", function (data, index) {
-            return data;
-        });
     }
-
-
-
-
-
 
     /**
      * Determines the current value of compartmentalization in the application's
@@ -1252,8 +1271,6 @@ class AssemblyView {
             !(this.model.entityViewSubNetworkLinks === null)
         );
     }
-
-
 }
 
 /**

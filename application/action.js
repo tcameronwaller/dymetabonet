@@ -462,7 +462,7 @@ class Action {
      * @param {Object} parameters.model Model of the comprehensive state of the
      * application.
      */
-    static removeReplication({identifier, model} = {}) {
+    static removeCurrentReplication({identifier, model} = {}) {
         // Filter replications to omit any replication for the identifier.
         var replications = model.replications.filter(function (replication) {
             return !(replication === identifier);
@@ -484,19 +484,23 @@ class Action {
      * @param {Object} parameters.model Model of the comprehensive state of the
      * application.
      */
-    static includeReplication({name, model} = {}) {
+    static includeNovelReplication({name, model} = {}) {
         // If name is valid for a current metabolite that is not already in the
         // collection of replications, then include that metabolite's identifier
         // in the collection of replications.
-        // Determine the identifier for any current, novel metabolite that
-        // matches the name.
-        var matches = model.currentMetabolites.filter(function (identifier) {
-            var nameMatch = model.metabolites[identifier].name === name;
-            var novel = !model.replications.includes(identifier);
-            return nameMatch && novel;
+        // Determine the identifier for any current, novel metabolites that
+        // match the name.
+        // Metabolites have both unique identifiers and unique names.
+        var nameMatches = model
+            .currentMetabolites.filter(function (identifier) {
+                return model.metabolites[identifier].name === name;
+            });
+        var novelNameMatches = nameMatches.filter(function (identifier) {
+            return !model.replications.includes(identifier);
         });
-        if ((matches.length > 0)) {
-            var replications = [].concat(model.replications, matches[0]);
+        if ((novelNameMatches.length > 0)) {
+            var replications = []
+                .concat(model.replications, novelNameMatches[0]);
         } else {
             var replications = model.replications;
         }
