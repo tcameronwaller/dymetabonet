@@ -989,7 +989,9 @@ class AssemblyView {
         self.assemble.addEventListener("click", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Assemble network's nodes and links.
-            Action.createNetwork(self.model);
+            // TODO: Temporary...
+            //Action.createNetwork(self.model);
+            Action.testOperation(self.model);
         });
     }
     /**
@@ -1296,12 +1298,12 @@ class TopologyView {
     }
     /**
      * Initializes the container for the interface.
-     * @param {Object} topologyView Instance of entity view interface.
+     * @param {Object} view Instance of interface's current view.
      */
-    initializeContainer(topologyView) {
+    initializeContainer(view) {
         // Set reference to class' current instance to transfer across changes
         // in scope.
-        var self = topologyView;
+        var self = view;
         // Create and set references to elements for interface.
         // Select view in document object model.
         self.view = self.document.getElementById("view");

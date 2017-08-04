@@ -25,12 +25,15 @@ class Extraction {
         var compartments = Extraction
             .createCompartmentRecords(data.compartments);
         var genes = Extraction.createGeneRecords(data.genes);
+        // TODO: Remove the "set" records for operations. I'll store this information differently...
         var operations = Extraction.createOperationRecords();
         var processes = Extraction.createProcessRecords(data.reactions);
+        // TODO: Remove the "set" records for reversibilities. I'll store this information differently...
         var reversibilities = Extraction.createReversibilityRecords();
         // Extract information about entities.
         var metabolites = Extraction
             .createMetaboliteRecords(data.metabolites, data.reactions);
+        // TODO: There are a lot of changes for reactions' records...
         var reactions = Extraction
             .createReactionRecords(data.reactions, processes);
         return {
@@ -341,18 +344,40 @@ class Extraction {
      * @returns {Object} Record for a node for a reaction.
      */
     static createReactionRecord(reaction, processes) {
+        // Extract genes that have a role in the reaction.
         var genes = Clean.extractGenesFromRule(reaction.gene_reaction_rule);
+        // Create records for metabolites that participate in the reaction,
+        // their roles as reactants or products, and the compartments in which they participate.
         var metabolites = Extraction
             .createReactionMetabolites(reaction.metabolites);
+        // TODO: Eliminate concept of "operations".
+        // TODO: Introduce "conversion", "dispersal", and "transport".
         var operations = Extraction.determineReactionOperations(metabolites);
+        // TODO: Use arrays to accommodate multiple processes for a reaction.
+        // TODO: Use transport reactions to fill-in multi-compartmental processes...
         var process = Extraction
             .determineReactionProcessIdentifier(reaction.subsystem, processes);
+        // TODO: Store reversibility as true/false.
+        // Determine whether or not the reaction's reactants and products are
+        // chemically different.
+        var conversion = Extraction
+            .determineReactionChemicalConversion(metabolites);
+        // Determine whether or not the reaction's metabolites participate in
+        // multiple compartments.
+        var dispersal = Extraction
+            .determineReactionMultipleCompartments(metabolites);
+        // Determine whether or not any of the reaction's reactants and products
+        // are chemically the same but participate in different compartments.
+        // Determine whether or not the reaction is reversible.
+        // TODO: Change the output of determineReactionReversibility so that it outputs true/false.
         var reversibility = Extraction
             .determineReactionReversibility(
                 reaction.lower_bound, reaction.upper_bound
             );
         return {
             [reaction.id]: {
+                conversion: conversion,
+                dispersal: dispersal,
                 genes: genes,
                 identifier: reaction.id,
                 metabolites: metabolites,
@@ -522,7 +547,9 @@ class Extraction {
      * @returns {boolean} Indicator of whether or not the reaction involves the
      * same metabolite as both reactant and product.
      */
-    static determineReactionSameReactantProduct(reactionMetabolites) {
+    static determineReactionSameChemicalDifferentCompartments(
+        reactionMetabolites
+    ) {
         var reactants = reactionMetabolites.filter(function (metabolite) {
             return metabolite.role === "reactant";
         }).map(function (reactant) {

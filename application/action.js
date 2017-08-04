@@ -167,9 +167,11 @@ class Action {
         var newFile = {
             file: null
         };
-        var newData = Object.assign({}, data, newFile);
+        // Submit new values of attributes to the model of the application's
+        // state.
+        var attributesValues = Object.assign({}, data, newFile);
         Action.submitAttributes({
-            attributesValues: newData,
+            attributesValues: attributesValues,
             model: model
         });
     }
@@ -567,12 +569,12 @@ class Action {
         // Submit new values of attributes to the model of the application's
         // state.
         var attributesValues = {
-            entityViewNetworkNodes: networkElements.nodes,
-            entityViewNetworkLinks: networkElements.links,
-            entityViewNetwork: network,
-            entityViewSubNetwork: subNetwork,
-            entityViewSubNetworkNodes: subNodes,
-            entityViewSubNetworkLinks: subLinks
+            networkNodes: networkElements.nodes,
+            networkLinks: networkElements.links,
+            network: network,
+            subNetwork: subNetwork,
+            subNetworkNodes: subNodes,
+            subNetworkLinks: subLinks
         };
         Action.submitAttributes({
             attributesValues: attributesValues,
@@ -672,7 +674,16 @@ class Action {
     }
 
 
-
+    /**
+     * Tests some operation temporarily before permanent implementation.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
+     */
+    static testOperation(model) {
+        // Append a string to the names of some reactions.
+        // 1. filter reactions first and then append to filtered set.
+        // 2. use conditional during single iteration.
+    }
 
 
 

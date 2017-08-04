@@ -655,8 +655,8 @@ class Clean {
      * Checks and cleans the metabolites of a reaction.
      * @param {string} identifier Identifier of a single reaction.
      * @param {Object<number>} metabolites Metabolites of a reaction.
-     * @param {Array<string>} metaboliteIdentifiers Identifiers of all metabolites
-     * in a metabolic model.
+     * @param {Array<string>} metaboliteIdentifiers Identifiers of all
+     * metabolites in a metabolic model.
      * @returns {Object<number>} Metabolites of the reaction.
      */
     static checkCleanReactionMetabolites(

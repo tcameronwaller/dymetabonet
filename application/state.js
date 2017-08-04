@@ -61,8 +61,7 @@ class State {
             new SetView(this.model);
         }
         // If application's state has appropriate information then create
-        // interface for control of network's assembly and visual
-        // representation.
+        // interface for control of network's assembly.
         if (
             this.determineMetabolicEntitiesSets() &&
             this.determineEntitiesAttributes() &&

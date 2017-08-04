@@ -4,11 +4,127 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
-27 July 2017
+4 August 2017
 
 ----------
+Processes
 
+Making processes continuous across multiple compartments is tricky.
+I need to figure out when to fill in the missing transport reactions.
+I think it will be helpful to include missing transport reactions after preparation of the reactions records otherwise.
+That way I will at least have access to the information in my preference of format.
 
+----------
+Progress
+
+I began working on characteristics of reactions---conversion, dispersal, transport, reversibility.
+
+----------
+Algorithm Efficiency
+
+May I ask you a question about the efficiency of algorithms? Say I want to perform an operation on a subset of a collection of elements.
+Option 1: Filter the elements, and then perform the operation on the filtered subset.
+Option 2: Iterate on the elements, performing the operation only if each element passes the filter.
+Either Option 1 or Option 2 might be more simple/readable/maintainable. It seems that Option 2 would be more efficient because it only involves a single iteration. Is that correct?
+
+Many complex factors contribute to the efficiency of an algorithm.
+JavaScript's Array.filter() method may be implemented in C or otherwise be very efficient.
+Another consideration is the logic and criteria for categories.
+Filtering to multiple categories with overlapping criteria would be difficult.
+In that case using multiple conditions for treatment of each element would probably be preferrable.
+
+Simplicity of implementation, readability of code, and maintainability of code are also factors that balance against the benefit of efficiency.
+
+Since optimal efficiency depends on many factors, it is necessary to test the performance of specific algorithms.
+
+Standard strategy
+performance.now()
+
+Non-standard strategy that automatically prints to the console.
+console.time()
+console.timeEnd()
+
+Optimize algorithms that are extremely slow if the performance is a problem.
+
+----------
+Presentation Idea
+
+In telling this project's story (oral presentation or textual article), consider describing the difference between communicative and exploratory data analysis.
+Tools such as Escher or even KEGG are more appropriate for communicative data analysis since they involve custom content and custom layouts to present that content clearly.
+The goal of my project is to support exploratory data analysis where the content and layouts are dynamic.
+
+--------------------------------------------------
+2 August 2017
+
+----------
+Plan
+
+Assemble network's nodes and links for all entities both with and without compartmentalization upon initialization of the application for metabolic entities and sets.
+This assembly will at least avoid the necessity for assembling these elements later.
+Relevant attributes in application's state might be allGeneralNetworkNodes, allGeneralNetworkLinks, allCompartmentalNetworkNodes, allCompartmentalNetworkLinks.
+These assemblies could use the default replications.
+Any subsequent change to replications would necessitate preparing a new assembly of the network.
+
+Maybe I should at least try filtering network's nodes and links to see how computationally expensive it is.
+Also, I should play with the network assembly to see how computationally expensive it is in comparison.
+
+Represent replications within a special attribute of nodes for reactions.
+
+Deal appropriately with transport reactions for network without compartmentalization.
+
+Make multi-compartmental processes continuous by including transport reactions.
+
+Include some sort of feedback in the topology view before representing the network visually.
+It might be helpful to represent the breadth and narrowness of the current filters and selections in terms of counts of entities or nodes and links.
+It might also be helpful to provide instructions about the data flow (including assembly of network's elements if relevant).
+
+----------
+Meet with Alexander Lex
+
+Alex recommended to change the major data transformations in the application.
+Conceptually, a user begins with an entire network and then filters that network to progressive narrowness according to interest.
+The necessity to assemble a network after filters is somewhat unintuitive.
+I considered the option of using an assembled network as a primary data structure in the application.
+I considered the option of filtering this network according to user selections.
+Filtering the network's nodes and links will still be computationally expensive.
+I think it will be beneficial to use the data structures and operations that are most reasonable, convenient, and efficient.
+I can try to design the interface so that the user's experience is more intuitive.
+
+Alex recommended to dismiss the option of assembling the network both with and without distinct nodes for compartmental metabolites.
+He recommended only supporting the compartmental version of the network.
+I think that the ability to represent the network with and without compartmentalization is useful and interesting.
+I consider this functionality to be important in the application, and I do not intend to dismiss it.
+
+Alex recommended to determine default metabolites for replication on the basis of the degrees of their nodes in the network.
+This strategy might be more objective.
+My previous strategy involved manual consideration of metabolites and selection on the basis of biological role.
+I agree that an objective approach on the basis of degree might be beneficial.
+
+Alex recommended to represent replicate metabolites as attributes of reactions rather than as distinct nodes.
+This representation will abbreviate and simplify the network.
+I agree that this representation might concisely convey essential information.
+It will be a challenge to figure out how to represent these replicate metabolites as miniature nodes or glyphs on nodes for their reactions.
+
+Alex recommended to provide information to the user about the current selection and the need to narrow it by filters by attributes and topology.
+Some sort of progress menu will be helpful to the user.
+
+Consider indicating the degrees of metabolites in the menu for new replications.
+
+----------
+Issues
+
+-labels or tool tips for values of attributes in sets' summary
+-search menus for values of attributes in sets' summary
+-labels or tool tips for nodes in node-link diagram
+-selection of nodes in node-link diagram for removal or proximity expansion
+-representation of link directionality in node-link diagram
+-representation in node-link diagram of node's degree in network or subnetwork
+-control for compartmentalization and replication in network's assembly
+-control for selection of subnetworks by topological traversal
+-control for visual representation of attributes
+-list of individual entities in network or subnetwork
+-resolution of discontinuous networks for processes
+-computational efficiency for interactivity
 
 --------------------------------------------------
 26 July 2017
