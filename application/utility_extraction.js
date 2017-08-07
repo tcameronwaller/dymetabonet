@@ -329,11 +329,214 @@ class Extraction {
      * @returns {Object<string>} Records for reactions.
      */
     static createReactionRecords(reactions, processes) {
+        // Determine metabolites and compartments that are candidates for
+        // transport in each process.
+        var processesTransportCandidates = Extraction.determineProcessesTransportCandidates(reactions, processes);
+        // TODO: Now pass processesTransportCandidates to the reactions function.
         // Create records for reactions.
         return reactions.reduce(function (collection, reaction) {
             var newRecord = Extraction
                 .createReactionRecord(reaction, processes);
             return Object.assign({}, collection, newRecord);
+        }, {});
+    }
+    /**
+     * Determines metabolites and compartments that are candidates for transport
+     * in each process.
+     * @param {Array<Object>} reactions Information for all reactions in a
+     * metabolic model.
+     * @param {Object<string>} processes Information about all processes in a
+     * metabolic model.
+     * @returns {Object<Array<Object>>} Metabolites and compartments that are
+     * candidates for transport in each process.
+     */
+    static determineProcessesTransportCandidates(reactions, processes) {
+        // Collect metabolites that occur in each compartment of each process.
+        var processesCompartmentsMetabolites = Extraction
+            .collectProcessesCompartmentsMetabolites(reactions, processes);
+        console.log("processesCompartmentsMetabolites");
+        console.log(processesCompartmentsMetabolites);
+        // Collect metabolites that occur in multiple compartments in each
+        // process.
+        var processesTransportCandidates = Extraction
+            .collectProcessesTransportCandidates(
+                processesCompartmentsMetabolites
+            );
+        console.log("processesTransportCandidates");
+        console.log(processesTransportCandidates);
+        return processesTransportCandidates;
+    }
+    /**
+     * Collects metabolites that occur in each compartment of each process.
+     * @param {Array<Object>} reactions Information for all reactions in a
+     * metabolic model.
+     * @param {Object<string>} processes Information about all processes in a
+     * metabolic model.
+     * @returns {Object<Object<Array<string>>>} Identifiers of metabolites that
+     * occur in each compartment of each process.
+     */
+    static collectProcessesCompartmentsMetabolites(reactions, processes) {
+        // Stratify metabolites by processes and compartments in which they
+        // participate in reactions.
+        // Iterate on reactions.
+        return reactions.reduce(function (reactionsCollection, reaction) {
+            var process = Extraction
+                .determineReactionProcessIdentifier(
+                    reaction.subsystem, processes
+                );
+            if (reactionsCollection.hasOwnProperty(process)) {
+                // Collection has a record for the current process.
+                // Preserve existing records in the collection.
+                var metabolitesCollection = Object
+                    .assign({}, reactionsCollection[process]);
+            } else {
+                // Collection does not have a record for the current process.
+                // Create a new record.
+                var metabolitesCollection = {};
+            }
+            var newMetabolitesCollection = Extraction
+                .collectProcessCompartmentsMetabolites({
+                    compartmentalMetabolites: Object.keys(reaction.metabolites),
+                    oldMetabolitesCollection: metabolitesCollection
+                });
+            // Include information from current process record within the
+            // collection.
+            var newProcessRecord = {
+                [process]: newMetabolitesCollection
+            };
+            var newReactionsCollection = Object
+                .assign({}, reactionsCollection, newProcessRecord);
+            return newReactionsCollection;
+        }, {});
+    }
+    /**
+     * Collects metabolites that occur in each compartment of a single process
+     * for a single reaction.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {sting} parameters.compartmentalMetabolites Identifiers for
+     * compartmental metabolites that participate in a reaction.
+     * @param {Object<Object>} parameters.oldMetabolitesCollection
+     * Collection of metabolites that occur in each compartment of a single
+     * process.
+     * @returns {Object<Array<string>>} Identifiers of metabolites that occur in
+     * each compartment of a single process.
+     */
+    static collectProcessCompartmentsMetabolites({
+        compartmentalMetabolites,
+        oldMetabolitesCollection
+                                                 } = {}) {
+        // Iterate on compartmental metabolites.
+        return compartmentalMetabolites
+            .reduce(function (metabolitesCollection, compartmentalMetabolite) {
+                var metabolite = Clean
+                    .extractMetaboliteIdentifier(compartmentalMetabolite);
+                var compartment = Clean
+                    .extractCompartmentIdentifier(compartmentalMetabolite);
+                if (metabolitesCollection.hasOwnProperty(compartment)) {
+                    // Collection has a record for the current compartment.
+                    // Preserve existing records in the collection.
+                    var metabolites = metabolitesCollection[compartment]
+                        .slice();
+                } else {
+                    // Collection does not have a record for the current
+                    // compartment.
+                    // Create a new record.
+                    var metabolites = [];
+                }
+                var newMetabolites = [].concat(metabolites, metabolite);
+                // Include information in the collection.
+                var newCompartmentRecord = {
+                    [compartment]: newMetabolites
+                };
+                var newMetabolitesCollection = Object
+                    .assign({}, metabolitesCollection, newCompartmentRecord);
+                return newMetabolitesCollection;
+            }, oldMetabolitesCollection);
+    }
+    /**
+     * Collects metabolites that occur in multiple compartments in each process.
+     * @param {Object<Object<Array<string>>>} processesCompartmentsMetabolites
+     * Identifiers of metabolites that occur in each compartment of each
+     * process.
+     * @returns {Object<Array<Object>>} Metabolites and compartments that are
+     * candidates for transport in each process.
+     */
+    static collectProcessesTransportCandidates(
+        processesCompartmentsMetabolites
+    ) {
+        var processes = Object.keys(processesCompartmentsMetabolites);
+        // Iterate on processes.
+        return processes.reduce(function (processesCollection, process) {
+            // Collect total metabolites for all compartments in the process.
+            var processRecord = processesCompartmentsMetabolites[process];
+            var compartments = Object.keys(processRecord);
+            // Iterate on compartments.
+            var totalMetabolites = compartments
+                .reduce(function (compartmentsCollection, compartment) {
+                    var compartmentalMetabolites = processRecord[compartment];
+                    return []
+                        .concat(
+                            compartmentsCollection, compartmentalMetabolites
+                        );
+                }, []);
+            // Collect unique metabolites for all compartments in the process.
+            var uniqueMetabolites = General
+                .collectUniqueElements(totalMetabolites);
+            // Determine in which compartments each metabolite occurs in the
+            // process.
+            var metabolitesCompartments = Extraction
+                .collectMetabolitesTransportCandidates(
+                    uniqueMetabolites, processRecord
+                );
+            var newProcessRecord = {
+                [process]: metabolitesCompartments
+            };
+            return Object.assign({}, processesCollection, newProcessRecord);
+        }, {});
+    }
+    /**
+     * Collects metabolites that occur in multiple compartments in a single
+     * process.
+     * @param {Array<string>} metabolites Identifiers of unique metabolites
+     * that occur in a single process.
+     * @param {Object<Array<string>>} processRecord Identifiers of metabolites
+     * that occur in each compartment of a single process.
+     * @returns {Object<Array<string>>} Metabolites that occur in multiple
+     * compartments in a single process.
+     */
+    static collectMetabolitesTransportCandidates(metabolites, processRecord) {
+        return metabolites.reduce(function (metabolitesCollection, metabolite) {
+            // Collect compartments in which the metabolite occurs in
+            // the process.
+            var compartments = Object.keys(processRecord);
+            var metaboliteCompartments = compartments
+                .reduce(function (compartmentsCollection, compartment) {
+                    var compartmentalMetabolites = processRecord
+                        [compartment];
+                    if (compartmentalMetabolites.includes(metabolite)) {
+                        return []
+                            .concat(
+                                compartmentsCollection, compartment
+                            );
+                    } else {
+                        return compartmentsCollection;
+                    }
+                }, []);
+            // Determine if the metabolite occurs in multiple compartments in
+            // the process.
+            if (metaboliteCompartments.length > 1) {
+                // Metabolite occurs in multiple compartments in the process.
+                var metaboliteRecord = {
+                    [metabolite]: metaboliteCompartments
+                };
+                return Object
+                    .assign(
+                        {}, metabolitesCollection, metaboliteRecord
+                    );
+            } else {
+                // Metabolite occurs in a single compartment in the process.
+                return metabolitesCollection;
+            }
         }, {});
     }
     /**
