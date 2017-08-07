@@ -238,6 +238,8 @@ class Action {
         // TODO: make the procedure more convenient for restore buttons for set
         // TODO: view and entity view respectively.
         // TODO: Return multiple attribute values in a single object.
+        console.log("entitiesSets");
+        console.log(entitiesSets);
         // Initialize values of attributes of the application's state for
         // information about metabolic entities and sets.
         // Remove the current file selection from the application's state.

@@ -4,6 +4,29 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+7 August 2017
+
+----------
+Literature Search
+
+"ReconMap: an interactive visualization of human metabolism"
+https://www.ncbi.nlm.nih.gov/pubmed/27993782
+15 February 2017
+The tool uses a static layout of the entire metabolic network.
+The tool's interactivity seems to be limited to searching for specific entities or maybe highlighting several entities from data.
+
+"Recon2Neo4j: applying graph database technologies for managing comprehensive genome-scale networks"
+https://www.ncbi.nlm.nih.gov/pubmed/27993779
+
+"The self-inhibitory nature of metabolic networks and its alleviation through compartmentalization"
+https://www.ncbi.nlm.nih.gov/pubmed/28691704
+
+"Metabolic systems biology: a brief primer"
+https://www.ncbi.nlm.nih.gov/pubmed/28028815
+1 May 2017
+Interesting brief review emphasizing the importance of systems-level analysis of metabolism.
+
+--------------------------------------------------
 4 August 2017
 
 ----------
