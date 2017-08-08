@@ -49,45 +49,58 @@ class Attribution {
      */
     static determineMetaboliteAttributes(metabolite, reactions) {
         return {
-            compartments: Attribution.determineMetaboliteReactionsCompartments({
+            compartments: Attribution.collectMetaboliteReactionsCompartments({
                 metaboliteIdentifier: metabolite.identifier,
+                reactionIdentifiers: metabolite.reactions,
+                reactions: reactions
+            }),
+            conversions: Attribution.collectReactionsAttributeValues({
+                attribute: "conversion",
+                reactionIdentifiers: metabolite.reactions,
+                reactions: reactions
+            }),
+            dispersals: Attribution.collectReactionsAttributeValues({
+                attribute: "dispersal",
                 reactionIdentifiers: metabolite.reactions,
                 reactions: reactions
             }),
             entity: "metabolite",
             identifier: metabolite.identifier,
-            operations: Attribution.determineReactionsOperations({
+            processes: Attribution.collectReactionsProcesses({
                 reactionIdentifiers: metabolite.reactions,
                 reactions: reactions
             }),
-            processes: Attribution.determineReactionsProcesses({
+            reversibilities: Attribution.collectReactionsAttributeValues({
+                attribute: "reversibility",
                 reactionIdentifiers: metabolite.reactions,
                 reactions: reactions
             }),
-            reversibilities: Attribution.determineReactionsReversibilities({
+            transports: Attribution.collectReactionsAttributeValues({
+                attribute: "transport",
                 reactionIdentifiers: metabolite.reactions,
                 reactions: reactions
             })
         };
     }
     /**
-     * Determines unique processes of multiple reactions.
+     * Collects unique processes of multiple reactions.
      * @param {Object} parameters Destructured object of parameters.
      * @param {Array<string>} parameters.reactionIdentifiers Identifiers for
      * reactions of interest.
      * @param {Object} parameters.reactions Information about all reactions.
      * @returns {Array<string>} Identifiers of processes.
      */
-    static determineReactionsProcesses({reactionIdentifiers, reactions} = {}) {
-        var processes = reactionIdentifiers.map(function (reactionIdentifier) {
-            var reaction = reactions[reactionIdentifier];
-            return reaction.process;
-        });
+    static collectReactionsProcesses({reactionIdentifiers, reactions} = {}) {
+        var processes = reactionIdentifiers
+            .reduce(function (collection, reactionIdentifier) {
+                var reaction = reactions[reactionIdentifier];
+                return [].concat(collection, reaction.processes);
+            }, []);
         return General.collectUniqueElements(processes);
     }
     /**
-     * Determines unique compartments in which a single metabolite participates
-     * in multiple reactions.
+     * Collects unique compartments in which a single metabolite participates in
+     * multiple reactions.
      * @param {Object} parameters Destructured object of parameters.
      * @param {string} parameters.metaboliteIdentifier Identifier for a
      * metabolite of interest.
@@ -96,7 +109,7 @@ class Attribution {
      * @param {Object} parameters.reactions Information for all reactions.
      * @returns {Array<string>} Identifiers of compartments.
      */
-    static determineMetaboliteReactionsCompartments({
+    static collectMetaboliteReactionsCompartments({
                                                          metaboliteIdentifier,
                                                          reactionIdentifiers,
                                                          reactions
@@ -117,43 +130,25 @@ class Attribution {
         return General.collectUniqueElements(compartments);
     }
     /**
-     * Determines unique operations, conversion or transport, of multiple
-     * reactions.
+     * Collects unique values of a single attribute from multiple reactions.
      * @param {Object} parameters Destructured object of parameters.
-     * @param {Array<string>} parameters.reactionIdentifiers Identifiers for
-     * reactions of interest.
-     * @param {Object} parameters.reactions Information for all reactions.
-     * @returns {Array<string>} Identifiers of operations.
-     */
-    static determineReactionsOperations({
-                                             reactionIdentifiers,
-                                             reactions
-                                         } = {}) {
-        var operations = reactionIdentifiers
-            .reduce(function (collection, reactionIdentifier) {
-                var reaction = reactions[reactionIdentifier];
-                return [].concat(collection, reaction.operations);
-            }, []);
-        return General.collectUniqueElements(operations);
-    }
-    /**
-     * Determines unique reversibilities of multiple reactions.
-     * @param {Object} parameters Destructured object of parameters.
+     * @param {string} parameters.attribute Name of attribute of which to
+     * collect values.
      * @param {Array<string>} parameters.reactionIdentifiers Identifiers for
      * reactions of interest.
      * @param {Object} parameters.reactions Information for all reactions.
      * @returns {Array<string>} Identifiers of reversibilities.
      */
-    static determineReactionsReversibilities({
-                                                  reactionIdentifiers,
-                                                  reactions
+    static collectReactionsAttributeValues({
+                                               attribute,
+                                               reactionIdentifiers,
+                                               reactions
                                               } = {}) {
-        var reversibilities = reactionIdentifiers
-            .map(function (reactionIdentifier) {
-                var reaction = reactions[reactionIdentifier];
-                return reaction.reversibility;
-            });
-        return General.collectUniqueElements(reversibilities);
+        var values = reactionIdentifiers.map(function (reactionIdentifier) {
+            var reaction = reactions[reactionIdentifier];
+            return reaction[attribute];
+        });
+        return General.collectUniqueElements(values);
     }
     /**
      * Determines attributes of all reactions.
@@ -174,13 +169,20 @@ class Attribution {
         return {
             compartments: Extraction
                 .extractReactionMetabolitesCompartments(reaction.metabolites),
+            conversions: [reaction.conversion],
+            dispersals: [reaction.dispersal],
             entity: "reaction",
             identifier: reaction.identifier,
-            operations: reaction.operations,
-            processes: [reaction.process],
-            reversibilities: [reaction.reversibility]
+            processes: reaction.processes,
+            reversibilities: [reaction.reversibility],
+            transports: [reaction.transport]
         };
     }
+
+
+    // TODO: Evaluate compatibility of methods below here for [processes]... it should be good to go, I think...
+
+
     /**
      * Copies attributes of metabolic entities, metabolites and reactions.
      * @param {Array<Object>} entitiesAttributes Attributes of all entities.
