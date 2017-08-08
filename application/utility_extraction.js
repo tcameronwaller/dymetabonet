@@ -337,7 +337,7 @@ class Extraction {
         // Render processes continuous by inclusion of transport reactions.
         // Determine metabolites and compartments that are candidates for
         // transport in each process.
-        var transportCandidates = Extraction
+        var processesTransports = Extraction
             .determineProcessesTransportCandidates(reactions, processes);
         // TODO: Now pass processesTransportCandidates to the reactions function.
         // Create records for reactions.
@@ -348,7 +348,7 @@ class Extraction {
             var newRecord = Extraction
                 .createReactionRecord({
                     reaction: reaction,
-                    transportCandidates: transportCandidates,
+                    processesTransports: processesTransports,
                     processes: processes
                 });
             return Object.assign({}, collection, newRecord);
@@ -368,16 +368,12 @@ class Extraction {
         // Collect metabolites that occur in each compartment of each process.
         var processesCompartmentsMetabolites = Extraction
             .collectProcessesCompartmentsMetabolites(reactions, processes);
-        console.log("processesCompartmentsMetabolites");
-        console.log(processesCompartmentsMetabolites);
         // Collect metabolites that occur in multiple compartments in each
         // process.
         var processesTransportCandidates = Extraction
             .collectProcessesTransportCandidates(
                 processesCompartmentsMetabolites
             );
-        console.log("processesTransportCandidates");
-        console.log(processesTransportCandidates);
         return processesTransportCandidates;
     }
     /**
@@ -559,7 +555,7 @@ class Extraction {
      * Creates a record for a single reaction from a metabolic model.
      * @param {Object} parameters Destructured object of parameters.
      * @param {Object} parameters.reaction Information for a reaction.
-     * @param {Object<Object<Array<string>>>} parameters.transportCandidates
+     * @param {Object<Object<Array<string>>>} parameters.processesTransports
      * Metabolites and compartments that are candidates for transport in each
      * process.
      * @param {Object} parameters.processes Information about all processes in a
@@ -567,7 +563,7 @@ class Extraction {
      * @returns {Object} Record for a reaction.
      */
     static createReactionRecord({
-                                    reaction, transportCandidates, processes
+                                    reaction, processesTransports, processes
     } = {}) {
         // Extract genes that have a role in the reaction.
         var genes = Clean.extractGenesFromRule(reaction.gene_reaction_rule);
@@ -594,32 +590,31 @@ class Extraction {
             .determineReactionMultipleCompartments(metabolites);
         // Determine whether or not any of the reaction's reactants and products
         // are chemically the same but participate in different compartments.
+        // Chemically identical reactants and products in distinct compartments
+        // indicate that the reaction involves transport.
         var transport = Extraction
             .determineReactionSameChemicalDifferentCompartments(metabolites);
         if (transport) {
-            console.log("-----")
-            console.log("passed transport criteria");
-            console.log(metabolites);
+            // Reaction involves transport.
+            // Collect the metabolites and compartments that the reaction's
+            // transport involves.
             var transports = Extraction
                 .collectReactionSameChemicalDifferentCompartments(metabolites);
-            console.log("transports");
-            console.log(transports);
+            // Evaluate reaction's potential involvement in processes across
+            // multiple compartments.
+            var transportProcesses = Extraction.collectTransportProcesses({
+                reactionTransports: transports,
+                processesTransports: processesTransports
+            });
         } else {
+            // Reaction does not involve transport.
             var transports = null;
+            var transportProcesses = [];
         }
-
-        // TODO: Use arrays to accommodate multiple processes for a reaction.
-        // TODO: Use transport reactions to fill-in multi-compartmental processes...
-
-        // TODO: If reaction matches transport criterion, then consider for inclusion
-        // TODO: in relevant processes.
-        // TODO: Consider whether reaction's transport metabolites and their compartments
-        // TODO: match any processes (consider all processes).
-
-        var process = Extraction
+        // Determine processes in which reaction participates.
+        var originalProcess = Extraction
             .determineReactionProcessIdentifier(reaction.subsystem, processes);
-        // TODO: Store reversibility as true/false.
-
+        var reactionProcesses = [].concat(originalProcess, transportProcesses);
         return {
             [reaction.id]: {
                 conversion: conversion,
@@ -628,7 +623,7 @@ class Extraction {
                 identifier: reaction.id,
                 metabolites: metabolites,
                 name: reaction.name,
-                process: process,
+                processes: reactionProcesses,
                 reversibility: reversibility,
                 transport: transport,
                 transports: transports
@@ -817,12 +812,70 @@ class Extraction {
             }
         }, []);
     }
-
-
-
-
-
-
+    /**
+     * Creates a record for a single reaction from a metabolic model.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {Array<Object>} parameters.reactionTransports Information about
+     * the metabolites and compartments in a reaction's transport behavior.
+     * @param {Object<Object<Array<string>>>} parameters.processesTransports
+     * Metabolites and compartments that are candidates for transport in each
+     * process.
+     * @returns {Array<string>} Identifiers of process in which the reaction
+     * participates through transport.
+     */
+    static collectTransportProcesses({
+                                         reactionTransports, processesTransports
+    } = {}) {
+        // Collect identifiers of processes in which the reaction participates
+        // through transport.
+        // Iterate on processes.
+        var processes = Object.keys(processesTransports);
+        return processes.reduce(function (collection, process) {
+            // Determine whether or not the reaction's transport participates in
+            // the process.
+            // Determine whether or not any of the metabolites and compartments
+            // in the reaction's transport behavior match any of the process'.
+            var processTransport = processesTransports[process];
+            var transportMatch = reactionTransports
+                .some(function (reactionTransport) {
+                    // Determine whether or not the metabolite of the reaction's
+                    // transport matches any metabolites for transport in the
+                    // process.
+                    var reactionMetabolite = reactionTransport.metabolite;
+                    var metaboliteMatch = processTransport
+                        .hasOwnProperty(reactionMetabolite);
+                    if (metaboliteMatch) {
+                        // Determine whether or not the compartments of the
+                        // reaction's transport for the metabolite match at
+                        // least two compartments for transport of the
+                        // metabolite in the process.
+                        var reactionCompartments = reactionTransport
+                            .compartments;
+                        var processCompartments = processTransport
+                            [reactionMetabolite];
+                        var compartmentMatches = processCompartments
+                            .filter(function (compartment) {
+                                return reactionCompartments
+                                    .includes(compartment);
+                            });
+                        var compartmentsMatch = compartmentMatches.length > 1;
+                    } else {
+                        var compartmentsMatch = false;
+                    }
+                    return metaboliteMatch && compartmentsMatch;
+                });
+            if (transportMatch) {
+                // The reaction's transport participates in the process.
+                // Collect the identifier for the process to include the
+                // reaction in the process.
+                var newCollection = [].concat(collection, process);
+            } else {
+                // The reaction's transport does not participate in the process.
+                var newCollection = collection;
+            }
+            return newCollection;
+        }, []);
+    }
     /**
      * Determines the identifier for a reaction's process.
      * @param {string} subsystem Name for a reaction's process.
@@ -836,8 +889,8 @@ class Extraction {
         } else {
             var name = "other";
         }
-        return Object.keys(processes).filter(function (key) {
+        return Object.keys(processes).find(function (key) {
             return processes[key].name === name;
-        })[0];
+        });
     }
 }

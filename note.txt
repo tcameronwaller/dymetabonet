@@ -4,6 +4,30 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+8 August 2017
+
+----------
+Transport Reactions in Processes
+
+I confirmed the match of transport reaction to processes for the transports below.
+
+Metabolite: 10fthf5glu
+Compartments: c, l
+Processes: process_64, process_97
+
+Metabolite: 2425dhvitd3
+Compartments: m, c
+Processes: process_2, process_85
+
+Metabolites: akg
+Compartments: m, c
+Metabolites: L2aadp
+Compartments: m, c
+Processes: process_3, process_5, process_8, process_10, process_12, process_16, process_22, process_28, process_30, process_41, process_48, process_81, process_85, process_93
+
+I confirmed the accuracy of the algorithm for determination and collection of transport metabolites and compartments from a reaction's metabolites.
+
+--------------------------------------------------
 7 August 2017
 
 ----------
