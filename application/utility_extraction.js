@@ -25,23 +25,16 @@ class Extraction {
         var compartments = Extraction
             .createCompartmentRecords(data.compartments);
         var genes = Extraction.createGeneRecords(data.genes);
-        // TODO: Remove the "set" records for operations. I'll store this information differently...
-        var operations = Extraction.createOperationRecords();
         var processes = Extraction.createProcessRecords(data.reactions);
-        // TODO: Remove the "set" records for reversibilities. I'll store this information differently...
-        var reversibilities = Extraction.createReversibilityRecords();
         // Extract information about entities.
         var metabolites = Extraction
             .createMetaboliteRecords(data.metabolites, data.reactions);
-        // TODO: There are a lot of changes for reactions' records...
         var reactions = Extraction
             .createReactionRecords(data.reactions, processes);
         return {
             compartments: compartments,
             genes: genes,
-            operations: operations,
             processes: processes,
-            reversibilities: reversibilities,
             metabolites: metabolites,
             reactions: reactions
         };
@@ -106,26 +99,6 @@ class Extraction {
             }
         };
     }
-    // Extract operations.
-    /**
-     * Creates records for all operations in a metabolic model.
-     * @returns {Object} Records for operations.
-     */
-    static createOperationRecords() {
-        // Reactions involve either chemical conversion or compartmental
-        // transport.
-        // Individual reactions can involve both operations.
-        return {
-            c: {
-                identifier: "c",
-                name: "conversion"
-            },
-            t: {
-                identifier: "t",
-                name: "transport"
-            }
-        };
-    }
     // Extract processes.
     /**
      * Creates records for all processes from a metabolic model.
@@ -170,23 +143,6 @@ class Extraction {
             [processIdentifier]: {
                 identifier: processIdentifier,
                 name: processName
-            }
-        };
-    }
-    // Extract reversibilities.
-    /**
-     * Creates records for all reversibilities in a metabolic model.
-     * @returns {Object} Records for reversibilities.
-     */
-    static createReversibilityRecords() {
-        return {
-            i: {
-                identifier: "i",
-                name: "irreversible"
-            },
-            r: {
-                identifier: "r",
-                name: "reversible"
             }
         };
     }
@@ -339,11 +295,7 @@ class Extraction {
         // transport in each process.
         var processesTransports = Extraction
             .determineProcessesTransportCandidates(reactions, processes);
-        // TODO: Now pass processesTransportCandidates to the reactions function.
         // Create records for reactions.
-        // TODO: Procedure for individual reactions needs...
-        // TODO: Records for processes (identifiers and names)
-        // TODO: processesTransportCandidates
         return reactions.reduce(function (collection, reaction) {
             var newRecord = Extraction
                 .createReactionRecord({

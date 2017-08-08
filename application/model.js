@@ -17,9 +17,7 @@ class Model {
             // Source.
             "file",
             // General.
-            "compartments", "genes", "operations", "processes",
-            "reversibilities",
-            "metabolites", "reactions",
+            "compartments", "genes", "processes", "metabolites", "reactions",
             // Set.
             "allEntitiesAttributes", "currentEntitiesAttributes",
             "currentMetabolites", "currentReactionsAttributes",
