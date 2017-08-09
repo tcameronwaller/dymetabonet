@@ -178,11 +178,6 @@ class Attribution {
             transports: [reaction.transport]
         };
     }
-
-
-    // TODO: Evaluate compatibility of methods below here for [processes]... it should be good to go, I think...
-
-
     /**
      * Copies attributes of metabolic entities, metabolites and reactions.
      * @param {Array<Object>} entitiesAttributes Attributes of all entities.
@@ -225,7 +220,8 @@ class Attribution {
      * @param {string} entity A type of entity, metabolite or reaction.
      * @param {Array<Object<string>>} entitiesAttributes Attributes of
      * metabolic entities, metabolites and reactions.
-     * @returns {<Array<Object<string>>} Attributes of entities of a specific type.
+     * @returns {<Array<Object<string>>} Attributes of entities of a specific
+     * type.
      */
     static filterEntityType(entity, entitiesAttributes) {
         return entitiesAttributes.filter(function (record) {
