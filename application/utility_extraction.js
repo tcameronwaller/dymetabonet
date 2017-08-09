@@ -26,11 +26,16 @@ class Extraction {
             .createCompartmentRecords(data.compartments);
         var genes = Extraction.createGeneRecords(data.genes);
         var processes = Extraction.createProcessRecords(data.reactions);
+
+        // TODO: While I'm at it, clean up method names, such as createReactionsRecords (indicate plurality).
+
         // Extract information about entities.
-        var metabolites = Extraction
-            .createMetaboliteRecords(data.metabolites, data.reactions);
         var reactions = Extraction
-            .createReactionRecords(data.reactions, processes);
+            .createReactionsRecords(data.reactions, processes);
+        // TODO: Pass the metabolites procedure a reference to the new reactions... might as well use the new structure of reaction records.
+        var metabolites = Extraction
+            .createMetabolitesRecords(data.metabolites, data.reactions);
+        // Compile information.
         return {
             compartments: compartments,
             genes: genes,
@@ -156,7 +161,7 @@ class Extraction {
      * metabolic model.
      * @returns {Object<string>} Records for metabolites.
      */
-    static createMetaboliteRecords(metabolites, reactions) {
+    static createMetabolitesRecords(metabolites, reactions) {
         // Collect the identifiers of reactions in which each metabolite
         // participates.
         var metaboliteReactions = Extraction
@@ -181,6 +186,8 @@ class Extraction {
             }
         }, {});
     }
+    // TODO: Make sure that I know what I'm doing in collecting a metabolite's reactions...
+    // TODO: It's important to get that process right.
     /**
      * Collects the identifiers of all reactions in which each metabolite
      * participates.
@@ -284,7 +291,7 @@ class Extraction {
      * metabolic model.
      * @returns {Object<string>} Records for reactions.
      */
-    static createReactionRecords(reactions, processes) {
+    static createReactionsRecords(reactions, processes) {
         // In the original data, metabolic processes or pathways do not include
         // transport reactions.
         // As a result, processes that disperse across multiple compartments are
@@ -519,10 +526,18 @@ class Extraction {
     } = {}) {
         // Extract genes that have a role in the reaction.
         var genes = Clean.extractGenesFromRule(reaction.gene_reaction_rule);
-        // Create records for metabolites that participate in the reaction,
-        // their roles as reactants or products, and the compartments in which they participate.
-        var metabolites = Extraction
-            .createReactionMetabolites(reaction.metabolites);
+        // Create records that describe the metabolites that participate in the
+        // reaction, their roles as reactants or products, and the compartments
+        // in which they participate.
+        var participants = Extraction
+            .createReactionParticipants(reaction.metabolites);
+        // Determine metabolites that participate in the reaction.
+        // TODO: Use general utility methods to collect unique values from the participant objects...
+        // TODO: Replace Extraction.extractReactionMetabolitesCompartments() with the more general solution...
+
+        // Determine compartments in which metabolites participate in the
+        // reaction.
+
         // Determine whether or not the reaction is reversible.
         var reversibility = Extraction
             .determineReactionReversibility(
@@ -575,6 +590,7 @@ class Extraction {
                 identifier: reaction.id,
                 metabolites: metabolites,
                 name: reaction.name,
+                participants: participants,
                 processes: reactionProcesses,
                 reversibility: reversibility,
                 transport: transport,
@@ -583,13 +599,15 @@ class Extraction {
         };
     }
     /**
-     * Creates records for the metabolites that participate in a reaction.
+     * Creates records that describe the metabolites that participate in a
+     * reaction, their roles as reactants or products, and the compartments in
+     * which they participate.
      * @param {Object<number>} reactionMetabolites Information about metabolites
      * that participate in a reaction.
      * @returns {Array<Object<string>>} Information about metabolites that
      * participate in a reaction.
      */
-    static createReactionMetabolites(reactionMetabolites) {
+    static createReactionParticipants(reactionMetabolites) {
         return Object.keys(reactionMetabolites).map(function (identifier) {
             return {
                 identifier: Clean.extractMetaboliteIdentifier(identifier),
