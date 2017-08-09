@@ -240,6 +240,7 @@ class Action {
         // TODO: Return multiple attribute values in a single object.
         console.log("entitiesSets");
         console.log(entitiesSets);
+        // TODO: Confirmed general compatibility to new reaction's attributes.
         // Initialize values of attributes of the application's state for
         // information about metabolic entities and sets.
         // Remove the current file selection from the application's state.
