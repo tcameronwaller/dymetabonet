@@ -126,11 +126,11 @@ class General {
     }
     /**
      * Collects values for identical keys from multiple objects.
-     * @param {Array<Object>} objects Array of objects.
      * @param {string} key Common key for all objects.
+     * @param {Array<Object>} objects Array of objects.
      * @returns {Array} Values from all objects.
      */
-    static collectValuesFromObjects(objects, key) {
+    static collectValuesFromObjects(key, objects) {
         return objects.map(function (object) {
             return object[key];
         });

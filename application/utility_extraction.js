@@ -23,12 +23,9 @@ class Extraction {
     static extractMetabolicEntitiesSetsRecon2(data) {
         // Extract information about sets.
         var compartments = Extraction
-            .createCompartmentRecords(data.compartments);
-        var genes = Extraction.createGeneRecords(data.genes);
-        var processes = Extraction.createProcessRecords(data.reactions);
-
-        // TODO: While I'm at it, clean up method names, such as createReactionsRecords (indicate plurality).
-
+            .createCompartmentsRecords(data.compartments);
+        var genes = Extraction.createGenesRecords(data.genes);
+        var processes = Extraction.createProcessesRecords(data.reactions);
         // Extract information about entities.
         var reactions = Extraction
             .createReactionsRecords(data.reactions, processes);
@@ -52,7 +49,7 @@ class Extraction {
      * metabolic model.
      * @returns {Object} Records for compartments.
      */
-    static createCompartmentRecords(compartments) {
+    static createCompartmentsRecords(compartments) {
         // Create records for compartments.
         return Object.keys(compartments)
             .reduce(function (collection, identifier) {
@@ -84,7 +81,7 @@ class Extraction {
      * model.
      * @returns {Object} Records for genes.
      */
-    static createGeneRecords(genes) {
+    static createGenesRecords(genes) {
         // Create records for genes.
         return genes.reduce(function (collection, gene) {
             var newRecord = Extraction.createGeneRecord(gene);
@@ -111,7 +108,7 @@ class Extraction {
      * metabolic model.
      * @returns {Object} Records for processes.
      */
-    static createProcessRecords(reactions) {
+    static createProcessesRecords(reactions) {
         // Create records for processes.
         // Assume that according to their annotation, all reactions in the
         // metabolic model participate in only a single metabolic process.
@@ -532,12 +529,16 @@ class Extraction {
         var participants = Extraction
             .createReactionParticipants(reaction.metabolites);
         // Determine metabolites that participate in the reaction.
-        // TODO: Use general utility methods to collect unique values from the participant objects...
-        // TODO: Replace Extraction.extractReactionMetabolitesCompartments() with the more general solution...
-
+        var metabolites = General
+            .collectUniqueElements(
+                General.collectValuesFromObjects("metabolite", participants)
+            );
         // Determine compartments in which metabolites participate in the
         // reaction.
-
+        var compartments = General
+            .collectUniqueElements(
+                General.collectValuesFromObjects("compartment", participants)
+            );
         // Determine whether or not the reaction is reversible.
         var reversibility = Extraction
             .determineReactionReversibility(
@@ -548,25 +549,25 @@ class Extraction {
         // Different metabolites in reactants and products indicate that the
         // reaction involves a chemical conversion.
         var conversion = Extraction
-            .determineReactionChemicalConversion(metabolites);
+            .determineReactionChemicalConversion(participants);
         // Determine whether or not the reaction's metabolites participate in
         // multiple compartments.
         // Metabolites in multiple compartments indicate that the reaction
         // involves dispersal.
         var dispersal = Extraction
-            .determineReactionMultipleCompartments(metabolites);
+            .determineReactionMultipleCompartments(compartments);
         // Determine whether or not any of the reaction's reactants and products
         // are chemically the same but participate in different compartments.
         // Chemically identical reactants and products in distinct compartments
         // indicate that the reaction involves transport.
         var transport = Extraction
-            .determineReactionSameChemicalDifferentCompartments(metabolites);
+            .determineReactionSameChemicalDifferentCompartments(participants);
         if (transport) {
             // Reaction involves transport.
             // Collect the metabolites and compartments that the reaction's
             // transport involves.
             var transports = Extraction
-                .collectReactionSameChemicalDifferentCompartments(metabolites);
+                .collectReactionSameChemicalDifferentCompartments(participants);
             // Evaluate reaction's potential involvement in processes across
             // multiple compartments.
             var transportProcesses = Extraction.collectTransportProcesses({
@@ -584,6 +585,7 @@ class Extraction {
         var reactionProcesses = [].concat(originalProcess, transportProcesses);
         return {
             [reaction.id]: {
+                compartments: compartments,
                 conversion: conversion,
                 dispersal: dispersal,
                 genes: genes,
@@ -604,13 +606,13 @@ class Extraction {
      * which they participate.
      * @param {Object<number>} reactionMetabolites Information about metabolites
      * that participate in a reaction.
-     * @returns {Array<Object<string>>} Information about metabolites that
-     * participate in a reaction.
+     * @returns {Array<Object<string>>} Information about metabolites'
+     * participation in a reaction.
      */
     static createReactionParticipants(reactionMetabolites) {
         return Object.keys(reactionMetabolites).map(function (identifier) {
             return {
-                identifier: Clean.extractMetaboliteIdentifier(identifier),
+                metabolite: Clean.extractMetaboliteIdentifier(identifier),
                 role: Extraction.determineReactionMetaboliteRole(
                     reactionMetabolites[identifier]
                 ),
@@ -650,23 +652,23 @@ class Extraction {
     }
     /**
      * Determines whether or not a reaction involves a chemical conversion
-     * between its reactant and product metabolites.
-     * @param {Array<Object<string>>} reactionMetabolites Information about
-     * metabolites that participate in a reaction.
+     * between the metabolites that participate as its reactants and products.
+     * @param {Array<Object<string>>} participants Information about
+     * metabolites' participation in a reaction.
      * @returns {boolean} Whether or not metabolites change chemically.
      */
-    static determineReactionChemicalConversion(reactionMetabolites) {
-        var reactants = reactionMetabolites
-            .filter(function (metabolite) {
-                return metabolite.role === "reactant";
+    static determineReactionChemicalConversion(participants) {
+        var reactants = participants
+            .filter(function (participant) {
+                return participant.role === "reactant";
             }).map(function (reactant) {
-                return reactant.identifier;
+                return reactant.metabolite;
             });
-        var products = reactionMetabolites
-            .filter(function (metabolite) {
-                return metabolite.role === "product";
+        var products = participants
+            .filter(function (participant) {
+                return participant.role === "product";
             }).map(function (product) {
-                return product.identifier;
+                return product.metabolite;
             });
         return (
             !General.compareArraysByInclusion(reactants, products) &&
@@ -676,64 +678,48 @@ class Extraction {
     /**
      * Determines whether or not a reaction involves metabolites in multiple
      * compartments.
-     * @param {Array<Object<string>>} reactionMetabolites Information about
-     * metabolites that participate in a reaction.
+     * @param {Array<string>} compartments Identifiers of compartments in which
+     * metabolites participate in a reaction.
      * @returns {boolean} Whether or not metabolites occur in multiple
      * compartments.
      */
-    static determineReactionMultipleCompartments(reactionMetabolites) {
-        var compartments = Extraction.extractReactionMetabolitesCompartments(
-            reactionMetabolites
-        );
+    static determineReactionMultipleCompartments(compartments) {
         return (compartments.length > 1);
-    }
-    /**
-     * Extracts unique compartments in which metabolites participate in a
-     * reaction.
-     * @param {Array<Object<string>>} reactionMetabolites Information about
-     * metabolites that participate in a reaction.
-     * @returns {Array<string>} Identifiers of compartments.
-     */
-    static extractReactionMetabolitesCompartments(reactionMetabolites) {
-        var compartments = reactionMetabolites.map(function (metabolite) {
-            return metabolite.compartment;
-        });
-        return General.collectUniqueElements(compartments);
     }
     /**
      * Determines whether or not any metabolites that participate in a reaction
      * as reactants and products are chemically identical but occur in different
      * compartments.
-     * @param {Array<Object<string>>} reactionMetabolites Information about
-     * metabolites that participate in a reaction.
+     * @param {Array<Object<string>>} participants Information about
+     * metabolites' participation in a reaction.
      * @returns {boolean} Indicator of whether or not the reaction involves the
      * same metabolite as both reactant and product in different compartments.
      */
     static determineReactionSameChemicalDifferentCompartments(
-        reactionMetabolites
+        participants
     ) {
         var transports = Extraction
             .collectReactionSameChemicalDifferentCompartments(
-                reactionMetabolites
+                participants
             );
         return (transports.length > 0);
     }
     /**
      * Collects metabolites that participate in a reaction as both reactants and
      * products but in different compartments.
-     * @param {Array<Object<string>>} reactionMetabolites Information about
-     * metabolites that participate in a reaction.
+     * @param {Array<Object<string>>} participants Information about
+     * metabolites' participation in a reaction.
      * @returns {Array<Object>} Metabolites and compartments in which they
      * participate in the reaction as both reactants and products.
      */
     static collectReactionSameChemicalDifferentCompartments(
-        reactionMetabolites
+        participants
     ) {
-        var reactants = reactionMetabolites.filter(function (metabolite) {
-            return metabolite.role === "reactant";
+        var reactants = participants.filter(function (participant) {
+            return participant.role === "reactant";
         });
-        var products = reactionMetabolites.filter(function (metabolite) {
-            return metabolite.role === "product";
+        var products = participants.filter(function (participant) {
+            return participant.role === "product";
         });
         // Collect the metabolites that the reaction transports and their
         // relevant compartments.
@@ -743,7 +729,7 @@ class Extraction {
             // Determine whether or not the collection already includes a record
             // for the reactant.
             var reactantMatch = collection.find(function (record) {
-                return record.metabolite === reactant.identifier;
+                return record.metabolite === reactant.metabolite;
             });
             if (!reactantMatch) {
                 // The collection does not already include a record for the
@@ -753,7 +739,7 @@ class Extraction {
                 // There might be multiple products that are the same chemical
                 // metabolite as the reactant.
                 var metaboliteMatches = products.filter(function (product) {
-                    return product.identifier === reactant.identifier;
+                    return product.metabolite === reactant.metabolite;
                 });
                 // Determine if any of these chemically identical metabolites
                 // occur in different compartments.
@@ -768,7 +754,7 @@ class Extraction {
                 if (uniqueCompartments.length > 1) {
                     // Metabolites occur in different compartments.
                     var newTransport = {
-                        metabolite: reactant.identifier,
+                        metabolite: reactant.metabolite,
                         compartments: uniqueCompartments
                     };
                     return [].concat(collection, newTransport);

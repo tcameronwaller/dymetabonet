@@ -124,7 +124,7 @@ class Attribution {
                         return metabolite.identifier === metaboliteIdentifier;
                     });
                 var metaboliteReactionCompartments = General
-                    .collectValuesFromObjects(metabolites, "compartment");
+                    .collectValuesFromObjects("compartment", metabolites);
                 return [].concat(collection, metaboliteReactionCompartments);
             }, []);
         return General.collectUniqueElements(compartments);
