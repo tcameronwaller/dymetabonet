@@ -54,12 +54,12 @@ class Attribution {
                 reactionIdentifiers: metabolite.reactions,
                 reactions: reactions
             }),
-            conversions: Attribution.collectReactionsAttributeValues({
+            conversions: Extraction.collectReactionsAttributeValues({
                 attribute: "conversion",
                 reactionIdentifiers: metabolite.reactions,
                 reactions: reactions
             }),
-            dispersals: Attribution.collectReactionsAttributeValues({
+            dispersals: Extraction.collectReactionsAttributeValues({
                 attribute: "dispersal",
                 reactionIdentifiers: metabolite.reactions,
                 reactions: reactions
@@ -70,12 +70,12 @@ class Attribution {
                 reactionIdentifiers: metabolite.reactions,
                 reactions: reactions
             }),
-            reversibilities: Attribution.collectReactionsAttributeValues({
+            reversibilities: Extraction.collectReactionsAttributeValues({
                 attribute: "reversibility",
                 reactionIdentifiers: metabolite.reactions,
                 reactions: reactions
             }),
-            transports: Attribution.collectReactionsAttributeValues({
+            transports: Extraction.collectReactionsAttributeValues({
                 attribute: "transport",
                 reactionIdentifiers: metabolite.reactions,
                 reactions: reactions
@@ -128,27 +128,6 @@ class Attribution {
                 return [].concat(collection, metaboliteReactionCompartments);
             }, []);
         return General.collectUniqueElements(compartments);
-    }
-    /**
-     * Collects unique values of a single attribute from multiple reactions.
-     * @param {Object} parameters Destructured object of parameters.
-     * @param {string} parameters.attribute Name of attribute of which to
-     * collect values.
-     * @param {Array<string>} parameters.reactionIdentifiers Identifiers for
-     * reactions of interest.
-     * @param {Object} parameters.reactions Information for all reactions.
-     * @returns {Array<string>} Identifiers of reversibilities.
-     */
-    static collectReactionsAttributeValues({
-                                               attribute,
-                                               reactionIdentifiers,
-                                               reactions
-                                              } = {}) {
-        var values = reactionIdentifiers.map(function (reactionIdentifier) {
-            var reaction = reactions[reactionIdentifier];
-            return reaction[attribute];
-        });
-        return General.collectUniqueElements(values);
     }
     /**
      * Determines attributes of all reactions.
