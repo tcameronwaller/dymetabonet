@@ -246,14 +246,36 @@ class Action {
         // information about metabolic entities and sets.
         // Remove the current file selection from the application's state.
         var file = null;
-        // Determine all attributes of all metabolic entities.
-        var allEntitiesAttributes = Attribution
-            .collectEntitiesAttributes(
-                entitiesSets.metabolites, entitiesSets.reactions
-            );
         // Initialize application's attributes for entities' sets.
-        var entitiesSetsAttributes = Action
-            .initializeEntitiesSetsAttributes(allEntitiesAttributes);
+        //var entitiesSetsAttributes = Action
+        //    .initializeEntitiesSetsAttributes(allEntitiesAttributes);
+
+        // Create a selection...
+        var selections = Attribution.recordFilterSelection({
+            value: "e",
+            attribute: "compartments",
+            selections: []
+        });
+        var filters = Attribution.translateSelectionsFilters(selections);
+        var filterReaction = Attribution.filterReactionAttributesValues({
+            filters: filters,
+            reaction: entitiesSets.reactions["6HMSMVACIDteb"]
+        });
+        console.log("test reaction filter");
+        console.log(filterReaction);
+
+
+
+
+
+
+
+
+        // Determine all attributes of all metabolic entities.
+        //var allEntitiesAttributes = Attribution
+        //    .collectEntitiesAttributes(
+        //        entitiesSets.metabolites, entitiesSets.reactions
+        //    );
 
 
         // Initialize application's attributes for individual entities.
@@ -273,18 +295,17 @@ class Action {
         // state.
         var newAttributesValues = {
             file: file,
-            allEntitiesAttributes: allEntitiesAttributes,
             compartmentalization: compartmentalization,
             replications: replications
         };
-        var attributesValues = Object
-            .assign(
-                {}, entitiesSets, entitiesSetsAttributes, newAttributesValues
-            );
-        Action.submitAttributes({
-            attributesValues: attributesValues,
-            model: model
-        });
+        //var attributesValues = Object
+        //    .assign(
+        //        {}, entitiesSets, entitiesSetsAttributes, newAttributesValues
+        //    );
+        //Action.submitAttributes({
+        //    attributesValues: attributesValues,
+        //    model: model
+        //});
     }
 
 

@@ -120,7 +120,7 @@ class Extraction {
                 var name = "other";
             }
             // Determine if a record already exists for the process.
-            if (Object.keys(collection).find(function (key) {
+            if (Object.keys(collection).some(function (key) {
                     return collection[key].name === name;
                 })) {
                 return collection;
@@ -155,7 +155,7 @@ class Extraction {
      * metabolic model.
      * @param {Object<string>} processes Information about all processes in a
      * metabolic model.
-     * @returns {Object} Records for reactions.
+     * @returns {Object} Records with information about reactions.
      */
     static createReactionsRecords(reactions, processes) {
         // In the original data, metabolic processes or pathways do not include
@@ -385,7 +385,7 @@ class Extraction {
      * process.
      * @param {Object} parameters.processes Information about all processes in a
      * metabolic model.
-     * @returns {Object} Record for a reaction.
+     * @returns {Object} Record with information about a reaction.
      */
     static createReactionRecord({
                                     reaction, processesTransports, processes
@@ -598,7 +598,7 @@ class Extraction {
         return reactants.reduce(function (collection, reactant) {
             // Determine whether or not the collection already includes a record
             // for the reactant.
-            var reactantMatch = collection.find(function (record) {
+            var reactantMatch = collection.some(function (record) {
                 return record.metabolite === reactant.metabolite;
             });
             if (!reactantMatch) {
