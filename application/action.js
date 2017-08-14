@@ -216,6 +216,8 @@ class Action {
      */
     static extractInitializeMetabolicEntitiesSets({data, model} = {}) {
         // Extract information about metabolic entities and sets.
+        // The full model has 2652 metabolites.
+        // The full model has 7785 reactions.
         var entitiesSets = Extraction.extractMetabolicEntitiesSetsRecon2(data);
         // Initialize application from information about metabolic entities and
         // sets.
@@ -234,77 +236,15 @@ class Action {
      * application.
      */
     static initializeMetabolicEntitiesSets({entitiesSets, model} = {}) {
-        // TODO: It would be helpful to organize this initialization somehow to
-        // TODO: make the procedure more convenient for restore buttons for set
-        // TODO: view and entity view respectively.
-        // TODO: Return multiple attribute values in a single object.
         console.log("entitiesSets");
         console.log(entitiesSets);
-        // TODO: Confirmed general compatibility to new reaction's attributes.
-        // TODO: Confirmed general compatibility to new reaction's processes.
         // Initialize values of attributes of the application's state for
         // information about metabolic entities and sets.
         // Remove the current file selection from the application's state.
         var file = null;
-        // Initialize application's attributes for entities' sets.
-        //var entitiesSetsAttributes = Action
-        //    .initializeEntitiesSetsAttributes(allEntitiesAttributes);
-
-        console.log("original reaction");
-        console.log(entitiesSets.reactions["6HMSMVACIDteb"]);
-        console.log("filter 1");
-        // Create a selection...
-        var selections1 = Attribution.recordFilterSelection({
-            value: "e",
-            attribute: "compartments",
-            selections: []
-        });
-        var filters1 = Attribution.translateSelectionsFilters(selections1);
-        var filterReaction1 = Attribution.filterReactionAttributesValues({
-            filters: filters1,
-            reaction: entitiesSets.reactions["6HMSMVACIDteb"]
-        });
-        console.log("test reaction attributes filter");
-        console.log(filterReaction1);
-        var pass1 = Attribution
-            .determineReactionPassFilters(filterReaction1);
-        console.log("test reaction pass filter");
-        console.log(pass1);
-
-        console.log("filter 2");
-        // Create a selection...
-        var selections2 = Attribution.recordFilterSelection({
-            value: "c",
-            attribute: "compartments",
-            selections: selections1
-        });
-        var filters2 = Attribution.translateSelectionsFilters(selections2);
-        var filterReaction2 = Attribution.filterReactionAttributesValues({
-            filters: filters2,
-            reaction: entitiesSets.reactions["6HMSMVACIDteb"]
-        });
-        console.log("test reaction attributes filter");
-        console.log(filterReaction2);
-        var pass2 = Attribution
-            .determineReactionPassFilters(filterReaction2);
-        console.log("test reaction pass filter");
-        console.log(pass2);
-
-
-
-
-
-
-
-
-
-
-        // Determine all attributes of all metabolic entities.
-        //var allEntitiesAttributes = Attribution
-        //    .collectEntitiesAttributes(
-        //        entitiesSets.metabolites, entitiesSets.reactions
-        //    );
-
+        // Initialize application's attributes for sets of current entities.
+        var currentEntitiesSetsAttributes = Action
+            .initializeCurrentEntitiesSetsAttributes(model);
 
         // Initialize application's attributes for individual entities.
         // Specify compartmentalization option for entity view.
@@ -428,6 +368,7 @@ class Action {
         // Determine entities and their values of attributes that pass filters
         // from selections.
         // Copy information about all entities' attributes.
+        // TODO: Change procedure here...
         var copyEntitiesAttributes = Attribution
             .copyEntitiesAttributes(model.allEntitiesAttributes);
         // Filter the entities' attributes.
@@ -636,13 +577,13 @@ class Action {
     }
     // Secondary actions relevant to application's state.
     /**
-     * Determines values of all attributes that derive from current entities'
-     * attributes.
-     * @param {Array<Object>} allEntitiesAttributes Attributes of all entities.
+     * Initializes values of attributes that relate to sets of current entities.
+     * @param {Object} model Model of the comprehensive state of the
+     * application.
      * @returns {Object} Collection of multiple attributes that relate to sets
-     * of entities by their attributes.
+     * of current entities by their attributes.
      */
-    static initializeEntitiesSetsAttributes(allEntitiesAttributes) {
+    static initializeCurrentEntitiesSetsAttributes(model) {
         // Specify selections of attributes for sets' summary.
         // These selections determine which search menus to create in set view.
         var attributesSelections = [];
@@ -654,19 +595,19 @@ class Action {
         var setsSummaryEntity = "metabolite";
         // Specify filter option for sets' summary.
         var setsSummaryFilter = false;
-        // Determine attributes of metabolic entities that pass current filters.
-        // For initialization, it is sufficient to copy the attributes of
-        // metabolic entities.
-        var currentEntitiesAttributes = Attribution
-            .copyEntitiesAttributes(allEntitiesAttributes);
-        // Determine values of all attributes that derive from current entities'
-        // attributes.
-        var entitiesAttributesDerivations = Action
-            .determineValuesFromEntitiesAttributes({
+        // Copy metabolic entities.
+        var currentMetabolites = Extraction.copyEntities(model.metabolites);
+        var currentReactions = Extraction.copyEntities(model.reactions);
+        // Determine values of attributes that summarize cardinalities of sets
+        // of entities.
+        var setsCardinalitiesAttributes = Action
+            .determineEntitiesSetsCardinalitiesAttributes({
                 entity: setsSummaryEntity,
                 filter: setsSummaryFilter,
-                currentEntitiesAttributes: currentEntitiesAttributes,
-                allEntitiesAttributes: allEntitiesAttributes
+                metabolites: model.metabolites,
+                reactions: model.reactions,
+                currentMetabolites: currentMetabolites,
+                currentReactions: currentReactions
             });
         // Return new values of attributes.
         var newAttributesValues = {
@@ -674,41 +615,40 @@ class Action {
             valuesSelections: valuesSelections,
             setsSummaryEntity: setsSummaryEntity,
             setsSummaryFilter: setsSummaryFilter,
-            currentEntitiesAttributes: currentEntitiesAttributes
+            currentMetabolites: currentMetabolites,
+            currentReactions: currentReactions
         };
         var attributesValues = Object
-            .assign({}, entitiesAttributesDerivations, newAttributesValues);
+            .assign({}, setsCardinalitiesAttributes, newAttributesValues);
         return attributesValues;
     }
     /**
-     * Determines values of all attributes that derive from current entities'
-     * attributes.
+     * Determines values of all attributes that summarize cardinalities of sets
+     * of entities.
      * @param {Object} parameters Destructured object of parameters.
      * @param {string} parameters.entity Current entity selection.
      * @param {boolean} parameters.filter Current filter selection.
-     * @param {Array<Object>} parameters.currentEntitiesAttributes Attributes of
-     * all entities that pass current filters.
-     * @param {Array<Object>} parameters.allEntitiesAttributes Attributes of all
-     * entities.
+     * @param {Object} parameters.metabolites Records with information about
+     * metabolites.
+     * @param {Object} parameters.reactions Records with information about
+     * reactions.
+     * @param {Object} parameters.currentMetabolites Records with information
+     * about metabolites and values of their attributes that pass filters.
+     * @param {Object} parameters.currentReactions Records with information
+     * about reactions and values of their attributes that pass filters.
      * @returns {Object} Collection of multiple attributes that derive from
      * current entities' attributes.
      */
-    static determineValuesFromEntitiesAttributes({
+    static determineEntitiesSetsCardinalitiesAttributes({
                                                      entity,
                                                      filter,
-                                                     currentEntitiesAttributes,
-                                                     allEntitiesAttributes
+                                                     metabolites,
+                                                     reactions,
+                                                     currentMetabolites,
+                                                     currentReactions
                                                  } = {}) {
-        // Extract identifiers of entities.
-        // The full model has 2652 metabolites.
-        var currentMetabolitesAttributes = Attribution
-            .filterEntityType("metabolite", currentEntitiesAttributes);
-        var currentMetabolites = Attribution
-            .extractEntityIdentifiers(currentMetabolitesAttributes);
-        // The full model has 7785 reactions.
-        var currentReactionsAttributes = Attribution
-            .filterEntityType("reaction", currentEntitiesAttributes);
         // Determine cardinalities of sets of metabolic entities.
+        // TODO: Re-work the cardinalities procedure.
         var setsCardinalities = Cardinality.determineSetsCardinalities({
             filter: filter,
             currentEntitiesAttributes: currentEntitiesAttributes,
@@ -719,26 +659,10 @@ class Action {
             .prepareSetsSummary(entity, setsCardinalities);
         // Return new values of attributes.
         return {
-            currentMetabolites: currentMetabolites,
-            currentReactionsAttributes: currentReactionsAttributes,
             setsCardinalities: setsCardinalities,
             setsSummary: setsSummary
         };
     }
-
-
-    /**
-     * Tests some operation temporarily before permanent implementation.
-     * @param {Object} model Model of the comprehensive state of the
-     * application.
-     */
-    static testOperation(model) {
-        // Append a string to the names of some reactions.
-        // 1. filter reactions first and then append to filtered set.
-        // 2. use conditional during single iteration.
-    }
-
-
 
 
     /**

@@ -16,11 +16,11 @@ class Model {
         this.attributeNames = [
             // Source.
             "file",
-            // General.
-            "compartments", "genes", "processes", "metabolites", "reactions",
-            // Set.
-            "allEntitiesAttributes", "currentEntitiesAttributes",
-            "currentMetabolites", "currentReactionsAttributes",
+            // Entities.
+            "metabolites", "reactions",
+            "currentMetabolites", "currentReactions",
+            // Sets.
+            "compartments", "genes", "processes",
             "attributesSelections", "valuesSelections",
             "setsSummaryEntity", "setsSummaryFilter",
             "setsCardinalities", "setsSummary",

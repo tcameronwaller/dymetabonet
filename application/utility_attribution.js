@@ -174,7 +174,7 @@ class Attribution {
             metabolites: metabolites
         };
         // Copy all of reaction's attributes.
-        var attributes = Attribution.copyEntityAttributesValues(reaction);
+        var attributes = Extraction.copyEntityAttributesValues(reaction);
         // Compile attributes for reaction's record.
         // Replace attributes relevant to filters.
         return Object.assign({}, attributes, filterAttributes);
@@ -236,61 +236,6 @@ class Attribution {
         });
     }
     /**
-     * Copies attributes' values of a metabolic entity, metabolite or reaction.
-     * @param {Object} entity Record with information about an entity and its
-     * attributes' values.
-     * @returns {Object} Copy of entity's record.
-     */
-    static copyEntityAttributesValues(entity) {
-        // Copy entity's values of attributes.
-        var attributes = Object.keys(entity);
-        return attributes.reduce(function (collection, attribute) {
-            var value = entity[attribute];
-            // Copy attribute's value according to its type.
-            // Attribute value's type is either null, undefined, string, number,
-            // boolean, or array.
-            if (Array.isArray(value)) {
-                // Attribute value's type is array.
-                // Elements within array are either type string or object.
-                if (typeof value[0] === "object") {
-                    // Elements within array are type object.
-                    // Values within object are either type string or array.
-                    var valueCopy = value.map(function (object) {
-                        var keys = Object.keys(object);
-                        return keys.reduce(function (collection, key) {
-                            var objectValue = object[key];
-                            if (Array.isArray(objectValue)) {
-                                // Object's value is an array of elements of
-                                // type string.
-                                var objectValueCopy = objectValue.slice();
-                            } else {
-                                // Object's value is of type string.
-                                var objectValueCopy = objectValue;
-                            }
-                            var newRecord = {
-                                [key]: objectValueCopy
-                            };
-                            return Object.assign({}, collection, newRecord);
-                        }, {});
-                    });
-                } else {
-                    // Elements within array are type string.
-                    var valueCopy = value.slice();
-                }
-            } else {
-                // Attribute value's type is either null, undefined, string,
-                // number, or boolean.
-                var valueCopy = value;
-            }
-            // Copy existing attributes and values in the collection and include
-            // copy of current attribute and its value.
-            var newRecord = {
-                [attribute]: valueCopy
-            };
-            return Object.assign({}, collection, newRecord);
-        }, {});
-    }
-    /**
      * Determines whether or not a reaction passes filters.
      * @param {Object} reaction Record with information about a reaction and its
      * attributes' values that pass filters.
@@ -342,7 +287,7 @@ class Attribution {
      * @returns {Object} Records with information about metabolites and values
      * of their attributes that pass filters.
      */
-    static filterMetabolitesReactionsAttributesValues({
+    static filterMetabolitesReactionsAttributes({
                                                           metabolites, reactions
     } = {}) {
         // Filter metabolites and their values of attributes.
@@ -356,13 +301,12 @@ class Attribution {
                 // Filter metabolite's reactions and values of attributes that
                 // it inherits from its reactions.
                 var filterMetabolite = Attribution
-                    .filterMetaboliteReactionsAttributesValues({
+                    .filterMetaboliteReactionsAttributes({
                         metabolite: metabolite,
                         reactions: reactions
                     });
                 // Determine whether or not the metabolite passes filters.
                 // within determine function... Metabolite passes filters if at least a single reaction claims it.
-                // TODO: Write the determineMetabolitePassFilters function.
                 var pass = Attribution
                     .determineMetabolitePassFilters(filterMetabolite);
                 if (pass) {
@@ -390,90 +334,38 @@ class Attribution {
      * @returns {Object} Record with information about a single metabolite and
      * values of its attributes that pass filters.
      */
-    static filterMetaboliteReactionsAttributesValues({
+    static filterMetaboliteReactionsAttributes({
                                                           metabolite, reactions
                                                       } = {}) {
-        // Iterate on metabolite's reactions.
-        var reactionsIdentifiers = metabolite.reactions;
-        var initialReactionsCollection = {
-            reactions: [],
-            compartments: [],
-            processes: []
-        };
-        // TODO: I need to finish preparing the complete record for the filter metabolite (including the metabolite's own attributes).
-        // TODO: The procedure below should be very similar to Extraction.collectMetaboliteReactionsAttributes... It's mostly different because it has to consider if reactions exist and claim metabolites...
-        // TODO: Just make the two the same...
-        // TODO: It'll be prudent to always makes sure that references to reactions are relevant before accessing them.
-
-        // TODO: Then bring in stuff from Extraction.createMetaboliteRecord to combine reactions' attributes with those of the metabolite itself.
-        // TODO: Also imitate filterReactionAttributesValues() and the copy function...
-        var reactionsAttributes = reactionsIdentifiers
-            .reduce(function (reactionsCollection, reactionIdentifier) {
-                // Determine if the reaction's identifier is in the current
-                // collection of reactions, indicating that the reaction passes
-                // current filters.
-                if (reactions.hasOwnProperty(reactionIdentifier)) {
-                    // Reaction passes filters.
-                    var reaction = reactions[reactionIdentifier];
-                    // Determine if the reaction claims the metabolite,
-                    // indicating that the metabolite's participation in the
-                    // reaction satisfies filters.
-                    if (reaction.metabolites.includes(metabolite.identifier)) {
-                        // Reaction claims metabolite.
-                        // Include reaction's identifier in metabolite's
-                        // collection of reactions.
-                        var collectionReactions = General
-                            .collectUniqueElements(
-                                []
-                                    .concat(
-                                        reactionsCollection.reactions,
-                                        reaction.identifier
-                                    )
-                            );
-                        // Determine values of attributes that metabolite
-                        // inherits from reaction.
-                        var compartments = Extraction
-                            .collectMetaboliteReactionCompartments({
-                                metaboliteIdentifier: metabolite.identifier,
-                                reaction: reaction
-                            });
-                        var collectionCompartments = General
-                            .collectUniqueElements(
-                                []
-                                    .concat(
-                                        reactionsCollection.compartments,
-                                        compartments
-                                    )
-                            );
-                        var processes = reaction.processes;
-                        var collectionProcesses = General
-                            .collectUniqueElements(
-                                []
-                                    .concat(
-                                        reactionsCollection.processes, processes
-                                    )
-                            );
-                        // Compile new values of attributes for the collection.
-                        var newReactionsCollection = {
-                            reactions: collectionReactions,
-                            compartments: collectionCompartments,
-                            processes: collectionProcesses
-                        };
-                    } else {
-                        // Reaction does not claim metabolite.
-                        // Do not change current collection.
-                        var newReactionsCollection = reactionsCollection;
-                    }
-                } else {
-                    // Reaction does not pass filters.
-                    // Do not change current collection.
-                    var newReactionsCollection = reactionsCollection;
-                }
-                return newReactionsCollection;
-            }, initialReactionsCollection);
+        // Copy all of metabolite's attributes.
+        var metaboliteAttributes = Extraction
+            .copyEntityAttributesValues(metabolite);
+        // Determine values of attributes that metabolite inherits from the
+        // reactions in which it participates.
+        var reactionsAttributes = Extraction
+            .collectMetaboliteReactionsAttributes({
+                metaboliteIdentifier: metabolite.identifier,
+                reactionsIdentifiers: metabolite.reactions,
+                reactions: reactions
+            });
+        // Compile attributes for metabolite's record.
+        // Replace attributes relevant to filters.
+        return Object.assign({}, metaboliteAttributes, reactionsAttributes);
     }
-
-
+    /**
+     * Determines whether or not a metabolite passes filters.
+     * @param {Object} metabolite Record with information about a metabolite and
+     * its attributes' values that pass filters.
+     * @returns {boolean} Whether or not the metabolite passes filters.
+     */
+    static determineMetabolitePassFilters(metabolite) {
+        // Attributes relevant to filtration are compartments and processes.
+        // Metabolites inherit these attributes from the reactions in which they
+        // participate.
+        // To pass filters, a metabolite must participate in at least a single
+        // reaction in a context that passes filters.
+        return metabolite.reactions.length > 0;
+    }
 }
 
 

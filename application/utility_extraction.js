@@ -844,14 +844,13 @@ class Extraction {
             charge: metabolite.charge,
             formula: metabolite.formula,
             identifier: identifier,
-            name: metabolite.name,
-            reactions: metaboliteReactions
+            name: metabolite.name
         };
         // Determine values of attributes that metabolite inherits from the
         // reactions in which it participates.
         var reactionsAttributes = Extraction
             .collectMetaboliteReactionsAttributes({
-                metabolite: identifier,
+                metaboliteIdentifier: identifier,
                 reactionsIdentifiers: metaboliteReactions,
                 reactions: reactions
             });
@@ -866,7 +865,8 @@ class Extraction {
      * Collects values of attributes that a metabolite inherits from the
      * reactions in which it participates.
      * @param {Object} parameters Destructured object of parameters.
-     * @param {string} parameters.metabolite Identifier of a single metabolite.
+     * @param {string} parameters.metaboliteIdentifier Identifier of a single
+     * metabolite.
      * @param {Array<string>} parameters.reactionsIdentifiers Identifiers of
      * reactions in which a single metabolite participates.
      * @param {Object} parameters.reactions Information about all reactions.
@@ -874,69 +874,86 @@ class Extraction {
      * the reactions in which it participates.
      */
     static collectMetaboliteReactionsAttributes({
-                                                    metabolite,
+                                                    metaboliteIdentifier,
                                                     reactionsIdentifiers,
                                                     reactions
     }) {
-        // TODO: Re-write function Extraction.collectMetaboliteReactionsAttributes and its
-        // TODO: subordinate functions.
-        // TODO: 1. Iterate on reactions (identifiers from metabolite's record).
-        // TODO: 2. For each reaction, consider whether to keep the reaction
-        // TODO: (in the metabolite's record) and also extract its attributes.
-        // TODO: Determine this by whether the reaction exists in the reaction
-        // TODO: collection and by whether the reaction claims the metabolite.
-        // TODO: 3. If the reaction is to keep, include reaction's identifier in
-        // TODO: a collection (collection.reactions).
-        // TODO: 4. If the reaction is to keep, include reaction's compartments
-        // TODO: and processes in a collection (collection.compartments,
-        // TODO: collection.processes).
-        // TODO: 5. Assign new reactions, compartments, and processes from the
-        // TODO: collection to the metabolite's record.
-
-        // Iterate on metabolite's reactions.
+        // Collect attributes that metabolite inherits from the reactions in
+        // which it participates.
+        // Initialize collection.
         var initialCollection = {
             reactions: [],
             compartments: [],
             processes: []
         };
+        // Iterate on metabolite's reactions.
         return reactionsIdentifiers
             .reduce(function (collection, reactionIdentifier) {
-                // Assume that all of metabolite's references are to valid
-                // reactions.
-                var reaction = reactions[reactionIdentifier];
-                // Determine compartments in which metabolite participates in the
-                // reaction.
-                var compartments = Extraction
-                    .collectMetaboliteReactionCompartments({
-                        metaboliteIdentifier: metabolite,
-                        reaction: reaction
-                    });
-                var collectionCompartments = General
-                    .collectUniqueElements(
-                        [].concat(collection.compartments, compartments)
-                    );
-                // Determine processes of the reaction in which metabolite
-                // participates.
-                // Metabolite inherits from its reactions all of the reactions'
-                // processes.
-                var processes = reaction.processes;
-                var collectionProcesses = General
-                    .collectUniqueElements(
-                        [].concat(collection.processes, processes)
-                    );
-
-                // TODO: I need to compile and return the collection...
-
+                // Determine if the reaction exists in the current collection of
+                // reactions, indicating that the reaction passes current
+                // filters.
+                if (reactions.hasOwnProperty(reactionIdentifier)) {
+                    // Reaction passes filters.
+                    var reaction = reactions[reactionIdentifier];
+                    // Determine if the reaction claims the metabolite,
+                    // indicating that the metabolite's participation in the
+                    // reaction satisfies filters.
+                    if (reaction.metabolites.includes(metaboliteIdentifier)) {
+                        // Reaction claims metabolite.
+                        // Include reaction's identifier in metabolite's
+                        // collection of reactions.
+                        var collectionReactions = General
+                            .collectUniqueElements(
+                                []
+                                    .concat(
+                                        collection.reactions,
+                                        reaction.identifier
+                                    )
+                            );
+                        // Determine values of attributes that metabolite
+                        // inherits from reaction.
+                        // Determine compartments in which metabolite
+                        // participates in the reaction.
+                        var compartments = Extraction
+                            .collectMetaboliteReactionCompartments({
+                                metaboliteIdentifier: metaboliteIdentifier,
+                                reaction: reaction
+                            });
+                        var collectionCompartments = General
+                            .collectUniqueElements(
+                                []
+                                    .concat(
+                                        collection.compartments,
+                                        compartments
+                                    )
+                            );
+                        // Determine processes of the reaction in which
+                        // metabolite participates.
+                        // Metabolite inherits from its reactions all of the
+                        // reactions' processes.
+                        var processes = reaction.processes;
+                        var collectionProcesses = General
+                            .collectUniqueElements(
+                                [].concat(collection.processes, processes)
+                            );
+                        // Compile new values of attributes for the collection.
+                        var newCollection = {
+                            reactions: collectionReactions,
+                            compartments: collectionCompartments,
+                            processes: collectionProcesses
+                        };
+                    } else {
+                        // Reaction does not claim metabolite.
+                        // Do not change current collection.
+                        var newCollection = collection;
+                    }
+                } else {
+                    // Reaction does not pass filters.
+                    // Do not change current collection.
+                    var newCollection = collection;
+                }
+                return newCollection;
             }, initialCollection);
-
-
-
-
-        // Compile attributes' values.
-        return {
-            compartments: compartments,
-            processes: processes
-        };
     }
     /**
      * Collects unique compartments in which a metabolite participates in a
@@ -967,27 +984,81 @@ class Extraction {
         return General.collectUniqueElements(participantsCompartments);
     }
     /**
-     * Collects unique values of a single attribute from multiple reactions.
-     * Accommodates individual values or arrays of values from each reaction.
-     * @param {Object} parameters Destructured object of parameters.
-     * @param {string} parameters.attribute Name of attribute of which to
-     * collect values.
-     * @param {Array<string>} parameters.identifiers Identifiers of reactions of
-     * interest.
-     * @param {Object} parameters.reactions Information about all reactions.
-     * @returns {Array<string>} Unique values of the attribute from all
-     * reactions of interest.
+     * Copies records with information about metabolic entities, metabolites or
+     * reactions.
+     * @param {Object} entities Records with information about entities and
+     * their attributes' values.
+     * @returns {Object} Copy of records for entities.
      */
-    static collectReactionsAttributeValues({
-                                               attribute,
-                                               identifiers,
-                                               reactions
-    } = {}) {
-        var values = identifiers.reduce(function (collection, identifier) {
-            var reaction = reactions[identifier];
-            var reactionValues = reaction[attribute];
-            return [].concat(collection, reactionValues);
-        }, []);
-        return General.collectUniqueElements(values);
+    static copyEntities(entities) {
+        // Iterate on entities.
+        var entitiesIdentifiers = Object.keys(entities);
+        return entitiesIdentifiers
+            .reduce(function (collection, entityIdentifier) {
+                var entity = entities[entityIdentifier];
+                // Copy all of entity's attributes.
+                var copyEntity = Extraction.copyEntityAttributesValues(entity);
+                // Include entity in the collection.
+                var newRecord = {
+                    [copyEntity.identifier]: copyEntity
+                };
+                var newCollection = Object.assign({}, collection, newRecord);
+                return newCollection;
+            }, {});
+    }
+    /**
+     * Copies attributes' values of a metabolic entity, metabolite or reaction.
+     * @param {Object} entity Record with information about an entity and its
+     * attributes' values.
+     * @returns {Object} Copy of entity's record.
+     */
+    static copyEntityAttributesValues(entity) {
+        // Copy entity's values of attributes.
+        var attributes = Object.keys(entity);
+        return attributes.reduce(function (collection, attribute) {
+            var value = entity[attribute];
+            // Copy attribute's value according to its type.
+            // Attribute value's type is either null, undefined, string, number,
+            // boolean, or array.
+            if (Array.isArray(value)) {
+                // Attribute value's type is array.
+                // Elements within array are either type string or object.
+                if (typeof value[0] === "object") {
+                    // Elements within array are type object.
+                    // Values within object are either type string or array.
+                    var valueCopy = value.map(function (object) {
+                        var keys = Object.keys(object);
+                        return keys.reduce(function (collection, key) {
+                            var objectValue = object[key];
+                            if (Array.isArray(objectValue)) {
+                                // Object's value is an array of elements of
+                                // type string.
+                                var objectValueCopy = objectValue.slice();
+                            } else {
+                                // Object's value is of type string.
+                                var objectValueCopy = objectValue;
+                            }
+                            var newRecord = {
+                                [key]: objectValueCopy
+                            };
+                            return Object.assign({}, collection, newRecord);
+                        }, {});
+                    });
+                } else {
+                    // Elements within array are type string.
+                    var valueCopy = value.slice();
+                }
+            } else {
+                // Attribute value's type is either null, undefined, string,
+                // number, or boolean.
+                var valueCopy = value;
+            }
+            // Copy existing attributes and values in the collection and include
+            // copy of current attribute and its value.
+            var newRecord = {
+                [attribute]: valueCopy
+            };
+            return Object.assign({}, collection, newRecord);
+        }, {});
     }
 }
