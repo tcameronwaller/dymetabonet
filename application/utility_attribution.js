@@ -107,20 +107,34 @@ class Attribution {
                 };
                 // Copy existing records in the collection and include new
                 // record.
-                return Object.assign({}, collection, newRecord);
+                var newCollection = Object.assign({}, collection, newRecord);
             } else {
                 // The collection includes a filter for the attribute.
-                // Include the new attribute's value in the collection.
-                // Assume that there are not any redundant selections.
-                var newValues = []
-                    .concat(collection[selection.attribute], selection.value);
-                var newRecord = {
-                    [selection.attribute]: newValues
-                };
-                // Copy existing records in the collection and include new
-                // record.
-                return Object.assign({}, collection, newRecord);
+                // Determine whether or not the selection's value of the
+                // attribute is novel.
+                // Normally in the application, replicate selections are not
+                // possible.
+                if (
+                    !collection[selection.attribute].includes(selection.value)
+                ) {
+                    // Selection's value of the attribute is novel.
+                    // Include the attribute's value in the collection.
+                    var newValues = []
+                        .concat(collection[selection.attribute], selection.value);
+                    var newRecord = {
+                        [selection.attribute]: newValues
+                    };
+                    // Copy existing records in the collection and include new
+                    // record.
+                    var newCollection = Object
+                        .assign({}, collection, newRecord);
+                } else {
+                    // Selection's value of the attribute is not novel.
+                    // Leave current filters as they are.
+                    var newCollection = collection;
+                }
             }
+            return newCollection;
         }, {});
     }
     /**
@@ -159,8 +173,6 @@ class Attribution {
             compartments: compartments,
             metabolites: metabolites
         };
-        console.log("filterAttributes");
-        console.log(filterAttributes);
         // Copy all of reaction's attributes.
         var attributes = Attribution.copyEntityAttributesValues(reaction);
         // Compile attributes for reaction's record.
@@ -285,23 +297,39 @@ class Attribution {
      * @returns {boolean} Whether or not the reaction passes filters.
      */
     static determineReactionPassFilters(reaction) {
-        // Reaction passes filters if it has any processes, compartments, and
-        // metabolites that pass filters.
+        // Requirements for reaction to pass filters depends on the reaction's
+        // main behavior.
+        // Determine whether or not reaction involves transport.
+        if (reaction.transport) {
+            // Reaction involves transport of a metabolite between different
+            // compartments.
+            // A single reaction can facilitate multiple transport events.
+            // Reactions that involve transport only pass filters if multiple
+            // compartments of any transport event pass filters.
+            var compartments = reaction.transports.some(function (transport) {
+                var matches = transport
+                    .compartments
+                    .filter(function (compartment) {
+                        return reaction.compartments.includes(compartment);
+                    });
+                return matches.length > 1;
+            });
+        } else {
+            // Reaction does not involve transport of a metabolite between
+            // different compartments.
+            // Reaction passes filters if it has any processes, compartments, and
+            // metabolites that pass filters.
+            var compartments = reaction.compartments.length > 0;
+        }
         // Combinations of criteria between different values of the same
         // attribute use OR logic, since any value that passes fulfills the
         // requirement for the attribute.
         // Combinations of criteria between different attributes use AND logic,
         // since all attributes must pass to fulfill the requirement for the
         // reaction.
-
-        // TODO: Remember... transport reactions have an additional requirement
-        // TODO: to pass filters... consider their transport compartments.
-
-
         var processes = reaction.processes.length > 0;
-        var compartments = reaction.compartments.length > 0;
         var metabolites = reaction.metabolites.length > 0;
-        return (processes && compartments && metabolites);
+        return (compartments && processes && metabolites);
     }
 }
 

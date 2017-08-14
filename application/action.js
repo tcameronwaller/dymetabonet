@@ -250,19 +250,47 @@ class Action {
         //var entitiesSetsAttributes = Action
         //    .initializeEntitiesSetsAttributes(allEntitiesAttributes);
 
+        console.log("original reaction");
+        console.log(entitiesSets.reactions["6HMSMVACIDteb"]);
+        console.log("filter 1");
         // Create a selection...
-        var selections = Attribution.recordFilterSelection({
+        var selections1 = Attribution.recordFilterSelection({
             value: "e",
             attribute: "compartments",
             selections: []
         });
-        var filters = Attribution.translateSelectionsFilters(selections);
-        var filterReaction = Attribution.filterReactionAttributesValues({
-            filters: filters,
+        var filters1 = Attribution.translateSelectionsFilters(selections1);
+        var filterReaction1 = Attribution.filterReactionAttributesValues({
+            filters: filters1,
             reaction: entitiesSets.reactions["6HMSMVACIDteb"]
         });
-        console.log("test reaction filter");
-        console.log(filterReaction);
+        console.log("test reaction attributes filter");
+        console.log(filterReaction1);
+        var pass1 = Attribution
+            .determineReactionPassFilters(filterReaction1);
+        console.log("test reaction pass filter");
+        console.log(pass1);
+
+        console.log("filter 2");
+        // Create a selection...
+        var selections2 = Attribution.recordFilterSelection({
+            value: "c",
+            attribute: "compartments",
+            selections: selections1
+        });
+        var filters2 = Attribution.translateSelectionsFilters(selections2);
+        var filterReaction2 = Attribution.filterReactionAttributesValues({
+            filters: filters2,
+            reaction: entitiesSets.reactions["6HMSMVACIDteb"]
+        });
+        console.log("test reaction attributes filter");
+        console.log(filterReaction2);
+        var pass2 = Attribution
+            .determineReactionPassFilters(filterReaction2);
+        console.log("test reaction pass filter");
+        console.log(pass2);
+
+
 
 
 
