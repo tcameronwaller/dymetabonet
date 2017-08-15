@@ -216,18 +216,18 @@
 
 
 /******************************************************************************/
-/* Entity View */
+/* Topology View */
 /******************************************************************************/
 
-#entity {
+#topology {
     /*display:inline;*/
     /*float: left;*/
     flex: 1;
     height: 100%;
 }
 
-#entity svg {
-    height: 90%;
+#topology svg {
+    height: 95%;
     width: 100%;
 }
 
@@ -240,17 +240,17 @@
     fill: rgba(100, 100, 100, 1);
 }
 
-#entity svg .link {
+#topology svg .link {
     stroke: rgba(100, 100, 100, 1);
     stroke-width: 2;
 }
 
-#entity svg .node.metabolite {
+#topology svg .node.metabolite {
     fill: rgba(50, 0, 0, 1);
     r: 7;
 }
 
-#entity svg .node.reaction {
+#topology svg .node.reaction {
     fill: rgba(100, 0, 0, 1);
     r: 15;
 }

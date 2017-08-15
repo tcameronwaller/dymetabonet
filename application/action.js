@@ -524,15 +524,11 @@ class Action {
         // Assembly of network elements from all metabolic entities.
         // General, Replication: 23315 nodes, 55058 links, 3.5 minutes
         // Compartmental, Replication: 26997 nodes, 64710 links, 4 minutes
-
-        // TODO: Re-work the network assembly procedure.
         var networkElements = Network.assembleNetworkElements({
-            currentMetabolites: model.currentMetabolites,
-            currentReactionsAttributes: model.currentReactionsAttributes,
             replications: model.replications,
             compartmentalization: model.compartmentalization,
-            metabolites: model.metabolites,
-            reactions: model.reactions
+            metabolites: model.currentMetabolites,
+            reactions: model.currentReactions
         });
         // Evaluate network's assembly.
         console.log("network elements");
@@ -551,14 +547,14 @@ class Action {
             nodes: networkElements.nodes
         });
         // Induce subnetwork.
-        var subNetwork = Network.induceEgoNetwork({
-            focus: "pyr_c",
-            depth: 2,
-            center: true,
-            direction: null,
-            network: network
-        });
-        //var subNetwork = network;
+        //var subNetwork = Network.induceEgoNetwork({
+        //    focus: "pyr_c",
+        //    depth: 2,
+        //    center: true,
+        //    direction: null,
+        //    network: network
+        //});
+        var subNetwork = network;
         // Extract information about nodes and links from the subnetwork.
         var subNodes = Network.extractNetworkNodes(subNetwork);
         var subLinks = Network.extractNetworkLinks(subNetwork);

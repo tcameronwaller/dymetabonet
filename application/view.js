@@ -1293,6 +1293,8 @@ class TopologyView {
         self.document = document;
         // Initialize container for interface.
         self.initializeContainer(self);
+        // Draw network.
+        self.drawNetwork(self);
     }
     /**
      * Initializes the container for the interface.
@@ -1337,8 +1339,11 @@ class TopologyView {
             self.container = self.document.getElementById("topology");
         }
     }
-
-    drawNetwork(entityView) {
+    /**
+     * Draws a node-link diagram to represent a network.
+     * @param {Object} view Instance of interface's current view.
+     */
+    drawNetwork(view) {
 
         // TODO: How can I accommodate networks of different scales?
         // TODO: I think I'll need variables for node and link dimensions as well as force parameters.
@@ -1347,7 +1352,7 @@ class TopologyView {
 
         // Set reference to class' current instance to transfer across changes
         // in scope.
-        var self = entityView;
+        var self = view;
 
         // Create graphical container for network visualization.
         // Create graphical container with D3 so that styles in CSS will control
@@ -1375,7 +1380,7 @@ class TopologyView {
         // Contain all links within a single group.
         var linkGroup = networkGraph.append("g");
         var dataLinks = linkGroup
-            .selectAll("line").data(self.model.entityViewSubNetworkLinks);
+            .selectAll("line").data(self.model.subNetworkLinks);
         dataLinks.exit().remove();
         var newLinks = dataLinks.enter().append("line");
         var links = newLinks.merge(dataLinks);
@@ -1385,7 +1390,7 @@ class TopologyView {
         // Contain all nodes within a single group.
         var nodeGroup = networkGraph.append("g");
         var dataNodes = nodeGroup
-            .selectAll("circle").data(self.model.entityViewSubNetworkNodes);
+            .selectAll("circle").data(self.model.subNetworkNodes);
         dataNodes.exit().remove();
         var newNodes = dataNodes.enter().append("circle");
         var nodes = newNodes.merge(dataNodes);
@@ -1403,7 +1408,7 @@ class TopologyView {
         // The center force causes nodes to behave strangely when user repositions
         // them manually.
         var simulation = d3.forceSimulation()
-            .nodes(self.model.entityViewSubNetworkNodes)
+            .nodes(self.model.subNetworkNodes)
             .force("center", d3.forceCenter()
                 .x(graphWidth / 2)
                 .y(graphHeight / 2)
@@ -1425,7 +1430,7 @@ class TopologyView {
                 .distanceMax(200)
             )
             .force("link", d3.forceLink()
-                .links(self.model.entityViewSubNetworkLinks)
+                .links(self.model.subNetworkLinks)
                 .id(function (d) {
                     return d.identifier;
                 })
@@ -1458,7 +1463,5 @@ class TopologyView {
                 .attr("x2", function (d) {return d.target.x;})
                 .attr("y2", function (d) {return d.target.y;});
         };
-
     }
-
 }
