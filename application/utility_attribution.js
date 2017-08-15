@@ -287,7 +287,7 @@ class Attribution {
      * @returns {Object} Records with information about metabolites and values
      * of their attributes that pass filters.
      */
-    static filterMetabolitesReactionsAttributes({
+    static filterMetabolitesReactionsAttributesValues({
                                                           metabolites, reactions
     } = {}) {
         // Filter metabolites and their values of attributes.

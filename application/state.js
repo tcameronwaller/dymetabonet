@@ -52,7 +52,7 @@ class State {
         // interface for set.
         if (
             this.determineMetabolicEntitiesSets() &&
-            this.determineEntitiesAttributes() &&
+            this.determineCurrentEntities() &&
             this.determineEntitiesAttributesSets()
         ) {
             // Initialize instance of interface.
@@ -64,7 +64,7 @@ class State {
         // interface for control of network's assembly.
         if (
             this.determineMetabolicEntitiesSets() &&
-            this.determineEntitiesAttributes() &&
+            this.determineCurrentEntities() &&
             this.determineNetworkAssembly()
         ) {
             // Initialize instance of interface.
@@ -76,7 +76,7 @@ class State {
         // interface for visual representation of network's topology.
         if (
             this.determineMetabolicEntitiesSets() &&
-            this.determineEntitiesAttributes() &&
+            this.determineCurrentEntities() &&
             this.determineNetwork()
         ) {
             // Initialize instance of interface.
@@ -108,10 +108,10 @@ class State {
      * Determines whether or not the application's state has information about
      * values of attributes of metabolic entities.
      */
-    determineEntitiesAttributes() {
+    determineCurrentEntities() {
         return (
-            !(this.model.allEntitiesAttributes === null) &&
-            !(this.model.currentEntitiesAttributes === null)
+            !(this.model.currentMetabolites === null) &&
+            !(this.model.currentReactions === null)
         );
     }
     /**
@@ -122,8 +122,8 @@ class State {
         return (
             !(this.model.attributesSelections === null) &&
             !(this.model.valuesSelections === null) &&
-            !(this.model.setsSummaryEntity === null) &&
-            !(this.model.setsSummaryFilter === null) &&
+            !(this.model.setsEntities === null) &&
+            !(this.model.setsFilter === null) &&
             !(this.model.setsCardinalities === null) &&
             !(this.model.setsSummary === null)
         );

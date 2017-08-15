@@ -296,8 +296,8 @@ class SetView {
             tableHeadRow.appendChild(self.tableHeadRowCellValue);
             self.tableHeadRowCellValue.classList.add("value");
             // Create and activate entity selector.
-            self.createActivateEntitySelector("metabolite", self);
-            self.createActivateEntitySelector("reaction", self);
+            self.createActivateEntitiesSelector("metabolites", self);
+            self.createActivateEntitiesSelector("reactions", self);
             // Create and activate filter selector.
             self.createActivateFilterSelector(self);
             // Create and activate reset button.
@@ -319,10 +319,10 @@ class SetView {
                 .tableHead.getElementsByTagName("tr").item(0);
             self.tableHeadRowCellValue = tableHeadRow
                 .getElementsByClassName("value").item(0);
-            self.metaboliteSelector = self
-                .document.getElementById("sets-summary-entity-metabolite");
-            self.reactionSelector = self
-                .document.getElementById("sets-summary-entity-reaction");
+            self.metabolitesSelector = self
+                .document.getElementById("sets-entities-metabolites");
+            self.reactionsSelector = self
+                .document.getElementById("sets-entities-reactions");
             self.filterSelector = self
                 .document.getElementById("sets-summary-filter");
             self.tableBody = self
@@ -331,37 +331,37 @@ class SetView {
     }
     /**
      * Creates and activates selectors for the type of entity in the set view.
-     * @param {string} entity Type of entity, metabolite or reaction, for which
-     * to create and activate selector.
+     * @param {string} entities Type of entities, metabolites or reactions, for
+     * which to create and activate selector.
      * @param {Object} setView Instance of set view interface.
      */
-    createActivateEntitySelector(entity, setView) {
+    createActivateEntitiesSelector(entities, setView) {
         // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
         // Create entity selector.
-        var entitySelector = entity + "Selector";
-        var identifier = "sets-summary-entity-" + entity;
-        self[entitySelector] = self.document.createElement("input");
-        self.tableHeadRowCellValue.appendChild(self[entitySelector]);
-        self[entitySelector].setAttribute("id", identifier);
-        self[entitySelector].setAttribute("type", "radio");
-        self[entitySelector].setAttribute("value", entity);
-        self[entitySelector].setAttribute("name", "entity");
-        self[entitySelector].classList.add("entity");
-        self[entitySelector].addEventListener("change", function (event) {
+        var entitiesSelector = entities + "Selector";
+        var identifier = "sets-entities-" + entities;
+        self[entitiesSelector] = self.document.createElement("input");
+        self.tableHeadRowCellValue.appendChild(self[entitiesSelector]);
+        self[entitiesSelector].setAttribute("id", identifier);
+        self[entitiesSelector].setAttribute("type", "radio");
+        self[entitiesSelector].setAttribute("value", entities);
+        self[entitiesSelector].setAttribute("name", "entities");
+        self[entitiesSelector].classList.add("entities");
+        self[entitiesSelector].addEventListener("change", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Change current selection of entity in application's state.
             //var radios = self
             //    .tableHeadRowCellValue.getElementsByClassName("entity");
             //var value = General.determineRadioGroupValue(radios);
             //Action.submitSetViewEntity(value, self.model);
-            Action.changeSetsSummaryEntity(self.model);
+            Action.changeSetsEntities(self.model);
         });
         var entityLabel = self.document.createElement("label");
         self.tableHeadRowCellValue.appendChild(entityLabel);
         entityLabel.setAttribute("for", identifier);
-        entityLabel.textContent = entity;
+        entityLabel.textContent = entities;
     }
     /**
      * Creates and activates selector for filter in the set view.
@@ -382,7 +382,7 @@ class SetView {
         self.filterSelector.addEventListener("change", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Change current selection of filter in application's state.
-            Action.changeSetsSummaryFilter(self.model);
+            Action.changeSetsFilter(self.model);
         });
         var filterLabel = self.document.createElement("label");
         self.tableHeadRowCellValue.appendChild(filterLabel);
@@ -416,10 +416,10 @@ class SetView {
         // in scope.
         var self = setView;
         // Update entity selector according to application's state.
-        self.metaboliteSelector.checked = self
-            .determineEntityMatch("metabolite", self);
-        self.reactionSelector.checked = self
-            .determineEntityMatch("reaction", self);
+        self.metabolitesSelector.checked = self
+            .determineEntityMatch("metabolites", self);
+        self.reactionsSelector.checked = self
+            .determineEntityMatch("reactions", self);
         // Update filter selector according to application's state.
         self.filterSelector.checked = self.determineFilter(self);
 
@@ -746,7 +746,7 @@ class SetView {
         // Assign event listeners and handlers to bars.
         self.tableBodyCellsValuesGraphBars
             .on("click", function (data, index, nodes) {
-                Action.selectSetViewValue({
+                Action.selectSetsValue({
                     value: data.value,
                     attribute: data.attribute,
                     model: self.model
@@ -764,7 +764,7 @@ class SetView {
         // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
-        return self.model.setsSummaryEntity === match;
+        return self.model.setsEntities === match;
     }
     /**
      * Determines the current filter selection in the application's state.
@@ -774,7 +774,7 @@ class SetView {
         // Set reference to class' current instance to transfer across changes
         // in scope.
         var self = setView;
-        return self.model.setsSummaryFilter;
+        return self.model.setsFilter;
     }
     /**
      * Determines whether or not a value and attribute match a current
@@ -989,9 +989,7 @@ class AssemblyView {
         self.assemble.addEventListener("click", function (event) {
             // Element on which the event originated is event.currentTarget.
             // Assemble network's nodes and links.
-            // TODO: Temporary...
-            //Action.createNetwork(self.model);
-            Action.testOperation(self.model);
+            Action.createNetwork(self.model);
         });
     }
     /**

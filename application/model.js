@@ -22,7 +22,7 @@ class Model {
             // Sets.
             "compartments", "genes", "processes",
             "attributesSelections", "valuesSelections",
-            "setsSummaryEntity", "setsSummaryFilter",
+            "setsEntities", "setsFilter",
             "setsCardinalities", "setsSummary",
             // Network.
             "compartmentalization", "replications",
