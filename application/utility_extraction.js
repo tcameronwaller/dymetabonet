@@ -24,13 +24,13 @@ class Extraction {
         // Extract information about sets.
         var compartments = Extraction
             .createCompartmentsRecords(data.compartments);
-        var genes = Extraction.createGenesRecords(data.genes);
         var processes = Extraction.createProcessesRecords(data.reactions);
         // Extract information about entities.
         var reactions = Extraction
             .createReactionsRecords(data.reactions, processes);
         var metabolites = Extraction
             .createMetabolitesRecords(data.metabolites, reactions);
+        var genes = Extraction.createGenesRecords(data.genes, reactions);
         // Compile information.
         return {
             compartments: compartments,
@@ -70,33 +70,6 @@ class Extraction {
             [identifier]: {
                 identifier: identifier,
                 name: name
-            }
-        };
-    }
-    // Extract genes.
-    /**
-     * Creates records for all genes in a metabolic model.
-     * @param {Array<Object>} genes Information for all genes of a metabolic
-     * model.
-     * @returns {Object} Records for genes.
-     */
-    static createGenesRecords(genes) {
-        // Create records for genes.
-        return genes.reduce(function (collection, gene) {
-            var newRecord = Extraction.createGeneRecord(gene);
-            return Object.assign({}, collection, newRecord);
-        }, {});
-    }
-    /**
-     * Creates a record for a single gene in a metabolic model.
-     * @param {Object<string>} gene Information about a single gene.
-     * @returns {Object} Record for a gene.
-     */
-    static createGeneRecord(gene) {
-        return {
-            [gene.id]: {
-                identifier: gene.id,
-                name: gene.name
             }
         };
     }
@@ -391,7 +364,10 @@ class Extraction {
                                     reaction, processesTransports, processes
                                 } = {}) {
         // Extract genes that have a role in the reaction.
-        var genes = Clean.extractGenesFromRule(reaction.gene_reaction_rule);
+        var genes = General
+            .collectUniqueElements(
+                Clean.extractGenesFromRule(reaction.gene_reaction_rule)
+            );
         // Create records that describe the metabolites that participate in the
         // reaction, their roles as reactants or products, and the compartments
         // in which they participate.
@@ -731,7 +707,10 @@ class Extraction {
         // Collect the identifiers of reactions in which each metabolite
         // participates.
         var metabolitesReactions = Extraction
-            .collectReactionsMetabolites(reactions);
+            .collectRecordsAttributeValues({
+                attribute: "metabolites",
+                records: reactions
+            });
         // Create records for general metabolites, without consideration for
         // compartmental occurrence.
         // Create records for metabolites.
@@ -743,11 +722,15 @@ class Extraction {
                 return collection;
             } else {
                 // A record does not exist for the metabolite.
+                // Determine identifiers of unique reactions in which metabolite
+                // participates.
+                var metaboliteReactions = General
+                    .collectUniqueElements(metabolitesReactions[identifier]);
                 // Create a new record for the metabolite.
                 var newRecord = Extraction
                     .createMetaboliteRecord({
                         metabolite: metabolite,
-                        metaboliteReactions: metabolitesReactions[identifier],
+                        metaboliteReactions: metaboliteReactions,
                         reactions: reactions
                     });
                 return Object.assign({}, collection, newRecord);
@@ -755,70 +738,74 @@ class Extraction {
         }, {});
     }
     /**
-     * Collects the identifiers of all reactions in which each metabolite
-     * participates.
-     * @param {Object} reactions Information about all reactions.
-     * @returns {Object<Array<string>>} Identifiers of reactions in which each
-     * metabolite participates.
+     * Collects the identifiers of all records with each value of an attribute.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {string} parameters.attribute Name of attribute in records.
+     * @param {Object<Object>} parameters.records Records with identifiers and
+     * attributes.
+     * @returns {Object<Array<string>>} Identifiers of records with each value
+     * of the attribute.
      */
-    static collectReactionsMetabolites(reactions) {
-        // Collect the identifiers of reactions in which each metabolite
-        // participates.
-        // Assume that every metabolite in the model participates in some
-        // reaction.
-        // Iterate on reactions.
-        var reactionIdentifiers = Object.keys(reactions);
-        return reactionIdentifiers
-            .reduce(function (reactionsCollection, reactionIdentifier) {
-                var reaction = reactions[reactionIdentifier];
-                // Determine metabolites of current reaction.
-                var reactionMetabolites = reaction.metabolites;
-                // Collect metabolites for the current reaction.
-                var reactionMetabolitesCollection = Extraction
-                    .collectReactionMetabolites({
-                        reaction: reaction.identifier,
-                        metabolites: reactionMetabolites,
-                        reactionsCollection: reactionsCollection,
+    static collectRecordsAttributeValues({attribute, records} = {}) {
+        // Collect the identifiers of records with each value of the attribute.
+        // Assume that every value of the attribute is relevant to some record.
+        // Iterate on records.
+        var recordIdentifiers = Object.keys(records);
+        return recordIdentifiers
+            .reduce(function (recordsCollection, recordIdentifier) {
+                var record = records[recordIdentifier];
+                // Determine values of the attribute within the current record.
+                var recordValues = record[attribute];
+                // Collect values of the attribute for the current record.
+                var recordValuesCollection = Extraction
+                    .collectRecordValues({
+                        record: record.identifier,
+                        values: recordValues,
+                        recordsCollection: recordsCollection
                     });
-                return reactionMetabolitesCollection;
+                return recordValuesCollection;
             }, {});
     }
     /**
-     * Collects the metabolites that participate in a single reaction, including
-     * the reaction in their collections.
-     * @param {string} reaction Identifier for a single reaction.
-     * @returns {Object<Array<string>>} Identifiers of reactions in which each
-     * metabolite participates.
+     * Collects the values of an attribute of a single record, including the
+     * record's identifier in matching collections.
+     * @param {Object} parameters Destructured object of parameters.
+     * @param {string} parameters.record Identifier for a single record.
+     * @param {Array<string>} parameters.values Identifiers of values of an
+     * attribute within the record.
+     * @param {Object<Array<string>>} parameters.recordsCollection Identifiers
+     * of records with each value of the attribute.
+     * @returns {Object<Array<string>>} Identifiers of records with each value
+     * of the attribute.
      */
-    static collectReactionMetabolites({
-                                          reaction,
-                                          metabolites,
-                                          reactionsCollection
+    static collectRecordValues({
+                                          record,
+                                          values,
+                                          recordsCollection
     } = {}) {
-        // Iterate on metabolites.
-        return metabolites.reduce(function (metabolitesCollection, metabolite) {
-            if (metabolitesCollection.hasOwnProperty(metabolite)) {
-                // The collection has a record for the metabolite.
-                // Include the current reaction in the record for the
-                // metabolite.
-                var oldReactions = metabolitesCollection[metabolite];
-                var newReactions = [].concat(oldReactions, reaction);
+        // Iterate on values.
+        return values.reduce(function (valuesCollection, value) {
+            if (valuesCollection.hasOwnProperty(value)) {
+                // The collection has a record for the value.
+                // Include the current record's identifer in the record for the
+                // value.
+                var oldRecords = valuesCollection[value];
+                var newRecords = [].concat(oldRecords, record);
                 var newRecord = {
-                    [metabolite]: newReactions
+                    [value]: newRecords
                 };
             } else {
-                // The collection does not have a record for the metabolite.
-                // Create a new record for the metabolite's reactions.
+                // The collection does not have a record for the value.
+                // Create a new record for the value's records.
                 var newRecord = {
-                    [metabolite]: [reaction]
+                    [value]: [record]
                 };
             }
-            // Include in the collection the new record for the metabolite's
-            // reactions.
-            return Object.assign ({}, metabolitesCollection, newRecord);
-        }, reactionsCollection);
+            // Include in the collection the new record for the value's
+            // records.
+            return Object.assign ({}, valuesCollection, newRecord);
+        }, recordsCollection);
     }
-
     /**
      * Creates a record for a single metabolite from a metabolic model.
      * @param {Object} parameters Destructured object of parameters.
@@ -982,6 +969,48 @@ class Extraction {
                 "compartment", participantsMatches
             );
         return General.collectUniqueElements(participantsCompartments);
+    }
+    // Extract genes.
+    /**
+     * Creates records for all genes in a metabolic model.
+     * @param {Array<Object>} genes Information for all genes of a metabolic
+     * model.
+     * @param {Object} reactions Information about all reactions.
+     * @returns {Object} Records for genes.
+     */
+    static createGenesRecords(genes, reactions) {
+        // Collect the identifiers of reactions in which each gene participates.
+        var genesReactions = Extraction
+            .collectRecordsAttributeValues({
+                attribute: "genes",
+                records: reactions
+            });
+        // Create records for genes.
+        return genes.reduce(function (collection, gene) {
+            // Determine identifiers of unique reactions in which metabolite
+            // participates.
+            var geneReactions = General
+                .collectUniqueElements(genesReactions[gene.id]);
+            var newRecord = Extraction
+                .createGeneRecord(gene, geneReactions);
+            return Object.assign({}, collection, newRecord);
+        }, {});
+    }
+    /**
+     * Creates a record for a single gene in a metabolic model.
+     * @param {Object<string>} gene Information about a single gene.
+     * @param {Array<string>} geneReactions Identifiers of reactions in which a
+     * single gene participates.
+     * @returns {Object} Record for a gene.
+     */
+    static createGeneRecord(gene, geneReactions) {
+        return {
+            [gene.id]: {
+                identifier: gene.id,
+                name: gene.name,
+                reactions: geneReactions
+            }
+        };
     }
     /**
      * Copies records with information about metabolic entities, metabolites or

@@ -4,6 +4,275 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+18 August 2017
+
+----------
+Genes with Roles in Multiple Reactions
+
+ATP Binding Cassette Family Members
+
+Acetyl-CoA Acyltransferase 1 (HGNC:82)
+106 reactions
+ACACT4p
+ACACT5p
+ACACT6p
+ACACT7p
+ACACT8p
+ACACT9p
+FAOXC180x
+FAOXC183806x
+...
+The single gene's product participates in multiple reactions, in multiple cases as the only gene for those reactions.
+
+----------
+Reaction Annotation for Replicative Function
+
+A single gene can have a role in multiple reactions.
+A single reaction can require the function of multiple genes.
+
+Reactions in metabolic reconstructions have annotations of genes that participate in the reaction.
+A single gene can participate in multiple reactions.
+I think that this assignment of genes to reactions could account for reactions' roles in multiple pathways.
+
+Search reactions for genes that have a role in multiple reactions.
+
+Search reactions for reactions with identical reactants and products.
+
+----------
+Enzymatic Promiscuity in Metabolism
+
+("2013"[Date - Publication] : "3000"[Date - Publication]) AND "metabolism" AND "human" AND "enzyme" AND "promiscuity"
+
+Specific Examples of Enzymatic Promiscuity in Human Metabolism
+
+cytosolic 5'-Nucleotidase III-Like Protein (cN-IIIB)
+https://www.ncbi.nlm.nih.gov/pubmed/25210039
+
+Cytochrome P450 3A4 (CYP3A4)
+https://www.ncbi.nlm.nih.gov/pubmed/23018626
+https://www.ncbi.nlm.nih.gov/pubmed/24571781
+
+Cytochrome P450 17A1 (CYP17A1)
+https://www.ncbi.nlm.nih.gov/pubmed/25482340
+
+Ghrelin O-acyltransferase (GOAT)
+https://www.ncbi.nlm.nih.gov/pubmed/25562443
+
+General Subject of Enzymatic Promiscuity in Metabolism
+
+"Network context and selection in the evolution to enzyme specificity"
+Nam... Palsson
+2012
+Science
+https://www.ncbi.nlm.nih.gov/pubmed/22936779
+
+"Enzyme promiscuity: engine of evolutionary innovation"
+Pandya... Allen
+2014
+Journal of Biological Chemistry
+https://www.ncbi.nlm.nih.gov/pubmed/25210039
+
+"Modeling cancer metabolism on a genome scale"
+Yizhak... Ruppin
+2015
+Molecular Systems Biology
+https://www.ncbi.nlm.nih.gov/pubmed/26130389
+
+--------------------------------------------------
+17 August 2017
+
+----------
+Evidence of Single Subsystem for each Reaction
+
+H Scott Hinton
+"Constraint-based Metabolic Recontructions and Analysis"
+2015
+Presentation
+Constraint-based Modeling Course, Utah State University
+Table representation of information for reactions shows a single subsystem annotation for each reaction.
+
+Ines Thiele et al
+"A community-driven global reconstruction of human metabolism"
+2013
+https://www.ncbi.nlm.nih.gov/pubmed/23455439
+Download csv file from table of reactions on http://vmh.uni.lu has a single subsystem for each reaction.
+Table for reactions from "Recon2_spreadsheet.xls" from publication's supplemental data has a single subsystem ("Pathway") for each reaction.
+Metabolites are replicated for compartments, and records are not identical.
+For example, citrate's name is different for the extracellular record.
+
+"A protocol for generating a high-quality genome-scale metabolic reconstruction"
+Nature Protocols
+2010
+https://www.ncbi.nlm.nih.gov/pubmed/20057383
+The article describes the utility of annotating reactions according to their subsystem, or general metabolic process.
+The description seems to suggest this annotation as being useful but not necessary.
+The description also recommends an annotation for a reaction's primary function.
+There is no recommendation of annotation for multiple functions.
+
+----------
+Inspection of Raw Information in Recon 2.2 in SBML Format
+
+SBMLeditor
+https://www.ncbi.nlm.nih.gov/pubmed/17341299
+http://www.ebi.ac.uk/compneur-srv/SBMLeditor.html
+I downloaded and ran SBMLeditor without difficulty.
+The editor was unable to load the Recon 2.2 model, or at least the loading process consumed full CPU capacity for about 10 minutes without any results.
+
+--------------------------------------------------
+15 August 2017
+
+----------
+Community Need
+
+Comment from a user on Biostars about the need for a dynamice viewer of metabolic models.
+https://www.biostars.org/p/155803/
+
+----------
+Problem: How to handle replication of reactions?
+
+I collapsed records for metabolites to eliminate replication of metabolites accross compartments.
+The collapsed records for metabolites are more concise and versatile.
+
+Is there replication in records for reactions?
+Transport reactions that are otherwise identical have different records for different compartments.
+Is there replication of reactions across processes/pathways?
+In a representation of metabolism without compartmentalization (summary), I would need to eliminate replication of reactions across compartments.
+I would also need to omit transport reactions.
+To approach this issue, perhaps it will be beneficial to determine the extent (if any) of replication of reactions across compartments or processes.
+Collect reactions by their combinations of reactants and products.
+It might be less correct to collapse records for reactions that it is to collapse records for metabolites.
+It certainly would be more difficult to collapse records for reactions, since reactions need to specify the compartments in which their metabolites participate.
+Reactions in different compartments might also involve different combinations of genes.
+
+----------
+Editor for Metabolic Models in SBML Format
+
+I feel confident that Recon 2.2 is the most up-to-date and useful model.
+I want to inspect the information in the raw SBML version of this model.
+I want to make sure that I do not lose any information in the JSON version.
+
+My intention is to inspect the information in the original models.
+
+SBMLeditor
+https://www.ncbi.nlm.nih.gov/pubmed/17341299
+http://www.ebi.ac.uk/compneur-srv/SBMLeditor.html
+
+SBMLViewer
+http://sv.insysbio.ru/
+
+SemanticSBML
+http://semanticsbml.org/semanticSBML/simple/index
+
+MetExplore
+http://www.metexplore.fr/
+I don't think the application even interpreted Recon2 correctly.
+
+----------
+Recon 2.2 Model of Human Metabolism
+
+
+----------
+Recon 2 Model of Human Metabolism
+Recon 2, 2013
+https://www.ncbi.nlm.nih.gov/pubmed/23455439
+
+http://www.ebi.ac.uk/biomodels-main/MODEL1109130000
+
+http://vmh.uni.lu/#home
+I inspected the tables for metabolites and reactions in the Excel spreadsheet from the supplemental data from the publication.
+Metabolites are compartmental, and their records include information similar to the information that I have access to in the JSON version of Recon 2.2.
+Reactions are also compartmental, and their records also include information similar to the information that I have access to in the JSON version of Recon 2.2.
+Reactions have annotations for a single pathway.
+
+----------
+
+("2013"[Date - Publication] : "3000"[Date - Publication]) AND "metabolism" AND "human" AND "reconstruction" AND ("Recon 2" OR "RECON 2" or "Recon2" OR "RECON2")
+
+----------
+Descriptions of Metabolic Models, Reconstructions
+
+"ReconMap: an interactive visualization of human metabolism"
+Bioinformatics
+2017
+https://www.ncbi.nlm.nih.gov/pubmed/27993782
+
+"Computational Modeling of Human Metabolism and Its Application to Systems Biomedicine"
+Methods in Molecular Biology
+2016
+https://www.ncbi.nlm.nih.gov/pubmed/26677187/
+I requested this article through the University of Utah Interlibrary Loan.
+
+Constraint-based models predict metabolic and associated cellular functions
+Nature Reviews Genetics
+2014
+https://www.ncbi.nlm.nih.gov/pubmed/24430943
+The article defines metabolic pathways as those groups of reactions that result from computational analysis of the metabolic network.
+
+"Constraining the metabolic genotype-phenotype relationship using a phylogeny of in silico methods"
+Nature Reviews Microbiology
+2012
+https://www.ncbi.nlm.nih.gov/pubmed/22367118
+The article describes pathways as "conceptual abstractions that group reactions".
+It describes how traditional pathways sometimes fail to represent metabolic functions accurately in the context of the complete metabolic network.
+Computational strategies such as Elementary Flux Mode (EFM) Analysis and Extreme Pathway (EXPa) Analysis seek to identifier groups of reactions that function in concert.
+These computational methods were a challenge on larger models, at least in 2012.
+
+"A protocol for generating a high-quality genome-scale metabolic reconstruction"
+Nature Protocols
+2010
+https://www.ncbi.nlm.nih.gov/pubmed/20057383
+The article describes the importance of including reactions for intracellular transport.
+It also discusses the challenges that many transport are unknown and excessive transport events can impart futile cycles to the model.
+The article describes the utility of annotating reactions according to their subsystem, or general metabolic process.
+The description seems to suggest this annotation as being useful but not necessary.
+The description also recommends an annotation for a reaction's primary function.
+There is no recommendation of annotation for multiple functions.
+
+--------------------------------------------------
+15 August 2017
+
+----------
+Consider the possibility of replication of reactions.
+
+The Recon 2.2 model might replicate reactions for processes and or compartments.
+
+I inspected publications describing Recon 1, Recon 2, and Recon 2.2.
+None of these publications offered clear information about annotation of subsystems or pathways for reactions.
+A reference about creation of metabolic reconstructions seemed to suggest that annotations only represent the main subsystem of a reaction.
+
+Inspect the data within original models in SBML format for both Recon 2 and Recon 2.2.
+I want to inspect the original data.
+It might be that COBRApy abbreviates the data when converting from SBML format to JSON format.
+Try to figure out if there is any way to convert between SBML format and JSON format in a lossless way.
+
+Tools to Explore Data from Models in SBML
+COBRApy
+CytoScape
+
+----------
+Confusing Commentary on Model of Human Metabolism
+
+https://www.ncbi.nlm.nih.gov/pubmed/28691704
+I think the article was referring to types of biochemical reactions.
+
+----------
+Models of Human Metabolism
+
+Recon 2.2, 2016
+https://www.ncbi.nlm.nih.gov/pubmed/27358602
+
+Recon 2, 2013
+https://www.ncbi.nlm.nih.gov/pubmed/23455439
+
+Recon 1, 2007
+https://www.ncbi.nlm.nih.gov/pubmed/17267599
+
+Reference for Metabolic Reconstructions
+https://www.ncbi.nlm.nih.gov/pubmed/20057383
+"Add subsystem information to reaction. This will be of great help for the debugging and network evaluation work. The subsystem assignment can be done either based on biochemical textbooks or KEGG41 maps. Note that a reaction or an enzyme can appear in multiple KEGG41 maps; therefore, the subsystem should reflect its primary function."
+
+
+--------------------------------------------------
 8 August 2017
 
 ----------
