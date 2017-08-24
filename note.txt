@@ -4,6 +4,20 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+23 August 2017
+
+----------
+Code Editor, IDE
+
+Atom
+https://atom.io/
+https://opensource.com/article/17/3/code-editors-javascript
+https://medium.com/@satya164/supercharged-javascript-development-in-atom-ea034e22eabc
+
+Atom's Packages
+https://atom.io/packages/atom-live-server
+
+--------------------------------------------------
 18 August 2017
 
 ----------
