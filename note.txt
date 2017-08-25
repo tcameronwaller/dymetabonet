@@ -4,6 +4,48 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+24 August 2017
+
+----------
+Summary of Reactions' Replication
+
+I implemented functionality to summarize the replication of reactions.
+
+If replicate reactions existed for roles in different processes, then extensive replication would be apparent for different combinations of processes independently of different combinations of compartments.
+Only 1 reaction is in this category.
+It appears that replicate reactions do not exist for roles in different processes.
+
+For the purposes of the application, it is important for selection of processes to provide a continuous subnetwork of metabolites and reactions relevant to the processes.
+I need to determine if annotations of reactions allow for continuous subnetworks of processes.
+The hypothesis is that many reactions have roles in multiple processes.
+Since each reaction only has annotation for a single process, the concern is that there will be discontinuities in subnetworks for processes.
+
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+
+summary of reactions' replication...
+sets of reactions by common reactants and products...
+total sets:
+(6088) [{…}, …]
+count total sets: 6088
+
+multiple reactions:
+(1359) [{…}, …]
+count multiple reactions: 1359
+count multiple reactions, multiple compartments: 1195
+count multiple reactions, multiple processes: 388
+count multiple reactions, single process, multiple compartments: 808
+count multiple reactions, single compartment, multiple processes: 1
+count replicate reactions: 3056
+count replicate conversion reactions: 1783
+
+count replicate dispersal reactions: 1276
+count replicate transport reactions: 1264--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+
+--------------------------------------------------
 23 August 2017
 
 ----------

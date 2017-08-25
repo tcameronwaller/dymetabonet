@@ -108,6 +108,33 @@ class General {
     }, []);
   }
   /**
+  * Collects unique arrays by inclusion of their elements.
+  * @param {Array<Array>} arrays Array of arrays.
+  * @returns {Array<Array>} Unique arrays.
+  */
+  static collectUniqueArraysByInclusion(arrays) {
+    // Collect and return unique arrays.
+    return arrays.reduce(function (collectionArrays, array) {
+      // Determine whether the collection includes an array with the same
+      // elements as the current array.
+      var match = collectionArrays.some(function (collectionArray) {
+        return General.compareArraysByMutualInclusion(array, collectionArray);
+      });
+      if (match) {
+        // The collection includes an array with the same elements as the
+        // current array.
+        // Preserve the collection.
+        return collectionArrays;
+      } else {
+        // The collection does not include an array with the same elements as
+        // the current array.
+        // Include the current array in the collection.
+        // TODO: Using Array.concat() flattens the arrays into a single array...
+        return collectionArrays.concat([array]);
+      }
+    }, []);
+  }
+  /**
   * Replaces all instances of a substring in a string.
   * @param {string} currentString The string that contains the substring for
   * replacement.
@@ -125,15 +152,27 @@ class General {
     }
   }
   /**
-  * Collects values for identical keys from multiple objects.
+  * Collects a single value for an identical key from multiple objects.
   * @param {string} key Common key for all objects.
   * @param {Array<Object>} objects Array of objects.
-  * @returns {Array} Values from all objects.
+  * @returns {Array} Values for the key from all objects.
   */
-  static collectValuesFromObjects(key, objects) {
+  static collectValueFromObjects(key, objects) {
     return objects.map(function (object) {
       return object[key];
     });
+  }
+  /**
+  * Collects multiple values from arrays for identical keys from multiple
+  * objects.
+  * @param {string} key Common key for all objects.
+  * @param {Array<Object>} objects Array of objects.
+  * @returns {Array} Values for the key from all objects.
+  */
+  static collectValuesFromObjects(key, objects) {
+    return objects.reduce(function (collection, object) {
+      return [].concat(collection, object[key]);
+    }, []);
   }
   /**
   * Compares two arrays by inclusion of elements.

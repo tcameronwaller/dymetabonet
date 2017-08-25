@@ -582,11 +582,6 @@ class Action {
   * @param {Object} model Model of the application's comprehensive state.
   */
   static executeTemporaryProcedure(model) {
-    var replicateReactions = Extraction
-    .collectReactionsReactantsProducts(model.reactions);
-    console.log("test replicateReactions");
-    console.log(replicateReactions);
-    // TODO: Filter the replicateReactions for those with > 1 reaction.
   }
 
   // Secondary actions relevant to application's state.
