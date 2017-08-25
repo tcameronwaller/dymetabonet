@@ -4,6 +4,29 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+25 August 2017
+
+----------
+Pathways
+
+At this point, I think it will be beneficial to evaluate the current status of annotations of reaction's pathways in the model of human metabolism.
+I wonder if inclusion of transport reactions is sufficient to render the pathways continuous.
+
+----------
+Annotation of Reactions' Pathways in Metabolic Models
+
+"Systems Biology: Constraint-Based Reconstruction and Analysis"
+Bernhard O Palsson
+
+http://systemsbiology.ucsd.edu/sites/default/files/Attachments/Images/InSilicoOrganisms/human_flyer4.pdf
+
+----------
+Summary of Reactions' Replication
+
+It is important to recognize that my summary of reactions' replication on 24 August used data for which I included transport reactions in matching processes.
+That is, I had modified the original data to include transport reactions.
+
+--------------------------------------------------
 24 August 2017
 
 ----------

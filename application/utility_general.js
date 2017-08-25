@@ -263,14 +263,6 @@ class General {
     })[0].value;
   }
 
-
-
-
-
-
-
-
-
   /**
   * Extracts information about entities and sets from a custom assembly for a
   * model of metabolism and organizes these as new attributes to submit to

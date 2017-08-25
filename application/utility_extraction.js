@@ -433,7 +433,8 @@ class Extraction {
     // Determine processes in which reaction participates.
     var originalProcess = Extraction
     .determineReactionProcessIdentifier(reaction.subsystem, processes);
-    var reactionProcesses = [].concat(originalProcess, transportProcesses);
+    var reactionProcesses = General
+    .collectUniqueElements([].concat(originalProcess, transportProcesses));
     // Compile reaction's attributes.
     return {
       [reaction.id]: {
@@ -842,10 +843,6 @@ class Extraction {
     return General.collectUniqueArraysByInclusion(combinations);
   }
 
-
-
-
-
   // Extract metabolites.
 
   /**
@@ -1167,25 +1164,6 @@ class Extraction {
 
   // Utility for managing information about metabolic entities and sets.
 
-  /**
-  * Extracts and saves information about reactions in which a single metabolite
-  * participates.
-  * @param {string} identifier Identifier for a single metabolite.
-  * @param {Object} metabolites Information about all metabolites.
-  * @param {Object} reactions Information about all reactions.
-  * @returns {Array<Object>} Information about reactions in which the metabolite
-  * participates.
-  */
-  static extractMetaboliteReactions({identifier, metabolites, reactions} = {}) {
-    var metabolite = metabolites[identifier];
-    var reactionIdentifiers = metabolite.reactions;
-    var metaboliteReactions = reactionIdentifiers.map(function (identifier) {
-      var reaction = reactions[identifier];
-      return Extraction.copyEntityAttributesValues(reaction);
-    });
-    var fileName = identifier + "-reactions.json";
-    General.saveObject(fileName, metaboliteReactions);
-  }
   /**
   * Copies records with information about metabolic entities, metabolites or
   * reactions.
