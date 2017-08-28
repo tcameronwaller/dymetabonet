@@ -231,22 +231,25 @@ class Action {
     var currentEntitiesSetsAttributes = Action
     .initializeCurrentEntitiesSetsAttributes(entitiesSets);
     // Initialize application's attributes for individual entities.
-    // Specify compartmentalization option for entity view.
+    // Specify compartmentalization for representation of metabolic entities in
+    // the network.
     var compartmentalization = true;
-    // Specify replication options for entity view.
-    var replications = [
-      "ac", "accoa", "adp", "amp", "atp", "ca2", "camp", "cdp", "cl",
-      "cmp", "co", "co2", "coa", "ctp", "datp", "dcmp", "dctp", "dna",
-      "dtdp", "dtmp", "fe2", "fe3", "fmn", "gdp", "gmp", "gtp", "h", "h2",
-      "h2o", "h2o2", "hco3", "i", "idp", "imp", "itp", "k", "na1", "nad",
-      "nadh", "nadp", "nadph", "nh4", "no", "no2", "o2", "o2s", "oh1",
-      "pi", "ppi", "pppi", "so3", "so4", "udp", "ump", "utp"
-    ];
+    // Specify simplification's method for representation of metabolic entities
+    // in the network.
+    var simplification = "omission";
+    //var replications = [
+    //  "ac", "accoa", "adp", "amp", "atp", "ca2", "camp", "cdp", "cl",
+    //  "cmp", "co", "co2", "coa", "ctp", "datp", "dcmp", "dctp", "dna",
+    //  "dtdp", "dtmp", "fe2", "fe3", "fmn", "gdp", "gmp", "gtp", "h", "h2",
+    //  "h2o", "h2o2", "hco3", "i", "idp", "imp", "itp", "k", "na1", "nad",
+    //  "nadh", "nadp", "nadph", "nh4", "no", "no2", "o2", "o2s", "oh1",
+    //  "pi", "ppi", "pppi", "so3", "so4", "udp", "ump", "utp"
+    //];
     // Compile new values of attributes.
     var newAttributesValues = {
       file: file,
       compartmentalization: compartmentalization,
-      replications: replications
+      simplification: simplification
     };
     var attributesValues = Object
     .assign(
@@ -524,9 +527,9 @@ class Action {
     // Assembly of network elements from all metabolic entities.
     // General, Replication: 23315 nodes, 55058 links, 3.5 minutes
     // Compartmental, Replication: 26997 nodes, 64710 links, 4 minutes
-    var networkElements = Network.assembleNetworkElements({
-      replications: model.replications,
+    var networkElements = Network.createNetworkElements({
       compartmentalization: model.compartmentalization,
+      simplification: model.simplification,
       metabolites: model.currentMetabolites,
       reactions: model.currentReactions
     });
@@ -581,7 +584,9 @@ class Action {
   * Executes a temporary procedure of utility for application's development.
   * @param {Object} model Model of the application's comprehensive state.
   */
-  static executeTemporaryProcedure(model) {}
+  static executeTemporaryProcedure(model) {
+    Action.createNetwork(model);
+  }
 
   // Secondary actions relevant to application's state.
 

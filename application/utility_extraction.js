@@ -976,11 +976,13 @@ class Extraction {
     // Determine identifier of general metabolite.
     var identifier = Clean.extractMetaboliteIdentifier(metabolite.id);
     // Compile metabolite's attributes.
+    // Initialize the simplification status to false for all metabolites.
     var metaboliteAttributes = {
       charge: metabolite.charge,
       formula: metabolite.formula,
       identifier: identifier,
-      name: metabolite.name
+      name: metabolite.name,
+      simplification: false
     };
     // Determine values of attributes that metabolite inherits from the
     // reactions in which it participates.
