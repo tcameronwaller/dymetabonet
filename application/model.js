@@ -17,10 +17,10 @@ class Model {
       // Source.
       "file",
       // Entities.
-      "metabolites", "reactions",
+      "metabolites", "reactions", "genes",
       "currentMetabolites", "currentReactions",
       // Sets.
-      "compartments", "genes", "processes",
+      "compartments", "processes",
       "attributesSelections", "valuesSelections",
       "setsEntities", "setsFilter",
       "setsCardinalities", "setsSummary",

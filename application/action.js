@@ -581,18 +581,7 @@ class Action {
   * Executes a temporary procedure of utility for application's development.
   * @param {Object} model Model of the application's comprehensive state.
   */
-  static executeTemporaryProcedure(model) {
-    var reactionIdentifiers = Object.keys(model.reactions);
-    var redundant = reactionIdentifiers.filter(function (identifier) {
-      var reaction = model.reactions[identifier];
-      var rawProcessesLength = reaction.processes.length;
-      var uniqueProcesses = General.collectUniqueElements(reaction.processes);
-      var uniqueProcessesLength = uniqueProcesses.length;
-      return rawProcessesLength !== uniqueProcessesLength;
-    });
-    console.log("reactions with redundant processes...");
-    console.log(redundant.length);
-  }
+  static executeTemporaryProcedure(model) {}
 
   // Secondary actions relevant to application's state.
 
