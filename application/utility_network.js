@@ -635,8 +635,6 @@ class Network {
     }, previousLinks);
   }
 
-
-
   /**
   * Initializes an operable network in JSNetworkX.
   * @param {Object} parameters Destructured object of parameters.

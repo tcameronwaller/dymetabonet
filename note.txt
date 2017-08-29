@@ -4,6 +4,42 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+29 August 2017
+
+----------
+Continuity of Subnetworks for Processes and Compartments
+
+Samples of networks with representation of compartmentalization and without any simplification of metabolites, either by replication or omission.
+
+3 Processes
+Subnetworks for all 3 processes were continuous.
+
+3 Compartments
+Subnetwork for 1 compartment was continuous.
+Subnetwork for 1 compartment was mostly continuous.
+Subnetwork for 1 compartment was very discontinuous.
+
+4 Processes in Combination with 1 Compartment Each
+Subnetwork for 1 combination was continuous.
+Subnetworks for 3 combinations were discontinuous.
+
+It is reasonable that subnetworks for processes are mostly continuous.
+Processes cross between compartments.
+Processes are conceptually continuous and cooperative.
+
+It is reasonable that subnetworks for compartments can be discontinuous.
+Parts of processes can cross temporarily into a compartment without involving other aspects of the compartment.
+Conceptually, compartments do not contain discrete parts of metabolism.
+Rather, all compartments cooperate together to offer favorable environments for reactions.
+Consider the publication below about compartmental mitigation of self-inhibition in metabolism.
+
+"The self-inhibitory nature of metabolic networks and its alleviation through compartmentalization"
+https://www.ncbi.nlm.nih.gov/pubmed/28691704
+
+In the metabolic network, subnetworks for both processes and compartments can be discontinuous.
+Topological traversals within the entire network or these subnetworks will be continuous.
+
+--------------------------------------------------
 25 August 2017
 
 ----------
