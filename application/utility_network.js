@@ -150,6 +150,7 @@ class Network {
     reaction,
     metabolites
   } = {}) {
+    // Determine whether to represent reaction and its metabolites.
     // Determine whether all of reaction's metabolites have designations for
     // simplification.
     // Consider only reaction's metabolites that pass filters.
@@ -316,7 +317,8 @@ class Network {
     compartmentalization,
     simplification
   } = {}) {
-    // Determine whether metabolite has a designation for simplification and
+    // Determine whether to represent metabolite.
+    // Determine whether to metabolite has a designation for simplification and
     // whether omission is the method for simplification.
     if (metabolite.simplification && simplification === "omission") {
       // Omit representations for the metabolite.
