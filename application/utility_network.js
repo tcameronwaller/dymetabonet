@@ -132,8 +132,8 @@ class Network {
     }, initialNetworkElements);
   }
   /**
-  * Determines whether to include in the network nodes and links for the
-  * reaction and its metabolites.
+  * Determines whether to include in the network representations for a reaction
+  * and its metabolites.
   * @param {Object} parameters Destructured object of parameters.
   * @param {boolean} parameters.compartmentalization Indicator of whether to
   * represent compartmentalization in the network.
@@ -150,25 +150,20 @@ class Network {
     reaction,
     metabolites
   } = {}) {
-    // Whether to include representations of the reaction and its metabolites
-    // depends on multiple, interdependent criteria.
-    // Consider criteria that relate to the relevance of the reaction's
-    // metabolites.
-    // Determine whether all of reaction's metabolites that pass filters have
-    // designations for simplification.
+    // Determine whether all of reaction's metabolites have designations for
+    // simplification.
+    // Consider only reaction's metabolites that pass filters.
     var metabolitesSimplification = Network
     .determineMetabolitesSimplification({
       metabolitesIdentifiers: reaction.metabolites,
       metabolites: metabolites
     });
     if (metabolitesSimplification) {
-      // All of reaction's metabolites that pass filters have designations for
-      // simplification.
+      // All of reaction's metabolites have designations for simplification.
       // Omit representations for reaction and its metabolites.
       return false;
     } else {
-      // Metabolites of interest participate in the reaction and pass filters.
-      // Consider criteria that relate to compartmentalization.
+      // Not all of reaction's metabolites have designations for simplification.
       // Determine whether to represent compartmentalization in the network.
       if (compartmentalization) {
         // Network represents compartmentalization.
@@ -192,12 +187,13 @@ class Network {
             // Omit representations for reaction and its metabolites.
             return false;
           } else {
-            // Reaction transports metabolites of interest.
+            // Reaction transports metabolites without designations for
+            // simplification.
             // Include representations for reaction and its metabolites.
             return true;
           }
         } else {
-          // Reaction's primary operation might not be transport.
+          // Reaction's primary operation is not transport.
           // Include representations for reaction and its metabolites.
           return true;
         }
@@ -209,7 +205,7 @@ class Network {
           // Omit representations for reaction and its metabolites.
           return false;
         } else {
-          // Reaction's primary operation might not be transport.
+          // Reaction's primary operation is not transport.
           // TODO: Determine if the reaction is a replicate reaction and if it is replicate for compartmental reasons.
           // TODO: If so, then omit it. Otherwise include it.
           // TODO: Temporary...
