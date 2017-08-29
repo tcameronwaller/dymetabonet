@@ -129,6 +129,7 @@ class Extraction {
 
   // Extract entities.
   // Extract reactions.
+  // Extract reactions.
 
   /**
   * Creates records for all reactions from a metabolic model.

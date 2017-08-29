@@ -277,7 +277,7 @@ class Network {
         simplification: simplification
       });
       if (pass) {
-        // Include representations of the metabolite in the network's elements.
+        // Include representations of the metabolite.
         // A single metabolite can participate in a reaction in multiple
         // contexts.
         // Create new nodes for the metabolite's contexts.
@@ -293,7 +293,7 @@ class Network {
         // nodes and links.
         return participantsNodesLinks;
       } else {
-        // Omit representations of the metabolite from the network's elements.
+        // Omit representations of the metabolite.
         return metabolitesCollection;
       }
     }, reactionsCollection);
