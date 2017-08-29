@@ -174,11 +174,11 @@ class Network {
           // for simplification.
           // Consider all metabolites of transport since prolific metabolites
           // are common in cooperative transport.
-          var transports = General
+          var transportsMetabolites = General
           .collectValueFromObjects("metabolite", reaction.transports);
           var transportsSimplification = Network
           .determineMetabolitesSimplification({
-            metabolitesIdentifiers: transports,
+            metabolitesIdentifiers: transportsMetabolites,
             metabolites: metabolites
           });
           if (transportsSimplification) {
