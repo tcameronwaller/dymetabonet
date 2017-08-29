@@ -156,13 +156,12 @@ class Network {
     // metabolites.
     // Determine whether all of reaction's metabolites that pass filters have
     // designations for simplification.
-    var reactionSimplification = reaction
-    .metabolites
-    .every(function (metaboliteIdentifier) {
-      var metabolite = metabolites[metaboliteIdentifier];
-      return metabolite.simplification;
+    var metabolitesSimplification = Network
+    .determineMetabolitesSimplification({
+      metabolitesIdentifiers: reaction.metabolites,
+      metabolites: metabolites
     });
-    if (reactionSimplification) {
+    if (metabolitesSimplification) {
       // All of reaction's metabolites that pass filters have designations for
       // simplification.
       // Omit representations for reaction and its metabolites.
@@ -180,15 +179,14 @@ class Network {
           // for simplification.
           // Consider all metabolites of transport since prolific metabolites
           // are common in cooperative transport.
-          var transports = General.collectValueFromObjects(
-            "metabolite", reaction.transports
-          );
-          var transportSimplification = transports
-          .every(function (metaboliteIdentifier) {
-            var metabolite = metabolites[metaboliteIdentifier];
-            return metabolite.simplification;
+          var transports = General
+          .collectValueFromObjects("metabolite", reaction.transports);
+          var transportsSimplification = Network
+          .determineMetabolitesSimplification({
+            metabolitesIdentifiers: transports,
+            metabolites: metabolites
           });
-          if (transportSimplification) {
+          if (transportsSimplification) {
             // Reaction transports only metabolites with designations for
             // simplification.
             // Omit representations for reaction and its metabolites.
@@ -220,6 +218,26 @@ class Network {
         }
       }
     }
+  }
+  /**
+  * Determines whether all of a set of metabolites have designations for
+  * simplification.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.metabolitesIdentifiers Identifiers of
+  * metabolites of which to consider designations for simplification.
+  * @param {Object} parameters.metabolites Records with information about
+  * metabolites, values of their attributes that pass filters, and designations
+  * of whether to simplify their representations in the network.
+  * @returns {boolean} Whether all of a set of metabolites have designations for
+  * simplification.
+  */
+  static determineMetabolitesSimplification({
+    metabolitesIdentifiers, metabolites
+  } = {}) {
+    return metabolitesIdentifiers.every(function (metaboliteIdentifier) {
+      var metabolite = metabolites[metaboliteIdentifier];
+      return metabolite.simplification;
+    });
   }
   /**
   * Collects network elements, nodes and links, across all metabolites that
