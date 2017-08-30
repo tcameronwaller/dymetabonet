@@ -240,18 +240,38 @@
     fill: rgba(100, 100, 100, 1);
 }
 
+#topology svg .node.mark.metabolite {
+    fill: rgba(50, 0, 0, 1);
+    r: 7;
+}
+
+#topology svg .node.mark.reaction {
+    fill: rgba(100, 0, 0, 1);
+    rx: 20;
+    ry: 10;
+}
+
+#topology svg .node.mark.metabolite.simplification {
+}
+
+#topology svg .node.mark.reaction.simplification {
+}
+
+#topology svg .node.label {
+}
+
+#topology svg .node.label.metabolite {
+  fill: rgba(0, 0, 0, 1);
+}
+
+#topology svg .node.label.reaction {
+  fill: rgba(50, 50, 50, 1);
+}
+
 #topology svg .link {
     stroke: rgba(100, 100, 100, 1);
     stroke-width: 2;
 }
 
-#topology svg .node.metabolite {
-    fill: rgba(50, 0, 0, 1);
-    r: 7;
+#topology svg .link.simplification {
 }
-
-#topology svg .node.reaction {
-    fill: rgba(100, 0, 0, 1);
-    r: 15;
-}
-

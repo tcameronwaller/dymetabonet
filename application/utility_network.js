@@ -90,26 +90,23 @@ class Network {
         // network's elements.
         // Determine whether any of the reaction's metabolites have designations
         // for simplification.
-        var designation = reaction
-        .metabolites
-        .some(function (metaboliteIdentifier) {
-          var metabolite = metabolites[metaboliteIdentifier];
-          return metabolite.simplification;
+        var reactionSimplification = Network
+        .determineMetabolitesSimplification({
+          condition: "any",
+          metabolitesIdentifiers: reaction.metabolites,
+          metabolites: metabolites
         });
         // Create node for the reaction.
         var reactionAttributes = Extraction
         .copyEntityAttributesValues(reaction);
         var novelAttributes = {
           entity: "reaction",
-          simplification: designation
+          simplification: reactionSimplification
         };
         var reactionNode = Object
         .assign({}, reactionAttributes, novelAttributes);
         // Create new nodes for the reaction's metabolites.
         // Create new links between the reaction and its metabolites.
-
-        // TODO: Update procedure for creating reaction's node and metabolites' nodes...
-
         var metabolitesNodesLinks = Network.collectNetworkMetabolites({
           reaction: reaction,
           compartmentalization: compartmentalization,
@@ -154,8 +151,8 @@ class Network {
     // Determine whether all of reaction's metabolites have designations for
     // simplification.
     // Consider only reaction's metabolites that pass filters.
-    var metabolitesSimplification = Network
-    .determineMetabolitesSimplification({
+    var metabolitesSimplification = Network.determineMetabolitesSimplification({
+      condition: "all",
       metabolitesIdentifiers: reaction.metabolites,
       metabolites: metabolites
     });
@@ -179,6 +176,7 @@ class Network {
           .collectValueFromObjects("metabolite", reaction.transports);
           var transportsSimplification = Network
           .determineMetabolitesSimplification({
+            condition: "all",
             metabolitesIdentifiers: transportsMetabolites,
             metabolites: metabolites
           });
@@ -217,24 +215,33 @@ class Network {
     }
   }
   /**
-  * Determines whether all of a set of metabolites have designations for
+  * Determines whether any or all of a set of metabolites have designations for
   * simplification.
   * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.condition Condition, either any or all, for which
+  * to evaluate metabolites.
   * @param {Array<string>} parameters.metabolitesIdentifiers Identifiers of
   * metabolites of which to consider designations for simplification.
   * @param {Object} parameters.metabolites Records with information about
   * metabolites, values of their attributes that pass filters, and designations
   * of whether to simplify their representations in the network.
-  * @returns {boolean} Whether all of a set of metabolites have designations for
-  * simplification.
+  * @returns {boolean} Whether any or all of a set of metabolites have
+  * designations for simplification.
   */
   static determineMetabolitesSimplification({
-    metabolitesIdentifiers, metabolites
+    condition, metabolitesIdentifiers, metabolites
   } = {}) {
-    return metabolitesIdentifiers.every(function (metaboliteIdentifier) {
-      var metabolite = metabolites[metaboliteIdentifier];
-      return metabolite.simplification;
-    });
+    if (condition === "any") {
+      return metabolitesIdentifiers.some(function (metaboliteIdentifier) {
+        var metabolite = metabolites[metaboliteIdentifier];
+        return metabolite.simplification;
+      });
+    } else if (condition === "all") {
+      return metabolitesIdentifiers.every(function (metaboliteIdentifier) {
+        var metabolite = metabolites[metaboliteIdentifier];
+        return metabolite.simplification;
+      });
+    }
   }
   /**
   * Collects network elements, nodes and links, across all metabolites that

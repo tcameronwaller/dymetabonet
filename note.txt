@@ -7,6 +7,29 @@ Research With Alexander Lex
 29 August 2017
 
 ----------
+Node Marks and Labels
+
+https://stackoverflow.com/questions/11102795/d3-node-labeling
+https://bl.ocks.org/mbostock/950642
+http://bl.ocks.org/mbostock/1153292
+Mike Bostock's reply to a question on Stack Overflow gives useful information about managing groups of marks and labels for nodes in a node-link diagram.
+Placing nodes' marks and labels in separate groups can keep the labels in the plane above all marks.
+Using groups for nodes is also convenient for using different types of marks for different types of nodes, dependent on nodes' data.
+
+Link arrow markers...
+http://jsfiddle.net/dzorz/uWtSk/
+
+----------
+Node Clusters
+
+http://bl.ocks.org/GerHobbelt/3071239
+This demonstration allows the user to click to group or ungroup compound nodes.
+The spatial segregation of nodes by attributes is useful.
+
+http://www.puzzlr.org/force-directed-graph-custom-forces/
+Custom Forces might be useful for grouping nodes.
+
+----------
 Continuity of Subnetworks for Processes and Compartments
 
 Samples of networks with representation of compartmentalization and without any simplification of metabolites, either by replication or omission.

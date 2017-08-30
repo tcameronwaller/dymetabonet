@@ -1305,6 +1305,8 @@ class TopologyView {
     self.document = document;
     // Initialize container for interface.
     self.initializeContainer(self);
+    // Initialize graphical container for network's node-link diagram.
+    self.initializeGraph(self);
     // Draw network.
     self.drawNetwork(self);
   }
@@ -1352,128 +1354,231 @@ class TopologyView {
     }
   }
   /**
+  * Initializes the graphical container for the network's node-link diagram.
+  * @param {Object} view Instance of interface's current view.
+  */
+  initializeGraph(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Create graphical container for network visualization.
+    // Create graphical container with D3 so that styles in CSS will control
+    // dimensions.
+    // Set reference to graphical container.
+    if (!self.container.getElementsByTagName("svg").item(0)) {
+      self.graphSelection = d3.select(self.container).append("svg");
+      self.graph = self.container.getElementsByTagName("svg").item(0);
+    } else {
+      self.graph = self.container.getElementsByTagName("svg").item(0);
+      self.graphSelection = d3.select(self.networkGraph);
+    }
+    // Determine the dimensions of the graphical container.
+    // Set references to dimensions of graphical container.
+    self.graphWidth = parseFloat(
+      window.getComputedStyle(self.graph).width.replace("px", "")
+    );
+    self.graphHeight = parseFloat(
+      window.getComputedStyle(self.graph).height.replace("px", "")
+    );
+  }
+  /**
   * Draws a node-link diagram to represent a network.
   * @param {Object} view Instance of interface's current view.
   */
   drawNetwork(view) {
-
-    // TODO: How can I accommodate networks of different scales?
-    // TODO: I think I'll need variables for node and link dimensions as well as force parameters.
-    // TODO: I can scale the radius of reactions by the number of metabolite nodes (in current network definition) they connect to.
-
-
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
-
-    // Create graphical container for network visualization.
-    // Create graphical container with D3 so that styles in CSS will control
-    // dimensions.
-    if (!self.container.getElementsByTagName("svg").item(0)) {
-      var networkGraph = d3.select(self.container).append("svg");
-      self.networkGraph = self
-      .container.getElementsByTagName("svg").item(0);
-    } else {
-      self.networkGraph = self
-      .container.getElementsByTagName("svg").item(0);
-      var networkGraph = d3.select(self.networkGraph);
-    }
-
-    // Determine the dimensions of the graphical container.
-    var graphWidth = parseFloat(
-      window.getComputedStyle(self.networkGraph).width.replace("px", "")
-    );
-    var graphHeight = parseFloat(
-      window.getComputedStyle(self.networkGraph).height.replace("px", "")
-    );
-
     // Create links.
     // Create links before nodes so that nodes will appear over the links.
+    self.createLinks(self);
+    // Create nodes.
+    self.createNodes(self);
+    // Initiate force simulation.
+    self.initiateForceSimulation(self);
+  }
+  /**
+  * Creates links in a node-link diagram.
+  * @param {Object} view Instance of interface's current view.
+  */
+  createLinks(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Create links.
     // Contain all links within a single group.
-    var linkGroup = networkGraph.append("g");
-    var dataLinks = linkGroup
+    var linksGroup = self.graphSelection.append("g");
+    var dataLinks = linksGroup
     .selectAll("line").data(self.model.subNetworkLinks);
     dataLinks.exit().remove();
-    var newLinks = dataLinks.enter().append("line");
-    var links = newLinks.merge(dataLinks);
-    links.classed("link", true);
-
+    var novelLinks = dataLinks.enter().append("line");
+    self.links = novelLinks.merge(dataLinks);
+    self.links.classed("link", true);
+    self.links.classed("simplification", function (data) {
+      return data.simplification;
+    });
+  }
+  /**
+  * Creates nodes in a node-link diagram.
+  * @param {Object} view Instance of interface's current view.
+  */
+  createNodes(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
     // Create nodes.
     // Contain all nodes within a single group.
-    var nodeGroup = networkGraph.append("g");
-    var dataNodes = nodeGroup
-    .selectAll("circle").data(self.model.subNetworkNodes);
-    dataNodes.exit().remove();
-    var newNodes = dataNodes.enter().append("circle");
-    var nodes = newNodes.merge(dataNodes);
-    nodes.classed("node", true);
-    nodes.classed("metabolite", function (data) {
+    var nodesGroup = self.graphSelection.append("g");
+    // Create nodes' marks.
+    var nodesMarksGroup = nodesGroup.append("g");
+    var dataNodesMarks = nodesMarksGroup
+    .selectAll("circle, ellipse").data(self.model.subNetworkNodes);
+    dataNodesMarks.exit().remove();
+    var novelNodesMarks = dataNodesMarks.enter().append(function (data) {
+      // Append different types of markers for different types of entities.
+      if (data.entity === "metabolite") {
+        // Node is for a metabolite.
+        return self
+        .document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      } else if (data.entity === "reaction") {
+        // Node is for a reaction.
+        return self
+        .document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+      }
+    });
+    self.nodesMarks = novelNodesMarks.merge(dataNodesMarks);
+    self.nodesMarks
+    .append("title")
+    .text(function (data) {
+      return data.name;
+    });
+    self.nodesMarks.classed("node", true);
+    self.nodesMarks.classed("mark", true);
+    self.nodesMarks.classed("metabolite", function (data) {
       return data.entity === "metabolite";
     });
-    nodes.classed("reaction", function (data) {
+    self.nodesMarks.classed("reaction", function (data) {
       return data.entity === "reaction";
     });
-
+    self.nodesMarks.classed("simplification", function (data) {
+      return data.simplification;
+    });
+    // Create nodes' labels.
+    var nodesLabelsGroup = nodesGroup.append("g");
+    var dataNodesLabels = nodesLabelsGroup
+    .selectAll("text").data(self.model.subNetworkNodes);
+    dataNodesLabels.exit().remove();
+    var novelNodesLabels = dataNodesLabels.enter().append("text");
+    self.nodesLabels = novelNodesLabels.merge(dataNodesLabels);
+    self.nodesLabels.text(function (data) {
+      return data.name.slice(0, 10) + "...";
+    });
+    self.nodesLabels.classed("node", true);
+    self.nodesLabels.classed("label", true);
+    self.nodesLabels.classed("metabolite", function (data) {
+      return data.entity === "metabolite";
+    });
+    self.nodesLabels.classed("reaction", function (data) {
+      return data.entity === "reaction";
+    });
+    self.nodesLabels.classed("simplification", function (data) {
+      return data.simplification;
+    });
+  }
+  /**
+  * Initiates a force simulation for placement of network's nodes and links in a
+  * node-link diagram.
+  * @param {Object} view Instance of interface's current view.
+  */
+  initiateForceSimulation(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
     // Initiate the force simulation.
     // The force method assigns a specific force simulation to the name.
     // Collision force prevents overlap and occlusion of nodes.
     // The center force causes nodes to behave strangely when user repositions
     // them manually.
-    var simulation = d3.forceSimulation()
+    // The force simulation assigns positions to the nodes, recording
+    // coordinates of these positions in novel attributes within nodes' records.
+    // Any elements with access to the nodes' data, such as nodes' marks and
+    // labels, also have access to the coordinates of these positions.
+    self.simulation = d3.forceSimulation()
     .nodes(self.model.subNetworkNodes)
     .force("center", d3.forceCenter()
-    .x(graphWidth / 2)
-    .y(graphHeight / 2)
-  )
-  .force("collision", d3.forceCollide()
-  .radius(function (data) {
-    if (data.entity === "metabolite") {
-      return 10;
-    } else if (data.entity === "reaction") {
-      return 20;
-    }
-  })
-  .strength(0.9)
-  .iterations(1)
-)
-.force("charge", d3.forceManyBody()
-.strength(-250)
-.distanceMin(1)
-.distanceMax(200)
-)
-.force("link", d3.forceLink()
-.links(self.model.subNetworkLinks)
-.id(function (d) {
-  return d.identifier;
-})
-.distance(7)
-)
-//.force("positionX", d3.forceX()
-//    .x(graphWidth / 2)
-//    .strength(0.1)
-//)
-//.force("positionY", d3.forceY()
-//    .y(graphWidth / 2)
-//    .strength(0.1)
-//)
-.on("tick", restoreNodePositions);
-
-// Declare function to increment the force simulation.
-// Impose constraints on node positions (d.x and d.y) according to dimensions of bounding SVG element.
-var radius = 9;
-function restoreNodePositions() {
-  nodes
-  .attr("cx", function (d) {
-    return d.x = Math.max(radius, Math.min(graphWidth - radius, d.x));
-  })
-  .attr("cy", function (d) {
-    return d.y = Math.max(radius, Math.min(graphHeight - radius, d.y));
-  });
-  links
-  .attr("x1", function (d) {return d.source.x;})
-  .attr("y1", function (d) {return d.source.y;})
-  .attr("x2", function (d) {return d.target.x;})
-  .attr("y2", function (d) {return d.target.y;});
-};
-}
+      .x(self.graphWidth / 2)
+      .y(self.graphHeight / 2)
+    )
+    .force("collision", d3.forceCollide()
+      .radius(function (data) {
+        if (data.entity === "metabolite") {
+          return 10;
+        } else if (data.entity === "reaction") {
+          return 20;
+        }
+      })
+      .strength(0.9)
+      .iterations(1)
+    )
+    .force("charge", d3.forceManyBody()
+      .strength(-250)
+      .distanceMin(1)
+      .distanceMax(200)
+    )
+    .force("link", d3.forceLink()
+      .links(self.model.subNetworkLinks)
+      .id(function (data) {
+        return data.identifier;
+      })
+      .distance(7)
+    )
+    .force("positionX", d3.forceX()
+      .x(self.graphWidth / 2)
+      .strength(0.1)
+    )
+    .force("positionY", d3.forceY()
+      .y(self.graphWidth / 2)
+      .strength(0.1)
+    )
+    .on("tick", function () {
+      self.restoreNodePositions(self);
+    });
+  }
+  /**
+  * Restores the positions of nodes and links according to results of force
+  * simulation.
+  * @param {Object} view Instance of interface's current view.
+  */
+  restoreNodePositions(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Set radius.
+    var radius = 9;
+    // TODO: If I represent reactions with rectangles, then I'll need to use some attribute other than "cx" and "cy" for the rectangle centers...
+    // TODO: For anything other than circles, including text, I might need to use transform instead of "cx" and "cy".
+    // Restore positions of nodes' marks according to results of simulation.
+    // Impose constraints on node positions (d.x and d.y) according to
+    // dimensions of bounding SVG element.
+    self.nodesMarks
+    .attr("cx", function (data) {
+      return data.x = Math
+      .max(radius, Math.min(self.graphWidth - radius, data.x));
+    })
+    .attr("cy", function (data) {
+      return data.y = Math
+      .max(radius, Math.min(self.graphHeight - radius, data.y));
+    });
+    // Restore positions of nodes' labels according to results of simulation.
+    // TODO: I need to handle the same edge offset for labels as I do for nodes.
+    self.nodesLabels
+    .attr("x", function (data) {return data.x;})
+    .attr("y", function (data) {return data.y;})
+    // Restore positions of links according to results of simulation.
+    self.links
+    .attr("x1", function (data) {return data.source.x;})
+    .attr("y1", function (data) {return data.source.y;})
+    .attr("x2", function (data) {return data.target.x;})
+    .attr("y2", function (data) {return data.target.y;});
+  }
 }
