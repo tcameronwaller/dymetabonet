@@ -475,6 +475,61 @@ class Extraction {
     });
   }
   /**
+  * Filters records that describe metabolites' participation in a reaction,
+  * their roles as reactants or products, and the compartments in which they
+  * participate.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Array<string>>} parameters.criteria Criteria for filters
+  * against participants, including metabolites, compartments, and roles.
+  * @param {Array<Object<string>>} parameters.participants Information about
+  * metabolites' participation in a reaction.
+  * @returns {Array<Object<string>>} Information about participation in a
+  * reaction by metabolites that pass filters.
+  */
+  static filterReactionParticipants({criteria, participants} = {}) {
+    return participants.filter(function (participant) {
+      if (criteria.hasOwnProperty("metabolites")) {
+        var metaboliteMatch = criteria
+        .metabolites.includes(participant.metabolite);
+      } else {
+        var metaboliteMatch = true;
+      }
+      if (criteria.hasOwnProperty("compartments")) {
+        var compartmentMatch = criteria
+        .compartments.includes(participant.compartment);
+      } else {
+        var compartmentMatch = true;
+      }
+      if (criteria.hasOwnProperty("roles")) {
+        var roleMatch = criteria.roles.includes(participant.role);
+      } else {
+        var roleMatch = true;
+      }
+      return metaboliteMatch && compartmentMatch && roleMatch;
+    });
+  }
+  /**
+  * Collects identifiers of metabolites that participate in a reaction in
+  * specific contexts of metabolites, compartments, and roles.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Array<string>>} parameters.criteria Criteria for filters
+  * against participants, including metabolites, compartments, and roles.
+  * @param {Array<Object<string>>} parameters.participants Information about
+  * metabolites' participation in a reaction.
+  * @returns {Array<string>} Identifiers of metabolites that participate in a
+  * reaction within specific contexts.
+  */
+  static collectMetabolitesFilterParticipants({criteria, participants} = {}) {
+    // Collect participants that match the criteria.
+    var filterParticipants = Extraction.filterReactionParticipants({
+      criteria: criteria,
+      participants: participants
+    });
+    // Collect identifiers of metabolites from participants.
+    return General.collectValueFromObjects("metabolite", filterParticipants);
+  }
+
+  /**
   * Determines the role of a metabolite in a reaction, either as a reactant
   * or a product.
   * @param {number} code Code designator for metabolite role in reaction.
@@ -512,19 +567,19 @@ class Extraction {
   * @returns {boolean} Whether or not metabolites change chemically.
   */
   static determineReactionChemicalConversion(participants) {
-    var reactants = participants
-    .filter(function (participant) {
-      return participant.role === "reactant";
-    }).map(function (reactant) {
-      return reactant.metabolite;
+    // Collect identifiers of metabolites that participate as reactants.
+    var reactantsIdentifiers = Extraction.collectMetabolitesFilterParticipants({
+      criteria: {roles: ["reactant"]},
+      participants: participants
     });
-    var products = participants
-    .filter(function (participant) {
-      return participant.role === "product";
-    }).map(function (product) {
-      return product.metabolite;
+    // Collect identifiers of metabolites that participate as products.
+    var productsIdentifiers = Extraction.collectMetabolitesFilterParticipants({
+      criteria: {roles: ["product"]},
+      participants: participants
     });
-    return !General.compareArraysByMutualInclusion(reactants, products);
+    // Compare reactants and products.
+    return !General
+    .compareArraysByMutualInclusion(reactantsIdentifiers, productsIdentifiers);
   }
   /**
   * Determines whether or not a reaction involves metabolites in multiple
@@ -562,11 +617,15 @@ class Extraction {
   * participate in the reaction as both reactants and products.
   */
   static collectReactionSameChemicalDifferentCompartments(participants) {
-    var reactants = participants.filter(function (participant) {
-      return participant.role === "reactant";
+    // Collect participants that are reactants.
+    var reactants = Extraction.filterReactionParticipants({
+      criteria: {roles: ["reactant"]},
+      participants: participants
     });
-    var products = participants.filter(function (participant) {
-      return participant.role === "product";
+    // Collect participants that are products.
+    var products = Extraction.filterReactionParticipants({
+      criteria: {roles: ["product"]},
+      participants: participants
     });
     // Collect the metabolites that the reaction transports and their
     // relevant compartments.
@@ -585,15 +644,14 @@ class Extraction {
         // the reactant.
         // There might be multiple products that are the same chemical
         // metabolite as the reactant.
-        var metaboliteMatches = products.filter(function (product) {
-          return product.metabolite === reactant.metabolite;
+        var metaboliteMatches = Extraction.filterReactionParticipants({
+          criteria: {metabolites: [reactant.metabolite]},
+          participants: products
         });
         // Determine if any of these chemically identical metabolites
         // occur in different compartments.
-        var compartmentMatches = metaboliteMatches
-        .map(function (record) {
-          return record.compartment;
-        });
+        var compartmentMatches = General
+        .collectValueFromObjects("compartment", metaboliteMatches);
         var compartments = []
         .concat(reactant.compartment, compartmentMatches);
         var uniqueCompartments = General
@@ -713,23 +771,23 @@ class Extraction {
       var reaction = reactions[reactionIdentifier];
       // Collect identifiers of metabolites that participate as reactants and
       // products in the reaction.
-      var reactants = reaction.participants
-      .filter(function (participant) {
-        return participant.role === "reactant";
-      }).map(function (reactant) {
-        return reactant.metabolite;
+      // Collect identifiers of metabolites that participate as reactants.
+      var reactantsIdentifiers = Extraction
+      .collectMetabolitesFilterParticipants({
+        criteria: {roles: ["reactant"]},
+        participants: reaction.participants
       });
-      var products = reaction.participants
-      .filter(function (participant) {
-        return participant.role === "product";
-      }).map(function (product) {
-        return product.metabolite;
+      // Collect identifiers of metabolites that participate as products.
+      var productsIdentifiers = Extraction
+      .collectMetabolitesFilterParticipants({
+        criteria: {roles: ["product"]},
+        participants: reaction.participants
       });
       // Include current reaction in the collection.
       return Extraction.collectReactionReactantsProducts({
         reaction: reaction.identifier,
-        reactants: reactants,
-        products: products,
+        reactants: reactantsIdentifiers,
+        products: productsIdentifiers,
         reactionsRecords: reactionsCollection,
         reactions: reactions
       });

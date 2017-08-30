@@ -147,72 +147,72 @@ class Network {
     reaction,
     metabolites
   } = {}) {
+    // Determine whether reaction passes on the basis of participation of its
+    // metabolites.
+    // A reaction is only relevant if metabolites participate in relevant
+    // contexts.
+    var participationRelevance = Network
+    .determineReactionMetabolitesParticipation(reaction);
+    // Determine whether reaction passes on the basis of simplification of its
+    // metabolites.
+    // A reaction is only relevant if its metabolites are relevant.
+    var simplificationRelevance = !Network
+    .determineReactionMetabolitesSimplification({
+      reaction: reaction,
+      metabolites: metabolites
+    });
+    // Determine whether reaction passes on the basis of compartmentalization.
+    // A reaction's relevance depends on it's role in relation to the relevance
+    // of compartmentalization.
+    var compartmentalRelevance = Network
+    .determineReactionCompartmentalRelevance({
+      compartmentalization: compartmentalization,
+      reaction: reaction,
+      metabolites: metabolites
+    });
     // Determine whether to represent reaction and its metabolites.
+    if (!participationRelevance) {
+      // Metabolites do not participate in reaction in relevant contexts as both
+      // reactants and products.
+      // Omit representations for reaction and its metabolites.
+      return false;
+    } else if (!simplificationRelevance) {
+      // All of reaction's metabolites have designations for simplification.
+      // Omit representations for reaction and its metabolites.
+      return false;
+    } else if (!compartmentalRelevance) {
+      // Reaction is irrelevant in the context of the relevance of
+      // compartmentalization.
+      // Omit representations for reaction and its metabolites.
+      return false;
+    } else {
+      // Include representations for reaction and its metabolites.
+      return true;
+    }
+  }
+  /**
+  * Determines whether all relevant metabolites that participate in a reaction
+  * have designations for simplification.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.reaction Record with information about a reaction
+  * and values of its attributes that pass filters.
+  * @param {Object} parameters.metabolites Records with information about
+  * metabolites, values of their attributes that pass filters, and designations
+  * of whether to simplify their representations in the network.
+  * @returns {boolean} Whether all of reaction's metabolites have designations
+  * for simplification.
+  */
+  static determineReactionMetabolitesSimplification({
+    reaction, metabolites
+  } = {}) {
     // Determine whether all of reaction's metabolites have designations for
     // simplification.
     // Consider only reaction's metabolites that pass filters.
-    var metabolitesSimplification = Network.determineMetabolitesSimplification({
+    return Network.determineMetabolitesSimplification({
       condition: "all",
       metabolitesIdentifiers: reaction.metabolites,
       metabolites: metabolites
     });
-    if (metabolitesSimplification) {
-      // All of reaction's metabolites have designations for simplification.
-      // Omit representations for reaction and its metabolites.
-      return false;
-    } else {
-      // Not all of reaction's metabolites have designations for simplification.
-      // Determine whether to represent compartmentalization in the network.
-      if (compartmentalization) {
-        // Network represents compartmentalization.
-        // Determine whether reaction performs transport and not conversion.
-        if (reaction.transport && !reaction.conversion) {
-          // Reaction's primary operation is transport.
-          // Determine if reaction transports only metabolites with designations
-          // for simplification.
-          // Consider all metabolites of transport since prolific metabolites
-          // are common in cooperative transport.
-          var transportsMetabolites = General
-          .collectValueFromObjects("metabolite", reaction.transports);
-          var transportsSimplification = Network
-          .determineMetabolitesSimplification({
-            condition: "all",
-            metabolitesIdentifiers: transportsMetabolites,
-            metabolites: metabolites
-          });
-          if (transportsSimplification) {
-            // Reaction transports only metabolites with designations for
-            // simplification.
-            // Omit representations for reaction and its metabolites.
-            return false;
-          } else {
-            // Reaction transports metabolites without designations for
-            // simplification.
-            // Include representations for reaction and its metabolites.
-            return true;
-          }
-        } else {
-          // Reaction's primary operation is not transport.
-          // Include representations for reaction and its metabolites.
-          return true;
-        }
-      } else {
-        // Network does not represent compartmentalization.
-        // Determine whether reaction performs transport and not conversion.
-        if (reaction.transport && !reaction.conversion) {
-          // Reaction's primary operation is transport.
-          // Omit representations for reaction and its metabolites.
-          return false;
-        } else {
-          // Reaction's primary operation is not transport.
-          // TODO: Determine if the reaction is a replicate reaction and if it is replicate for compartmental reasons.
-          // TODO: If so, then omit it. Otherwise include it.
-          // TODO: Temporary...
-          // Include representations for reaction and its metabolites.
-          return true;
-        }
-      }
-    }
   }
   /**
   * Determines whether any or all of a set of metabolites have designations for
@@ -241,6 +241,115 @@ class Network {
         var metabolite = metabolites[metaboliteIdentifier];
         return metabolite.simplification;
       });
+    }
+  }
+  /**
+  * Determines whether metabolites participate in a reaction in relevant
+  * contexts as both reactants and products.
+  * @param {Object} reaction Record with information about a reaction and values
+  * of its attributes that pass filters.
+  * @returns {boolean} Whether to represent the reaction and its metabolites in
+  * the network.
+  */
+  static determineReactionMetabolitesParticipation(reaction) {
+    // Determine whether reaction involves participation from relevant
+    // metabolites as both reactants and products.
+    // Consider only reaction's metabolites that pass filters.
+    // Collect unique identifiers of metabolites that participate as reactants
+    // in relevant contexts.
+    var reactantsIdentifiers = Extraction.collectMetabolitesFilterParticipants({
+      criteria: {
+        metabolites: reaction.metabolites,
+        compartments: reaction.compartments,
+        roles: ["reactant"]
+      },
+      participants: reaction.participants
+    });
+    var uniqueReactants = General.collectUniqueElements(reactantsIdentifiers);
+    // Collect unique identifiers of metabolites that participate as products in
+    // relevant contexts.
+    var productsIdentifiers = Extraction.collectMetabolitesFilterParticipants({
+      criteria: {
+        metabolites: reaction.metabolites,
+        compartments: reaction.compartments,
+        roles: ["product"]
+      },
+      participants: reaction.participants
+    });
+    var uniqueProducts = General.collectUniqueElements(productsIdentifiers);
+    // Determine if the reaction has at least one relevant reactant and at least
+    // one relevant product.
+    return (uniqueReactants.length > 0 && uniqueProducts.length > 0);
+  }
+  /**
+  * Determines whether a reaction is relevant in the context of
+  * compartmentalization.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.compartmentalization Indicator of whether to
+  * represent compartmentalization in the network.
+  * @param {Object} parameters.reaction Record with information about a reaction
+  * and values of its attributes that pass filters.
+  * @param {Object} parameters.metabolites Records with information about
+  * metabolites, values of their attributes that pass filters, and designations
+  * of whether to simplify their representations in the network.
+  * @returns {boolean} Whether the reaction is relevant in the context of
+  * compartmentalization.
+  */
+  static determineReactionCompartmentalRelevance({
+    compartmentalization,
+    reaction,
+    metabolites
+  } = {}) {
+    // Determine reaction's relevance in the context of compartmentalization's
+    // relevance.
+    if (compartmentalization) {
+      // Compartmentalization is relevant.
+      // Determine whether reaction performs transport and not conversion.
+      if (reaction.transport && !reaction.conversion) {
+        // Reaction's primary operation is transport.
+        // Determine if reaction transports only metabolites with designations
+        // for simplification.
+        // Consider all metabolites of transport since prolific metabolites
+        // are common in cooperative transport.
+        var transportsMetabolites = General
+        .collectValueFromObjects("metabolite", reaction.transports);
+        var transportsSimplification = Network
+        .determineMetabolitesSimplification({
+          condition: "all",
+          metabolitesIdentifiers: transportsMetabolites,
+          metabolites: metabolites
+        });
+        if (transportsSimplification) {
+          // Reaction transports only metabolites with designations for
+          // simplification.
+          // Reaction is irrelevant.
+          return false;
+        } else {
+          // Reaction transports metabolites without designations for
+          // simplification.
+          // Reaction is relevant.
+          return true;
+        }
+      } else {
+        // Reaction's primary operation is not transport.
+        // Reaction is relevant.
+        return true;
+      }
+    } else {
+      // Compartmentalization is irrelevant.
+      // Determine whether reaction performs transport and not conversion.
+      if (reaction.transport && !reaction.conversion) {
+        // Reaction's primary operation is transport.
+        // Reaction is irrelevant.
+        return false;
+      } else {
+        // Reaction's primary operation is not transport.
+        // Determine if reaction is a compartmental replicate.
+        // TODO: If so, then omit it. Otherwise include it.
+        // TODO: Temporary...
+        // Include representations for reaction and its metabolites.
+        return true;
+      }
     }
   }
   /**
@@ -363,14 +472,13 @@ class Network {
     // participates in the reaction.
     // Only include contexts that satisfy filters, specifically with regard
     // to compartments.
-    var participants = reaction.participants.filter(function (participant) {
-      var metaboliteMatch = (
-        participant.metabolite === metabolite.identifier
-      );
-      var compartmentMatch = reaction
-      .compartments
-      .includes(participant.compartment);
-      return metaboliteMatch && compartmentMatch;
+    // Collect participants in relevant contexts.
+    var participants = Extraction.filterReactionParticipants({
+      criteria: {
+        metabolites: [metabolite.identifier],
+        compartments: reaction.compartments
+      },
+      participants: reaction.participants
     });
     // Iterate on contexts in which the metabolite participates in the reaction.
     return participants
