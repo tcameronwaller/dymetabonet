@@ -233,7 +233,7 @@ class Action {
     // Initialize application's attributes for individual entities.
     // Specify compartmentalization for representation of metabolic entities in
     // the network.
-    var compartmentalization = true;
+    var compartmentalization = false;
     // Specify simplification's method for representation of metabolic entities
     // in the network.
     var simplification = "omission";

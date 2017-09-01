@@ -4,6 +4,76 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+30 August 2017
+
+----------
+Progress
+Dates reference entries in notes with more details.
+
+-----
+17 August 2017
+Reactions have annotations for single subsystems or processes.
+Examples: "Citric acid cycle", "Fatty acid oxidation", "Fatty acid synthesis", "Glycine, serine, alanine and threonine metabolism", "Glycolysis/gluconeogenesis", "Pentose phosphate pathway", "Transport, extracellular", "Valine, leucine, and isoleucine metabolism"
+It seems that annotations of processes for reactions avoid conflicts by grouping overlapping processes together.
+
+-----
+18 August 2017
+Many genes have roles in multiple reactions.
+
+-----
+24 August 2017
+Many reactions are replicates with identical reactants and products.
+Vast majority of reaction replication is for different compartments.
+Examples:
+profondeur/design/screen/screen_2017-08-24_1.png
+
+-----
+29 August 2017
+With inclusion of transport reactions, subnetworks for processes are usually continuous.
+Subnetworks for compartments can be discontinuous.
+Examples:
+profondeur/design/screen/screen_2017-08-29_1.png
+profondeur/design/screen/screen_2017-08-29_2.png
+profondeur/design/screen/screen_2017-08-29_3.png
+profondeur/design/screen/screen_2017-08-29_4.png
+profondeur/design/screen/screen_2017-08-29_5.png
+profondeur/design/screen/screen_2017-08-29_6.png
+profondeur/design/screen/screen_2017-08-29_7.png
+profondeur/design/screen/screen_2017-08-29_8.png
+profondeur/design/screen/screen_2017-08-29_9.png
+profondeur/design/screen/screen_2017-08-29_10.png
+Distinction between nodes for metabolites and reactions.
+Labels for nodes.
+Examples:
+profondeur/design/screen/screen_2017-08-29_11.png
+profondeur/design/screen/screen_2017-08-29_12.png
+
+-----
+30 August 2017
+Omission of nodes for reactions without reactants and products simplifies subnetworks dramatically.
+Examples:
+profondeur/design/screen/screen_2017-08-29_6.png
+profondeur/design/screen/screen_2017-08-30_1.png
+profondeur/design/screen/screen_2017-08-29_12.png
+profondeur/design/screen/screen_2017-08-30_2.png
+
+----------
+Plan
+
+Alternative visual representations for reactions.
+Interface controls for network assembly and visual representation.
+
+----------
+Documentation
+
+Metabolites derive their attributes from their reactions.
+It is important to consider co-occurrence of context.
+A metabolite's participation in a reaction associates it with the reaction's processes and compartments.
+Since metabolites gain attributes from multiple reactions in which they participate, it is impossible to summarize a metabolite's attributes in isolation from its reactions.
+It is important to preserve the concept of co-occurrence of attributes.
+Otherwise, a metabolite can persist against filters even when its reactions that gave it an attribute do not.
+
+--------------------------------------------------
 29 August 2017
 
 ----------
@@ -257,7 +327,7 @@ I downloaded and ran SBMLeditor without difficulty.
 The editor was unable to load the Recon 2.2 model, or at least the loading process consumed full CPU capacity for about 10 minutes without any results.
 
 --------------------------------------------------
-15 August 2017
+16 August 2017
 
 ----------
 Community Need
@@ -307,7 +377,6 @@ I don't think the application even interpreted Recon2 correctly.
 
 ----------
 Recon 2.2 Model of Human Metabolism
-
 
 ----------
 Recon 2 Model of Human Metabolism
@@ -408,7 +477,6 @@ https://www.ncbi.nlm.nih.gov/pubmed/17267599
 Reference for Metabolic Reconstructions
 https://www.ncbi.nlm.nih.gov/pubmed/20057383
 "Add subsystem information to reaction. This will be of great help for the debugging and network evaluation work. The subsystem assignment can be done either based on biochemical textbooks or KEGG41 maps. Note that a reaction or an enzyme can appear in multiple KEGG41 maps; therefore, the subsystem should reflect its primary function."
-
 
 --------------------------------------------------
 8 August 2017
