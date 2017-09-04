@@ -88,16 +88,15 @@ class Network {
       // Determine whether to include representations of the reaction and its
       // metabolites in the network's elements.
       var pass = Network.determineReactionRepresentation({
-        compartmentalization: compartmentalization,
         reaction: reaction,
+        compartmentalization: compartmentalization,
         metabolites: metabolites
       });
       if (pass) {
         // Determine consensus information for reaction.
-        var consensusReaction = Network.determineConsensusReaction({
+        var consensualReaction = Network.determineConsensualReaction({
           reactionIdentifier: reactionIdentifier,
           compartmentalization: compartmentalization,
-          previousNetworkElements: reactionsCollection,
           metabolites: metabolites,
           reactions: reactions
         })
@@ -138,10 +137,10 @@ class Network {
   * Determines whether to include in the network representations for a reaction
   * and its metabolites.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} parameters.compartmentalization Indicator of whether to
-  * represent compartmentalization in the network.
   * @param {Object} parameters.reaction Record with information about a reaction
   * and values of its attributes that pass filters.
+  * @param {boolean} parameters.compartmentalization Indicator of whether to
+  * represent compartmentalization in the network.
   * @param {Object} parameters.metabolites Records with information about
   * metabolites, values of their attributes that pass filters, and designations
   * of whether to simplify their representations in the network.
@@ -149,8 +148,8 @@ class Network {
   * the network.
   */
   static determineReactionRepresentation({
-    compartmentalization,
     reaction,
+    compartmentalization,
     metabolites
   } = {}) {
     // Determine whether reaction passes on the basis of participation of its
@@ -379,7 +378,8 @@ class Network {
     }
   }
   /**
-  * Collects replicate reactions that are redundant.
+  * Determines consensual information about a reaction from any relevant,
+  * redundant replicates.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.reactionIdentifier Identifier of a reaction.
   * @param {boolean} parameters.compartmentalization Indicator of whether to
@@ -389,13 +389,13 @@ class Network {
   * of whether to simplify their representations in the network.
   * @param {Object} parameters.reactions Records with information about
   * reactions and values of their attributes that pass filters.
-  * @returns {boolean} Whether a reaction's replication is redundant.
+  * @returns {Object} Consensual information about a reaction.
   */
-  static determineConsensusReaction({
+  static determineConsensualReaction({
     reactionIdentifier, compartmentalization, metabolites, reactions
   } = {}) {
-    // Collect replicate reactions that are relevant and redundant.
-    // TODO: collectRedundantReplicateReactions needs implementation...
+    // Collect identifiers of replicate reactions that are both relevant and
+    // redundant.
     var redundantReactions = Network.collectRedundantReplicateReactions({
       reactionIdentifier: reactionIdentifier,
       compartmentalization: compartmentalization,
@@ -418,7 +418,8 @@ class Network {
     return consensusReaction;
   }
   /**
-  * Collects replicate reactions that are redundant.
+  * Collects identifiers of replicate reactions that are both relevant and
+  * redundant.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.reactionIdentifier Identifier of a reaction.
   * @param {boolean} parameters.compartmentalization Indicator of whether to
@@ -428,39 +429,113 @@ class Network {
   * of whether to simplify their representations in the network.
   * @param {Object} parameters.reactions Records with information about
   * reactions and values of their attributes that pass filters.
-  * @returns {boolean} Whether a reaction's replication is redundant.
+  * @returns {Array<string>} Identifiers of reactions.
   */
   static collectRedundantReplicateReactions({
     reactionIdentifier, compartmentalization, metabolites, reactions
   } = {}) {
-    // Collect replicate reactions that are redundant and relevant.
+    // Relevant reactions persist against current filters for values of their
+    // attributes.
+    // Relevant reactions also merit representation in the network.
+    // Replicate reactions have identical metabolites that participate as
+    // reactants and products.
+    // Replication of reactions usually accommodates compartmentalization.
+    // Replicate reactions that differ in any way other than
+     // compartmentalization are redundant.
+    // Collect identifiers of replicate reactions that are both relevant and
+    // redundant.
     // Set reference to reaction's record.
     var reaction = reactions[reactionIdentifier];
     // Determine whether the reaction has replication.
     if (reaction.replication) {
       // Reaction has replication.
-      // Determine if multiple replicate reactions are relevant, such that they
-      // persist against filters and merit representation in the network.
-      var replicateReactions = reaction.replicates.filter(function (replicate) {
-        var persistence = reactions.hasOwnProperty(replicate);
-        var representation = Network.determineReactionRepresentation({
-          compartmentalization: compartmentalization,
-          reaction: reaction,
-          metabolites: metabolites
+      // Determine whether compartmentalization is relevant.
+      if (compartmentalization) {
+        // Compartmentalization is relevant.
+        // Collect identifiers of replicate reactions that are relevant and
+        // involve participation of identical metabolites in identical
+        // compartments.
+        // TODO: Consider placing the filter operation for replicates in a separate function.
+        // TODO: That way I can just call it according to the compartmentalization setting...
+        // TODO: As a matter of fact, that way I could move the compartmentalization if clause to the separate function.
+        var replicateReactions = reaction
+        .replicates.filter(function (identifier) {
+          var persistence = reactions.hasOwnProperty(identifier);
+          if (persistence) {
+            // Set reference to replicate reaction's record.
+            var replicateReaction = reactions[identifier];
+            var representation = Network.determineReactionRepresentation({
+              reaction: replicateReaction,
+              compartmentalization: compartmentalization,
+              metabolites: metabolites
+            });
+            var participation = Network.compareMutualReactionsParticipants({
+              firstParticipants: reaction.participants,
+              secondParticipants: replicateReaction.participants
+            });
+          } else {
+            var representation = false;
+            var participation = false;
+          }
+          return persistence && representation && participation;
         });
-        return persistence && representation;
-      });
-      if (replicateReactions.length > 1) {
-        // Multiple replicate reactions are relevant.
       } else {
-        // A single replicate reaction is relevant.
-        return false;
+        // Compartmentalization is irrelevant.
+        // Collect identifiers of replicate reactions that are relevant.
+        // TODO: Do not distinguish by compartments of participation.
+        // TODO: Combine all relevant replicate reactions.
       }
-
     } else {
       // Reaction does not have replication.
-      return false;
+      // Return reaction's identifier.
+      return [reactionIdentifier];
     }
+  }
+  /**
+  * Compares the participants of two reactions to detmerine if identical
+  * metabolites in identical compartments participate in identical roles in both
+  * reactions.
+  * @param {Array<Object>} firstParticipants Participants of first reaction.
+  * @param {Array<Object>} secondParticipants Participants of second reaction.
+  * @returns {boolean} Whether the two reactions have identical participants.
+  */
+  static compareMutualReactionsParticipants({
+    firstParticipants, secondParticipants
+  } = {}) {
+    var first = Network.compareReactionsParticipants({
+      firstParticipants: firstParticipants,
+      secondParticipants: secondParticipants
+    });
+    var second = Network.compareReactionsParticipants({
+      firstParticipants: secondParticipants,
+      secondParticipants: firstParticipants
+    });
+    return first && second;
+  }
+  /**
+  * Compares the participants of two reactions to detmerine if all participants
+  * of first reaction have identical participants in second reaction.
+  * @param {Array<Object>} firstParticipants Participants of first reaction.
+  * @param {Array<Object>} secondParticipants Participants of second reaction.
+  * @returns {boolean} Whether the two reactions have identical participants.
+  */
+  static compareReactionsParticipants({
+    firstParticipants, secondParticipants
+  } = {}) {
+    return firstParticipants.every(function (firstParticipant) {
+      return secondParticipants.find(function (secondParticipant) {
+        var metabolites = (
+          firstParticipant.metabolite === secondParticipant.metabolite
+        );
+        var compartments = (
+          firstParticipant.compartment === secondParticipant.compartment
+        );
+        var roles = (
+          firstParticipant.role === secondParticipant.role
+        );
+        return metabolites && compartments && roles;
+      });
+    });
   }
   /**
   * Creates novel nodes for a reaction and includes them in the collection of
@@ -486,6 +561,8 @@ class Network {
     metabolites,
     reactions
   } = {}) {
+    // Determine whether the reaction or its redundant replicates already have
+    // nodes.
     // Create node for reaction.
     // Create nodes to control layout for the reaction.
     // Create link for reaction.
