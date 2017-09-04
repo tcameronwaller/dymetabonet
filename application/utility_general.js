@@ -248,6 +248,30 @@ class General {
     var after = array.slice(index + count);
     return [].concat(before, after);
   }
+  /**
+  * Sorts elements in arrray by order of characters' codes.
+  * @param {Array<string>} array Array of elements to sort.
+  * @returns {Array<string>} Shallow copy of array in sort order.
+  */
+  static sortArrayElementsByCharacter(array) {
+    return array.slice().sort(function (firstElement, secondElement) {
+      // Convert values to lower case for comparison.
+      var firstValue = firstElement.toLowerCase();
+      var secondValue = secondElement.toLowerCase();
+      // Compare values by alphabetical order.
+      if (firstValue < secondValue) {
+        // Place first element before second element.
+        return -1;
+      } else if (firstValue > secondValue) {
+        // Place first element after second element.
+        return 1;
+      } else {
+        // Preserve current relative placements of elements.
+        return 0;
+      }
+    });
+  }
+
 
 
   /**

@@ -99,7 +99,7 @@ class Network {
           compartmentalization: compartmentalization,
           metabolites: metabolites,
           reactions: reactions
-        })
+        });
         // Create novel nodes for the reaction and include them in the
         // collection.
         // TODO: The function createNovelReactionNodes needs implementation...
@@ -111,8 +111,6 @@ class Network {
           reactions: reactions
         });
 
-
-
         // TODO: Re-do the procedure for metabolites to follow new pattern of different categories of network elements...
         // Create new nodes for the reaction's metabolites.
         // Create new links between the reaction and its metabolites.
@@ -120,7 +118,7 @@ class Network {
           reaction: reaction,
           compartmentalization: compartmentalization,
           simplification: simplification,
-          reactionsCollection: reactionsCollection,
+          previousNetworkElements: reactionNetworkElements,
           metabolites: metabolites
         });
         // Restore the collection of network elements.
@@ -402,20 +400,12 @@ class Network {
       metabolites: metabolites,
       reactions: reactions
     });
-    // Determine whether there are multiple relevant, redundant reactions.
-    if (redundantReactions.length > 1) {
-      // There are multiple relevant, redundant reactions.
-      // Combine redundant reactions to create a single record.
-      var consensusReaction = Network.combineReplicateReactions();
-      // TODO: Implement the combineReplicateReactions functionality...
-    } else {
-      // There is a single relevant reaction.
-      // Propagate information for reaction.
-      // Set reference to reaction's record.
-      var reaction = reactions[reactionIdentifier];
-      var consensusReaction = reaction;
-    }
-    return consensusReaction;
+    // Determine information about a single, consensual reaction to propagate.
+    var consensualReaction = Network.combineReplicateReactions({
+      reactionsIdentifiers: redundantReactions,
+      reactions: reactions
+    });
+    return consensualReaction;
   }
   /**
   * Collects identifiers of replicate reactions that are both relevant and
@@ -441,50 +431,55 @@ class Network {
     // reactants and products.
     // Replication of reactions usually accommodates compartmentalization.
     // Replicate reactions that differ in any way other than
-     // compartmentalization are redundant.
-    // Collect identifiers of replicate reactions that are both relevant and
-    // redundant.
+    // compartmentalization are redundant.
     // Set reference to reaction's record.
     var reaction = reactions[reactionIdentifier];
     // Determine whether the reaction has replication.
     if (reaction.replication) {
       // Reaction has replication.
-      // Determine whether compartmentalization is relevant.
-      if (compartmentalization) {
-        // Compartmentalization is relevant.
-        // Collect identifiers of replicate reactions that are relevant and
-        // involve participation of identical metabolites in identical
-        // compartments.
-        // TODO: Consider placing the filter operation for replicates in a separate function.
-        // TODO: That way I can just call it according to the compartmentalization setting...
-        // TODO: As a matter of fact, that way I could move the compartmentalization if clause to the separate function.
-        var replicateReactions = reaction
-        .replicates.filter(function (identifier) {
-          var persistence = reactions.hasOwnProperty(identifier);
-          if (persistence) {
-            // Set reference to replicate reaction's record.
-            var replicateReaction = reactions[identifier];
-            var representation = Network.determineReactionRepresentation({
-              reaction: replicateReaction,
-              compartmentalization: compartmentalization,
-              metabolites: metabolites
-            });
+      // Collect identifiers of replicate reactions that are both relevant and
+      // redundant.
+      var redundantReactions = reaction
+      .replicates.filter(function (identifier) {
+        // Determine whether replicate reaction persists against filters.
+        var persistence = reactions.hasOwnProperty(identifier);
+        if (persistence) {
+          // Replicate reaction persists against filters.
+          // Set reference to replicate reaction's record.
+          var replicateReaction = reactions[identifier];
+          // Determine whether replicate reaction merits representation in the
+          // network.
+          var representation = Network.determineReactionRepresentation({
+            reaction: replicateReaction,
+            compartmentalization: compartmentalization,
+            metabolites: metabolites
+          });
+          // Determine whether compartmentalization is relevant.
+          if (compartmentalization) {
+            // Compartmentalization is relevant.
+            // Determine whether replicate reactions involve participation of
+            // identical metabolites, in identical compartments, in identical
+            // roles.
             var participation = Network.compareMutualReactionsParticipants({
               firstParticipants: reaction.participants,
               secondParticipants: replicateReaction.participants
             });
           } else {
-            var representation = false;
-            var participation = false;
+            // Compartmentalization is irrelevant.
+            // Ignore details of metabolites' participation in replicate
+            // reactions.
+            var participation = true;
           }
-          return persistence && representation && participation;
-        });
-      } else {
-        // Compartmentalization is irrelevant.
-        // Collect identifiers of replicate reactions that are relevant.
-        // TODO: Do not distinguish by compartments of participation.
-        // TODO: Combine all relevant replicate reactions.
-      }
+        } else {
+          // Replicate reaction does not persist against filters.
+          var representation = false;
+          var participation = false;
+        }
+        return persistence && representation && participation;
+      });
+      // Return identifiers of replicate reactions that are both relevant and
+      // redundant.
+      return General.collectUniqueElements(redundantReactions);
     } else {
       // Reaction does not have replication.
       // Return reaction's identifier.
@@ -502,15 +497,15 @@ class Network {
   static compareMutualReactionsParticipants({
     firstParticipants, secondParticipants
   } = {}) {
-    var first = Network.compareReactionsParticipants({
+    var firstComparison = Network.compareReactionsParticipants({
       firstParticipants: firstParticipants,
       secondParticipants: secondParticipants
     });
-    var second = Network.compareReactionsParticipants({
+    var secondComparison = Network.compareReactionsParticipants({
       firstParticipants: secondParticipants,
       secondParticipants: firstParticipants
     });
-    return first && second;
+    return firstComparison && secondComparison;
   }
   /**
   * Compares the participants of two reactions to detmerine if all participants
@@ -537,6 +532,78 @@ class Network {
       });
     });
   }
+  /**
+  * Combines information about redundant replicate reactions to create
+  * consensual information.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.reactionsIdentifiers Identifiers of
+  * redundant replicate reactions.
+  * @param {Object} parameters.reactions Records with information about
+  * reactions and values of their attributes that pass filters.
+  * @returns {Object} Consensual information about a reaction.
+  */
+  static combineReplicateReactions({reactionsIdentifiers, reactions} = {}) {
+    // Determine whether there are multiple relevant, redundant reactions.
+    if (reactionsIdentifiers.length > 1) {
+      // There are multiple relevant, redundant reactions.
+      // Determine priority reaction from which to preserve attributes without
+      // combination.
+      // Sort reactions' identifiers by alphabetical order.
+      var sortReactionsIdentifiers = General
+      .sortArrayElementsByCharacter(reactionsIdentifiers);
+      // Select first reaction's identifier as priority.
+      var priorityReactionIdentifier = sortReactionsIdentifiers[0];
+      // Copy attributes from priority reaction's record.
+      var priorityAttributes = Extraction
+      .copyEntityAttributesValues(reactions[priorityReactionIdentifier]);
+      // Combine values of appropriate attributes from all replicate reactions.
+      var initialAttributes = {
+        compartments: [],
+        genes: [],
+        metabolites: [],
+        processes: []
+      };
+      // Iterate on reactions.
+      var combinationAttributes = reactionsIdentifiers
+      .reduce(function (attributesCollection, reactionIdentifier) {
+        // Set reference to reaction's record.
+        var reaction = reactions[reactionIdentifier];
+        // Include reaction's values of attributes in the collection.
+        var compartments = General
+        .collectUniqueElements(
+          [].concat(attributesCollection.compartments, reaction.compartments)
+        );
+        var genes = General
+        .collectUniqueElements(
+          [].concat(attributesCollection.genes, reaction.genes)
+        );
+        var metabolites = General
+        .collectUniqueElements(
+          [].concat(attributesCollection.metabolites, reaction.metabolites)
+        );
+        var processes = General
+        .collectUniqueElements(
+          [].concat(attributesCollection.processes, reaction.processes)
+        );
+        // Compile attributes to restore the collection.
+        return {
+          compartments: compartments,
+          genes: genes,
+          metabolites: metabolites,
+          processes: processes
+        };
+      }, initialAttributes);
+      // Include combination attributes in the record of attributes for the
+      // consensual reaction.
+      return Object.assign({}, priorityAttributes, combinationAttributes);
+    } else {
+      // There is a single relevant reaction.
+      // Copy and propagate attributes from reaction.
+      return Extraction
+      .copyEntityAttributesValues(reactions[reactionsIdentifiers[0]]);
+    }
+  }
+
   /**
   * Creates novel nodes for a reaction and includes them in the collection of
   * network's elements.
