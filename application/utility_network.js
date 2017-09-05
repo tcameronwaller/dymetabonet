@@ -73,11 +73,11 @@ class Network {
     // Separate types of nodes and links to simplify searches for existing
     // records.
     var initialNetworkElements = {
-      metaboliteLinks: [],
-      metaboliteNodes: [],
-      reactionLinks: [],
-      reactionLayoutNodes: [],
-      reactionNodes: []
+      metabolitesLinks: [],
+      metabolitesNodes: [],
+      reactionsLinks: [],
+      reactionsPositionNodes: [],
+      reactionsNodes: []
     };
     // Iterate on reactions.
     var reactionsIdentifiers = Object.keys(reactions);
@@ -100,20 +100,16 @@ class Network {
           metabolites: metabolites,
           reactions: reactions
         });
-        // Create novel nodes for the reaction and include them in the
+        // Create novel nodes and link for the reaction, and include these in the
         // collection.
-        // TODO: The function createNovelReactionNodes needs implementation...
-        var reactionNetworkElements = Network.createNovelReactionNodes({
-          reactionIdentifier: reactionIdentifier,
-          compartmentalization: compartmentalization,
+        var reactionNetworkElements = Network.createNovelReactionNodesLink({
+          reaction: consensualReaction,
           previousNetworkElements: reactionsCollection,
-          metabolites: metabolites,
-          reactions: reactions
+          metabolites: metabolites
         });
-
         // TODO: Re-do the procedure for metabolites to follow new pattern of different categories of network elements...
-        // Create new nodes for the reaction's metabolites.
-        // Create new links between the reaction and its metabolites.
+        // Create novel nodes and links for the reaction's metabolites, and
+        // include these in the collection.
         var metabolitesNetworkElements = Network.collectNetworkMetabolites({
           reaction: reaction,
           compartmentalization: compartmentalization,
@@ -603,60 +599,190 @@ class Network {
       .copyEntityAttributesValues(reactions[reactionsIdentifiers[0]]);
     }
   }
-
   /**
-  * Creates novel nodes for a reaction and includes them in the collection of
-  * network's elements.
+  * Creates novel nodes and link for a reaction and includes these in a
+  * collection of network's elements.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.reactionIdentifier Identifier of a reaction.
-  * @param {boolean} parameters.compartmentalization Indicator of whether to
-  * represent compartmentalization in the network.
+  * @param {Object} parameters.reaction Consensual information about a reaction.
   * @param {Object<Array<Object>>} parameters.previousNetworkElements Records
   * with information about nodes and links in a network.
   * @param {Object} parameters.metabolites Records with information about
   * metabolites, values of their attributes that pass filters, and designations
   * of whether to simplify their representations in the network.
-  * @param {Object} parameters.reactions Records with information about
-  * reactions and values of their attributes that pass filters.
   * @returns {Object<Array<Object>>} Records with information about nodes and
   * links in a network.
   */
-  static createNovelReactionNodes({
-    reactionIdentifier,
-    compartmentalization,
+  static createNovelReactionNodesLink({
+    reaction,
     previousNetworkElements,
-    metabolites,
-    reactions
+    metabolites
   } = {}) {
-    // Determine whether the reaction or its redundant replicates already have
-    // nodes.
-    // Create node for reaction.
-    // Create nodes to control layout for the reaction.
-    // Create link for reaction.
-
-    // TODO: I need a separate function to organize the procedure for creating a node for a reaction.
-    // TODO: In this function... figure out the simplification designation
-    // TODO: In this function... also determine combinations for compartmental replicate reactions if there's no compartmentalization.
-    // Include representations of the reaction and its metabolites in the
-    // network's elements.
+    // Determine whether the collection includes a node for the reaction.
+    var nodeMatch = previousNetworkElements.reactionNodes.some(function (node) {
+      return node.identifier === reaction.identifier;
+    });
+    if (nodeMatch) {
+      // Collection includes a node for the reaction.
+      // Preserve current network elements.
+      return previousNetworkElements;
+    } else {
+      // Collection does not include a node for the reaction.
+      // Assume that the collection does not include any nodes or link for the
+      // reaction.
+      // Create novel nodes and link for the reaction.
+      var reactionPositionNodes = Network.createReactionPositionNodes(reaction);
+      var reactionNode = Network.createReactionNode({
+        reaction: reaction,
+        positionSource: reactionPositionNodes.source,
+        positionTarget: reactionPositionNodes.target,
+        metabolites: metabolites
+      });
+      var reactionLink = Network.createReactionLink({
+        source: reactionPositionNodes.source.identifier,
+        target: reactionPositionNodes.target.identifier,
+        reaction: reactionNode
+      });
+      // Include reaction's novel nodes and link in the collection.
+      var reactionsNodes = []
+      .concat(previousNetworkElements.reactionsNodes, reactionNode);
+      var reactionsPositionNodes = []
+      .concat(
+        previousNetworkElements.reactionsPositionNodes,
+        reactionPositionNodes.source,
+        reactionPositionNodes.target
+      );
+      var reactionsLinks = []
+      .concat(previousNetworkElements.reactionsLinks, reactionLink);
+      var currentNetworkElements = {
+        reactionsLinks: reactionsLinks,
+        reactionsPositionNodes: reactionsPositionNodes,
+        reactionsNodes: reactionsNodes
+      };
+      var networkElements = Object
+      .assign({}, previousNetworkElements, currentNetworkElements);
+      return networkElements;
+    }
+  }
+  /**
+  * Creates nodes of type position for a reaction.
+  * @param {Object} reaction Consensual information about a reaction.
+  * @returns {Object<Object>} Record with information about nodes of type
+  * position for a reaction.
+  */
+  static createReactionPositionNodes(reaction) {
+    var source = Network.createReactionPositionNode({
+      reaction: reaction,
+      direction: "source"
+    });
+    var target = Network.createReactionPositionNode({
+      reaction: reaction,
+      direction: "target"
+    });
+    return {
+      source: source,
+      target: target
+    };
+  }
+  /**
+  * Creates a node of type position for a reaction.
+  * @param {Object} reaction Consensual information about a reaction.
+  * @returns {Object} Record with information about a node of type position for
+  * a reaction.
+  */
+  static createReactionPositionNode({reaction, direction} = {}) {
+    return {
+      direction: direction,
+      entity: "reaction",
+      identifier: reaction.identifier + "_" + direction,
+      reaction: reaction.identifier,
+      type: "position"
+    };
+  }
+  /**
+  * Creates a node of type record for a reaction.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.reaction Consensual information about a reaction.
+  * @param {Object} parameters.positionSource Record with information about a
+  * node of type position for source.
+  * @param {Object} parameters.positionTarget Record with information about a
+  * node of type position for target.
+  * @param {Object} parameters.metabolites Records with information about
+  * metabolites, values of their attributes that pass filters, and designations
+  * of whether to simplify their representations in the network.
+  * @returns {Object} Record with information about a node of type record for a
+  * reaction.
+  */
+  static createReactionNode({
+    reaction, positionSource, positionTarget, metabolites
+  } = {}) {
     // Determine whether any of the reaction's metabolites have designations
     // for simplification.
-    var reactionSimplification = Network
-    .determineMetabolitesSimplification({
+    var simplification = Network.determineMetabolitesSimplification({
       condition: "any",
       metabolitesIdentifiers: reaction.metabolites,
       metabolites: metabolites
     });
+    // Create references to nodes of type position for the reaction.
+    var positions = []
+    .concat(positionSource.identifier, positionTarget.identifier);
     // Create node for the reaction.
-    var reactionAttributes = Extraction
-    .copyEntityAttributesValues(reaction);
+    var copyAttributes = Extraction.copyEntityAttributesValues(reaction);
     var novelAttributes = {
       entity: "reaction",
-      simplification: reactionSimplification
+      positions: positions,
+      simplification: simplification,
+      type: "record"
     };
-    var reactionNode = Object
-    .assign({}, reactionAttributes, novelAttributes);
+    var record = Object.assign({}, copyAttributes, novelAttributes);
+    return record;
   }
+  /**
+  * Creates a link for a reaction.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.source Identifier of a node of type position for
+  * source.
+  * @param {string} parameters.target Identifier of a node of type position for
+  * target.
+  * @param {Object} parameters.reaction Record with information about a node of
+  * type record for a reaction.
+  * @returns {Object} Record with information about a link for a reaction.
+  */
+  static createReactionLink({source, target, reaction} = {}) {
+    var attributes = {
+      entity: "reaction",
+      simplification: reaction.simplification
+    };
+    var link = Network.createLink({
+      source: source,
+      target: target,
+      attributes: attributes
+    });
+    return link;
+  }
+  /**
+  * Creates record for a link.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.source Identifier of a single node to be the
+  * link's source.
+  * @param {string} parameters.target Identifier of a single node to be the
+  * link's target.
+  * @param {Object} parameters.attributes Values of attributes to include in the
+  * link's record.
+  * @returns {Object} Record for a link.
+  */
+  static createLink({source, target, attributes} = {}) {
+    // Use a special delimiter, "_-_", between identifiers of source and target
+    // nodes for links in order to avoid ambiguity with other combinations of
+    // identifiers.
+    var identifier = source + "_-_" + target;
+    var record = {
+      identifier: identifier,
+      source: source,
+      target: target
+    };
+    return Object.assign({}, record, attributes);
+  }
+
   /**
   * Collects network elements, nodes and links, across all metabolites that
   * participate in a single reaction.
@@ -667,8 +793,8 @@ class Network {
   * represent compartmentalization in the network.
   * @param {string} parameters.simplification Indicator of whether to simplify
   * nodes for metabolites in the network by replication or by omission.
-  * @param {Object<Array<Object>>} parameters.reactionsCollection Collection
-  * of network elements from reactions.
+  * @param {Object<Array<Object>>} parameters.previousNetworkElements Records
+  * with information about nodes and links in a network.
   * @param {Object} parameters.metabolites Records with information about
   * metabolites, values of their attributes that pass filters, and designations
   * of whether to simplify their representations in the network.
@@ -678,18 +804,17 @@ class Network {
     reaction,
     compartmentalization,
     simplification,
-    reactionsCollection,
+    previousNetworkElements,
     metabolites
   } = {}) {
     // Only include representations for the reaction's metabolites that pass
     // filters.
-    // If reaction's record includes a reference to the metabolite, then the
-    // metabolite's participation satisfies filters.
+    // Reaction's record includes references to metabolites that participate in
+    // the reaction and persist against filters.
     // Iterate on metabolites.
     return reaction
-    .metabolites
-    .reduce(function (metabolitesCollection, metaboliteIdentifier) {
-      // Set reference to current metabolite's record.
+    .metabolites.reduce(function (metabolitesCollection, metaboliteIdentifier) {
+      // Set reference to metabolite's record.
       var metabolite = metabolites[metaboliteIdentifier];
       // Determine whether to include representations for the metabolite in the
       // network's elements.
@@ -701,24 +826,24 @@ class Network {
       if (pass) {
         // Include representations of the metabolite.
         // A single metabolite can participate in a reaction in multiple
-        // contexts.
-        // Create new nodes for the metabolite's contexts.
-        // Create new links between the reaction and the metabolite's contexts.
-        var participantsNodesLinks = Network.collectNetworkParticipants({
+        // contexts of compartments and roles.
+        // Create novel nodes and links for the contexts in which the metabolite
+        // participates in the reaction, and include these in the collection.
+        var participantsNetworkElements = Network.collectNetworkParticipants({
           reaction: reaction,
           metabolite: metabolite,
           compartmentalization: compartmentalization,
           simplification: simplification,
-          metabolitesCollection: metabolitesCollection
+          previousNetworkElements: metabolitesCollection
         });
         // Restore the collection of network elements to include new
         // nodes and links.
-        return participantsNodesLinks;
+        return participantsNetworkElements;
       } else {
         // Omit representations of the metabolite.
         return metabolitesCollection;
       }
-    }, reactionsCollection);
+    }, previousNetworkElements);
   }
   /**
   * Determines whether to include in the network nodes and links for a
@@ -739,7 +864,7 @@ class Network {
     simplification
   } = {}) {
     // Determine whether to represent metabolite.
-    // Determine whether to metabolite has a designation for simplification and
+    // Determine whether metabolite has a designation for simplification and
     // whether omission is the method for simplification.
     if (metabolite.simplification && simplification === "omission") {
       // Omit representations for the metabolite.
@@ -762,8 +887,8 @@ class Network {
   * represent compartmentalization in the network.
   * @param {string} parameters.simplification Indicator of whether to simplify
   * nodes for metabolites in the network by replication or by omission.
-  * @param {Object<Array<Object>>} parameters.metabolitesCollection Collection
-  * of network elements from metabolites that participate in a reaction.
+  * @param {Object<Array<Object>>} parameters.previousNetworkElements Records
+  * with information about nodes and links in a network.
   * @returns {Object<Array<Object>>} Network elements.
   */
   static collectNetworkParticipants({
@@ -771,13 +896,12 @@ class Network {
     metabolite,
     compartmentalization,
     simplification,
-    metabolitesCollection
+    previousNetworkElements
   } = {}) {
-    // Determine contexts of roles and compartments in which the metabolite
+    // Determine contexts of compartments and roles in which the metabolite
     // participates in the reaction.
-    // Only include contexts that satisfy filters, specifically with regard
-    // to compartments.
-    // Collect participants in relevant contexts.
+    // Only include contexts that persist against filters, specifically for
+    // compartments.
     var participants = Extraction.filterReactionParticipants({
       criteria: {
         metabolites: [metabolite.identifier],
@@ -786,8 +910,7 @@ class Network {
       participants: reaction.participants
     });
     // Iterate on contexts in which the metabolite participates in the reaction.
-    return participants
-    .reduce(function (participantsCollection, participant) {
+    return participants.reduce(function (participantsCollection, participant) {
       // Create node for metabolite's participation in the reaction.
       // Determine identifier for metabolite node.
       var nodeIdentifier = Network.determineMetaboliteNodeIdentifier({
@@ -798,15 +921,18 @@ class Network {
         method: simplification,
         reaction: reaction.identifier
       });
-      // Create novel metabolite node and include in the collection.
+      // Create novel metabolite node, and include it in the collection.
       // Include attributes from general metabolite's record in the
       // node's attributes.
+      // TODO: Procedures for node and link creation need updates for new structure of network elements.
+      // TODO: Can I manage the creation of nodes and links for metabolites simultaneously, like I did for reactions?
+      // TODO: Do I have to first create links and then decide if they're novel?
       var currentNodes = Network.createNovelMetaboliteNode({
         identifier: nodeIdentifier,
         compartment: participant.compartment,
         compartmentalization: compartmentalization,
         attributes: metabolite,
-        previousNodes: participantsCollection.nodes
+        previousNetworkElements: participantsCollection
       });
       // Create links between the reaction and the metabolite.
       var links = Network.createReactionMetaboliteLinks({
@@ -863,6 +989,8 @@ class Network {
     // Determine whether to simplify the representation for the metabolite.
     if (simplification) {
       // Simplify metabolite's representation in the network.
+      // Since metabolite merits representation, the method for simplification
+      // is not omission.
       if (method === "replication") {
         // Replicate nodes for the metabolite.
         var metaboliteNodeIdentifier = (
@@ -906,8 +1034,8 @@ class Network {
   * @param {Object} parameters.attributes Record with information about a
   * metabolite, values of its attributes that pass filters, and designation of
   * whether to simplify its representation in the network.
-  * @param {Array<Object>} parameters.previousNodes Nodes in previous collection
-  * for the network.
+  * @param {Object<Array<Object>>} parameters.previousNetworkElements Records
+  * with information about nodes and links in a network.
   * @returns {Array<Object>} New nodes for the network.
   */
   static createNovelMetaboliteNode({
@@ -915,7 +1043,7 @@ class Network {
     compartment,
     compartmentalization,
     attributes,
-    previousNodes
+    previousNetworkElements
   } = {}) {
     // Determine whether the collection includes a node for the metabolite.
     var nodeMatch = previousNodes.some(function (node) {
@@ -1010,29 +1138,6 @@ class Network {
       });
       return [].concat(forwardLink, reverseLink);
     }
-  }
-  /**
-  * Creates record for a link.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.source Identifier of a single node to be the
-  * link's source.
-  * @param {string} parameters.target Identifier of a single node to be the
-  * link's target.
-  * @param {Object} parameters.attributes Values of attributes in include in the
-  * link's record.
-  * @returns {Object} Record for a link.
-  */
-  static createLink({source, target, attributes} = {}) {
-    // Use a special delimiter "_-_" between identifiers of reactions and
-    // metabolites for links in order to avoid ambiguity with nodes for
-    // reaction-specific metabolites.
-    var identifier = source + "_-_" + target;
-    var record = {
-      identifier: identifier,
-      source: source,
-      target: target
-    };
-    return Object.assign({}, record, attributes);
   }
   /**
   * Collects links that are novel to a collection for a network.
