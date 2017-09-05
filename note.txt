@@ -4,6 +4,196 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+5 September 2017
+
+----------
+Ideas for Presentation
+
+Introduction
+
+Metabolism
+Metabolic Regulation
+Metabolic Network
+-Abstraction
+-Reactions between metabolites
+--Reactions involve genes, transcripts, proteins
+-Compartments
+-Pathways
+Holistic Characteristics of Metabolic Network
+-Small-World?
+-Scale-Free?
+-Modularity
+-Implications for evolution
+Modularity in Metabolic Network
+-Prominent in simpler metabolisms?
+-Necessary for evolution?
+-Modular simplification
+--Abstraction
+---Sets of reactions
+---Gene Set Enrichment Analysis
+---Metabolite Set Enrichment Analysis
+---Reduction in scale
+--Representations
+---Distinct pathways
+---Examples
+----Janet Lindsley's Map
+----ReconMap 2017
+----KEGG Atlas
+Continuity in Metabolic Network
+-Reality
+-Prominent in complex metabolisms?
+-Implications for evolution?
+-Examples
+--Human metabolic abnormalities across pathways
+--Examples from Janet Lindsley (include these and acknowledge Janet)
+--Metabolic perturbations in cancer
+---Strong support for metabolic perspective across pathways
+--Pervasive enzymatic inhibition by metabolites
+-Challenge
+--Scale of the network
+--Show an example of an entire metabolic network for illustration
+-Representations
+--Requirement for computational methods and interactive exploration
+--Examples
+---Escher... a step in the right direction
+
+Method
+
+Recon 2.2 Model of Human Metabolism
+-Information in the model
+
+Tell a story
+
+Prototype 1
+-How many commits?
+-How many lines of code?
+-Manual curation, filtration, organization of data for Citrate Cycle
+-Representation of metabolic network
+-Simplification of network's interconnectivity (technical word?) by replication
+
+Prototype 2
+-How many commits?
+-How many lines of code?
+-Full-scale data from Recon 2.2
+--Organization of data
+--Extraction of information for network
+--Filtration of data
+-Show image of humongous proximity network around pyruvate
+-Emphasize challenge of scale
+
+Show XKCD comic about solving a domain problem with algorithms
+Hope that people laugh
+
+Prototype 3 (current)
+-How many commits?
+-How many lines of code?
+-More organization, filtration, extraction of data
+-Emphasize cool aspects
+--Summary of full-scale data (sets' cardinalities)
+--Filtration of entities by attributes
+--Compartmental or general representation of network
+--Simplification of custom metabolites (replication, omission) in network
+--Topological traversal of network (at least proximity)
+--Visual representation
+
+Goals...
+
+----------
+Meet with Janet Lindsley
+
+My original intention in meeting with Janet was to ask for examples of reactions with roles in multiple metabolic pathways.
+Jared P Rutter advised me to consult with Janet about this subject.
+
+A general subject of interest involves the definition of pathways in metabolism.
+Metabolism is fairly cooperative and continuous.
+Definitions of distinct pathways is difficult and risks being arbitrary.
+
+In conceptualizing and understanding metabolism, there is a balance between principles of modularity and continuity or cooperativity.
+Biological, metabolic networks have properties of modularity and continuity.
+Evolution of complex networks seems to lose modularity in favor of efficiency or something.
+
+Janet Shared with me a map of human metabolism that she helped produce along with a team at Stanford University.
+This map of human metabolism is static and divides human metabolism into major pathways or modules.
+The major goal of this representation of metabolism is educational and also to give an overview of metabolic processes.
+Modular representations of metabolism in discreet pathways is conceptually simple.
+These representations are especially useful for static representations.
+
+There are benefits to both modular and continuous representations.
+Continuous representations require computational methods and interactivity.
+
+Janet shared some examples of correlation across pathways in human metabolism.
+
+1. Carbamoyl Phosphate
+Carbamoyl phosphate is part of the urea cycle that takes place in the mitochondrion.
+Ornithine transcarbamoylase catalyzes a reaction with carbamoyl phosphate in the mitochondrion.
+A deficiency in ornithine transcarbamoylase causes carbamoyl phosphate to accumulate in the cytosol.
+In the cytosol, carbamoyl phosphate synthetase II catalyzes a reaction with carbamoyl phosphate as part of the Pyrimidine Synthesis Pathway.
+The excess productivity of pyrimidine synthesis causes physiological problems.
+I think the problem is a type of acidosis.
+
+2. Steroid Hormone Synthesis
+Steroid Hormone Synthesis pathway occurs in the adrenal gland and in the gonads.
+Deficient activity in multiple enzymes (17 alpha hydroxylase, 21 hydroxylase, 11 beta hydroxylase) of Steroid Hormone Synthesis interfere with normal production in the adrenal gland.
+The situation causes congenital adrenal hyperplasia and also causes morphological differences in the genitalia of females.
+The condition is life-threatening, and infant screens check for the condition.
+
+3. PRPP Synthetase
+Phosphoribosyl Pyrophosphate (PRPP) Synthetase arguably has a role in both the Pentose Phosphate Pathway and in Purine Synthesis.
+PRPP Synthetase's role in purine synthesis somehow relates to a disease condition of gout as a result of accumulation of uric acid.
+
+4. Glucose-6-Phosphatase
+Deficiency in Glucose-6-Phosphatase traps glucose-6-phosphate from gluconeogenesis in cells, interfering with glucose release from the liver into the blood stream.
+The condition causes hypoglycemia.
+Somehow the condition also causes elevation in uric acid.
+An hypothesis is that accumulation of glucose-6-phosphate drives the Pentose Phosphate Pathway, which drives Nucleotide Synthesis specifically Purine Synthesis.
+Degradation of Purines produces uric acid.
+
+5. Folate Metabolism
+Folate metabolism influences Nucleotide Metabolism and Amino Acid Metabolism.
+Folate metabolism also relates somehow to Vitamin B12 Metabolism.
+
+6. Gluconeogenesis from Fat
+Eukaryotes such as Saccharomyces cerevisiae and even Caenorhabditis elegans can produce glucose from fat.
+This process probably requires the Glyoxylate Cycle or Shunt.
+It seems that it would be very beneficial for humans to be able to produce glucose from fat, but humans cannot.
+Janet is curious how humans evolved the inability to produce glucose from fat.
+The human brain requires glucose to survive, even though some parts of the brain can metabolize ketones.
+Humans can produce some glucose from the glycerol backbone of triglycerides.
+Fasting humans cannot produce glucose from fat.
+Instead, humans must degrade muscle to produce glucose from amino acids.
+
+----------
+Pathway Annotation in Metabolic Networks
+
+https://www.ncbi.nlm.nih.gov/pubmed/28751865
+"Breakdown of Modularity in Complex Networks"
+Frontiers in Physiology
+2017
+Modularity is important in evolution of metabolism.
+In more complex systems, there is an efficient benefit to losing modularity and favoring cooperativity.
+
+https://www.ncbi.nlm.nih.gov/pubmed/12202830
+"Hierarchical organization of modularity in metabolic networks"
+Science
+2002
+This article describes modularity in metabolic networks.
+https://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=12202830
+Many relevant articles cite this article.
+
+https://www.ncbi.nlm.nih.gov/pubmed/28555623
+"Redesigning metabolism based on orthogonality principles"
+Nature Communications
+2017
+This article describes the inter-connectedness of natural metabolic networks.
+This article cites other articles that describe modularity in metabolic networks.
+
+https://www.ncbi.nlm.nih.gov/pubmed/25887214
+"PathwayBooster: a tool to support the curation of metabolic pathways"
+BMC Bioinformatics
+2015
+This article describing a software tool might be a helpful comparison for publication in the biotechnological field.
+
+--------------------------------------------------
 30 August 2017
 
 ----------

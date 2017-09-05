@@ -245,20 +245,19 @@ class Action {
     //  "nadh", "nadp", "nadph", "nh4", "no", "no2", "o2", "o2s", "oh1",
     //  "pi", "ppi", "pppi", "so3", "so4", "udp", "ump", "utp"
     //];
-    // Compile new values of attributes.
+    // Compile novel values of attributes.
     var newAttributesValues = {
       file: file,
       compartmentalization: compartmentalization,
       simplification: simplification
     };
-    var attributesValues = Object
-    .assign(
+    var attributesValues = Object.assign(
       {},
       entitiesSets,
       currentEntitiesSetsAttributes,
       newAttributesValues
     );
-    // Submit new values of attributes to the model of the application's
+    // Submit novel values of attributes to the model of the application's
     // state.
     Action.submitAttributes({
       attributesValues: attributesValues,
@@ -527,6 +526,7 @@ class Action {
     // Assembly of network elements from all metabolic entities.
     // General, Replication: 23315 nodes, 55058 links, 3.5 minutes
     // Compartmental, Replication: 26997 nodes, 64710 links, 4 minutes
+    // TODO: Accommodate new organization of network elements.
     var networkElements = Network.createNetworkElements({
       compartmentalization: model.compartmentalization,
       simplification: model.simplification,
@@ -543,42 +543,48 @@ class Action {
     //var emptyNodes = networkElements.nodes.filter(function (node) {
     //    return !node.hasOwnProperty("identifier");
     //});
-    // Initialize an operable network in JSNetworkX from the network's
-    // elements.
-    var network = Network.initializeNetwork({
-      links: networkElements.links,
-      nodes: networkElements.nodes
-    });
-    // Induce subnetwork.
-    //var subNetwork = Network.induceEgoNetwork({
-    //    focus: "pyr_c",
-    //    depth: 2,
-    //    center: true,
-    //    direction: null,
-    //    network: network
-    //});
-    var subNetwork = network;
-    // Extract information about nodes and links from the subnetwork.
-    var subNodes = Network.extractNetworkNodes(subNetwork);
-    var subLinks = Network.extractNetworkLinks(subNetwork);
-    console.log("subnetwork elements");
-    console.log(subNodes);
-    console.log(subLinks);
-
-    // Submit new values of attributes to the model of the application's
+    // Copy network elements to current network elements.
+    var currentNetworkElements = Network
+    .copyCurrentNetworkElements(networkElements);
+    // Compile novel values of attributes.
+    var attributesValues = Object.assign(
+      {},
+      networkElements,
+      currentNetworkElements
+    );
+    // Submit novel values of attributes to the model of the application's
     // state.
-    var attributesValues = {
-      networkNodes: networkElements.nodes,
-      networkLinks: networkElements.links,
-      network: network,
-      subNetwork: subNetwork,
-      subNetworkNodes: subNodes,
-      subNetworkLinks: subLinks
-    };
     Action.submitAttributes({
       attributesValues: attributesValues,
       model: model
     });
+
+    // TODO: I don't want to initialize a network in JSNetworkX until I have to.
+
+    var iSaySo = false;
+    if (iSaySo) {
+      // Initialize an operable network in JSNetworkX from the network's
+      // elements.
+      var network = Network.initializeNetwork({
+        links: networkElements.links,
+        nodes: networkElements.nodes
+      });
+      // Induce subnetwork.
+      //var subNetwork = Network.induceEgoNetwork({
+      //    focus: "pyr_c",
+      //    depth: 2,
+      //    center: true,
+      //    direction: null,
+      //    network: network
+      //});
+      var subNetwork = network;
+      // Extract information about nodes and links from the subnetwork.
+      var subNodes = Network.extractNetworkNodes(subNetwork);
+      var subLinks = Network.extractNetworkLinks(subNetwork);
+      console.log("subnetwork elements");
+      console.log(subNodes);
+      console.log(subLinks);
+    }
   }
   /**
   * Executes a temporary procedure of utility for application's development.

@@ -1205,6 +1205,25 @@ class Network {
     }
     return link;
   }
+  
+  /**
+  * Copies records with information about nodes and links in a network.
+  * @param {Object<Array<Object>>} networkElements Records with information
+  * about nodes and links in a network.
+  * @returns {Object<Array<Object>>} Copies of records with information about
+  * nodes and links in a network.
+  */
+  static copyCurrentNetworkElements(networkElements) {
+    // Termporarily transfer network elements by reference.
+    // TODO: Copy the records themselves to avoid problems.
+    return {
+      currentMetabolitesLinks: networkElements.metabolitesLinks,
+      currentMetabolitesNodes: networkElements.metabolitesNodes,
+      currentReactionsLinks: networkElements.reactionsLinks,
+      currentReactionsPositionNodes: networkElements.reactionsPositionNodes,
+      currentReactionsNodes: networkElements.reactionsNodes
+    };
+  }
 
   /**
   * Initializes an operable network in JSNetworkX.
