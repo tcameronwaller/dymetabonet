@@ -26,7 +26,7 @@ class Model {
       "setsCardinalities", "setsSummary",
       // Network.
       "compartmentalization", "simplification",
-      "metabolitesNodes", "reactonsNodes", "reactionsPositionNodes",
+      "metabolitesNodes", "reactionsNodes", "reactionsPositionNodes",
       "metabolitesLinks", "reactionsLinks",
       "network",
       // Subnetwork.

@@ -78,7 +78,7 @@ class State {
     if (
       this.determineMetabolicEntitiesSets() &&
       this.determineCurrentEntities() &&
-      this.determineNetwork()
+      this.determineNetworkElements()
     ) {
       // Initialize instance of interface.
       // Pass this instance a reference to the model of the application's
@@ -144,14 +144,18 @@ class State {
   * Determines whether or not the application's state has information about
   * a network and subnetwork of relations between metabolic entities.
   */
-  determineNetwork() {
+  determineNetworkElements() {
     return (
-      !(this.model.network === null) &&
-      !(this.model.networkNodes === null) &&
-      !(this.model.networkLinks === null) &&
-      !(this.model.subNetwork === null) &&
-      !(this.model.subNetworkNodes === null) &&
-      !(this.model.subNetworkLinks === null)
+      !(this.model.metabolitesNodes === null) &&
+      !(this.model.reactionsNodes === null) &&
+      !(this.model.reactionsPositionNodes === null) &&
+      !(this.model.metabolitesLinks === null) &&
+      !(this.model.reactionsLinks === null) &&
+      !(this.model.currrentMetabolitesNodes === null) &&
+      !(this.model.currentReactionsNodes === null) &&
+      !(this.model.currentReactionsPositionNodes === null) &&
+      !(this.model.currentMetabolitesLinks === null) &&
+      !(this.model.currentReactionsLinks === null)
     );
   }
 }

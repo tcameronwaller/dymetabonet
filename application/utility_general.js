@@ -89,6 +89,27 @@ class General {
   }
 
   /**
+  * Computes the sum of elements in an array.
+  * @param {Array<number>} elements Array of elements.
+  * @returns {number} Sum of elements.
+  */
+  static computeElementsSum(elements) {
+    return elements.reduce(function (sum, value) {
+      return sum + value;
+    }, 0);
+  }
+  /**
+  * Computes the mean of elements in an array.
+  * @param {Array<number>} elements Array of elements.
+  * @returns {number} Arithmetic mean of elements.
+  */
+  static computeElementsMean(elements) {
+    var sum = General.computeElementsSum(elements);
+    return sum / elements.length;
+  }
+
+
+  /**
   * Collects unique elements.
   * @param {Array} elements Array of elements.
   * @returns {Array} Unique elements.

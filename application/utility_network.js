@@ -1185,6 +1185,7 @@ class Network {
     // participates in a reaction.
     // Reactions do not accommodate redundant participants.
     var attributes = {
+      entity: "metabolite",
       simplification: simplification
     };
     // Create a link to represent metabolite's role in the reaction.
@@ -1205,7 +1206,7 @@ class Network {
     }
     return link;
   }
-  
+
   /**
   * Copies records with information about nodes and links in a network.
   * @param {Object<Array<Object>>} networkElements Records with information

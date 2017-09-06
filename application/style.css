@@ -183,7 +183,7 @@
 #bottom {
     background-color: rgba(255, 255, 255, 1);
     display: flex;
-    height: 70%;
+    height: 80%;
     width: 100%;
 }
 
@@ -245,6 +245,12 @@
     r: 7;
 }
 
+#topology svg .node.position.reaction {
+    fill: rgba(10, 10, 10, 1);
+    r: 3;
+}
+
+
 #topology svg .node.mark.reaction {
     fill: rgba(100, 0, 0, 1);
     rx: 20;
@@ -268,10 +274,17 @@
   fill: rgba(50, 50, 50, 1);
 }
 
-#topology svg .link {
+#topology svg .link.metabolite {
     stroke: rgba(100, 100, 100, 1);
     stroke-width: 2;
 }
+
+#topology svg .link.reaction {
+    stroke: rgba(10, 10, 10, 1);
+    stroke-width: 5;
+    /*marker-end: url(#link-marker);*/
+}
+
 
 #topology svg .link.simplification {
 }

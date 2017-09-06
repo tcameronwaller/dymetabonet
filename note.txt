@@ -4,6 +4,34 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+6 September 2017
+
+----------
+D3 Force Layout with Multiple Foci
+https://bl.ocks.org/mbostock/1021841
+https://bl.ocks.org/mbostock/1804919
+
+----------
+D3 Append Different Types of Elements According to Data
+D3's append method can accept a function that returns a type of SVG element according to the data.
+It is necessary to use document.createElementNS() with a reference to an element in the www.w3.org name space.
+    var dataNodesMarks = nodesMarksGroup
+    .selectAll("circle, ellipse").data(self.nodesPositionRecords);
+    dataNodesMarks.exit().remove();
+    var novelNodesMarks = dataNodesMarks.enter().append(function (data) {
+      // Append different types of markers for different types of entities.
+      if (data.entity === "metabolite") {
+        // Node is for a metabolite.
+        return self
+        .document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      } else if (data.entity === "reaction") {
+        // Node is for a reaction.
+        return self
+        .document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+      }
+    });
+
+--------------------------------------------------
 5 September 2017
 
 ----------
@@ -63,6 +91,13 @@ Recon 2.2 Model of Human Metabolism
 -Information in the model
 
 Tell a story
+Create a line graph
+Plot dates on the horizontal axis
+Plot both commits and lines of code on the vertical axis
+Acknowledge that lines of code do not necessarily increase linearly with changes to the application.
+Changes to the application replace and even condense lines of code.
+Maybe also plot the changes in from each commit?
+Show progress for each prototype on the chart.
 
 Prototype 1
 -How many commits?

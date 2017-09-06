@@ -3,6 +3,28 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
+6 September 2017
+
+----------
+    var dataNodesMarks = nodesMarksGroup
+    .selectAll("circle, ellipse").data(self.nodesPositionRecords);
+    dataNodesMarks.exit().remove();
+    var novelNodesMarks = dataNodesMarks.enter().append(function (data) {
+      // Append different types of markers for different types of entities.
+      if (data.entity === "metabolite") {
+        // Node is for a metabolite.
+        return self
+        .document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      } else if (data.entity === "reaction") {
+        // Node is for a reaction.
+        return self
+        .document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+      }
+    });
+
+
+
+--------------------------------------------------
 18 July 2017
 
 ----------
@@ -24,9 +46,6 @@ Notes: Scrap Code For Project Profondeur
             return checkAttribute && checkValues;
         });
     }
-
-
-
 
 --------------------------------------------------
 13 July 2017

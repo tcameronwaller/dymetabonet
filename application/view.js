@@ -1370,7 +1370,7 @@ class TopologyView {
       self.graph = self.container.getElementsByTagName("svg").item(0);
     } else {
       self.graph = self.container.getElementsByTagName("svg").item(0);
-      self.graphSelection = d3.select(self.networkGraph);
+      self.graphSelection = d3.select(self.graph);
     }
     // Determine the dimensions of the graphical container.
     // Set references to dimensions of graphical container.
@@ -1389,6 +1389,8 @@ class TopologyView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
+    // Define directional marker for links.
+    self.createDirectionalMarker(self);
     // Create links.
     // Create links before nodes so that nodes will appear over the links.
     self.createLinks(self);
@@ -1396,6 +1398,52 @@ class TopologyView {
     self.createNodes(self);
     // Initiate force simulation.
     self.initiateForceSimulation(self);
+  }
+  /**
+  * Creates definition of directional markers for links.
+  * @param {Object} view Instance of interface's current view.
+  */
+  createDirectionalMarker(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Define directional marker for links.
+    // Set reference to current definition.
+    if (!self.graph.getElementsByTagName("defs").item(0)) {
+      if (false) {
+        // Define directly.
+        self.definition = self.document.createElement("defs");
+        self.graph.appendChild(self.definition);
+        self.marker = self.document.createElement("marker");
+        self.definition.appendChild(self.marker);
+        self.marker.setAttribute("id", "link-marker");
+        self.marker.setAttribute("viewBox", "0 0 10 10");
+        self.marker.setAttribute("refX", 20);
+        self.marker.setAttribute("refY", 5);
+        self.marker.setAttribute("markerWidth", 5);
+        self.marker.setAttribute("markerHeight", 5);
+        self.marker.setAttribute("orient", "auto");
+        self.path = self.document.createElement("path");
+        self.marker.appendChild(self.path);
+        self.path.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+      }
+      // Define by D3.
+      self.marker = self.graphSelection
+      .append("defs")
+      .append("marker")
+      .attr("id", "link-marker")
+      .attr("viewBox", "0 0 10 10")
+      .attr("refX", 7)
+      .attr("refY", 5)
+      .attr("markerWidth", 5)
+      .attr("markerHeight", 5)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M 0 0 L 10 5 L 0 10 z");
+    } else {
+      self.definition = self.graph.getElementsByTagName("defs").item(0);
+      self.marker = self.document.getElementById("link-marker");
+    }
   }
   /**
   * Creates links in a node-link diagram.
@@ -1406,17 +1454,31 @@ class TopologyView {
     // in scope.
     var self = view;
     // Create links.
+    // Combine links relevant to position.
+    self.linksRecords = []
+    .concat(self.model.metabolitesLinks, self.model.reactionsLinks);
     // Contain all links within a single group.
     var linksGroup = self.graphSelection.append("g");
+    // Create links.
     var dataLinks = linksGroup
-    .selectAll("line").data(self.model.subNetworkLinks);
+    .selectAll("line").data(self.linksRecords);
     dataLinks.exit().remove();
     var novelLinks = dataLinks.enter().append("line");
     self.links = novelLinks.merge(dataLinks);
     self.links.classed("link", true);
+    self.links.classed("metabolite", function (data) {
+      return data.entity === "metabolite";
+    });
+    self.links.classed("reaction", function (data) {
+      return data.entity === "reaction";
+    });
     self.links.classed("simplification", function (data) {
       return data.simplification;
     });
+    self.linksReactions = self.links.filter(function (data) {
+      return data.entity === "reaction";
+    });
+    self.linksReactions.attr("marker-end", "url(#link-marker)");
   }
   /**
   * Creates nodes in a node-link diagram.
@@ -1426,34 +1488,35 @@ class TopologyView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
-    // Create nodes.
+
+    // Create nodes for positions.
+    // Combine records nodes relevant to position.
+    self.nodesPositionsRecords = []
+    .concat(self.model.metabolitesNodes, self.model.reactionsPositionNodes);
     // Contain all nodes within a single group.
     var nodesGroup = self.graphSelection.append("g");
     // Create nodes' marks.
     var nodesMarksGroup = nodesGroup.append("g");
     var dataNodesMarks = nodesMarksGroup
-    .selectAll("circle, ellipse").data(self.model.subNetworkNodes);
+    .selectAll("circle").data(self.nodesPositionsRecords);
     dataNodesMarks.exit().remove();
-    var novelNodesMarks = dataNodesMarks.enter().append(function (data) {
-      // Append different types of markers for different types of entities.
-      if (data.entity === "metabolite") {
-        // Node is for a metabolite.
-        return self
-        .document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      } else if (data.entity === "reaction") {
-        // Node is for a reaction.
-        return self
-        .document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
-      }
-    });
+    var novelNodesMarks = dataNodesMarks.enter().append("circle");
     self.nodesMarks = novelNodesMarks.merge(dataNodesMarks);
-    self.nodesMarks
-    .append("title")
-    .text(function (data) {
-      return data.name;
+    if (false) {
+      self.nodesMarks.append("title").text(function (data) {
+        return data.name;
+      });
+    }
+    self.nodesMarks.attr("id", function (data) {
+      return data.identifier;
     });
     self.nodesMarks.classed("node", true);
-    self.nodesMarks.classed("mark", true);
+    self.nodesMarks.classed("mark", function (data) {
+      return data.entity === "metabolite";
+    });
+    self.nodesMarks.classed("position", function (data) {
+      return data.entity === "reaction";
+    });
     self.nodesMarks.classed("metabolite", function (data) {
       return data.entity === "metabolite";
     });
@@ -1463,27 +1526,57 @@ class TopologyView {
     self.nodesMarks.classed("simplification", function (data) {
       return data.simplification;
     });
-    // Create nodes' labels.
-    var nodesLabelsGroup = nodesGroup.append("g");
-    var dataNodesLabels = nodesLabelsGroup
-    .selectAll("text").data(self.model.subNetworkNodes);
-    dataNodesLabels.exit().remove();
-    var novelNodesLabels = dataNodesLabels.enter().append("text");
-    self.nodesLabels = novelNodesLabels.merge(dataNodesLabels);
-    self.nodesLabels.text(function (data) {
-      return data.name.slice(0, 10) + "...";
-    });
-    self.nodesLabels.classed("node", true);
-    self.nodesLabels.classed("label", true);
-    self.nodesLabels.classed("metabolite", function (data) {
-      return data.entity === "metabolite";
-    });
-    self.nodesLabels.classed("reaction", function (data) {
-      return data.entity === "reaction";
-    });
-    self.nodesLabels.classed("simplification", function (data) {
+
+    // Create nodes for marks.
+    // Contain all nodes within a single group.
+    var nodesReactionsGroup = self.graphSelection.append("g");
+    // Create nodes' marks.
+    var nodesReactionsMarksGroup = nodesReactionsGroup.append("g");
+    var dataNodesReactionsMarks = nodesReactionsMarksGroup
+    .selectAll("ellipse").data(self.model.reactionsNodes);
+    dataNodesReactionsMarks.exit().remove();
+    var novelNodesReactionsMarks = dataNodesReactionsMarks.enter().append("ellipse");
+    self.nodesReactionsMarks = novelNodesReactionsMarks.merge(dataNodesReactionsMarks);
+
+    if (false) {
+      self.nodesMarks.append("title").text(function (data) {
+        return data.name;
+      });
+    }
+    self.nodesReactionsMarks.classed("node", true);
+    self.nodesReactionsMarks.classed("mark", true);
+    self.nodesReactionsMarks.classed("reaction", true);
+    self.nodesReactionsMarks.classed("simplification", function (data) {
       return data.simplification;
     });
+
+
+
+
+
+    // Create nodes' labels.
+    if (false) {
+      var nodesLabelsGroup = nodesGroup.append("g");
+      var dataNodesLabels = nodesLabelsGroup
+      .selectAll("text").data(self.model.subNetworkNodes);
+      dataNodesLabels.exit().remove();
+      var novelNodesLabels = dataNodesLabels.enter().append("text");
+      self.nodesLabels = novelNodesLabels.merge(dataNodesLabels);
+      self.nodesLabels.text(function (data) {
+        return data.name.slice(0, 10) + "...";
+      });
+      self.nodesLabels.classed("node", true);
+      self.nodesLabels.classed("label", true);
+      self.nodesLabels.classed("metabolite", function (data) {
+        return data.entity === "metabolite";
+      });
+      self.nodesLabels.classed("reaction", function (data) {
+        return data.entity === "reaction";
+      });
+      self.nodesLabels.classed("simplification", function (data) {
+        return data.simplification;
+      });
+    }
   }
   /**
   * Initiates a force simulation for placement of network's nodes and links in a
@@ -1501,10 +1594,12 @@ class TopologyView {
     // them manually.
     // The force simulation assigns positions to the nodes, recording
     // coordinates of these positions in novel attributes within nodes' records.
+    // These coordinates are accessible in the original data that associates
+    // with node elements.
     // Any elements with access to the nodes' data, such as nodes' marks and
     // labels, also have access to the coordinates of these positions.
     self.simulation = d3.forceSimulation()
-    .nodes(self.model.subNetworkNodes)
+    .nodes(self.nodesPositionsRecords)
     .force("center", d3.forceCenter()
       .x(self.graphWidth / 2)
       .y(self.graphHeight / 2)
@@ -1512,9 +1607,9 @@ class TopologyView {
     .force("collision", d3.forceCollide()
       .radius(function (data) {
         if (data.entity === "metabolite") {
-          return 10;
+          return 50;
         } else if (data.entity === "reaction") {
-          return 20;
+          return 50;
         }
       })
       .strength(0.9)
@@ -1526,19 +1621,25 @@ class TopologyView {
       .distanceMax(200)
     )
     .force("link", d3.forceLink()
-      .links(self.model.subNetworkLinks)
+      .links(self.linksRecords)
       .id(function (data) {
         return data.identifier;
       })
-      .distance(7)
+      .distance(function (data) {
+        if (data.entity === "metabolite") {
+          return 100;
+        } else if (data.entity === "reaction") {
+          return 25;
+        }
+      })
     )
     .force("positionX", d3.forceX()
       .x(self.graphWidth / 2)
-      .strength(0.1)
+      .strength(0.0001)
     )
     .force("positionY", d3.forceY()
       .y(self.graphWidth / 2)
-      .strength(0.1)
+      .strength(0.05)
     )
     .on("tick", function () {
       self.restoreNodePositions(self);
@@ -1569,11 +1670,48 @@ class TopologyView {
       return data.y = Math
       .max(radius, Math.min(self.graphHeight - radius, data.y));
     });
+    // TODO: Determine ids of relevant position nodes...
+    // TODO: Use a function for this...
+    // TODO: Determine the mean cx and cy coordinates and use those...
+    self.nodesReactionsMarks
+    .attr("cx", function (data) {
+      // Access coordinates of position nodes from the original records for the
+      // nodes.
+      var positionsRecords = data.positions.map(function (identifier) {
+        return self.model.reactionsPositionNodes.find(function (record) {
+          return record.identifier === identifier;
+        });
+      });
+      var positions = General.collectValueFromObjects("x", positionsRecords);
+      var position = General.computeElementsMean(positions);
+      return Math.max(radius, Math.min(self.graphWidth - radius, position));
+    })
+    //.attr("cy", function (data) {
+    //  return data.y = Math
+    //  .max(radius, Math.min(self.graphHeight - radius, data.y));
+    //});
+    .attr("cy", function (data) {
+      // Access coordinates of position nodes from the original records for the
+      // nodes.
+      var positionsRecords = data.positions.map(function (identifier) {
+        return self.model.reactionsPositionNodes.find(function (record) {
+          return record.identifier === identifier;
+        });
+      });
+      var positions = General.collectValueFromObjects("y", positionsRecords);
+      var position = General.computeElementsMean(positions);
+      return Math.max(radius, Math.min(self.graphHeight - radius, position));
+    });
+
+    // TODO: I'll need to position labels for metabolite nodes differently than reaction nodes.
+    // TODO: The procedures will be the same for their corresponding mark nodes...
     // Restore positions of nodes' labels according to results of simulation.
     // TODO: I need to handle the same edge offset for labels as I do for nodes.
-    self.nodesLabels
-    .attr("x", function (data) {return data.x;})
-    .attr("y", function (data) {return data.y;})
+    if (false) {
+      self.nodesLabels
+      .attr("x", function (data) {return data.x;})
+      .attr("y", function (data) {return data.y;})
+    }
     // Restore positions of links according to results of simulation.
     self.links
     .attr("x1", function (data) {return data.source.x;})
