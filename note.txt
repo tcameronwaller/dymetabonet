@@ -4,7 +4,158 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+8 September 2017
+
+----------
+Mean of Circular Quantities
+
+Measurements of angles about an origin, 0-360 degrees, are circular quantities.
+Calculation of means of circular quantities is problematic.
+
+For example, the mean of 290 and 10 is 150; however, the mean angle between 290 degrees and 10 degrees is closer to 330 degrees.
+Calculation of means of multiple angles is even more problematic.
+For example, what is the mean of 10 degrees, 120 degrees, and 290 degrees?
+
+It is possible to approximate the mean of multiple angles.
+Calculate the points at which each angle's ray intersects the unit circle at a radius of 1 unit from the origin.
+The reason to calculate points at a radius of 1 unit is to avoid any influences from differences in radius.
+Otherwise, points at greater radii from the origin would dominate.
+Calculate separately the means of x and y coordinates for all points.
+If mean coordinates are 0, 0, then there is no mean.
+Otherwise, find angle of point with mean coordinates.
+
+In my situation, I will begin with multiple points with coordinates.
+Coordinates in the Scalable Vector Graphics (SVG) element are different than the typical coordinate plane.
+Convert points' coordinates to reasonable points on a coordinate plane.
+Treat coordinates of central reaction's node as the origin.
+Subtract all y-coordinates from the maximal y-coordinate to invert the y-axis.
+Subtract the origin's coordinates from all other coordinates to set the origin to (0, 0) and all others to be relative to the origin.
+
+Convert all of these coordinates to coordinates at a radius of 1 unit from the origin of the coordinate plane.
+Calculate positive angles in either degrees (0-360) or radians (0-2pi) of each point.
+Use atan2 function, and convert any negative values to appropriate positive values (if necessary).
+Determine coordinates of points at which each angle's ray intersects with unit circle at radius of 1 unit from origin.
+Use sine of angle for y-coordinate.
+Use cosine of angle for x-coordinate.
+Calculate means of x-coordinates.
+There is no need to calculate means of y-coordinates or to calculate the angle of the point with mean coordinates.
+If mean x-coordinate is positive, then prefer the right side.
+If mean x-coordinate is negative, then prefer the left side.
+
+The procedure to determine the optimal side of a reaction for one type of metabolite's role, either reactant or product, is clear.
+How will I resolve conflicts between reactants and products?
+What will I do if both reactants and products prefer the left side, for example?
+Should I consider the extent to which reactants and products each prefer the side?
+
+I will need to consider and assign sides of reactants and products together.
+If reactants have no preference, then I will determine the preference from products.
+If neither reactants nor products have a preference, then I will choose the default of reactants on left and products on right.
+If both reactants and products prefer the same side, then I will give the side to the role with the stronger preference (greater absolute value of the x coordinate).
+
+Functions
+
+determineReactionSide
+
+convertCoordinates
+-accept coordinates for 1 point at a time
+-accept coordinates of desired origin
+-accept height of SVG element
+-call invertOrdinate
+-call shiftOrigin
+-call Math.atan2
+-call Math.sin
+-call Math.cos
+-call computeElementsMean
+
+invertOrdinate
+-accept coordinates for 1 point at a time
+-accept height of SVG element
+
+shiftOrigin
+-accept coordinates for 1 point at a time
+-accept coordinates of desired origin
+
+References
+https://en.wikipedia.org/wiki/Mean_of_circular_quantities
+https://en.wikipedia.org/wiki/Atan2
+https://math.stackexchange.com/questions/211074/calculate-average-angle-after-crossing-360-degrees
+
+--------------------------------------------------
+7 September 2017
+
+----------
+Determination of sides of reactions' nodes for attachment of links for reactants and products.
+
+theta = arctan(y/x)
+
+The arc tangent function will return 2 values.
+1 value is for rotation in the positive direction.
+1 value is for rotation in the negative direction.
+Always take the positive value for the angle.
+Convert the value from radians to degrees.
+
+360 degrees = 2 * pi radians
+180 degrees = pi radians
+degrees = radians * (180 degrees / pi radians)
+
+Use Math.atan2(y, x)
+
+----------
+Visualizations for Systems Biology
+https://github.com/zakandrewking/escher/wiki/Systems-biology-visualizations
+
+----------
+MetDraw
+www.metdraw.com
+
+MetDraw accepts models in SBML format and then represents those models as networks.
+MetDraw supports several customizable options, including replication of minor metabolites for each reaction.
+
+MetDraw does not support dynamic querying or exploration of the metabolic network.
+These queries could potentially happen with some other tool.
+Queries by attributes or topological traversals could filter the model and return a subset of the model in SBML format.
+MetDraw then draws the information from the SBML file.
+
+----------
+D3Flux
+
+D3Flux is a tool that uses D3 to visualize flux networks from metabolic models in COBRApy.
+
+https://pstjohn.github.io/Metabolic-Network-Visualization/
+https://github.com/pstjohn/d3flux
+
+----------
+Orient Rotate Nodes in D3
+
+https://stackoverflow.com/questions/30486614/d3-force-layout-how-to-dynamically-orient-teardrop-shaped-nodes
+
+----------
+Zoom Graph in D3
+
+http://bl.ocks.org/TWiStErRob/b1c62730e01fe33baa2dea0d0aa29359
+http://jsfiddle.net/Nivaldo/46nBm/
+
+--------------------------------------------------
 6 September 2017
+
+----------
+Determining Angles in Coordinate System by Trigonometry
+
+http://www.dummies.com/education/math/trigonometry/use-coordinates-of-points-to-find-values-of-trigonometry-functions/
+https://math.stackexchange.com/questions/1327253/how-do-we-find-out-angle-from-x-y-coordinates
+http://www.montereyinstitute.org/courses/DevelopmentalMath/COURSE_TEXT2_RESOURCE/U19_L1_T3_text_final.html
+
+
+----------
+Progress
+
+Preliminary custom visual representation of reactions in network's node-link diagram...
+Reaction's representation is an elliptical node (eventually to have a label) at the center of a special, directional link.
+
+Advantages:
+-reaction directionality and reversibility
+-distinction between reactants and products
+-reaction position and orientation fit within layout
 
 ----------
 D3 Force Layout with Multiple Foci

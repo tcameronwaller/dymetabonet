@@ -591,7 +591,13 @@ class Action {
   * @param {Object} model Model of the application's comprehensive state.
   */
   static executeTemporaryProcedure(model) {
-    Action.createNetwork(model);
+    // 31
+    // 149
+    // -149
+    // -31
+    var resultRadians = Math.atan2(-0.1, -1);
+    var resultDegrees = resultRadians * (180 / Math.PI);
+    console.log(resultDegrees);
   }
 
   // Secondary actions relevant to application's state.

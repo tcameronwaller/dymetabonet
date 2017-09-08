@@ -107,6 +107,22 @@ class General {
     var sum = General.computeElementsSum(elements);
     return sum / elements.length;
   }
+  /**
+  * Computes measurement in degrees of angle in standard position with vertex at
+  * origin of coordinate plane, initial side on positive x-axis, and terminal
+  * side to some point with specific coordinates.
+  * Range is -180 degrees to 180 degrees.
+  * @param {number} x Coordinate on x-axis or abscissa.
+  * @param {number} y Coordinate on y-axis or ordinate.
+  * @returns {number} Measurement of angle in degrees.
+  */
+  static computeCoordinatesAngleDegree(x, y) {
+    // I need measurements of angles in degrees 0-360.
+    // The -180 to 180 thing interferes with correct calculations of means...
+    var resultRadians = Math.atan2(y, x);
+    var resultDegrees = resultRadians * (180 / Math.PI);
+    return resultDegrees;
+  }
 
 
   /**
