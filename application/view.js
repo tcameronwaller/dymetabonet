@@ -1719,4 +1719,20 @@ class TopologyView {
     .attr("x2", function (data) {return data.target.x;})
     .attr("y2", function (data) {return data.target.y;});
   }
+  
+  /**
+  * Refine links attachments.
+  * @param {Object} view Instance of interface's current view.
+  */
+  refineLinksAttachments(view) {}
+
+  // TODO: Need function in network module to filter/collect metabolites' nodes that have links to a reaction's node.
+  // TODO: Need function in network module to filter/collect links between source and target nodes...
+  // TODO: Include parallel links between metabolites and reversible reactions.
+  /**
+  * Determines the orientation of a reaction's node.
+  * @param {Object} view Instance of interface's current view.
+  */
+  determineReactionNodeOrientation(view) {}
+
 }

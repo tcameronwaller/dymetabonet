@@ -108,21 +108,100 @@ class General {
     return sum / elements.length;
   }
   /**
-  * Computes measurement in degrees of angle in standard position with vertex at
-  * origin of coordinate plane, initial side on positive x-axis, and terminal
-  * side to some point with specific coordinates.
-  * Range is -180 degrees to 180 degrees.
-  * @param {number} x Coordinate on x-axis or abscissa.
-  * @param {number} y Coordinate on y-axis or ordinate.
-  * @returns {number} Measurement of angle in degrees.
+  * Computes measurement in radians of the positive angle in standard position
+  * with vertex at origin of coordinate plane, initial side on positive x-axis,
+  * and terminal side to some point with specific coordinates.
+  * @param {number} x Point's coordinate on x-axis or abscissa.
+  * @param {number} y Point's coordinate on y-axis or ordinate.
+  * @returns {number} Measurement of positive angle in radians.
   */
-  static computeCoordinatesAngleDegree(x, y) {
-    // I need measurements of angles in degrees 0-360.
-    // The -180 to 180 thing interferes with correct calculations of means...
-    var resultRadians = Math.atan2(y, x);
-    var resultDegrees = resultRadians * (180 / Math.PI);
-    return resultDegrees;
+  static computeCoordinatesPositiveAngleRadians(x, y) {
+    // Compute measurement in radians of the angle.
+    // By default, angle with terminal side in quadrants 1 or 2 of coordinate
+    // plane is positive.
+    // By default, angle with terminal side in quadrants 3 or 4 of coordinate
+    // plane is negative.
+    var result = Math.atan2(y, x);
+    // Determine if angle is positive or negative.
+    if (result > 0) {
+      // Angle is positive.
+      var positiveResult = result;
+    } else {
+      // Angle is negative.
+      // Convert negative angle to positive angle.
+      var positiveResult = (2 * Math.PI) - result;
+    }
+    // Return measurement in radians of positive angle.
+    return positiveResult;
   }
+  /**
+  * Converts an angle's measurement in radians to degrees.
+  * @param {number} radians An angle's measurement in radians.
+  * @returns {number} Angle's measurement in degrees.
+  */
+  static convertAngleRadiansDegrees(radians) {
+    return radians * (180 / Math.PI);
+  }
+  /**
+  * Converts the coordinates of a point within a scalable vector graph.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.pointX Point's coordinate on x-axis or abscissa.
+  * @param {number} parameters.pointY Point's coordinate on y-axis or ordinate.
+  * @param {number} parameters.originX Origin's coordinate on x-axis or
+  * abscissa.
+  * @param {number} parameters.originY Origin's coordinate on y-axis or
+  * ordinate.
+  * @param {number} parameters.height Height in pixels of scalable vector graph.
+  * @returns {Object<number>} Coordinates of point.
+  */
+  static convertGraphCoordinates({
+    pointX, pointY, originX, originY, height
+  } = {}) {
+    // The coordinates of scalable vector graphs originate at the top left
+    // corner.
+    // Coordinates of the x-axis or abscissa increase towards the right.
+    // Coordinates of the y-axis or ordinate increase towards the bottom.
+    // Invert the coordinates of the y-axis or ordinate.
+    var pointYFlip = height - pointY;
+    var originYFlip = height - originY;
+    // Shift the point's coordinates relative to the new origin.
+    var pointXShift = pointX - originX;
+    var pointYShift = pointYFlip - originYFlip;
+    // Return coordinates.
+    return {
+      x: pointXShift,
+      y: pointYShift
+    };
+  }
+  /**
+  * Computes coordinates of point at which an angle's terminal side intersects
+  * the unit circle at a radius of 1 unit from the origin.
+  * @param {number} angle Measurement of positive angle in radians.
+  * @returns {Object<number>} Coordinates of point.
+  */
+  static computeAngleUnitIntersection(angle) {
+    // Unit circle has a radius of 1 unit.
+    // Hypotenuse of right triangle relevant to coordinates of any point on unit
+    // circle has length of 1 unit.
+    // Cosine of angle (adjacent/hypotenuse) is equal to the coordinate on
+    // x-axis or abscissa of the point at which angle's terminal side intersects
+    // unit circle.
+    // Sine of angle (opposite/hypotenuse) is equal to the coordinate on y-axis
+    // or ordinate of the point at which angle's terminal side intersects unit
+    // circle.
+    // Compute coordinates of the point at which angle's terminal side
+    // intersects unit circle.
+    var pointX = Math.cos(angle);
+    var pointY = Math.sin(angle);
+    // Return coordinates.
+    return {
+      x: pointX,
+      y: pointY
+    };
+  }
+
+
+
 
 
   /**
