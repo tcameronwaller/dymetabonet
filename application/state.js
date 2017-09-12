@@ -148,14 +148,10 @@ class State {
     return (
       !(this.model.metabolitesNodes === null) &&
       !(this.model.reactionsNodes === null) &&
-      !(this.model.reactionsPositionNodes === null) &&
-      !(this.model.metabolitesLinks === null) &&
-      !(this.model.reactionsLinks === null) &&
+      !(this.model.links === null) &&
       !(this.model.currrentMetabolitesNodes === null) &&
       !(this.model.currentReactionsNodes === null) &&
-      !(this.model.currentReactionsPositionNodes === null) &&
-      !(this.model.currentMetabolitesLinks === null) &&
-      !(this.model.currentReactionsLinks === null)
+      !(this.model.currentLinks === null)
     );
   }
 }

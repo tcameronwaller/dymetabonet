@@ -548,7 +548,7 @@ class Network {
       var priorityReactionIdentifier = sortReactionsIdentifiers[0];
       // Copy attributes from priority reaction's record.
       var priorityAttributes = Extraction
-      .copyEntityAttributesValues(reactions[priorityReactionIdentifier]);
+      .copyEntityRecord(reactions[priorityReactionIdentifier]);
       // Combine values of appropriate attributes from all replicate reactions.
       var initialAttributes = {
         compartments: [],
@@ -592,8 +592,7 @@ class Network {
     } else {
       // There is a single relevant reaction.
       // Copy and propagate attributes from reaction.
-      return Extraction
-      .copyEntityAttributesValues(reactions[reactionsIdentifiers[0]]);
+      return Extraction.copyEntityRecord(reactions[reactionsIdentifiers[0]]);
     }
   }
   /**
@@ -662,7 +661,7 @@ class Network {
       metabolites: metabolites
     });
     // Create node for the reaction.
-    var copyAttributes = Extraction.copyEntityAttributesValues(reaction);
+    var copyAttributes = Extraction.copyEntityRecord(reaction);
     var novelAttributes = {
       entity: "reaction",
       simplification: simplification
@@ -991,7 +990,7 @@ class Network {
       var compartmentValue = null;
     }
     // Create node for the metabolite.
-    var copyAttributes = Extraction.copyEntityAttributesValues(metabolite);
+    var copyAttributes = Extraction.copyEntityRecord(metabolite);
     var novelAttributes = {
       compartment: compartmentValue,
       entity: "metabolite",
@@ -1086,7 +1085,6 @@ class Network {
     return Object.assign({}, record, attributes);
   }
 
-  // TODO: Need function in network module to filter/collect metabolites' nodes that have links to a reaction's node.
   // TODO: Need function in network module to filter/collect links between source and target nodes...
   // TODO: Include parallel links between metabolites and reversible reactions.
 
@@ -1097,16 +1095,30 @@ class Network {
   * @returns {Object<Array<Object>>} Copies of records with information about
   * nodes and links in a network.
   */
-  static copyCurrentNetworkElements(networkElements) {
-    // Termporarily transfer network elements by reference.
-    // TODO: Copy the records themselves to avoid problems.
+  static copyNetworkElements(networkElements) {
+    // Copy records for network's elements.
     return {
-      currentMetabolitesLinks: networkElements.metabolitesLinks,
-      currentMetabolitesNodes: networkElements.metabolitesNodes,
-      currentReactionsLinks: networkElements.reactionsLinks,
-      currentReactionsPositionNodes: networkElements.reactionsPositionNodes,
-      currentReactionsNodes: networkElements.reactionsNodes
+      currentLinks: Extraction.copyArrayEntitiesRecords(networkElements.links),
+      currentMetabolitesNodes: Extraction
+      .copyArrayEntitiesRecords(networkElements.metabolitesNodes),
+      currentReactionsNodes: Extraction
+      .copyArrayEntitiesRecords(networkElements.reactionsNodes)
     };
+  }
+  /**
+  * Collects identifiers of nodes that are direct neighbors of a single focal
+  * node.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.focus Identifier of a single node in a network
+  * that is the focal node.
+  * @param {Array<Object>} parameters.links Records for network's links.
+  * @param {Array<Object>} parameters.nodes Records for network's nodes.
+  * @returns {Array<string>} Identifiers of nodes that are direct neighbors of
+  * focal node.
+  */
+  static collectNeighborsNodes({focus, links, nodes} = {}) {
+    // Iterate on links.
+    return links.reduce(function (collection, link) {}, []);
   }
 
   /**
@@ -1132,8 +1144,8 @@ class Network {
   * Induces a subnetwork for all nodes within a specific depth without weight
   * of a single focal node or ego.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.focus Identifier for a single node in a
-  * network that is the focal node.
+  * @param {string} parameters.focus Identifier of a single node in a network
+  * that is the focal node.
   * @param {number} parameters.depth Depth in count of links of traversal
   * around focal node.
   * @param {boolean} parameters.center Indicator of whether or not to include
@@ -1768,7 +1780,7 @@ class NetworkPrevious {
       var priorityReactionIdentifier = sortReactionsIdentifiers[0];
       // Copy attributes from priority reaction's record.
       var priorityAttributes = Extraction
-      .copyEntityAttributesValues(reactions[priorityReactionIdentifier]);
+      .copyEntityRecord(reactions[priorityReactionIdentifier]);
       // Combine values of appropriate attributes from all replicate reactions.
       var initialAttributes = {
         compartments: [],
@@ -1812,8 +1824,7 @@ class NetworkPrevious {
     } else {
       // There is a single relevant reaction.
       // Copy and propagate attributes from reaction.
-      return Extraction
-      .copyEntityAttributesValues(reactions[reactionsIdentifiers[0]]);
+      return Extraction.copyEntityRecord(reactions[reactionsIdentifiers[0]]);
     }
   }
   /**
@@ -1944,7 +1955,7 @@ class NetworkPrevious {
     var positions = []
     .concat(positionSource.identifier, positionTarget.identifier);
     // Create node for the reaction.
-    var copyAttributes = Extraction.copyEntityAttributesValues(reaction);
+    var copyAttributes = Extraction.copyEntityRecord(reaction);
     var novelAttributes = {
       entity: "reaction",
       positions: positions,
@@ -2359,7 +2370,7 @@ class NetworkPrevious {
       var compartmentValue = null;
     }
     // Create node for the metabolite.
-    var copyAttributes = Extraction.copyEntityAttributesValues(metabolite);
+    var copyAttributes = Extraction.copyEntityRecord(metabolite);
     var novelAttributes = {
       compartment: compartmentValue,
       entity: "metabolite",
@@ -2430,7 +2441,7 @@ class NetworkPrevious {
   * @returns {Object<Array<Object>>} Copies of records with information about
   * nodes and links in a network.
   */
-  static copyCurrentNetworkElements(networkElements) {
+  static copyNetworkElements(networkElements) {
     // Termporarily transfer network elements by reference.
     // TODO: Copy the records themselves to avoid problems.
     return {

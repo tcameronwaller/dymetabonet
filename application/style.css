@@ -241,20 +241,14 @@
 }
 
 #topology svg .node.mark.metabolite {
-    fill: rgba(50, 0, 0, 1);
-    r: 7;
+    fill: rgba(100, 0, 150, 1);
+    r: 25;
 }
-
-#topology svg .node.position.reaction {
-    fill: rgba(10, 10, 10, 1);
-    r: 3;
-}
-
 
 #topology svg .node.mark.reaction {
-    fill: rgba(100, 0, 0, 1);
-    rx: 20;
-    ry: 10;
+    fill: rgba(0, 100, 150, 1);
+    rx: 50;
+    ry: 20;
 }
 
 #topology svg .node.mark.metabolite.simplification {
@@ -274,17 +268,10 @@
   fill: rgba(50, 50, 50, 1);
 }
 
-#topology svg .link.metabolite {
+#topology svg .link {
     stroke: rgba(100, 100, 100, 1);
     stroke-width: 2;
 }
-
-#topology svg .link.reaction {
-    stroke: rgba(10, 10, 10, 1);
-    stroke-width: 5;
-    /*marker-end: url(#link-marker);*/
-}
-
 
 #topology svg .link.simplification {
 }

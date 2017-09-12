@@ -26,15 +26,12 @@ class Model {
       "setsCardinalities", "setsSummary",
       // Network.
       "compartmentalization", "simplification",
-      "metabolitesNodes", "reactionsNodes", "reactionsPositionNodes",
-      "metabolitesLinks", "reactionsLinks",
+      "metabolitesNodes", "reactionsNodes", "links",
       "network",
       // Subnetwork.
       "proximityFocus", "proximityDirection", "proximityDepth",
       "pathOrigin", "pathDestination", "pathDirection", "pathCount",
-      "currentMetabolitesNodes", "currentReactonsNodes",
-      "currentReactionsPositionNodes",
-      "currentMetabolitesLinks", "currentReactionsLinks",
+      "currentMetabolitesNodes", "currentReactionsNodes", "currentLinks",
       "subNetwork",
     ];
   }

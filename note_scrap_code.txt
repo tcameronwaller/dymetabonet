@@ -3,6 +3,38 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
+12 September 2017
+
+----------
+Assigning position from positions of other elements.
+
+    self.nodesReactionsMarks
+    .attr("cx", function (data) {
+      // Access coordinates of position nodes from the original records for the
+      // nodes.
+      var positionsRecords = data.positions.map(function (identifier) {
+        return self.model.reactionsPositionNodes.find(function (record) {
+          return record.identifier === identifier;
+        });
+      });
+      var positions = General.collectValueFromObjects("x", positionsRecords);
+      var position = General.computeElementsMean(positions);
+      return Math.max(radius, Math.min(self.graphWidth - radius, position));
+    })
+    .attr("cy", function (data) {
+      // Access coordinates of position nodes from the original records for the
+      // nodes.
+      var positionsRecords = data.positions.map(function (identifier) {
+        return self.model.reactionsPositionNodes.find(function (record) {
+          return record.identifier === identifier;
+        });
+      });
+      var positions = General.collectValueFromObjects("y", positionsRecords);
+      var position = General.computeElementsMean(positions);
+      return Math.max(radius, Math.min(self.graphHeight - radius, position));
+    });
+
+--------------------------------------------------
 6 September 2017
 
 ----------
@@ -21,8 +53,6 @@ Notes: Scrap Code For Project Profondeur
         .document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
       }
     });
-
-
 
 --------------------------------------------------
 18 July 2017

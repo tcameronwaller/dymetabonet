@@ -369,8 +369,8 @@ class Action {
     // Filter against complete collections of entities to account for any
     // changes to selections of filters.
     // Copy metabolic entities.
-    var metabolites = Extraction.copyEntities(model.metabolites);
-    var reactions = Extraction.copyEntities(model.reactions);
+    var metabolites = Extraction.copyObjectEntitiesRecords(model.metabolites);
+    var reactions = Extraction.copyObjectEntitiesRecords(model.reactions);
     // Filter the metabolic entities and their values of attributes.
     var currentReactions = Attribution.filterReactionsAttributesValues({
       selections: valuesSelections,
@@ -545,7 +545,9 @@ class Action {
     //});
     // Copy network elements to current network elements.
     var currentNetworkElements = Network
-    .copyCurrentNetworkElements(networkElements);
+    .copyNetworkElements(networkElements);
+    console.log("current network elements");
+    console.log(currentNetworkElements);
     // Compile novel values of attributes.
     var attributesValues = Object.assign(
       {},
@@ -591,13 +593,7 @@ class Action {
   * @param {Object} model Model of the application's comprehensive state.
   */
   static executeTemporaryProcedure(model) {
-    // 31
-    // 149
-    // -149
-    // -31
-    var resultRadians = Math.atan2(-0.1, -1);
-    var resultDegrees = resultRadians * (180 / Math.PI);
-    console.log(resultDegrees);
+    Action.createNetwork(model);
   }
 
   // Secondary actions relevant to application's state.
@@ -640,8 +636,9 @@ class Action {
     var setsFilter = false;
     // Copy metabolic entities.
     var currentMetabolites = Extraction
-    .copyEntities(entitiesSets.metabolites);
-    var currentReactions = Extraction.copyEntities(entitiesSets.reactions);
+    .copyObjectEntitiesRecords(entitiesSets.metabolites);
+    var currentReactions = Extraction
+    .copyObjectEntitiesRecords(entitiesSets.reactions);
     // Determine values of attributes that summarize cardinalities of sets
     // of entities.
     var setsCardinalitiesAttributes = Action

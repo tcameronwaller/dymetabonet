@@ -1254,40 +1254,54 @@ class Extraction {
   /**
   * Copies records with information about metabolic entities, metabolites or
   * reactions.
-  * @param {Object} entities Records with information about entities and
+  * @param {Object<Object>} entities Records with information about entities and
   * their attributes' values.
-  * @returns {Object} Copy of records for entities.
+  * @returns {Object<Object>} Copy of records for entities.
   */
-  static copyEntities(entities) {
-    // Iterate on entities.
-    var entitiesIdentifiers = Object.keys(entities);
-    return entitiesIdentifiers
-    .reduce(function (collection, entityIdentifier) {
+  static copyObjectEntitiesRecords(entities) {
+    // Iterate on entities' records.
+    var entitiesIdetifiers = Object.keys(entities);
+    return entitiesIdentifiers.reduce(function (collection, entityIdentifier) {
+      // Set reference to entity's record.
       var entity = entities[entityIdentifier];
       // Copy all of entity's attributes.
-      var copyEntity = Extraction.copyEntityAttributesValues(entity);
+      var copyEntity = Extraction.copyEntityRecord(entity);
       // Include entity in the collection.
-      var newRecord = {
+      var novelRecord = {
         [copyEntity.identifier]: copyEntity
       };
-      var newCollection = Object.assign({}, collection, newRecord);
-      return newCollection;
+      return Object.assign({}, collection, novelRecord);
     }, {});
   }
   /**
-  * Copies attributes' values of a metabolic entity, metabolite or reaction.
+  * Copies records with information about metabolic entities, metabolites or
+  * reactions.
+  * @param {Array<Object>} entities Records with information about entities and
+  * their attributes' values.
+  * @returns {Array<Object>} Copy of records for entities.
+  */
+  static copyArrayEntitiesRecords(entities) {
+    // Iterate on entities' records.
+    return entities.map(function (entity) {
+      // Copy all of entity's attributes.
+      return Extraction.copyEntityRecord(entity);
+    });
+  }
+  /**
+  * Copies attributes' values in a record for a metabolic entity, metabolite or
+  * reaction.
   * @param {Object} entity Record with information about an entity and its
   * attributes' values.
   * @returns {Object} Copy of entity's record.
   */
-  static copyEntityAttributesValues(entity) {
+  static copyEntityRecord(entity) {
     // Copy entity's values of attributes.
     var attributes = Object.keys(entity);
     return attributes.reduce(function (collection, attribute) {
       var value = entity[attribute];
       // Copy attribute's value according to its type.
-      // Attribute value's type is either null, undefined, string, number,
-      // boolean, or array.
+      // Attribute value's type is either null, undefined, boolean, string,
+      // number, or array.
       if (Array.isArray(value)) {
         // Attribute value's type is array.
         // Elements within array are either type string or object.
@@ -1306,10 +1320,10 @@ class Extraction {
                 // Object's value is of type string.
                 var objectValueCopy = objectValue;
               }
-              var newRecord = {
+              var novelRecord = {
                 [key]: objectValueCopy
               };
-              return Object.assign({}, collection, newRecord);
+              return Object.assign({}, collection, novelRecord);
             }, {});
           });
         } else {
@@ -1317,16 +1331,16 @@ class Extraction {
           var valueCopy = value.slice();
         }
       } else {
-        // Attribute value's type is either null, undefined, string,
-        // number, or boolean.
+        // Attribute value's type is either null, undefined, boolean, string,
+        // or number.
         var valueCopy = value;
       }
       // Copy existing attributes and values in the collection and include
       // copy of current attribute and its value.
-      var newRecord = {
+      var novelRecord = {
         [attribute]: valueCopy
       };
-      return Object.assign({}, collection, newRecord);
+      return Object.assign({}, collection, novelRecord);
     }, {});
   }
 }
