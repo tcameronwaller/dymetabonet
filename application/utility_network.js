@@ -69,7 +69,7 @@ class Network {
     metabolites,
     reactions
   } = {}) {
-    // Initiate a collection of network elements.
+    // Initialize a collection of network elements.
     // Separate types of nodes and links to simplify searches for existing
     // records.
     var initialNetworkElements = {
@@ -1021,6 +1021,7 @@ class Network {
     // participates in a reaction.
     // Reactions do not accommodate redundant participants.
     var attributes = {
+      role: role,
       simplification: simplification
     };
     // Determine whether reaction is reversible.
@@ -1106,19 +1107,94 @@ class Network {
     };
   }
   /**
+  * Collects identifiers of links that connect directly to a single focal node.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.focus Identifier of a single node in a network
+  * that is the focal node.
+  * @param {Array<Object>} parameters.links Records for network's links.
+  * @returns {Array<string>} Identifiers of links that connect directly to focal
+  * node.
+  */
+  static collectNeighborsLinks({focus, links} = {}) {
+    // Iterate on links.
+    var neighborsLinks = links.reduce(function (collection, link) {
+      // Collect identifiers of nodes to which the link connects.
+      var linkNodes = [].concat(link.source, link.target);
+      // Determine whether link connects to focal node.
+      var match = linkNodes.some(function (identifier) {
+        return identifier === focus;
+      });
+      if (match) {
+        // Link connects to focal node.
+        // Include link's identifier in collection.
+        return [].concat(collection, link.identifier);
+      } else {
+        // Link does not connect to focal node.
+        // Preserve collection.
+        return collection;
+      }
+    }, []);
+    // Return identifiers of unique links.
+    return General.collectUniqueElements(neighborsLinks);
+  }
+  /**
   * Collects identifiers of nodes that are direct neighbors of a single focal
   * node.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.focus Identifier of a single node in a network
   * that is the focal node.
   * @param {Array<Object>} parameters.links Records for network's links.
-  * @param {Array<Object>} parameters.nodes Records for network's nodes.
   * @returns {Array<string>} Identifiers of nodes that are direct neighbors of
   * focal node.
   */
-  static collectNeighborsNodes({focus, links, nodes} = {}) {
-    // Iterate on links.
-    return links.reduce(function (collection, link) {}, []);
+  static collectNeighborsNodes({focus, links} = {}) {
+    // Iterate on links to collect neighbors.
+    var neighbors = links.reduce(function (collection, link) {
+      // Collect identifiers of nodes to which the link connects.
+      var linkNodes = [].concat(link.source, link.target);
+      // Determine whether link connects to focal node.
+      var match = linkNodes.some(function (identifier) {
+        return identifier === focus;
+      });
+      if (match) {
+        // Link connects to focal node.
+        // Include neighbor in collection.
+        // Assume that link connects to a real node and that this node's
+        // identifier is the same that the link references.
+        var neighbor = linkNodes.filter(function (identifier) {
+          return identifier !== focus;
+        });
+        return [].concat(collection, neighbor[0]);
+      } else {
+        // Link does not connect to focal node.
+        // Preserve collection.
+        return collection;
+      }
+    }, []);
+    // Return identifiers of unique neighbors.
+    return General.collectUniqueElements(neighbors);
+  }
+  /**
+  * Collects records for elements by their identifiers.
+  * @param {Array<string>} identifers Identifiers of nodes.
+  * @param {Array<Object>} elements Records for elements.
+  * @returns {Array<Object>} Records for elements.
+  */
+  static collectElementsRecords(identifiers, elements) {
+    return identifiers.map(function (identifier) {
+      return Network.accessElementRecord(identifier, elements);
+    });
+  }
+  /**
+  * Accesses the record for an element by its identifier.
+  * @param {string} identifer Identifier of a single node.
+  * @param {Array<Object>} elements Records for elements.
+  * @returns {Object} Record for element.
+  */
+  static accessElementRecord(identifier, elements) {
+    return elements.find(function (record) {
+      return record.identifier === identifier;
+    });
   }
 
   /**

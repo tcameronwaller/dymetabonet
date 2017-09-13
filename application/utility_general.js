@@ -89,58 +89,70 @@ class General {
   }
 
   /**
-  * Computes the sum of elements in an array.
-  * @param {Array<number>} elements Array of elements.
-  * @returns {number} Sum of elements.
+  * Extracts from nodes' records coordinates for positions from force
+  * simulation.
+  * @param {Array<Object>} nodes Records for nodes with positions from force
+  * simulation.
+  * @returns {Array<Object<number>>} Coordinates for nodes' positions.
   */
-  static computeElementsSum(elements) {
-    return elements.reduce(function (sum, value) {
-      return sum + value;
-    }, 0);
+  static extractNodesCoordinates(nodes) {
+    return nodes.map(function (node) {
+      return General.extractNodeCoordinates(node);
+    });
   }
   /**
-  * Computes the mean of elements in an array.
-  * @param {Array<number>} elements Array of elements.
-  * @returns {number} Arithmetic mean of elements.
+  * Extracts from a node's record coordinates for position from force
+  * simulation.
+  * @param {Object} node Record for a node with position from force simulation.
+  * @returns {Object<number>} Coordinates for node's position.
   */
-  static computeElementsMean(elements) {
-    var sum = General.computeElementsSum(elements);
-    return sum / elements.length;
+  static extractNodeCoordinates(node) {
+    return {
+      x: node.x,
+      y: node.y
+    };
   }
   /**
-  * Computes measurement in radians of the positive angle in standard position
-  * with vertex at origin of coordinate plane, initial side on positive x-axis,
-  * and terminal side to some point with specific coordinates.
-  * @param {number} x Point's coordinate on x-axis or abscissa.
-  * @param {number} y Point's coordinate on y-axis or ordinate.
-  * @returns {number} Measurement of positive angle in radians.
+  * Converts and normalizes coordinates of radial points relative to a central
+  * origin.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object<number>>} parameters.pointsCoordinates Records of
+  * coordinates for points around a central origin.
+  * @param {Object<number>} parameters.originCoordinates Record of coordinates
+  * for a central origin.
+  * @param {number} parameters.graphHeight Vertical dimension of graphical
+  * container.
+  * @returns {Array<Object>} Records of coordinates for points around a central
+  * origin.
   */
-  static computeCoordinatesPositiveAngleRadians(x, y) {
-    // Compute measurement in radians of the angle.
-    // By default, angle with terminal side in quadrants 1 or 2 of coordinate
-    // plane is positive.
-    // By default, angle with terminal side in quadrants 3 or 4 of coordinate
-    // plane is negative.
-    var result = Math.atan2(y, x);
-    // Determine if angle is positive or negative.
-    if (result > 0) {
-      // Angle is positive.
-      var positiveResult = result;
-    } else {
-      // Angle is negative.
-      // Convert negative angle to positive angle.
-      var positiveResult = (2 * Math.PI) - result;
-    }
-    // Return measurement in radians of positive angle.
-    return positiveResult;
-  }
-  /**
-  * Converts an angle's measurement in radians to degrees.
-  * @param {number} radians An angle's measurement in radians.
-  * @returns {number} Angle's measurement in degrees.
-  */
-  static convertAngleRadiansDegrees(radians) {
-    return radians * (180 / Math.PI);
+  static convertNormalizeRadialCoordinates({
+    pointsCoordinates, originCoordinates, graphHeight
+  } = {}) {
+    // Convert and normalize points' coordinates.
+    return pointsCoordinates.map(function (pointCoordinates) {
+      // Convert coordinates relative to origin on standard coordinate plane.
+      var standardCoordinates = General.convertGraphCoordinates({
+        pointX: pointCoordinates.x,
+        pointY: pointCoordinates.y,
+        originX: originCoordinates.x,
+        originY: originCoordinates.y,
+        height: graphHeight
+      });
+      // Compute measurement in radians of the positive angle in standard
+      // position for the ray to the point.
+      var angle = General.computeCoordinatesPositiveAngleRadians({
+        x: standardCoordinates.x,
+        y: standardCoordinates.y
+      });
+      // Compute coordinates of point at which a ray for the angle intersects
+      // the unit circle at a radius of 1 unit from the origin.
+      var normalCoordinates = General.computeAngleUnitIntersection(angle);
+      // Return coordinates.
+      return {
+        x: normalCoordinates.x,
+        y: normalCoordinates.y
+      };
+    });
   }
   /**
   * Converts the coordinates of a point within a scalable vector graph.
@@ -174,6 +186,42 @@ class General {
     };
   }
   /**
+  * Computes measurement in radians of the positive angle in standard position
+  * with vertex at origin of coordinate plane, initial side on positive x-axis,
+  * and terminal side to some point with specific coordinates.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.x Point's coordinate on x-axis or abscissa.
+  * @param {number} parameters.y Point's coordinate on y-axis or ordinate.
+  * @returns {number} Measurement of positive angle in radians.
+  */
+  static computeCoordinatesPositiveAngleRadians({x, y} = {}) {
+    // Compute measurement in radians of the angle.
+    // By default, angle with terminal side in quadrants 1 or 2 of coordinate
+    // plane is positive.
+    // By default, angle with terminal side in quadrants 3 or 4 of coordinate
+    // plane is negative.
+    var result = Math.atan2(y, x);
+    // Determine if angle is positive or negative.
+    if (result > 0) {
+      // Angle is positive.
+      var positiveResult = result;
+    } else {
+      // Angle is negative.
+      // Convert negative angle to positive angle.
+      var positiveResult = (2 * Math.PI) - result;
+    }
+    // Return measurement in radians of positive angle.
+    return positiveResult;
+  }
+  /**
+  * Converts an angle's measurement in radians to degrees.
+  * @param {number} radians An angle's measurement in radians.
+  * @returns {number} Angle's measurement in degrees.
+  */
+  static convertAngleRadiansDegrees(radians) {
+    return radians * (180 / Math.PI);
+  }
+  /**
   * Computes coordinates of point at which an angle's terminal side intersects
   * the unit circle at a radius of 1 unit from the origin.
   * @param {number} angle Measurement of positive angle in radians.
@@ -198,6 +246,27 @@ class General {
       x: pointX,
       y: pointY
     };
+  }
+
+
+  /**
+  * Computes the sum of elements in an array.
+  * @param {Array<number>} elements Array of elements.
+  * @returns {number} Sum of elements.
+  */
+  static computeElementsSum(elements) {
+    return elements.reduce(function (sum, value) {
+      return sum + value;
+    }, 0);
+  }
+  /**
+  * Computes the mean of elements in an array.
+  * @param {Array<number>} elements Array of elements.
+  * @returns {number} Arithmetic mean of elements.
+  */
+  static computeElementsMean(elements) {
+    var sum = General.computeElementsSum(elements);
+    return sum / elements.length;
   }
 
 

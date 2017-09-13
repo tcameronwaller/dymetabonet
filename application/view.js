@@ -1467,6 +1467,12 @@ class TopologyView {
     var novelLinks = dataLinks.enter().append("line");
     self.links = novelLinks.merge(dataLinks);
     self.links.classed("link", true);
+    self.links.classed("reactant", function (data) {
+      return data.role === "reactant";
+    });
+    self.links.classed("product", function (data) {
+      return data.role === "product";
+    });
     self.links.classed("simplification", function (data) {
       return data.simplification;
     });
@@ -1606,20 +1612,20 @@ class TopologyView {
       .strength(0.05)
     )
     .on("tick", function () {
-      self.restoreNodesLinksPositions(self);
+      self.restoreNodesPositions(self);
+      self.restoreLinksPositions(self);
     })
     .on("end", function () {
-      self.refineNodesLinksPositions(self);
+      self.refineNodesLinksRepresentations(self);
     });
     // TODO: After simulation completes... complete representation of directionality of reaction's nodes...
     // TODO: After simulation completes... create and position labels for nodes...
   }
   /**
-  * Restores the positions of nodes and links according to results of force
-  * simulation.
+  * Restores nodes' positions according to results of force simulation.
   * @param {Object} view Instance of interface's current view.
   */
-  restoreNodesLinksPositions(view) {
+  restoreNodesPositions(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
@@ -1645,59 +1651,271 @@ class TopologyView {
     self.nodesLabels
     .attr("x", function (data) {return data.x;})
     .attr("y", function (data) {return data.y;})
+  }
+  /**
+  * Restores links' positions according to results of force simulation.
+  * @param {Object} view Instance of interface's current view.
+  */
+  restoreLinksPositions(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    var reactionNodeWidth = 100;
     // Restore positions of links according to results of simulation.
     // D3's procedure for force simulation copies records for source and target
     // nodes within records for links.
+    console.log("evaluate links' data");
+    console.log(self.links.data());
     self.links
-    .attr("x1", function (data) {return data.source.x;})
+    .attr("x1", function (data) {
+      // Determine whether link's terminus connects to a reaction's node.
+      if (data.source.entity === "reaction") {
+        // Link's terminus connects to a reaction's node.
+        // Determine whether reaction's node has an orientation.
+        if (data.source.left && data.source.right) {
+          // Reaction's node has an orientation.
+          // Determine which side matches the link's role.
+          if (data.source.left === data.role) {
+            // Link's role matches left side of reaction's node.
+            return data.source.x - (reactionNodeWidth / 2);
+          } else if (data.source.right === data.role) {
+            // Link's role matches right side of reaction's node.
+            return data.source.x + (reactionNodeWidth / 2);
+          }
+        } else {
+          // Reaction's node does not have an orientation.
+          return data.source.x
+        }
+      } else {
+        // Link's terminus does not connect to a reaction's node.
+        return data.source.x
+      }
+    })
     .attr("y1", function (data) {return data.source.y;})
-    .attr("x2", function (data) {return data.target.x;})
+    .attr("x2", function (data) {
+      // Determine whether link's terminus connects to a reaction's node.
+      if (data.target.entity === "reaction") {
+        // Link's terminus connects to a reaction's node.
+        // Determine whether reaction's node has an orientation.
+        if (data.target.left && data.target.right) {
+          // Reaction's node has an orientation.
+          // Determine which side matches the link's role.
+          if (data.target.left === data.role) {
+            // Link's role matches left side of reaction's node.
+            return data.target.x - (reactionNodeWidth / 2);
+          } else if (data.target.right === data.role) {
+            // Link's role matches right side of reaction's node.
+            return data.target.x + (reactionNodeWidth / 2);
+          }
+        } else {
+          // Reaction's node does not have an orientation.
+          return data.target.x
+        }
+      } else {
+        // Link's terminus does not connect to a reaction's node.
+        return data.target.x
+      }
+    })
     .attr("y2", function (data) {return data.target.y;});
   }
   /**
-  * Refines the positions of nodes and links according to results of force
-  * simulation.
+  * Refines the representations of nodes and links.
   * @param {Object} view Instance of interface's current view.
   */
-  refineNodesLinksPositions(view) {
+  refineNodesLinksRepresentations(view) {
+
+    // TODO: I'll need to organize this procedure... probably driving multiple methods/functions from this function...
+
     // Set reference to class' current instance to transfer across changes in
     // scope.
     var self = view;
-    // Iterate on records for reactions' nodes.
-    // Use the appropriate records to access positions from force simulation.
-    var reactionsNodesRecords = self.nodesRecords.filter(function (record) {
+    // Separate records of nodes for metabolites and reactions with access to
+    // positions from force simulation.
+    var metabolitesNodes = self.nodesRecords.filter(function (record) {
+      return record.entity === "metabolite";
+    });
+    var reactionsNodes = self.nodesRecords.filter(function (record) {
       return record.entity === "reaction";
     });
-    reactionsNodesRecords.forEach(function (reactionNode) {
+    // Iterate on records for reactions' nodes with access to positions from
+    // force simulation.
+    reactionsNodes.forEach(function (reactionNode) {
       // Collect identifiers of metabolites' nodes that surround the reaction's
       // node.
       // Use original records without access to positions from force simulation.
       var neighbors = Network.collectNeighborsNodes({
         focus: reactionNode.identifier,
-        links: self.model.currentLinks,
-        nodes: []
-        .concat(
-          self.model.currentMetabolitesNodes,
-          self.model.currentReactionsNodes
-        )
+        links: self.model.currentLinks
       });
       // Determine the roles in which metabolites participate in the reaction.
-      // TODO: Sort identifiers of metabolites' nodes by reactants and products.
+      // Reaction's store information about metabolites' participation.
+      // Metabolites can participate in multiple reactions.
+      var neighborsRoles = TopologyView.sortMetabolitesNodesReactionRoles({
+        nodesIdentifiers: neighbors,
+        participants: reactionNode.participants,
+        metabolitesNodes: self.model.currentMetabolitesNodes
+      });
+      // Collect records for nodes of metabolites that participate in the
+      // reaction in each role.
+      var reactantsNodes = Network
+      .collectElementsRecords(neighborsRoles.reactants, metabolitesNodes);
+      var productsNodes = Network
+      .collectElementsRecords(neighborsRoles.products, metabolitesNodes);
       // Determine orientation of reaction's node.
-      // Collect identifiers of links that attach to reaction's node.
-      // Adjust points of attachment of links to reaction's node.
-      // TODO: This step will be tricky of any metabolites' nodes are both reactants and products... must consider reaction reversibility, too.
+      // Include designations of orientation in record for reaction's node.
+      var orientation = TopologyView.determineReactionNodeOrientation({
+        reactionNode: reactionNode,
+        reactantsNodes: reactantsNodes,
+        productsNodes: productsNodes,
+        graphHeight: self.graphHeight
+      });
+      // Include information about orientation in record for reaction's node.
+      // Modify current record to preserve references from existing elements.
+      reactionNode.left = orientations.left;
+      reactionNode.right = orientations.right;
     });
+    // Include indicators of directionality on reactions' nodes.
+    // TODO: Some sort of arrow overlay... hold off until we assess the link crossing problem.
+    // Include labels for nodes.
+    self.restoreLinksPositions(self);
 
   }
-
-  // TODO: Need function in network module to filter/collect metabolites' nodes that have links to a reaction's node.
-  // TODO: Need function in network module to filter/collect links between source and target nodes...
-  // TODO: Include parallel links between metabolites and reversible reactions.
   /**
-  * Determines the orientation of a reaction's node.
-  * @param {Object} view Instance of interface's current view.
+  * Sorts identifiers of nodes for metabolites by their roles in a reaction.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.nodesIdentifiers Identifiers of nodes for
+  * metabolites that participate in a reaction.
+  * @param {Array<Object<string>>} parameters.participants Information about
+  * metabolites' participation in a reaction.
+  * @param {Array<Object>} parameters.metabolitesNodes Records for network's
+  * nodes for metabolites.
+  * @returns {Object<Array<string>>} Identifiers of nodes for metabolites that
+  * participate in a reaction either as reactants or products.
   */
-  determineReactionNodeOrientation(view) {}
+  static sortMetabolitesNodesReactionRoles({
+    nodesIdentifiers, participants, metabolitesNodes
+  } = {}) {
+    // Initialize a collection of metabolites' nodes by roles in a reaction.
+    var initialCollection = {
+      reactants: [],
+      products: []
+    };
+    // Iterate on identifiers for metabolites' nodes.
+    var nodesRoles = nodesIdentifiers
+    .reduce(function (collection, nodeIdentifier) {
+      // Access record of node for metabolite.
+      var nodeRecord = Network
+      .accessElementRecord(nodeIdentifier, metabolitesNodes);
+      // Determine details of node's relation to the reaction.
+      if (nodeRecord.compartment) {
+        // Node represents compartmentalization.
+        var matches = Extraction.filterReactionParticipants({
+          criteria: {
+            metabolites: [nodeRecord.metabolite],
+            compartments: [nodeRecord.compartment]
+          },
+          participants: participants
+        });
+      } else {
+        // Node does not represent compartmentalization.
+        var matches = Extraction.filterReactionParticipants({
+          criteria: {metabolites: [nodeRecord.metabolite]},
+          participants: participants
+        });
+      }
+      var roles = General.collectValueFromObjects("role", matches);
+      // Include identifier of metabolite's node in the collection according to
+      // its role in the reaction.
+      if (roles.includes("reactant")) {
+        var reactants = [].concat(collection.reactants, nodeRecord.identifier);
+      } else {
+        var reactants = collection.reactants.slice();
+      }
+      if (roles.includes("product")) {
+        var products = [].concat(collection.products, nodeRecord.identifier);
+      } else {
+        var products = collection.products.slice();
+      }
+      var currentCollection = {
+        reactants: reactants,
+        products: products
+      };
+      return currentCollection;
+    }, initialCollection);
+    // Return identifiers of unique nodes by roles.
+    return {
+      reactants: General.collectUniqueElements(nodesRoles.reactants),
+      products: General.collectUniqueElements(nodesRoles.products)
+    };
+  }
+  /**
+  * Determines the orientation of a reaction's node relative to sides for
+  * reactants and products.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.reactionNode Record for node for a reaction.
+  * @param {Array<Object>} parameters.reactantsNodes Records of nodes
+  * for metabolites that participate as reactants in a reaction.
+  * @param {Array<Object>} parameters.productsNodes Records of nodes
+  * for metabolites that participate as products in a reaction.
+  * @param {number} parameters.graphHeight Vertical dimension of graphical
+  * container.
+  * @returns {Object<string>} Record with indicators of sides of reaction's node
+  * for reactants and products.
+  */
+  static determineReactionNodeOrientation({
+    reactionNode,
+    reactantsNodes,
+    productsNodes,
+    graphHeight
+  } = {}) {
+    // Extract coordinates for position of reaction's node.
+    var reactionCoordinates = General.extractNodeCoordinates(reactionNode);
+    // Extract coordinates of positions of nodes for metabolites that
+    // participate in reaction as reactants and products.
+    var reactantsCoordinates = General.extractNodesCoordinates(reactantsNodes);
+    var productsCoordinates = General.extractNodesCoordinates(productsNodes);
+    // Convert coordinates of nodes for metabolites that participate in reaction
+    // as reactants and products.
+    var reactantsRadialCoordinates = General.convertNormalizeRadialCoordinates({
+      pointsCoordinates: reactantsCoordinates,
+      originCoordinates: reactionCoordinates,
+      graphHeight: graphHeight
+    });
+    var productsRadialCoordinates = General.convertNormalizeRadialCoordinates({
+      pointsCoordinates: productsCoordinates,
+      originCoordinates: reactionCoordinates,
+      graphHeight: graphHeight
+    });
+    // Determine mean of horizontal coordinates for reactants and products.
+    var reactantsXCoordinates = General
+    .collectValueFromObjects("x", reactantsRadialCoordinates);
+    var reactantsMeanX = General.computeElementsMean(reactantsXCoordinates);
+    var productsXCoordinates = General
+    .collectValueFromObjects("x", productsRadialCoordinates);
+    var productsMeanX = General.computeElementsMean(productsXCoordinates);
+    // Determine orientation of reaction's node.
+    if (reactantsMeanX < productsMeanX) {
+      // Reactants dominate left side of reaction's node.
+      var orientation = {
+        left: "reactant",
+        right: "product"
+      };
+    } else if (productsMeanX < reactantsMeanX) {
+      // Products dominate left side of reaction's node.
+      var orientation = {
+        left: "product",
+        right: "reactant"
+      };
+    } else {
+      // Neither reactants nor products dominate.
+      // Prioritize orientation with reactants on left and products on right.
+      var orientation = {
+        left: "reactant",
+        right: "product"
+      };
+    }
+    // Return orientation of reaction's node.
+    return orientation;
+  }
 
 }

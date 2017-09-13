@@ -4,6 +4,20 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+13 September 2017
+
+----------
+Plan
+
+Organize TopologyView's function refineNodesLinksRepresentations.
+
+Include arrows on links to indicate links' directionalities.
+Format (color, width, pattern) links according to role.
+Include indicators on reactions' nodes of directionality.
+
+Position labels on nodes after positions are still.
+
+--------------------------------------------------
 8 September 2017
 
 ----------

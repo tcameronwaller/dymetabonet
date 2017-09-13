@@ -273,5 +273,13 @@
     stroke-width: 2;
 }
 
+#topology svg .link.reactant {
+    stroke: rgba(100, 10, 10, 1);
+}
+
+#topology svg .link.product {
+    stroke: rgba(10, 10, 100, 1);
+}
+
 #topology svg .link.simplification {
 }
