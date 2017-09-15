@@ -1433,7 +1433,7 @@ class TopologyView {
       .append("marker")
       .attr("id", "link-marker")
       .attr("viewBox", "0 0 10 10")
-      .attr("refX", 7)
+      .attr("refX", 15)
       .attr("refY", 5)
       .attr("markerWidth", 5)
       .attr("markerHeight", 5)
@@ -1666,7 +1666,15 @@ class TopologyView {
     // nodes within records for links.
     console.log("evaluate links' data");
     console.log(self.links.data());
+    // TODO: Just need to set "points" attribute of polyline...
     self.links
+    .attr("points", function (data) {
+      // Create points for vertices at source, center, and target of polyline.
+      return General.createStraightPolylinePoints({
+        source: source,
+        target: target
+      });
+    })
     .attr("x1", function (data) {
       // Determine whether link's terminus connects to a reaction's node.
       if (data.source.entity === "reaction") {
@@ -1763,7 +1771,7 @@ class TopologyView {
       .collectElementsRecords(neighborsRoles.products, metabolitesNodes);
       // Determine orientation of reaction's node.
       // Include designations of orientation in record for reaction's node.
-      var orientation = TopologyView.determineReactionNodeOrientation({
+      var orientations = TopologyView.determineReactionNodeOrientation({
         reactionNode: reactionNode,
         reactantsNodes: reactantsNodes,
         productsNodes: productsNodes,
@@ -1917,5 +1925,81 @@ class TopologyView {
     // Return orientation of reaction's node.
     return orientation;
   }
+  /**
+  * Determines the coordinates of termini for a link.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.role Role in a reaction, reactant or product,
+  * that link represents.
+  * @param {Object} parameters.source Record of node that is link's source.
+  * @param {Object} parameters.target Records of node that is link's target.
+  * @param {number} parameters.width Width of reactions' nodes.
+  * @returns {Object<Object<number>>} Record with coordinates of indicators of sides of reaction's node
+  * for reactants and products.
+  */
+  static determineLinkTermini({role, source, target, width} = {}) {
+    var shift = width / 2;
+    var sourceShift = TopologyView.determineLinkTerminusHorizontalShift({
+      role: role,
+      terminus: source,
+      shift: shift
+    });
+    var targetShift = TopologyView.determineLinkTerminusHorizontalShift({
+      role: role,
+      terminus: target,
+      shift: shift
+    });
+    // Compile coordinates of termini.
+    var shiftSource = {
+      x: source.x + sourceShift,
+      y: source.y
+    };
+    var shiftTarget = {
+      x: target.x + targetShift,
+      y: target.y
+    };
+    return {
+      source: shiftSource,
+      target: shiftTarget
+    };
+  }
+  /**
+  * Determines the horizontal shift of a link's terminus.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.role Role in a reaction, reactant or product,
+  * that link represents.
+  * @param {Object} parameters.terminus Record of node that is link's terminus.
+  * @param {number} parameters.shift Horizontal shift to accommodate width of
+  * reactions' nodes.
+  * @returns {number} Horizontal shift for link's terminus.
+  */
+  static determineLinkTerminusHorizontalShift({role, terminus, shift} = {}) {
+    // Determine whether link's terminus connects to a reaction's node.
+    if (terminus.entity === "reaction") {
+      // Link's terminus connects to a reaction's node.
+      // Determine whether reaction's node has an orientation.
+      if (terminus.left && terminus.right) {
+        // Reaction's node has an orientation.
+        // Determine which side matches the link's role.
+        if (terminus.left === role) {
+          // Link's role matches left side of reaction's node.
+          //return terminus.x - shift;
+          return -shift;
+        } else if (terminus.right === role) {
+          // Link's role matches right side of reaction's node.
+          //return terminus.x + shift;
+          return shift;
+        }
+      } else {
+        // Reaction's node does not have an orientation.
+        //return terminus.x
+        return 0;
+      }
+    } else {
+      // Link's terminus does not connect to a reaction's node.
+      //return terminus.x
+      return 0;
+    }
+  }
+
 
 }

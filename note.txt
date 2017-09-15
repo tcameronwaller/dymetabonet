@@ -4,6 +4,25 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+15 September 2017
+
+----------
+Directional markers on reactions' nodes
+
+----------
+Directional markers on links' lines
+
+I think that placing markers in the centers of lines will avoid occlusion behind reaction's nodes.
+Links to reactions' nodes pass behind variable areas of the node dependent on angle.
+
+Append polylines instead of lines.
+Determine coordinates of points for polylines.
+Attach marker to middle vertices of polylines.
+
+https://stackoverflow.com/questions/15729856/display-an-arrow-head-in-the-middle-of-d3-force-layout-link
+https://stackoverflow.com/questions/35083285/how-to-place-marker-head-in-the-middle-of-the-links
+
+--------------------------------------------------
 13 September 2017
 
 ----------

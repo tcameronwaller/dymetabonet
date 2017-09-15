@@ -268,6 +268,27 @@ class General {
     var sum = General.computeElementsSum(elements);
     return sum / elements.length;
   }
+  /**
+  * Creates points for the source, center, and target vertices of a straight
+  * polyline.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<number>} parameters.source Records of coordinates for point
+  * at source.
+  * @param {Object<number>} parameters.target Record of coordinates for point at
+  * target.
+  * @returns {string} Definitions of points for a straight polyline.
+  */
+  static createStraightPolylinePoints({source, target} = {}) {
+    var center = {
+      x: General.computeElementsMean([source.x + target.x]),
+      y: General.computeElementsMean([source.y + target.y]);
+    };
+    var points = (
+      source.x + "," + source.y + " " + center.x + ",", + center.y + " " +
+      target.x + "," + target.y
+    );
+    return points;
+  }
 
 
 
