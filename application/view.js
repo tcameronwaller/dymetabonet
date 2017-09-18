@@ -1262,7 +1262,6 @@ class AssemblyView {
       return self.model.metabolites[data].name;
     });
   }
-
   /**
   * Determines the current value of compartmentalization in the application's
   * state.
@@ -1290,6 +1289,9 @@ class AssemblyView {
 * metabolic entities.
 */
 class TopologyView {
+  // TODO: Eventually, I might need to avoid replicate additions of nodes and links with interaction...
+  // TODO: Follow a pattern of the set summary?
+  // TODO: Or recreate network's elements after every change?
   /**
   * Initializes an instance of the class.
   * @param {Object} model Model of the comprehensive state of the
@@ -1389,21 +1391,42 @@ class TopologyView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
+    // Prepare information about network's elements.
+    self.prepareNetworkElementsData(self);
+
     // Define directional marker for links.
-    self.createDirectionalMarker(self);
+    self.createLinkDirectionalMarker(self);
     // Create links.
     // Create links before nodes so that nodes will appear over the links.
     self.createLinks(self);
     // Create nodes.
-    self.createNodes(self);
+    self.createNodesMarks(self);
     // Initiate force simulation.
     self.initiateForceSimulation(self);
+  }
+  /**
+  * Prepares information about network's elements.
+  * @param {Object} view Instance of interface's current view.
+  */
+  prepareNetworkElementsData(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Copy records of information about network's elements, nodes and links, to
+    // avoid changes to original records, especially due to the force simulation.
+    self.linksRecords = Extraction
+    .copyArrayEntitiesRecords(self.model.currentLinks);
+    // Combine records for nodes.
+    self.nodesRecords = [].concat(
+      Extraction.copyArrayEntitiesRecords(self.model.currentMetabolitesNodes),
+      Extraction.copyArrayEntitiesRecords(self.model.currentReactionsNodes)
+    );
   }
   /**
   * Creates definition of directional markers for links.
   * @param {Object} view Instance of interface's current view.
   */
-  createDirectionalMarker(view) {
+  createLinkDirectionalMarker(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
@@ -1454,17 +1477,13 @@ class TopologyView {
     // in scope.
     var self = view;
     // Create links.
-    // Copy records for nodes to avoid changes to original records, especially
-    // due to the force simulation.
-    self.linksRecords = Extraction
-    .copyArrayEntitiesRecords(self.model.currentLinks);
     // Contain all links within a single group.
     var linksGroup = self.graphSelection.append("g");
     // Create elements to represent links.
     var dataLinks = linksGroup
-    .selectAll("line").data(self.linksRecords);
+    .selectAll("polyline").data(self.linksRecords);
     dataLinks.exit().remove();
-    var novelLinks = dataLinks.enter().append("line");
+    var novelLinks = dataLinks.enter().append("polyline");
     self.links = novelLinks.merge(dataLinks);
     self.links.classed("link", true);
     self.links.classed("reactant", function (data) {
@@ -1476,44 +1495,32 @@ class TopologyView {
     self.links.classed("simplification", function (data) {
       return data.simplification;
     });
-    self.links.attr("marker-end", "url(#link-marker)");
+    self.links.attr("marker-mid", "url(#link-marker)");
   }
   /**
   * Creates nodes in a node-link diagram.
   * @param {Object} view Instance of interface's current view.
   */
-  createNodes(view) {
+  createNodesMarks(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
     // Create nodes.
-    // Combine records for nodes.
-    // Copy records for nodes to avoid changes to original records, especially
-    // due to the force simulation.
-    self.nodesRecords = []
-    .concat(
-      Extraction.copyArrayEntitiesRecords(self.model.currentMetabolitesNodes),
-      Extraction.copyArrayEntitiesRecords(self.model.currentReactionsNodes)
-    );
     // Contain all nodes within a single group.
-    var nodesGroup = self.graphSelection.append("g");
-    // Create elements to represent nodes.
-    var nodesMarksGroup = nodesGroup.append("g");
-    var dataNodesMarks = nodesMarksGroup
-    .selectAll("circle, ellipse").data(self.nodesRecords);
+    // This group will contain all representations and annotations of all nodes.
+    self.nodesGroup = self.graphSelection.append("g");
+    // Contain visual representations of all nodes within a single group.
+    // This containment will collect these visual representations within a
+    // single layer.
+    self.nodesRepresentationsGroup = self.nodesGroup.append("g");
+    // Create visual representations for individual nodes.
+    // The primary element is a group to contain all marks for the node.
+    var dataNodesMarks = self
+    .nodesRepresentationsGroup
+    .selectAll("g")
+    .data(self.nodesRecords);
     dataNodesMarks.exit().remove();
-    var novelNodesMarks = dataNodesMarks.enter().append(function (data) {
-      // Append different types of elements for different types of entities.
-      if (data.entity === "metabolite") {
-        // Node represents a metabolite.
-        return self
-        .document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      } else if (data.entity === "reaction") {
-        // Node represents a reaction.
-        return self
-        .document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
-      }
-    });
+    var novelNodesMarks = dataNodesMarks.enter().append("g");
     self.nodesMarks = novelNodesMarks.merge(dataNodesMarks);
     self.nodesMarks.append("title").text(function (data) {
       return data.name;
@@ -1532,7 +1539,47 @@ class TopologyView {
     self.nodesMarks.classed("simplification", function (data) {
       return data.simplification;
     });
+    // Create visual representations of nodes' entities.
+    self.nodesEntities = self.nodesMarks.append(function (data) {
+      // Append different types of elements for different types of entities.
+      if (data.entity === "metabolite") {
+        // Node represents a metabolite.
+        return self
+        .document
+        .createElementNS("http://www.w3.org/2000/svg", "circle");
+      } else if (data.entity === "reaction") {
+        // Node represents a reaction.
+        return self
+        .document
+        .createElementNS("http://www.w3.org/2000/svg", "rect");
+      }
+    });
+    self.nodesEntities.classed("entity", true);
+    // Determine shift for reactions' nodes according to their widths.
+    var reactionNode = self.graph.querySelector(".node.mark.reaction .entity");
+    self.nodeReactionWidth = reactionNode.getBoundingClientRect().width;
+    self.nodeReactionHeight = reactionNode.getBoundingClientRect().height;
+    var horizontalShift = - (self.nodeReactionWidth / 2);
+    var verticalShift = - (self.nodeReactionHeight / 2);
+    // Set shift for reactions' nodes.
+    var nodesEntitiesReactions = self.nodesEntities.filter(function (data) {
+      return data.entity === "reaction";
+    });
+    nodesEntitiesReactions.attr("x", horizontalShift);
+    nodesEntitiesReactions.attr("y", verticalShift);
+  }
+  /**
+  * Creates labels for nodes in a node-link diagram.
+  * @param {Object} view Instance of interface's current view.
+  */
+  createNodesLabels(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
     // Create labels for nodes.
+    // Contain nodes' labels within a group that is separate from nodes' marks.
+    // This separation will place nodes' labels in a top layer and avoid
+    // occlusion of labels.
     var nodesLabelsGroup = nodesGroup.append("g");
     var dataNodesLabels = nodesLabelsGroup
     .selectAll("text").data(self.nodesRecords);
@@ -1612,7 +1659,7 @@ class TopologyView {
       .strength(0.05)
     )
     .on("tick", function () {
-      self.restoreNodesPositions(self);
+      self.restoreNodesMarksPositions(self);
       self.restoreLinksPositions(self);
     })
     .on("end", function () {
@@ -1625,7 +1672,7 @@ class TopologyView {
   * Restores nodes' positions according to results of force simulation.
   * @param {Object} view Instance of interface's current view.
   */
-  restoreNodesPositions(view) {
+  restoreNodesMarksPositions(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
@@ -1633,24 +1680,24 @@ class TopologyView {
     var radius = 9;
     // TODO: If I represent reactions with rectangles, then I'll need to use some attribute other than "cx" and "cy" for the rectangle centers...
     // TODO: For anything other than circles, including text, I might need to use transform instead of "cx" and "cy".
+
     // Restore positions of nodes' marks according to results of simulation.
-    // Impose constraints on node positions (d.x and d.y) according to
-    // dimensions of bounding SVG element.
-    self
-    .nodesMarks
-    .attr("cx", function (data) {
-      return data.x = Math
-      .max(radius, Math.min(self.graphWidth - radius, data.x));
-    })
-    .attr("cy", function (data) {
-      return data.y = Math
-      .max(radius, Math.min(self.graphHeight - radius, data.y));
+    // Impose constraints on node positions according to dimensions of graphical
+    // container.
+    self.nodesMarks.attr("transform", function (data) {
+      // Constrain nodes' positions according to dimensions of graphical
+      // container.
+      data.x = Math.max(radius, Math.min(self.graphWidth - radius, data.x));
+      data.y = Math.max(radius, Math.min(self.graphHeight - radius, data.y));
+      // Determine coordinates for nodes' marks from results of simulation in
+      // nodes' records.
+      return "translate(" + data.x + "," + data.y + ")";
     });
     // Restore positions of nodes' labels according to results of simulation.
     // TODO: I need to handle the same edge offset for labels as I do for nodes.
-    self.nodesLabels
-    .attr("x", function (data) {return data.x;})
-    .attr("y", function (data) {return data.y;})
+    //self.nodesLabels
+    //.attr("x", function (data) {return data.x;})
+    //.attr("y", function (data) {return data.y;})
   }
   /**
   * Restores links' positions according to results of force simulation.
@@ -1660,80 +1707,125 @@ class TopologyView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
-    var reactionNodeWidth = 100;
     // Restore positions of links according to results of simulation.
-    // D3's procedure for force simulation copies records for source and target
-    // nodes within records for links.
-    console.log("evaluate links' data");
-    console.log(self.links.data());
-    // TODO: Just need to set "points" attribute of polyline...
-    self.links
-    .attr("points", function (data) {
-      // Create points for vertices at source, center, and target of polyline.
-      return General.createStraightPolylinePoints({
-        source: source,
-        target: target
+    // D3's procedure for force simulation copies references to records for
+    // source and target nodes within records for links.
+    self.links.attr("points", function (data) {
+      // Determine positions of link's termini.
+      var termini = TopologyView.determineLinkTermini({
+        role: data.role,
+        source: data.source,
+        target: data.target,
+        width: self.nodeReactionWidth
       });
-    })
-    .attr("x1", function (data) {
-      // Determine whether link's terminus connects to a reaction's node.
-      if (data.source.entity === "reaction") {
-        // Link's terminus connects to a reaction's node.
-        // Determine whether reaction's node has an orientation.
-        if (data.source.left && data.source.right) {
-          // Reaction's node has an orientation.
-          // Determine which side matches the link's role.
-          if (data.source.left === data.role) {
-            // Link's role matches left side of reaction's node.
-            return data.source.x - (reactionNodeWidth / 2);
-          } else if (data.source.right === data.role) {
-            // Link's role matches right side of reaction's node.
-            return data.source.x + (reactionNodeWidth / 2);
-          }
-        } else {
-          // Reaction's node does not have an orientation.
-          return data.source.x
+      // Create points for vertices at source, center, and target of polyline.
+      var points = General.createStraightPolylinePoints({
+        source: termini.source,
+        target: termini.target
+      });
+      return points;
+    });
+  }
+  /**
+  * Determines the coordinates of termini for a link.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.role Role in a reaction, reactant or product,
+  * that link represents.
+  * @param {Object} parameters.source Record of node that is link's source.
+  * @param {Object} parameters.target Record of node that is link's target.
+  * @param {number} parameters.width Width of reactions' nodes.
+  * @returns {Object<Object<number>>} Records with coordinates of link's
+  * termini.
+  */
+  static determineLinkTermini({role, source, target, width} = {}) {
+    // Determine shift proportionate to width of reactions' nodes.
+    var shift = width / 2;
+    // Determine horizontal shifts for link's termini.
+    var sourceShift = TopologyView.determineLinkTerminusHorizontalShift({
+      role: role,
+      terminus: source,
+      shift: shift
+    });
+    var targetShift = TopologyView.determineLinkTerminusHorizontalShift({
+      role: role,
+      terminus: target,
+      shift: shift
+    });
+    // Compile coordinates of termini.
+    var shiftSource = {
+      x: source.x + sourceShift,
+      y: source.y
+    };
+    var shiftTarget = {
+      x: target.x + targetShift,
+      y: target.y
+    };
+    return {
+      source: shiftSource,
+      target: shiftTarget
+    };
+  }
+  /**
+  * Determines the horizontal shift of a link's terminus.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.role Role in a reaction, reactant or product,
+  * that link represents.
+  * @param {Object} parameters.terminus Record of node that is link's terminus.
+  * @param {number} parameters.shift Horizontal shift to accommodate width of
+  * reactions' nodes.
+  * @returns {number} Horizontal shift for link's terminus.
+  */
+  static determineLinkTerminusHorizontalShift({role, terminus, shift} = {}) {
+    // Determine whether link's terminus connects to a reaction's node.
+    if (terminus.entity === "reaction") {
+      // Link's terminus connects to a reaction's node.
+      // Determine whether reaction's node has an orientation.
+      if (terminus.left && terminus.right) {
+        // Reaction's node has an orientation.
+        // Determine which side matches the link's role.
+        if (terminus.left === role) {
+          // Link's role matches left side of reaction's node.
+          //return terminus.x - shift;
+          return -shift;
+        } else if (terminus.right === role) {
+          // Link's role matches right side of reaction's node.
+          //return terminus.x + shift;
+          return shift;
         }
       } else {
-        // Link's terminus does not connect to a reaction's node.
-        return data.source.x
+        // Reaction's node does not have an orientation.
+        //return terminus.x
+        return 0;
       }
-    })
-    .attr("y1", function (data) {return data.source.y;})
-    .attr("x2", function (data) {
-      // Determine whether link's terminus connects to a reaction's node.
-      if (data.target.entity === "reaction") {
-        // Link's terminus connects to a reaction's node.
-        // Determine whether reaction's node has an orientation.
-        if (data.target.left && data.target.right) {
-          // Reaction's node has an orientation.
-          // Determine which side matches the link's role.
-          if (data.target.left === data.role) {
-            // Link's role matches left side of reaction's node.
-            return data.target.x - (reactionNodeWidth / 2);
-          } else if (data.target.right === data.role) {
-            // Link's role matches right side of reaction's node.
-            return data.target.x + (reactionNodeWidth / 2);
-          }
-        } else {
-          // Reaction's node does not have an orientation.
-          return data.target.x
-        }
-      } else {
-        // Link's terminus does not connect to a reaction's node.
-        return data.target.x
-      }
-    })
-    .attr("y2", function (data) {return data.target.y;});
+    } else {
+      // Link's terminus does not connect to a reaction's node.
+      //return terminus.x
+      return 0;
+    }
   }
   /**
   * Refines the representations of nodes and links.
   * @param {Object} view Instance of interface's current view.
   */
   refineNodesLinksRepresentations(view) {
-
-    // TODO: I'll need to organize this procedure... probably driving multiple methods/functions from this function...
-
+    // Set reference to class' current instance to transfer across changes in
+    // scope.
+    var self = view;
+    // Determine orientations of reaction's nodes.
+    self.determineReactionsNodesOrientations(self);
+    // Represent reactions' directionalities on their nodes.
+    self.createReactionsNodesDirections(self);
+    // Include labels for nodes.
+    // TODO: ...
+    // Represent reactions' directionalities in links.
+    self.restoreLinksPositions(self);
+  }
+  /**
+  * Determines the orientations of reactions' nodes relative to sides for
+  * reactants and products.
+  * @param {Object} view Instance of interface's current view.
+  */
+  determineReactionsNodesOrientations(view) {
     // Set reference to class' current instance to transfer across changes in
     // scope.
     var self = view;
@@ -1782,11 +1874,6 @@ class TopologyView {
       reactionNode.left = orientations.left;
       reactionNode.right = orientations.right;
     });
-    // Include indicators of directionality on reactions' nodes.
-    // TODO: Some sort of arrow overlay... hold off until we assess the link crossing problem.
-    // Include labels for nodes.
-    self.restoreLinksPositions(self);
-
   }
   /**
   * Sorts identifiers of nodes for metabolites by their roles in a reaction.
@@ -1926,80 +2013,139 @@ class TopologyView {
     return orientation;
   }
   /**
-  * Determines the coordinates of termini for a link.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.role Role in a reaction, reactant or product,
-  * that link represents.
-  * @param {Object} parameters.source Record of node that is link's source.
-  * @param {Object} parameters.target Records of node that is link's target.
-  * @param {number} parameters.width Width of reactions' nodes.
-  * @returns {Object<Object<number>>} Record with coordinates of indicators of sides of reaction's node
-  * for reactants and products.
+  * Creates representations of reactions' directions on their nodes.
+  * @param {Object} view Instance of interface's current view.
   */
-  static determineLinkTermini({role, source, target, width} = {}) {
-    var shift = width / 2;
-    var sourceShift = TopologyView.determineLinkTerminusHorizontalShift({
-      role: role,
-      terminus: source,
-      shift: shift
+  createReactionsNodesDirections(view) {
+    // Set reference to class' current instance to transfer across changes in
+    // scope.
+    var self = view;
+    // Determine dimensions for directional marks.
+    self.nodeDirectionHeight = self.nodeReactionHeight;
+    self.nodeDirectionWidth = self.nodeReactionWidth / 7;
+    // Select groups of marks to represent reactions' nodes.
+    var nodesMarksReactions = self.nodesMarks.filter(function (data) {
+      return data.entity === "reaction";
     });
-    var targetShift = TopologyView.determineLinkTerminusHorizontalShift({
-      role: role,
-      terminus: target,
-      shift: shift
+    self.nodesLeftDirections = nodesMarksReactions.append(function (data) {
+      // Append different types of elements for different properties.
+      var direction = TopologyView.determineReactionDirection({
+        left: data.left,
+        right: data.right,
+        reversibility: data.reversibility
+      });
+      if (direction === "left") {
+        // Side of reaction's node needs directional marker.
+        return self
+        .document
+        .createElementNS("http://www.w3.org/2000/svg", "polygon");
+      } else if (direction === "right") {
+        // Side of reaction's node does not need directional marker.
+        return self
+        .document
+        .createElementNS("http://www.w3.org/2000/svg", "rect");
+      } else if (direction === "both") {
+        // Side of reaction's node needs directional marker.
+        return self
+        .document
+        .createElementNS("http://www.w3.org/2000/svg", "polygon");
+      }
     });
-    // Compile coordinates of termini.
-    var shiftSource = {
-      x: source.x + sourceShift,
-      y: source.y
-    };
-    var shiftTarget = {
-      x: target.x + targetShift,
-      y: target.y
-    };
-    return {
-      source: shiftSource,
-      target: shiftTarget
-    };
+    self.nodesRightDirections = nodesMarksReactions.append(function (data) {
+      // Append different types of elements for different types of entities.
+      var direction = TopologyView.determineReactionDirection({
+        left: data.left,
+        right: data.right,
+        reversibility: data.reversibility
+      });
+      if (direction === "left") {
+        // Side of reaction's node does not need directional marker.
+        return self
+        .document
+        .createElementNS("http://www.w3.org/2000/svg", "rect");
+      } else if (direction === "right") {
+        // Side of reaction's node needs directional marker.
+        return self
+        .document
+        .createElementNS("http://www.w3.org/2000/svg", "polygon");
+      } else if (direction === "both") {
+        // Side of reaction's node needs directional marker.
+        return self
+        .document
+        .createElementNS("http://www.w3.org/2000/svg", "polygon");
+      }
+    });
+    // Set attributes of directional marks.
+    self.nodesLeftDirections.classed("direction", true);
+    self.nodesRightDirections.classed("direction", true);
+    self
+    .nodesLeftDirections
+    .filter("polygon")
+    .attr("points", function (data) {
+      return General.createHorizontalIsoscelesTrianglePoints({
+        base: self.nodeDirectionHeight,
+        altitude: self.nodeDirectionWidth,
+        direction: "left"
+      });
+    });
+    self
+    .nodesRightDirections
+    .filter("polygon")
+    .attr("points", function (data) {
+      return General.createHorizontalIsoscelesTrianglePoints({
+        base: self.nodeDirectionHeight,
+        altitude: self.nodeDirectionWidth,
+        direction: "right"
+      });
+    });
+    self
+    .nodesLeftDirections
+    .filter("rect")
+    .attr("height", self.nodeDirectionHeight)
+    .attr("width", self.nodeDirectionWidth);
+    self
+    .nodesRightDirections
+    .filter("rect")
+    .attr("height", self.nodeDirectionHeight)
+    .attr("width", self.nodeDirectionWidth);
+    self.nodesLeftDirections.attr("transform", function (data) {
+      var x = - (self.nodeReactionWidth / 2);
+      var y = - (self.nodeDirectionHeight / 2);
+      return "translate(" + x + "," + y + ")";
+    });
+    self.nodesRightDirections.attr("transform", function (data) {
+      var x = ((self.nodeReactionWidth / 2) - self.nodeDirectionWidth);
+      var y = - (self.nodeDirectionHeight / 2);
+      return "translate(" + x + "," + y + ")";
+    });
   }
   /**
-  * Determines the horizontal shift of a link's terminus.
+  * Determines the direction of a reaction's node.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.role Role in a reaction, reactant or product,
-  * that link represents.
-  * @param {Object} parameters.terminus Record of node that is link's terminus.
-  * @param {number} parameters.shift Horizontal shift to accommodate width of
-  * reactions' nodes.
-  * @returns {number} Horizontal shift for link's terminus.
+  * @param {string} parameters.left Role in reaction to represent on left side
+  * of reaction's node.
+  * @param {string} parameters.right Role in reaction to represent on right side
+  * of reaction's node.
+  * @param {boolean} parameters.reversibility Whether reaction is reversible.
+  * @returns {string} Indicator of direction of a reaction's node, left, right,
+  * or both.
   */
-  static determineLinkTerminusHorizontalShift({role, terminus, shift} = {}) {
-    // Determine whether link's terminus connects to a reaction's node.
-    if (terminus.entity === "reaction") {
-      // Link's terminus connects to a reaction's node.
-      // Determine whether reaction's node has an orientation.
-      if (terminus.left && terminus.right) {
-        // Reaction's node has an orientation.
-        // Determine which side matches the link's role.
-        if (terminus.left === role) {
-          // Link's role matches left side of reaction's node.
-          //return terminus.x - shift;
-          return -shift;
-        } else if (terminus.right === role) {
-          // Link's role matches right side of reaction's node.
-          //return terminus.x + shift;
-          return shift;
-        }
-      } else {
-        // Reaction's node does not have an orientation.
-        //return terminus.x
-        return 0;
-      }
+  static determineReactionDirection({left, right, reversibility} = {}) {
+    // Determine whether reaction is reversible.
+    if (reversibility) {
+      // Reaction is reversible.
+      return "both";
     } else {
-      // Link's terminus does not connect to a reaction's node.
-      //return terminus.x
-      return 0;
+      // Reaction is irreversible.
+      // Determine reaction's direction.
+      if (left === "reactant" && right === "product") {
+        // Reaction's direction is to the right.
+        return "right";
+      } else if (left === "product" && right === "reactant") {
+        // Reaction's direction is to the left.
+        return "left";
+      }
     }
   }
-
 
 }

@@ -7,6 +7,32 @@ Research With Alexander Lex
 15 September 2017
 
 ----------
+Nodes' Marks and Labels
+
+https://stackoverflow.com/questions/11102795/d3-node-labeling
+https://bl.ocks.org/mbostock/950642
+http://bl.ocks.org/mbostock/1153292
+Mike Bostock's reply to a question on Stack Overflow gives useful information about managing groups of marks and labels for nodes in a node-link diagram.
+Placing nodes' marks and labels in separate groups can keep the labels in the plane above all marks.
+Using groups for nodes is also convenient for using different types of marks for different types of nodes, dependent on nodes' data.
+
+Contain visual representations of all nodes (marks for their entities and directions) within a group.
+Contain annotations of all nodes (labels) within a separate group.
+These groups will keep marks and labels in separate layers to prevent occlusion of lables by marks.
+
+Group elements in scalable vector graphics (SVG) do not have direct attributes for position, x and y.
+Group elements instead have transform attributes.
+Transforms of position of a group element also apply to children of the group element.
+Set positions of nodes' groups using a transform attribute.
+Assign any shfits, such as for directional markers, using dx and dy attributes.
+
+At least, I tink that transform attributes are necessary for positions of elements other than circles, ellipses, and text.
+Is that correct?
+
+--------------------------------------------------
+15 September 2017
+
+----------
 Directional markers on reactions' nodes
 
 ----------

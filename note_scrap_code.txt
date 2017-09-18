@@ -3,6 +3,46 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
+17 September 2017
+
+----------
+    self.nodesMarksGroup = self.nodesGroup.append("g");
+    // Create visual representations of nodes' entities.
+    var dataNodesMarks = nodesMarksGroup
+    .selectAll("circle, ellipse").data(self.nodesRecords);
+    dataNodesMarks.exit().remove();
+    var novelNodesMarks = dataNodesMarks.enter().append(function (data) {
+      // Append different types of elements for different types of entities.
+      if (data.entity === "metabolite") {
+        // Node represents a metabolite.
+        return self
+        .document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      } else if (data.entity === "reaction") {
+        // Node represents a reaction.
+        return self
+        .document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+      }
+    });
+    self.nodesMarks = novelNodesMarks.merge(dataNodesMarks);
+    self.nodesMarks.append("title").text(function (data) {
+      return data.name;
+    });
+    self.nodesMarks.attr("id", function (data) {
+      return data.identifier;
+    });
+    self.nodesMarks.classed("node", true);
+    self.nodesMarks.classed("mark", true);
+    self.nodesMarks.classed("metabolite", function (data) {
+      return data.entity === "metabolite";
+    });
+    self.nodesMarks.classed("reaction", function (data) {
+      return data.entity === "reaction";
+    });
+    self.nodesMarks.classed("simplification", function (data) {
+      return data.simplification;
+    });
+
+--------------------------------------------------
 12 September 2017
 
 ----------

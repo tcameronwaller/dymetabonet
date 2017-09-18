@@ -280,19 +280,85 @@ class General {
   */
   static createStraightPolylinePoints({source, target} = {}) {
     var center = {
-      x: General.computeElementsMean([source.x + target.x]),
-      y: General.computeElementsMean([source.y + target.y]);
+      x: General.computeElementsMean([source.x, target.x]),
+      y: General.computeElementsMean([source.y, target.y])
     };
-    var points = (
-      source.x + "," + source.y + " " + center.x + ",", + center.y + " " +
-      target.x + "," + target.y
-    );
-    return points;
+    return General.createPointsString([source, center, target]);
   }
-
-
-
-
+  /**
+  * Creates points for vertices of a horizontal, isosceles triangle.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.base Dimension of triangle's base.
+  * @param {number} parameters.altitude Dimension of triangle's altitude.
+  * @param {string} parameters.direction Direction, right or left, in which the
+  * horizontal triangle's apex faces.
+  * @returns {string} Definitions of points for an horizontal, isosceles
+  * triangle.
+  */
+  static createHorizontalIsoscelesTrianglePoints({
+    base, altitude, direction
+  } = {}) {
+    // The coordinates of scalable vector graphs originate at the top left
+    // corner.
+    // Coordinates of the x-axis or abscissa increase towards the right.
+    // Coordinates of the y-axis or ordinate increase towards the bottom.
+    // Determine direction in which triangle's apex faces.
+    if (direction === "right") {
+      // Triangle's apex faces right.
+      // Determine coordinates of triangle's vertices.
+      var vertex1 = {
+        x: 0,
+        y: 0
+      };
+      var vertex2 = {
+        x: altitude,
+        y: (base / 2)
+      };
+      var vertex3 = {
+        x: 0,
+        y: base
+      };
+    } else if (direction === "left") {
+      // Triangle's apex faces left.
+      // Determine coordinates of triangle's vertices.
+      var vertex1 = {
+        x: altitude,
+        y: 0
+      };
+      var vertex2 = {
+        x: altitude,
+        y: base
+      };
+      var vertex3 = {
+        x: 0,
+        y: (base / 2)
+      };
+    }
+    return General.createPointsString([vertex1, vertex2, vertex3]);
+  }
+  /**
+  * Creates string for graphical points from coordinates of vertices.
+  * @param {Array<Object<number>>} points Records of coordinates for points of
+  * vertices.
+  * @returns {string} Definition of point.
+  */
+  static createPointsString(points) {
+    return points.reduce(function (string, point) {
+      if (string.length > 0) {
+        // String is not empty.
+        // String contains previous points.
+        // Include delimiter between previous points and current point.
+        var delimiter = " ";
+      } else {
+        // String is empty.
+        // String does not contain previous points.
+        // Do not include delimiter.
+        var delimiter = "";
+      }
+      // Compose previous and current points.
+      return (string + delimiter + point.x + "," + point.y);
+    }, "");
+  }
 
   /**
   * Collects unique elements.

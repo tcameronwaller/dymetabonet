@@ -214,7 +214,6 @@
 
 #assembly-replication-novel input {}
 
-
 /******************************************************************************/
 /* Topology View */
 /******************************************************************************/
@@ -231,30 +230,25 @@
     width: 100%;
 }
 
-
-#network-graph rect {
-    height: 5cm;
-    width: 5cm;
-    x: 0;
-    y: 0;
-    fill: rgba(100, 100, 100, 1);
-}
-
-#topology svg .node.mark.metabolite {
+#topology svg .node.mark.metabolite .entity {
     fill: rgba(100, 0, 150, 1);
     r: 25;
 }
 
-#topology svg .node.mark.reaction {
+#topology svg .node.mark.reaction .entity {
     fill: rgba(0, 100, 150, 1);
-    rx: 50;
-    ry: 20;
+    height: 0.75cm;
+    width: 2.5cm;
 }
 
-#topology svg .node.mark.metabolite.simplification {
+#topology svg .node.mark.reaction .direction {
+    fill: rgba(0, 50, 50, 1);
 }
 
-#topology svg .node.mark.reaction.simplification {
+#topology svg .node.mark.metabolite.simplification .entity {
+}
+
+#topology svg .node.mark.reaction.simplification .entity {
 }
 
 #topology svg .node.label {
@@ -269,16 +263,16 @@
 }
 
 #topology svg .link {
-    stroke: rgba(100, 100, 100, 1);
     stroke-width: 2;
 }
 
 #topology svg .link.reactant {
-    stroke: rgba(100, 10, 10, 1);
+    stroke: rgba(100, 100, 100, 1);
+    stroke-dasharray: 5,5;
 }
 
 #topology svg .link.product {
-    stroke: rgba(10, 10, 100, 1);
+    stroke: rgba(100, 100, 100, 1);
 }
 
 #topology svg .link.simplification {
