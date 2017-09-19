@@ -1546,7 +1546,7 @@ class TopologyView {
         // Node represents a metabolite.
         return self
         .document
-        .createElementNS("http://www.w3.org/2000/svg", "circle");
+        .createElementNS("http://www.w3.org/2000/svg", "ellipse");
       } else if (data.entity === "reaction") {
         // Node represents a reaction.
         return self
@@ -1555,18 +1555,21 @@ class TopologyView {
       }
     });
     self.nodesEntities.classed("entity", true);
-    // Determine shift for reactions' nodes according to their widths.
+    // Determine style-dependent dimensions of nodes that represent entities.
+    var metaboliteNode = self
+    .graph
+    .querySelector(".node.mark.metabolite .entity");
+    self.nodeMetaboliteWidth = metaboliteNode.getBoundingClientRect().width;
+    self.nodeMetaboliteHeight = metaboliteNode.getBoundingClientRect().height;
     var reactionNode = self.graph.querySelector(".node.mark.reaction .entity");
     self.nodeReactionWidth = reactionNode.getBoundingClientRect().width;
     self.nodeReactionHeight = reactionNode.getBoundingClientRect().height;
-    var horizontalShift = - (self.nodeReactionWidth / 2);
-    var verticalShift = - (self.nodeReactionHeight / 2);
-    // Set shift for reactions' nodes.
+    // Shift reactions' nodes according to their dimensions.
     var nodesEntitiesReactions = self.nodesEntities.filter(function (data) {
       return data.entity === "reaction";
     });
-    nodesEntitiesReactions.attr("x", horizontalShift);
-    nodesEntitiesReactions.attr("y", verticalShift);
+    nodesEntitiesReactions.attr("x", - (self.nodeReactionWidth / 2));
+    nodesEntitiesReactions.attr("y", - (self.nodeReactionHeight / 2));
   }
   /**
   * Creates labels for nodes in a node-link diagram.
@@ -1577,17 +1580,19 @@ class TopologyView {
     // in scope.
     var self = view;
     // Create labels for nodes.
-    // Contain nodes' labels within a group that is separate from nodes' marks.
-    // This separation will place nodes' labels in a top layer and avoid
-    // occlusion of labels.
-    var nodesLabelsGroup = nodesGroup.append("g");
-    var dataNodesLabels = nodesLabelsGroup
-    .selectAll("text").data(self.nodesRecords);
+    // Contain annotations of all nodes within a single group.
+    // This containment will collect these annotations within a single layer,
+    // avoiding occlusion from other visual representations.
+    self.nodesAnnotationsGroup = self.nodesGroup.append("g");
+    var dataNodesLabels = self
+    .nodesAnnotationsGroup
+    .selectAll("text")
+    .data(self.nodesRecords);
     dataNodesLabels.exit().remove();
     var novelNodesLabels = dataNodesLabels.enter().append("text");
     self.nodesLabels = novelNodesLabels.merge(dataNodesLabels);
     self.nodesLabels.text(function (data) {
-      return data.name.slice(0, 10) + "...";
+      return data.name.slice(0, 5) + "...";
     });
     self.nodesLabels.classed("node", true);
     self.nodesLabels.classed("label", true);
@@ -1622,6 +1627,11 @@ class TopologyView {
     // Any elements with access to the nodes' data, such as nodes' marks and
     // labels, also have access to the coordinates of these positions.
     self.simulation = d3.forceSimulation()
+    .alphaTarget(0)
+    .alpha(1)
+    .alphaDecay(0.01)
+    .alphaMin(0.001)
+    .velocityDecay(0.3)
     .nodes(self.nodesRecords)
     .force("center", d3.forceCenter()
       .x(self.graphWidth / 2)
@@ -1630,25 +1640,38 @@ class TopologyView {
     .force("collision", d3.forceCollide()
       .radius(function (data) {
         if (data.entity === "metabolite") {
-          return 50;
+          return self.nodeMetaboliteWidth;
         } else if (data.entity === "reaction") {
-          return 50;
+          return self.nodeReactionWidth;
         }
       })
       .strength(0.9)
       .iterations(1)
     )
     .force("charge", d3.forceManyBody()
+      .theta(0.7)
       .strength(-250)
       .distanceMin(1)
-      .distanceMax(200)
+      .distanceMax(1000)
     )
     .force("link", d3.forceLink()
       .links(self.linksRecords)
       .id(function (data) {
         return data.identifier;
       })
-      .distance(25)
+      .distance(function (data) {
+        // Determine whether the link represents relation between nodes that
+        // have designations for simplification.
+        if (data.simulation) {
+          // Link has designation for simplification.
+          return self.nodeMetaboliteWidth;
+        } else {
+          // Link does not have designation for simplification.
+          return self.nodeReactionWidth + self.nodeMetaboliteWidth;
+        }
+      })
+      //.strength()
+      //.iterations()
     )
     .force("positionX", d3.forceX()
       .x(self.graphWidth / 2)
@@ -1656,7 +1679,7 @@ class TopologyView {
     )
     .force("positionY", d3.forceY()
       .y(self.graphWidth / 2)
-      .strength(0.05)
+      .strength(0.01)
     )
     .on("tick", function () {
       self.restoreNodesMarksPositions(self);
@@ -1669,7 +1692,8 @@ class TopologyView {
     // TODO: After simulation completes... create and position labels for nodes...
   }
   /**
-  * Restores nodes' positions according to results of force simulation.
+  * Restores positions of nodes' visual representations according to results of
+  * force simulation.
   * @param {Object} view Instance of interface's current view.
   */
   restoreNodesMarksPositions(view) {
@@ -1677,10 +1701,7 @@ class TopologyView {
     // in scope.
     var self = view;
     // Set radius.
-    var radius = 9;
-    // TODO: If I represent reactions with rectangles, then I'll need to use some attribute other than "cx" and "cy" for the rectangle centers...
-    // TODO: For anything other than circles, including text, I might need to use transform instead of "cx" and "cy".
-
+    var radius = self.nodeReactionWidth;
     // Restore positions of nodes' marks according to results of simulation.
     // Impose constraints on node positions according to dimensions of graphical
     // container.
@@ -1693,11 +1714,25 @@ class TopologyView {
       // nodes' records.
       return "translate(" + data.x + "," + data.y + ")";
     });
+  }
+  /**
+  * Restores positions of nodes' annotations according to results of force
+  * simulation.
+  * @param {Object} view Instance of interface's current view.
+  */
+  restoreNodesLabelsPositions(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
     // Restore positions of nodes' labels according to results of simulation.
     // TODO: I need to handle the same edge offset for labels as I do for nodes.
-    //self.nodesLabels
-    //.attr("x", function (data) {return data.x;})
-    //.attr("y", function (data) {return data.y;})
+    self.nodesLabels.attr("transform", function (data) {
+      // Determine coordinates for nodes' marks from results of simulation in
+      // nodes' records.
+      var x = data.x;
+      var y = data.y;
+      return "translate(" + data.x + "," + data.y + ")";
+    });
   }
   /**
   * Restores links' positions according to results of force simulation.
@@ -1816,7 +1851,8 @@ class TopologyView {
     // Represent reactions' directionalities on their nodes.
     self.createReactionsNodesDirections(self);
     // Include labels for nodes.
-    // TODO: ...
+    self.createNodesLabels(self);
+    self.restoreNodesLabelsPositions(self);
     // Represent reactions' directionalities in links.
     self.restoreLinksPositions(self);
   }

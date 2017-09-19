@@ -230,19 +230,27 @@
     width: 100%;
 }
 
+#topology svg text {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: small;
+}
+
 #topology svg .node.mark.metabolite .entity {
-    fill: rgba(100, 0, 150, 1);
-    r: 25;
+    fill: rgba(50, 50, 50, 1);
+    rx: 30;
+    ry: 20;
 }
 
 #topology svg .node.mark.reaction .entity {
-    fill: rgba(0, 100, 150, 1);
+    fill: rgba(200, 200, 200, 1);
     height: 0.75cm;
     width: 2.5cm;
 }
 
 #topology svg .node.mark.reaction .direction {
-    fill: rgba(0, 50, 50, 1);
+    fill: rgba(100, 100, 100, 1);
 }
 
 #topology svg .node.mark.metabolite.simplification .entity {
@@ -252,14 +260,16 @@
 }
 
 #topology svg .node.label {
+  alignment-baseline: middle;
+  text-anchor: middle;
 }
 
 #topology svg .node.label.metabolite {
-  fill: rgba(0, 0, 0, 1);
+  fill: rgba(200, 200, 200, 1);
 }
 
 #topology svg .node.label.reaction {
-  fill: rgba(50, 50, 50, 1);
+  fill: rgba(0, 0, 0, 1);
 }
 
 #topology svg .link {
