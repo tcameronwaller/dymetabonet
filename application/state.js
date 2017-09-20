@@ -70,8 +70,7 @@ class State {
       // Initialize instance of interface.
       // Pass this instance a reference to the model of the application's
       // state.
-      // TODO: I need to re-do the assembly view for the new simplificiation method...
-      //new AssemblyView(this.model);
+      new AssemblyView(this.model);
     }
     // If application's state has appropriate information then create
     // interface for visual representation of network's topology.

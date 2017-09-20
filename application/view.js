@@ -836,8 +836,7 @@ class SetView {
 class AssemblyView {
   /**
   * Initializes an instance of the class.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
+  * @param {Object} model Model of the application's comprehensive state.
   */
   constructor (model) {
     // Set reference to class' current instance to transfer across changes
@@ -919,12 +918,12 @@ class AssemblyView {
   * @param {Object} view Instance of interface's current view.
   */
   initializeAssemblyControls(view) {
-    // As their actions do not change and they have access to the dynamic
-    // model, it is only necessary to define event handlers upon initiation
-    // of control elements.
-    // Set reference to class' current instance to transfer across changes
+    // Preserve reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
+    // As their actions do not change and they have access to the dynamic model,
+    // it is only necessary to define event handlers upon initialization of
+    // control elements.
     // Create and set references to elements for interface.
     // Initialize interface.
     if (!self.container.hasChildNodes()) {
@@ -939,9 +938,15 @@ class AssemblyView {
       // Create and activate compartmentalization selector.
       self.createActivateCompartmentalizationSelector(self);
       self.container.appendChild(self.document.createElement("br"));
-      // Initialize interface to summarize and modify replications for
-      // network's assembly.
-      self.initializeReplicationInterface(self);
+      // Create and activate simplification control.
+      // TODO: Create and activate simplification control.
+      // Create and activate menu for simplification candidates.
+      // TODO: Create summary candidates menu...
+      if (false) {
+        // Initialize interface to summarize and modify replications for
+        // network's assembly.
+        self.initializeReplicationInterface(self);
+      }
     } else {
       // Interface's container includes child elements for control of
       // network's assembly.
@@ -951,18 +956,20 @@ class AssemblyView {
       // changes.
       self.compartmentalizationSelector = self
       .document.getElementById("compartmentalization");
-      self.replication = self
-      .document.getElementById("assembly-replication");
-      self.currentReplications = self
-      .document.getElementById("assembly-replication-current");
-      self.replicationTableBody = self
-      .currentReplications.getElementsByTagName("tbody").item(0);
-      self.novelReplications = self
-      .document.getElementById("assembly-replication-novel");
-      self.replicationOptions = self
-      .novelReplications.getElementsByTagName("datalist").item(0);
-      self.replicationSearch = self
-      .novelReplications.getElementsByTagName("input").item(0);
+      if (false) {
+        self.replication = self
+        .document.getElementById("assembly-replication");
+        self.currentReplications = self
+        .document.getElementById("assembly-replication-current");
+        self.replicationTableBody = self
+        .currentReplications.getElementsByTagName("tbody").item(0);
+        self.novelReplications = self
+        .document.getElementById("assembly-replication-novel");
+        self.replicationOptions = self
+        .novelReplications.getElementsByTagName("datalist").item(0);
+        self.replicationSearch = self
+        .novelReplications.getElementsByTagName("input").item(0);
+      }
     }
   }
   /**
@@ -1015,8 +1022,7 @@ class AssemblyView {
     var self = view;
     // Create and activate compartmentalization selector.
     var identifier = "compartmentalization";
-    self.compartmentalizationSelector = self
-    .document.createElement("input");
+    self.compartmentalizationSelector = self.document.createElement("input");
     self.container.appendChild(self.compartmentalizationSelector);
     self.compartmentalizationSelector.setAttribute("id", identifier);
     self.compartmentalizationSelector.setAttribute("type", "checkbox");
@@ -1122,10 +1128,12 @@ class AssemblyView {
     // state.
     self.compartmentalizationSelector.checked = self
     .determineCompartmentalization(self);
-    // Create and activate data-dependent summary of replications.
-    self.createActivateReplicationsSummary(self);
-    // Create and activate menu to include new replications.
-    self.createNovelReplicationsMenu(self);
+    if (false) {
+      // Create and activate data-dependent summary of replications.
+      self.createActivateReplicationsSummary(self);
+      // Create and activate menu to include new replications.
+      self.createNovelReplicationsMenu(self);
+    }
   }
   /**
   * Creates and activates body of table for summary of current replications.
@@ -1296,6 +1304,11 @@ class TopologyView {
   * Initializes an instance of the class.
   * @param {Object} model Model of the comprehensive state of the
   * application.
+  */
+
+  /**
+  * Initializes an instance of the class.
+  * @param {Object} model Model of the application's comprehensive state.
   */
   constructor (model) {
     // Set reference to class' current instance to transfer across changes

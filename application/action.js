@@ -57,8 +57,7 @@ class Action {
   * Removes the value of an attribute in the model of the application's state
   * by submitting a null value for the attribute.
   * @param {string} name Name of the attribute.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
+  * @param {Object} model Model of the application's comprehensive state.
   */
   static removeAttribute(name, model) {
     Action.submitAttribute({
@@ -227,34 +226,21 @@ class Action {
     // information about metabolic entities and sets.
     // Remove the current file selection from the application's state.
     var file = null;
-    // Initialize application's attributes for sets of current entities.
+    // Initialize application's attributes for sets of entities.
     var currentEntitiesSetsAttributes = Action
     .initializeCurrentEntitiesSetsAttributes(entitiesSets);
     // Initialize application's attributes for individual entities.
-    // Specify compartmentalization for representation of metabolic entities in
-    // the network.
-    var compartmentalization = true;
-    // Specify simplification's method for representation of metabolic entities
-    // in the network.
-    var simplification = "omission";
-    //var replications = [
-    //  "ac", "accoa", "adp", "amp", "atp", "ca2", "camp", "cdp", "cl",
-    //  "cmp", "co", "co2", "coa", "ctp", "datp", "dcmp", "dctp", "dna",
-    //  "dtdp", "dtmp", "fe2", "fe3", "fmn", "gdp", "gmp", "gtp", "h", "h2",
-    //  "h2o", "h2o2", "hco3", "i", "idp", "imp", "itp", "k", "na1", "nad",
-    //  "nadh", "nadp", "nadph", "nh4", "no", "no2", "o2", "o2s", "oh1",
-    //  "pi", "ppi", "pppi", "so3", "so4", "udp", "ump", "utp"
-    //];
+    var networkDefinitionAttributes = Action
+    .initializeNetworkDefinitionAttributes();
     // Compile novel values of attributes.
     var newAttributesValues = {
-      file: file,
-      compartmentalization: compartmentalization,
-      simplification: simplification
+      file: file
     };
     var attributesValues = Object.assign(
       {},
       entitiesSets,
       currentEntitiesSetsAttributes,
+      networkDefinitionAttributes,
       newAttributesValues
     );
     // Submit novel values of attributes to the model of the application's
@@ -410,13 +396,20 @@ class Action {
   }
   /**
   * Restores sets' summary to its initial state.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
+  * @param {Object} model Model of the application's comprehensive state.
   */
   static restoreSetsSummary(model) {
+    // Compile information about metabolic entities and sets.
+    var entitiesSets = {
+      compartments: model.compartments,
+      genes: model.genes,
+      processes: model.processes,
+      metabolites: model.metabolites,
+      reactions: model.reactions
+    };
     // Initialize application's attributes for entities' sets.
     var entitiesSetsAttributes = Action
-    .initializeEntitiesSetsAttributes(model.allEntitiesAttributes);
+    .initializeCurrentEntitiesSetsAttributes(entitiesSets);
     // Submit new values of attributes to the model of the application's
     // state.
     Action.submitAttributes({
@@ -432,17 +425,16 @@ class Action {
   * application.
   */
   static changeCompartmentalization(model) {
-    // Determine new compartmentalization.
-    var oldValue = model.compartmentalization;
-    if (oldValue) {
-      var newValue = false;
+    // Change compartmentalization.
+    var previousValue = model.compartmentalization;
+    if (previousValue) {
+      var currentValue = false;
     } else {
-      var newValue = true;
+      var currentValue = true;
     }
-    // Submit new value of attribute to the model of the application's
-    // state.
+    // Submit attribute's current value to the model of the application's state.
     Action.submitAttribute({
-      value: newValue,
+      value: currentValue,
       attribute: "compartmentalization",
       model: model
     });
@@ -453,7 +445,16 @@ class Action {
   * application.
   */
   static restoreNetworkAssembly(model) {
-    // TODO: Put all operations for this restore in a separate method and call that method both from initializeMetabolicEntitiesSets and here.
+    // Initialize application's attributes that relate to definition and
+    // assemblyof network's elements from metabolic entities.
+    var networkDefinitionAttributes = Action
+    .initializeNetworkDefinitionAttributes();
+    // Submit new values of attributes to the model of the application's
+    // state.
+    Action.submitAttributes({
+      attributesValues: networkDefinitionAttributes,
+      model: model
+    });
   }
   /**
   * Removes the identifier for a single metabolite from the collection of
@@ -706,6 +707,36 @@ class Action {
       setsSummary: setsSummary
     };
   }
+  /**
+  * Initializes values of attributes that relate to definition and assembly of
+  * network's elements from metabolic entities.
+  * @returns {Object} Collection of multiple attributes that relate to
+  * definition and assembly of network's elements.
+  */
+  static initializeNetworkDefinitionAttributes() {
+    // Specify compartmentalization for representation of metabolic entities in
+    // the network.
+    var compartmentalization = true;
+    // Specify simplification's method for representation of metabolic entities
+    // in the network.
+    var simplification = "omission";
+    //var replications = [
+    //  "ac", "accoa", "adp", "amp", "atp", "ca2", "camp", "cdp", "cl",
+    //  "cmp", "co", "co2", "coa", "ctp", "datp", "dcmp", "dctp", "dna",
+    //  "dtdp", "dtmp", "fe2", "fe3", "fmn", "gdp", "gmp", "gtp", "h", "h2",
+    //  "h2o", "h2o2", "hco3", "i", "idp", "imp", "itp", "k", "na1", "nad",
+    //  "nadh", "nadp", "nadph", "nh4", "no", "no2", "o2", "o2s", "oh1",
+    //  "pi", "ppi", "pppi", "so3", "so4", "udp", "ump", "utp"
+    //];
+    // Compile attributes' values.
+    var attributesValues = {
+      compartmentalization: compartmentalization,
+      simplification: simplification
+    };
+    // Return attributes' values.
+    return attributesValues;
+  }
+
 
 
   /**

@@ -1260,7 +1260,7 @@ class Extraction {
   */
   static copyObjectEntitiesRecords(entities) {
     // Iterate on entities' records.
-    var entitiesIdetifiers = Object.keys(entities);
+    var entitiesIdentifiers = Object.keys(entities);
     return entitiesIdentifiers.reduce(function (collection, entityIdentifier) {
       // Set reference to entity's record.
       var entity = entities[entityIdentifier];
