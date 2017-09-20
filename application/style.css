@@ -234,19 +234,19 @@
   font-family: sans-serif;
   font-style: normal;
   font-weight: bold;
-  font-size: small;
+  /*font-size: 50px;*/
 }
 
 #topology svg .node.mark.metabolite .entity {
     fill: rgba(50, 50, 50, 1);
-    rx: 30;
-    ry: 20;
+    /*rx: 25;*/
+    /*ry: 15;*/
 }
 
 #topology svg .node.mark.reaction .entity {
     fill: rgba(200, 200, 200, 1);
-    height: 0.75cm;
-    width: 2.5cm;
+    /*height: 0.75cm;*/
+    /*width: 2.5cm;*/
 }
 
 #topology svg .node.mark.reaction .direction {

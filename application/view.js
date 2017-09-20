@@ -1393,7 +1393,8 @@ class TopologyView {
     var self = view;
     // Prepare information about network's elements.
     self.prepareNetworkElementsData(self);
-
+    // Create scales for representations of network's elements.
+    self.createRepresentationsScales(self);
     // Define directional marker for links.
     self.createLinkDirectionalMarker(self);
     // Create links.
@@ -1421,6 +1422,55 @@ class TopologyView {
       Extraction.copyArrayEntitiesRecords(self.model.currentMetabolitesNodes),
       Extraction.copyArrayEntitiesRecords(self.model.currentReactionsNodes)
     );
+  }
+  /**
+  * Creates scales for representations of network's elements.
+  * @param {Object} view Instance of interface's current view.
+  */
+  createRepresentationsScales(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // The optimal scale for representations of network's elements depends on
+    // the dimensions of the graphical container or view and on the count of
+    // elements.
+    // Determine this scale dynamically since it depends on context of use.
+    // Define scales' domains on the basis of the ratio of the graphical
+    // container's width to the count of nodes.
+    // Define scale for dimensions of representations.
+    // Domain's unit is pixel for ratio of graphical container's width to count
+    // of nodes.
+    // Range's unit is pixel for dimension of graphical elements.
+    //domain: range
+    //0-25: 15
+    //25-50: 25
+    //50-100: 35
+    //100-150: 50
+    //150-1000: 75
+    self.dimensionScale = d3
+    .scaleThreshold()
+    .domain([25, 50, 100, 150])
+    .range([15, 25, 35, 50, 75]);
+    // Define scale for size of font in annotations.
+    // Domain's unit is pixel for ratio of graphical container's width to count
+    // of nodes.
+    // Range's unit is pixel for dimension of font characters.
+    //domain: range
+    //0-25: 7
+    //25-50: 12
+    //50-100: 15
+    //100-150: 20
+    //150-1000: 30
+    self.fontScale = d3
+    .scaleThreshold()
+    .domain([25, 50, 100, 150])
+    .range([7, 12, 15, 20, 30]);
+    // Compute ratio for scales' domain.
+    self.scaleRatio = self.graphWidth / self.nodesRecords.length;
+    // Compute dimension from scale.
+    self.scaleDimension = self.dimensionScale(self.scaleRatio);
+    // Compute font size from scale.
+    self.scaleFont = self.fontScale(self.scaleRatio);
   }
   /**
   * Creates definition of directional markers for links.
@@ -1555,21 +1605,42 @@ class TopologyView {
       }
     });
     self.nodesEntities.classed("entity", true);
-    // Determine style-dependent dimensions of nodes that represent entities.
-    var metaboliteNode = self
-    .graph
-    .querySelector(".node.mark.metabolite .entity");
-    self.nodeMetaboliteWidth = metaboliteNode.getBoundingClientRect().width;
-    self.nodeMetaboliteHeight = metaboliteNode.getBoundingClientRect().height;
-    var reactionNode = self.graph.querySelector(".node.mark.reaction .entity");
-    self.nodeReactionWidth = reactionNode.getBoundingClientRect().width;
-    self.nodeReactionHeight = reactionNode.getBoundingClientRect().height;
-    // Shift reactions' nodes according to their dimensions.
+    // Determine dimensions for representations of network's elements.
+    // As optimal scale depends on context, determine dimensions within script.
+    // Otherwise an alternative is to determine dimension within style and then
+    // access the dimension using element.getBoundingClientRect or
+    // window.getComputeStyle.
+    //var node = self.graph.querySelector(".node.mark.metabolite .entity");
+    // Set dimensions of metabolites' nodes.
+    var nodesEntitiesMetabolites = self.nodesEntities.filter(function (data) {
+      return data.entity === "metabolite";
+    });
+    self.metaboliteNodeWidth = self.scaleDimension * 1;
+    self.metaboliteNodeHeight = self.scaleDimension * 0.5;
+    nodesEntitiesMetabolites.attr("rx", function (data) {
+      return self.metaboliteNodeWidth;
+    });
+    nodesEntitiesMetabolites.attr("ry", function (data) {
+      return self.metaboliteNodeHeight;
+    });
+    // Set dimensions of reactions' nodes.
     var nodesEntitiesReactions = self.nodesEntities.filter(function (data) {
       return data.entity === "reaction";
     });
-    nodesEntitiesReactions.attr("x", - (self.nodeReactionWidth / 2));
-    nodesEntitiesReactions.attr("y", - (self.nodeReactionHeight / 2));
+    self.reactionNodeWidth = self.scaleDimension * 2.5;
+    self.reactionNodeHeight = self.scaleDimension * 0.5;
+    nodesEntitiesReactions.attr("width", function (data) {
+      return self.reactionNodeWidth;
+    });
+    nodesEntitiesReactions.attr("height", function (data) {
+      return self.reactionNodeHeight;
+    });
+    // Shift reactions' nodes according to their dimensions.
+    nodesEntitiesReactions.attr("transform", function (data) {
+      var x = - (self.reactionNodeWidth / 2);
+      var y = - (self.reactionNodeHeight / 2);
+      return "translate(" + x + "," + y + ")";
+    });
   }
   /**
   * Creates labels for nodes in a node-link diagram.
@@ -1605,6 +1676,8 @@ class TopologyView {
     self.nodesLabels.classed("simplification", function (data) {
       return data.simplification;
     });
+    // Determine size of font for annotations of network's elements.
+    self.nodesLabels.attr("font-size", self.scaleFont + "px");
   }
   /**
   * Initiates a force simulation for placement of network's nodes and links in a
@@ -1640,9 +1713,9 @@ class TopologyView {
     .force("collision", d3.forceCollide()
       .radius(function (data) {
         if (data.entity === "metabolite") {
-          return self.nodeMetaboliteWidth;
+          return self.metaboliteNodeWidth;
         } else if (data.entity === "reaction") {
-          return self.nodeReactionWidth;
+          return self.reactionNodeWidth;
         }
       })
       .strength(0.9)
@@ -1652,7 +1725,7 @@ class TopologyView {
       .theta(0.7)
       .strength(-250)
       .distanceMin(1)
-      .distanceMax(1000)
+      .distanceMax(self.scaleDimension * 15)
     )
     .force("link", d3.forceLink()
       .links(self.linksRecords)
@@ -1662,12 +1735,12 @@ class TopologyView {
       .distance(function (data) {
         // Determine whether the link represents relation between nodes that
         // have designations for simplification.
-        if (data.simulation) {
+        if (data.simplification) {
           // Link has designation for simplification.
-          return self.nodeMetaboliteWidth;
+          return self.metaboliteNodeWidth;
         } else {
           // Link does not have designation for simplification.
-          return self.nodeReactionWidth + self.nodeMetaboliteWidth;
+          return self.reactionNodeWidth + self.metaboliteNodeWidth;
         }
       })
       //.strength()
@@ -1688,8 +1761,6 @@ class TopologyView {
     .on("end", function () {
       self.refineNodesLinksRepresentations(self);
     });
-    // TODO: After simulation completes... complete representation of directionality of reaction's nodes...
-    // TODO: After simulation completes... create and position labels for nodes...
   }
   /**
   * Restores positions of nodes' visual representations according to results of
@@ -1701,7 +1772,7 @@ class TopologyView {
     // in scope.
     var self = view;
     // Set radius.
-    var radius = self.nodeReactionWidth;
+    var radius = self.reactionNodeWidth;
     // Restore positions of nodes' marks according to results of simulation.
     // Impose constraints on node positions according to dimensions of graphical
     // container.
@@ -1725,7 +1796,6 @@ class TopologyView {
     // in scope.
     var self = view;
     // Restore positions of nodes' labels according to results of simulation.
-    // TODO: I need to handle the same edge offset for labels as I do for nodes.
     self.nodesLabels.attr("transform", function (data) {
       // Determine coordinates for nodes' marks from results of simulation in
       // nodes' records.
@@ -1751,7 +1821,7 @@ class TopologyView {
         role: data.role,
         source: data.source,
         target: data.target,
-        width: self.nodeReactionWidth
+        width: self.reactionNodeWidth
       });
       // Create points for vertices at source, center, and target of polyline.
       var points = General.createStraightPolylinePoints({
@@ -2057,8 +2127,8 @@ class TopologyView {
     // scope.
     var self = view;
     // Determine dimensions for directional marks.
-    self.nodeDirectionHeight = self.nodeReactionHeight;
-    self.nodeDirectionWidth = self.nodeReactionWidth / 7;
+    var width = self.reactionNodeWidth / 7;
+    var height = self.reactionNodeHeight;
     // Select groups of marks to represent reactions' nodes.
     var nodesMarksReactions = self.nodesMarks.filter(function (data) {
       return data.entity === "reaction";
@@ -2119,8 +2189,8 @@ class TopologyView {
     .filter("polygon")
     .attr("points", function (data) {
       return General.createHorizontalIsoscelesTrianglePoints({
-        base: self.nodeDirectionHeight,
-        altitude: self.nodeDirectionWidth,
+        base: height,
+        altitude: width,
         direction: "left"
       });
     });
@@ -2129,29 +2199,29 @@ class TopologyView {
     .filter("polygon")
     .attr("points", function (data) {
       return General.createHorizontalIsoscelesTrianglePoints({
-        base: self.nodeDirectionHeight,
-        altitude: self.nodeDirectionWidth,
+        base: height,
+        altitude: width,
         direction: "right"
       });
     });
     self
     .nodesLeftDirections
     .filter("rect")
-    .attr("height", self.nodeDirectionHeight)
-    .attr("width", self.nodeDirectionWidth);
+    .attr("height", height)
+    .attr("width", width);
     self
     .nodesRightDirections
     .filter("rect")
-    .attr("height", self.nodeDirectionHeight)
-    .attr("width", self.nodeDirectionWidth);
+    .attr("height", height)
+    .attr("width", width);
     self.nodesLeftDirections.attr("transform", function (data) {
-      var x = - (self.nodeReactionWidth / 2);
-      var y = - (self.nodeDirectionHeight / 2);
+      var x = - (self.reactionNodeWidth / 2);
+      var y = - (height / 2);
       return "translate(" + x + "," + y + ")";
     });
     self.nodesRightDirections.attr("transform", function (data) {
-      var x = ((self.nodeReactionWidth / 2) - self.nodeDirectionWidth);
-      var y = - (self.nodeDirectionHeight / 2);
+      var x = ((self.reactionNodeWidth / 2) - width);
+      var y = - (height / 2);
       return "translate(" + x + "," + y + ")";
     });
   }
@@ -2183,5 +2253,4 @@ class TopologyView {
       }
     }
   }
-
 }
