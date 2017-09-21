@@ -4,6 +4,16 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+20 September 2017
+
+----------
+Nodes' Marks and Labels
+
+I realized that the collision force avoids overlap between nodes.
+As a result, occlusion of nodes' labels should not be a problem.
+It would be an option to contain nodes' labels within the same layer as nodes' marks.
+
+--------------------------------------------------
 15 September 2017
 
 ----------
@@ -203,7 +213,6 @@ Determining Angles in Coordinate System by Trigonometry
 http://www.dummies.com/education/math/trigonometry/use-coordinates-of-points-to-find-values-of-trigonometry-functions/
 https://math.stackexchange.com/questions/1327253/how-do-we-find-out-angle-from-x-y-coordinates
 http://www.montereyinstitute.org/courses/DevelopmentalMath/COURSE_TEXT2_RESOURCE/U19_L1_T3_text_final.html
-
 
 ----------
 Progress

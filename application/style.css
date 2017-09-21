@@ -112,7 +112,7 @@
 }
 
 #set table thead tr {
-    height: 1cm;
+    height: 0.75cm;
     vertical-align: middle;
 }
 
@@ -124,7 +124,7 @@
 }
 
 #set table tbody tr {
-    height: 1cm;
+    height: 0.75cm;
     vertical-align: middle;
 }
 
@@ -132,7 +132,7 @@
     border-color: rgba(200, 200, 200, 1);
     border-style: solid;
     border-width: 1mm;
-    height: 1cm;
+    height: 0.75cm;
     overflow: hidden;
     padding: 1mm;
     white-space: nowrap;
@@ -151,13 +151,13 @@
 }
 
 #set table tbody td.value svg {
-    height: 1cm;
+    height: 0.75cm;
     width: 100%;
 }
 
 #set table tbody td.value .bar {
     /*fill: rgba(200, 20, 20, 1);*/
-    height: 1cm;
+    height: 0.75cm;
 }
 
 #set table tbody td.value .bar.normal:nth-child(odd) {
@@ -183,7 +183,7 @@
 #bottom {
     background-color: rgba(255, 255, 255, 1);
     display: flex;
-    height: 80%;
+    height: 92%;
     width: 100%;
 }
 
@@ -226,8 +226,21 @@
 }
 
 #topology svg {
-    height: 95%;
+    height: 100%;
     width: 100%;
+    /*dark*/
+    fill: rgba(255, 100, 0, 1);
+    /*light*/
+    /*fill: rgba(0, 0, 0, 1);*/
+}
+
+#topology-base {
+    height: 100%;
+    width: 100%;
+    /*dark*/
+    fill: rgba(0, 0, 0, 1);
+    /*light*/
+    /*fill: rgba(255, 255, 255, 1);*/
 }
 
 #topology svg text {
@@ -238,19 +251,17 @@
 }
 
 #topology svg .node.mark.metabolite .entity {
-    fill: rgba(50, 50, 50, 1);
-    /*rx: 25;*/
-    /*ry: 15;*/
+  /*dark*/
+  fill: rgba(0, 200, 255, 1);
 }
 
 #topology svg .node.mark.reaction .entity {
-    fill: rgba(200, 200, 200, 1);
-    /*height: 0.75cm;*/
-    /*width: 2.5cm;*/
+    fill: rgba(255, 0, 200, 1);
 }
 
 #topology svg .node.mark.reaction .direction {
-    fill: rgba(100, 100, 100, 1);
+  /*dark*/
+  fill: rgba(100, 0, 200, 1);
 }
 
 #topology svg .node.mark.metabolite.simplification .entity {
@@ -265,24 +276,29 @@
 }
 
 #topology svg .node.label.metabolite {
-  fill: rgba(200, 200, 200, 1);
+  /*dark*/
+  fill: rgba(0, 0, 0, 1);
 }
 
 #topology svg .node.label.reaction {
   fill: rgba(0, 0, 0, 1);
 }
 
+#topology svg .marker {
+  /*fill: rgba(100, 0, 0, 1);*/
+}
+
 #topology svg .link {
-    stroke-width: 2;
+  /*dark*/
+  stroke: rgba(200, 200, 0, 1);
 }
 
 #topology svg .link.reactant {
-    stroke: rgba(100, 100, 100, 1);
     stroke-dasharray: 5,5;
 }
 
 #topology svg .link.product {
-    stroke: rgba(100, 100, 100, 1);
+    stroke-dasharray: 5, 0;
 }
 
 #topology svg .link.simplification {

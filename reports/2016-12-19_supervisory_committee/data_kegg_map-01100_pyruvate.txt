@@ -1,0 +1,36 @@
+identifier,name
+C00022,Pyruvate
+C00074,Phosphoenolpyruvate
+C00024,Acetyl-CoA
+C00186,(S)-Lactate
+C00036,Oxaloacetate
+C00149,(S)-Malate
+C00133,D-Alanine
+C00041,L-Alanine
+C00065,L-Serine
+C11437,1-Deoxy-D-xylulose 5-phosphate
+C01216,2-Dehydro-3-Deoxy-D-Galactonate
+C06762,4-Hydroxy-2-Oxohexanoic Acid
+C00227,Acetyl Phosphate
+C03589,4-Hydroxy-2-Oxopentanoate
+C01011,(3S)-Citramalyl-CoA
+C02291,L-Cystathionine
+C06006,(S)-2-Aceto-2-Hydroxybutanoate
+C06010,(S)-2-Acetolactate
+C00164,Acetoacetate
+C02876,Propanoyl Phosphate
+C00049,L-Aspartate
+C01061,4-Fumarylacetoacetate
+C02612,(R)-2-Methylmalate
+C00957,Mercaptopyruvate
+C05527,3-Sulfinylpyruvate
+C00166,Phenylpyruvate
+C02514,3-Fumarylpyruvate
+C00061,Riboflavin-5-phosphate
+C00811,4-Coumarate
+C00018,Pyridoxal Phosphate
+C20784,Adenosine Diphospho-5-Beta-Ethyl-4-Methylthiazole-2-Carboxylic Acid
+C15809,Iminoglycine
+C00204,2-Dehydro-3-Deoxy-D-Gluconate
+C04442,2-Dehydro-3-Deoxy-6-Phospho-D-Gluconate
+C04556,4-Amino-2-Methyl-5-(Phosphooxymethyl)pyrimidine

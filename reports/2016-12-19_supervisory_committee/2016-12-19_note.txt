@@ -1,0 +1,310 @@
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+
+Feedback from Alexander Lex on 16 December 2016.
+
+Introduce metabolism better
+Introduce metabolic network better
+
+Current Technology
+KEGG Atlas
+Explicitly show the problem
+Show a specific example
+
+Consider including more examples of visualization tools.
+
+Challenges slide
+Rephrase
+Main challenge is holistic context versus specific detail
+Specific example of holistic context versus specific detail
+The others (layout and vis exp results) more so explain the challenge
+Dynamic layout is a solution, not a challenge
+Group it with the first challenge
+Experimental results visualization is also a sort of solution...
+
+
+Query Interface
+The distinction between criteria for inclusion and exclusion is confusing.
+
+
+Bubble Sets
+
+
+We need to discuss visual representation of the network more.
+We also need to discuss visual representation of experimental data on the network more.
+
+
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+
+Plan
+
+Include the interface sketches in the presentation.
+
+Also include snapshots of other detail views from sketch over the interface svg.
+
+--------------------------------------------------
+Importance and Relevance of Study of Metabolism
+
+Metabolism sustains life.
+Metabolic defects contribute to many human diseases, including obesity, diabetes, cardiovascular disease, and cancer.
+The study of metabolism is relevant to domains of biology, biotechnology, pharmacology, and medicine.
+Goals in these domains include understanding life, using life's mechanisms to synthesize materials and perform other tasks, modification of natural processes, diagnosis of human disease, and treatment of human disease.
+
+Project Goal
+Support the study of metabolism in domains of biology, biotechnology, pharmacology, and medicine.
+
+
+Slide 1
+Title
+
+Slide 2
+Relevance, Goal
+Metabolism sustains life.
+Metabolism is an integral part of the biological system.
+Defects in metabolism drive many human diseases, including obesity, diabetes, cardiovascular disease, and cancer.
+The goal of this project is to develop computational methods to support the study of metabolism in domains of biology, biotechnology, pharmacology, and medicine.
+
+--------------------------------------------------
+Metabolism as a System and Network
+
+Metabolism is a system of biological entities and relations between them.
+These entities include genes, transcripts, proteins, and metabolites.
+These relations include ...
+
+Metabolic Network
+-Reactions (involving genes, transcripts, and proteins) relate metabolites.
+--Simplification
+--Focus on metabolic processes
+--Model transport events as reactions.
+-Diverse attributes and properties of nodes and links
+--Attributes and properties define multiple sets (cellular compartment, metabolic pathway)
+-"Digraph" with directional links
+-"Hypergraph" with links between multiple nodes
+-Great range (1-1000?) of "degree distribution" of degrees/connections of metabolite nodes.
+-Prevalent loops.
+-Many alternative paths.
+--While some paths may dominate flux, alternative paths still matter.
+
+Metabolism functions as a cooperative, inter-connected whole.
+
+--------------------------------------------------
+Study of Metabolism
+
+1) Need to design experiments.
+Experiments are to study functions of individual entities or processes.
+Consider context of metabolic system when studying individual members.
+
+2) Need to interpret experimental results.
+Data include mutations and copy variations in genes (genomics), abundance and splice variations of transcripts (transcriptomics), abundance and post-translational modifications of proteins (proteomics), and abundance of metabolites (metabolomics).
+Consider results in context of metabolic system.
+
+Challenges in Study of Metabolism
+1) Metabolism is a complex system.
+Consideration for the entire system is necessary for both reliable design of experiments and accurate interpretation of results.
+2) High-throughput methods, and data-heavy results, especially 'omics technologies.
+3) More common for non-specialist, non-expert investigators to study metabolism.
+Metabolism contributes to many human diseases and is relevant to many domains.
+
+Slide 3
+Study of metabolism
+1) Design experiments.
+Study functions of individual entities or processes.
+2) Interpret results.
+Especially interpret results from 'omics technologies (genomics, transcriptomics, proteomics, metabolomics).
+In both of these cases, it is important to consider the holistic context of the metabolic system.
+
+Challenges in Study of Metabolism
+1) Metabolism is a complex system.
+2) High-throughput methods and data-heavy results, especially 'omics technologies.
+3) Non-specialist, non-expert investigators.
+
+--------------------------------------------------
+Current Technology
+
+Briefly mention some relevant technologies.
+
+Databases
+-KEGG
+-UniProt
+-MetaCyc
+
+Models
+-Recon 2.2
+
+Visual Exploration
+KEGG Atlas
+MetScape
+Escher
+
+Slide 4
+Describe current technology very briefly.
+
+--------------------------------------------------
+KEGG Atlas, Demonstration and Limitations
+
+Slide
+KEGG Atlas
+Map "01100 Metabolic Pathways"
+This map from KEGG Atlas represents the metabolic network between _____ metabolites.
+The map only represents "most important" metabolites in reactions.
+It organizes nodes for metabolites spatially by metabolic pathway or process.
+There is no clear indication of compartmentalization.
+This map-like layout is manually-drawn and is static.
+
+Slide
+KEGG
+Map "01100 Metabolic Pathways"
+Pyruvate Metabolism
+Highlight all metabolites within 1 reaction of pyruvate.
+Suppose we are interested in a subset of this metabolic network.
+There is no support for custom queries (topology-based or otherwise).
+I manually traced edges from the node for pyruvate to find all metabolites that relate directly (within 1 reaction).
+Finding all 35 metabolites, copying their identifiers, and highlighting them on the map took me 1 hour.
+Many sets of metabolites of interest (such as this set) are not all within the same pathway.
+In many cases the relevant portion of the metabolic network traverses pathways.
+Although all of these metabolites relate directly to pyruvate, their spatial positions depend on pathway.
+The layout de-emphasizes and even distorts the connectivity between these metabolites.
+The map replicates several nodes (including pyruvate's) in an ambiguous way.
+
+Slide
+KEGG
+Map "01100 Metabolic Pathways"
+Pyruvate Metabolism
+Human
+
+Slide
+KEGG
+Pyruvate Metabolism
+Because KEGG uses static maps for "distinct" pathways, the user must find metabolites by searching multiple, separate maps.
+
+--------------------------------------------------
+Escher, Demonstration and Limitations
+
+Show an Escher custom map of pyruvate metabolism.
+Now explain compartmentalization.
+These maps also do not account for compartmentalization.
+
+Slide
+Escher relates information from metabolic models (systems biology) to maps with manual, static layouts.
+
+Slide
+
+Slide
+Escher relies on manual, static layouts for readability.
+Escher is inappropriate for efficient exploration by custom queries.
+
+--------------------------------------------------
+Limitations in Current Technology
+
+Spatial Groups in Layout
+Free layouts represent topology (connectivity) of the network most accurately.
+Free layouts can also suffer from excessive clutter and poor readability.
+Layout restraints organize nodes into groups by position.
+Depending on the user's interest, layout by compartment or by pathway/process can be helpful.
+In many cases it is relevant to consider the compartments in which different reactions occur.
+It can help to arrange reactions in positional groups to indicate compartment.
+In other cases, compartmentalization is less relevant.
+
+--------------------------------------------------
+Technical Challenges in the Study of Metabolism
+
+Challenges
+1) Preserve holistic context while providing specific detail.
+Metabolism functions as a cooperative whole.
+Need to consider and study metabolism holistically.
+Metabolism is also vast and complex.
+Need to consider relevant portions of metabolism in detail according to interest.
+2) Represent selections of the network flexibly and dynamically.
+Connection and cooperation between members of the metabolic system traverse and transcend typical pathways.
+Interest sets of metabolism are custom and case-specific with great variety.
+There are many alternative paths.
+3) Associate experimental results (data) with context of metabolic system.
+
+Slide 5
+1) Preserve holistic context while providing specific detail.
+Metabolism functions as a cooperative whole.
+Need to consider and study metabolism holistically.
+Metabolism is also vast and complex.
+Need to consider relevant portions of metabolism in detail according to interest.
+2) Represent selections of the network flexibly and dynamically.
+Connection and cooperation between members of the metabolic system traverse and transcend typical pathways.
+Interest sets of metabolism are custom and case-specific with great variety.
+Need for automatic, dynamic representations that are clear.
+3) Associate experimental results (data) with context of metabolic system.
+
+--------------------------------------------------
+Tasks
+
+Maybe I should use "property" exclusively for attributes from the metabolic model and "attribute" exclusively for experimental data.
+
+Selection Tasks
+1) Select nodes and links by topology.
+-Select by reactions, genes, transcripts, proteins, metabolites, or combinations thereof.
+-Select by proximity, within specific path length (radius), to a node or nodes in the query.
+-Select nodes and links in shortest paths connecting multiple nodes.
+2) Select nodes and links by property (model factor) or attribute (experimental measurement).
+-Select by inclusion or exclusion of any property or attribute of nodes or links.
+3) Select nodes and links by both topology and property or attribute.
+4) Build selection query from data of experimental results.
+-Include all metabolites/transcripts/proteins in data set in the selection.
+
+Exploration Tasks
+1) Represent selections of the metabolic network visually.
+-Nodes and links.
+-Flexible, dynamic representation to accommodate custom selections.
+2) Display network information (distribution of degree, betweenness centrality, and set distribution) for both entire model and selection.
+3) Provide option to replicate nodes with high degrees.
+4) Represent properties of nodes and links on the visual network.
+-Arrange nodes and links in positional groups for sets (cellular compartment, pathway).
+-Color nodes and links for sets (pathway).
+5) On selection of nodes or links, display detail information for metabolites (common reaction partners, set distribution) or reactions (genes, transcripts, proteins).
+
+Measurement Tasks
+1) Represent selection of specific quantitative attribute by color saturation on the network.
+-Either nodes for metabolites or links for genes, transcripts, or proteins.
+
+--------------------------------------------------
+Design
+
+16:9
+35 cm X 19.7 cm
+
+Slide 6
+The following images are sketches to demonstrate ideas.
+
+Slide 7
+
+Slide 8
+Exploration Tasks
+1) Represent selections of the metabolic network visually.
+-Nodes and links.
+-Flexible, dynamic representation to accommodate custom selections.
+2) Display network information (distribution of degree, betweenness centrality, and sets) for entire model and selection.
+3) Provide option to replicate nodes with high degrees.
+4) Represent properties of nodes and links on the visual network.
+-Arrange nodes and links in positional groups for sets (cellular compartment, pathway).
+-Color nodes and links for sets (pathway).
+5) On selection of nodes or links, display summary information for metabolites (common reaction partners, set distribution) or reactions (genes, transcripts, proteins).
+
+Slide 9
+Slide 10
+
+Slide 11
+Measurement Tasks
+1) Represent selection of specific quantitative attribute by color saturation on the network.
+-Either nodes for metabolites or links for genes, transcripts, or proteins.
+
+--------------------------------------------------
+Prototype
+
+https://tcameronwaller.github.io/profondeur/
+This prototype primarily explores an automatic, dynamic layout for network selections.
+
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+
+

@@ -174,7 +174,7 @@ class Attribution {
       metabolites: metabolites
     };
     // Copy all of reaction's attributes.
-    var attributes = Extraction.copyEntityAttributesValues(reaction);
+    var attributes = Extraction.copyEntityRecord(reaction);
     // Compile attributes for reaction's record.
     // Replace attributes relevant to filters.
     return Object.assign({}, attributes, filterAttributes);
@@ -339,7 +339,7 @@ class Attribution {
   } = {}) {
     // Copy all of metabolite's attributes.
     var metaboliteAttributes = Extraction
-    .copyEntityAttributesValues(metabolite);
+    .copyEntityRecord(metabolite);
     // Determine values of attributes that metabolite inherits from the
     // reactions in which it participates.
     var reactionsAttributes = Extraction

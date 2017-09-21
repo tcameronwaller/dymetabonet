@@ -847,11 +847,11 @@ class AssemblyView {
     // Set reference to document object model (DOM).
     self.document = document;
     // Initialize container for interface.
-    self.initializeContainer(self);
+    //self.initializeContainer(self);
     // Initialize interface for control of network's assembly.
-    self.initializeAssemblyControls(self);
+    //self.initializeAssemblyControls(self);
     // Restore interface for control of network's assembly.
-    self.restoreAssemblyControls(self);
+    //self.restoreAssemblyControls(self);
   }
   /**
   * Initializes the container for the interface.
@@ -1382,7 +1382,10 @@ class TopologyView {
     // Set reference to graphical container.
     if (!self.container.getElementsByTagName("svg").item(0)) {
       self.graphSelection = d3.select(self.container).append("svg");
+      self.graphSelection.attr("id", "graph");
       self.graph = self.container.getElementsByTagName("svg").item(0);
+      self.base = self.graphSelection.append("rect");
+      self.base.attr("id", "topology-base");
     } else {
       self.graph = self.container.getElementsByTagName("svg").item(0);
       self.graphSelection = d3.select(self.graph);
@@ -1447,43 +1450,123 @@ class TopologyView {
     // The optimal scale for representations of network's elements depends on
     // the dimensions of the graphical container or view and on the count of
     // elements.
-    // Determine this scale dynamically since it depends on context of use.
+    // Determine this scale dynamically within script since it depends on
+    // context of use.
+    // Otherwise an alternative is to determine dimension within style and then
+    // access the dimension using element.getBoundingClientRect or
+    // window.getComputeStyle.
+    //var node = self.graph.querySelector(".node.mark.metabolite .entity");
     // Define scales' domains on the basis of the ratio of the graphical
     // container's width to the count of nodes.
-    // Define scale for dimensions of representations.
+    var domainRatios = [0.3, 1, 5, 10, 15, 25, 50, 100, 150];
+    // Define scale for dimensions of nodes' representations.
     // Domain's unit is pixel for ratio of graphical container's width to count
     // of nodes.
     // Range's unit is pixel for dimension of graphical elements.
     //domain: range
-    //0-25: 15
+    //0-0.3: 1
+    //0.3-1: 3
+    //1-5: 5
+    //5-10: 7
+    //10-15: 10
+    //15-25: 15
     //25-50: 25
     //50-100: 35
     //100-150: 50
-    //150-1000: 75
-    self.dimensionScale = d3
+    //150-10000: 75
+    self.nodeDimensionScale = d3
     .scaleThreshold()
-    .domain([25, 50, 100, 150])
-    .range([15, 25, 35, 50, 75]);
+    .domain(domainRatios)
+    .range([1, 3, 5, 7, 10, 15, 25, 35, 50, 75]);
+    // Define scale for dimensions of links' representations.
+    // Domain's unit is pixel for ratio of graphical container's width to count
+    // of nodes.
+    // Range's unit is pixel for dimension of graphical elements.
+    //domain: range
+    //0-0.3: 0.02
+    //0.3-1: 0.05
+    //1-5: 0.1
+    //5-10: 0.3
+    //10-15: 0.5
+    //15-25: 0.7
+    //25-50: 1
+    //50-100: 3
+    //100-150: 5
+    //150-10000: 7
+    self.linkDimensionScale = d3
+    .scaleThreshold()
+    .domain(domainRatios)
+    .range([0.02, 0.05, 0.1, 0.3, 0.5, 0.7, 1, 3, 5, 7]);
     // Define scale for size of font in annotations.
     // Domain's unit is pixel for ratio of graphical container's width to count
     // of nodes.
     // Range's unit is pixel for dimension of font characters.
     //domain: range
-    //0-25: 7
+    //0-0.3: 1
+    //0.3-1: 2
+    //1-5: 3
+    //5-10: 4
+    //10-15: 5
+    //15-25: 7
     //25-50: 12
     //50-100: 15
     //100-150: 20
-    //150-1000: 30
+    //150-10000: 30
     self.fontScale = d3
     .scaleThreshold()
-    .domain([25, 50, 100, 150])
-    .range([7, 12, 15, 20, 30]);
+    .domain(domainRatios)
+    .range([1, 2, 3, 4, 5, 7, 12, 15, 20, 30]);
+    // Define scale for alpha decay rate in force simulation.
+    // Domain's unit is pixel for ratio of graphical container's width to count
+    // of nodes.
+    // Range's unit is arbitrary for decay rates.
+    //domain: range
+    //0-0.3: 0.2
+    //0.3-1: 0.1
+    //1-5: 0.05
+    //5-10: 0.03
+    //10-15: 0.015
+    //15-25: 0.015
+    //25-50: 0.015
+    //50-100: 0.01
+    //100-150: 0.01
+    //150-10000: 0.01
+    self.alphaDecayScale = d3
+    .scaleThreshold()
+    .domain(domainRatios)
+    .range([0.2, 0.1, 0.05, 0.03, 0.015, 0.015, 0.015, 0.01, 0.01, 0.01]);
+    // Define scale for velocity decay rate in force simulation.
+    // Domain's unit is pixel for ratio of graphical container's width to count
+    // of nodes.
+    // Range's unit is arbitrary for decay rates.
+    //domain: range
+    //0-0.3: 0.5
+    //0.3-1: 0.5
+    //1-5: 0.4
+    //5-10: 0.4
+    //10-15: 0.4
+    //15-25: 0.3
+    //25-50: 0.3
+    //50-100: 0.3
+    //100-150: 0.3
+    //150-10000: 0.3
+    self.velocityDecayScale = d3
+    .scaleThreshold()
+    .domain(domainRatios)
+    .range([0.5, 0.5, 0.4, 0.4, 0.4, 0.3, 0.3, 0.3, 0.3, 0.3]);
     // Compute ratio for scales' domain.
     self.scaleRatio = self.graphWidth / self.nodesRecords.length;
-    // Compute dimension from scale.
-    self.scaleDimension = self.dimensionScale(self.scaleRatio);
+    console.log("nodes: " + self.nodesRecords.length);
+    console.log("links: " + self.linksRecords.length);
+    console.log("scale ratio: " + self.scaleRatio);
+    // Compute dimensions from scale.
+    self.scaleNodeDimension = self.nodeDimensionScale(self.scaleRatio);
+    self.scaleLinkDimension = self.linkDimensionScale(self.scaleRatio);
     // Compute font size from scale.
     self.scaleFont = self.fontScale(self.scaleRatio);
+    // Compute simulation decay rates from scale.
+    self.scaleAlphaDecay = self.alphaDecayScale(self.scaleRatio);
+    self.scaleVelocityDecay = self.velocityDecayScale(self.scaleRatio);
   }
   /**
   * Creates definition of directional markers for links.
@@ -1504,7 +1587,7 @@ class TopologyView {
         self.definition.appendChild(self.marker);
         self.marker.setAttribute("id", "link-marker");
         self.marker.setAttribute("viewBox", "0 0 10 10");
-        self.marker.setAttribute("refX", 20);
+        self.marker.setAttribute("refX", -3);
         self.marker.setAttribute("refY", 5);
         self.marker.setAttribute("markerWidth", 5);
         self.marker.setAttribute("markerHeight", 5);
@@ -1519,7 +1602,7 @@ class TopologyView {
       .append("marker")
       .attr("id", "link-marker")
       .attr("viewBox", "0 0 10 10")
-      .attr("refX", 15)
+      .attr("refX", -5)
       .attr("refY", 5)
       .attr("markerWidth", 5)
       .attr("markerHeight", 5)
@@ -1559,6 +1642,10 @@ class TopologyView {
       return data.simplification;
     });
     self.links.attr("marker-mid", "url(#link-marker)");
+    // Determine dimensions for representations of network's elements.
+    // Set dimensions of links.
+    self.linkStrokeWidth = self.scaleLinkDimension * 1;
+    self.links.attr("stroke-width", self.linkStrokeWidth);
   }
   /**
   * Creates nodes in a node-link diagram.
@@ -1619,35 +1706,22 @@ class TopologyView {
     });
     self.nodesEntities.classed("entity", true);
     // Determine dimensions for representations of network's elements.
-    // As optimal scale depends on context, determine dimensions within script.
-    // Otherwise an alternative is to determine dimension within style and then
-    // access the dimension using element.getBoundingClientRect or
-    // window.getComputeStyle.
-    //var node = self.graph.querySelector(".node.mark.metabolite .entity");
     // Set dimensions of metabolites' nodes.
     var nodesEntitiesMetabolites = self.nodesEntities.filter(function (data) {
       return data.entity === "metabolite";
     });
-    self.metaboliteNodeWidth = self.scaleDimension * 1;
-    self.metaboliteNodeHeight = self.scaleDimension * 0.5;
-    nodesEntitiesMetabolites.attr("rx", function (data) {
-      return self.metaboliteNodeWidth;
-    });
-    nodesEntitiesMetabolites.attr("ry", function (data) {
-      return self.metaboliteNodeHeight;
-    });
+    self.metaboliteNodeWidth = self.scaleNodeDimension * 1;
+    self.metaboliteNodeHeight = self.scaleNodeDimension * 0.5;
+    nodesEntitiesMetabolites.attr("rx", self.metaboliteNodeWidth);
+    nodesEntitiesMetabolites.attr("ry", self.metaboliteNodeHeight);
     // Set dimensions of reactions' nodes.
     var nodesEntitiesReactions = self.nodesEntities.filter(function (data) {
       return data.entity === "reaction";
     });
-    self.reactionNodeWidth = self.scaleDimension * 2.5;
-    self.reactionNodeHeight = self.scaleDimension * 0.5;
-    nodesEntitiesReactions.attr("width", function (data) {
-      return self.reactionNodeWidth;
-    });
-    nodesEntitiesReactions.attr("height", function (data) {
-      return self.reactionNodeHeight;
-    });
+    self.reactionNodeWidth = self.scaleNodeDimension * 2.5;
+    self.reactionNodeHeight = self.scaleNodeDimension * 0.75;
+    nodesEntitiesReactions.attr("width", self.reactionNodeWidth);
+    nodesEntitiesReactions.attr("height", self.reactionNodeHeight);
     // Shift reactions' nodes according to their dimensions.
     nodesEntitiesReactions.attr("transform", function (data) {
       var x = - (self.reactionNodeWidth / 2);
@@ -1715,9 +1789,9 @@ class TopologyView {
     self.simulation = d3.forceSimulation()
     .alphaTarget(0)
     .alpha(1)
-    .alphaDecay(0.01)
+    .alphaDecay(self.scaleAlphaDecay)
     .alphaMin(0.001)
-    .velocityDecay(0.3)
+    .velocityDecay(self.scaleVelocityDecay)
     .nodes(self.nodesRecords)
     .force("center", d3.forceCenter()
       .x(self.graphWidth / 2)
@@ -1731,14 +1805,14 @@ class TopologyView {
           return self.reactionNodeWidth;
         }
       })
-      .strength(0.9)
+      .strength(0.7)
       .iterations(1)
     )
     .force("charge", d3.forceManyBody()
-      .theta(0.7)
-      .strength(-250)
+      .theta(0.9)
+      .strength(-500)
       .distanceMin(1)
-      .distanceMax(self.scaleDimension * 15)
+      .distanceMax(self.scaleNodeDimension * 15)
     )
     .force("link", d3.forceLink()
       .links(self.linksRecords)

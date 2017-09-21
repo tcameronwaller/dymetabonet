@@ -1,0 +1,195 @@
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+
+
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+
+Plan
+
+Include the interface sketches in the presentation.
+
+Also include snapshots of other detail views from sketch over the interface svg.
+
+
+
+--------------------------------------------------
+Importance and Relevance of Study of Metabolism
+
+Metabolism sustains life.
+Metabolic defects contribute to many human diseases, including obesity, diabetes, cardiovascular disease, and cancer.
+The study of metabolism is relevant to domains of biology, biotechnology, pharmacology, and medicine.
+Goals in these domains include understanding life, using life's mechanisms to synthesize materials and perform other tasks, modification of natural processes, diagnosis of human disease, and treatment of human disease.
+
+Project Goal
+Support the study of metabolism in domains of biology, biotechnology, pharmacology, and medicine.
+
+
+Slide 1
+Title
+
+Slide 2
+Relevance, Goal
+Metabolism sustains life.
+Metabolism is an integral part of the biological system.
+Defects in metabolism drive many human diseases.
+The goal of this project is to develop computational methods to support the study of metabolism in domains of biology, biotechnology, pharmacology, and medicine.
+
+--------------------------------------------------
+Study of Metabolism
+
+1) Need to design experiments.
+Consider context of metabolic system when studying individual members.
+
+2) Need to interpret experimental results.
+Consider results in context of metabolic system.
+Data include mutations and copy variations in genes (genomics), abundance and splice variations of transcripts (transcriptomics), abundance and post-translational modifications of proteins (proteomics), and abundance of metabolites (metabolomics).
+
+Slide 3
+The study of metabolism
+1) Design experiments to study functions of individual entities or processes.
+2) Interpret results, especially from 'omics technologies (genomics, transcriptomics, proteomics, metabolomics).
+In both of these cases, it is important to consider the holistic context of the metabolic system.
+
+--------------------------------------------------
+Current Technology
+
+Briefly mention some relevant technologies.
+
+Databases
+-KEGG
+-UniProt
+-MetaCyc
+
+Models
+-Recon 2.2
+
+Visual Exploration
+KEGG Atlas
+MetScape
+Escher
+
+Slide 4
+Describe current technology very briefly.
+
+--------------------------------------------------
+Challenges in the Study of Metabolism
+
+Challenges
+1) Preserve holistic context while providing specific detail.
+Metabolism functions as a cooperative whole.
+Need to consider and study metabolism holistically.
+Metabolism is also vast and complex.
+Need to consider relevant portions of metabolism in detail according to interest.
+2) Represent selections of the network flexibly and dynamically.
+Connection and cooperation between members of the metabolic system traverse and transcend typical pathways.
+Interest sets of metabolism are custom and case-specific with great variety.
+There are many alternative paths.
+3) Associate experimental results (data) with context of metabolic system.
+
+Slide 5
+1) Preserve holistic context while providing specific detail.
+Metabolism functions as a cooperative whole.
+Need to consider and study metabolism holistically.
+Metabolism is also vast and complex.
+Need to consider relevant portions of metabolism in detail according to interest.
+2) Represent selections of the network flexibly and dynamically.
+Connection and cooperation between members of the metabolic system traverse and transcend typical pathways.
+Interest sets of metabolism are custom and case-specific with great variety.
+Need for automatic, dynamic representations that are clear.
+3) Associate experimental results (data) with context of metabolic system.
+
+--------------------------------------------------
+Tasks
+
+Maybe I should use "property" exclusively for attributes from the metabolic model and "attribute" exclusively for experimental data.
+
+Selection Tasks
+1) Select nodes and links by topology.
+-Select by proximity, within specific path length, to a single node.
+-Select shortest paths connecting multiple nodes.
+2) Select nodes and links by property (model factor) or attribute (experimental measurement).
+-Select by inclusion or exclusion of any property or attribute of nodes or links.
+3) Select nodes and links by both topology and property or attribute.
+
+Exploration Tasks
+1) Represent selections of the metabolic network visually.
+-Nodes and links.
+-Flexible, dynamic representation to accommodate custom selections.
+2) Display network information (distribution of degree, betweenness centrality, and set distribution) for both entire model and selection.
+3) Provide option to replicate nodes with high degrees.
+4) Represent properties of nodes and links on the visual network.
+-Arrange nodes and links in positional groups for sets (cellular compartment, pathway).
+-Color nodes and links for sets (pathway).
+5) On selection of nodes or links, display detail information for metabolites (common reaction partners, set distribution) or reactions (genes, transcripts, proteins).
+
+Measurement Tasks
+1) Represent selection of specific quantitative attribute by color saturation on the network.
+-Either nodes for metabolites or links for genes, transcripts, or proteins.
+
+--------------------------------------------------
+Design
+
+16:9
+35 cm X 19.7 cm
+
+Slide 6
+The following images are sketches to demonstrate ideas.
+
+Slide 7
+
+Slide 8
+Exploration Tasks
+1) Represent selections of the metabolic network visually.
+-Nodes and links.
+-Flexible, dynamic representation to accommodate custom selections.
+2) Display network information (distribution of degree, betweenness centrality, and sets) for entire model and selection.
+3) Provide option to replicate nodes with high degrees.
+4) Represent properties of nodes and links on the visual network.
+-Arrange nodes and links in positional groups for sets (cellular compartment, pathway).
+-Color nodes and links for sets (pathway).
+5) On selection of nodes or links, display summary information for metabolites (common reaction partners, set distribution) or reactions (genes, transcripts, proteins).
+
+Slide 9
+Slide 10
+
+Slide 11
+Measurement Tasks
+1) Represent selection of specific quantitative attribute by color saturation on the network.
+-Either nodes for metabolites or links for genes, transcripts, or proteins.
+
+--------------------------------------------------
+Prototype
+
+https://tcameronwaller.github.io/profondeur/
+This prototype primarily explores an automatic, dynamic layout for network selections.
+
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+
+
+--------------------------------------------------
+Metabolism as a System and Network
+
+Metabolism is a system of biological entities and relations between them.
+These entities include genes, transcripts, proteins, and metabolites.
+These relations include ...
+
+Metabolic Network
+-Reactions (involving genes, transcripts, and proteins) relate metabolites.
+--Simplification
+--Focus on metabolic processes
+--Model transport events as reactions.
+-Diverse attributes and properties of nodes and links
+--Attributes and properties define multiple sets (cellular compartment, metabolic pathway)
+-"Digraph" with directional links
+-"Hypergraph" with links between multiple nodes
+-Great range (1-1000?) of "degree distribution" of degrees/connections of metabolite nodes.
+-Prevalent loops.
+-Many alternative paths.
+--While some paths may dominate flux, alternative paths still matter.
+
+Metabolism functions as a cooperative, inter-connected whole.

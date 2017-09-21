@@ -1,0 +1,90 @@
+--------------------------------------------------
+Presentation Notes
+28 September 2017
+Research Seminar
+Department of Biochemistry
+University of Utah
+--------------------------------------------------
+
+----------
+Slide 1
+
+Note
+
+Figure
+
+"Visual Exploration and Analysis of Metabolic Networks"
+T Cameron Waller
+28 September 2017
+Research Seminar
+Department of Biochemistry
+University of Utah
+
+Human body
+Tissue
+Cell
+Molecular reaction
+
+--------------------------------------------------
+Section: ...
+--------------------------------------------------
+
+----------
+Slide 2
+
+Note
+Introduction of metabolism, metabolic regulation, and their study.
+Metabolism is a collective system of all chemical reactions in an organism that are necessary for survival, growth, and reproduction.
+Regulation within this system differentiates between many states of health and disease.
+Metabolic diseases in humans include obesity, diabetes, cancer, and death.
+Death involves complete disregulation of metabolism.
+The study of metabolism is relevant to human health.
+Metabolism's complexity is a challenge, especially as accurate context is important.
+
+Figure
+Human body
+Tissue
+Cell
+Molecular reaction
+
+----------
+Slide 3
+
+Note
+Introduction of the metabolic network.
+A network is an abstract representation of relations between entities.
+Metabolism behaves like a network of reactions between metabolites.
+Metabolites are small, biologically-relevant molecules.
+Reactions involve roles of genes, transcripts, and proteins for encoding, catalysis, and regulation.
+Metabolites and their reactions segregate between cellular compartments, organelles.
+Sets of reactions behave cooperatively in pathways or processes.
+
+Figure
+
+----------
+Slide 4
+
+Note
+Introduction of the metabolic model.
+
+Summarize the raw data within the metabolic model.
+
+Figure
+Interactive viewer for data in JSON format
+
+----------
+Slide ?
+
+Note
+"So, this is a custom graph that I made with my application."
+"It represents the entire network for the Recon 2.2 model of human metabolism."
+"It has ___ nodes and ___ links."
+"..."
+"So, my job here is done."
+"As you can see from this figure..."
+"Believe it or not, graphs like this are not very useful."
+
+Figure
+Visual representation of entire network for human metabolism
+Custom color scheme with dark background and bright nodes, links, and labels
+
