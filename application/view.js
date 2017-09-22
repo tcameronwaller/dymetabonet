@@ -1306,6 +1306,10 @@ class TopologyView {
   * application.
   */
 
+  // TODO: Re-draw the network for general (non-compartmental) version.
+  // TODO: Make nodes and links same dimension as they are in the compartmental version in order to illustrate differences.
+  // TODO: Reduce frequency of re-positions to make the process more efficient.
+
   /**
   * Initializes an instance of the class.
   * @param {Object} model Model of the application's comprehensive state.
@@ -1411,6 +1415,10 @@ class TopologyView {
     self.prepareNetworkElementsData(self);
     // Create scales for representations of network's elements.
     self.createRepresentationsScales(self);
+    // Create scales for simulations of forces between network's elements.
+    self.createSimulationsScales(self);
+    // Create scales for efficiency.
+    self.createEfficiencyScales(self);
     // Define directional marker for links.
     self.createLinkDirectionalMarker(self);
     // Create links.
@@ -1447,16 +1455,16 @@ class TopologyView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
-    // The optimal scale for representations of network's elements depends on
+    // The optimal scales for representations of network's elements depend on
     // the dimensions of the graphical container or view and on the count of
     // elements.
-    // Determine this scale dynamically within script since it depends on
+    // Determine these scales dynamically within script since they depend on
     // context of use.
     // Otherwise an alternative is to determine dimension within style and then
     // access the dimension using element.getBoundingClientRect or
     // window.getComputeStyle.
     //var node = self.graph.querySelector(".node.mark.metabolite .entity");
-    // Define scales' domains on the basis of the ratio of the graphical
+    // Define scales' domain on the basis of the ratio of the graphical
     // container's width to the count of nodes.
     var domainRatios = [0.3, 1, 5, 10, 15, 25, 50, 100, 150];
     // Define scale for dimensions of nodes' representations.
@@ -1474,16 +1482,16 @@ class TopologyView {
     //50-100: 35
     //100-150: 50
     //150-10000: 75
-    self.nodeDimensionScale = d3
+    var nodeDimensionScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([1, 3, 5, 7, 10, 15, 25, 35, 50, 75]);
+    .range([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
     // Define scale for dimensions of links' representations.
     // Domain's unit is pixel for ratio of graphical container's width to count
     // of nodes.
     // Range's unit is pixel for dimension of graphical elements.
     //domain: range
-    //0-0.3: 0.02
+    //0-0.3: 0.03
     //0.3-1: 0.05
     //1-5: 0.1
     //5-10: 0.3
@@ -1493,10 +1501,10 @@ class TopologyView {
     //50-100: 3
     //100-150: 5
     //150-10000: 7
-    self.linkDimensionScale = d3
+    var linkDimensionScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([0.02, 0.05, 0.1, 0.3, 0.5, 0.7, 1, 3, 5, 7]);
+    .range([0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03]);
     // Define scale for size of font in annotations.
     // Domain's unit is pixel for ratio of graphical container's width to count
     // of nodes.
@@ -1512,61 +1520,128 @@ class TopologyView {
     //50-100: 15
     //100-150: 20
     //150-10000: 30
-    self.fontScale = d3
+    var fontScale = d3
     .scaleThreshold()
     .domain(domainRatios)
     .range([1, 2, 3, 4, 5, 7, 12, 15, 20, 30]);
-    // Define scale for alpha decay rate in force simulation.
-    // Domain's unit is pixel for ratio of graphical container's width to count
-    // of nodes.
-    // Range's unit is arbitrary for decay rates.
-    //domain: range
-    //0-0.3: 0.2
-    //0.3-1: 0.1
-    //1-5: 0.05
-    //5-10: 0.03
-    //10-15: 0.015
-    //15-25: 0.015
-    //25-50: 0.015
-    //50-100: 0.01
-    //100-150: 0.01
-    //150-10000: 0.01
-    self.alphaDecayScale = d3
-    .scaleThreshold()
-    .domain(domainRatios)
-    .range([0.2, 0.1, 0.05, 0.03, 0.015, 0.015, 0.015, 0.01, 0.01, 0.01]);
-    // Define scale for velocity decay rate in force simulation.
-    // Domain's unit is pixel for ratio of graphical container's width to count
-    // of nodes.
-    // Range's unit is arbitrary for decay rates.
-    //domain: range
-    //0-0.3: 0.5
-    //0.3-1: 0.5
-    //1-5: 0.4
-    //5-10: 0.4
-    //10-15: 0.4
-    //15-25: 0.3
-    //25-50: 0.3
-    //50-100: 0.3
-    //100-150: 0.3
-    //150-10000: 0.3
-    self.velocityDecayScale = d3
-    .scaleThreshold()
-    .domain(domainRatios)
-    .range([0.5, 0.5, 0.4, 0.4, 0.4, 0.3, 0.3, 0.3, 0.3, 0.3]);
     // Compute ratio for scales' domain.
     self.scaleRatio = self.graphWidth / self.nodesRecords.length;
-    console.log("nodes: " + self.nodesRecords.length);
-    console.log("links: " + self.linksRecords.length);
-    console.log("scale ratio: " + self.scaleRatio);
+    //console.log("nodes: " + self.nodesRecords.length);
+    //console.log("links: " + self.linksRecords.length);
+    //console.log("scale ratio: " + self.scaleRatio);
     // Compute dimensions from scale.
-    self.scaleNodeDimension = self.nodeDimensionScale(self.scaleRatio);
-    self.scaleLinkDimension = self.linkDimensionScale(self.scaleRatio);
+    self.scaleNodeDimension = nodeDimensionScale(self.scaleRatio);
+    self.scaleLinkDimension = linkDimensionScale(self.scaleRatio);
     // Compute font size from scale.
-    self.scaleFont = self.fontScale(self.scaleRatio);
+    self.scaleFont = fontScale(self.scaleRatio);
+  }
+  /**
+  * Creates scales for simulations of forces between network's elements.
+  * @param {Object} view Instance of interface's current view.
+  */
+  createSimulationsScales(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Simulations of forces between network's elements are computationally
+    // expensive.
+    // The computational cost varies with the counts of network's elements.
+    // To maintain efficiency, vary the rigor of these simulations by the counts
+    // of network's elements.
+    // Determine these scales dynamically within script since they depend on
+    // context of use.
+    // Define scales' domain on the basis of the count of nodes.
+    var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
+    // Define scale for alpha decay rate in force simulation.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.05, iterations = 134.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.02, iterations = 300.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.015, iterations = 458.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.005, iterations = 1379.
+    // Domain's unit is count of nodes.
+    // Range's unit is arbitrary for decay rates.
+    //domain: range
+    //0-100: 0.005
+    //100-500: 0.006
+    //500-1000: 0.007
+    //1000-2500: 0.008
+    //2500-5000: 0.009
+    //5000-10000: 0.01
+    //10000-1000000: 0.011
+    var alphaDecayScale = d3
+    .scaleThreshold()
+    .domain(domainCounts)
+    .range([0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005]);
+    // Define scale for velocity decay rate in force simulation.
+    // Domain's unit is count of nodes.
+    // Range's unit is arbitrary for decay rates.
+    //domain: range
+    //0-100: 0.2
+    //100-500: 0.2
+    //500-1000: 0.25
+    //1000-2500: 0.25
+    //2500-5000: 0.25
+    //5000-10000: 0.3
+    //10000-1000000: 0.3
+    var velocityDecayScale = d3
+    .scaleThreshold()
+    .domain(domainCounts)
+    .range([0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]);
     // Compute simulation decay rates from scale.
-    self.scaleAlphaDecay = self.alphaDecayScale(self.scaleRatio);
-    self.scaleVelocityDecay = self.velocityDecayScale(self.scaleRatio);
+    self.scaleAlphaDecay = alphaDecayScale(self.nodesRecords.length);
+    self.scaleVelocityDecay = velocityDecayScale(self.nodesRecords.length);
+  }
+  /**
+  * Creates scale for efficiency in the application.
+  * @param {Object} view Instance of interface's current view.
+  */
+  createEfficiencyScales(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Graphical rendering of visual elements for network's elements is
+    // computationally expensive
+    // The maintenance of efficient interactivity in the application requires
+    // restriction on behavior.
+    // Greater scale of the network requires more stringent restriction for
+    // computational efficiency.
+    // Determine a scale for this efficiency dynamically within script since it
+    // depends on context of use.
+    // Define scale's domain on the basis of the count of nodes.
+    var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
+    // Define scale for intervals at which to restore positions of nodes and
+    // links during simulation's iterations.
+    // Domain's unit is count of nodes.
+    // Range's unit is arbitrary.
+    //domain: range
+    //0-100: 3
+    //100-500: 5
+    //500-1000: 10
+    //1000-2500: 15
+    //2500-5000: 20
+    //5000-10000: 25
+    //10000-1000000: 50
+    var intervalScale = d3
+    .scaleThreshold()
+    .domain(domainCounts)
+    .range([50, 50, 50, 50, 50, 50, 50]);
+    // Define scale for representation of labels for nodes.
+    // Domain's unit is count of nodes.
+    // Range's unit is arbitrary.
+    //domain: range
+    //0-100: true
+    //100-500: true
+    //500-1000: true
+    //1000-2500: true
+    //2500-5000: false
+    //5000-10000: false
+    //10000-1000000: false
+    var labelScale = d3
+    .scaleThreshold()
+    .domain(domainCounts)
+    .range([true, true, true, true, false, false, false]);
+    // Compute efficient behavior rules from scales.
+    self.scaleInterval = intervalScale(self.nodesRecords.length);
+    self.scaleLabel = labelScale(self.nodesRecords.length);
   }
   /**
   * Creates definition of directional markers for links.
@@ -1775,6 +1850,11 @@ class TopologyView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
+    // Define parameters of the force simulation.
+    self.alpha = 1;
+    self.alphaMinimum = 0.001;
+    // Initiate monitor of simulation's progress.
+    self.initiateForceSimulationProgress(self);
     // Initiate the force simulation.
     // The force method assigns a specific force simulation to the name.
     // Collision force prevents overlap and occlusion of nodes.
@@ -1788,9 +1868,9 @@ class TopologyView {
     // labels, also have access to the coordinates of these positions.
     self.simulation = d3.forceSimulation()
     .alphaTarget(0)
-    .alpha(1)
+    .alpha(self.alpha)
     .alphaDecay(self.scaleAlphaDecay)
-    .alphaMin(0.001)
+    .alphaMin(self.alphaMinimum)
     .velocityDecay(self.scaleVelocityDecay)
     .nodes(self.nodesRecords)
     .force("center", d3.forceCenter()
@@ -1809,10 +1889,10 @@ class TopologyView {
       .iterations(1)
     )
     .force("charge", d3.forceManyBody()
-      .theta(0.9)
+      .theta(0.3)
       .strength(-500)
       .distanceMin(1)
-      .distanceMax(self.scaleNodeDimension * 15)
+      .distanceMax(self.scaleNodeDimension * 50)
     )
     .force("link", d3.forceLink()
       .links(self.linksRecords)
@@ -1835,19 +1915,84 @@ class TopologyView {
     )
     .force("positionX", d3.forceX()
       .x(self.graphWidth / 2)
-      .strength(0.0001)
+      .strength(0.00005)
     )
     .force("positionY", d3.forceY()
       .y(self.graphWidth / 2)
-      .strength(0.01)
+      .strength(0.05)
     )
     .on("tick", function () {
-      self.restoreNodesMarksPositions(self);
-      self.restoreLinksPositions(self);
+      // Restore monitor of simulation's progress.
+      self.restoreForceSimulationProgress(self);
     })
     .on("end", function () {
-      self.refineNodesLinksRepresentations(self);
+      // Complete tasks dependent on simulation's completion.
+      self.completeForceSimulation(self);
     });
+  }
+  /**
+  * Initiates a monitor of force simulation's progress.
+  * @param {Object} view Instance of interface's current view.
+  */
+  initiateForceSimulationProgress(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Compute an estimate of the simulation's iterations.
+    self.estimateIterations = self.computeSimulationIterations(self);
+    // Initiate counter for simulation's iterations.
+    self.simulationCounter = 0;
+  }
+  /**
+  * Computes an estimate of iterations for a simulation.
+  * @param {Object} view Instance of interface's current view.
+  */
+  computeSimulationIterations(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    return (
+      (Math.log10(self.alphaMinimum)) /
+      (Math.log10(self.alpha - self.scaleAlphaDecay))
+    );
+  }
+  /**
+  * Restores a monitor of force simulation's progress.
+  * @param {Object} view Instance of interface's current view.
+  */
+  restoreForceSimulationProgress(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Increment count of simulation's iterations.
+    self.simulationCounter += 1;
+    // Report simulation's progress.
+    var percentage = Math
+    .round((self.simulationCounter / self.estimateIterations) * 100);
+    if (percentage % 10 === 0) {
+      console.log("simulation: " + percentage + "%");
+    }
+    // Restore positions of nodes and links periodically throughout the
+    // simulation.
+    if (self.simulationCounter % self.scaleInterval === 0) {
+      self.restoreNodesMarksPositions(self);
+      self.restoreLinksPositions(self);
+    }
+  }
+  /**
+  * Completes tasks dependent on force simulation.
+  * @param {Object} view Instance of interface's current view.
+  */
+  completeForceSimulation(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Report completion of simulation.
+    console
+    .log("simulation complete: " + self.simulationCounter + " iterations");
+    self.restoreNodesMarksPositions(self);
+    self.restoreLinksPositions(self);
+    self.refineNodesLinksRepresentations(self);
   }
   /**
   * Restores positions of nodes' visual representations according to results of
@@ -2008,8 +2153,10 @@ class TopologyView {
     // Represent reactions' directionalities on their nodes.
     self.createReactionsNodesDirections(self);
     // Include labels for nodes.
-    self.createNodesLabels(self);
-    self.restoreNodesLabelsPositions(self);
+    if (self.scaleLabel) {
+      self.createNodesLabels(self);
+      self.restoreNodesLabelsPositions(self);
+    }
     // Represent reactions' directionalities in links.
     self.restoreLinksPositions(self);
   }
@@ -2095,6 +2242,7 @@ class TopologyView {
       var nodeRecord = Network
       .accessElementRecord(nodeIdentifier, metabolitesNodes);
       // Determine details of node's relation to the reaction.
+      // TODO: Some problem here with general network.
       if (nodeRecord.compartment) {
         // Node represents compartmentalization.
         var matches = Extraction.filterReactionParticipants({

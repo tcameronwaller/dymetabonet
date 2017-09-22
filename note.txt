@@ -4,6 +4,16 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+21 September 2017
+
+----------
+Save Image in High Quality from SVG Graphics in Browser
+
+http://nytimes.github.io/svg-crowbar/
+https://bl.ocks.org/mbostock/6466603
+http://techslides.com/save-svg-as-an-image
+
+--------------------------------------------------
 20 September 2017
 
 ----------

@@ -229,7 +229,7 @@
     height: 100%;
     width: 100%;
     /*dark*/
-    fill: rgba(255, 100, 0, 1);
+    fill: rgba(255, 50, 0, 1);
     /*light*/
     /*fill: rgba(0, 0, 0, 1);*/
 }
@@ -261,7 +261,7 @@
 
 #topology svg .node.mark.reaction .direction {
   /*dark*/
-  fill: rgba(100, 0, 200, 1);
+  fill: rgba(50, 0, 200, 1);
 }
 
 #topology svg .node.mark.metabolite.simplification .entity {
@@ -290,11 +290,11 @@
 
 #topology svg .link {
   /*dark*/
-  stroke: rgba(200, 200, 0, 1);
+  stroke: rgba(255, 255, 0, 1);
 }
 
 #topology svg .link.reactant {
-    stroke-dasharray: 5,5;
+    stroke-dasharray: 5,7;
 }
 
 #topology svg .link.product {
