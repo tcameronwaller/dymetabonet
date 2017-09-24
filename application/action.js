@@ -355,8 +355,8 @@ class Action {
     // Filter against complete collections of entities to account for any
     // changes to selections of filters.
     // Copy metabolic entities.
-    var metabolites = Extraction.copyObjectEntitiesRecords(model.metabolites);
-    var reactions = Extraction.copyObjectEntitiesRecords(model.reactions);
+    var metabolites = Extraction.copyEntitiesRecordsObject(model.metabolites);
+    var reactions = Extraction.copyEntitiesRecordsObject(model.reactions);
     // Filter the metabolic entities and their values of attributes.
     var currentReactions = Attribution.filterReactionsAttributesValues({
       selections: valuesSelections,
@@ -590,11 +590,56 @@ class Action {
     }
   }
   /**
+  * Summarizes the counts of reactions in which each metabolite participates.
+  * @param {Object} model Model of the comprehensive state of the
+  * application.
+  */
+  static summarizeMetabolitesParticipationReactions(model) {
+    // Prepare summary of metabolites' participation in reactions.
+    var summary = Extraction
+    .createMetabolitesParticipationSummary(model.currentMetabolites);
+    console.log("summary of metabolites' participation in reactions...");
+    console.log(summary);
+    General.saveObject("metabolites_reactions.json", summary);
+  }
+  /**
+  * Designates a single metabolite for simplification.
+  * Submits new values to the model of the application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a single metabolite.
+  * @param {Object} parameters.model Model of the comprehensive state of the
+  * application.
+  */
+  static changeMetabolitesSimplification({identifiers, model} = {}) {
+    // Access record for metabolite.
+    var metabolites = model.currentMetabolites;
+    var metabolite = metabolites[identifier];
+    Extraction.changeMetaboliteSimplification(metabolite);
+
+    // TODO: I need to include the new record for metabolite in the model's currentMetabolites.
+    // TODO: First update the records, then submit to model.
+  }
+  /**
+  * Designates a single metabolite for simplification.
+  * Submits new values to the model of the application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a single metabolite.
+  * @param {Object} parameters.model Model of the comprehensive state of the
+  * application.
+  */
+  static changeMetaboliteSimplification({identifier, model} = {}) {
+    // Access record for metabolite.
+    var metabolites = model.currentMetabolites;
+    var metabolite = metabolites[identifier];
+    Extraction.changeMetaboliteSimplification(metabolite);
+  }
+  /**
   * Executes a temporary procedure of utility for application's development.
   * @param {Object} model Model of the application's comprehensive state.
   */
   static executeTemporaryProcedure(model) {
-    Action.createNetwork(model);
+    //Action.createNetwork(model);
+    Action.summarizeMetabolitesParticipationReactions(model);
   }
 
   // Secondary actions relevant to application's state.
@@ -637,9 +682,9 @@ class Action {
     var setsFilter = false;
     // Copy metabolic entities.
     var currentMetabolites = Extraction
-    .copyObjectEntitiesRecords(entitiesSets.metabolites);
+    .copyEntitiesRecordsObject(entitiesSets.metabolites);
     var currentReactions = Extraction
-    .copyObjectEntitiesRecords(entitiesSets.reactions);
+    .copyEntitiesRecordsObject(entitiesSets.reactions);
     // Determine values of attributes that summarize cardinalities of sets
     // of entities.
     var setsCardinalitiesAttributes = Action

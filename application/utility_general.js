@@ -248,7 +248,6 @@ class General {
     };
   }
 
-
   /**
   * Computes the sum of elements in an array.
   * @param {Array<number>} elements Array of elements.
@@ -267,6 +266,26 @@ class General {
   static computeElementsMean(elements) {
     var sum = General.computeElementsSum(elements);
     return sum / elements.length;
+  }
+  /**
+  * Determines the maximal value.
+  * @param {Array<number>} numbers Numbers to compare.
+  * @returns {number} Number of maximal value.
+  */
+  static determineMaximum(numbers) {
+    return numbers.reduce(function (maximum, number) {
+      return Math.max(maximum, number);
+    });
+  }
+  /**
+  * Determines the minimal value.
+  * @param {Array<number>} numbers Numbers to compare.
+  * @returns {number} Number of minimal value.
+  */
+  static determineMinimum(numbers) {
+    return numbers.reduce(function (minimum, number) {
+      return Math.min(minimum, number);
+    });
   }
   /**
   * Creates points for the source, center, and target vertices of a straight
@@ -358,6 +377,171 @@ class General {
       // Compose previous and current points.
       return (string + delimiter + point.x + "," + point.y);
     }, "");
+  }
+
+  /**
+  * Calculates the frequencies of each value in a collection of data.
+  * Sequential identifiers of bins represent all intervals across the
+  * distribution, including those that are empty.
+  * Omits records and frequencies for these empty intervals.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.records Information about records and
+  * their values.
+  * @param {string} parameters.key Key for values in records.
+  * @param {number} parameters.count Count of bins for values.
+  * @returns {Array<Object>} Shallow copies of original records with information
+  * about bins and frequencies of records in each bin.
+  */
+  static calculateRecordsValuesFrequencies({records, key, count} = {}) {
+    // Calculate frequencies of values in intervals across the distribution.
+    var values = records.map(function (record) {
+      return record[key];
+    });
+    var distributionBins = General.calculateDistributionIntervalFrequencies({
+      values: values,
+      count: count
+    });
+    // Include information about bins and frequencies in records.
+    var recordsFrequencies = records.map(function (record) {
+      // Determine record's value.
+      var value = record[key];
+      // Identify bin to which record's value belongs.
+      var recordBin = distributionBins.find(function (bin) {
+        return (bin.minimum <= value && value < bin.maximum);
+      });
+      // Create new record with information about bin and frequency.
+      var novelAttributes = {
+        bin: recordBin.identifier,
+        frequency: recordBin.frequency
+      };
+      var novelRecord = Object.assign(record, novelAttributes);
+      // Replace previous record in the collection.
+      return novelRecord;
+    });
+    return recordsFrequencies;
+  }
+  /**
+  * Calculates the frequencies of values within each interval across a
+  * distribution.
+  * These frequencies represent the distribution and are useful to create an
+  * histogram.
+  * This distribution includes empty intervals.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<number>} parameters.values Values in a distribution.
+  * @param {number} parameters.count Count of bins for values.
+  * @returns {Array<Object<number>>} Records with information about bins at
+  * regular, equal intervals and frequencies of values within each bin.
+  */
+  static calculateDistributionIntervalFrequencies({values, count} = {}) {
+    // Create bins for values at regular, equal intervals.
+    var bins = General.createValuesBins({
+      values: values,
+      count: count
+    });
+    // Count records that belong to each bin.
+    var binsFrequencies = values.reduce(function (binsCollection, value) {
+      // Identify bin to which value belongs.
+      var index = binsCollection.findIndex(function (bin) {
+        return (bin.minimum <= value && value < bin.maximum);
+      });
+      // Create new record for bin with incremental frequency.
+      var novelAttribute = {
+        frequency: binsCollection[index].frequency + 1
+      };
+      var novelBin = Object.assign(binsCollection[index], novelAttribute);
+      // Replace bin's previous record in the collection.
+      var previousBins = General.copyArrayOmitElements({
+        array: binsCollection,
+        index: index,
+        count: 1
+      });
+      var currentBins = [].concat(previousBins, novelBin);
+      return currentBins;
+    }, bins);
+    // Sort bins by sequential identifiers.
+    var sortBins = binsFrequencies.slice().sort(function (firstBin, secondBin) {
+      return (
+        firstBin.identifier - secondBin.identifier
+      );
+    });
+    // Return bins.
+    return sortBins;
+  }
+  /**
+  * Creates bins for values with regular, equal intervals.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<number>} parameters.values Values to assign to bins.
+  * @param {number} parameters.count Count of bins to create.
+  * @returns {Array<Object<number>>} Bins for values with regular, equal
+  * intervals.
+  */
+  static createValuesBins({values, count} = {}) {
+    // Determine regular equal interval of bins.
+    // Determine interval from one unit less than count to compensate for
+    // inclusivity in definition of bin's intervals.
+    var minimum = General.determineMinimum(values);
+    var maximum = General.determineMaximum(values);
+    var interval = (maximum - minimum) / (count - 1);
+    // Create bins.
+    var bins = General.createNovelBin({
+      minimum: minimum,
+      interval: interval,
+      maximum: maximum,
+      bins: []
+    });
+    return bins;
+  }
+  /**
+  * Creates a novel bin and includes it in a collection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.minimum Minimal value.
+  * @param {number} parameters.interval Regular, equal interval of bins.
+  * @param {number} parameters.maximum Maximal value.
+  * @param {Array<Object<number>>} bins Bins for values with regular, equal
+  * intervals.
+  * @returns {Array<Object<number>>} Bins for values with regular, equal
+  * intervals.
+  */
+  static createNovelBin({minimum, interval, maximum, bins} = {}) {
+    // Determine values for novel bin.
+    var currentIdentifier = bins.length + 1;
+    var currentMinimum = minimum;
+    var currentMaximum = minimum + interval;
+    // Create novel bin.
+    var novelBin = {
+      identifier: currentIdentifier,
+      minimum: currentMinimum,
+      maximum: currentMaximum,
+      frequency: 0
+    };
+    // Include novel bin in collection.
+    var currentBins = [].concat(bins, novelBin);
+    // Determine whether there are more bins to create.
+    if (currentMaximum < (maximum + interval)) {
+      // Create another bin.
+      return General.createNovelBin({
+        minimum: currentMaximum,
+        interval: interval,
+        maximum: maximum,
+        bins: currentBins
+      });
+    } else {
+      // Return bins.
+      return currentBins;
+    }
+  }
+  /**
+  * Calculates the count of bins across a distribution from a target interval.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<number>} parameters.values Values to assign to bins.
+  * @param {number} parameters.interval Regular, equal interval of bins.
+  * @returns {number} Count of bins for the target interval.
+  */
+  static calculateDistributionIntervalCount({values, interval} = {}) {
+    var minimum = General.determineMinimum(values);
+    var maximum = General.determineMaximum(values);
+    var count = (maximum - minimum) / interval;
+    return count;
   }
 
   /**
@@ -543,8 +727,6 @@ class General {
       }
     });
   }
-
-
 
   /**
   * Determines the value of the only active radio button in a group.

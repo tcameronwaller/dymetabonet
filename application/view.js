@@ -1440,12 +1440,16 @@ class TopologyView {
     // Copy records of information about network's elements, nodes and links, to
     // avoid changes to original records, especially due to the force simulation.
     self.linksRecords = Extraction
-    .copyArrayEntitiesRecords(self.model.currentLinks);
+    .copyEntitiesRecordsArray(self.model.currentLinks);
     // Combine records for nodes.
     self.nodesRecords = [].concat(
-      Extraction.copyArrayEntitiesRecords(self.model.currentMetabolitesNodes),
-      Extraction.copyArrayEntitiesRecords(self.model.currentReactionsNodes)
+      Extraction.copyEntitiesRecordsArray(self.model.currentMetabolitesNodes),
+      Extraction.copyEntitiesRecordsArray(self.model.currentReactionsNodes)
     );
+    //console.log("links: " + self.linksRecords.length);
+    //console.log("nodes: " + self.nodesRecords.length);
+    //console.log("metabolites: " + self.model.currentMetabolitesNodes.length);
+    //console.log("reactions: " + self.model.currentReactionsNodes.length);
   }
   /**
   * Creates scales for representations of network's elements.
@@ -1504,7 +1508,7 @@ class TopologyView {
     var linkDimensionScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03]);
+    .range([0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]);
     // Define scale for size of font in annotations.
     // Domain's unit is pixel for ratio of graphical container's width to count
     // of nodes.
@@ -1623,7 +1627,7 @@ class TopologyView {
     var intervalScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([50, 50, 50, 50, 50, 50, 50]);
+    .range([100, 100, 100, 100, 100, 100, 100]);
     // Define scale for representation of labels for nodes.
     // Domain's unit is count of nodes.
     // Range's unit is arbitrary.
@@ -1638,7 +1642,7 @@ class TopologyView {
     var labelScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([true, true, true, true, false, false, false]);
+    .range([false, false, false, false, false, false, false]);
     // Compute efficient behavior rules from scales.
     self.scaleInterval = intervalScale(self.nodesRecords.length);
     self.scaleLabel = labelScale(self.nodesRecords.length);
@@ -1915,11 +1919,11 @@ class TopologyView {
     )
     .force("positionX", d3.forceX()
       .x(self.graphWidth / 2)
-      .strength(0.00005)
+      .strength(0.00007)
     )
     .force("positionY", d3.forceY()
       .y(self.graphWidth / 2)
-      .strength(0.05)
+      .strength(0.07)
     )
     .on("tick", function () {
       // Restore monitor of simulation's progress.

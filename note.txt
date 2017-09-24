@@ -4,7 +4,105 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+23 September 2017
+
+----------
+Metabolite Degrees
+
+The model of human metabolism includes records for 2652 unique metabolites.
+I created summary records of metabolites with information about their identifiers, names, and counts of reactions in which they participate.
+I also calculated frequencies of metabolites with each count of reactions.
+I sorted these records by the counts of reactions.
+I saved this information in JSON format.
+I converted this information from JSON format to CSV format using an online tool (https://json-csv.com/).
+I used Microsoft Excel to draw charts representing the distribution of metabolites' participation in reactions.
+
+--------------------------------------------------
+22 September 2017
+
+----------
+Visual Representations of the Metabolic Network
+
+screen_2017-09-22_3.png
+Reconstruction 2.2 of human metabolism
+Compartmental representation of network
+5322 metabolites
+7007 reactions
+12329 nodes
+42932 links
+alpha = 1
+alphaMinimum = 0.001
+alphaDecay = 0.005
+velocityDecay = 0.2
+simulation iterations = 1379
+nodeDimension = 1
+linkDimension = 0.05
+
+screen_2017-09-22_2.png
+Reconstruction 2.2 of human metabolism
+General representation of network
+2626 metabolites
+3417 reactions
+6043 nodes
+28671 links
+alpha = 1
+alphaMinimum = 0.001
+alphaDecay = 0.005
+velocityDecay = 0.2
+simulation iterations = 1379
+nodeDimension = 1
+linkDimension = 0.05
+
+screen_2017-09-22_1.png
+Reconstruction 2.2 of human metabolism
+General representation of network
+2626 metabolites
+3417 reactions
+6043 nodes
+28671 links
+alpha = 1
+alphaMinimum = 0.001
+alphaDecay = 0.005
+velocityDecay = 0.2
+simulation iterations = 1379
+nodeDimension = 1
+linkDimension = 0.03
+
+--------------------------------------------------
 21 September 2017
+
+----------
+Visual Representations of the Metabolic Network
+
+screen_2017-09-21_1.png
+Reconstruction 2.2 of human metabolism
+Compartmental representation of network
+5322 metabolites
+7007 reactions
+12329 nodes
+42932 links
+alpha = 1
+alphaMinimum = 0.001
+alphaDecay = 0.005
+velocityDecay = 0.2
+simulation iterations = 1379
+nodeDimension = 1
+linkDimension = 0.03
+
+screen_2017-09-21_2.png
+Reconstruction 2.2 of human metabolism
+General representation of network
+2626 metabolites
+3417 reactions
+6043 nodes
+28671 links
+alpha = 1
+alphaMinimum = 0.001
+alphaDecay = 0.005
+velocityDecay = 0.2
+simulation iterations = 1379
+nodeDimension = 3
+linkDimension = 0.05
 
 ----------
 Save Image in High Quality from SVG Graphics in Browser

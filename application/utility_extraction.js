@@ -5,9 +5,7 @@
 * This class stores methods for external utility.
 */
 class Extraction {
-
   // Master control of extraction procedure.
-
   /**
   * Extracts information about metabolic entities and sets from the Recon 2.2
   * model of human metabolism from systems biology.
@@ -42,10 +40,8 @@ class Extraction {
       reactions: reactions
     };
   }
-
   // Extract sets.
   // Extract compartments.
-
   /**
   * Creates records for all compartments in a metabolic model.
   * @param {Object} compartments Information about all compartments in a
@@ -77,9 +73,7 @@ class Extraction {
       }
     };
   }
-
   // Extract processes.
-
   /**
   * Creates records for all processes from a metabolic model.
   * @param {Array<Object>} reactions Information for all reactions of a
@@ -126,18 +120,15 @@ class Extraction {
       }
     };
   }
-
   // Extract entities.
   // Extract reactions.
-  // Extract reactions.
-
   /**
   * Creates records for all reactions from a metabolic model.
   * @param {Array<Object>} reactions Original, raw information about all
   * reactions.
   * @param {Object<string>} processes Information about all processes in a
   * metabolic model.
-  * @returns {Object} Records with information about reactions.
+  * @returns {Object<Object>} Records with information about reactions.
   */
   static createReactionsRecords(reactions, processes) {
     // In the original data, metabolic processes or pathways do not include
@@ -927,9 +918,7 @@ class Extraction {
       return processes[key].name === name;
     });
   }
-
   // Extract metabolites.
-
   /**
   * Creates records for all metabolites from a metabolic model.
   * @param {Array<Object>} metabolites Information for all metabolites of a
@@ -1206,6 +1195,74 @@ class Extraction {
     );
     return General.collectUniqueElements(participantsCompartments);
   }
+  /**
+  * Creates summary of metabolites' participation in reactions.
+  * @param {Object<Object>} metabolites Records with information about
+  * metabolites.
+  * @returns {Array<Object>} Records with information about the count of
+  * reactions in which each metabolite participates.
+  */
+  static createMetabolitesParticipationSummary(metabolites) {
+    // Transfer records for metabolites from a collection in an object to a
+    // collection in an array.
+    var metabolitesRecords = Extraction
+    .copyEntitiesRecordsObjectArray(metabolites);
+    // Summarize the identifier, name, and count of reactions for each
+    // metabolite.
+    var metabolitesSummaries = metabolitesRecords.map(function (metabolite) {
+      return {
+        identifier: metabolite.identifier,
+        name: metabolite.name,
+        count: metabolite.reactions.length
+      };
+    });
+    // Determine frequencies of metabolites with each count of reactions.
+    // Determine count of intervals to consider.
+    var values = metabolitesSummaries.map(function (record) {
+      return record.count;
+    });
+    var count = General.calculateDistributionIntervalCount({
+      values: values,
+      interval: 1
+    });
+    var metabolitesFrequencies = General.calculateRecordsValuesFrequencies({
+      records: metabolitesSummaries,
+      key: "count",
+      count: count + 1
+    });
+    // Sort records for metabolites by their counts of reactions.
+    var summary = metabolitesFrequencies
+    .slice()
+    .sort(function (firstRecord, secondRecord) {
+      return (
+        secondRecord.count - firstRecord.count
+      );
+    });
+    return summary;
+  }
+  /**
+  * Changes designation for simplification within a copy of a metabolite's
+  * record.
+  * @param {Object} metabolite Record with information about a metabolite.
+  * @returns {Object} Record with information about a metabolite.
+  */
+  static changeMetaboliteSimplification(metabolite) {
+    // Change designation for simplification.
+    var previousValue = metabolite.simplification;
+    if (previousValue) {
+      var currentValue = false;
+    } else {
+      var currentValue = true;
+    }
+    var novelAttribute = {
+      simplification: currentValue
+    };
+    // Copy record with information about metabolite.
+    var metaboliteCopy = Extraction.copyEntityRecord(metabolite);
+    // Replace previous designation for simplification in metabolite's record.
+    var novelMetabolite = Object.assign(metaboliteCopy, novelAttribute);
+    return novelMetabolite;
+  }
   // Extract genes.
   /**
   * Creates records for all genes in a metabolic model.
@@ -1253,12 +1310,29 @@ class Extraction {
 
   /**
   * Copies records with information about metabolic entities, metabolites or
+  * reactions from a collection in an object to a collection in an array.
+  * @param {Object<Object>} entities Records with information about entities and
+  * their attributes' values.
+  * @returns {Object<Object>} Copy of records for entities.
+  */
+  static copyEntitiesRecordsObjectArray(entities) {
+    // Iterate on entities' records.
+    var entitiesIdentifiers = Object.keys(entities);
+    return entitiesIdentifiers.map(function (entityIdentifier) {
+      // Set reference to entity's record.
+      var entity = entities[entityIdentifier];
+      // Copy all of entity's attributes.
+      return Extraction.copyEntityRecord(entity);
+    });
+  }
+  /**
+  * Copies records with information about metabolic entities, metabolites or
   * reactions.
   * @param {Object<Object>} entities Records with information about entities and
   * their attributes' values.
   * @returns {Object<Object>} Copy of records for entities.
   */
-  static copyObjectEntitiesRecords(entities) {
+  static copyEntitiesRecordsObject(entities) {
     // Iterate on entities' records.
     var entitiesIdentifiers = Object.keys(entities);
     return entitiesIdentifiers.reduce(function (collection, entityIdentifier) {
@@ -1280,7 +1354,7 @@ class Extraction {
   * their attributes' values.
   * @returns {Array<Object>} Copy of records for entities.
   */
-  static copyArrayEntitiesRecords(entities) {
+  static copyEntitiesRecordsArray(entities) {
     // Iterate on entities' records.
     return entities.map(function (entity) {
       // Copy all of entity's attributes.

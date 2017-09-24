@@ -1099,11 +1099,11 @@ class Network {
   static copyNetworkElements(networkElements) {
     // Copy records for network's elements.
     return {
-      currentLinks: Extraction.copyArrayEntitiesRecords(networkElements.links),
+      currentLinks: Extraction.copyEntitiesRecordsArray(networkElements.links),
       currentMetabolitesNodes: Extraction
-      .copyArrayEntitiesRecords(networkElements.metabolitesNodes),
+      .copyEntitiesRecordsArray(networkElements.metabolitesNodes),
       currentReactionsNodes: Extraction
-      .copyArrayEntitiesRecords(networkElements.reactionsNodes)
+      .copyEntitiesRecordsArray(networkElements.reactionsNodes)
     };
   }
   /**

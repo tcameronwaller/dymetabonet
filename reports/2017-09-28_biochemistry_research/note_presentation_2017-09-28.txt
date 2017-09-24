@@ -20,13 +20,8 @@ Research Seminar
 Department of Biochemistry
 University of Utah
 
-Human body
-Tissue
-Cell
-Molecular reaction
-
 --------------------------------------------------
-Section: ...
+Section: Introduction
 --------------------------------------------------
 
 ----------
@@ -52,7 +47,7 @@ Slide 3
 
 Note
 Introduction of the metabolic network.
-A network is an abstract representation of relations between entities.
+A network is an abstract representation of relations (links) between entities (nodes).
 Metabolism behaves like a network of reactions between metabolites.
 Metabolites are small, biologically-relevant molecules.
 Reactions involve roles of genes, transcripts, and proteins for encoding, catalysis, and regulation.
@@ -60,31 +55,256 @@ Metabolites and their reactions segregate between cellular compartments, organel
 Sets of reactions behave cooperatively in pathways or processes.
 
 Figure
+Small illustrations
+Network
+Metabolite
+Reaction
+Cellular compartments
+Pathways or processes
 
 ----------
 Slide 4
 
 Note
-Introduction of the metabolic model.
-
-Summarize the raw data within the metabolic model.
+Introduction of the metabolic model or reconstruction.
+Metabolic models are compilations of information from scientific literature, genomic annotation, and homologous comparison to other species.
+Citations and dates of major progresses on the model of human metabolism (recon 1, recon 2, recon 2.2).
+Counts of metabolites, reactions, processes, and compartments in each model.
+Summary of the raw data within the metabolic model.
+Counts of metabolites, reactions, compartments, and processes.
 
 Figure
-Interactive viewer for data in JSON format
+Titles and properties of models of human metabolism.
+Interactive viewer for data in JSON format from Recon 2.2.
 
 ----------
-Slide ?
+Slide 5
 
 Note
-"So, this is a custom graph that I made with my application."
-"It represents the entire network for the Recon 2.2 model of human metabolism."
-"It has ___ nodes and ___ links."
-"..."
-"So, my job here is done."
-"As you can see from this figure..."
-"Believe it or not, graphs like this are not very useful."
+Information from the model of human metabolism can define a network.
+What does this network look like?
+I used my application to draw a custom representation of this network.
+"Wow. It is so beautiful."
+"Early on I observed that there seems to be the shape of a person in the network."
 
 Figure
-Visual representation of entire network for human metabolism
-Custom color scheme with dark background and bright nodes, links, and labels
+screen_2017-09-22_3.png
+Visual representation of the entire compartmental network for human metabolism.
+Counts of metabolites, reactions, nodes, and links.
+Custom color scheme with dark background and bright nodes and links.
 
+----------
+Slide 6
+
+Note
+Study of metabolism at global, holistic scope
+Computational methods permit global analysis of the metabolic network and inform relevant observations.
+Biological networks tend to be small-world and scale-free, with a few nodes as central hubs that minimize paths between many other nodes.
+In a metabolic network, a hub might be a central metabolite such as pyruvate.
+Modularity in metabolism involves compartments and pathways or processes that divide the system into smaller subsystems.
+Continuity in metabolism involves transports and cross-pathway reactions that connect all subsystems into a cooperative whole.
+Metabolism behaves as a cooperative, continuous system that also demonstrates modular specialization.
+Implications for evolution and regulation.
+
+Balance between modularity and continuity.
+The metabolic network has properties of both modularity and continuity.
+Both are relevant to the study of metabolism.
+Compartments and pathways or processes provide categorical bins to reduce the scale of the system.
+Modularity simplifies conceptual understanding of metabolism.
+Examples include Gene and Metabolite Set Enrichment Analysis.
+
+Figure
+Emphasis of primary points.
+
+----------
+Slide 7
+
+Note
+This network of human metabolism demonstrates obvious modularity, with distinct modules, groups, clusters, or communities.
+These groups have dense relations within themselves but sparse relations to other groups.
+The network is still continuous, however.
+This network represents compartmentalization in the metabolic network, and this compartmentalization accounts for much of this modularity.
+
+Figure
+screen_2017-09-22_3.png
+Visual representation of the entire compartmental network for human metabolism.
+Counts of metabolites, reactions, nodes, and links.
+
+----------
+Slide 8
+
+Note
+Information from the model of human metabolism can define a network in multiple ways.
+I also defined a network without consideration of subcellular compartmentalization.
+This network demonstrates less modularity and instead appears very continuous.
+
+Figure
+screen_2017-09-22_2.png
+Visual representation of the entire general network for human metabolism.
+Counts of metabolites, reactions, nodes, and links.
+
+----------
+Slide 9
+
+Note
+Study of metabolism at local, specific scope.
+Design of experiments and interpretation of results require information about individual metabolites, genes, transcripts, and proteins.
+A challenge is to access information about the metabolic network at various scopes or levels of detail.
+
+Figure
+Small network showing detail for individual metabolites and reactions between them.
+
+----------
+Slide 10
+
+Note
+KEGG Atlas represents modularity in metabolism in terms of pathways or processes.
+Modularity provides categorical bins to reduce scale and simplify conceptual understanding.
+
+Figure
+KEGG Atlas
+
+----------
+Slide 11
+
+Note
+KEGG Atlas uses a static map that prioritizes some information at the expense of other information.
+No representation of compartmentalization.
+Obscurity of relations between different processes.
+Replication of central metabolites.
+
+Figure
+KEGG Atlas with emphasis of all nodes that connect directly to pyruvate.
+
+----------
+Slide 12
+
+Note
+
+Figure
+Map in Escher of pyruvate's reactions in all compartments.
+
+----------
+Slide 13
+
+Note
+Janet Lindsley collaborated with a team at Stanford to develop a clear and communicable map of metabolism.
+Representations of metabolism in static maps (spatial reference) with modularity (compartments and processes) are simple, understandable, and memorable.
+
+Figure
+Janet Lindsley's map of metabolism
+
+----------
+Slide 14
+
+Note
+Janet Lindsley shared we me some fascinating examples of human metabolic diseases that involve perturbations across traditional pathways.
+
+Figure
+Janet Lindsley's map of metabolism with illustrated relations of perturbations in human diseases.
+1. Carbamoyl phosphate
+2. Glucose-6-phosphatase
+3. Cancer
+
+--------------------------------------------------
+Section: Description of Project, Story
+--------------------------------------------------
+
+----------
+Slide 15
+
+Note
+Metabolism has information at global and local scopes.
+Metabolism has both modularity and continuity.
+Metabolism has various states in health and disease.
+Goal of project
+Goal is to explore metabolism dynamically from global to local scope with accurate representation of both modularity and continuity.
+
+Figure
+
+----------
+Slide 16
+
+Note
+Introduction to method
+My team and I chose to implement our program as a web application.
+The web is the dominant application platform due to ease of development and deployment.
+Web applications run within the browser (Google's Chrome, Mozilla's Firefox, Apple's Safari, Window's Internet Explorer) on the user's machine.
+JavaScript is the standard programming language for behavior in web applications and is arguably the most popular and common programming language in the world.
+Data-Driven Documents (D3) is a JavaScript library for visual representation of information in web documents.
+D3 is powerful and versatile to support many types of custom visualizations.
+Among the most popular collections of open-source software, D3 is especially prominent in information visualization from The New York Times.
+JSNetworkX is a JavaScript port of the most popular graph library in Python.
+
+https://www.quora.com/Is-JavaScript-the-most-popular-programming-language-in-the-world
+
+Figure
+D3 web page (d3js.org).
+
+----------
+Slide 17
+
+Note
+
+Figure
+Prototype 1
+Image of network for citrate cycle without replication of nodes for metabolites.
+
+----------
+Slide 19
+
+Note
+The metabolic network has major hubs, metabolites that participate in an exceptionally great count of reactions.
+The greatest major hubs are proton and water.
+Prolific metabolites like proton and water are probably not interesting.
+In contrast, pyruvate is a hub, ranked 54, that is interesting.
+I omitted the top 1% of metabolites from the network to reduce excessive connectivity.
+
+Figure
+Charts from 23 September 2017 representing distribution of metabolites' participation in reactions.
+Mark proton, water, pyruvate, and other metabolites of interest on the charts.
+Mark the top 1% of metabolites for replication or omission in the network.
+
+----------
+Slide 18
+
+Note
+
+Figure
+Prototype 1
+Image of network for citrate cycle with replication of nodes for metabolites.
+
+----------
+Slide 18
+
+Note
+
+Figure
+Prototype 2
+
+----------
+Slide 19
+
+Note
+
+Figure
+XKCD Comic
+
+----------
+Slide 20
+
+Note
+
+Figure
+Prototype 3...
+
+----------
+Color-code metabolites' nodes by compartments.
+Represent multi-compartmental pathways...
+
+----------
+Slide 
+
+Note
+
+Figure
