@@ -4,6 +4,23 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+24 September 2017
+
+----------
+Metabolite Degrees
+
+On 23 September 2017 I considered metabolite's participation in reactions in all compartments.
+I did not distinguish between compartments.
+For the purpose of simplification of nodes for metabolites, I should probably be able to determine degrees of metabolites' nodes in a compartmental context.
+I will need to consider how to store this information.
+I could potentially include filters against metabolites' reactions in the procedure for definition of network's elements.
+
+Yes.
+I think that a metabolite's record, whether or not for a node, should have a reference to the reactions in which it participates in its current context.
+Records for metabolites' nodes should reference their reactions in the current definition of the network.
+I will then use the information from these records to determine metabolites' degrees in their current contexts.
+
+--------------------------------------------------
 23 September 2017
 
 ----------

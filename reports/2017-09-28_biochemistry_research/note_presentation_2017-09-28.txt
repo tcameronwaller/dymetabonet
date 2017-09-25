@@ -40,7 +40,7 @@ Figure
 Human body
 Tissue
 Cell
-Molecular reaction
+Molecular reaction for phosphorylation of glucose
 
 ----------
 Slide 3
@@ -51,6 +51,7 @@ A network is an abstract representation of relations (links) between entities (n
 Metabolism behaves like a network of reactions between metabolites.
 Metabolites are small, biologically-relevant molecules.
 Reactions involve roles of genes, transcripts, and proteins for encoding, catalysis, and regulation.
+Define different types of nodes for metabolites and reactions with links between them.
 Metabolites and their reactions segregate between cellular compartments, organelles.
 Sets of reactions behave cooperatively in pathways or processes.
 
@@ -59,6 +60,7 @@ Small illustrations
 Network
 Metabolite
 Reaction
+Definition of nodes and links from metabolites and reactions.
 Cellular compartments
 Pathways or processes
 
@@ -73,17 +75,23 @@ Counts of metabolites, reactions, processes, and compartments in each model.
 Summary of the raw data within the metabolic model.
 Counts of metabolites, reactions, compartments, and processes.
 
+https://www.ncbi.nlm.nih.gov/pubmed/17267599
+https://www.ncbi.nlm.nih.gov/pubmed/23455439
+https://www.ncbi.nlm.nih.gov/pubmed/27358602
+
 Figure
 Titles and properties of models of human metabolism.
-Interactive viewer for data in JSON format from Recon 2.2.
+Screen shots from interactive viewer for data in JSON format from Recon 2.2.
+Citations of sources for publications of human metabolic models.
 
 ----------
 Slide 5
 
 Note
-Information from the model of human metabolism can define a network.
-What does this network look like?
+I defined a network from information from the model of human metabolism.
 I used my application to draw a custom representation of this network.
+Iterative simulations of forces drive the arrangement of nodes and links.
+What does this network look like?
 "Wow. It is so beautiful."
 "Early on I observed that there seems to be the shape of a person in the network."
 
@@ -122,6 +130,7 @@ Slide 7
 Note
 This network of human metabolism demonstrates obvious modularity, with distinct modules, groups, clusters, or communities.
 These groups have dense relations within themselves but sparse relations to other groups.
+These groups also have their own hubs.
 The network is still continuous, however.
 This network represents compartmentalization in the metabolic network, and this compartmentalization accounts for much of this modularity.
 
@@ -134,9 +143,9 @@ Counts of metabolites, reactions, nodes, and links.
 Slide 8
 
 Note
-Information from the model of human metabolism can define a network in multiple ways.
 I also defined a network without consideration of subcellular compartmentalization.
 This network demonstrates less modularity and instead appears very continuous.
+This network has major, central hubs.
 
 Figure
 screen_2017-09-22_2.png
@@ -147,6 +156,38 @@ Counts of metabolites, reactions, nodes, and links.
 Slide 9
 
 Note
+The metabolic network has major hubs, metabolites that participate in an exceptionally great count of reactions.
+I summarized the participation of all metabolites in reactions.
+The greatest major hubs are proton and water.
+Prolific metabolites like proton and water are probably not interesting in the context of experimentation.
+In contrast, pyruvate is also a hub ranked 54, that is interesting.
+I omitted the top 1% of metabolites from the network to reduce excessive connectivity.
+
+Figure
+Charts from 23 September 2017 representing distribution of metabolites' participation in reactions.
+Mark proton, water, 2-oxoglutarate, pyruvate, and other metabolites of interest on the charts.
+Mark the top 1% of metabolites for replication or omission in the network.
+
+----------
+Slide 10
+
+Note
+
+Figure
+Visual representation of the entire compartmental network for human metabolism with simplification of representations of top 1% of metabolites.
+
+----------
+Slide 11
+
+Note
+
+Figure
+Visual representation of the entire general network for human metabolism with simplification of representations of top 1% of metabolites.
+
+----------
+Slide 12
+
+Note
 Study of metabolism at local, specific scope.
 Design of experiments and interpretation of results require information about individual metabolites, genes, transcripts, and proteins.
 A challenge is to access information about the metabolic network at various scopes or levels of detail.
@@ -155,7 +196,7 @@ Figure
 Small network showing detail for individual metabolites and reactions between them.
 
 ----------
-Slide 10
+Slide 13
 
 Note
 KEGG Atlas represents modularity in metabolism in terms of pathways or processes.
@@ -165,7 +206,7 @@ Figure
 KEGG Atlas
 
 ----------
-Slide 11
+Slide 14
 
 Note
 KEGG Atlas uses a static map that prioritizes some information at the expense of other information.
@@ -177,7 +218,7 @@ Figure
 KEGG Atlas with emphasis of all nodes that connect directly to pyruvate.
 
 ----------
-Slide 12
+Slide 15
 
 Note
 
@@ -185,7 +226,7 @@ Figure
 Map in Escher of pyruvate's reactions in all compartments.
 
 ----------
-Slide 13
+Slide 16
 
 Note
 Janet Lindsley collaborated with a team at Stanford to develop a clear and communicable map of metabolism.
@@ -195,7 +236,7 @@ Figure
 Janet Lindsley's map of metabolism
 
 ----------
-Slide 14
+Slide 17
 
 Note
 Janet Lindsley shared we me some fascinating examples of human metabolic diseases that involve perturbations across traditional pathways.
@@ -211,7 +252,7 @@ Section: Description of Project, Story
 --------------------------------------------------
 
 ----------
-Slide 15
+Slide 18
 
 Note
 Metabolism has information at global and local scopes.
@@ -223,7 +264,7 @@ Goal is to explore metabolism dynamically from global to local scope with accura
 Figure
 
 ----------
-Slide 16
+Slide 19
 
 Note
 Introduction to method
@@ -242,7 +283,7 @@ Figure
 D3 web page (d3js.org).
 
 ----------
-Slide 17
+Slide 20
 
 Note
 
@@ -251,22 +292,7 @@ Prototype 1
 Image of network for citrate cycle without replication of nodes for metabolites.
 
 ----------
-Slide 19
-
-Note
-The metabolic network has major hubs, metabolites that participate in an exceptionally great count of reactions.
-The greatest major hubs are proton and water.
-Prolific metabolites like proton and water are probably not interesting.
-In contrast, pyruvate is a hub, ranked 54, that is interesting.
-I omitted the top 1% of metabolites from the network to reduce excessive connectivity.
-
-Figure
-Charts from 23 September 2017 representing distribution of metabolites' participation in reactions.
-Mark proton, water, pyruvate, and other metabolites of interest on the charts.
-Mark the top 1% of metabolites for replication or omission in the network.
-
-----------
-Slide 18
+Slide 21
 
 Note
 
@@ -275,15 +301,27 @@ Prototype 1
 Image of network for citrate cycle with replication of nodes for metabolites.
 
 ----------
-Slide 18
+Slide 22
 
 Note
+I eventually rendered the data usable at the scale of the entire model.
+The scale was a bit overwhelming.
 
 Figure
 Prototype 2
 
 ----------
-Slide 19
+Slide 23
+
+Note
+I began developing methods to filter the metabolites and reactions.
+
+Figure
+Prototype 2
+
+
+----------
+Slide 23
 
 Note
 
@@ -291,7 +329,7 @@ Figure
 XKCD Comic
 
 ----------
-Slide 20
+Slide 24
 
 Note
 

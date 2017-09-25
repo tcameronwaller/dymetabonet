@@ -1,0 +1,103 @@
+
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+Case Study
+KEGG and KEGG Atlas
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+
+--------------------------------------------------
+18 December 2016
+
+I accessed the KEGG Atlas (http://www.kegg.jp/kegg/atlas/).
+I selected the Map "01100 Metabolic Pathways".
+I found pyruvate (C00022) on the map.
+By the way, it was necessary to click on each metabolite in order to find an interpretable name.
+I traced lines from pyruvate manually to identify all metabolites on the map within 1 reaction of pyruvate.
+I assembled the list of metabolites with KEGG identifiers below.
+
+I accessed a different interface with the KEGG map (http://www.genome.jp/kegg-bin/show_pathway?map01100).
+I entered my list of KEGG identifiers in the "User data mapping" window.
+The KEGG map colored nodes for my selection of metabolites in red.
+
+This entire process took me 1 hour (10:30 - 11:30).
+
+The red highlighting of these metabolites on the map was difficult to read, so I also manually added markers.
+
+----------
+Data
+----------
+
+C00022,Pyruvate
+C00074,Phosphoenolpyruvate
+C00024,Acetyl-CoA
+C00186,(S)-Lactate
+C00036,Oxaloacetate
+C00149,(S)-Malate
+C00133,D-Alanine
+C00041,L-Alanine
+C00065,L-Serine
+C11437,1-Deoxy-D-xylulose 5-phosphate
+C01216,2-Dehydro-3-Deoxy-D-Galactonate
+C06762,4-Hydroxy-2-Oxohexanoic Acid
+C00227,Acetyl Phosphate
+C03589,4-Hydroxy-2-Oxopentanoate
+C01011,(3S)-Citramalyl-CoA
+C02291,L-Cystathionine
+C06006,(S)-2-Aceto-2-Hydroxybutanoate
+C06010,(S)-2-Acetolactate
+C00164,Acetoacetate
+C02876,Propanoyl Phosphate
+C00049,L-Aspartate
+C01061,4-Fumarylacetoacetate
+C02612,(R)-2-Methylmalate
+C00957,Mercaptopyruvate
+C05527,3-Sulfinylpyruvate
+C00166,Phenylpyruvate
+C02514,3-Fumarylpyruvate
+C00061,Riboflavin-5-phosphate
+C00811,4-Coumarate
+C00018,Pyridoxal Phosphate
+C20784,Adenosine Diphospho-5-Beta-Ethyl-4-Methylthiazole-2-Carboxylic Acid
+C15809,Iminoglycine
+C00204,2-Dehydro-3-Deoxy-D-Gluconate
+C04442,2-Dehydro-3-Deoxy-6-Phospho-D-Gluconate
+C04556,4-Amino-2-Methyl-5-(Phosphooxymethyl)pyrimidine
+
+C00022
+C00074
+C00024
+C00186
+C00036
+C00149
+C00133
+C00041
+C00065
+C11437
+C01216
+C06762
+C00227
+C03589
+C01011
+C02291
+C06006
+C06010
+C00164
+C02876
+C00049
+C01061
+C02612
+C00957
+C05527
+C00166
+C02514
+C00061
+C00811
+C00018
+C20784
+C15809
+C00204
+C04442
+C04556
