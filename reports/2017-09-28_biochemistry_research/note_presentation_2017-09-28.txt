@@ -30,7 +30,10 @@ Slide 2
 Note
 Introduction of metabolism, metabolic regulation, and their study.
 Metabolism is a collective system of all chemical reactions in an organism that are necessary for survival, growth, and reproduction.
-Regulation within this system differentiates between many states of health and disease.
+The bodies of complex organisms like animals have distinct types of tissues with distinct types of cells that specialize in parts of metabolism.
+An example of a metabolic reaction is the phosphorylation of glucose by hexokinase or glucokinase that traps glucose within the cell and commits it to glycolysis or glycogen synthesis.
+Glucokinase predominates in the liver and has a lesser affinity for glucose in order to regulate storage in states of abundance.
+Regulation within metabolism differentiates between many states of health and disease.
 Metabolic diseases in humans include obesity, diabetes, cancer, and death.
 Death involves complete disregulation of metabolism.
 The study of metabolism is relevant to human health.
@@ -48,21 +51,18 @@ Slide 3
 Note
 Introduction of the metabolic network.
 A network is an abstract representation of relations (links) between entities (nodes).
+It is a model for data.
 Metabolism behaves like a network of reactions between metabolites.
+Define different types of nodes for metabolites and reactions with links between them.
+Nodes and links possess attributes or properties.
 Metabolites are small, biologically-relevant molecules.
 Reactions involve roles of genes, transcripts, and proteins for encoding, catalysis, and regulation.
-Define different types of nodes for metabolites and reactions with links between them.
 Metabolites and their reactions segregate between cellular compartments, organelles.
 Sets of reactions behave cooperatively in pathways or processes.
 
 Figure
-Small illustrations
-Network
-Metabolite
-Reaction
-Definition of nodes and links from metabolites and reactions.
-Cellular compartments
-Pathways or processes
+Illustrate with a familiar, biological example.
+Simple network representation of glycolysis and citrate cycle pathways within cytosol and mitochondrion compartments.
 
 ----------
 Slide 4
@@ -102,7 +102,7 @@ Counts of metabolites, reactions, nodes, and links.
 Custom color scheme with dark background and bright nodes and links.
 
 ----------
-Slide 6
+Slide 6 [priority]
 
 Note
 Study of metabolism at global, holistic scope
@@ -128,6 +128,21 @@ Emphasis of primary points.
 Slide 7
 
 Note
+The metabolic network has major hubs, metabolites that participate in an exceptionally great count of reactions.
+I summarized the participation of all metabolites in reactions.
+The greatest major hubs are proton and water among the most prolific 1% of metabolites.
+Prolific metabolites like proton and water are probably not interesting in the context of experimentation.
+In contrast 2-oxoglutarate, pyruvate, and glucose are also hubs that are likely relevant and interesting.
+
+Figure
+Charts from 23 September 2017 representing distribution of metabolites' participation in reactions.
+Mark proton, water, 2-oxoglutarate, pyruvate, and glucose on the charts.
+Mark the top 1% of metabolites for simplification.
+
+----------
+Slide 8
+
+Note
 This network of human metabolism demonstrates obvious modularity, with distinct modules, groups, clusters, or communities.
 These groups have dense relations within themselves but sparse relations to other groups.
 These groups also have their own hubs.
@@ -140,7 +155,7 @@ Visual representation of the entire compartmental network for human metabolism.
 Counts of metabolites, reactions, nodes, and links.
 
 ----------
-Slide 8
+Slide 9
 
 Note
 I also defined a network without consideration of subcellular compartmentalization.
@@ -153,99 +168,70 @@ Visual representation of the entire general network for human metabolism.
 Counts of metabolites, reactions, nodes, and links.
 
 ----------
-Slide 9
-
-Note
-The metabolic network has major hubs, metabolites that participate in an exceptionally great count of reactions.
-I summarized the participation of all metabolites in reactions.
-The greatest major hubs are proton and water.
-Prolific metabolites like proton and water are probably not interesting in the context of experimentation.
-In contrast, pyruvate is also a hub ranked 54, that is interesting.
-I omitted the top 1% of metabolites from the network to reduce excessive connectivity.
-
-Figure
-Charts from 23 September 2017 representing distribution of metabolites' participation in reactions.
-Mark proton, water, 2-oxoglutarate, pyruvate, and other metabolites of interest on the charts.
-Mark the top 1% of metabolites for replication or omission in the network.
-
-----------
 Slide 10
 
 Note
+Study of metabolism at local, specific scope.
+Design of experiments and interpretation of results require information about individual metabolites, genes, transcripts, and proteins.
+A challenge is to access different types of information about the metabolic network at various scopes or levels of detail.
+I will illustrate this challenge with an example.
 
 Figure
-Visual representation of the entire compartmental network for human metabolism with simplification of representations of top 1% of metabolites.
+Small network showing detail for individual metabolites and reactions between them.
+Simple network representation of glycolysis and citrate cycle pathways within cytosol and mitochondrion compartments.
 
 ----------
 Slide 11
 
 Note
-
-Figure
-Visual representation of the entire general network for human metabolism with simplification of representations of top 1% of metabolites.
-
-----------
-Slide 12
-
-Note
-Study of metabolism at local, specific scope.
-Design of experiments and interpretation of results require information about individual metabolites, genes, transcripts, and proteins.
-A challenge is to access information about the metabolic network at various scopes or levels of detail.
-
-Figure
-Small network showing detail for individual metabolites and reactions between them.
-
-----------
-Slide 13
-
-Note
-KEGG Atlas represents modularity in metabolism in terms of pathways or processes.
-Modularity provides categorical bins to reduce scale and simplify conceptual understanding.
+KEGG Atlas is among the most capable and common tools for studying the metabolic network.
+It organizes portions of metabolism separately and represents these in static maps with emphatic modularity of pathways or processes.
+These representations simplify metabolism.
+Static maps provide spatial reference.
+Modules, such as compartments and processes, provide categories to reduce scale and simplify understanding.
+A challenge arises when relations across typical categories become relevant.
 
 Figure
 KEGG Atlas
 
 ----------
-Slide 14
+Slide 12
 
 Note
-KEGG Atlas uses a static map that prioritizes some information at the expense of other information.
-No representation of compartmentalization.
-Obscurity of relations between different processes.
+Janet Lindsley told me about some fascinating examples of human metabolic diseases that involve perturbations across traditional pathways.
+
+1. Hyperammonemia, Orotic Acidemia
+Ornithine Carbamoyltransferase (OTC) in the mitochondrion normally routes carbamoyl phosphate through the Urea Cycle to dispose of ammonia.
+Deficiency in OTC causes carbamoyl phosphate to accumulate in both the mitochondrion and the cytosol.
+In the cytosol the excess carbamoyl phosphate routes through Pyrimidine Synthesis and causes accumulation of intermediate orotic acid.
+People with deficiency in OTC have accumulation of ammonia and orotic acid throughout the body.
+
+2. Hypoglycemia, Hyperuricemia and Gout
+Glucose-6-Phosphatase allows glucose from Gluconeogenesis in the liver to escape cells into the bloodstream.
+Deficiency in Glucose-6-Phosphatase traps glucose in cells.
+The excess glucose routes through Pentose Phosphate Pathway and Purine Synthesis and causes accumulation of uric acid.
+People with deficiency in Glucose-6-Phosphatase have hypoglycemia and also have accumulation of uric acid.
+
+3. Cancer
+
+Figure
+KEGG Atlas with annotations of connections across pathways.
+
+----------
+Slide 13
+
+Note
+Representations of metabolism tend to favor some types of information at the expense of others.
+KEGG's static maps do not represent compartmentalization.
+They also obscure relations between different categories.
+Pyruvate's direct relations to other metabolites spread across a substantial portion of the map and are obscure.
 Replication of central metabolites.
 
 Figure
 KEGG Atlas with emphasis of all nodes that connect directly to pyruvate.
 
-----------
-Slide 15
 
-Note
 
-Figure
-Map in Escher of pyruvate's reactions in all compartments.
-
-----------
-Slide 16
-
-Note
-Janet Lindsley collaborated with a team at Stanford to develop a clear and communicable map of metabolism.
-Representations of metabolism in static maps (spatial reference) with modularity (compartments and processes) are simple, understandable, and memorable.
-
-Figure
-Janet Lindsley's map of metabolism
-
-----------
-Slide 17
-
-Note
-Janet Lindsley shared we me some fascinating examples of human metabolic diseases that involve perturbations across traditional pathways.
-
-Figure
-Janet Lindsley's map of metabolism with illustrated relations of perturbations in human diseases.
-1. Carbamoyl phosphate
-2. Glucose-6-phosphatase
-3. Cancer
 
 --------------------------------------------------
 Section: Description of Project, Story
@@ -255,11 +241,12 @@ Section: Description of Project, Story
 Slide 18
 
 Note
+Challenge
 Metabolism has information at global and local scopes.
 Metabolism has both modularity and continuity.
 Metabolism has various states in health and disease.
 Goal of project
-Goal is to explore metabolism dynamically from global to local scope with accurate representation of both modularity and continuity.
+Explore metabolism dynamically from global to local scope with accurate representation of both modularity and continuity.
 
 Figure
 
@@ -286,6 +273,14 @@ D3 web page (d3js.org).
 Slide 20
 
 Note
+To start my project, I selected a small model of metabolism from Escherichia coli.
+I curated this model manually to select only the reactions and metabolites that are relevant to the Citrate Cycle.
+I defined nodes for metabolites, special links for reactions, and links between them.
+Biologists are familiar with the Citrate Cycle, and we know that this process behaves like a cycle.
+So, what is this messy tangle of metabolites and reactions?
+Metabolism is a lot more messy than biologists usually represent it.
+Many figures of metabolic pathways ignore all but the most relevant metabolites and reactions.
+I began to consider ways that I could simplify representations of metabolic networks in ways that are still accurate.
 
 Figure
 Prototype 1
@@ -296,6 +291,7 @@ Slide 21
 
 Note
 
+
 Figure
 Prototype 1
 Image of network for citrate cycle with replication of nodes for metabolites.
@@ -304,6 +300,7 @@ Image of network for citrate cycle with replication of nodes for metabolites.
 Slide 22
 
 Note
+Tell brief story about the challenge in scaling up to the complete data.
 I eventually rendered the data usable at the scale of the entire model.
 The scale was a bit overwhelming.
 
@@ -314,19 +311,18 @@ Prototype 2
 Slide 23
 
 Note
-I began developing methods to filter the metabolites and reactions.
 
 Figure
-Prototype 2
-
+XKCD Comic
 
 ----------
 Slide 23
 
 Note
+I began developing methods to filter the metabolites and reactions.
 
 Figure
-XKCD Comic
+Prototype 2
 
 ----------
 Slide 24
