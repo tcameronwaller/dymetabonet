@@ -4,6 +4,102 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+27 September 2017
+
+----------
+Capability of Metabolic Models
+
+https://www.ncbi.nlm.nih.gov/pubmed/28878380
+"An in-silico approach to predict and exploit synthetic lethality in cancer metabolism"
+Nature Communications
+2017
+
+https://www.ncbi.nlm.nih.gov/pubmed/28254760
+"Personal model-assisted identification of NAD+ and glutathione metabolism as intervention target in NAFLD"
+Mol Sys Biol
+2017
+
+https://www.ncbi.nlm.nih.gov/pubmed/27239044
+"In Silico Modeling of Liver Metabolism in a Human Disease Reveals a Key Enzyme for Histidine and Histamine Homeostasis"
+Cell Reports
+2016
+
+https://www.ncbi.nlm.nih.gov/pubmed/26813959
+"Generation of 2,000 breast cancer metabolic landscapes reveals a poor prognosis group with active serotonin production"
+Science Reports
+2016
+
+https://www.ncbi.nlm.nih.gov/pubmed/25937284
+"Proteome- and transcriptome-driven reconstruction of the human myocyte metabolic network and its use for identification of markers for diabetes"
+Cell Reports
+2015
+
+https://www.ncbi.nlm.nih.gov/pubmed/26434764
+"Extensive weight loss reveals distinct gene expression changes in human subcutaneous and visceral adipose tissue"
+Science Reports
+2015
+
+----------
+Modularity and Continuity in Metabolic Networks
+
+https://www.ncbi.nlm.nih.gov/pubmed/28912490
+"The interdependent network of gene regulation and metabolism is robust where it needs to be"
+Nature Communications
+2017
+Relations between metabolic network and genetic regulatory network.
+
+https://www.ncbi.nlm.nih.gov/pubmed/28751865
+"Breakdown of Modularity in Complex Networks"
+Frontiers in Physiology
+2017
+Modularity is important in evolution of metabolism.
+In more complex systems, there is an efficient benefit to losing modularity and favoring cooperativity.
+
+https://www.ncbi.nlm.nih.gov/pubmed/28469242
+"Glassy nature of hierarchical organizations"
+Science Reports
+2017
+
+https://www.ncbi.nlm.nih.gov/pubmed/27958395
+"Multi-resolution community detection in massive networks"
+Science Reports
+2016
+
+https://www.ncbi.nlm.nih.gov/pubmed/12202830
+"Hierarchical organization of modularity in metabolic networks"
+Science
+2002
+This article describes modularity in metabolic networks.
+https://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=12202830
+Many relevant articles cite this article.
+
+----------
+Small World Metabolic Networks
+
+https://www.ncbi.nlm.nih.gov/pubmed/14735121
+"Network biology: understanding the cell's functional organization"
+Nature Reviews Genetics
+2004
+
+https://www.ncbi.nlm.nih.gov/pubmed/11522199
+"The small world inside large metabolic networks"
+Proceedings in Biological Science
+2001
+
+https://www.ncbi.nlm.nih.gov/pubmed/11034217
+"The large-scale organization of metabolic networks"
+Nature
+2000
+
+----------
+Relations between Multi-Omics Entities
+
+https://www.ncbi.nlm.nih.gov/pubmed/28476144
+"Multi-omics approaches to disease"
+Genome Biology
+2017
+
+--------------------------------------------------
 24 September 2017
 
 ----------

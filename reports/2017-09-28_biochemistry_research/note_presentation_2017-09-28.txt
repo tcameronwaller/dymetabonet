@@ -68,54 +68,17 @@ Simple network representation of glycolysis and citrate cycle pathways within cy
 Slide 4
 
 Note
-Introduction of the metabolic model or reconstruction.
-Metabolic models are compilations of information from scientific literature, genomic annotation, and homologous comparison to other species.
-Citations and dates of major progresses on the model of human metabolism (recon 1, recon 2, recon 2.2).
-Counts of metabolites, reactions, processes, and compartments in each model.
-Summary of the raw data within the metabolic model.
-Counts of metabolites, reactions, compartments, and processes.
-
-https://www.ncbi.nlm.nih.gov/pubmed/17267599
-https://www.ncbi.nlm.nih.gov/pubmed/23455439
-https://www.ncbi.nlm.nih.gov/pubmed/27358602
-
-Figure
-Titles and properties of models of human metabolism.
-Screen shots from interactive viewer for data in JSON format from Recon 2.2.
-Citations of sources for publications of human metabolic models.
-
-----------
-Slide 5
-
-Note
-I defined a network from information from the model of human metabolism.
-I used my application to draw a custom representation of this network.
-Iterative simulations of forces drive the arrangement of nodes and links.
-What does this network look like?
-"Wow. It is so beautiful."
-"Early on I observed that there seems to be the shape of a person in the network."
-
-Figure
-screen_2017-09-22_3.png
-Visual representation of the entire compartmental network for human metabolism.
-Counts of metabolites, reactions, nodes, and links.
-Custom color scheme with dark background and bright nodes and links.
-
-----------
-Slide 6 [priority]
-
-Note
-Study of metabolism at global, holistic scope
+Study of metabolic network at global, holistic scope
 Computational methods permit global analysis of the metabolic network and inform relevant observations.
 Biological networks tend to be small-world and scale-free, with a few nodes as central hubs that minimize paths between many other nodes.
 In a metabolic network, a hub might be a central metabolite such as pyruvate.
 Modularity in metabolism involves compartments and pathways or processes that divide the system into smaller subsystems.
-Continuity in metabolism involves transports and cross-pathway reactions that connect all subsystems into a cooperative whole.
+Connectivity in metabolism involves transports and cross-pathway reactions that connect all subsystems into a cooperative whole.
 Metabolism behaves as a cooperative, continuous system that also demonstrates modular specialization.
 Implications for evolution and regulation.
 
-Balance between modularity and continuity.
-The metabolic network has properties of both modularity and continuity.
+Balance between modularity and connectivity.
+The metabolic network has properties of both modularity and connectivity.
 Both are relevant to the study of metabolism.
 Compartments and pathways or processes provide categorical bins to reduce the scale of the system.
 Modularity simplifies conceptual understanding of metabolism.
@@ -123,6 +86,32 @@ Examples include Gene and Metabolite Set Enrichment Analysis.
 
 Figure
 Emphasis of primary points.
+Citations of key articles.
+
+----------
+Slide 5
+
+Note
+Introduction of the metabolic model or reconstruction.
+Metabolic models are compilations of information from genomic annotations, biochemical databases, and scientific literature.
+Citations and dates of major progresses on the model of human metabolism (recon 1, recon 2, recon 2.2).
+As human metabolic models improve, they have demonstrated utility in predictions and analyses of -omics data.
+
+Figure
+Emphasis of primary points.
+
+----------
+Slide 6
+
+Note
+Description of Recon 2.2 model of human metabolism.
+Counts of metabolites, reactions, processes, and compartments in model.
+Summary of the raw data within the metabolic model.
+
+Figure
+Titles and properties of models of human metabolism.
+Examples of raw information in JSON format from Recon 2.2.
+Citations of sources for publications of human metabolic models.
 
 ----------
 Slide 7
@@ -143,6 +132,16 @@ Mark the top 1% of metabolites for simplification.
 Slide 8
 
 Note
+I defined a network from information from the model of human metabolism.
+I used my application to draw a custom representation of this network.
+Iterative simulations of forces drive the arrangement of nodes and links.
+What does this network look like?
+"Wow. It is so beautiful."
+"Early on I observed that there seems to be the shape of a person in the network."
+
+Nodes: 12329
+Links: 42932
+
 This network of human metabolism demonstrates obvious modularity, with distinct modules, groups, clusters, or communities.
 These groups have dense relations within themselves but sparse relations to other groups.
 These groups also have their own hubs.
@@ -153,6 +152,7 @@ Figure
 screen_2017-09-22_3.png
 Visual representation of the entire compartmental network for human metabolism.
 Counts of metabolites, reactions, nodes, and links.
+Custom color scheme with dark background and bright nodes and links.
 
 ----------
 Slide 9
@@ -161,6 +161,9 @@ Note
 I also defined a network without consideration of subcellular compartmentalization.
 This network demonstrates less modularity and instead appears very continuous.
 This network has major, central hubs.
+
+Nodes: 6043
+Links: 28671
 
 Figure
 screen_2017-09-22_2.png
@@ -189,36 +192,12 @@ It organizes portions of metabolism separately and represents these in static ma
 These representations simplify metabolism.
 Static maps provide spatial reference.
 Modules, such as compartments and processes, provide categories to reduce scale and simplify understanding.
-A challenge arises when relations across typical categories become relevant.
 
 Figure
 KEGG Atlas
 
 ----------
 Slide 12
-
-Note
-Janet Lindsley told me about some fascinating examples of human metabolic diseases that involve perturbations across traditional pathways.
-
-1. Hyperammonemia, Orotic Acidemia
-Ornithine Carbamoyltransferase (OTC) in the mitochondrion normally routes carbamoyl phosphate through the Urea Cycle to dispose of ammonia.
-Deficiency in OTC causes carbamoyl phosphate to accumulate in both the mitochondrion and the cytosol.
-In the cytosol the excess carbamoyl phosphate routes through Pyrimidine Synthesis and causes accumulation of intermediate orotic acid.
-People with deficiency in OTC have accumulation of ammonia and orotic acid throughout the body.
-
-2. Hypoglycemia, Hyperuricemia and Gout
-Glucose-6-Phosphatase allows glucose from Gluconeogenesis in the liver to escape cells into the bloodstream.
-Deficiency in Glucose-6-Phosphatase traps glucose in cells.
-The excess glucose routes through Pentose Phosphate Pathway and Purine Synthesis and causes accumulation of uric acid.
-People with deficiency in Glucose-6-Phosphatase have hypoglycemia and also have accumulation of uric acid.
-
-3. Cancer
-
-Figure
-KEGG Atlas with annotations of connections across pathways.
-
-----------
-Slide 13
 
 Note
 Representations of metabolism tend to favor some types of information at the expense of others.
@@ -230,28 +209,54 @@ Replication of central metabolites.
 Figure
 KEGG Atlas with emphasis of all nodes that connect directly to pyruvate.
 
+----------
+Slide 13
 
+Note
+A challenge arises when relations across typical categories become relevant.
+Janet Lindsley told me about some examples of human metabolic diseases that involve perturbations across common pathways.
 
+1. Ornithine Carbamoyltransferase Deficiency
+Ornithine Carbamoyltransferase (OTC) in the mitochondrion normally routes carbamoyl phosphate through the Urea Cycle to dispose of ammonia.
+Deficiency in OTC causes carbamoyl phosphate to accumulate in both the mitochondrion and the cytosol.
+In the cytosol the excess carbamoyl phosphate routes through Pyrimidine Synthesis and causes accumulation of intermediate orotic acid.
+Symptoms of the disease include hyperammonemia and orotic acidemia.
+
+2. Glycogen Storage Disease Type 1
+Hypoglycemia, Hyperuricemia and Gout
+Glucose-6-Phosphatase normally allows glucose from Gluconeogenesis in the liver to escape cells into the bloodstream.
+Deficiency in Glucose-6-Phosphatase traps glucose in cells.
+The excess glucose routes through Pentose Phosphate Pathway and Purine Synthesis. Excess purines route through Purine Degradation and cause accumulation of uric acid.
+Symptoms of the disease include hypoglycemia, hyperuricemia, and gout.
+
+3. Cancer
+Cancer is a diverse and complex disease.
+Perturbations in normal metabolism, such as central catabolism, favor synthesis of nucleotides, amino acids, and fats.
+
+Figure
+KEGG Atlas with annotations of connections across pathways.
+
+----------
+Slide 14
+
+Note
+Summary of demands in study of metabolism.
+Global and local scopes.
+Modularity and connectivity.
+Different states in health and disease.
+Purpose
+Explore metabolism dynamically from global to local scope with accurate representation of both modularity and connectivity.
+We need a tool that supports dynamic exploration of metabolic networks.
+
+Figure
+Emphasis of primary points
 
 --------------------------------------------------
 Section: Description of Project, Story
 --------------------------------------------------
 
 ----------
-Slide 18
-
-Note
-Challenge
-Metabolism has information at global and local scopes.
-Metabolism has both modularity and continuity.
-Metabolism has various states in health and disease.
-Goal of project
-Explore metabolism dynamically from global to local scope with accurate representation of both modularity and continuity.
-
-Figure
-
-----------
-Slide 19
+Slide 15
 
 Note
 Introduction to method
@@ -261,16 +266,45 @@ Web applications run within the browser (Google's Chrome, Mozilla's Firefox, App
 JavaScript is the standard programming language for behavior in web applications and is arguably the most popular and common programming language in the world.
 Data-Driven Documents (D3) is a JavaScript library for visual representation of information in web documents.
 D3 is powerful and versatile to support many types of custom visualizations.
-Among the most popular collections of open-source software, D3 is especially prominent in information visualization from The New York Times.
+D3 is among the most popular collections of open-source software, and is especially prominent in information visualization for The New York Times.
 JSNetworkX is a JavaScript port of the most popular graph library in Python.
 
 https://www.quora.com/Is-JavaScript-the-most-popular-programming-language-in-the-world
 
 Figure
-D3 web page (d3js.org).
+Emphasis of primary points
+Logos for JavaScript, D3, JSNetworkX
+Maybe include a screen shot of code.
 
 ----------
-Slide 20
+Slide 16
+
+Note
+Description of tasks for the tool.
+
+Selections of interest could include the metabolic network in its entirety, a single compartment or process, or portions around or between individual metabolites or reactions.
+Filter by attributes and topological traversal will support these selections.
+Representation or neglect of compartmentalization in the network also depends on interest.
+
+Context within entirety simplifies selections and gives reference.
+Depiction of cardinalities of individual entities within sets will provide this context.
+
+Visual representation will communicate information about the network.
+There are many types of information about the network.
+Metabolites and reactions have attributes of their own and relations between them.
+Prolific metabolites might require simplification either by replication or omission from the network.
+Simulations of forces will arrange the network's elements.
+
+Visual representation of experimental data for metabolites or reactions in the context of the network.
+Support identification of custom selections of metabolites or reactions.
+Support custom values for metabolites or reactions.
+Represent measurements' values by color saturation of nodes.
+
+Figure
+Emphasis of primary points
+
+----------
+Slide 17
 
 Note
 To start my project, I selected a small model of metabolism from Escherichia coli.
@@ -278,7 +312,7 @@ I curated this model manually to select only the reactions and metabolites that 
 I defined nodes for metabolites, special links for reactions, and links between them.
 Biologists are familiar with the Citrate Cycle, and we know that this process behaves like a cycle.
 So, what is this messy tangle of metabolites and reactions?
-Metabolism is a lot more messy than biologists usually represent it.
+Metabolism is a lot messier than biologists usually represent it.
 Many figures of metabolic pathways ignore all but the most relevant metabolites and reactions.
 I began to consider ways that I could simplify representations of metabolic networks in ways that are still accurate.
 
@@ -287,54 +321,76 @@ Prototype 1
 Image of network for citrate cycle without replication of nodes for metabolites.
 
 ----------
-Slide 21
+Slide 18
 
 Note
-
+Replication of nodes for metabolites that are prolific hubs simplified the network.
+The network resembles a cycle for the relevant metabolites.
 
 Figure
 Prototype 1
 Image of network for citrate cycle with replication of nodes for metabolites.
 
 ----------
-Slide 22
+Slide 19
 
 Note
-Tell brief story about the challenge in scaling up to the complete data.
-I eventually rendered the data usable at the scale of the entire model.
-The scale was a bit overwhelming.
+Organization of information from the entire human metabolic model.
+Correction of subtle errors and inconsistencies.
+Representations of general metabolites and compartmental metabolites.
+Interpretation of reaction directionalities and reversibilities.
+Inclusion of transport reactions in processes.
+Attribution of entities, metabolites and reactions, to sets.
+Filtration of entities by attributes.
+Definition of network's elements, nodes and links.
+Simplification of metabolites' nodes by replication or omission.
+
+Figure
+Brief descriptions of various tasks in data organization.
+
+----------
+Slide 20
+
+Note
+Organization of the information allows me to work on its visual representation.
+When I first visualized a substantial portion of the network, it was a bit overwhelming.
+I visualized a proximity network around pyruvate at a depth of just 3 reactions.
 
 Figure
 Prototype 2
 
 ----------
-Slide 23
+Slide 21
 
 Note
+At about that point in my project, this comic from XKCD seemed appropriate.
 
 Figure
 XKCD Comic
 
 ----------
-Slide 23
+Slide 22
 
 Note
-I began developing methods to filter the metabolites and reactions.
+I developed the application's ability to select portions of interest.
+This example shows the portion of the Fatty Acid Oxidation process within only the Endoplasmic Reticular compartment.
 
 Figure
 Prototype 2
 
 ----------
-Slide 24
+Slide 23
 
 Note
 
 Figure
-Prototype 3...
+Prototype 3
+
+...
 
 ----------
-Color-code metabolites' nodes by compartments.
-Represent multi-compartmental pathways...
+----------
+----------
 
 ----------
 Slide 
