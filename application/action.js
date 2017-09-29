@@ -638,8 +638,8 @@ class Action {
   * @param {Object} model Model of the application's comprehensive state.
   */
   static executeTemporaryProcedure(model) {
-    //Action.createNetwork(model);
-    Action.summarizeMetabolitesParticipationReactions(model);
+    Action.createNetwork(model);
+    //Action.summarizeMetabolitesParticipationReactions(model);
   }
 
   // Secondary actions relevant to application's state.

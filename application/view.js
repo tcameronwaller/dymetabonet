@@ -1489,7 +1489,7 @@ class TopologyView {
     var nodeDimensionScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+    .range([1, 3, 5, 7, 10, 15, 25, 30, 35, 50]);
     // Define scale for dimensions of links' representations.
     // Domain's unit is pixel for ratio of graphical container's width to count
     // of nodes.
@@ -1508,7 +1508,7 @@ class TopologyView {
     var linkDimensionScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]);
+    .range([0.03, 0.05, 0.1, 0.3, 0.5, 0.7, 1, 2, 3, 5]);
     // Define scale for size of font in annotations.
     // Domain's unit is pixel for ratio of graphical container's width to count
     // of nodes.
@@ -1527,7 +1527,7 @@ class TopologyView {
     var fontScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([1, 2, 3, 4, 5, 7, 12, 15, 20, 30]);
+    .range([1, 2, 3, 4, 5, 7, 12, 15, 17, 20]);
     // Compute ratio for scales' domain.
     self.scaleRatio = self.graphWidth / self.nodesRecords.length;
     //console.log("nodes: " + self.nodesRecords.length);
@@ -1574,7 +1574,7 @@ class TopologyView {
     var alphaDecayScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005]);
+    .range([0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.011]);
     // Define scale for velocity decay rate in force simulation.
     // Domain's unit is count of nodes.
     // Range's unit is arbitrary for decay rates.
@@ -1589,7 +1589,7 @@ class TopologyView {
     var velocityDecayScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]);
+    .range([0.2, 0.2, 0.25, 0.25, 0.25, 0.3, 0.3]);
     // Compute simulation decay rates from scale.
     self.scaleAlphaDecay = alphaDecayScale(self.nodesRecords.length);
     self.scaleVelocityDecay = velocityDecayScale(self.nodesRecords.length);
@@ -1627,7 +1627,7 @@ class TopologyView {
     var intervalScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([100, 100, 100, 100, 100, 100, 100]);
+    .range([3, 5, 10, 15, 20, 25, 50]);
     // Define scale for representation of labels for nodes.
     // Domain's unit is count of nodes.
     // Range's unit is arbitrary.
@@ -1642,7 +1642,7 @@ class TopologyView {
     var labelScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([false, false, false, false, false, false, false]);
+    .range([true, true, true, true, false, false, false]);
     // Compute efficient behavior rules from scales.
     self.scaleInterval = intervalScale(self.nodesRecords.length);
     self.scaleLabel = labelScale(self.nodesRecords.length);
@@ -1911,7 +1911,7 @@ class TopologyView {
           return self.metaboliteNodeWidth;
         } else {
           // Link does not have designation for simplification.
-          return self.reactionNodeWidth + self.metaboliteNodeWidth;
+          return (1.5 * (self.reactionNodeWidth + self.metaboliteNodeWidth));
         }
       })
       //.strength()

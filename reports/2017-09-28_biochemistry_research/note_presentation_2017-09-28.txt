@@ -31,7 +31,8 @@ Note
 Introduction of metabolism, metabolic regulation, and their study.
 Metabolism is a collective system of all chemical reactions in an organism that are necessary for survival, growth, and reproduction.
 The bodies of complex organisms like animals have distinct types of tissues with distinct types of cells that specialize in parts of metabolism.
-An example of a metabolic reaction is the phosphorylation of glucose by hexokinase or glucokinase that traps glucose within the cell and commits it to glycolysis or glycogen synthesis.
+An example of a metabolic reaction is the phosphorylation of glucose by hexokinase or glucokinase.
+This reaction traps glucose within the cell and commits it to glycolysis or glycogen synthesis.
 Glucokinase predominates in the liver and has a lesser affinity for glucose in order to regulate storage in states of abundance.
 Regulation within metabolism differentiates between many states of health and disease.
 Metabolic diseases in humans include obesity, diabetes, cancer, and death.
@@ -50,13 +51,15 @@ Slide 3
 
 Note
 Introduction of the metabolic network.
-A network is an abstract representation of relations (links) between entities (nodes).
+A network is an abstract representation of relations between entities.
+Nodes represent entities, and links represent relations.
 It is a model for data.
 Metabolism behaves like a network of reactions between metabolites.
 Define different types of nodes for metabolites and reactions with links between them.
 Nodes and links possess attributes or properties.
-Metabolites are small, biologically-relevant molecules.
+Metabolites are small, biologically-relevant molecules with attributes such as chemical formula and ionic charge.
 Reactions involve roles of genes, transcripts, and proteins for encoding, catalysis, and regulation.
+Reactions also have directionality and reversibility.
 Metabolites and their reactions segregate between cellular compartments, organelles.
 Sets of reactions behave cooperatively in pathways or processes.
 
@@ -69,20 +72,14 @@ Slide 4
 
 Note
 Study of metabolic network at global, holistic scope
-Computational methods permit global analysis of the metabolic network and inform relevant observations.
+Due to the scale of the metabolic network, computational algorithms are necessary to study it at global scope.
+Computational algorithms permit global analysis of the metabolic network and inform relevant observations.
 Biological networks tend to be small-world and scale-free, with a few nodes as central hubs that minimize paths between many other nodes.
 In a metabolic network, a hub might be a central metabolite such as pyruvate.
 Modularity in metabolism involves compartments and pathways or processes that divide the system into smaller subsystems.
 Connectivity in metabolism involves transports and cross-pathway reactions that connect all subsystems into a cooperative whole.
 Metabolism behaves as a cooperative, continuous system that also demonstrates modular specialization.
 Implications for evolution and regulation.
-
-Balance between modularity and connectivity.
-The metabolic network has properties of both modularity and connectivity.
-Both are relevant to the study of metabolism.
-Compartments and pathways or processes provide categorical bins to reduce the scale of the system.
-Modularity simplifies conceptual understanding of metabolism.
-Examples include Gene and Metabolite Set Enrichment Analysis.
 
 Figure
 Emphasis of primary points.
@@ -94,8 +91,11 @@ Slide 5
 Note
 Introduction of the metabolic model or reconstruction.
 Metabolic models are compilations of information from genomic annotations, biochemical databases, and scientific literature.
+Assembly of these models is an iterative tasks from the community.
 Citations and dates of major progresses on the model of human metabolism (recon 1, recon 2, recon 2.2).
-As human metabolic models improve, they have demonstrated utility in predictions and analyses of -omics data.
+As human metabolic models improve, they demonstrate utility in predictions and analyses of -omics data.
+As examples, both liver studies (Mardinoglu 2017, Pagliarini 2016) utilized human metabolic models to predict therapeutic targets in liver disease.
+Both studies validated the efficacy of these targets in mice and/or human patients.
 
 Figure
 Emphasis of primary points.
@@ -105,13 +105,14 @@ Slide 6
 
 Note
 Description of Recon 2.2 model of human metabolism.
+Recon 2.2 is the most current human metabolic model.
 Counts of metabolites, reactions, processes, and compartments in model.
 Summary of the raw data within the metabolic model.
 
 Figure
 Titles and properties of models of human metabolism.
 Examples of raw information in JSON format from Recon 2.2.
-Citations of sources for publications of human metabolic models.
+Citation for Recon 2.2.
 
 ----------
 Slide 7
@@ -143,9 +144,9 @@ Nodes: 12329
 Links: 42932
 
 This network of human metabolism demonstrates obvious modularity, with distinct modules, groups, clusters, or communities.
-These groups have dense relations within themselves but sparse relations to other groups.
-These groups also have their own hubs.
-The network is still continuous, however.
+These modules have dense relations within themselves but sparse relations to other modules.
+These modules also have their own hubs.
+The network is still connected.
 This network represents compartmentalization in the metabolic network, and this compartmentalization accounts for much of this modularity.
 
 Figure
@@ -159,7 +160,8 @@ Slide 9
 
 Note
 I also defined a network without consideration of subcellular compartmentalization.
-This network demonstrates less modularity and instead appears very continuous.
+Defining the network without compartmentalization is useful in experimental contexts that disregard compartments, such as whole-cell metabolomics.
+This network demonstrates less modularity and instead connectivity is apparent.
 This network has major, central hubs.
 
 Nodes: 6043
@@ -175,7 +177,10 @@ Slide 10
 
 Note
 Study of metabolism at local, specific scope.
-Design of experiments and interpretation of results require information about individual metabolites, genes, transcripts, and proteins.
+Design of experiments and interpretation of results require information about individual metabolites and reactions (genes, transcripts, proteins).
+The local network in this example gives names and relations for the pyruvate dehydrogenase reaction.
+We know identities of entities, which metabolites are reactants and products, and the directionality and reversibility of the reaction.
+
 A challenge is to access different types of information about the metabolic network at various scopes or levels of detail.
 I will illustrate this challenge with an example.
 
@@ -187,8 +192,9 @@ Simple network representation of glycolysis and citrate cycle pathways within cy
 Slide 11
 
 Note
-KEGG Atlas is among the most capable and common tools for studying the metabolic network.
-It organizes portions of metabolism separately and represents these in static maps with emphatic modularity of pathways or processes.
+KEGG Atlas is currently among the most capable and common tools for studying the metabolic network.
+It represents metabolism in static maps.
+These maps organizes portions of metabolism separately and represents these with emphatic modularity by pathways or processes.
 These representations simplify metabolism.
 Static maps provide spatial reference.
 Modules, such as compartments and processes, provide categories to reduce scale and simplify understanding.
@@ -200,11 +206,12 @@ KEGG Atlas
 Slide 12
 
 Note
-Representations of metabolism tend to favor some types of information at the expense of others.
+Static representations of metabolism tend to favor some types of information at the expense of others.
 KEGG's static maps do not represent compartmentalization.
 They also obscure relations between different categories.
 Pyruvate's direct relations to other metabolites spread across a substantial portion of the map and are obscure.
 Replication of central metabolites.
+Proximity is an example of information that static representations sometimes obscure.
 
 Figure
 KEGG Atlas with emphasis of all nodes that connect directly to pyruvate.
@@ -213,7 +220,7 @@ KEGG Atlas with emphasis of all nodes that connect directly to pyruvate.
 Slide 13
 
 Note
-A challenge arises when relations across typical categories become relevant.
+A challenge also arises when relations across typical categories become relevant.
 Janet Lindsley told me about some examples of human metabolic diseases that involve perturbations across common pathways.
 
 1. Ornithine Carbamoyltransferase Deficiency
@@ -244,7 +251,7 @@ Summary of demands in study of metabolism.
 Global and local scopes.
 Modularity and connectivity.
 Different states in health and disease.
-Purpose
+Need
 Explore metabolism dynamically from global to local scope with accurate representation of both modularity and connectivity.
 We need a tool that supports dynamic exploration of metabolic networks.
 
@@ -260,10 +267,13 @@ Slide 15
 
 Note
 Introduction to method
-My team and I chose to implement our program as a web application.
+My team and I chose to implement our tool as a web application.
 The web is the dominant application platform due to ease of development and deployment.
 Web applications run within the browser (Google's Chrome, Mozilla's Firefox, Apple's Safari, Window's Internet Explorer) on the user's machine.
+A server is unnecessary.
+The user will navigate to a web address and begin to use the application.
 JavaScript is the standard programming language for behavior in web applications and is arguably the most popular and common programming language in the world.
+JavaScript is especially powerful for dynamic, interactive interfaces.
 Data-Driven Documents (D3) is a JavaScript library for visual representation of information in web documents.
 D3 is powerful and versatile to support many types of custom visualizations.
 D3 is among the most popular collections of open-source software, and is especially prominent in information visualization for The New York Times.
@@ -282,8 +292,8 @@ Slide 16
 Note
 Description of tasks for the tool.
 
-Selections of interest could include the metabolic network in its entirety, a single compartment or process, or portions around or between individual metabolites or reactions.
-Filter by attributes and topological traversal will support these selections.
+Selections of interest might include the metabolic network in its entirety, a single compartment or process, or portions around or between individual entities.
+Filters by attributes and topological traversal will support these selections.
 Representation or neglect of compartmentalization in the network also depends on interest.
 
 Context within entirety simplifies selections and gives reference.
@@ -294,6 +304,7 @@ There are many types of information about the network.
 Metabolites and reactions have attributes of their own and relations between them.
 Prolific metabolites might require simplification either by replication or omission from the network.
 Simulations of forces will arrange the network's elements.
+Sets of entities with common compartments and processes are favorable for aggregation and clear representation.
 
 Visual representation of experimental data for metabolites or reactions in the context of the network.
 Support identification of custom selections of metabolites or reactions.
@@ -382,11 +393,41 @@ Prototype 2
 Slide 23
 
 Note
+The application summarizes the entire metabolic network in terms of cardinalities of entities (metabolites and reactions) within sets by attributes of processes and compartments.
+This summary is also a menu for selection and will include labels and search menus.
+
+The application represents nodes for entities and relations between them.
+The representation attempts to clarify a reaction's directionality and reversibility.
+The application supports definition of the network with or without compartmentalization.
+The application will also support either replication or omission of nodes for metabolites that are prolific hubs.
+In its current state of development, I need to restore this functionality.
+The arrangement of nodes and links is automatic and accommodates networks in a broad range of scales.
+
+At its current state, the application consists of 8960 lines of code.
 
 Figure
-Prototype 3
+Prototype 3 screen image 2017-09-28_1.
 
-...
+----------
+Slide 24
+
+Note
+At various points in this presentation, I have illustrated several functions of the application in its current state.
+My short-term (1 month) goal for this project is to implement controls in the application's interface for all current functionality and to improve performance and latency.
+Then I can deploy a prototype to my team members and gather feedback.
+My middle-term (3 months) goal for this project is to implement novel functionality to support all tasks.
+
+Figure
+Emphasis of primary points
+
+----------
+Slide 25
+
+Note
+Acknowledgements and thanks
+
+Figure
+Acknowledgements
 
 ----------
 ----------
