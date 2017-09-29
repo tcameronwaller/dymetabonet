@@ -1483,9 +1483,9 @@ class TopologyView {
     //10-15: 10
     //15-25: 15
     //25-50: 25
-    //50-100: 35
-    //100-150: 50
-    //150-10000: 75
+    //50-100: 30
+    //100-150: 35
+    //150-10000: 50
     var nodeDimensionScale = d3
     .scaleThreshold()
     .domain(domainRatios)
@@ -1502,9 +1502,9 @@ class TopologyView {
     //10-15: 0.5
     //15-25: 0.7
     //25-50: 1
-    //50-100: 3
-    //100-150: 5
-    //150-10000: 7
+    //50-100: 2
+    //100-150: 3
+    //150-10000: 5
     var linkDimensionScale = d3
     .scaleThreshold()
     .domain(domainRatios)
@@ -1522,8 +1522,8 @@ class TopologyView {
     //15-25: 7
     //25-50: 12
     //50-100: 15
-    //100-150: 20
-    //150-10000: 30
+    //100-150: 17
+    //150-10000: 20
     var fontScale = d3
     .scaleThreshold()
     .domain(domainRatios)
