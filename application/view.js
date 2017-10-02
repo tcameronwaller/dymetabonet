@@ -1,3 +1,7 @@
+// TODO: Organize common procedures for constructor's and initializeContainer's within another function.
+// TODO: Simply calling these procedures from respective class instances and passing "self" will work.
+// TODO: Maybe group this general functionality within some sort of utility class...
+
 /**
 * Interface to select file, check and extract information about metabolic
 * entities and sets, and restore application's state.
@@ -117,6 +121,7 @@ class SourceView {
   }
 }
 
+// TODO: Consider re-naming "PersistenceView" as "StateView" or something...
 /**
 * Interface to save and restore a persistent state of the application.
 */
@@ -209,8 +214,7 @@ class PersistenceView {
 class SetView {
   /**
   * Initializes an instance of the class.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
+  * @param {Object} model Model of the application's comprehensive state.
   */
   constructor (model) {
     // Set reference to class' current instance to transfer across changes
@@ -222,20 +226,19 @@ class SetView {
     self.document = document;
     // Initialize container for interface.
     self.initializeContainer(self);
-    // Create aspects of interface that do not depend on data.
-    // Initialize table for summary of sets' cardinalities.
-    self.initializeSummaryTable(self);
-    // Restore the table for summary of sets' cardinalitites.
-    self.restoreSummaryTable(self);
+    // Initialize menu for summary of sets' cardinalities.
+    self.initializeSummaryMenu(self);
+    // Restore menu for summary of sets' cardinalitites.
+    self.restoreSummaryMenu(self);
   }
   /**
   * Initializes the container for the interface.
-  * @param {Object} setView Instance of set view interface.
+  * @param {Object} view Instance of interface's current view.
   */
-  initializeContainer(setView) {
+  initializeContainer(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
+    var self = view;
     // Create and set references to elements for interface.
     // Select view in document object model.
     self.view = self.document.getElementById("view");
@@ -274,22 +277,20 @@ class SetView {
     }
   }
   /**
-  * Initializes the table to summarize sets' cardinalities.
-  * Creates new elements that do not exist and do not vary with data.
+  * Initializes the menu to summarize sets' cardinalities.
+  * Creates elements that do not yet exist.
   * Sets references to elements that already exist.
-  * @param {Object} setView Instance of set view interface.
+  * @param {Object} view Instance of interface's current view.
   */
-  initializeSummaryTable(setView) {
-    // As their actions do not change and they have access to the dynamic
-    // model, it is only necessary to define event handlers upon initiation
-    // of control elements.
+  initializeSummaryMenu(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
-    // Create and set references to elements for interface.
-    // Initialize table.
-    // Set references to table, table's head, table's head value cell,
-    // entity selectors, filter selector, and table's body.
+    var self = view;
+    // Create elements that persist across interactive, dynamic changes to the
+    // application's state.
+    // Activate behavior that is consistent across interactive, dynamic changes
+    // to the application's state.
+    // Determine whether the summary's menu already exists within the view.
     if (!self.container.getElementsByTagName("table").item(0)) {
       // Interface's container does not include a table element.
       // Create table.
@@ -307,21 +308,21 @@ class SetView {
       self.tableHeadRowCellValue = self.document.createElement("th");
       tableHeadRow.appendChild(self.tableHeadRowCellValue);
       self.tableHeadRowCellValue.classList.add("value");
-      // Create and activate entity selector.
-      self.createActivateEntitiesSelector("metabolites", self);
-      self.createActivateEntitiesSelector("reactions", self);
-      // Create and activate filter selector.
-      self.createActivateFilterSelector(self);
+      // Create and activate controls for entities.
+      self.createActivateEntitiesControl("metabolites", self);
+      self.createActivateEntitiesControl("reactions", self);
+      // Create and activate control for filter.
+      self.createActivateFilterControl(self);
       // Create and activate reset button.
-      self.createActivateReset(self);
+      self.createActivateRestore(self);
       // Create table's body.
       self.tableBody = self.document.createElement("tbody");
       self.table.appendChild(self.tableBody);
     } else {
       // Interface's container includes a table element.
       // Establish references to existing elements.
-      // References are only necessary for elements that depend on the
-      // application's state.
+      // References are only necessary for elements that vary with changes to
+      // the application's state.
       self.table = self.container.getElementsByTagName("table").item(0);
       self.tableHead = self
       .container.getElementsByTagName("thead").item(0);
@@ -331,37 +332,38 @@ class SetView {
       .tableHead.getElementsByTagName("tr").item(0);
       self.tableHeadRowCellValue = tableHeadRow
       .getElementsByClassName("value").item(0);
-      self.metabolitesSelector = self
+      self.metabolitesControl = self
       .document.getElementById("sets-entities-metabolites");
-      self.reactionsSelector = self
+      self.reactionsControl = self
       .document.getElementById("sets-entities-reactions");
-      self.filterSelector = self
-      .document.getElementById("sets-summary-filter");
+      self.filterControl = self
+      .document.getElementById("sets-filter");
       self.tableBody = self
       .container.getElementsByTagName("tbody").item(0);
     }
   }
   /**
-  * Creates and activates selectors for the type of entity in the set view.
+  * Creates and activates controls to select the type of entity in the menu to
+  * summarize sets' cardinalities.
   * @param {string} entities Type of entities, metabolites or reactions, for
   * which to create and activate selector.
-  * @param {Object} setView Instance of set view interface.
+  * @param {Object} view Instance of interface's current view.
   */
-  createActivateEntitiesSelector(entities, setView) {
+  createActivateEntitiesControl(entities, view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
+    var self = view;
     // Create entity selector.
-    var entitiesSelector = entities + "Selector";
+    var entitiesControl = entities + "Control";
     var identifier = "sets-entities-" + entities;
-    self[entitiesSelector] = self.document.createElement("input");
-    self.tableHeadRowCellValue.appendChild(self[entitiesSelector]);
-    self[entitiesSelector].setAttribute("id", identifier);
-    self[entitiesSelector].setAttribute("type", "radio");
-    self[entitiesSelector].setAttribute("value", entities);
-    self[entitiesSelector].setAttribute("name", "entities");
-    self[entitiesSelector].classList.add("entities");
-    self[entitiesSelector].addEventListener("change", function (event) {
+    self[entitiesControl] = self.document.createElement("input");
+    self.tableHeadRowCellValue.appendChild(self[entitiesControl]);
+    self[entitiesControl].setAttribute("id", identifier);
+    self[entitiesControl].setAttribute("type", "radio");
+    self[entitiesControl].setAttribute("value", entities);
+    self[entitiesControl].setAttribute("name", "entities");
+    self[entitiesControl].classList.add("entities");
+    self[entitiesControl].addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Change current selection of entity in application's state.
       //var radios = self
@@ -376,22 +378,23 @@ class SetView {
     entityLabel.textContent = entities;
   }
   /**
-  * Creates and activates selector for filter in the set view.
-  * @param {Object} setView Instance of set view interface.
+  * Creates and activates control to select whether to filter the menu to
+  * summarize sets' cardinalities.
+  * @param {Object} view Instance of interface's current view.
   */
-  createActivateFilterSelector(setView) {
+  createActivateFilterControl(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
+    var self = view;
     // Create and activate filter selector.
-    var identifier = "sets-summary-filter";
-    self.filterSelector = self.document.createElement("input");
-    self.tableHeadRowCellValue.appendChild(self.filterSelector);
-    self.filterSelector.setAttribute("id", identifier);
-    self.filterSelector.setAttribute("type", "checkbox");
-    self.filterSelector.setAttribute("value", "filter");
-    self.filterSelector.classList.add("filter");
-    self.filterSelector.addEventListener("change", function (event) {
+    var identifier = "sets-filter";
+    self.filterControl = self.document.createElement("input");
+    self.tableHeadRowCellValue.appendChild(self.filterControl);
+    self.filterControl.setAttribute("id", identifier);
+    self.filterControl.setAttribute("type", "checkbox");
+    self.filterControl.setAttribute("value", "filter");
+    self.filterControl.classList.add("filter");
+    self.filterControl.addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Change current selection of filter in application's state.
       Action.changeSetsFilter(self.model);
@@ -402,60 +405,60 @@ class SetView {
     filterLabel.textContent = "filter";
   }
   /**
-  * Creates and activates button to reset sets' summary for set view.
-  * @param {Object} setView Instance of set view interface.
+  * Creates and activates control to restore the menu to summarize sets'
+  * cardinalities to its original state.
+  * @param {Object} view Instance of interface's current view.
   */
-  createActivateReset(setView) {
+  createActivateRestore(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
+    var self = view;
     // Create and activate button to restore application to initial state.
-    self.reset = self.document.createElement("button");
-    self.tableHeadRowCellValue.appendChild(self.reset);
-    self.reset.textContent = "reset";
-    self.reset.addEventListener("click", function (event) {
+    self.restore = self.document.createElement("button");
+    self.tableHeadRowCellValue.appendChild(self.restore);
+    self.restore.textContent = "restore";
+    self.restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Restore sets' summary to initial state.
       Action.restoreSetsSummary(self.model);
     });
   }
   /**
-  * Restores the table to summarize sets' cardinalities.
-  * @param {Object} setView Instance of set view interface.
+  * Restores the menu to summarize sets' cardinalities.
+  * @param {Object} view Instance of interface's current view.
   */
-  restoreSummaryTable(setView) {
+  restoreSummaryMenu(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
-    // Update entity selector according to application's state.
-    self.metabolitesSelector.checked = self
+    var self = view;
+    // Create and restore elements that vary across interactive, dynamic changes
+    // to the application's state.
+    // Activate behavior that varies across interactive, dynamic changes to the
+    // application's state.
+    // Restore the summary menu to match the application's dynamic state.
+    // Restore state's of controls.
+    self.metabolitesControl.checked = self
     .determineEntityMatch("metabolites", self);
-    self.reactionsSelector.checked = self
+    self.reactionsControl.checked = self
     .determineEntityMatch("reactions", self);
-    // Update filter selector according to application's state.
-    self.filterSelector.checked = self.determineFilter(self);
-
-    // TODO: Create table elements for set cardinalities according to current set cardinalitites in application state...
-    // TODO: At first, just re-create the table every time... probably not too much of a problem, especially with D3.
-
-    // Create and activate data-dependent set's summary in summary table.
+    self.filterControl.checked = self.determineFilter(self);
+    // Create and activate data-dependent summary's menu.
     self.createActivateSummaryBody(self);
   }
   /**
   * Creates and activates body of summary table.
-  * @param {Object} setView Instance of set view interface.
+  * @param {Object} view Instance of interface's current view.
   */
-  createActivateSummaryBody(setView) {
+  createActivateSummaryBody(view) {
 
-    // TODO: Attribute Search Menu
-    // TODO: Fix width of attribute headers so they don't change when attribute search menus appear.
+    // TODO: Attribute Search Menu... make them always present...
     // TODO: Handle text overflow of options in search menu.
     // TODO: Handle scrolling through options in search menu.
     // TODO: Include some indicator of selection status in options in search menu.
 
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
+    var self = view;
     // Select summary table's body.
     var body = d3.select(self.tableBody);
     // Append rows to table with association to data.
@@ -498,14 +501,13 @@ class SetView {
     self.createActivateSummaryBodyCellsValues(self);
   }
   /**
-  * Creates and activates cells for data's attributes in body of summary
-  * table.
-  * @param {Object} setView Instance of set view interface.
+  * Creates and activates cells for data's attributes in body of summary table.
+  * @param {Object} view Instance of interface's current view.
   */
-  createActivateSummaryBodyCellsAttributes(setView) {
+  createActivateSummaryBodyCellsAttributes(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
+    var self = view;
 
     // Assign attributes to cells for attributes.
     self.tableBodyCellsAttributes
@@ -541,12 +543,12 @@ class SetView {
   /**
   * Activates cells for data's attributes in body of summary
   * table.
-  * @param {Object} setView Instance of set view interface.
+  * @param {Object} view Instance of interface's current view.
   */
-  activateSummaryBodyCellsAttributes(setView) {
+  activateSummaryBodyCellsAttributes(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
+    var self = view;
 
     // TODO: If the search fields change the width of the attribute menu cells, it will be necessary to redraw the menu altogether...
     // TODO: Maybe fix the width of the cells?
@@ -650,12 +652,12 @@ class SetView {
   }
   /**
   * Creates and activates cells for data's values in body of summary table.
-  * @param {Object} setView Instance of set view interface.
+  * @param {Object} view Instance of interface's current view.
   */
-  createActivateSummaryBodyCellsValues(setView) {
+  createActivateSummaryBodyCellsValues(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
+    var self = view;
 
     // TODO: Format bars according to their selection status in the model of app state.
     // TODO: Use bar's attribute and value to look-up selection status in model.
@@ -707,7 +709,7 @@ class SetView {
       var match = self.determineValueAttributeMatchSelections({
         value: data.value,
         attribute: data.attribute,
-        setView: self
+        view: self
       });
       return !match;
     })
@@ -715,7 +717,7 @@ class SetView {
       var match = self.determineValueAttributeMatchSelections({
         value: data.value,
         attribute: data.attribute,
-        setView: self
+        view: self
       });
       return match;
     })
@@ -745,12 +747,12 @@ class SetView {
   }
   /**
   * Activates cells for data's values in body of summary table.
-  * @param {Object} setView Instance of set view interface.
+  * @param {Object} view Instance of interface's current view.
   */
-  activateSummaryBodyCellsValues(setView) {
+  activateSummaryBodyCellsValues(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
+    var self = view;
 
     // Remove any existing event listeners and handlers from bars.
     self.tableBodyCellsValuesGraphBars
@@ -766,26 +768,28 @@ class SetView {
     });
   }
   /**
-  * Determines whether or not the application state has a current selection
-  * of entity that matches a specific type of entity.
-  * @param {string} match Type of entity, metabolite or reaction, to find
-  * match with entity selection in application's state.
-  * @param {Object} setView Instance of set view interface.
+  * Determines whether or not a specific type of entities matches the selection
+  * in the application's state.
+  * @param {string} match Type of entities, metabolites or reactions, to compare
+  * to the selection in application's state.
+  * @param {Object} view Instance of interface's current view.
   */
-  determineEntityMatch(match, setView) {
+  determineEntityMatch(match, view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
-    return self.model.setsEntities === match;
+    var self = view;
+    var selection = self.model.setsEntities;
+    return selection === match;
   }
   /**
-  * Determines the current filter selection in the application's state.
-  * @param {Object} setView Instance of set view interface.
+  * Determines the current selection in the application's state of whether to
+  * filter the menu to summarize sets' cardinalities.
+  * @param {Object} view Instance of interface's current view.
   */
-  determineFilter(setView) {
+  determineFilter(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
+    var self = view;
     return self.model.setsFilter;
   }
   /**
@@ -794,13 +798,14 @@ class SetView {
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.value Value of attribute of interest.
   * @param {string} parameters.attribute Attribute of interest.
+  * @param {Object} parameters.view Instance of interface's current view.
   * @returns {boolean} Whether or not the value and attribute match a current
   * selection.
   */
-  determineValueAttributeMatchSelections({value, attribute, setView}) {
+  determineValueAttributeMatchSelections({value, attribute, view}) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
-    var self = setView;
+    var self = view;
     // Determine whether or not current selections include a selection for
     // the attribute and value.
     var match = self

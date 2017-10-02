@@ -4,6 +4,27 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+2 October 2017
+
+----------
+Efficiency of Procedure to Filter Entites and their Values of Attributes
+
+The procedure to determine sets' cardinalities and prepare a summary of sets does not require much resource.
+The latency time for this procedure is about 1 second.
+The action method "Action.determineEntitiesSetsCardinalititesAttributes" controls this procedure.
+
+The procedure to filter entities and their values of attributes does require much resource.
+The latency time for this procedure is about 45 seconds.
+The action method "Action.selectSetsValue" controls this procedure.
+Within this procedure, the process of copying records for metabolites and reactions requires much resource.
+The latency time for this process is about 30-45 seconds.
+
+Using JSON.pars(JSON.stringify(data)) might be a more efficient method to copy records for entities and their values of attributes.
+Alternatively, perhaps I could copy records for entities within the procedure for filtering them and their attributes.
+The idea is to minimize the count of iterations.
+Perform the entire procedure within as few iterations as possible.
+
+--------------------------------------------------
 27 September 2017
 
 ----------
