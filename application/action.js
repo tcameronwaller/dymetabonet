@@ -233,7 +233,7 @@ class Action {
     var networkDefinitionAttributes = Action
     .initializeNetworkDefinitionAttributes();
     // Compile novel values of attributes.
-    var newAttributesValues = {
+    var novelAttributesValues = {
       file: file
     };
     var attributesValues = Object.assign(
@@ -241,7 +241,7 @@ class Action {
       entitiesSets,
       currentEntitiesSetsAttributes,
       networkDefinitionAttributes,
-      newAttributesValues
+      novelAttributesValues
     );
     // Submit novel values of attributes to the model of the application's
     // state.
@@ -345,32 +345,45 @@ class Action {
     // and values for set view.
     // These selections determine which attributes and values define filters
     // against entities' attributes.
-    var valuesSelections = Attribution.recordFilterSelection({
+    var currentSelections = Attribution.recordFilterSelection({
       value: value,
       attribute: attribute,
-      selections: model.valuesSelections
+      previousSelections: model.valuesSelections
     });
-    // Determine entities and their values of attributes that pass filters
-    // from selections.
-    // Filter against complete collections of entities to account for any
-    // changes to selections of filters.
-    // Copy metabolic entities.
-    // TODO: These copy procedures might be slow...
-    var metabolites = Extraction.copyEntitiesRecordsObject(model.metabolites);
-    var reactions = Extraction.copyEntitiesRecordsObject(model.reactions);
-    // Filter the metabolic entities and their values of attributes.
-    // TODO: These filter procedures might be slow...
-    var currentReactions = Attribution.filterReactionsAttributesValues({
-      selections: valuesSelections,
-      reactions: reactions
-    });
-    var currentMetabolites = Attribution
-    .filterMetabolitesReactionsAttributesValues({
-      metabolites: metabolites,
-      reactions: currentReactions
-    });
-    // Determine values of attributes that summarize cardinalities of sets
-    // of entities.
+    // Determine entities and their values of attributes that pass filters from
+    // selections.
+    // The filtration procedure is computationally expensive, especially in
+    // collection of attributes from all reactions in which a metabolite
+    // participates.
+    // Determine whether there are any selections of atttributes' values to
+    // apply as filters.
+    if (currentSelections.length === 0) {
+      // There are not any selections of attributes' values to apply as filters.
+      // Copy information about metabolic entities.
+      var currentMetabolites = General.copyValueJSON(model.metabolites);
+      var currentReactions = General.copyValueJSON(model.reactions);
+    } else {
+      // There are selections of attributes' values to apply as filters.
+      // Filter the metabolic entities and their values of attributes.
+      // Filter against complete collections of entities to account for any
+      // changes to selections of filters.
+      var currentReactions = Attribution.filterReactionsAttributesValues({
+        selections: currentSelections,
+        reactions: model.reactions
+      });
+      console.log("currentReactions");
+      console.log(Object.keys(currentReactions).length);
+      var currentMetabolites = Attribution.filterMetabolitesAttributesValues({
+        metabolites: model.metabolites,
+        reactions: currentReactions
+      });
+      console.log("currentMetabolites");
+      console.log(Object.keys(currentMetabolites).length);
+    }
+
+
+    // Determine values of attributes that summarize cardinalities of sets of
+    // entities.
     var setsCardinalitiesAttributes = Action
     .determineEntitiesSetsCardinalitiesAttributes({
       entities: model.setsEntities,
@@ -380,16 +393,16 @@ class Action {
       currentMetabolites: currentMetabolites,
       currentReactions: currentReactions
     });
-    // Compile new values of attributes.
-    var newAttributesValues = {
+    // Compile novel values of attributes.
+    var novelAttributesValues = {
       attributesSelections: attributesSelections,
-      valuesSelections: valuesSelections,
+      valuesSelections: currentSelections,
       currentMetabolites: currentMetabolites,
       currentReactions: currentReactions
     };
     var attributesValues = Object
-    .assign({}, setsCardinalitiesAttributes, newAttributesValues);
-    // Submit new values of attributes to the model of the application's
+    .assign({}, setsCardinalitiesAttributes, novelAttributesValues);
+    // Submit novel values of attributes to the model of the application's
     // state.
     Action.submitAttributes({
       attributesValues: attributesValues,
@@ -762,7 +775,7 @@ class Action {
     var setsEntities = "metabolites";
     // Specify filter option for sets' summary.
     var setsFilter = false;
-    // Copy metabolic entities.
+    // Copy information about metabolic entities.
     var currentMetabolites = General.copyValueJSON(entitiesSets.metabolites);
     var currentReactions = General.copyValueJSON(entitiesSets.reactions);
     // Determine values of attributes that summarize cardinalities of sets

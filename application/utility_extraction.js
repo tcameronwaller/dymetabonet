@@ -1090,8 +1090,8 @@ class Extraction {
     reactionsIdentifiers,
     reactions
   }) {
-    // Collect attributes that metabolite inherits from the reactions in
-    // which it participates.
+    // Collect attributes that metabolite inherits from the reactions in which
+    // it participates.
     // Initialize collection.
     var initialCollection = {
       reactions: [],
@@ -1102,19 +1102,17 @@ class Extraction {
     return reactionsIdentifiers
     .reduce(function (collection, reactionIdentifier) {
       // Determine if the reaction exists in the current collection of
-      // reactions, indicating that the reaction passes current
-      // filters.
+      // reactions, indicating that the reaction passes current filters.
       if (reactions.hasOwnProperty(reactionIdentifier)) {
         // Reaction passes filters.
         var reaction = reactions[reactionIdentifier];
-        // Determine if the reaction claims the metabolite,
-        // indicating that the metabolite's participation in the
-        // reaction satisfies filters.
+        // Determine if the reaction claims the metabolite, indicating that the
+        // metabolite's participation in the reaction satisfies filters.
         if (reaction.metabolites.includes(metaboliteIdentifier)) {
           // Reaction claims metabolite.
-          // Include reaction's identifier in metabolite's
-          // collection of reactions.
-          var collectionReactions = General
+          // Include reaction's identifier in metabolite's collection of
+          // reactions.
+          var currentReactions = General
           .collectUniqueElements(
             []
             .concat(
@@ -1122,16 +1120,15 @@ class Extraction {
               reaction.identifier
             )
           );
-          // Determine values of attributes that metabolite
-          // inherits from reaction.
-          // Determine compartments in which metabolite
-          // participates in the reaction.
-          var compartments = Extraction
-          .collectMetaboliteReactionCompartments({
+          // Determine values of attributes that metabolite inherits from
+          // reaction.
+          // Determine compartments in which metabolite participates in the
+          // reaction.
+          var compartments = Extraction.collectMetaboliteReactionCompartments({
             metaboliteIdentifier: metaboliteIdentifier,
             reaction: reaction
           });
-          var collectionCompartments = General
+          var currentCompartments = General
           .collectUniqueElements(
             []
             .concat(
@@ -1139,32 +1136,32 @@ class Extraction {
               compartments
             )
           );
-          // Determine processes of the reaction in which
-          // metabolite participates.
-          // Metabolite inherits from its reactions all of the
-          // reactions' processes.
+          // Determine processes of the reaction in which metabolite
+          // participates.
+          // Metabolite inherits from its reactions all of the reactions'
+          // processes.
           var processes = reaction.processes;
-          var collectionProcesses = General
+          var currentProcesses = General
           .collectUniqueElements(
             [].concat(collection.processes, processes)
           );
-          // Compile new values of attributes for the collection.
-          var newCollection = {
-            reactions: collectionReactions,
-            compartments: collectionCompartments,
-            processes: collectionProcesses
+          // Compile collection's values of attributes.
+          var currentCollection = {
+            reactions: currentReactions,
+            compartments: currentCompartments,
+            processes: currentProcesses
           };
         } else {
           // Reaction does not claim metabolite.
-          // Do not change current collection.
-          var newCollection = collection;
+          // Preserve collection.
+          var currentCollection = collection;
         }
       } else {
         // Reaction does not pass filters.
-        // Do not change current collection.
-        var newCollection = collection;
+        // Preserve collection.
+        var currentCollection = collection;
       }
-      return newCollection;
+      return currentCollection;
     }, initialCollection);
   }
   /**
