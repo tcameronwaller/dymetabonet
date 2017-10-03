@@ -7,6 +7,20 @@ Research With Alexander Lex
 2 October 2017
 
 ----------
+Efficiency of procedure to copy records for entities
+
+1. Custom
+Iterate on records for all entities.
+For each entity's record, consider the types of all attributes.
+Copy the attributes' records according to their types.
+Process duration: 42407 milliseconds
+
+2. JSON
+Convert object containing records for all entities to JavaScript Object Notation (JSON).
+Parse the information from JSON.
+Process duration: 363 milliseconds.
+
+----------
 Efficiency of Procedure to Filter Entites and their Values of Attributes
 
 The procedure to determine sets' cardinalities and prepare a summary of sets does not require much resource.
@@ -19,7 +33,7 @@ The action method "Action.selectSetsValue" controls this procedure.
 Within this procedure, the process of copying records for metabolites and reactions requires much resource.
 The latency time for this process is about 30-45 seconds.
 
-Using JSON.pars(JSON.stringify(data)) might be a more efficient method to copy records for entities and their values of attributes.
+Using JSON.parse(JSON.stringify(data)) might be a more efficient method to copy records for entities and their values of attributes.
 Alternatively, perhaps I could copy records for entities within the procedure for filtering them and their attributes.
 The idea is to minimize the count of iterations.
 Perform the entire procedure within as few iterations as possible.

@@ -87,6 +87,104 @@ class General {
       element.removeChild(child);
     });
   }
+  /**
+  * Copies an object by conversion to JavaScript Object Notation (JSON).
+  * @param {Object} object Object to copy.
+  * @returns {Object} Copy of object.
+  */
+  static copyObjectJSON(object) {
+    return JSON.parse(JSON.stringify(object));
+  }
+  /**
+  * Copies a value according to its type.
+  * @param {Object} value Value to copy, of type null, undefined, boolean,
+  * string, number, symbol, array, or object.
+  * @returns {Object} Copy of value.
+  */
+  static copyValue(value) {
+    // Determine whether the value is mutable.
+    var mutable = General.determineValueMutability(value);
+    if (!mutable) {
+      // Value is immutable.
+      // Copy value by assignment.
+      var valueCopy = value;
+    } else {
+      // Value is mutable.
+      // Determine whether the value is an array or another object.
+      var type = General.determineValueType(value);
+      if (type === "array") {
+        // Value is an array.
+        // Determine whether any elements of the array are mutable.
+        var someMutable = value.some(function (element) {
+          return General.determineValueMutability(element);
+        });
+        if (!someMutable) {
+          // None of array's elements are mutable.
+          var valueCopy = value.slice();
+        } else {
+          // Some of array's elements are mutable.
+          var valueCopy = value.map(function (element) {
+            return General.copyValue(element);
+          });
+        }
+      } else if (type === "object") {
+        // Value is an object.
+        // Determine whether any values within the object are mutable.
+        var keys = Object.keys(value);
+        var someMutable = keys.some(function (key) {
+          return General.determineValueMutability(value[key]);
+        });
+        if (!someMutable) {
+          // None of object's values are mutable.
+          var valueCopy = Object.assign({}, value);
+        } else {
+          // Some of object's values are mutable.
+          var valueCopy = keys.reduce(function (collection, key) {
+            var objectValueCopy = General.copyValue(value[key]);
+            var novelRecord = {
+              [key]: objectValueCopy
+            };
+            return Object.assign({}, collection, novelRecord);
+          }, {});
+        }
+      }
+    }
+    return valueCopy;
+  }
+  /**
+  * Determines a value's type.
+  * @param value Value to consider.
+  * @returns {string} The value's type.
+  */
+  static determineValueType(value) {
+    // Determine whether value's type is array, object, null, undefined,
+    // boolean, number, string, or symbol.
+    if ((typeof value === "object") && (Array.isArray(value))) {
+      return "array";
+    } else if ((typeof value === "object") && (!Array.isArray(value))) {
+      return "object";
+    } else if (value === null) {
+      return "null";
+    } else {
+      return typeof value;
+    }
+  }
+  /**
+  * Determines whether a value's type is mutable.
+  * @param value Value to consider.
+  * @returns {boolean} Whether value's type is mutable.
+  */
+  static determineValueMutability(value) {
+    var type = General.determineValueType(value);
+    var isImmutable = (
+      (
+        type === "null" || type === "undefined" || type === "boolean" ||
+        type === "number" || type === "string" || type === "symbol"
+      ) && !(type === "object" || type === "array")
+    );
+    return !isImmutable;
+  }
+
 
   /**
   * Extracts from nodes' records coordinates for positions from force

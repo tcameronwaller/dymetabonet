@@ -1350,6 +1350,29 @@ class Extraction {
   /**
   * Copies records with information about metabolic entities, metabolites or
   * reactions.
+  * @param {Object<Object>} entities Records with information about entities and
+  * their attributes' values.
+  * @returns {Object<Object>} Copy of records for entities.
+  */
+  static copyEntitiesRecordsObjectNovel(entities) {
+    // Iterate on entities' records.
+    var entitiesIdentifiers = Object.keys(entities);
+    return entitiesIdentifiers.reduce(function (collection, entityIdentifier) {
+      // Set reference to entity's record.
+      var entity = entities[entityIdentifier];
+      // Copy all of entity's attributes.
+      var copyEntity = General.copyValue(entity);
+      console.log(copyEntity);
+      // Include entity in the collection.
+      var novelRecord = {
+        [copyEntity.identifier]: copyEntity
+      };
+      return Object.assign({}, collection, novelRecord);
+    }, {});
+  }
+  /**
+  * Copies records with information about metabolic entities, metabolites or
+  * reactions.
   * @param {Array<Object>} entities Records with information about entities and
   * their attributes' values.
   * @returns {Array<Object>} Copy of records for entities.
@@ -1374,25 +1397,37 @@ class Extraction {
     return attributes.reduce(function (collection, attribute) {
       var value = entity[attribute];
       // Copy attribute's value according to its type.
+      // Types object and array are mutable.
+      // Types null, undefined, boolean, string, and number are immutable.
       // Attribute value's type is either null, undefined, boolean, string,
       // number, or array.
-      if (Array.isArray(value)) {
+      if (!Array.isArray(value)) {
+        // Attribute value's type is not array.
+        // Attribute value's type is either null, undefined, boolean, string,
+        // or number.
+        var valueCopy = value;
+      } else {
         // Attribute value's type is array.
         // Elements within array are either type string or object.
-        if (typeof value[0] === "object") {
+        if (!(typeof value[0] === "object")) {
+          // Elements within array are not type object.
+          // Elements within array are type string.
+          var valueCopy = value.slice();
+        } else {
           // Elements within array are type object.
           // Values within object are either type string or array.
           var valueCopy = value.map(function (object) {
             var keys = Object.keys(object);
             return keys.reduce(function (collection, key) {
               var objectValue = object[key];
-              if (Array.isArray(objectValue)) {
-                // Object's value is an array of elements of
-                // type string.
-                var objectValueCopy = objectValue.slice();
-              } else {
+              if (!Array.isArray(objectValue)) {
+                // Values within object are not type array.
                 // Object's value is of type string.
                 var objectValueCopy = objectValue;
+
+                // Object's value is an array of elements of type string.
+                var objectValueCopy = objectValue.slice();
+              } else {
               }
               var novelRecord = {
                 [key]: objectValueCopy
@@ -1400,14 +1435,7 @@ class Extraction {
               return Object.assign({}, collection, novelRecord);
             }, {});
           });
-        } else {
-          // Elements within array are type string.
-          var valueCopy = value.slice();
         }
-      } else {
-        // Attribute value's type is either null, undefined, boolean, string,
-        // or number.
-        var valueCopy = value;
       }
       // Copy existing attributes and values in the collection and include
       // copy of current attribute and its value.
@@ -1417,4 +1445,5 @@ class Extraction {
       return Object.assign({}, collection, novelRecord);
     }, {});
   }
+
 }

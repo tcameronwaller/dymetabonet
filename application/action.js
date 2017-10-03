@@ -642,10 +642,79 @@ class Action {
   static executeTemporaryProcedure(model) {
     //Action.createNetwork(model);
     //Action.summarizeMetabolitesParticipationReactions(model);
+
+    var test1 = General.copyValue(true);
+    console.log(test1);
+    var test2 = General.copyValue("string test");
+    console.log(test2);
+    var test3 = General.copyValue([1, 2, 3, 4, 5]);
+    console.log(test3);
+    var test4 = General.copyValue({first: "blah", second: "hi"});
+    console.log(test4);
+    var test5 = General.copyValue([
+      {first: "hey", second: "hi"},
+      {first: "rose", second: "tulip"}
+    ]);
+    console.log(test5);
+    var test6 = General.copyValue({
+      first: "hello rose",
+      second: ["a", "b", "c", "d"]
+    });
+    console.log(test6);
+    var test7 = General.copyValue(model.metabolites["pyr"]);
+    console.log(test7);
+
+    Action.testCopyMethods(model);
+    // TODO: Figure out on which metabolite (after "dhocholoylcoa") the algorithm is throwing an error and why...
+  }
+  static testCopyMethods(model) {
+    // Original procedure to copy all records for metabolites and reactions
+    // requires 42443 milliseconds.
+    // JSON procedure to copy all records for metabolites and reactions requires
+    // 369 milliseconds.
+
+    // Initiate process timer.
+    //console.time("timer");
+    var startTime = window.performance.now();
+    //var metabolites = Extraction.copyEntitiesRecordsObject(model.metabolites);
+    //var reactions = Extraction.copyEntitiesRecordsObject(model.reactions);
+    var metabolites = General.copyObjectJSON(model.metabolites);
+    var reactions = General.copyObjectJSON(model.reactions);
+    // Terminate process timer.
+    //console.timeEnd("timer");
+    var endTime = window.performance.now();
+    var duration = Math.round(endTime - startTime);
+    console.log("-------------------------")
+    console.log("JSON method");
+    console.log("process duration: " + duration + " milliseconds");
+    console.log(metabolites);
+    console.log(reactions);
+
+    var startTime = window.performance.now();
     var metabolites = Extraction.copyEntitiesRecordsObject(model.metabolites);
     var reactions = Extraction.copyEntitiesRecordsObject(model.reactions);
-    console.log("copy done...");
+    // Terminate process timer.
+    //console.timeEnd("timer");
+    var endTime = window.performance.now();
+    var duration = Math.round(endTime - startTime);
+    console.log("-------------------------")
+    console.log("original method");
+    console.log("process duration: " + duration + " milliseconds");
+    console.log(metabolites);
+    console.log(reactions);
 
+    var startTime = window.performance.now();
+    var metabolites = Extraction.copyEntitiesRecordsObjectNovel(model.metabolites);
+    var reactions = Extraction.copyEntitiesRecordsObjectNovel(model.reactions);
+    // Terminate process timer.
+    //console.timeEnd("timer");
+    var endTime = window.performance.now();
+    var duration = Math.round(endTime - startTime);
+    console.log("-------------------------")
+    console.log("novel method");
+    console.log("process duration: " + duration + " milliseconds");
+    console.log(metabolites);
+    console.log(reactions);
   }
 
   // Secondary actions relevant to application's state.
