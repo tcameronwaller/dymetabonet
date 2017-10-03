@@ -643,29 +643,8 @@ class Action {
     //Action.createNetwork(model);
     //Action.summarizeMetabolitesParticipationReactions(model);
 
-    var test1 = General.copyValue(true);
-    console.log(test1);
-    var test2 = General.copyValue("string test");
-    console.log(test2);
-    var test3 = General.copyValue([1, 2, 3, 4, 5]);
-    console.log(test3);
-    var test4 = General.copyValue({first: "blah", second: "hi"});
-    console.log(test4);
-    var test5 = General.copyValue([
-      {first: "hey", second: "hi"},
-      {first: "rose", second: "tulip"}
-    ]);
-    console.log(test5);
-    var test6 = General.copyValue({
-      first: "hello rose",
-      second: ["a", "b", "c", "d"]
-    });
-    console.log(test6);
-    var test7 = General.copyValue(model.metabolites["pyr"]);
-    console.log(test7);
-
     Action.testCopyMethods(model);
-    // TODO: Figure out on which metabolite (after "dhocholoylcoa") the algorithm is throwing an error and why...
+
   }
   static testCopyMethods(model) {
     // Original procedure to copy all records for metabolites and reactions
@@ -678,17 +657,59 @@ class Action {
     var startTime = window.performance.now();
     //var metabolites = Extraction.copyEntitiesRecordsObject(model.metabolites);
     //var reactions = Extraction.copyEntitiesRecordsObject(model.reactions);
-    var metabolites = General.copyObjectJSON(model.metabolites);
-    var reactions = General.copyObjectJSON(model.reactions);
+    var metabolites = General.copyValueJSON(model.metabolites);
+    var reactions = General.copyValueJSON(model.reactions);
     // Terminate process timer.
     //console.timeEnd("timer");
     var endTime = window.performance.now();
     var duration = Math.round(endTime - startTime);
     console.log("-------------------------")
-    console.log("JSON method");
+    console.log("1. JSON method");
     console.log("process duration: " + duration + " milliseconds");
-    console.log(metabolites);
-    console.log(reactions);
+
+    var startTime = window.performance.now();
+    var metabolites = General.copyValue(model.metabolites, false);
+    var reactions = General.copyValue(model.reactions, false);
+    // Terminate process timer.
+    //console.timeEnd("timer");
+    var endTime = window.performance.now();
+    var duration = Math.round(endTime - startTime);
+    console.log("-------------------------")
+    console.log("2. recursive agnostic method without pattern");
+    console.log("process duration: " + duration + " milliseconds");
+
+    var startTime = window.performance.now();
+    var metabolites = General.copyValue(model.metabolites, true);
+    var reactions = General.copyValue(model.reactions, true);
+    // Terminate process timer.
+    //console.timeEnd("timer");
+    var endTime = window.performance.now();
+    var duration = Math.round(endTime - startTime);
+    console.log("-------------------------")
+    console.log("3. recursive agnostic method with pattern");
+    console.log("process duration: " + duration + " milliseconds");
+
+    var startTime = window.performance.now();
+    var metabolites = General.copyDeepObjectEntries(model.metabolites, false);
+    var reactions = General.copyDeepObjectEntries(model.reactions, false);
+    // Terminate process timer.
+    //console.timeEnd("timer");
+    var endTime = window.performance.now();
+    var duration = Math.round(endTime - startTime);
+    console.log("-------------------------")
+    console.log("4. recursive top-level specific method without pattern");
+    console.log("process duration: " + duration + " milliseconds");
+
+    var startTime = window.performance.now();
+    var metabolites = General.copyDeepObjectEntries(model.metabolites, true);
+    var reactions = General.copyDeepObjectEntries(model.reactions, true);
+    // Terminate process timer.
+    //console.timeEnd("timer");
+    var endTime = window.performance.now();
+    var duration = Math.round(endTime - startTime);
+    console.log("-------------------------")
+    console.log("5. recursive top-level specific method with pattern");
+    console.log("process duration: " + duration + " milliseconds");
 
     var startTime = window.performance.now();
     var metabolites = Extraction.copyEntitiesRecordsObject(model.metabolites);
@@ -698,23 +719,9 @@ class Action {
     var endTime = window.performance.now();
     var duration = Math.round(endTime - startTime);
     console.log("-------------------------")
-    console.log("original method");
+    console.log("6. method specific to entities");
     console.log("process duration: " + duration + " milliseconds");
-    console.log(metabolites);
-    console.log(reactions);
 
-    var startTime = window.performance.now();
-    var metabolites = Extraction.copyEntitiesRecordsObjectNovel(model.metabolites);
-    var reactions = Extraction.copyEntitiesRecordsObjectNovel(model.reactions);
-    // Terminate process timer.
-    //console.timeEnd("timer");
-    var endTime = window.performance.now();
-    var duration = Math.round(endTime - startTime);
-    console.log("-------------------------")
-    console.log("novel method");
-    console.log("process duration: " + duration + " milliseconds");
-    console.log(metabolites);
-    console.log(reactions);
   }
 
   // Secondary actions relevant to application's state.
@@ -756,10 +763,8 @@ class Action {
     // Specify filter option for sets' summary.
     var setsFilter = false;
     // Copy metabolic entities.
-    var currentMetabolites = Extraction
-    .copyEntitiesRecordsObject(entitiesSets.metabolites);
-    var currentReactions = Extraction
-    .copyEntitiesRecordsObject(entitiesSets.reactions);
+    var currentMetabolites = General.copyValueJSON(entitiesSets.metabolites);
+    var currentReactions = General.copyValueJSON(entitiesSets.reactions);
     // Determine values of attributes that summarize cardinalities of sets
     // of entities.
     var setsCardinalitiesAttributes = Action

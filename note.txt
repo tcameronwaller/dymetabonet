@@ -4,6 +4,56 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+3 October 2017
+
+----------
+Plan, Improve Performance
+
+Procedure to copy information about metabolic entities is computationally expensive.
+Use optimal methods to copy information about metabolic entities.
+Procedures of special interest include filtration of entities by selections in sets' summary menu.
+Procedures of special interest include also definition of network's elements.
+
+----------
+Algorithms to Copy Values
+
+The proper methods to copy values depends on their types and mutability.
+Evaluating a value's type is computationally expensive.
+Evaluating conditional expressions is also computationally expensive.
+
+Algorithms to copy values of known types can be efficient.
+Algorithms to copy values of unkown types are inefficient.
+If values have unknown type, then the method by conversion to JavaScript Object Notation is probably the most efficient.
+
+Experiment
+
+I measured the durations of processes to copy information about metabolites and reactions.
+
+1.
+Method: conversion to JSON format
+Duration (milliseconds): 514, 358, 359
+
+2.
+Method: full recursion, agnostic of values' types, without assumption of pattern
+Duration (milliseconds): 41835, 42180, 42800
+
+3.
+Method: full recursion, agnostic of values' types, with assumption of pattern
+Duration (milliseconds): 41472, 42217, 42465
+
+4.
+Method: specific to top-level structure, agnostic of values' types, without assumption of pattern
+Duration (milliseconds): 42528, 41903, 42004
+
+5.
+Method: specific to top-level structure, agnostic of values' types, with assumption of pattern
+Duration (milliseconds): 41723, 42729, 42419
+
+6.
+Method: specific to top-level structure, specific to types in entities' records
+Duration (milliseconds): 41944, 42352, 42326
+
+--------------------------------------------------
 2 October 2017
 
 ----------

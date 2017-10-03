@@ -87,21 +87,61 @@ class General {
       element.removeChild(child);
     });
   }
+
   /**
-  * Copies an object by conversion to JavaScript Object Notation (JSON).
-  * @param {Object} object Object to copy.
-  * @returns {Object} Copy of object.
+  * Copies a deep value by conversion to JavaScript Object Notation (JSON).
+  * @param value Value to copy with an explicity representation in JSON.
+  * @returns Copy of value from representation in JSON.
   */
-  static copyObjectJSON(object) {
-    return JSON.parse(JSON.stringify(object));
+  static copyValueJSON(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+  /**
+  * Copies deep entries from an object.
+  * @param {Object} object An object with entries of keys and values.
+  * @param {boolean} pattern Whether to assume that all elements within arrays
+  * or all values within objects have identical types.
+  * @returns {Object} Copy of object's entries.
+  */
+  static copyDeepObjectEntries(object, pattern) {
+    // Iterate on object's entries.
+    var keys = Object.keys(object);
+    return keys.reduce(function (collection, key) {
+      // Set reference to object's value.
+      var value = object[key];
+      // Copy value.
+      var valueCopy = General.copyValue(value, pattern);
+      // Include value in the collection.
+      var novelEntry = {
+        [key]: valueCopy
+      };
+      return Object.assign({}, collection, novelEntry);
+    }, {});
+  }
+  /**
+  * Copies deep elements from an array.
+  * @param {Array} array An array with elements.
+  * @param {boolean} pattern Whether to assume that all elements within arrays
+  * or all values within objects have identical types.
+  * @returns {Array} Copy of array's elements.
+  */
+  static copyDeepArrayElements(array, pattern) {
+    // Iterate on array's elements.
+    return array.map(function (element) {
+      // Copy element.
+      var elementCopy = General.copyValue(element, pattern);
+      return elementCopy;
+    });
   }
   /**
   * Copies a value according to its type.
-  * @param {Object} value Value to copy, of type null, undefined, boolean,
-  * string, number, symbol, array, or object.
-  * @returns {Object} Copy of value.
+  * @param value Value to copy, of type null, undefined, boolean, string,
+  * number, symbol, array, or object.
+  * @param {boolean} pattern Whether to assume that all elements within arrays
+  * or all values within objects have identical types.
+  * @returns Copy of value.
   */
-  static copyValue(value) {
+  static copyValue(value, pattern) {
     // Determine whether the value is mutable.
     var mutable = General.determineValueMutability(value);
     if (!mutable) {
@@ -115,9 +155,15 @@ class General {
       if (type === "array") {
         // Value is an array.
         // Determine whether any elements of the array are mutable.
-        var someMutable = value.some(function (element) {
-          return General.determineValueMutability(element);
-        });
+        if (pattern) {
+          // Assume that all array's elements have identical type.
+          var someMutable = General.determineValueMutability(value[0]);
+        } else {
+          // Consider types of all array's elements.
+          var someMutable = value.some(function (element) {
+            return General.determineValueMutability(element);
+          });
+        }
         if (!someMutable) {
           // None of array's elements are mutable.
           var valueCopy = value.slice();
@@ -129,11 +175,17 @@ class General {
         }
       } else if (type === "object") {
         // Value is an object.
-        // Determine whether any values within the object are mutable.
+        // Determine whether any of object's values are mutable.
         var keys = Object.keys(value);
-        var someMutable = keys.some(function (key) {
-          return General.determineValueMutability(value[key]);
-        });
+        if (pattern) {
+          // Assume that all object's values have identical type.
+          var someMutable = General.determineValueMutability(value[keys[0]]);
+        } else {
+          // Consider types of all object's values.
+          var someMutable = keys.some(function (key) {
+            return General.determineValueMutability(value[key]);
+          });
+        }
         if (!someMutable) {
           // None of object's values are mutable.
           var valueCopy = Object.assign({}, value);
@@ -159,12 +211,13 @@ class General {
   static determineValueType(value) {
     // Determine whether value's type is array, object, null, undefined,
     // boolean, number, string, or symbol.
-    if ((typeof value === "object") && (Array.isArray(value))) {
-      return "array";
+    // An historical anomaly in JavaScript is that the type of null is object.
+    if (value === null) {
+      return "null";
     } else if ((typeof value === "object") && (!Array.isArray(value))) {
       return "object";
-    } else if (value === null) {
-      return "null";
+    } else if ((typeof value === "object") && (Array.isArray(value))) {
+      return "array";
     } else {
       return typeof value;
     }

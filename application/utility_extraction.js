@@ -1342,30 +1342,7 @@ class Extraction {
       var copyEntity = Extraction.copyEntityRecord(entity);
       // Include entity in the collection.
       var novelRecord = {
-        [copyEntity.identifier]: copyEntity
-      };
-      return Object.assign({}, collection, novelRecord);
-    }, {});
-  }
-  /**
-  * Copies records with information about metabolic entities, metabolites or
-  * reactions.
-  * @param {Object<Object>} entities Records with information about entities and
-  * their attributes' values.
-  * @returns {Object<Object>} Copy of records for entities.
-  */
-  static copyEntitiesRecordsObjectNovel(entities) {
-    // Iterate on entities' records.
-    var entitiesIdentifiers = Object.keys(entities);
-    return entitiesIdentifiers.reduce(function (collection, entityIdentifier) {
-      // Set reference to entity's record.
-      var entity = entities[entityIdentifier];
-      // Copy all of entity's attributes.
-      var copyEntity = General.copyValue(entity);
-      console.log(copyEntity);
-      // Include entity in the collection.
-      var novelRecord = {
-        [copyEntity.identifier]: copyEntity
+        [entityIdentifier]: copyEntity
       };
       return Object.assign({}, collection, novelRecord);
     }, {});
