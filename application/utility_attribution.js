@@ -244,9 +244,7 @@ class Attribution {
       // Reactions that involve transport only pass filters if multiple
       // compartments of any transport event pass filters.
       var compartments = reaction.transports.some(function (transport) {
-        var matches = transport
-        .compartments
-        .filter(function (compartment) {
+        var matches = transport.compartments.filter(function (compartment) {
           return reaction.compartments.includes(compartment);
         });
         return matches.length > 1;

@@ -653,87 +653,56 @@ class Action {
   * @param {Object} model Model of the application's comprehensive state.
   */
   static executeTemporaryProcedure(model) {
+    // Initiate process timer.
+    //console.time("timer");
+    //var startTime = window.performance.now();
+
     //Action.createNetwork(model);
     //Action.summarizeMetabolitesParticipationReactions(model);
 
-    Action.testCopyMethods(model);
+    Action.testFilterEntities(model);
 
+    // Terminate process timer.
+    //console.timeEnd("timer");
+    //var endTime = window.performance.now();
+    //var duration = Math.round(endTime - startTime);
+    //console.log("process duration: " + duration + " milliseconds");
   }
-  static testCopyMethods(model) {
-    // Original procedure to copy all records for metabolites and reactions
-    // requires 42443 milliseconds.
-    // JSON procedure to copy all records for metabolites and reactions requires
-    // 369 milliseconds.
+  static testFilterEntities(model) {
 
+    ////////////////////////////////////////////////////////////////////////////
+    console.log("-------------------------");
+    console.log("-------------------------");
+    console.log("-------------------------");
+    console.log("Performance trial of procedure for filtration of entities by values of attributes.");
+    console.log("Trial intentionally applies procedure without any filters, requiring expensive iteration and collection of all entities.");
+    console.log("The procedure will be far less expensive in normal interaction with just a few filters.");
+    console.log("I implemented efficient modifications in the actual code and wanted to confirm performance.");
+    ////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////
     // Initiate process timer.
     //console.time("timer");
     var startTime = window.performance.now();
-    //var metabolites = Extraction.copyEntitiesRecordsObject(model.metabolites);
-    //var reactions = Extraction.copyEntitiesRecordsObject(model.reactions);
-    var metabolites = General.copyValueJSON(model.metabolites);
-    var reactions = General.copyValueJSON(model.reactions);
+    // Execute process.
+    var currentReactions = Attribution.filterReactionsAttributesValues({
+      selections: [],
+      reactions: model.reactions
+    });
+    var currentMetabolites = Attribution.filterMetabolitesAttributesValues({
+      metabolites: model.metabolites,
+      reactions: currentReactions
+    });
     // Terminate process timer.
     //console.timeEnd("timer");
     var endTime = window.performance.now();
     var duration = Math.round(endTime - startTime);
     console.log("-------------------------")
-    console.log("1. JSON method");
-    console.log("process duration: " + duration + " milliseconds");
-
-    var startTime = window.performance.now();
-    var metabolites = General.copyValue(model.metabolites, false);
-    var reactions = General.copyValue(model.reactions, false);
-    // Terminate process timer.
-    //console.timeEnd("timer");
-    var endTime = window.performance.now();
-    var duration = Math.round(endTime - startTime);
-    console.log("-------------------------")
-    console.log("2. recursive agnostic method without pattern");
-    console.log("process duration: " + duration + " milliseconds");
-
-    var startTime = window.performance.now();
-    var metabolites = General.copyValue(model.metabolites, true);
-    var reactions = General.copyValue(model.reactions, true);
-    // Terminate process timer.
-    //console.timeEnd("timer");
-    var endTime = window.performance.now();
-    var duration = Math.round(endTime - startTime);
-    console.log("-------------------------")
-    console.log("3. recursive agnostic method with pattern");
-    console.log("process duration: " + duration + " milliseconds");
-
-    var startTime = window.performance.now();
-    var metabolites = General.copyDeepObjectEntries(model.metabolites, false);
-    var reactions = General.copyDeepObjectEntries(model.reactions, false);
-    // Terminate process timer.
-    //console.timeEnd("timer");
-    var endTime = window.performance.now();
-    var duration = Math.round(endTime - startTime);
-    console.log("-------------------------")
-    console.log("4. recursive top-level specific method without pattern");
-    console.log("process duration: " + duration + " milliseconds");
-
-    var startTime = window.performance.now();
-    var metabolites = General.copyDeepObjectEntries(model.metabolites, true);
-    var reactions = General.copyDeepObjectEntries(model.reactions, true);
-    // Terminate process timer.
-    //console.timeEnd("timer");
-    var endTime = window.performance.now();
-    var duration = Math.round(endTime - startTime);
-    console.log("-------------------------")
-    console.log("5. recursive top-level specific method with pattern");
-    console.log("process duration: " + duration + " milliseconds");
-
-    var startTime = window.performance.now();
-    var metabolites = Extraction.copyEntitiesRecordsObject(model.metabolites);
-    var reactions = Extraction.copyEntitiesRecordsObject(model.reactions);
-    // Terminate process timer.
-    //console.timeEnd("timer");
-    var endTime = window.performance.now();
-    var duration = Math.round(endTime - startTime);
-    console.log("-------------------------")
-    console.log("6. method specific to entities");
-    console.log("process duration: " + duration + " milliseconds");
+    console.log("Trial.");
+    console.log("- copy method: conversion to JSON");
+    console.log("- metabolite attribute method: minimal unique collections");
+    console.log("- process duration: " + duration + " milliseconds");
+    ////////////////////////////////////////////////////////////////////////////
 
   }
 

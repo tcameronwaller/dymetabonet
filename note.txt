@@ -4,6 +4,38 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+4 October 2017
+
+----------
+Procedure Performance
+
+I tested the process' duration of the procedure for filtration of entities by their values of attributes.
+I intentionally applied an empty set of filters against all entities, requiring iterative collection of all entities and their attributes.
+These parameters require a much more expensive procedure than is likely to occur in normal interactive use.
+Normal interactive use is likely to involve a few filters, reducing the counts of entities to collect.
+I tested this duration with several variations on the procedure.
+
+Trial 1
+copy method: recursive agnostic
+metabolite attribute method: original method with excessive iterations to collect unique values
+process' duration: 304003 milliseconds
+
+Trial 2
+copy method: conversion to JSON
+metabolite attribute method: original method with excessive iterations to collect unique values
+process' duration: 230385 milliseconds
+
+Trial 3
+copy method: conversion to JSON
+metabolite attribute method: method with minimal iterations to collect unique values
+process' duration: 42201 milliseconds
+
+Image screen_2017-10-04_1.png captures the output to the console from these trials.
+
+Results of the trials indicate that the method of conversion to JavaScript Object Notation (JSON) format for copy is the most efficient.
+Results of the trials also indicate that elimination of unnecessary iterations to collect unique values improves efficiency.
+
+--------------------------------------------------
 3 October 2017
 
 ----------

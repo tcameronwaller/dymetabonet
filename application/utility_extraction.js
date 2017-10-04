@@ -1074,8 +1074,8 @@ class Extraction {
     };
   }
   /**
-  * Collects values of attributes that a metabolite inherits from the
-  * reactions in which it participates.
+  * Collects values of attributes that a metabolite inherits from the reactions
+  * in which it participates.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.metaboliteIdentifier Identifier of a single
   * metabolite.
@@ -1098,8 +1098,8 @@ class Extraction {
       compartments: [],
       processes: []
     };
-    // Iterate on metabolite's reactions.
-    return reactionsIdentifiers
+    // Collect values of attributes from reactions.
+    var totalAttributes = reactionsIdentifiers
     .reduce(function (collection, reactionIdentifier) {
       // Determine if the reaction exists in the current collection of
       // reactions, indicating that the reaction passes current filters.
@@ -1112,14 +1112,8 @@ class Extraction {
           // Reaction claims metabolite.
           // Include reaction's identifier in metabolite's collection of
           // reactions.
-          var currentReactions = General
-          .collectUniqueElements(
-            []
-            .concat(
-              collection.reactions,
-              reaction.identifier
-            )
-          );
+          var currentReactions = []
+          .concat(collection.reactions, reaction.identifier);
           // Determine values of attributes that metabolite inherits from
           // reaction.
           // Determine compartments in which metabolite participates in the
@@ -1128,23 +1122,14 @@ class Extraction {
             metaboliteIdentifier: metaboliteIdentifier,
             reaction: reaction
           });
-          var currentCompartments = General
-          .collectUniqueElements(
-            []
-            .concat(
-              collection.compartments,
-              compartments
-            )
-          );
+          var currentCompartments = []
+          .concat(collection.compartments, compartments);
           // Determine processes of the reaction in which metabolite
           // participates.
           // Metabolite inherits from its reactions all of the reactions'
           // processes.
           var processes = reaction.processes;
-          var currentProcesses = General
-          .collectUniqueElements(
-            [].concat(collection.processes, processes)
-          );
+          var currentProcesses = [].concat(collection.processes, processes);
           // Compile collection's values of attributes.
           var currentCollection = {
             reactions: currentReactions,
@@ -1161,18 +1146,25 @@ class Extraction {
         // Preserve collection.
         var currentCollection = collection;
       }
+      // Preserve collection.
       return currentCollection;
     }, initialCollection);
+    // Collect unique values of attributes.
+    return {
+      reactions: General.collectUniqueElements(totalAttributes.reactions),
+      compartments: General.collectUniqueElements(totalAttributes.compartments),
+      processes: General.collectUniqueElements(totalAttributes.processes)
+    };
   }
   /**
-  * Collects unique compartments in which a metabolite participates in a
-  * single reaction.
+  * Collects compartments in which a metabolite participates in a single
+  * reaction.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.metaboliteIdentifier Identifier of a single
   * metabolite.
   * @param {Object} parameters.reaction Information about a reaction.
-  * @returns {Array<string>} Identifiers of unique compartments in which
-  * metabolite participates in the reaction.
+  * @returns {Array<string>} Identifiers of compartments in which metabolite
+  * participates in the reaction.
   */
   static collectMetaboliteReactionCompartments({
     metaboliteIdentifier,
@@ -1186,11 +1178,10 @@ class Extraction {
     var participantsMatches = participants.filter(function (participant) {
       return participant.metabolite === metaboliteIdentifier;
     });
-    var participantsCompartments = General
-    .collectValueFromObjects(
+    var participantsCompartments = General.collectValueFromObjects(
       "compartment", participantsMatches
     );
-    return General.collectUniqueElements(participantsCompartments);
+    return participantsCompartments;
   }
   /**
   * Creates summary of metabolites' participation in reactions.
