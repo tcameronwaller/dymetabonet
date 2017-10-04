@@ -656,54 +656,16 @@ class Action {
     // Initiate process timer.
     //console.time("timer");
     //var startTime = window.performance.now();
+    // Execute process.
 
     //Action.createNetwork(model);
     //Action.summarizeMetabolitesParticipationReactions(model);
-
-    Action.testFilterEntities(model);
 
     // Terminate process timer.
     //console.timeEnd("timer");
     //var endTime = window.performance.now();
     //var duration = Math.round(endTime - startTime);
     //console.log("process duration: " + duration + " milliseconds");
-  }
-  static testFilterEntities(model) {
-
-    ////////////////////////////////////////////////////////////////////////////
-    console.log("-------------------------");
-    console.log("-------------------------");
-    console.log("-------------------------");
-    console.log("Performance trial of procedure for filtration of entities by values of attributes.");
-    console.log("Trial intentionally applies procedure without any filters, requiring expensive iteration and collection of all entities.");
-    console.log("The procedure will be far less expensive in normal interaction with just a few filters.");
-    console.log("I implemented efficient modifications in the actual code and wanted to confirm performance.");
-    ////////////////////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Initiate process timer.
-    //console.time("timer");
-    var startTime = window.performance.now();
-    // Execute process.
-    var currentReactions = Attribution.filterReactionsAttributesValues({
-      selections: [],
-      reactions: model.reactions
-    });
-    var currentMetabolites = Attribution.filterMetabolitesAttributesValues({
-      metabolites: model.metabolites,
-      reactions: currentReactions
-    });
-    // Terminate process timer.
-    //console.timeEnd("timer");
-    var endTime = window.performance.now();
-    var duration = Math.round(endTime - startTime);
-    console.log("-------------------------")
-    console.log("Trial.");
-    console.log("- copy method: conversion to JSON");
-    console.log("- metabolite attribute method: minimal unique collections");
-    console.log("- process duration: " + duration + " milliseconds");
-    ////////////////////////////////////////////////////////////////////////////
-
   }
 
   // Secondary actions relevant to application's state.
