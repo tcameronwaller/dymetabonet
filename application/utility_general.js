@@ -4,6 +4,9 @@
 * This class stores methods for external utility.
 */
 class General {
+
+  // Methods for file system.
+
   /**
   * Accesses a file at a specific path on client's system.
   * @param {string} path Directory path and file name.
@@ -58,6 +61,9 @@ class General {
     reference.click();
     document.body.removeChild(reference);
   }
+
+  // Methods for document object model (DOM).
+
   /**
   * Removes from the Document Object Model (DOM) elements that do not have
   * specific values of a specific attribute.
@@ -87,157 +93,34 @@ class General {
       element.removeChild(child);
     });
   }
-
   /**
-  * Copies a deep value by conversion to JavaScript Object Notation (JSON).
-  * @param value Value to copy with an explicity representation in JSON.
-  * @returns Copy of value from representation in JSON.
+  * Determines the value of the only active radio button in a group.
+  * @param {Object} radios Live collection of radio button elements in the
+  * Document Object Model (DOM).
+  * @returns {string} Value of the only active radio button from the group.
   */
-  static copyValueJSON(value) {
-    return JSON.parse(JSON.stringify(value));
+  static determineRadioGroupValue(radios) {
+    // Assume that only a single radio button in the group is active.
+    return Array.from(radios).filter(function (radio) {
+      return radio.checked;
+    })[0].value;
   }
   /**
-  * Copies deep entries from an object.
-  * @param {Object} object An object with entries of keys and values.
-  * @param {boolean} pattern Whether to assume that all elements within arrays
-  * or all values within objects have identical types.
-  * @returns {Object} Copy of object's entries.
+  * Determines the final dimensions of an element within the document object
+  * model (DOM).
+  * @param {Object} element Reference to an element within the DOM.
+  * @param {string} dimension Dimension, width or height, to determine.
+  * @returns {number} Dimension of the element in pixels.
   */
-  static copyDeepObjectEntries(object, pattern) {
-    // Iterate on object's entries.
-    var keys = Object.keys(object);
-    return keys.reduce(function (collection, key) {
-      // Set reference to object's value.
-      var value = object[key];
-      // Copy value.
-      var valueCopy = General.copyValue(value, pattern);
-      // Include value in the collection.
-      var novelEntry = {
-        [key]: valueCopy
-      };
-      return Object.assign({}, collection, novelEntry);
-    }, {});
-  }
-  /**
-  * Copies deep elements from an array.
-  * @param {Array} array An array with elements.
-  * @param {boolean} pattern Whether to assume that all elements within arrays
-  * or all values within objects have identical types.
-  * @returns {Array} Copy of array's elements.
-  */
-  static copyDeepArrayElements(array, pattern) {
-    // Iterate on array's elements.
-    return array.map(function (element) {
-      // Copy element.
-      var elementCopy = General.copyValue(element, pattern);
-      return elementCopy;
-    });
-  }
-  /**
-  * Copies a value according to its type.
-  * @param value Value to copy, of type null, undefined, boolean, string,
-  * number, symbol, array, or object.
-  * @param {boolean} pattern Whether to assume that all elements within arrays
-  * or all values within objects have identical types.
-  * @returns Copy of value.
-  */
-  static copyValue(value, pattern) {
-    // Determine whether the value is mutable.
-    var mutable = General.determineValueMutability(value);
-    if (!mutable) {
-      // Value is immutable.
-      // Copy value by assignment.
-      var valueCopy = value;
-    } else {
-      // Value is mutable.
-      // Determine whether the value is an array or another object.
-      var type = General.determineValueType(value);
-      if (type === "array") {
-        // Value is an array.
-        // Determine whether any elements of the array are mutable.
-        if (pattern) {
-          // Assume that all array's elements have identical type.
-          var someMutable = General.determineValueMutability(value[0]);
-        } else {
-          // Consider types of all array's elements.
-          var someMutable = value.some(function (element) {
-            return General.determineValueMutability(element);
-          });
-        }
-        if (!someMutable) {
-          // None of array's elements are mutable.
-          var valueCopy = value.slice();
-        } else {
-          // Some of array's elements are mutable.
-          var valueCopy = value.map(function (element) {
-            return General.copyValue(element);
-          });
-        }
-      } else if (type === "object") {
-        // Value is an object.
-        // Determine whether any of object's values are mutable.
-        var keys = Object.keys(value);
-        if (pattern) {
-          // Assume that all object's values have identical type.
-          var someMutable = General.determineValueMutability(value[keys[0]]);
-        } else {
-          // Consider types of all object's values.
-          var someMutable = keys.some(function (key) {
-            return General.determineValueMutability(value[key]);
-          });
-        }
-        if (!someMutable) {
-          // None of object's values are mutable.
-          var valueCopy = Object.assign({}, value);
-        } else {
-          // Some of object's values are mutable.
-          var valueCopy = keys.reduce(function (collection, key) {
-            var objectValueCopy = General.copyValue(value[key]);
-            var novelRecord = {
-              [key]: objectValueCopy
-            };
-            return Object.assign({}, collection, novelRecord);
-          }, {});
-        }
-      }
-    }
-    return valueCopy;
-  }
-  /**
-  * Determines a value's type.
-  * @param value Value to consider.
-  * @returns {string} The value's type.
-  */
-  static determineValueType(value) {
-    // Determine whether value's type is array, object, null, undefined,
-    // boolean, number, string, or symbol.
-    // An historical anomaly in JavaScript is that the type of null is object.
-    if (value === null) {
-      return "null";
-    } else if ((typeof value === "object") && (!Array.isArray(value))) {
-      return "object";
-    } else if ((typeof value === "object") && (Array.isArray(value))) {
-      return "array";
-    } else {
-      return typeof value;
-    }
-  }
-  /**
-  * Determines whether a value's type is mutable.
-  * @param value Value to consider.
-  * @returns {boolean} Whether value's type is mutable.
-  */
-  static determineValueMutability(value) {
-    var type = General.determineValueType(value);
-    var isImmutable = (
-      (
-        type === "null" || type === "undefined" || type === "boolean" ||
-        type === "number" || type === "string" || type === "symbol"
-      ) && !(type === "object" || type === "array")
+  static determineElementDimension(element, dimension) {
+    // Alternative is to use element.getBoundingClientRect().
+    return parseFloat(
+      window.getComputedStyle(element)[dimension].replace("px", "")
     );
-    return !isImmutable;
   }
 
+
+  // Methods for graphs.
 
   /**
   * Extracts from nodes' records coordinates for positions from force
@@ -398,46 +281,6 @@ class General {
       y: pointY
     };
   }
-
-  /**
-  * Computes the sum of elements in an array.
-  * @param {Array<number>} elements Array of elements.
-  * @returns {number} Sum of elements.
-  */
-  static computeElementsSum(elements) {
-    return elements.reduce(function (sum, value) {
-      return sum + value;
-    }, 0);
-  }
-  /**
-  * Computes the mean of elements in an array.
-  * @param {Array<number>} elements Array of elements.
-  * @returns {number} Arithmetic mean of elements.
-  */
-  static computeElementsMean(elements) {
-    var sum = General.computeElementsSum(elements);
-    return sum / elements.length;
-  }
-  /**
-  * Determines the maximal value.
-  * @param {Array<number>} numbers Numbers to compare.
-  * @returns {number} Number of maximal value.
-  */
-  static determineMaximum(numbers) {
-    return numbers.reduce(function (maximum, number) {
-      return Math.max(maximum, number);
-    });
-  }
-  /**
-  * Determines the minimal value.
-  * @param {Array<number>} numbers Numbers to compare.
-  * @returns {number} Number of minimal value.
-  */
-  static determineMinimum(numbers) {
-    return numbers.reduce(function (minimum, number) {
-      return Math.min(minimum, number);
-    });
-  }
   /**
   * Creates points for the source, center, and target vertices of a straight
   * polyline.
@@ -530,6 +373,47 @@ class General {
     }, "");
   }
 
+  // Methods for calculations.
+
+  /**
+  * Computes the sum of elements in an array.
+  * @param {Array<number>} elements Array of elements.
+  * @returns {number} Sum of elements.
+  */
+  static computeElementsSum(elements) {
+    return elements.reduce(function (sum, value) {
+      return sum + value;
+    }, 0);
+  }
+  /**
+  * Computes the mean of elements in an array.
+  * @param {Array<number>} elements Array of elements.
+  * @returns {number} Arithmetic mean of elements.
+  */
+  static computeElementsMean(elements) {
+    var sum = General.computeElementsSum(elements);
+    return sum / elements.length;
+  }
+  /**
+  * Determines the maximal value.
+  * @param {Array<number>} numbers Numbers to compare.
+  * @returns {number} Number of maximal value.
+  */
+  static determineMaximum(numbers) {
+    return numbers.reduce(function (maximum, number) {
+      return Math.max(maximum, number);
+    });
+  }
+  /**
+  * Determines the minimal value.
+  * @param {Array<number>} numbers Numbers to compare.
+  * @returns {number} Number of minimal value.
+  */
+  static determineMinimum(numbers) {
+    return numbers.reduce(function (minimum, number) {
+      return Math.min(minimum, number);
+    });
+  }
   /**
   * Calculates the frequencies of each value in a collection of data.
   * Sequential identifiers of bins represent all intervals across the
@@ -695,6 +579,157 @@ class General {
     return count;
   }
 
+  // Methods for management of values.
+
+  /**
+  * Copies a deep value by conversion to JavaScript Object Notation (JSON).
+  * @param value Value to copy with an explicity representation in JSON.
+  * @returns Copy of value from representation in JSON.
+  */
+  static copyValueJSON(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+  /**
+  * Copies deep entries from an object.
+  * @param {Object} object An object with entries of keys and values.
+  * @param {boolean} pattern Whether to assume that all elements within arrays
+  * or all values within objects have identical types.
+  * @returns {Object} Copy of object's entries.
+  */
+  static copyDeepObjectEntries(object, pattern) {
+    // Iterate on object's entries.
+    var keys = Object.keys(object);
+    return keys.reduce(function (collection, key) {
+      // Set reference to object's value.
+      var value = object[key];
+      // Copy value.
+      var valueCopy = General.copyValue(value, pattern);
+      // Include value in the collection.
+      var novelEntry = {
+        [key]: valueCopy
+      };
+      return Object.assign({}, collection, novelEntry);
+    }, {});
+  }
+  /**
+  * Copies deep elements from an array.
+  * @param {Array} array An array with elements.
+  * @param {boolean} pattern Whether to assume that all elements within arrays
+  * or all values within objects have identical types.
+  * @returns {Array} Copy of array's elements.
+  */
+  static copyDeepArrayElements(array, pattern) {
+    // Iterate on array's elements.
+    return array.map(function (element) {
+      // Copy element.
+      var elementCopy = General.copyValue(element, pattern);
+      return elementCopy;
+    });
+  }
+  /**
+  * Copies a value according to its type.
+  * @param value Value to copy, of type null, undefined, boolean, string,
+  * number, symbol, array, or object.
+  * @param {boolean} pattern Whether to assume that all elements within arrays
+  * or all values within objects have identical types.
+  * @returns Copy of value.
+  */
+  static copyValue(value, pattern) {
+    // Determine whether the value is mutable.
+    var mutable = General.determineValueMutability(value);
+    if (!mutable) {
+      // Value is immutable.
+      // Copy value by assignment.
+      var valueCopy = value;
+    } else {
+      // Value is mutable.
+      // Determine whether the value is an array or another object.
+      var type = General.determineValueType(value);
+      if (type === "array") {
+        // Value is an array.
+        // Determine whether any elements of the array are mutable.
+        if (pattern) {
+          // Assume that all array's elements have identical type.
+          var someMutable = General.determineValueMutability(value[0]);
+        } else {
+          // Consider types of all array's elements.
+          var someMutable = value.some(function (element) {
+            return General.determineValueMutability(element);
+          });
+        }
+        if (!someMutable) {
+          // None of array's elements are mutable.
+          var valueCopy = value.slice();
+        } else {
+          // Some of array's elements are mutable.
+          var valueCopy = value.map(function (element) {
+            return General.copyValue(element);
+          });
+        }
+      } else if (type === "object") {
+        // Value is an object.
+        // Determine whether any of object's values are mutable.
+        var keys = Object.keys(value);
+        if (pattern) {
+          // Assume that all object's values have identical type.
+          var someMutable = General.determineValueMutability(value[keys[0]]);
+        } else {
+          // Consider types of all object's values.
+          var someMutable = keys.some(function (key) {
+            return General.determineValueMutability(value[key]);
+          });
+        }
+        if (!someMutable) {
+          // None of object's values are mutable.
+          var valueCopy = Object.assign({}, value);
+        } else {
+          // Some of object's values are mutable.
+          var valueCopy = keys.reduce(function (collection, key) {
+            var objectValueCopy = General.copyValue(value[key]);
+            var novelRecord = {
+              [key]: objectValueCopy
+            };
+            return Object.assign({}, collection, novelRecord);
+          }, {});
+        }
+      }
+    }
+    return valueCopy;
+  }
+  /**
+  * Determines a value's type.
+  * @param value Value to consider.
+  * @returns {string} The value's type.
+  */
+  static determineValueType(value) {
+    // Determine whether value's type is array, object, null, undefined,
+    // boolean, number, string, or symbol.
+    // An historical anomaly in JavaScript is that the type of null is object.
+    if (value === null) {
+      return "null";
+    } else if ((typeof value === "object") && (!Array.isArray(value))) {
+      return "object";
+    } else if ((typeof value === "object") && (Array.isArray(value))) {
+      return "array";
+    } else {
+      return typeof value;
+    }
+  }
+  /**
+  * Determines whether a value's type is mutable.
+  * @param value Value to consider.
+  * @returns {boolean} Whether value's type is mutable.
+  */
+  static determineValueMutability(value) {
+    var type = General.determineValueType(value);
+    var isImmutable = (
+      (
+        type === "null" || type === "undefined" || type === "boolean" ||
+        type === "number" || type === "string" || type === "symbol"
+      ) && !(type === "object" || type === "array")
+    );
+    return !isImmutable;
+  }
   /**
   * Collects unique elements.
   * @param {Array} elements Array of elements.
@@ -879,18 +914,7 @@ class General {
     });
   }
 
-  /**
-  * Determines the value of the only active radio button in a group.
-  * @param {Object} radios Live collection of radio button elements in the
-  * Document Object Model (DOM).
-  * @returns {string} Value of the only active radio button from the group.
-  */
-  static determineRadioGroupValue(radios) {
-    // Assume that only a single radio button in the group is active.
-    return Array.from(radios).filter(function (radio) {
-      return radio.checked;
-    })[0].value;
-  }
+  // TODO: I don't think I use this function "extractAssemblyEntitiesSets".
 
   /**
   * Extracts information about entities and sets from a custom assembly for a

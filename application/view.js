@@ -484,20 +484,9 @@ class SetView {
     });
     dataCells.exit().remove();
     var newCells = dataCells.enter().append("td");
-    var cells = newCells.merge(dataCells);
-
-    // Cells for data's attributes.
-    // Select cells for data's attributes.
-    self.tableBodyCellsAttributes = cells.filter(function (data, index) {
-      return data.type === "attribute";
-    });
+    self.tableBodyCells = newCells.merge(dataCells);
+    // Create and activate summary table's cells.
     self.createActivateSummaryBodyCellsAttributes(self);
-
-    // Cells for data's values.
-    // Select cells for data's values.
-    self.tableBodyCellsValues = cells.filter(function (data, index) {
-      return data.type === "value";
-    });
     self.createActivateSummaryBodyCellsValues(self);
   }
   /**
@@ -508,6 +497,13 @@ class SetView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
+
+    // Cells for data's attributes.
+    // Select cells for data's attributes.
+    self.tableBodyCellsAttributes = self
+    .tableBodyCells.filter(function (data, index) {
+      return data.type === "attribute";
+    });
 
     // Assign attributes to cells for attributes.
     self.tableBodyCellsAttributes
@@ -650,6 +646,9 @@ class SetView {
       }
     });
   }
+
+
+
   /**
   * Creates and activates cells for data's values in body of summary table.
   * @param {Object} view Instance of interface's current view.
@@ -659,9 +658,12 @@ class SetView {
     // in scope.
     var self = view;
 
-    // TODO: Format bars according to their selection status in the model of app state.
-    // TODO: Use bar's attribute and value to look-up selection status in model.
-
+    // Cells for data's values.
+    // Select cells for data's values.
+    self.tableBodyCellsValues = self
+    .tableBodyCells.filter(function (data, index) {
+      return data.type === "value";
+    });
 
     // Assign attributes to cells in value column.
     self.tableBodyCellsValues.classed("value", true);
@@ -679,16 +681,23 @@ class SetView {
     var newValueCellGraphs = dataValueCellGraphs.enter().append("svg");
     var valueCellGraphs = newValueCellGraphs.merge(dataValueCellGraphs);
     valueCellGraphs.classed("graph", true);
-    // Determine the width of graphical containers.
-    var graphWidth = parseFloat(
-      window.getComputedStyle(
-        self.tableBody.getElementsByClassName("graph").item(0)
-      ).width.replace("px", "")
-    );
+
+    // Determine the dimensions of the graphical containers.
+    // Set references to dimensions of graphical container.
+    var graph = self.tableBody.getElementsByClassName("graph").item(0);
+    self.graphWidth = General.determineElementDimension(graph, "width");
+    self.graphHeight = General.determineElementDimension(graph, "height");
+
+
+    // TODO: Follow pattern of Topology View.
+    // TODO: Include groups for bars' representations (marks, bars themselves) and annotations (labels).
+    // TODO: Contain the bars within a single group to keep within a bottom layer.
+    // TODO: Create individual groups for each bar--contains bar and title.
+    // TODO: Contain labels for the bars within a single group in a top layer.
+
     // Append rectangles to graphical containers in cells for values.
     var dataValueCellBars = valueCellGraphs
-    .selectAll("rect")
-    .data(function (element, index) {
+    .selectAll("rect").data(function (element, index) {
       // Organize data for rectangles.
       return element.values;
     });
@@ -731,7 +740,7 @@ class SetView {
       var scale = d3
       .scaleLinear()
       .domain([0, data.total])
-      .range([0, graphWidth]);
+      .range([0, self.graphWidth]);
       return scale(data.base);
     })
     .attr("width", function (data, index) {
@@ -739,9 +748,27 @@ class SetView {
       var scale = d3
       .scaleLinear()
       .domain([0, data.total])
-      .range([0, graphWidth]);
+      .range([0, self.graphWidth]);
       return scale(data.count);
     });
+
+    // Create titles for bars.
+    //var titles = self
+    //.nodesRepresentationsGroup
+    //.selectAll("g")
+    //.data(self.nodesRecords);
+    //dataNodesMarks.exit().remove();
+    //var novelNodesMarks = dataNodesMarks.enter().append("g");
+    //self.nodesMarks = novelNodesMarks.merge(dataNodesMarks);
+    //self.nodesMarks.append("title").text(function (data) {
+    //  return data.name;
+    //});
+
+
+
+
+
+
     // Activate cells for data's values.
     self.activateSummaryBodyCellsValues(self);
   }
@@ -1382,8 +1409,8 @@ class TopologyView {
   * @param {Object} view Instance of interface's current view.
   */
   initializeGraph(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
+    // Set reference to class' current instance to transfer across changes in
+    // scope.
     var self = view;
     // Create graphical container for network visualization.
     // Create graphical container with D3 so that styles in CSS will control
@@ -1391,7 +1418,7 @@ class TopologyView {
     // Set reference to graphical container.
     if (!self.container.getElementsByTagName("svg").item(0)) {
       self.graphSelection = d3.select(self.container).append("svg");
-      self.graphSelection.attr("id", "graph");
+      self.graphSelection.classed("graph", true);
       self.graph = self.container.getElementsByTagName("svg").item(0);
       self.base = self.graphSelection.append("rect");
       self.base.attr("id", "topology-base");
@@ -1399,14 +1426,10 @@ class TopologyView {
       self.graph = self.container.getElementsByTagName("svg").item(0);
       self.graphSelection = d3.select(self.graph);
     }
-    // Determine the dimensions of the graphical container.
+    // Determine the dimensions of the graphical containers.
     // Set references to dimensions of graphical container.
-    self.graphWidth = parseFloat(
-      window.getComputedStyle(self.graph).width.replace("px", "")
-    );
-    self.graphHeight = parseFloat(
-      window.getComputedStyle(self.graph).height.replace("px", "")
-    );
+    self.graphWidth = General.determineElementDimension(self.graph, "width");
+    self.graphHeight = General.determineElementDimension(self.graph, "height");
   }
   /**
   * Draws a node-link diagram to represent a network.

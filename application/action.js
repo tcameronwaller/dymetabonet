@@ -658,7 +658,7 @@ class Action {
     //var startTime = window.performance.now();
     // Execute process.
 
-    //Action.createNetwork(model);
+    Action.createNetwork(model);
     //Action.summarizeMetabolitesParticipationReactions(model);
 
     // Terminate process timer.
