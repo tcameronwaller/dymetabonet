@@ -150,30 +150,37 @@
     background-color: rgba(255, 255, 255, 1);
 }
 
-#set table tbody td.value svg {
+#set table tbody td.value svg.graph {
     height: 0.75cm;
     width: 100%;
 }
 
-#set table tbody td.value .bar {
+#set table tbody td.value .mark {
     /*fill: rgba(200, 20, 20, 1);*/
-    height: 0.75cm;
 }
 
-#set table tbody td.value .bar.normal:nth-child(odd) {
+#set table tbody td.value svg.graph g.group:nth-child(odd) .mark.normal {
     fill: rgba(0, 255, 100, 1);
 }
 
-#set table tbody td.value .bar.normal:nth-child(even) {
+#set table tbody td.value svg.graph g.group:nth-child(even) .mark.normal {
     fill: rgba(0, 100, 255, 1);
 }
 
-#set table tbody td.value .bar.emphasis:nth-child(odd) {
+#set table tbody td.value svg.graph g.group:nth-child(odd) .mark.emphasis {
     fill: rgba(255, 100, 0, 1);
 }
 
-#set table tbody td.value .bar.emphasis:nth-child(even) {
+#set table tbody td.value svg.graph g.group:nth-child(even) .mark.emphasis {
     fill: rgba(255, 0, 0, 1);
+}
+
+#set table tbody td.value svg.graph text.label {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 13px;
+  fill: rgba(0, 0, 0, 1);
 }
 
 /******************************************************************************/

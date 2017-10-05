@@ -646,9 +646,6 @@ class SetView {
       }
     });
   }
-
-
-
   /**
   * Creates and activates cells for data's values in body of summary table.
   * @param {Object} view Instance of interface's current view.
@@ -657,63 +654,103 @@ class SetView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
-
-    // Cells for data's values.
     // Select cells for data's values.
     self.tableBodyCellsValues = self
     .tableBodyCells.filter(function (data, index) {
       return data.type === "value";
     });
-
     // Assign attributes to cells in value column.
     self.tableBodyCellsValues.classed("value", true);
-    // Append graphical containers to cells for values.
-    // The graphical containers need access to the same data as their parent
-    // cells without any transformation.
-    // Append graphical containers to the enter selection to avoid replication
-    // of these containers upon restorations to the table.
-    var dataValueCellGraphs = self.tableBodyCellsValues
-    .selectAll("svg")
-    .data(function (element, index) {
+    // Create graphs to represent sets' cardinalities.
+    // It is possible to contain a graph's visual representations and textual
+    // annotations within separate groups in order to segregate these within
+    // separate layers.
+    // This strategy avoids occlusion of textual annotations by visual
+    // representations.
+    // In these graphs, this occlusion is impossible, so a simpler structure is
+    // preferrable.
+    // Graph structure.
+    // - graph (scalable vector graphical container)
+    // -- bars (groups)
+    // --- barGroups (groups)
+    // ---- barTitles (titles)
+    // ---- barMarks (rectangles)
+    // ---- barLabels (text)
+    // Graphs need access to the same data as their parent cells without any
+    // transformation.
+    // Append graphs to the enter selections to avoid replication upon
+    // restorations.
+    var dataGraphs = self
+    .tableBodyCellsValues.selectAll("svg").data(function (element, index) {
       return [element];
     });
-    dataValueCellGraphs.exit().remove();
-    var newValueCellGraphs = dataValueCellGraphs.enter().append("svg");
-    var valueCellGraphs = newValueCellGraphs.merge(dataValueCellGraphs);
-    valueCellGraphs.classed("graph", true);
-
-    // Determine the dimensions of the graphical containers.
-    // Set references to dimensions of graphical container.
+    dataGraphs.exit().remove();
+    var novelGraphs = dataGraphs.enter().append("svg");
+    var graphs = novelGraphs.merge(dataGraphs);
+    graphs.classed("graph", true);
+    // Determine graphs' dimensions of graphs.
+    // Set references graphs' dimensions.
     var graph = self.tableBody.getElementsByClassName("graph").item(0);
     self.graphWidth = General.determineElementDimension(graph, "width");
     self.graphHeight = General.determineElementDimension(graph, "height");
-
-
-    // TODO: Follow pattern of Topology View.
-    // TODO: Include groups for bars' representations (marks, bars themselves) and annotations (labels).
-    // TODO: Contain the bars within a single group to keep within a bottom layer.
-    // TODO: Create individual groups for each bar--contains bar and title.
-    // TODO: Contain labels for the bars within a single group in a top layer.
-
-    // Append rectangles to graphical containers in cells for values.
-    var dataValueCellBars = valueCellGraphs
-    .selectAll("rect").data(function (element, index) {
-      // Organize data for rectangles.
+    // Create bars within graphs to represent sets' cardinalities.
+    // Create groups to contain all bars' visual representations and textual
+    // annotations.
+    var dataBars = graphs.selectAll("g").data(function (element, index) {
+      return [element];
+    });
+    dataBars.exit().remove();
+    var novelBars = dataBars.enter().append("g");
+    var bars = novelBars.merge(dataBars);
+    // Create groups to contain individual bars' visual representations and
+    // textual annotations.
+    var dataBarGroups = bars.selectAll("g").data(function (element, index) {
       return element.values;
     });
-    dataValueCellBars.exit().remove();
-    var newValueCellBars = dataValueCellBars.enter().append("rect");
-    self.tableBodyCellsValuesGraphBars = newValueCellBars
-    .merge(dataValueCellBars);
-    // Assign attributes to rectangles.
-    self.tableBodyCellsValuesGraphBars
-    .attr("id", function (data, index) {
-      return "set-view-attribute-" +
-      data.attribute +
-      "-value-" +
-      data.identifier;
-    })
-    .classed("bar", true)
+    dataBarGroups.exit().remove();
+    var novelBarGroups = dataBarGroups.enter().append("g");
+    self.tableBodyCellsValuesGraphBarGroups = novelBarGroups
+    .merge(dataBarGroups);
+    // Assign attributes.
+    self.tableBodyCellsValuesGraphBarGroups
+    .classed("group", true)
+    .attr("transform", function (element, index) {
+      // Determine scale between value and graph's dimension.
+      var scale = d3
+      .scaleLinear()
+      .domain([0, element.total])
+      .range([0, self.graphWidth]);
+      var x = scale(element.base);
+      var y = 0;
+      return "translate(" + x + "," + y + ")";
+    });
+    // Create titles for individual bars.
+    var dataBarTitles = self.tableBodyCellsValuesGraphBarGroups
+    .selectAll("title").data(function (element, index) {
+      return [element];
+    });
+    dataBarTitles.exit().remove();
+    var novelBarTitles = dataBarTitles.enter().append("title");
+    var barTitles = novelBarTitles.merge(dataBarTitles);
+    // Assign attributes.
+    barTitles.text(function (element, index) {
+      return SetView.determineAttributeValueName({
+        attribute: element.attribute,
+        valueIdentifier: element.value,
+        model: self.model
+      });
+    });
+    // Create marks for individual bars.
+    var dataBarMarks = self.tableBodyCellsValuesGraphBarGroups
+    .selectAll("rect").data(function (element, index) {
+      return [element];
+    });
+    dataBarMarks.exit().remove();
+    var novelBarMarks = dataBarMarks.enter().append("rect");
+    var barMarks = novelBarMarks.merge(dataBarMarks);
+    // Assign attributes.
+    barMarks
+    .classed("mark", true)
     .classed("normal", function (data, index) {
       var match = self.determineValueAttributeMatchSelections({
         value: data.value,
@@ -730,45 +767,50 @@ class SetView {
       });
       return match;
     })
-    .attr("title", function (data, index) {
-      return data.value;
-    });
-    // Assign position and dimension to rectangles.
-    self.tableBodyCellsValuesGraphBars
-    .attr("x", function (data, index) {
-      // Determine scale according to attribute total.
+    .attr("width", function (element, index) {
+      // Determine scale between value and graph's dimension.
       var scale = d3
       .scaleLinear()
-      .domain([0, data.total])
+      .domain([0, element.total])
       .range([0, self.graphWidth]);
-      return scale(data.base);
+      return scale(element.count);
     })
-    .attr("width", function (data, index) {
-      // Determine scale according to attribute total.
-      var scale = d3
-      .scaleLinear()
-      .domain([0, data.total])
-      .range([0, self.graphWidth]);
-      return scale(data.count);
+    .attr("height", self.graphHeight);
+    // Create labels for individual bars.
+    var dataBarLabels = self.tableBodyCellsValuesGraphBarGroups
+    .selectAll("text").data(function (element, index) {
+      return [element];
     });
-
-    // Create titles for bars.
-    //var titles = self
-    //.nodesRepresentationsGroup
-    //.selectAll("g")
-    //.data(self.nodesRecords);
-    //dataNodesMarks.exit().remove();
-    //var novelNodesMarks = dataNodesMarks.enter().append("g");
-    //self.nodesMarks = novelNodesMarks.merge(dataNodesMarks);
-    //self.nodesMarks.append("title").text(function (data) {
-    //  return data.name;
-    //});
-
-
-
-
-
-
+    dataBarLabels.exit().remove();
+    var novelBarLabels = dataBarLabels.enter().append("text");
+    var barLabels = novelBarLabels.merge(dataBarLabels);
+    // Assign attributes.
+    barLabels
+    .classed("label", true)
+    .text(function (element, index, nodes) {
+      // Determine width of bar's rectangle.
+      var scale = d3
+      .scaleLinear().domain([0, element.total]).range([0, self.graphWidth]);
+      var width = scale(element.count);
+      // Determine dimension of label's characters.
+      var documentElement = nodes[index];
+      var character = General
+      .determineElementDimension(documentElement, "fontSize");
+      // Determine count of characters that will fit on bar's rectangle.
+      var count = (width / character) * 1.5;
+      // Prepare name.
+      var name = SetView.determineAttributeValueName({
+        attribute: element.attribute,
+        valueIdentifier: element.value,
+        model: self.model
+      });
+      return name.slice(0, count);
+    })
+    .attr("transform", function (element, index) {
+      var x = 3;
+      var y = self.graphHeight / 2;
+      return "translate(" + x + "," + y + ")";
+    });
     // Activate cells for data's values.
     self.activateSummaryBodyCellsValues(self);
   }
@@ -780,12 +822,11 @@ class SetView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
-
     // Remove any existing event listeners and handlers from bars.
-    self.tableBodyCellsValuesGraphBars
+    self.tableBodyCellsValuesGraphBarGroups
     .on("click", null);
     // Assign event listeners and handlers to bars.
-    self.tableBodyCellsValuesGraphBars
+    self.tableBodyCellsValuesGraphBarGroups
     .on("click", function (data, index, nodes) {
       Action.selectSetsValue({
         value: data.value,
@@ -819,6 +860,7 @@ class SetView {
     var self = view;
     return self.model.setsFilter;
   }
+  // TODO: Make "determineValueAttributeMatchSelections" a static method... give it a reference to the model...
   /**
   * Determines whether or not a value and attribute match a current
   * selection.
@@ -852,6 +894,23 @@ class SetView {
       return false;
     }
   }
+  /**
+  * Determines the name of an attribute's value from references in the model of
+  * the application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.attribute Name of an attribute.
+  * @param {string} parameters.valueIdentifier Identifier of a value of the
+  * attribute.
+  * @param {Object} parameters.model Model of the application's comprehensive
+  * state.
+  * @returns {string} Name of the value of the attribute.
+  */
+  static determineAttributeValueName({
+    attribute, valueIdentifier, model
+  } = {}) {
+    return model[attribute][valueIdentifier].name;
+  }
+
 }
 
 // TODO: EntityView should give information about counts of metabolites and

@@ -106,18 +106,21 @@ class General {
     })[0].value;
   }
   /**
-  * Determines the final dimensions of an element within the document object
-  * model (DOM).
+  * Determines the final dimensions in pixels of an element's attribute within
+  * the document object model (DOM).
   * @param {Object} element Reference to an element within the DOM.
-  * @param {string} dimension Dimension, width or height, to determine.
-  * @returns {number} Dimension of the element in pixels.
+  * @param {string} attribute Attribute---width, height or fontSize---to
+  * determine.
+  * @returns {number} Dimension of the element's attribute in pixels.
   */
-  static determineElementDimension(element, dimension) {
+  static determineElementDimension(element, attribute) {
     // Alternative is to use element.getBoundingClientRect().
+    // Alternative may also be to use d3.style(node, name).
     return parseFloat(
-      window.getComputedStyle(element)[dimension].replace("px", "")
+      window.getComputedStyle(element)[attribute].replace("px", "")
     );
   }
+
 
 
   // Methods for graphs.
