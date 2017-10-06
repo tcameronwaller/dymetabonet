@@ -560,8 +560,7 @@ class Action {
     //    return !node.hasOwnProperty("identifier");
     //});
     // Copy network elements to current network elements.
-    var currentNetworkElements = Network
-    .copyNetworkElements(networkElements);
+    var currentNetworkElements = Network.copyNetworkElements(networkElements);
     console.log("current network elements");
     console.log(currentNetworkElements);
     // Compile novel values of attributes.

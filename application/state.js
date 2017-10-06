@@ -15,7 +15,9 @@ class State {
   constructor(model) {
     // Reference to model of application's state.
     this.model = model;
-    // Control representation of the state of the model.
+    // Control representation and behavior according to application's state.
+    // Each change to the model of the application's state calls this class to
+    // interpret the state.
     this.represent();
     // Control action on the state of the model.
     this.act();
@@ -74,6 +76,11 @@ class State {
     }
     // If application's state has appropriate information then create
     // interface for visual representation of network's topology.
+    // TODO: Eventually, I think I'll need to split "determineNetworkElements"
+    // TODO: to consider network's elements and subnetwork's elements... ie, I'll
+    // TODO: need network's elements to allow topological traversal, but I won't
+    // TODO: necessarily draw the network until I have the current network's elements...
+    // TODO: those currently of interest for drawing...
     if (
       this.determineMetabolicEntitiesSets() &&
       this.determineCurrentEntities() &&

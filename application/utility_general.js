@@ -63,6 +63,7 @@ class General {
   }
 
   // Methods for document object model (DOM).
+  // TODO: Consider placing all of these methods within a separate utility class...
 
   /**
   * Removes from the Document Object Model (DOM) elements that do not have

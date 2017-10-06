@@ -661,7 +661,9 @@ class Network {
       metabolites: metabolites
     });
     // Create node for the reaction.
-    var copyAttributes = Extraction.copyEntityRecord(reaction);
+    // TODO: Do a performance comparison for old copy method and new copy method.
+    //var copyAttributes = Extraction.copyEntityRecord(reaction);
+    var copyAttributes = General.copyValueJSON(reaction);
     var novelAttributes = {
       entity: "reaction",
       simplification: simplification

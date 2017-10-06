@@ -324,22 +324,17 @@ class SetView {
       // References are only necessary for elements that vary with changes to
       // the application's state.
       self.table = self.container.getElementsByTagName("table").item(0);
-      self.tableHead = self
-      .container.getElementsByTagName("thead").item(0);
-      self.tableHead = self
-      .container.getElementsByTagName("thead").item(0);
-      var tableHeadRow = self
-      .tableHead.getElementsByTagName("tr").item(0);
+      self.tableHead = self.container.getElementsByTagName("thead").item(0);
+      self.tableHead = self.container.getElementsByTagName("thead").item(0);
+      var tableHeadRow = self.tableHead.getElementsByTagName("tr").item(0);
       self.tableHeadRowCellValue = tableHeadRow
       .getElementsByClassName("value").item(0);
       self.metabolitesControl = self
       .document.getElementById("sets-entities-metabolites");
       self.reactionsControl = self
       .document.getElementById("sets-entities-reactions");
-      self.filterControl = self
-      .document.getElementById("sets-filter");
-      self.tableBody = self
-      .container.getElementsByTagName("tbody").item(0);
+      self.filterControl = self.document.getElementById("sets-filter");
+      self.tableBody = self.container.getElementsByTagName("tbody").item(0);
     }
   }
   /**
@@ -910,7 +905,6 @@ class SetView {
   } = {}) {
     return model[attribute][valueIdentifier].name;
   }
-
 }
 
 // TODO: EntityView should give information about counts of metabolites and
@@ -1389,17 +1383,7 @@ class AssemblyView {
 */
 class TopologyView {
   // TODO: Eventually, I might need to avoid replicate additions of nodes and links with interaction...
-  // TODO: Follow a pattern of the set summary?
-  // TODO: Or recreate network's elements after every change?
-  /**
-  * Initializes an instance of the class.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
-  */
-
-  // TODO: Re-draw the network for general (non-compartmental) version.
-  // TODO: Make nodes and links same dimension as they are in the compartmental version in order to illustrate differences.
-  // TODO: Reduce frequency of re-positions to make the process more efficient.
+  // TODO: Or recreate network's elements after every change?... temp easy solution
 
   /**
   * Initializes an instance of the class.
@@ -1413,12 +1397,25 @@ class TopologyView {
     self.model = model;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Initialize container for interface.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
+  }
+  /**
+  * Initializes the interface's view.
+  * Controls aspects of view's composition and behavior that persist with
+  * changes to the application's state.
+  * @param {Object} view Instance of interface's current view.
+  */
+  initializeView(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Initialize view's container.
     self.initializeContainer(self);
-    // Initialize graphical container for network's node-link diagram.
+    // Initialize view's graphical container for network's node-link diagram.
     self.initializeGraph(self);
-    // Draw network.
-    self.drawNetwork(self);
   }
   /**
   * Initializes the container for the interface.
@@ -1471,19 +1468,32 @@ class TopologyView {
     // Set reference to class' current instance to transfer across changes in
     // scope.
     var self = view;
-    // Create graphical container for network visualization.
-    // Create graphical container with D3 so that styles in CSS will control
-    // dimensions.
-    // Set reference to graphical container.
+    // Determine whether the graph already exists within the view.
     if (!self.container.getElementsByTagName("svg").item(0)) {
+      // Graph does not exist within view.
+      // Create graph for network visualization.
+      //self.graph = self.document.createElement("svg");
+      //self.container.appendChild(self.graph);
+      //self.graph.classList.add("graph");
+      //self.graphSelection = d3.select(self.graph);
+      // Create graph with D3 so that styles in CSS will control dimensions.
       self.graphSelection = d3.select(self.container).append("svg");
       self.graphSelection.classed("graph", true);
-      self.graph = self.container.getElementsByTagName("svg").item(0);
-      self.base = self.graphSelection.append("rect");
-      self.base.attr("id", "topology-base");
+      self.graph = self.graphSelection.node();
+      // Create basic elements within graph.
+      // Create base for graph's background.
+      var base = self
+      .document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      self.graph.appendChild(base);
+      base.classList.add("base");
+      // Define links' directional marker.
+      self.defineLinkDirectionalMarker(self);
     } else {
+      // Graph exists within view.
+      // Set references to graph.
       self.graph = self.container.getElementsByTagName("svg").item(0);
       self.graphSelection = d3.select(self.graph);
+      // Set references to basic elements within graph.
     }
     // Determine the dimensions of the graphical containers.
     // Set references to dimensions of graphical container.
@@ -1491,23 +1501,74 @@ class TopologyView {
     self.graphHeight = General.determineElementDimension(self.graph, "height");
   }
   /**
-  * Draws a node-link diagram to represent a network.
+  * Defines link's directional marker.
   * @param {Object} view Instance of interface's current view.
   */
-  drawNetwork(view) {
+  defineLinkDirectionalMarker(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Define links' directional marker.
+    // Define by D3.
+    var marker = self.graphSelection
+    .append("defs")
+    .append("marker")
+    .attr("id", "link-marker")
+    .attr("viewBox", "0 0 10 10")
+    .attr("refX", -5)
+    .attr("refY", 5)
+    .attr("markerWidth", 5)
+    .attr("markerHeight", 5)
+    .attr("orient", "auto")
+    .append("path")
+    .attr("d", "M 0 0 L 10 5 L 0 10 z");
+    if (false) {
+      // Define directly.
+      var definition = self.document.createElement("defs");
+      self.graph.appendChild(definition);
+      var marker = self.document.createElement("marker");
+      definition.appendChild(marker);
+      marker.setAttribute("id", "link-marker");
+      marker.setAttribute("viewBox", "0 0 10 10");
+      marker.setAttribute("refX", -3);
+      marker.setAttribute("refY", 5);
+      marker.setAttribute("markerWidth", 5);
+      marker.setAttribute("markerHeight", 5);
+      marker.setAttribute("orient", "auto");
+      var path = self.document.createElement("path");
+      marker.appendChild(path);
+      path.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+    }
+  }
+  /**
+  * Restores the interface's view.
+  * Controls aspects of view's composition and behavior that vary with changes
+  * to the application's state.
+  * @param {Object} view Instance of interface's current view.
+  */
+  restoreView(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Create and activate network.
+    self.createActivateNetwork(self);
+  }
+  /**
+  * Creates and activates a visual representation of a network.
+  * @param {Object} view Instance of interface's current view.
+  */
+  createActivateNetwork(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
     // Prepare information about network's elements.
-    self.prepareNetworkElementsData(self);
+    self.prepareNetworkElementsInformation(self);
     // Create scales for representations of network's elements.
     self.createRepresentationsScales(self);
     // Create scales for simulations of forces between network's elements.
     self.createSimulationsScales(self);
     // Create scales for efficiency.
     self.createEfficiencyScales(self);
-    // Define directional marker for links.
-    self.createLinkDirectionalMarker(self);
     // Create links.
     // Create links before nodes so that nodes will appear over the links.
     self.createLinks(self);
@@ -1520,18 +1581,18 @@ class TopologyView {
   * Prepares information about network's elements.
   * @param {Object} view Instance of interface's current view.
   */
-  prepareNetworkElementsData(view) {
+  prepareNetworkElementsInformation(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
-    // Copy records of information about network's elements, nodes and links, to
-    // avoid changes to original records, especially due to the force simulation.
-    self.linksRecords = Extraction
-    .copyEntitiesRecordsArray(self.model.currentLinks);
+    // Copy information about network's elements, nodes and links, to preserve
+    // original information against modifications, especially due to the force
+    // simulation.
+    self.linksRecords = General.copyValueJSON(self.model.currentLinks);
     // Combine records for nodes.
     self.nodesRecords = [].concat(
-      Extraction.copyEntitiesRecordsArray(self.model.currentMetabolitesNodes),
-      Extraction.copyEntitiesRecordsArray(self.model.currentReactionsNodes)
+      General.copyValueJSON(self.model.currentMetabolitesNodes),
+      General.copyValueJSON(self.model.currentReactionsNodes)
     );
     //console.log("links: " + self.linksRecords.length);
     //console.log("nodes: " + self.nodesRecords.length);
@@ -1734,52 +1795,10 @@ class TopologyView {
     self.scaleInterval = intervalScale(self.nodesRecords.length);
     self.scaleLabel = labelScale(self.nodesRecords.length);
   }
-  /**
-  * Creates definition of directional markers for links.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createLinkDirectionalMarker(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Define directional marker for links.
-    // Set reference to current definition.
-    if (!self.graph.getElementsByTagName("defs").item(0)) {
-      if (false) {
-        // Define directly.
-        self.definition = self.document.createElement("defs");
-        self.graph.appendChild(self.definition);
-        self.marker = self.document.createElement("marker");
-        self.definition.appendChild(self.marker);
-        self.marker.setAttribute("id", "link-marker");
-        self.marker.setAttribute("viewBox", "0 0 10 10");
-        self.marker.setAttribute("refX", -3);
-        self.marker.setAttribute("refY", 5);
-        self.marker.setAttribute("markerWidth", 5);
-        self.marker.setAttribute("markerHeight", 5);
-        self.marker.setAttribute("orient", "auto");
-        self.path = self.document.createElement("path");
-        self.marker.appendChild(self.path);
-        self.path.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
-      }
-      // Define by D3.
-      self.marker = self.graphSelection
-      .append("defs")
-      .append("marker")
-      .attr("id", "link-marker")
-      .attr("viewBox", "0 0 10 10")
-      .attr("refX", -5)
-      .attr("refY", 5)
-      .attr("markerWidth", 5)
-      .attr("markerHeight", 5)
-      .attr("orient", "auto")
-      .append("path")
-      .attr("d", "M 0 0 L 10 5 L 0 10 z");
-    } else {
-      self.definition = self.graph.getElementsByTagName("defs").item(0);
-      self.marker = self.document.getElementById("link-marker");
-    }
-  }
+
+
+
+  
   /**
   * Creates links in a node-link diagram.
   * @param {Object} view Instance of interface's current view.
@@ -1788,6 +1807,11 @@ class TopologyView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
+
+
+    // TODO: Use enter and exit selections to avoid duplication...
+    // TODO: Follow pattern of SetView createActivateSummaryBodyCellsValues(view)
+
     // Create links.
     // Contain all links within a single group.
     var linksGroup = self.graphSelection.append("g");
@@ -1821,6 +1845,16 @@ class TopologyView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
+
+
+    // TODO: Use enter and exit selections to avoid duplication...
+    // TODO: Include nodes' marks and labels within same groups... 1 group per node
+    // TODO: Follow pattern of SetView createActivateSummaryBodyCellsValues(view)
+
+
+
+
+
     // Create nodes.
     // Contain all nodes within a single group.
     // This group will contain all representations and annotations of all nodes.
@@ -1903,6 +1937,16 @@ class TopologyView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
+
+
+    // TODO: Use enter and exit selections to avoid duplication...
+    // TODO: Include nodes' marks and labels within same groups... 1 group per node
+    // TODO: Follow pattern of SetView createActivateSummaryBodyCellsValues(view)
+
+
+
+
+
     // Create labels for nodes.
     // Contain annotations of all nodes within a single group.
     // This containment will collect these annotations within a single layer,
@@ -1932,6 +1976,10 @@ class TopologyView {
     // Determine size of font for annotations of network's elements.
     self.nodesLabels.attr("font-size", self.scaleFont + "px");
   }
+
+
+
+
   /**
   * Initiates a force simulation for placement of network's nodes and links in a
   * node-link diagram.

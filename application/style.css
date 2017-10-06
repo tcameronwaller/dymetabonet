@@ -232,7 +232,7 @@
     height: 100%;
 }
 
-#topology svg {
+#topology svg.graph {
     height: 100%;
     width: 100%;
     /*dark*/
@@ -241,7 +241,7 @@
     /*fill: rgba(0, 0, 0, 1);*/
 }
 
-#topology-base {
+#topology .base {
     height: 100%;
     width: 100%;
     /*dark*/
