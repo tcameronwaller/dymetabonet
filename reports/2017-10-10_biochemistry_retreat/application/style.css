@@ -1,0 +1,317 @@
+/*
+ Profondeur supports visual exploration and analysis of metabolic networks.
+ Copyright (C) 2016  Thomas Cameron Waller
+
+ Author email: tcameronwaller@gmail.com
+
+ This file is part of Profondeur.
+
+ Profondeur is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Set dimensions of elements proportional to dimensions of the viewport or window. */
+
+
+/* Media Queries */
+/*
+@media (max-width: 15cm) {
+    #interface {
+        flex-direction: column;
+    }
+}
+*/
+
+/******************************************************************************/
+/* Interface */
+/******************************************************************************/
+
+#view {
+    background-color: rgba(255, 255, 255, 1);
+    display: block;
+    font-size: small;
+    height: 98vh;
+    margin: 0;
+    width: 98vw;
+}
+
+.show-inline {
+    display: inline;
+}
+
+.hide {
+    display: none;
+}
+
+/******************************************************************************/
+/* Source View */
+/******************************************************************************/
+
+#source input {
+    display: none;
+}
+
+/******************************************************************************/
+/* Top View */
+/******************************************************************************/
+
+#top {
+    background-color: rgba(50, 50, 50, 1);
+    display: flex;
+    width: 100%;
+}
+
+/******************************************************************************/
+/* Persistence View */
+/******************************************************************************/
+
+#persistence button {
+    width: 1.5cm;
+}
+
+#persistence {
+    flex-basis: content;
+    height: 100%;
+}
+
+/******************************************************************************/
+/* Set View */
+/******************************************************************************/
+
+#set {
+    /*display: inline;*/
+    /*float: left;*/
+    background-color: rgba(50, 50, 50, 1);
+    flex: 1;
+    font-family: sans-serif;
+}
+
+#set table {
+    border-collapse: collapse;
+    border-style: solid;
+    width: 100%;
+    table-layout: auto;
+    text-align: left;
+}
+
+#set table thead {
+    background-color: rgba(50, 50, 50, 1);
+    color: rgba(255, 255, 255, 1);
+    font-size: medium;
+    font-weight: bold;
+}
+
+#set table thead tr {
+    height: 0.75cm;
+    vertical-align: middle;
+}
+
+#set table thead th {
+    border-color: rgba(200, 200, 200, 1);
+    border-style: solid;
+    border-width: 1mm;
+    padding: 1mm;
+}
+
+#set table tbody tr {
+    height: 0.75cm;
+    vertical-align: middle;
+}
+
+#set table tbody td {
+    border-color: rgba(200, 200, 200, 1);
+    border-style: solid;
+    border-width: 1mm;
+    height: 0.75cm;
+    overflow: hidden;
+    padding: 1mm;
+    white-space: nowrap;
+}
+
+#set table tbody td.attribute {
+    background-color: rgba(50, 50, 50, 1);
+    color: rgba(255, 255, 255, 1);
+    font-size: medium;
+    font-weight: bold;
+    width: 3cm;
+}
+
+#set table tbody td.value {
+    background-color: rgba(255, 255, 255, 1);
+}
+
+#set table tbody td.value svg.graph {
+    height: 0.75cm;
+    width: 100%;
+}
+
+#set table tbody td.value .mark {
+    /*fill: rgba(200, 20, 20, 1);*/
+}
+
+#set table tbody td.value svg.graph g.group:nth-child(odd) .mark.normal {
+    fill: rgba(0, 255, 100, 1);
+}
+
+#set table tbody td.value svg.graph g.group:nth-child(even) .mark.normal {
+    fill: rgba(0, 100, 255, 1);
+}
+
+#set table tbody td.value svg.graph g.group:nth-child(odd) .mark.emphasis {
+    fill: rgba(255, 100, 0, 1);
+}
+
+#set table tbody td.value svg.graph g.group:nth-child(even) .mark.emphasis {
+    fill: rgba(255, 0, 0, 1);
+}
+
+#set table tbody td.value svg.graph text.label {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 13px;
+  fill: rgba(0, 0, 0, 1);
+}
+
+/******************************************************************************/
+/* Bottom View */
+/******************************************************************************/
+
+#bottom {
+    background-color: rgba(255, 255, 255, 1);
+    display: flex;
+    height: 90%;
+    width: 100%;
+}
+
+/******************************************************************************/
+/* Control View */
+/******************************************************************************/
+
+#control {
+    background-color: rgba(200, 200, 200, 1);
+    flex-basis: 5cm;
+    height: 100%;
+    overflow: auto;
+}
+
+/******************************************************************************/
+/* Assembly View */
+/******************************************************************************/
+
+#assembly-replication {
+    width: 90%;
+}
+
+#assembly-replication-current {
+    width: 100%;
+    height: 5cm;
+    overflow-y: auto;
+}
+
+#assembly-replication-novel input {}
+
+/******************************************************************************/
+/* Panel View */
+/******************************************************************************/
+
+#panel {
+    /*display:inline;*/
+    /*float: left;*/
+    flex: 1;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 1);
+}
+
+
+/******************************************************************************/
+/* Topology View */
+/******************************************************************************/
+
+#topology {
+    /*display:inline;*/
+    /*float: left;*/
+    flex: 1;
+    height: 100%;
+}
+
+#topology svg.graph {
+    height: 100%;
+    width: 100%;
+    /*dark*/
+    fill: rgba(255, 50, 0, 1);
+    /*light*/
+    /*fill: rgba(0, 0, 0, 1);*/
+}
+
+#topology .base {
+    height: 100%;
+    width: 100%;
+    /*dark*/
+    fill: rgba(0, 0, 0, 1);
+    /*light*/
+    /*fill: rgba(255, 255, 255, 1);*/
+}
+
+#topology svg.graph .node.metabolite .mark {
+  /*dark*/
+  fill: rgba(0, 200, 255, 1);
+}
+
+#topology svg.graph .node.reaction .mark {
+    fill: rgba(255, 0, 200, 1);
+}
+
+#topology svg.graph .node.reaction .direction {
+  /*dark*/
+  fill: rgba(50, 0, 200, 1);
+}
+
+#topology svg.graph .node.metabolite.simplification .mark {
+}
+
+#topology svg.graph .node.reaction.simplification .mark {
+}
+
+#topology svg.graph .node text.label {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  alignment-baseline: middle;
+  text-anchor: middle;
+}
+
+#topology svg.graph .node.metabolite text.label {
+  /*dark*/
+  fill: rgba(0, 0, 0, 1);
+}
+
+#topology svg.graph .node.reaction text.label {
+  fill: rgba(0, 0, 0, 1);
+}
+
+#topology svg.graph .link {
+  /*dark*/
+  stroke: rgba(255, 255, 0, 1);
+}
+
+#topology svg.graph .link.reactant {
+    stroke-dasharray: 5,7;
+}
+
+#topology svg.graph .link.product {
+    stroke-dasharray: 5, 0;
+}
+
+#topology svg.graph .link.simplification {
+}
