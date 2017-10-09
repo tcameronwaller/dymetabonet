@@ -75,6 +75,18 @@ class State {
       new AssemblyView(this.model);
     }
     // If application's state has appropriate information then create
+    // interface for place-holder in bottom of interface.
+    if (
+      this.determineMetabolicEntitiesSets() &&
+      this.determineCurrentEntities() &&
+      !this.determineNetworkElements()
+    ) {
+      // Initialize instance of interface.
+      // Pass this instance a reference to the model of the application's
+      // state.
+      new BottomView(this.model);
+    }
+    // If application's state has appropriate information then create
     // interface for visual representation of network's topology.
     // TODO: Eventually, I think I'll need to split "determineNetworkElements"
     // TODO: to consider network's elements and subnetwork's elements... ie, I'll

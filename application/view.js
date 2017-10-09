@@ -315,6 +315,14 @@ class SetView {
       self.createActivateFilterControl(self);
       // Create and activate reset button.
       self.createActivateRestore(self);
+
+      // TODO: This control is temporary for the sake of demonstration on 10 October 2017.
+      // Create and control for compartmentalization.
+      self.createActivateCompartmentalizationControl(self);
+
+
+
+
       // Create table's body.
       self.tableBody = self.document.createElement("tbody");
       self.table.appendChild(self.tableBody);
@@ -334,6 +342,13 @@ class SetView {
       self.reactionsControl = self
       .document.getElementById("sets-entities-reactions");
       self.filterControl = self.document.getElementById("sets-filter");
+
+
+      self.compartmentalizationControl = self
+      .document.getElementById("compartmentalization");
+
+
+
       self.tableBody = self.container.getElementsByTagName("tbody").item(0);
     }
   }
@@ -418,6 +433,36 @@ class SetView {
       Action.restoreSetsSummary(self.model);
     });
   }
+
+  /**
+  * Creates and activates control to select whether to represent
+  * compartmentalization in the network.
+  * @param {Object} view Instance of interface's current view.
+  */
+  createActivateCompartmentalizationControl(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Create and activate control for compartmentalization.
+    var identifier = "compartmentalization";
+    self.compartmentalizationControl = self.document.createElement("input");
+    self.tableHeadRowCellValue.appendChild(self.compartmentalizationControl);
+    self.compartmentalizationControl.setAttribute("id", identifier);
+    self.compartmentalizationControl.setAttribute("type", "checkbox");
+    self
+    .compartmentalizationControl.setAttribute("value", "compartmentalization");
+    self
+    .compartmentalizationControl.addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Change current selection of filter in application's state.
+      Action.changeCompartmentalization(self.model);
+    });
+    var compartmentalizationLabel = self.document.createElement("label");
+    self.tableHeadRowCellValue.appendChild(compartmentalizationLabel);
+    compartmentalizationLabel.setAttribute("for", identifier);
+    compartmentalizationLabel.textContent = "compartmentalization";
+  }
+
   /**
   * Restores the menu to summarize sets' cardinalities.
   * @param {Object} view Instance of interface's current view.
@@ -437,6 +482,8 @@ class SetView {
     self.reactionsControl.checked = self
     .determineEntityMatch("reactions", self);
     self.filterControl.checked = self.determineFilter(self);
+    self.compartmentalizationControl.checked = self
+    .determineCompartmentalization(self);
     // Create and activate data-dependent summary's menu.
     self.createActivateSummaryBody(self);
   }
@@ -666,7 +713,7 @@ class SetView {
     // preferrable.
     // Graph structure.
     // - graph (scalable vector graphical container)
-    // -- bars (groups)
+    // -- barsGroup (group)
     // --- barGroups (groups)
     // ---- barTitles (titles)
     // ---- barMarks (rectangles)
@@ -691,15 +738,16 @@ class SetView {
     // Create bars within graphs to represent sets' cardinalities.
     // Create groups to contain all bars' visual representations and textual
     // annotations.
-    var dataBars = graphs.selectAll("g").data(function (element, index) {
+    var dataBarsGroup = graphs.selectAll("g").data(function (element, index) {
       return [element];
     });
-    dataBars.exit().remove();
-    var novelBars = dataBars.enter().append("g");
-    var bars = novelBars.merge(dataBars);
+    dataBarsGroup.exit().remove();
+    var novelBarsGroup = dataBarsGroup.enter().append("g");
+    var barsGroup = novelBarsGroup.merge(dataBarsGroup);
     // Create groups to contain individual bars' visual representations and
     // textual annotations.
-    var dataBarGroups = bars.selectAll("g").data(function (element, index) {
+    var dataBarGroups = barsGroup
+    .selectAll("g").data(function (element, index) {
       return element.values;
     });
     dataBarGroups.exit().remove();
@@ -728,12 +776,14 @@ class SetView {
     var novelBarTitles = dataBarTitles.enter().append("title");
     var barTitles = novelBarTitles.merge(dataBarTitles);
     // Assign attributes.
-    barTitles.text(function (element, index) {
-      return SetView.determineAttributeValueName({
+    barTitles.text(function (element, index, nodes) {
+      var name = SetView.determineAttributeValueName({
         attribute: element.attribute,
         valueIdentifier: element.value,
         model: self.model
       });
+      var message = (name + " (" + element.count + ")");
+      return message;
     });
     // Create marks for individual bars.
     var dataBarMarks = self.tableBodyCellsValuesGraphBarGroups
@@ -854,6 +904,17 @@ class SetView {
     // in scope.
     var self = view;
     return self.model.setsFilter;
+  }
+  /**
+  * Determines the current selection in the application's state of whether to
+  * represent compartmentalization in the network.
+  * @param {Object} view Instance of interface's current view.
+  */
+  determineCompartmentalization(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    return self.model.compartmentalization;
   }
   // TODO: Make "determineValueAttributeMatchSelections" a static method... give it a reference to the model...
   /**
@@ -1378,13 +1439,100 @@ class AssemblyView {
 }
 
 /**
+* Interface to represent a temporary place-holder in bottom of interface.
+*/
+class BottomView {
+  /**
+  * Initializes an instance of the class.
+  * @param {Object} model Model of the application's comprehensive state.
+  */
+  constructor (model) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = this;
+    // Set reference to model of application's state.
+    self.model = model;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
+  }
+  /**
+  * Initializes the interface's view.
+  * Controls aspects of view's composition and behavior that persist with
+  * changes to the application's state.
+  * @param {Object} view Instance of interface's current view.
+  */
+  initializeView(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Initialize view's container.
+    self.initializeContainer(self);
+  }
+  /**
+  * Initializes the container for the interface.
+  * @param {Object} view Instance of interface's current view.
+  */
+  initializeContainer(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Create and set references to elements for interface.
+    // Select view in document object model.
+    self.view = self.document.getElementById("view");
+    // Remove any extraneous content within view.
+    // Initialization of the persistence view already removes extraneous
+    // content from view.
+    General.filterRemoveDocumentElements({
+      values: ["top", "bottom"],
+      attribute: "id",
+      elements: self.view.children
+    });
+    // Create container for interfaces within bottom of view.
+    if (!self.document.getElementById("bottom")) {
+      self.bottom = self.document.createElement("div");
+      self.view.appendChild(self.bottom);
+      self.bottom.setAttribute("id", "bottom");
+    } else {
+      self.bottom = self.document.getElementById("bottom");
+    }
+    // Remove any extraneous content within bottom.
+    General.filterRemoveDocumentElements({
+      values: ["control", "panel"],
+      attribute: "id",
+      elements: self.bottom.children
+    });
+    // Create container for interface within bottom.
+    // Set reference to current interface's container.
+    if (!self.document.getElementById("panel")) {
+      self.container = self.document.createElement("div");
+      self.bottom.appendChild(self.container);
+      self.container.setAttribute("id", "panel");
+    } else {
+      self.container = self.document.getElementById("panel");
+    }
+  }
+  /**
+  * Restores the interface's view.
+  * Controls aspects of view's composition and behavior that vary with changes
+  * to the application's state.
+  * @param {Object} view Instance of interface's current view.
+  */
+  restoreView(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+  }
+}
+
+/**
 * Interface to represent the topology of the network of relations between
 * metabolic entities.
 */
 class TopologyView {
-  // TODO: Eventually, I might need to avoid replicate additions of nodes and links with interaction...
-  // TODO: Or recreate network's elements after every change?... temp easy solution
-
   /**
   * Initializes an instance of the class.
   * @param {Object} model Model of the application's comprehensive state.
@@ -1569,11 +1717,22 @@ class TopologyView {
     self.createSimulationsScales(self);
     // Create scales for efficiency.
     self.createEfficiencyScales(self);
+    // Create graph to represent metabolic network.
+    // Graph structure.
+    // - graph (scalable vector graphical container)
+    // -- linksGroup (group)
+    // --- linksMarks (polylines)
+    // -- nodesGroup (group)
+    // --- nodesGroups (groups)
+    // ---- nodesTitles (titles)
+    // ---- nodesMarks (ellipses, rectangles)
+    // ---- nodesDirectionalMarks (rectangles, polygons)
+    // ---- nodesLabels (text)
     // Create links.
     // Create links before nodes so that nodes will appear over the links.
     self.createLinks(self);
     // Create nodes.
-    self.createNodesMarks(self);
+    self.createNodes(self);
     // Initiate force simulation.
     self.initiateForceSimulation(self);
   }
@@ -1706,8 +1865,11 @@ class TopologyView {
     var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
     // Define scale for alpha decay rate in force simulation.
     // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.05, iterations = 134.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.03, iterations = 227.
     // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.02, iterations = 300.
     // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.015, iterations = 458.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.013, iterations = 528.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.01, iterations = 688.
     // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.005, iterations = 1379.
     // Domain's unit is count of nodes.
     // Range's unit is arbitrary for decay rates.
@@ -1722,7 +1884,7 @@ class TopologyView {
     var alphaDecayScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.011]);
+    .range([0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025]);
     // Define scale for velocity decay rate in force simulation.
     // Domain's unit is count of nodes.
     // Range's unit is arbitrary for decay rates.
@@ -1769,13 +1931,13 @@ class TopologyView {
     //100-500: 5
     //500-1000: 10
     //1000-2500: 15
-    //2500-5000: 20
-    //5000-10000: 25
-    //10000-1000000: 50
+    //2500-5000: 25
+    //5000-10000: 50
+    //10000-1000000: 100
     var intervalScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([3, 5, 10, 15, 20, 25, 50]);
+    .range([3, 5, 10, 15, 25, 50, 100]);
     // Define scale for representation of labels for nodes.
     // Domain's unit is count of nodes.
     // Range's unit is arbitrary.
@@ -1795,10 +1957,6 @@ class TopologyView {
     self.scaleInterval = intervalScale(self.nodesRecords.length);
     self.scaleLabel = labelScale(self.nodesRecords.length);
   }
-
-
-
-  
   /**
   * Creates links in a node-link diagram.
   * @param {Object} view Instance of interface's current view.
@@ -1807,179 +1965,192 @@ class TopologyView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
-
-
-    // TODO: Use enter and exit selections to avoid duplication...
-    // TODO: Follow pattern of SetView createActivateSummaryBodyCellsValues(view)
-
     // Create links.
     // Contain all links within a single group.
-    var linksGroup = self.graphSelection.append("g");
+    var dataLinksGroup = self
+    .graphSelection.selectAll("g").data([self.linksRecords]);
+    dataLinksGroup.exit().remove();
+    var novelLinksGroup = dataLinksGroup.enter().append("g");
+    var linksGroup = novelLinksGroup.merge(dataLinksGroup);
     // Create elements to represent links.
-    var dataLinks = linksGroup
-    .selectAll("polyline").data(self.linksRecords);
-    dataLinks.exit().remove();
-    var novelLinks = dataLinks.enter().append("polyline");
-    self.links = novelLinks.merge(dataLinks);
-    self.links.classed("link", true);
-    self.links.classed("reactant", function (data) {
+    var dataLinksMarks = linksGroup
+    .selectAll("polyline").data(function (element, index, nodes) {
+      return element;
+    });
+    dataLinksMarks.exit().remove();
+    var novelLinksMarks = dataLinksMarks.enter().append("polyline");
+    self.linksMarks = novelLinksMarks.merge(dataLinksMarks);
+    // Assign attributes.
+    self.linksMarks.classed("link", true);
+    self.linksMarks.classed("reactant", function (data) {
       return data.role === "reactant";
     });
-    self.links.classed("product", function (data) {
+    self.linksMarks.classed("product", function (data) {
       return data.role === "product";
     });
-    self.links.classed("simplification", function (data) {
+    self.linksMarks.classed("simplification", function (data) {
       return data.simplification;
     });
-    self.links.attr("marker-mid", "url(#link-marker)");
+    self.linksMarks.attr("marker-mid", "url(#link-marker)");
     // Determine dimensions for representations of network's elements.
     // Set dimensions of links.
     self.linkStrokeWidth = self.scaleLinkDimension * 1;
-    self.links.attr("stroke-width", self.linkStrokeWidth);
+    self.linksMarks.attr("stroke-width", self.linkStrokeWidth);
   }
   /**
   * Creates nodes in a node-link diagram.
+  * @param {Object} view Instance of interface's current view.
+  */
+  createNodes(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Create nodes.
+    // Contain all nodes within a single group.
+    var dataNodesGroup = self
+    .graphSelection.selectAll("g").data([self.nodesRecords]);
+    dataNodesGroup.exit().remove();
+    var novelNodesGroup = dataNodesGroup.enter().append("g");
+    self.nodesGroup = novelNodesGroup.merge(dataNodesGroup);
+    // Create groups to contain individual nodes' visual representations and
+    // textual annotations.
+    self.createNodesGroups(self);
+    // Create titles for individual nodes.
+    self.createNodesTitles(self);
+    // Create marks for individual nodes.
+    self.createNodesMarks(self);
+    // Remove nodes' labels.
+    // For efficiency, only include node's labels after simulation completes.
+    self.removeNodesLabels(self);
+  }
+  /**
+  * Creates nodes's groups.
+  * @param {Object} view Instance of interface's current view.
+  */
+  createNodesGroups(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Create groups to contain individual nodes' visual representations and
+    // textual annotations.
+    var dataNodesGroups = self.nodesGroup
+    .selectAll("g").data(function (element, index, nodes) {
+      return element;
+    });
+    dataNodesGroups.exit().remove();
+    var novelNodesGroups = dataNodesGroups.enter().append("g");
+    self.nodesGroups = novelNodesGroups.merge(dataNodesGroups);
+    // Assign attributes.
+    self
+    .nodesGroups
+    .attr("id", function (element, index, nodes) {
+      return "node-" + element.identifier;
+    })
+    .classed("node", true)
+    .classed("metabolite", function (element, index, nodes) {
+      return element.entity === "metabolite";
+    })
+    .classed("reaction", function (element, index, nodes) {
+      return element.entity === "reaction";
+    })
+    .classed("simplification", function (element, index, nodes) {
+      return element.simplification;
+    });
+  }
+  /**
+  * Creates nodes's titles.
+  * @param {Object} view Instance of interface's current view.
+  */
+  createNodesTitles(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Create titles for individual nodes.
+    var dataNodesTitles = self.nodesGroups
+    .selectAll("title").data(function (element, index, nodes) {
+      return [element];
+    });
+    dataNodesTitles.exit().remove();
+    var novelNodesTitles = dataNodesTitles.enter().append("title");
+    var nodesTitles = novelNodesTitles.merge(dataNodesTitles);
+    // Assign attributes.
+    nodesTitles.text(function (element, index, nodes) {
+      return element.name;
+    });
+  }
+  /**
+  * Creates nodes's marks.
   * @param {Object} view Instance of interface's current view.
   */
   createNodesMarks(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
-
-
-    // TODO: Use enter and exit selections to avoid duplication...
-    // TODO: Include nodes' marks and labels within same groups... 1 group per node
-    // TODO: Follow pattern of SetView createActivateSummaryBodyCellsValues(view)
-
-
-
-
-
-    // Create nodes.
-    // Contain all nodes within a single group.
-    // This group will contain all representations and annotations of all nodes.
-    self.nodesGroup = self.graphSelection.append("g");
-    // Contain visual representations of all nodes within a single group.
-    // This containment will collect these visual representations within a
-    // single layer.
-    self.nodesRepresentationsGroup = self.nodesGroup.append("g");
-    // Create visual representations for individual nodes.
-    // The primary element is a group to contain all marks for the node.
+    // Create marks for individual nodes.
     var dataNodesMarks = self
-    .nodesRepresentationsGroup
-    .selectAll("g")
-    .data(self.nodesRecords);
+    .nodesGroups
+    .selectAll("ellipse", "rect")
+    .filter(".mark")
+    .data(function (element, index, nodes) {
+      return [element];
+    });
     dataNodesMarks.exit().remove();
-    var novelNodesMarks = dataNodesMarks.enter().append("g");
-    self.nodesMarks = novelNodesMarks.merge(dataNodesMarks);
-    self.nodesMarks.append("title").text(function (data) {
-      return data.name;
-    });
-    self.nodesMarks.attr("id", function (data) {
-      return data.identifier;
-    });
-    self.nodesMarks.classed("node", true);
-    self.nodesMarks.classed("mark", true);
-    self.nodesMarks.classed("metabolite", function (data) {
-      return data.entity === "metabolite";
-    });
-    self.nodesMarks.classed("reaction", function (data) {
-      return data.entity === "reaction";
-    });
-    self.nodesMarks.classed("simplification", function (data) {
-      return data.simplification;
-    });
-    // Create visual representations of nodes' entities.
-    self.nodesEntities = self.nodesMarks.append(function (data) {
+    var novelNodesMarks = dataNodesMarks
+    .enter()
+    .append(function (element, index, nodes) {
       // Append different types of elements for different types of entities.
-      if (data.entity === "metabolite") {
+      if (element.entity === "metabolite") {
         // Node represents a metabolite.
         return self
         .document
         .createElementNS("http://www.w3.org/2000/svg", "ellipse");
-      } else if (data.entity === "reaction") {
+      } else if (element.entity === "reaction") {
         // Node represents a reaction.
         return self
         .document
         .createElementNS("http://www.w3.org/2000/svg", "rect");
       }
     });
-    self.nodesEntities.classed("entity", true);
+    var nodesMarks = novelNodesMarks.merge(dataNodesMarks);
+    // Assign attributes.
+    nodesMarks.classed("mark", true)
     // Determine dimensions for representations of network's elements.
     // Set dimensions of metabolites' nodes.
-    var nodesEntitiesMetabolites = self.nodesEntities.filter(function (data) {
-      return data.entity === "metabolite";
-    });
     self.metaboliteNodeWidth = self.scaleNodeDimension * 1;
     self.metaboliteNodeHeight = self.scaleNodeDimension * 0.5;
-    nodesEntitiesMetabolites.attr("rx", self.metaboliteNodeWidth);
-    nodesEntitiesMetabolites.attr("ry", self.metaboliteNodeHeight);
-    // Set dimensions of reactions' nodes.
-    var nodesEntitiesReactions = self.nodesEntities.filter(function (data) {
-      return data.entity === "reaction";
+    var nodesMarksMetabolites = nodesMarks
+    .filter(function (element, index, nodes) {
+      return element.entity === "metabolite";
     });
+    nodesMarksMetabolites.attr("rx", self.metaboliteNodeWidth);
+    nodesMarksMetabolites.attr("ry", self.metaboliteNodeHeight);
+    // Set dimensions of reactions' nodes.
     self.reactionNodeWidth = self.scaleNodeDimension * 2.5;
     self.reactionNodeHeight = self.scaleNodeDimension * 0.75;
-    nodesEntitiesReactions.attr("width", self.reactionNodeWidth);
-    nodesEntitiesReactions.attr("height", self.reactionNodeHeight);
+    var nodesMarksReactions = nodesMarks
+    .filter(function (element, index, nodes) {
+      return element.entity === "reaction";
+    });
+    nodesMarksReactions.attr("width", self.reactionNodeWidth);
+    nodesMarksReactions.attr("height", self.reactionNodeHeight);
     // Shift reactions' nodes according to their dimensions.
-    nodesEntitiesReactions.attr("transform", function (data) {
+    nodesMarksReactions.attr("transform", function (element, index, nodes) {
       var x = - (self.reactionNodeWidth / 2);
       var y = - (self.reactionNodeHeight / 2);
       return "translate(" + x + "," + y + ")";
     });
   }
   /**
-  * Creates labels for nodes in a node-link diagram.
+  * Removes nodes' labels from a node-link diagram.
   * @param {Object} view Instance of interface's current view.
   */
-  createNodesLabels(view) {
+  removeNodesLabels(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
-
-
-    // TODO: Use enter and exit selections to avoid duplication...
-    // TODO: Include nodes' marks and labels within same groups... 1 group per node
-    // TODO: Follow pattern of SetView createActivateSummaryBodyCellsValues(view)
-
-
-
-
-
-    // Create labels for nodes.
-    // Contain annotations of all nodes within a single group.
-    // This containment will collect these annotations within a single layer,
-    // avoiding occlusion from other visual representations.
-    self.nodesAnnotationsGroup = self.nodesGroup.append("g");
-    var dataNodesLabels = self
-    .nodesAnnotationsGroup
-    .selectAll("text")
-    .data(self.nodesRecords);
-    dataNodesLabels.exit().remove();
-    var novelNodesLabels = dataNodesLabels.enter().append("text");
-    self.nodesLabels = novelNodesLabels.merge(dataNodesLabels);
-    self.nodesLabels.text(function (data) {
-      return data.name.slice(0, 5) + "...";
-    });
-    self.nodesLabels.classed("node", true);
-    self.nodesLabels.classed("label", true);
-    self.nodesLabels.classed("metabolite", function (data) {
-      return data.entity === "metabolite";
-    });
-    self.nodesLabels.classed("reaction", function (data) {
-      return data.entity === "reaction";
-    });
-    self.nodesLabels.classed("simplification", function (data) {
-      return data.simplification;
-    });
-    // Determine size of font for annotations of network's elements.
-    self.nodesLabels.attr("font-size", self.scaleFont + "px");
+    // Remove labels for individual nodes.
+    self.nodesGroups.selectAll("text").remove();
   }
-
-
-
-
   /**
   * Initiates a force simulation for placement of network's nodes and links in a
   * node-link diagram.
@@ -2031,7 +2202,7 @@ class TopologyView {
       .theta(0.3)
       .strength(-500)
       .distanceMin(1)
-      .distanceMax(self.scaleNodeDimension * 50)
+      .distanceMax(self.scaleNodeDimension * 25)
     )
     .force("link", d3.forceLink()
       .links(self.linksRecords)
@@ -2046,7 +2217,7 @@ class TopologyView {
           return self.metaboliteNodeWidth;
         } else {
           // Link does not have designation for simplification.
-          return (1.5 * (self.reactionNodeWidth + self.metaboliteNodeWidth));
+          return (1.3 * (self.reactionNodeWidth + self.metaboliteNodeWidth));
         }
       })
       //.strength()
@@ -2058,7 +2229,7 @@ class TopologyView {
     )
     .force("positionY", d3.forceY()
       .y(self.graphWidth / 2)
-      .strength(0.07)
+      .strength(0.03)
     )
     .on("tick", function () {
       // Restore monitor of simulation's progress.
@@ -2114,7 +2285,7 @@ class TopologyView {
     // Restore positions of nodes and links periodically throughout the
     // simulation.
     if (self.simulationCounter % self.scaleInterval === 0) {
-      self.restoreNodesMarksPositions(self);
+      self.restoreNodesPositions(self);
       self.restoreLinksPositions(self);
     }
   }
@@ -2126,19 +2297,24 @@ class TopologyView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
-    // Report completion of simulation.
-    console
-    .log("simulation complete: " + self.simulationCounter + " iterations");
-    self.restoreNodesMarksPositions(self);
+    // Restore and refine network's representation.
+    self.restoreNodesPositions(self);
     self.restoreLinksPositions(self);
     self.refineNodesLinksRepresentations(self);
+    // Report completion of network's representation.
+    var message = (
+      "network representation complete... " +
+      self.simulationCounter + " iterations"
+    );
+    console.log(message);
+    window.alert(message);
   }
   /**
   * Restores positions of nodes' visual representations according to results of
   * force simulation.
   * @param {Object} view Instance of interface's current view.
   */
-  restoreNodesMarksPositions(view) {
+  restoreNodesPositions(view) {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
@@ -2147,31 +2323,13 @@ class TopologyView {
     // Restore positions of nodes' marks according to results of simulation.
     // Impose constraints on node positions according to dimensions of graphical
     // container.
-    self.nodesMarks.attr("transform", function (data) {
+    self.nodesGroups.attr("transform", function (data) {
       // Constrain nodes' positions according to dimensions of graphical
       // container.
       data.x = Math.max(radius, Math.min(self.graphWidth - radius, data.x));
       data.y = Math.max(radius, Math.min(self.graphHeight - radius, data.y));
       // Determine coordinates for nodes' marks from results of simulation in
       // nodes' records.
-      return "translate(" + data.x + "," + data.y + ")";
-    });
-  }
-  /**
-  * Restores positions of nodes' annotations according to results of force
-  * simulation.
-  * @param {Object} view Instance of interface's current view.
-  */
-  restoreNodesLabelsPositions(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Restore positions of nodes' labels according to results of simulation.
-    self.nodesLabels.attr("transform", function (data) {
-      // Determine coordinates for nodes' marks from results of simulation in
-      // nodes' records.
-      var x = data.x;
-      var y = data.y;
       return "translate(" + data.x + "," + data.y + ")";
     });
   }
@@ -2186,7 +2344,7 @@ class TopologyView {
     // Restore positions of links according to results of simulation.
     // D3's procedure for force simulation copies references to records for
     // source and target nodes within records for links.
-    self.links.attr("points", function (data) {
+    self.linksMarks.attr("points", function (data) {
       // Determine positions of link's termini.
       var termini = TopologyView.determineLinkTermini({
         role: data.role,
@@ -2290,11 +2448,10 @@ class TopologyView {
     // Determine orientations of reaction's nodes.
     self.determineReactionsNodesOrientations(self);
     // Represent reactions' directionalities on their nodes.
-    self.createReactionsNodesDirections(self);
-    // Include labels for nodes.
+    self.createReactionsNodesDirectionalMarks(self);
+    // Create nodes' labels.
     if (self.scaleLabel) {
       self.createNodesLabels(self);
-      self.restoreNodesLabelsPositions(self);
     }
     // Represent reactions' directionalities in links.
     self.restoreLinksPositions(self);
@@ -2496,70 +2653,34 @@ class TopologyView {
   * Creates representations of reactions' directions on their nodes.
   * @param {Object} view Instance of interface's current view.
   */
-  createReactionsNodesDirections(view) {
+  createReactionsNodesDirectionalMarks(view) {
     // Set reference to class' current instance to transfer across changes in
     // scope.
     var self = view;
+    // Select groups of reactions' nodes.
+    var nodesReactionsGroups = self
+    .nodesGroups.filter(function (element, index, nodes) {
+      return element.entity === "reaction";
+    });
+    var leftDirectionalMarks = nodesReactionsGroups
+    .append(function (element, index, nodes) {
+      // Append different types of elements for different properties.
+      var type = TopologyView.determineDirectionalMarkType("left", element);
+      return self.document.createElementNS("http://www.w3.org/2000/svg", type);
+    });
+    var rightDirectionalMarks = nodesReactionsGroups
+    .append(function (element, index, nodes) {
+      // Append different types of elements for different properties.
+      var type = TopologyView.determineDirectionalMarkType("right", element);
+      return self.document.createElementNS("http://www.w3.org/2000/svg", type);
+    });
+    // Set attributes of directional marks.
     // Determine dimensions for directional marks.
     var width = self.reactionNodeWidth / 7;
     var height = self.reactionNodeHeight;
-    // Select groups of marks to represent reactions' nodes.
-    var nodesMarksReactions = self.nodesMarks.filter(function (data) {
-      return data.entity === "reaction";
-    });
-    self.nodesLeftDirections = nodesMarksReactions.append(function (data) {
-      // Append different types of elements for different properties.
-      var direction = TopologyView.determineReactionDirection({
-        left: data.left,
-        right: data.right,
-        reversibility: data.reversibility
-      });
-      if (direction === "left") {
-        // Side of reaction's node needs directional marker.
-        return self
-        .document
-        .createElementNS("http://www.w3.org/2000/svg", "polygon");
-      } else if (direction === "right") {
-        // Side of reaction's node does not need directional marker.
-        return self
-        .document
-        .createElementNS("http://www.w3.org/2000/svg", "rect");
-      } else if (direction === "both") {
-        // Side of reaction's node needs directional marker.
-        return self
-        .document
-        .createElementNS("http://www.w3.org/2000/svg", "polygon");
-      }
-    });
-    self.nodesRightDirections = nodesMarksReactions.append(function (data) {
-      // Append different types of elements for different types of entities.
-      var direction = TopologyView.determineReactionDirection({
-        left: data.left,
-        right: data.right,
-        reversibility: data.reversibility
-      });
-      if (direction === "left") {
-        // Side of reaction's node does not need directional marker.
-        return self
-        .document
-        .createElementNS("http://www.w3.org/2000/svg", "rect");
-      } else if (direction === "right") {
-        // Side of reaction's node needs directional marker.
-        return self
-        .document
-        .createElementNS("http://www.w3.org/2000/svg", "polygon");
-      } else if (direction === "both") {
-        // Side of reaction's node needs directional marker.
-        return self
-        .document
-        .createElementNS("http://www.w3.org/2000/svg", "polygon");
-      }
-    });
-    // Set attributes of directional marks.
-    self.nodesLeftDirections.classed("direction", true);
-    self.nodesRightDirections.classed("direction", true);
-    self
-    .nodesLeftDirections
+    leftDirectionalMarks.classed("direction", true);
+    rightDirectionalMarks.classed("direction", true);
+    leftDirectionalMarks
     .filter("polygon")
     .attr("points", function (data) {
       return General.createHorizontalIsoscelesTrianglePoints({
@@ -2568,8 +2689,7 @@ class TopologyView {
         direction: "left"
       });
     });
-    self
-    .nodesRightDirections
+    rightDirectionalMarks
     .filter("polygon")
     .attr("points", function (data) {
       return General.createHorizontalIsoscelesTrianglePoints({
@@ -2578,26 +2698,51 @@ class TopologyView {
         direction: "right"
       });
     });
-    self
-    .nodesLeftDirections
+    leftDirectionalMarks
     .filter("rect")
     .attr("height", height)
     .attr("width", width);
-    self
-    .nodesRightDirections
+    rightDirectionalMarks
     .filter("rect")
     .attr("height", height)
     .attr("width", width);
-    self.nodesLeftDirections.attr("transform", function (data) {
+    leftDirectionalMarks.attr("transform", function (data) {
       var x = - (self.reactionNodeWidth / 2);
       var y = - (height / 2);
       return "translate(" + x + "," + y + ")";
     });
-    self.nodesRightDirections.attr("transform", function (data) {
+    rightDirectionalMarks.attr("transform", function (data) {
       var x = ((self.reactionNodeWidth / 2) - width);
       var y = - (height / 2);
       return "translate(" + x + "," + y + ")";
     });
+  }
+  /**
+  * Determines the type of graphical element to represent the direction of a
+  * reaction's node.
+  * @param {string} side Side of reaction's node, left or right.
+  * @param {Object} reaction Record for a reaction with information about its
+  * node's orientation.
+  * @returns {string} Type of graphical element to represet direction of a
+  * reaction's node.
+  */
+  static determineDirectionalMarkType(side, reaction) {
+    var direction = TopologyView.determineReactionDirection({
+      left: reaction.left,
+      right: reaction.right,
+      reversibility: reaction.reversibility
+    });
+    if (direction === "both") {
+      // Side of reaction's node needs directional marker.
+      var type = "polygon";
+    } else if (side === direction) {
+      // Side of reaction's node needs directional marker.
+      var type = "polygon";
+    } else if (side !== direction) {
+      // Side of reaction's node does not need directional marker.
+      var type = "rect";
+    }
+    return type;
   }
   /**
   * Determines the direction of a reaction's node.
@@ -2626,5 +2771,29 @@ class TopologyView {
         return "left";
       }
     }
+  }
+  /**
+  * Creates labels for nodes in a node-link diagram.
+  * @param {Object} view Instance of interface's current view.
+  */
+  createNodesLabels(view) {
+    // Set reference to class' current instance to transfer across changes
+    // in scope.
+    var self = view;
+    // Create labels for individual nodes.
+    var dataNodesLabels = self.nodesGroups
+    .selectAll("text").data(function (element, index, nodes) {
+      return [element];
+    });
+    dataNodesLabels.exit().remove();
+    var novelNodesLabels = dataNodesLabels.enter().append("text");
+    var nodesLabels = novelNodesLabels.merge(dataNodesLabels);
+    // Assign attributes.
+    nodesLabels.text(function (data) {
+      return data.name.slice(0, 5) + "...";
+    });
+    nodesLabels.classed("label", true);
+    // Determine size of font for annotations of network's elements.
+    nodesLabels.attr("font-size", self.scaleFont + "px");
   }
 }

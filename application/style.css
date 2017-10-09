@@ -40,9 +40,9 @@
     background-color: rgba(255, 255, 255, 1);
     display: block;
     font-size: small;
-    height: 97vh;
+    height: 98vh;
     margin: 0;
-    width: 97vw;
+    width: 98vw;
 }
 
 .show-inline {
@@ -190,7 +190,7 @@
 #bottom {
     background-color: rgba(255, 255, 255, 1);
     display: flex;
-    height: 91%;
+    height: 90%;
     width: 100%;
 }
 
@@ -222,6 +222,19 @@
 #assembly-replication-novel input {}
 
 /******************************************************************************/
+/* Panel View */
+/******************************************************************************/
+
+#panel {
+    /*display:inline;*/
+    /*float: left;*/
+    flex: 1;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 1);
+}
+
+
+/******************************************************************************/
 /* Topology View */
 /******************************************************************************/
 
@@ -250,63 +263,55 @@
     /*fill: rgba(255, 255, 255, 1);*/
 }
 
-#topology svg text {
-  font-family: sans-serif;
-  font-style: normal;
-  font-weight: bold;
-  /*font-size: 50px;*/
-}
-
-#topology svg .node.mark.metabolite .entity {
+#topology svg.graph .node.metabolite .mark {
   /*dark*/
   fill: rgba(0, 200, 255, 1);
 }
 
-#topology svg .node.mark.reaction .entity {
+#topology svg.graph .node.reaction .mark {
     fill: rgba(255, 0, 200, 1);
 }
 
-#topology svg .node.mark.reaction .direction {
+#topology svg.graph .node.reaction .direction {
   /*dark*/
   fill: rgba(50, 0, 200, 1);
 }
 
-#topology svg .node.mark.metabolite.simplification .entity {
+#topology svg.graph .node.metabolite.simplification .mark {
 }
 
-#topology svg .node.mark.reaction.simplification .entity {
+#topology svg.graph .node.reaction.simplification .mark {
 }
 
-#topology svg .node.label {
+#topology svg.graph .node text.label {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
   alignment-baseline: middle;
   text-anchor: middle;
 }
 
-#topology svg .node.label.metabolite {
+#topology svg.graph .node.metabolite text.label {
   /*dark*/
   fill: rgba(0, 0, 0, 1);
 }
 
-#topology svg .node.label.reaction {
+#topology svg.graph .node.reaction text.label {
   fill: rgba(0, 0, 0, 1);
 }
 
-#topology svg .marker {
-  /*fill: rgba(100, 0, 0, 1);*/
-}
-
-#topology svg .link {
+#topology svg.graph .link {
   /*dark*/
   stroke: rgba(255, 255, 0, 1);
 }
 
-#topology svg .link.reactant {
+#topology svg.graph .link.reactant {
     stroke-dasharray: 5,7;
 }
 
-#topology svg .link.product {
+#topology svg.graph .link.product {
     stroke-dasharray: 5, 0;
 }
 
-#topology svg .link.simplification {
+#topology svg.graph .link.simplification {
 }

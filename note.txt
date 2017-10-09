@@ -4,6 +4,13 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+9 October 2017
+
+----------
+
+An indication of compartment for metabolites in multi-compartmental networks will be nice.
+
+--------------------------------------------------
 4 October 2017
 
 ----------

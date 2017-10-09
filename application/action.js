@@ -112,8 +112,8 @@ class Action {
   // Primary actions relevant to application's state.
 
   /**
-  * Initializes the model of the application's state by submitting null
-  * values for all attributes.
+  * Initializes the model of the application's state by submitting null values
+  * for all attributes.
   * @param {Object} model Model of the comprehensive state of the
   * application.
   */
@@ -232,6 +232,8 @@ class Action {
     // Initialize application's attributes for individual entities.
     var networkDefinitionAttributes = Action
     .initializeNetworkDefinitionAttributes();
+    var networkElementsAttributes = Action
+    .initializeNetworkElementsAttributes();
     // Compile novel values of attributes.
     var novelAttributesValues = {
       file: file
@@ -241,6 +243,7 @@ class Action {
       entitiesSets,
       currentEntitiesSetsAttributes,
       networkDefinitionAttributes,
+      networkElementsAttributes,
       novelAttributesValues
     );
     // Submit novel values of attributes to the model of the application's
@@ -276,12 +279,19 @@ class Action {
       currentMetabolites: model.currentMetabolites,
       currentReactions: model.currentReactions
     });
+    // Initialize network's elements.
+    var networkElementsAttributes = Action
+    .initializeNetworkElementsAttributes();
     // Compile new values of attributes.
-    var newAttributesValues = {
+    var novelAttributesValues = {
       setsEntities: currentEntities
     };
-    var attributesValues = Object
-    .assign({}, setsCardinalitiesAttributes, newAttributesValues);
+    var attributesValues = Object.assign(
+      {},
+      setsCardinalitiesAttributes,
+      networkElementsAttributes,
+      novelAttributesValues
+    );
     // Submit new values of attributes to the model of the application's
     // state.
     Action.submitAttributes({
@@ -315,12 +325,19 @@ class Action {
       currentMetabolites: model.currentMetabolites,
       currentReactions: model.currentReactions
     });
+    // Initialize network's elements.
+    var networkElementsAttributes = Action
+    .initializeNetworkElementsAttributes();
     // Compile new values of attributes.
-    var newAttributesValues = {
+    var novelAttributesValues = {
       setsFilter: currentFilter
     };
-    var attributesValues = Object
-    .assign({}, setsCardinalitiesAttributes, newAttributesValues);
+    var attributesValues = Object.assign(
+      {},
+      setsCardinalitiesAttributes,
+      networkElementsAttributes,
+      novelAttributesValues
+    );
     // Submit new values of attributes to the model of the application's
     // state.
     Action.submitAttributes({
@@ -371,17 +388,11 @@ class Action {
         selections: currentSelections,
         reactions: model.reactions
       });
-      console.log("currentReactions");
-      console.log(Object.keys(currentReactions).length);
       var currentMetabolites = Attribution.filterMetabolitesAttributesValues({
         metabolites: model.metabolites,
         reactions: currentReactions
       });
-      console.log("currentMetabolites");
-      console.log(Object.keys(currentMetabolites).length);
     }
-
-
     // Determine values of attributes that summarize cardinalities of sets of
     // entities.
     var setsCardinalitiesAttributes = Action
@@ -393,6 +404,9 @@ class Action {
       currentMetabolites: currentMetabolites,
       currentReactions: currentReactions
     });
+    // Initialize network's elements.
+    var networkElementsAttributes = Action
+    .initializeNetworkElementsAttributes();
     // Compile novel values of attributes.
     var novelAttributesValues = {
       attributesSelections: attributesSelections,
@@ -400,8 +414,12 @@ class Action {
       currentMetabolites: currentMetabolites,
       currentReactions: currentReactions
     };
-    var attributesValues = Object
-    .assign({}, setsCardinalitiesAttributes, novelAttributesValues);
+    var attributesValues = Object.assign(
+      {},
+      setsCardinalitiesAttributes,
+      networkElementsAttributes,
+      novelAttributesValues
+    );
     // Submit novel values of attributes to the model of the application's
     // state.
     Action.submitAttributes({
@@ -425,10 +443,19 @@ class Action {
     // Initialize application's attributes for entities' sets.
     var entitiesSetsAttributes = Action
     .initializeCurrentEntitiesSetsAttributes(entitiesSets);
+    // Initialize network's elements.
+    var networkElementsAttributes = Action
+    .initializeNetworkElementsAttributes();
+    // Compile novel values of attributes.
+    var attributesValues = Object.assign(
+      {},
+      entitiesSetsAttributes,
+      networkElementsAttributes
+    );
     // Submit new values of attributes to the model of the application's
     // state.
     Action.submitAttributes({
-      attributesValues: entitiesSetsAttributes,
+      attributesValues: attributesValues,
       model: model
     });
   }
@@ -447,10 +474,22 @@ class Action {
     } else {
       var currentValue = true;
     }
-    // Submit attribute's current value to the model of the application's state.
-    Action.submitAttribute({
-      value: currentValue,
-      attribute: "compartmentalization",
+    // Initialize network's elements.
+    var networkElementsAttributes = Action
+    .initializeNetworkElementsAttributes();
+    // Compile new values of attributes.
+    var novelAttributesValues = {
+      compartmentalization: currentValue
+    };
+    var attributesValues = Object.assign(
+      {},
+      networkElementsAttributes,
+      novelAttributesValues
+    );
+    // Submit new values of attributes to the model of the application's
+    // state.
+    Action.submitAttributes({
+      attributesValues: attributesValues,
       model: model
     });
   }
@@ -577,9 +616,7 @@ class Action {
     });
 
     // TODO: I don't want to initialize a network in JSNetworkX until I have to.
-
-    var iSaySo = false;
-    if (iSaySo) {
+    if (false) {
       // Initialize an operable network in JSNetworkX from the network's
       // elements.
       var network = Network.initializeNetwork({
@@ -804,6 +841,36 @@ class Action {
     // Return attributes' values.
     return attributesValues;
   }
+  /**
+  * Initializes values of attributes that relate to network's elements.
+  * @returns {Object} Collection of multiple attributes that relate to network's
+  * elements.
+  */
+  static initializeNetworkElementsAttributes() {
+    // Initialize attributes for network's elements.
+    var metabolitesNodes = null;
+    var reactionsNodes = null;
+    var links = null;
+    var network = null;
+    var currentMetabolitesNodes = null;
+    var currentReactionsNodes = null;
+    var currentLinks = null;
+    var subNetwork = null;
+    // Compile novel values of attributes.
+    var attributesValues = {
+      metabolitesNodes: metabolitesNodes,
+      reactionsNodes: reactionsNodes,
+      links: links,
+      network: network,
+      currentMetabolitesNodes: currentMetabolitesNodes,
+      currentReactionsNodes: currentReactionsNodes,
+      currentLinks: currentLinks,
+      subNetwork: subNetwork
+    };
+    // Return attributes' values.
+    return attributesValues;
+  }
+
 
 
 
