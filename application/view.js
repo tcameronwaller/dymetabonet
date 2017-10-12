@@ -433,7 +433,6 @@ class SetView {
       Action.restoreSetsSummary(self.model);
     });
   }
-
   /**
   * Creates and activates control to select whether to represent
   * compartmentalization in the network.
@@ -462,7 +461,6 @@ class SetView {
     compartmentalizationLabel.setAttribute("for", identifier);
     compartmentalizationLabel.textContent = "compartmentalization";
   }
-
   /**
   * Restores the menu to summarize sets' cardinalities.
   * @param {Object} view Instance of interface's current view.
@@ -531,6 +529,9 @@ class SetView {
     self.createActivateSummaryBodyCellsAttributes(self);
     self.createActivateSummaryBodyCellsValues(self);
   }
+
+
+
   /**
   * Creates and activates cells for data's attributes in body of summary table.
   * @param {Object} view Instance of interface's current view.
@@ -539,44 +540,94 @@ class SetView {
     // Set reference to class' current instance to transfer across changes
     // in scope.
     var self = view;
-
-    // Cells for data's attributes.
     // Select cells for data's attributes.
     self.tableBodyCellsAttributes = self
     .tableBodyCells.filter(function (data, index) {
       return data.type === "attribute";
     });
-
     // Assign attributes to cells for attributes.
-    self.tableBodyCellsAttributes
-    .attr("id", function (data, index) {
-      return "set-view-attribute-" + data.attribute;
-    })
-    .classed("attribute", true);
-
-    // TODO: I should not do this...
-    // TODO: Instead, I want to create search menus for anything (one at a time) with a selection flag in the model of app's state.
-    // Remove search menus from any previous user interaction.
-    //self.tableBodyCellsAttributes.selectAll(".search").remove();
-
-    // Append label containers to cells for attributes.
-    // These label containers need access to the same data as their parent
-    // cells without any transformation.
-    // Append label containers to the enter selection to avoid replication
-    // of these containers upon restorations to the table.
-    var dataLabels = self.tableBodyCellsAttributes
-    .selectAll("div").data(function (element, index) {
+    self.tableBodyCellsAttributes.classed("attribute", true);
+    // Create labels.
+    var dataLabels = self
+    .tableBodyCellsAttributes.selectAll("div")
+    .filter(".label")
+    .data(function (element, index, nodes) {
       return [element];
     });
     dataLabels.exit().remove();
-    var newLabels = dataLabels.enter().append("div");
-    self.tableBodyCellsAttributesLabels = newLabels.merge(dataLabels);
-    // Append text content to labels.
-    self.tableBodyCellsAttributesLabels.text(function (data) {
-      return data.attribute;
+    var novelLabels = dataLabels.enter().append("div");
+    var labels = novelLabels.merge(dataLabels);
+    // Assign attributes.
+    labels
+    .classed("label", true)
+    .text(function (element, index, nodes) {
+      return element.attribute;
     });
-    // Activate cells.
-    //self.activateSummaryBodyCellsAttributes(self);
+    // Create search menus.
+    var dataSearches = self
+    .tableBodyCellsAttributes.selectAll("div")
+    .filter(".search")
+    .data(function (element, index, nodes) {
+      return [element];
+    });
+    dataSearches.exit().remove();
+    var novelSearches = dataSearches.enter().append("div");
+    var searches = novelSearches.merge(dataSearches);
+    // Assign attributes.
+    searches.classed("search", true);
+    // Create list of options for search menu.
+    var dataOptionsLists = searches.selectAll("datalist")
+    .data(function (element, index, nodes) {
+      return [element];
+    });
+    dataOptionsLists.exit().remove();
+    var novelOptionsLists = dataOptionsLists.enter().append("datalist");
+    var optionsLists = novelOptionsLists.merge(dataOptionsLists);
+    // Assign attributes.
+    optionsLists.attr("id", function (element, index, nodes) {
+      return element.attribute + "-options-list";
+    });
+    // Create options within list.
+    var dataOptions = optionsLists.selectAll("option")
+    .data(function (element, index, nodes) {
+      return element.values;
+    });
+    dataOptions.exit().remove();
+    var novelOptions = dataOptions.enter().append("option");
+    var options = novelOptions.merge(dataOptions);
+    // Assign attributes.
+    options
+    .text(function (element, index, nodes) {
+      return element.value;
+    })
+    .attr("value", function (element, index, nodes) {
+      var name = SetView.determineAttributeValueName({
+        attribute: element.attribute,
+        valueIdentifier: element.value,
+        model: self.model
+      });
+      return name;
+    });
+    // Create search menu.
+    var dataMenus = searches.selectAll("input")
+    .data(function (element, index, nodes) {
+      return [element];
+    });
+    dataMenus.exit().remove();
+    var novelMenus = dataMenus.enter().append("input");
+    self.searchMenus = novelMenus.merge(dataMenus);
+    // Assign attributes.
+    self.searchMenus
+    .attr("id", function (element, index, nodes) {
+      return element.attribute + "-search-menu";
+    })
+    .attr("type", "search")
+    .attr("list", function (element, index, nodes) {
+      return element.attribute + "-options-list";
+    })
+    .attr("autocomplete", "off");
+    // Activate behavior.
+    self.activateSummaryBodyCellsAttributes(self);
   }
   /**
   * Activates cells for data's attributes in body of summary
@@ -588,106 +639,49 @@ class SetView {
     // in scope.
     var self = view;
 
-    // TODO: If the search fields change the width of the attribute menu cells, it will be necessary to redraw the menu altogether...
-    // TODO: Maybe fix the width of the cells?
-    // TODO: How to handle text overflow in the options for the search field?
-    // Remove any existing event listeners and handlers from cells.
-    self.tableBodyCellsAttributesLabels
-    .on("click", null);
-    // Assign event listeners and handlers to cells.
-    self.tableBodyCellsAttributesLabels
-    .on("click", function (data, index, nodes) {
-      // Restoration of attribute menu removes search menus for attribute
-      // values from any previous user interaction.
-      // Also, after creation of the search menu, subsequent selection of
-      // the attribute head removes it.
-      // There is not a risk of replication of the search menu.
-      // It is unnecessary to use D3's selectAll or data methods or enter
-      // and exit selections to append and remove elements of the search
-      // menu.
-      // D3 append method propagates data.
-      // Access data bound to selection by selection.data().
-      // Select the attribute cell.
-      var attributeCell = d3.select(nodes[index].parentElement);
-      var attributeSearch = attributeCell.select(".search");
-      // Determine whether or not the attribute head already has a search
-      // menu.
-      if (attributeSearch.empty()) {
-        // Attribute head does not have a search menu.
-        // Create and activate a search field.
-        // Append a search menu to the attribute cell.
-        var attributeSearch = attributeCell.append("div");
-        attributeSearch.classed("search", true);
-        // Append a data list to the search menu.
-        var attributeValueList = attributeSearch.append("datalist");
-        attributeValueList
-        .attr("id", function (data, index) {
-          return "attribute-" + data.attribute + "-values";
+    // TODO: Maybe try also including inner text within the datalist options.
+    // TODO: Is the option's inner text accessible to the input element and its event listener?
+    // TODO: Even if it isn't... I could filter the options to find which was selected.
+    // TODO: Then I could find the option's identifier and use that for the action.
+    // TODO: That might not be necessary, because I should also be able to access the options' attached data...
+
+    if (false) {
+      // Assign event listeners and handlers to search menu.
+      // Option elements from datalist element do not report events.
+      // Respond to event on input search text field and then find
+      // relevant information from the options in the datalist.
+      attributeSearchField
+      .on("change", function (data, index, nodes) {
+        // TODO: Use the value of the input field and compare against the list options.
+        // TODO: Only perform selection event if the value of the field matches an option from the datalist.
+        // TODO: http://stackoverflow.com/questions/30022728/perform-action-when-clicking-html5-datalist-option
+        // Assume that each attribute value has a unique name.
+        var selection = nodes[index].value;
+        var attributeValues = d3
+        .select(nodes[index].list)
+        .selectAll("option");
+        var attributeValue = attributeValues
+        .filter(function (data, index) {
+          return data.name === selection;
         });
-        // Append options to the data list.
-        var attributeValues = attributeValueList
-        .selectAll("option")
-        .data(function (element, index) {
-          return element.values;
-        });
-        attributeValues.exit().remove();
-        var newAttributeValues = attributeValues
-        .enter()
-        .append("option");
-        attributeValues = newAttributeValues
-        .merge(attributeValues);
-        attributeValues.attr("value", function (data, index) {
-          return data.name;
-        });
-        // Append search text field to the search menu.
-        var attributeSearchField = attributeSearch.append("input");
-        attributeSearchField
-        .attr("autocomplete", "off")
-        .attr("id", function (data, index) {
-          return "attribute-" + data.attribute + "-search";
-        })
-        .attr("list", function (data, index) {
-          return "attribute-" + data.attribute + "-values";
-        })
-        .attr("type", "search");
-        // Assign event listeners and handlers to search menu.
-        // Option elements from datalist element do not report events.
-        // Respond to event on input search text field and then find
-        // relevant information from the options in the datalist.
-        attributeSearchField
-        .on("change", function (data, index, nodes) {
-          // TODO: Use the value of the input field and compare against the list options.
-          // TODO: Only perform selection event if the value of the field matches an option from the datalist.
-          // TODO: http://stackoverflow.com/questions/30022728/perform-action-when-clicking-html5-datalist-option
-          // Assume that each attribute value has a unique name.
-          var selection = nodes[index].value;
-          var attributeValues = d3
-          .select(nodes[index].list)
-          .selectAll("option");
-          var attributeValue = attributeValues
-          .filter(function (data, index) {
-            return data.name === selection;
+        if (!attributeValue.empty()) {
+          controlAttributeMenuSelection({
+            value: attributeValue.data()[0].identifier,
+            attribute: attributeValue.data()[0].attribute,
+            entity: entity,
+            filter: filter,
+            originalAttributeSummary:
+            originalAttributeSummary,
+            originalAttributeIndex: originalAttributeIndex,
+            model: model
           });
-          if (!attributeValue.empty()) {
-            controlAttributeMenuSelection({
-              value: attributeValue.data()[0].identifier,
-              attribute: attributeValue.data()[0].attribute,
-              entity: entity,
-              filter: filter,
-              originalAttributeSummary:
-              originalAttributeSummary,
-              originalAttributeIndex: originalAttributeIndex,
-              model: model
-            });
-          }
-        });
-      } else {
-        // Attribute head has a search menu.
-        // Remove the search menu.
-        attributeSearch.remove();
-      }
-    });
+        }
+      });
+    }
   }
+
+
+
   /**
   * Creates and activates cells for data's values in body of summary table.
   * @param {Object} view Instance of interface's current view.
