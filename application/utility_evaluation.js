@@ -123,10 +123,11 @@ class Evaluation {
     var reactionIdentifiers = metabolite.reactions;
     var metaboliteReactions = reactionIdentifiers.map(function (identifier) {
       var reaction = reactions[identifier];
-      return Extraction.copyEntityAttributesValues(reaction);
+      return General.copyValueJSON(reaction);
     });
-    var fileName = identifier + "-reactions.json";
-    General.saveObject(fileName, metaboliteReactions);
+    return metaboliteReactions;
+    //var fileName = identifier + "-reactions.json";
+    //General.saveObject(fileName, metaboliteReactions);
   }
 
 }

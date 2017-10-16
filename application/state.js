@@ -139,7 +139,6 @@ class State {
   */
   determineEntitiesAttributesSets() {
     return (
-      !(this.model.attributesSelections === null) &&
       !(this.model.valuesSelections === null) &&
       !(this.model.setsEntities === null) &&
       !(this.model.setsFilter === null) &&

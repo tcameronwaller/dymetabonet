@@ -355,9 +355,6 @@ class Action {
   * application.
   */
   static selectSetsValue({value, attribute, model} = {}) {
-    // Remove any selections of attributes for set view.
-    // These selections determine which search menus to create in set view.
-    var attributesSelections = [];
     // Record current selection in collection of selections of attributes
     // and values for set view.
     // These selections determine which attributes and values define filters
@@ -409,7 +406,6 @@ class Action {
     .initializeNetworkElementsAttributes();
     // Compile novel values of attributes.
     var novelAttributesValues = {
-      attributesSelections: attributesSelections,
       valuesSelections: currentSelections,
       currentMetabolites: currentMetabolites,
       currentReactions: currentReactions
@@ -694,8 +690,20 @@ class Action {
     //var startTime = window.performance.now();
     // Execute process.
 
-    Action.createNetwork(model);
+    //Action.createNetwork(model);
     //Action.summarizeMetabolitesParticipationReactions(model);
+
+
+    var metaboliteReactions = Evaluation.extractMetaboliteReactions({
+      identifier: "ala_L",
+      metabolites: model.metabolites,
+      reactions: model.reactions
+    });
+    var filterReactions = metaboliteReactions.filter(function (reaction) {
+      return !reaction.transport;
+    });
+    console.log("non transport reactions that involve 'ala_L'");
+    console.log(filterReactions);
 
     // Terminate process timer.
     //console.timeEnd("timer");
@@ -731,9 +739,6 @@ class Action {
   * of current entities by their attributes.
   */
   static initializeCurrentEntitiesSetsAttributes(entitiesSets) {
-    // Specify selections of attributes for sets' summary.
-    // These selections determine which search menus to create in set view.
-    var attributesSelections = [];
     // Specify selections of values of attributes for sets' summary.
     // These selections determine which attributes and values define filters
     // against entities' attributes.
@@ -756,9 +761,8 @@ class Action {
       currentMetabolites: currentMetabolites,
       currentReactions: currentReactions
     });
-    // Compile new values of attributes.
+    // Compile novel values of attributes.
     var newAttributesValues = {
-      attributesSelections: attributesSelections,
       valuesSelections: valuesSelections,
       setsEntities: setsEntities,
       setsFilter: setsFilter,

@@ -529,9 +529,6 @@ class SetView {
     self.createActivateSummaryBodyCellsAttributes(self);
     self.createActivateSummaryBodyCellsValues(self);
   }
-
-
-
   /**
   * Creates and activates cells for data's attributes in body of summary table.
   * @param {Object} view Instance of interface's current view.
@@ -596,9 +593,20 @@ class SetView {
     var novelOptions = dataOptions.enter().append("option");
     var options = novelOptions.merge(dataOptions);
     // Assign attributes.
-    options
-    .text(function (element, index, nodes) {
-      return element.value;
+    options.text(function (element, index, nodes) {
+      // Determine whether the option corresponds to a current selection of the
+      // attribute's value.
+      var match = SetView.determineValueAttributeMatchSelections({
+        value: element.value,
+        attribute: element.attribute,
+        model: self.model
+      });
+      if (match) {
+        var selection = "selection";
+      } else {
+        var selection = "";
+      }
+      return selection;
     })
     .attr("value", function (element, index, nodes) {
       var name = SetView.determineAttributeValueName({
@@ -621,9 +629,18 @@ class SetView {
     .attr("id", function (element, index, nodes) {
       return element.attribute + "-search-menu";
     })
+    .classed("processes", function (element, index, nodes) {
+      return element.attribute === "processes";
+    })
+    .classed("compartments", function (element, index, nodes) {
+      return element.attribute === "compartments";
+    })
     .attr("type", "search")
     .attr("list", function (element, index, nodes) {
       return element.attribute + "-options-list";
+    })
+    .attr("placeholder", function (element, index, nodes) {
+      return "search " + element.attribute;
     })
     .attr("autocomplete", "off");
     // Activate behavior.
@@ -635,53 +652,49 @@ class SetView {
   * @param {Object} view Instance of interface's current view.
   */
   activateSummaryBodyCellsAttributes(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
+    // Set reference to class' current instance to transfer across changes in
+    // scope.
     var self = view;
-
-    // TODO: Maybe try also including inner text within the datalist options.
-    // TODO: Is the option's inner text accessible to the input element and its event listener?
-    // TODO: Even if it isn't... I could filter the options to find which was selected.
-    // TODO: Then I could find the option's identifier and use that for the action.
-    // TODO: That might not be necessary, because I should also be able to access the options' attached data...
-
-    if (false) {
-      // Assign event listeners and handlers to search menu.
-      // Option elements from datalist element do not report events.
-      // Respond to event on input search text field and then find
-      // relevant information from the options in the datalist.
-      attributeSearchField
-      .on("change", function (data, index, nodes) {
-        // TODO: Use the value of the input field and compare against the list options.
-        // TODO: Only perform selection event if the value of the field matches an option from the datalist.
-        // TODO: http://stackoverflow.com/questions/30022728/perform-action-when-clicking-html5-datalist-option
-        // Assume that each attribute value has a unique name.
-        var selection = nodes[index].value;
-        var attributeValues = d3
-        .select(nodes[index].list)
-        .selectAll("option");
-        var attributeValue = attributeValues
-        .filter(function (data, index) {
-          return data.name === selection;
+    // Assign event listeners and handlers to search menus.
+    // Options from datalist elements do not report events.
+    // Rather, search input elements report events.
+    // Respond to event on input search element and access relevant information
+    // that associates with the element.
+    // Remove any existing event listeners.
+    self.searchMenus.on("change", null);
+    // Assign event listeners and handlers.
+    self.searchMenus.on("change", function (element, index, nodes) {
+      // Determine the search menu's value, which is the name of the attribute's
+      // value.
+      var menu = nodes[index];
+      var name = menu.value;
+      //var list = menu.list;
+      // Determine the attribute and value of the search menu's selection.
+      // Determine whether the search menu's selection matches a valid value of
+      // the attribute.
+      // Assume that attributes' values have unique names.
+      var menuSelection = d3.select(menu);
+      var attribute = menuSelection.data()[0].attribute;
+      var values = menuSelection.data()[0].values;
+      var match = values.filter(function (element) {
+        var valueName = SetView.determineAttributeValueName({
+          attribute: attribute,
+          valueIdentifier: element.value,
+          model: self.model
         });
-        if (!attributeValue.empty()) {
-          controlAttributeMenuSelection({
-            value: attributeValue.data()[0].identifier,
-            attribute: attributeValue.data()[0].attribute,
-            entity: entity,
-            filter: filter,
-            originalAttributeSummary:
-            originalAttributeSummary,
-            originalAttributeIndex: originalAttributeIndex,
-            model: model
-          });
-        }
+        return name === valueName;
       });
-    }
+      if (match.length > 0) {
+        var identifier = match[0].value;
+        // Submit selection of attribute's value.
+        Action.selectSetsValue({
+          value: identifier,
+          attribute: attribute,
+          model: self.model
+        });
+      }
+    });
   }
-
-
-
   /**
   * Creates and activates cells for data's values in body of summary table.
   * @param {Object} view Instance of interface's current view.
@@ -791,18 +804,18 @@ class SetView {
     barMarks
     .classed("mark", true)
     .classed("normal", function (data, index) {
-      var match = self.determineValueAttributeMatchSelections({
+      var match = SetView.determineValueAttributeMatchSelections({
         value: data.value,
         attribute: data.attribute,
-        view: self
+        model: self.model
       });
       return !match;
     })
     .classed("emphasis", function (data, index) {
-      var match = self.determineValueAttributeMatchSelections({
+      var match = SetView.determineValueAttributeMatchSelections({
         value: data.value,
         attribute: data.attribute,
-        view: self
+        model: self.model
       });
       return match;
     })
@@ -858,15 +871,15 @@ class SetView {
   * @param {Object} view Instance of interface's current view.
   */
   activateSummaryBodyCellsValues(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
+    // Set reference to class' current instance to transfer across changes in
+    // scope.
     var self = view;
     // Remove any existing event listeners and handlers from bars.
-    self.tableBodyCellsValuesGraphBarGroups
-    .on("click", null);
+    self.tableBodyCellsValuesGraphBarGroups.on("click", null);
     // Assign event listeners and handlers to bars.
     self.tableBodyCellsValuesGraphBarGroups
     .on("click", function (data, index, nodes) {
+      // Submit selection of attribute's value.
       Action.selectSetsValue({
         value: data.value,
         attribute: data.attribute,
@@ -910,27 +923,20 @@ class SetView {
     var self = view;
     return self.model.compartmentalization;
   }
-  // TODO: Make "determineValueAttributeMatchSelections" a static method... give it a reference to the model...
   /**
-  * Determines whether or not a value and attribute match a current
-  * selection.
+  * Determines whether a value and attribute match a current selection.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.value Value of attribute of interest.
   * @param {string} parameters.attribute Attribute of interest.
-  * @param {Object} parameters.view Instance of interface's current view.
-  * @returns {boolean} Whether or not the value and attribute match a current
+  * @param {Object} parameters.model Model of the application's comprehensive
+  * state.
+  * @returns {boolean} Whether the value and attribute match a current
   * selection.
   */
-  determineValueAttributeMatchSelections({value, attribute, view}) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Determine whether or not current selections include a selection for
-    // the attribute and value.
-    var match = self
-    .model
-    .valuesSelections
-    .find(function (selection) {
+  static determineValueAttributeMatchSelections({value, attribute, model}) {
+    // Determine whether current selections include a selection for the
+    // attribute and value.
+    var match = model.valuesSelections.find(function (selection) {
       return (
         selection.attribute === attribute &&
         selection.value === value

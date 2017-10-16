@@ -21,8 +21,7 @@ class Model {
       "currentMetabolites", "currentReactions",
       // Sets.
       "compartments", "processes",
-      "attributesSelections", "valuesSelections",
-      "setsEntities", "setsFilter",
+      "setsEntities", "setsFilter", "valuesSelections",
       "setsCardinalities", "setsSummary",
       // Network.
       "compartmentalization", "simplification",
