@@ -16,10 +16,10 @@ class Attribution {
   */
   static recordFilterSelection({value, attribute, previousSelections} = {}) {
     // Determine whether previous selections include the attribute's value.
-    var match = previousSelections.some(function (selection) {
-      return (
-        selection.attribute === attribute && selection.value === value
-      );
+    var match = Attribution.determineSelectionMatch({
+      value: value,
+      attribute: attribute,
+      selections: previousSelections
     });
     if (match) {
       // The previous selections include the attribute's value.
@@ -39,6 +39,24 @@ class Attribution {
       var currentSelections = [].concat(previousSelections, novelSelection);
     }
     return currentSelections;
+  }
+  /**
+  * Determines whether a current selection exists for an attribute and its
+  * value.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.value Value of attribute in current selection.
+  * @param {string} parameters.attribute Attribute in current selection.
+  * @param {Array<Object<string>>} parameters.selections Selections of
+  * attributes' values.
+  * @returns {boolean} Whether a current selection exists for the attribute and
+  * its value.
+  */
+  static determineSelectionMatch({value, attribute, selections} = {}) {
+    return selections.some(function (selection) {
+      return (
+        selection.attribute === attribute && selection.value === value
+      );
+    });
   }
   /**
   * Filters reactions and their values of attributes.

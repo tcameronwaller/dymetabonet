@@ -274,6 +274,7 @@ class Action {
     .determineEntitiesSetsCardinalitiesAttributes({
       entities: currentEntities,
       filter: model.setsFilter,
+      selections: model.setsSelections,
       metabolites: model.metabolites,
       reactions: model.reactions,
       currentMetabolites: model.currentMetabolites,
@@ -320,6 +321,7 @@ class Action {
     .determineEntitiesSetsCardinalitiesAttributes({
       entities: model.setsEntities,
       filter: currentFilter,
+      selections: model.setsSelections,
       metabolites: model.metabolites,
       reactions: model.reactions,
       currentMetabolites: model.currentMetabolites,
@@ -346,7 +348,7 @@ class Action {
     });
   }
   /**
-  * Selects the value of an attribute in the sets' summary of the set view.
+  * Selects an attribute's value from the sets' summary.
   * Submits new values to the model of the application's state.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.value Value of attribute in current selection.
@@ -354,15 +356,15 @@ class Action {
   * @param {Object} parameters.model Model of the comprehensive state of the
   * application.
   */
-  static selectSetsValue({value, attribute, model} = {}) {
+  static selectSetsAttributeValue({value, attribute, model} = {}) {
     // Record current selection in collection of selections of attributes
     // and values for set view.
     // These selections determine which attributes and values define filters
     // against entities' attributes.
-    var currentSelections = Attribution.recordFilterSelection({
+    var setsSelections = Attribution.recordFilterSelection({
       value: value,
       attribute: attribute,
-      previousSelections: model.valuesSelections
+      previousSelections: model.setsSelections
     });
     // Determine entities and their values of attributes that pass filters from
     // selections.
@@ -371,7 +373,7 @@ class Action {
     // participates.
     // Determine whether there are any selections of atttributes' values to
     // apply as filters.
-    if (currentSelections.length === 0) {
+    if (setsSelections.length === 0) {
       // There are not any selections of attributes' values to apply as filters.
       // Copy information about metabolic entities.
       var currentMetabolites = General.copyValueJSON(model.metabolites);
@@ -382,7 +384,7 @@ class Action {
       // Filter against complete collections of entities to account for any
       // changes to selections of filters.
       var currentReactions = Attribution.filterReactionsAttributesValues({
-        selections: currentSelections,
+        selections: setsSelections,
         reactions: model.reactions
       });
       var currentMetabolites = Attribution.filterMetabolitesAttributesValues({
@@ -396,6 +398,7 @@ class Action {
     .determineEntitiesSetsCardinalitiesAttributes({
       entities: model.setsEntities,
       filter: model.setsFilter,
+      selections: setsSelections,
       metabolites: model.metabolites,
       reactions: model.reactions,
       currentMetabolites: currentMetabolites,
@@ -406,7 +409,7 @@ class Action {
     .initializeNetworkElementsAttributes();
     // Compile novel values of attributes.
     var novelAttributesValues = {
-      valuesSelections: currentSelections,
+      setsSelections: setsSelections,
       currentMetabolites: currentMetabolites,
       currentReactions: currentReactions
     };
@@ -448,7 +451,7 @@ class Action {
       entitiesSetsAttributes,
       networkElementsAttributes
     );
-    // Submit new values of attributes to the model of the application's
+    // Submit novel values of attributes to the model of the application's
     // state.
     Action.submitAttributes({
       attributesValues: attributesValues,
@@ -690,20 +693,8 @@ class Action {
     //var startTime = window.performance.now();
     // Execute process.
 
-    //Action.createNetwork(model);
+    Action.createNetwork(model);
     //Action.summarizeMetabolitesParticipationReactions(model);
-
-
-    var metaboliteReactions = Evaluation.extractMetaboliteReactions({
-      identifier: "ala_L",
-      metabolites: model.metabolites,
-      reactions: model.reactions
-    });
-    var filterReactions = metaboliteReactions.filter(function (reaction) {
-      return !reaction.transport;
-    });
-    console.log("non transport reactions that involve 'ala_L'");
-    console.log(filterReactions);
 
     // Terminate process timer.
     //console.timeEnd("timer");
@@ -742,7 +733,7 @@ class Action {
     // Specify selections of values of attributes for sets' summary.
     // These selections determine which attributes and values define filters
     // against entities' attributes.
-    var valuesSelections = [];
+    var setsSelections = [];
     // Specify entities of interest for sets' summary.
     var setsEntities = "metabolites";
     // Specify filter option for sets' summary.
@@ -756,21 +747,22 @@ class Action {
     .determineEntitiesSetsCardinalitiesAttributes({
       entities: setsEntities,
       filter: setsFilter,
+      selections: setsSelections,
       metabolites: entitiesSets.metabolites,
       reactions: entitiesSets.reactions,
       currentMetabolites: currentMetabolites,
       currentReactions: currentReactions
     });
     // Compile novel values of attributes.
-    var newAttributesValues = {
-      valuesSelections: valuesSelections,
+    var novelAttributesValues = {
+      setsSelections: setsSelections,
       setsEntities: setsEntities,
       setsFilter: setsFilter,
       currentMetabolites: currentMetabolites,
       currentReactions: currentReactions
     };
     var attributesValues = Object
-    .assign({}, setsCardinalitiesAttributes, newAttributesValues);
+    .assign({}, setsCardinalitiesAttributes, novelAttributesValues);
     // Return new values of attributes.
     return attributesValues;
   }
@@ -780,6 +772,8 @@ class Action {
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.entities Current entities of interest.
   * @param {boolean} parameters.filter Current filter selection.
+  * @param {Array<Object<string>>} parameters.selections Selections of attributes'
+  * values from the sets' summary.
   * @param {Object} parameters.metabolites Records with information about
   * metabolites.
   * @param {Object} parameters.reactions Records with information about
@@ -794,6 +788,7 @@ class Action {
   static determineEntitiesSetsCardinalitiesAttributes({
     entities,
     filter,
+    selections,
     metabolites,
     reactions,
     currentMetabolites,
@@ -809,7 +804,11 @@ class Action {
       currentReactions: currentReactions
     });
     // Prepare summary of sets of entities.
-    var setsSummary = Cardinality.prepareSetsSummary(setsCardinalities);
+    // The sets' summary derives from sets' cardinalities and sets' selections.
+    var setsSummary = Cardinality.prepareSetsSummary({
+      selections: selections,
+      setsCardinalities: setsCardinalities
+    });
     // Return new values of attributes.
     return {
       setsCardinalities: setsCardinalities,

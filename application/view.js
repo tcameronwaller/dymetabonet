@@ -596,12 +596,7 @@ class SetView {
     options.text(function (element, index, nodes) {
       // Determine whether the option corresponds to a current selection of the
       // attribute's value.
-      var match = SetView.determineValueAttributeMatchSelections({
-        value: element.value,
-        attribute: element.attribute,
-        model: self.model
-      });
-      if (match) {
+      if (element.selection) {
         var selection = "selection";
       } else {
         var selection = "";
@@ -687,7 +682,7 @@ class SetView {
       if (match.length > 0) {
         var identifier = match[0].value;
         // Submit selection of attribute's value.
-        Action.selectSetsValue({
+        Action.selectSetsAttributeValue({
           value: identifier,
           attribute: attribute,
           model: self.model
@@ -803,21 +798,11 @@ class SetView {
     // Assign attributes.
     barMarks
     .classed("mark", true)
-    .classed("normal", function (data, index) {
-      var match = SetView.determineValueAttributeMatchSelections({
-        value: data.value,
-        attribute: data.attribute,
-        model: self.model
-      });
-      return !match;
+    .classed("normal", function (element, index, nodes) {
+      return !element.selection;
     })
-    .classed("emphasis", function (data, index) {
-      var match = SetView.determineValueAttributeMatchSelections({
-        value: data.value,
-        attribute: data.attribute,
-        model: self.model
-      });
-      return match;
+    .classed("emphasis", function (element, index, nodes) {
+      return element.selection;
     })
     .attr("width", function (element, index) {
       // Determine scale between value and graph's dimension.
@@ -880,7 +865,7 @@ class SetView {
     self.tableBodyCellsValuesGraphBarGroups
     .on("click", function (data, index, nodes) {
       // Submit selection of attribute's value.
-      Action.selectSetsValue({
+      Action.selectSetsAttributeValue({
         value: data.value,
         attribute: data.attribute,
         model: self.model
@@ -922,33 +907,6 @@ class SetView {
     // in scope.
     var self = view;
     return self.model.compartmentalization;
-  }
-  /**
-  * Determines whether a value and attribute match a current selection.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.value Value of attribute of interest.
-  * @param {string} parameters.attribute Attribute of interest.
-  * @param {Object} parameters.model Model of the application's comprehensive
-  * state.
-  * @returns {boolean} Whether the value and attribute match a current
-  * selection.
-  */
-  static determineValueAttributeMatchSelections({value, attribute, model}) {
-    // Determine whether current selections include a selection for the
-    // attribute and value.
-    var match = model.valuesSelections.find(function (selection) {
-      return (
-        selection.attribute === attribute &&
-        selection.value === value
-      );
-    });
-    if (match) {
-      // Current selections include the attribute and value.
-      return true;
-    } else {
-      // Current selections do not include the attribute and value.
-      return false;
-    }
   }
   /**
   * Determines the name of an attribute's value from references in the model of
