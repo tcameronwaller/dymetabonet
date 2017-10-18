@@ -15,8 +15,7 @@ class Evaluation {
     console.log("--------------------------------------------------");
     console.log("summary of reactions' replication...");
     console.log("sets of reactions by common reactants and products...");
-    var records = Extraction
-    .collectReactionsReactantsProducts(reactions);
+    var records = Extraction.collectReactionsReactantsProducts(reactions);
     console.log("total sets:");
     console.log(records);
     console.log("count total sets: " + records.length);
@@ -110,6 +109,49 @@ class Evaluation {
     console.log("--------------------------------------------------");
   }
   /**
+  * Extracts combinations of values of an attribute from reactions.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.attribute Name of attribute of reactions.
+  * @param {Array<string>} parameters.reactionsIdentifiers Identifiers of
+  * reactions from which to extract combinations of values of the attribute.
+  * @param {Object<Object>} parameters.reactions Information about all
+  * reactions.
+  * @returns {Array<Array<string>>} Combinations of values of the attribute.
+  */
+  static extractReactionsUniqueCombinations({
+    attribute, reactionsIdentifiers, reactions
+  } = {}) {
+    // Collect all combinations of the attribute from reactions.
+    var combinations = reactionsIdentifiers.map(function (reactionIdentifier) {
+      // Set reference to record for current reaction.
+      var reaction = reactions[reactionIdentifier];
+      return reaction[attribute];
+    });
+    // Collect unique combinations of the attribute.
+    return General.collectUniqueArraysByInclusion(combinations);
+  }
+  static temporaryStuffForUniqueCombinations() {
+    // Determine unique combinations of compartments for the current reactions.
+    // Multiple combinations from a set of reactions indicate that reactions in
+    // the set have different combinations.
+    var compartments = Extraction
+    .extractReactionsUniqueCombinations({
+      attribute: "compartments",
+      reactionsIdentifiers: currentReactions,
+      reactions: reactions
+    });
+    // Determine unique sets of processes for the current reactions.
+    // Multiple combinations from a set of reactions indicate that reactions in
+    // the set have different combinations.
+    var processes = Extraction
+    .extractReactionsUniqueCombinations({
+      attribute: "processes",
+      reactionsIdentifiers: currentReactions,
+      reactions: reactions
+    });
+  }
+
+  /**
   * Extracts and saves information about reactions in which a single metabolite
   * participates.
   * @param {string} identifier Identifier for a single metabolite.
@@ -129,5 +171,51 @@ class Evaluation {
     //var fileName = identifier + "-reactions.json";
     //General.saveObject(fileName, metaboliteReactions);
   }
+  /**
+  * Creates summary of metabolites' participation in reactions.
+  * @param {Object<Object>} metabolites Records with information about
+  * metabolites.
+  * @returns {Array<Object>} Records with information about the count of
+  * reactions in which each metabolite participates.
+  */
+  static createMetabolitesParticipationSummary(metabolites) {
+    // Transfer records for metabolites from a collection in an object to a
+    // collection in an array.
+    var metabolitesRecords = Extraction
+    .copyEntitiesRecordsObjectArray(metabolites);
+    // Summarize the identifier, name, and count of reactions for each
+    // metabolite.
+    var metabolitesSummaries = metabolitesRecords.map(function (metabolite) {
+      return {
+        identifier: metabolite.identifier,
+        name: metabolite.name,
+        count: metabolite.reactions.length
+      };
+    });
+    // Determine frequencies of metabolites with each count of reactions.
+    // Determine count of intervals to consider.
+    var values = metabolitesSummaries.map(function (record) {
+      return record.count;
+    });
+    var count = General.calculateDistributionIntervalCount({
+      values: values,
+      interval: 1
+    });
+    var metabolitesFrequencies = General.calculateRecordsValuesFrequencies({
+      records: metabolitesSummaries,
+      key: "count",
+      count: count + 1
+    });
+    // Sort records for metabolites by their counts of reactions.
+    var summary = metabolitesFrequencies
+    .slice()
+    .sort(function (firstRecord, secondRecord) {
+      return (
+        secondRecord.count - firstRecord.count
+      );
+    });
+    return summary;
+  }
+
 
 }

@@ -4,6 +4,41 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+18 October 2017
+
+----------
+Meet with Alexander Lex
+
+Alex made several recommendations to improve the interface.
+
+1. Sets' Summary Menu
+The horizontal, stacked bar chart gives a nice representation of distribution between sets for processes and compartments.
+The count of processes is a problem.
+In the stacked bar chart, many processes have bars that are too small to accommodate informative labels.
+A potential solution is to represent sets' cardinalities in horizontal bars that are not stacked.
+Use a vertical list of bars and labels within a vertically scrollable window.
+Sort the list of sets by cardinality.
+Create separate, scrollable windows for processes and compartments.
+Place these components of the Sets' Summary Menu within a collapsible panel on the left of the screen.
+This same collapsible panel can also contain the controls for compartmentalization, replication, omission, and topological traversals.
+Collapsing the side panel will give more room for representing the network.
+
+2. Interactivity in Sets' Summary Menu
+Even without activating the filter option, a selection of a process or compartment should somehow highlight all compartments or processes respectively that would be in the filtered selection.
+
+3. Live Feedback on Network
+Give some sort of live feedback to the user on the selection's influence on the network.
+If the network is too large to draw interactively, show some sort of report instead of the topology view.
+This report should specify the counts of nodes and links or something.
+This view should also have an over-ride button to go ahead and draw the network.
+
+4. Light Color Scheme
+A color scheme with a light background will be better for printing.
+
+5. Controls for Simplification
+Implement controls for simplification of individual metabolites and reactions.
+
+--------------------------------------------------
 17 October 2017
 
 ----------
