@@ -4,6 +4,34 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+17 October 2017
+
+----------
+Hierarchies in filters and selections of entities
+
+Data: "metabolites", "reactions" ... complete information about all entities
+
+Values of attributes assign entities to sets.
+Selections of sets filter entities by their values of attributes.
+
+Data: "currentMetabolites", "currentReactions" ... complete information about entities that pass filters
+
+Entities that pass these filters by attributes are available for individual representation.
+Selections can designate individual entities for omission from the network.
+
+Data: "currentMetabolites", "currentReactions" ... complete information about entities that pass filters along with designations for omission from network ("omission" attribute for each entity)
+
+The network only represents entities that both pass filters by attributes and pass omission.
+The network also represents nodes for metabolites according to their designation for replication.
+
+Data: "networkNodes", "networkLinks"
+
+Topological traversals of the network (ignoring omissions) select portions of the network for final representation.
+Topological traversal depends on replication and omission of nodes within the network.
+
+Data: "subNetworkNodes", "subNetworkLinks"
+
+--------------------------------------------------
 9 October 2017
 
 ----------

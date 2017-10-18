@@ -29,11 +29,11 @@ class Action {
   * application.
   */
   static submitAttribute({value, attribute, model} = {}) {
-    var newAttribute = [{
+    var novelAttribute = [{
       attribute: attribute,
       value: value
     }];
-    model.restore(newAttribute, model);
+    model.restore(novelAttribute, model);
   }
   /**
   * Submits new values for attributes to the model of the application's
@@ -44,14 +44,14 @@ class Action {
   * application.
   */
   static submitAttributes({attributesValues, model} = {}) {
-    var newAttributes = Object
+    var novelAttributes = Object
     .keys(attributesValues).map(function (attribute) {
       return {
         attribute: attribute,
         value: attributesValues[attribute]
       };
     });
-    model.restore(newAttributes, model);
+    model.restore(novelAttributes, model);
   }
   /**
   * Removes the value of an attribute in the model of the application's state
@@ -120,8 +120,8 @@ class Action {
   static initializeApplication(model) {
     var attributesValues = model
     .attributeNames.reduce(function (collection, attributeName) {
-      var newRecord = {[attributeName]: null};
-      return Object.assign({}, collection, newRecord);
+      var novelRecord = {[attributeName]: null};
+      return Object.assign({}, collection, novelRecord);
     }, {});
     Action.submitAttributes({
       attributesValues: attributesValues,
@@ -150,12 +150,12 @@ class Action {
   */
   static restoreState({data, model} = {}) {
     // Remove any current file selection from the application's state.
-    var newFile = {
+    var novelFile = {
       file: null
     };
     // Submit new values of attributes to the model of the application's
     // state.
-    var attributesValues = Object.assign({}, data, newFile);
+    var attributesValues = Object.assign({}, data, novelFile);
     Action.submitAttributes({
       attributesValues: attributesValues,
       model: model

@@ -22,8 +22,7 @@ class Extraction {
   */
   static extractMetabolicEntitiesSetsRecon2(data) {
     // Extract information about sets.
-    var compartments = Extraction
-    .createCompartmentsRecords(data.compartments);
+    var compartments = Extraction.createCompartmentsRecords(data.compartments);
     var processes = Extraction.createProcessesRecords(data.reactions);
     // Extract information about entities.
     var reactions = Extraction
@@ -40,8 +39,10 @@ class Extraction {
       reactions: reactions
     };
   }
+
   // Extract sets.
   // Extract compartments.
+
   /**
   * Creates records for all compartments in a metabolic model.
   * @param {Object} compartments Information about all compartments in a
@@ -73,7 +74,9 @@ class Extraction {
       }
     };
   }
+
   // Extract processes.
+
   /**
   * Creates records for all processes from a metabolic model.
   * @param {Array<Object>} reactions Information for all reactions of a
@@ -99,9 +102,9 @@ class Extraction {
         return collection;
       } else {
         // Create record for the process.
-        var newRecord = Extraction
+        var novelRecord = Extraction
         .createProcessRecord(name, Object.keys(collection).length);
-        return Object.assign({}, collection, newRecord);
+        return Object.assign({}, collection, novelRecord);
       }
     }, {});
   }
@@ -120,8 +123,10 @@ class Extraction {
       }
     };
   }
+
   // Extract entities.
   // Extract reactions.
+
   /**
   * Creates records for all reactions from a metabolic model.
   * @param {Array<Object>} reactions Original, raw information about all
@@ -133,10 +138,11 @@ class Extraction {
   static createReactionsRecords(reactions, processes) {
     // In the original data, metabolic processes or pathways do not include
     // transport reactions.
-    // As a result, processes that disperse across multiple compartments are
-    // discontinuous.
-    // Discontinuous processes are not accurate representations of biology.
-    // Render processes continuous by inclusion of transport reactions.
+    // As a result, processes that disperse across multiple compartments lack
+    // connectivity.
+    // Processes without connectivity are not accurate representations of
+    // biology.
+    // Complete processes' connectivity by inclusion of transport reactions.
     // Collect metabolites and compartments that are candidates for transport
     // in each process.
     var processesTransports = Extraction
@@ -402,6 +408,80 @@ class Extraction {
     }, []);
   }
   /**
+  * Creates records that describe the metabolites that participate in a
+  * reaction, their roles as reactants or products, and the compartments in
+  * which they participate.
+  * @param {Object<number>} reactionMetabolites Information about metabolites
+  * that participate in a reaction.
+  * @returns {Array<Object<string>>} Information about metabolites'
+  * participation in a reaction.
+  */
+  static createReactionParticipants(reactionMetabolites) {
+    return Object.keys(reactionMetabolites).map(function (identifier) {
+      return {
+        metabolite: Clean.extractMetaboliteIdentifier(identifier),
+        role: Extraction.determineReactionMetaboliteRole(
+          reactionMetabolites[identifier]
+        ),
+        compartment: Clean.extractCompartmentIdentifier(identifier)
+      };
+    });
+  }
+  /**
+  * Collects identifiers of metabolites that participate in a reaction in
+  * specific contexts of metabolites, compartments, and roles.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Array<string>>} parameters.criteria Criteria for filters
+  * against participants, including metabolites, compartments, and roles.
+  * @param {Array<Object<string>>} parameters.participants Information about
+  * metabolites' participation in a reaction.
+  * @returns {Array<string>} Identifiers of metabolites that participate in a
+  * reaction within specific contexts.
+  */
+  static collectMetabolitesFilterParticipants({criteria, participants} = {}) {
+    // Collect participants that match the criteria.
+    var filterParticipants = Extraction.filterReactionParticipants({
+      criteria: criteria,
+      participants: participants
+    });
+    // Collect identifiers of metabolites from participants.
+    return General.collectValueFromObjects("metabolite", filterParticipants);
+  }
+  /**
+  * Filters records that describe metabolites' participation in a reaction,
+  * their roles as reactants or products, and the compartments in which they
+  * participate.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Array<string>>} parameters.criteria Criteria for filters
+  * against participants, including metabolites, compartments, and roles.
+  * @param {Array<Object<string>>} parameters.participants Information about
+  * metabolites' participation in a reaction.
+  * @returns {Array<Object<string>>} Information about participation in a
+  * reaction by metabolites that pass filters.
+  */
+  static filterReactionParticipants({criteria, participants} = {}) {
+    return participants.filter(function (participant) {
+      if (criteria.hasOwnProperty("metabolites")) {
+        var metaboliteMatch = criteria
+        .metabolites.includes(participant.metabolite);
+      } else {
+        var metaboliteMatch = true;
+      }
+      if (criteria.hasOwnProperty("compartments")) {
+        var compartmentMatch = criteria
+        .compartments.includes(participant.compartment);
+      } else {
+        var compartmentMatch = true;
+      }
+      if (criteria.hasOwnProperty("roles")) {
+        var roleMatch = criteria.roles.includes(participant.role);
+      } else {
+        var roleMatch = true;
+      }
+      return metaboliteMatch && compartmentMatch && roleMatch;
+    });
+  }
+  /**
   * Collects a single reaction's identifier along with other reactions between
   * identical sets of reactants and products.
   * @param {Object} parameters Destructured object of parameters.
@@ -465,48 +545,11 @@ class Extraction {
     // Include current record in the collection.
     return [].concat(previousRecordsCopy, currentRecord);
   }
-  /**
-  * Extracts combinations of values of an attribute from reactions.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.attribute Name of attribute of reactions.
-  * @param {Array<string>} parameters.reactionsIdentifiers Identifiers of
-  * reactions from which to extract combinations of values of the attribute.
-  * @param {Object<Object>} parameters.reactions Information about all
-  * reactions.
-  * @returns {Array<Array<string>>} Combinations of values of the attribute.
-  */
-  static extractReactionsUniqueCombinations({
-    attribute, reactionsIdentifiers, reactions
-  } = {}) {
-    // Collect all combinations of the attribute from reactions.
-    var combinations = reactionsIdentifiers.map(function (reactionIdentifier) {
-      // Set reference to record for current reaction.
-      var reaction = reactions[reactionIdentifier];
-      return reaction[attribute];
-    });
-    // Collect unique combinations of the attribute.
-    return General.collectUniqueArraysByInclusion(combinations);
-  }
-  static temporaryStuffForUniqueCombinations() {
-    // Determine unique combinations of compartments for the current reactions.
-    // Multiple combinations from a set of reactions indicate that reactions in
-    // the set have different combinations.
-    var compartments = Extraction
-    .extractReactionsUniqueCombinations({
-      attribute: "compartments",
-      reactionsIdentifiers: currentReactions,
-      reactions: reactions
-    });
-    // Determine unique sets of processes for the current reactions.
-    // Multiple combinations from a set of reactions indicate that reactions in
-    // the set have different combinations.
-    var processes = Extraction
-    .extractReactionsUniqueCombinations({
-      attribute: "processes",
-      reactionsIdentifiers: currentReactions,
-      reactions: reactions
-    });
-  }
+
+
+
+
+  
   /**
   * Creates a record for a single reaction from a metabolic model.
   * @param {Object} parameters Destructured object of parameters.
@@ -618,80 +661,6 @@ class Extraction {
         transports: transports
       }
     };
-  }
-  /**
-  * Creates records that describe the metabolites that participate in a
-  * reaction, their roles as reactants or products, and the compartments in
-  * which they participate.
-  * @param {Object<number>} reactionMetabolites Information about metabolites
-  * that participate in a reaction.
-  * @returns {Array<Object<string>>} Information about metabolites'
-  * participation in a reaction.
-  */
-  static createReactionParticipants(reactionMetabolites) {
-    return Object.keys(reactionMetabolites).map(function (identifier) {
-      return {
-        metabolite: Clean.extractMetaboliteIdentifier(identifier),
-        role: Extraction.determineReactionMetaboliteRole(
-          reactionMetabolites[identifier]
-        ),
-        compartment: Clean.extractCompartmentIdentifier(identifier)
-      };
-    });
-  }
-  /**
-  * Filters records that describe metabolites' participation in a reaction,
-  * their roles as reactants or products, and the compartments in which they
-  * participate.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Array<string>>} parameters.criteria Criteria for filters
-  * against participants, including metabolites, compartments, and roles.
-  * @param {Array<Object<string>>} parameters.participants Information about
-  * metabolites' participation in a reaction.
-  * @returns {Array<Object<string>>} Information about participation in a
-  * reaction by metabolites that pass filters.
-  */
-  static filterReactionParticipants({criteria, participants} = {}) {
-    return participants.filter(function (participant) {
-      if (criteria.hasOwnProperty("metabolites")) {
-        var metaboliteMatch = criteria
-        .metabolites.includes(participant.metabolite);
-      } else {
-        var metaboliteMatch = true;
-      }
-      if (criteria.hasOwnProperty("compartments")) {
-        var compartmentMatch = criteria
-        .compartments.includes(participant.compartment);
-      } else {
-        var compartmentMatch = true;
-      }
-      if (criteria.hasOwnProperty("roles")) {
-        var roleMatch = criteria.roles.includes(participant.role);
-      } else {
-        var roleMatch = true;
-      }
-      return metaboliteMatch && compartmentMatch && roleMatch;
-    });
-  }
-  /**
-  * Collects identifiers of metabolites that participate in a reaction in
-  * specific contexts of metabolites, compartments, and roles.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Array<string>>} parameters.criteria Criteria for filters
-  * against participants, including metabolites, compartments, and roles.
-  * @param {Array<Object<string>>} parameters.participants Information about
-  * metabolites' participation in a reaction.
-  * @returns {Array<string>} Identifiers of metabolites that participate in a
-  * reaction within specific contexts.
-  */
-  static collectMetabolitesFilterParticipants({criteria, participants} = {}) {
-    // Collect participants that match the criteria.
-    var filterParticipants = Extraction.filterReactionParticipants({
-      criteria: criteria,
-      participants: participants
-    });
-    // Collect identifiers of metabolites from participants.
-    return General.collectValueFromObjects("metabolite", filterParticipants);
   }
   /**
   * Determines the role of a metabolite in a reaction, either as a reactant
@@ -1295,6 +1264,49 @@ class Extraction {
   }
 
   // Utility for managing information about metabolic entities and sets.
+
+  /**
+  * Extracts combinations of values of an attribute from reactions.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.attribute Name of attribute of reactions.
+  * @param {Array<string>} parameters.reactionsIdentifiers Identifiers of
+  * reactions from which to extract combinations of values of the attribute.
+  * @param {Object<Object>} parameters.reactions Information about all
+  * reactions.
+  * @returns {Array<Array<string>>} Combinations of values of the attribute.
+  */
+  static extractReactionsUniqueCombinations({
+    attribute, reactionsIdentifiers, reactions
+  } = {}) {
+    // Collect all combinations of the attribute from reactions.
+    var combinations = reactionsIdentifiers.map(function (reactionIdentifier) {
+      // Set reference to record for current reaction.
+      var reaction = reactions[reactionIdentifier];
+      return reaction[attribute];
+    });
+    // Collect unique combinations of the attribute.
+    return General.collectUniqueArraysByInclusion(combinations);
+  }
+  static temporaryStuffForUniqueCombinations() {
+    // Determine unique combinations of compartments for the current reactions.
+    // Multiple combinations from a set of reactions indicate that reactions in
+    // the set have different combinations.
+    var compartments = Extraction
+    .extractReactionsUniqueCombinations({
+      attribute: "compartments",
+      reactionsIdentifiers: currentReactions,
+      reactions: reactions
+    });
+    // Determine unique sets of processes for the current reactions.
+    // Multiple combinations from a set of reactions indicate that reactions in
+    // the set have different combinations.
+    var processes = Extraction
+    .extractReactionsUniqueCombinations({
+      attribute: "processes",
+      reactionsIdentifiers: currentReactions,
+      reactions: reactions
+    });
+  }
 
   /**
   * Copies records with information about metabolic entities, metabolites or
