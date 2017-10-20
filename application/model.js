@@ -39,15 +39,15 @@ class Model {
 
       // Sets.
       // Attribute "setsTotalReactions" stores information for each reaction
-      // about the sets to which the entity belongs and about metabolites that
-      // participate.
+      // about the metabolites that participate and the sets to which the entity
+      // belongs by its values of attributes.
       // Information includes references to attributes "reactions",
       // "metabolites", "compartments", and "processes".
       // Information derives from attribute "reactions".
       "setsTotalReactions",
       // Attribute "setsTotalMetabolites" stores information for each metabolite
-      // about the sets to which the entity belongs and about reactions in which
-      // it participates.
+      // about the reactions in which it participates and the sets to which the
+      // entity belongs by its values of attributes.
       // Information includes references to attributes "metabolites",
       // "reactions", "compartments", and "processes".
       // Information derives from attribute "setsTotalReactions".
@@ -60,8 +60,8 @@ class Model {
       // "processes".
       "setsSelections",
       // Attribute "setsCurrentReactions" stores information for each reaction
-      // about the sets to which the entity belongs and about metabolites that
-      // participate.
+      // about the metabolites that participate and the sets to which the entity
+      // belongs by its values of attributes.
       // Information only includes entities that pass filters and those of their
       // values of attributes that pass filters.
       // Information includes references to attributes "reactions",
@@ -70,8 +70,8 @@ class Model {
       // "setsSelections".
       "setsCurrentReactions",
       // Attribute "setsCurrentMetabolites" stores information for each
-      // metabolite about the sets to which the entity belongs and about
-      // reactions in which it participates.
+      // metabolite about the reactions in which it participates and the sets to
+      // which the entity belongs by its values of attributes.
       // Information only includes entities that pass filters and those of their
       // values of attributes that pass filters.
       // Information includes references to attributes "metabolites",
@@ -108,7 +108,7 @@ class Model {
       "compartmentalization",
 
       // Attribute "entitiesReactions" stores information for each reaction
-      // about metabolites that participate.
+      // about the metabolites that participate.
       // Information includes compartmentalization of metabolites.
       // Information includes references to attributes "reactions",
       // "metabolites", and "compartments".

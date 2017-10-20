@@ -917,6 +917,122 @@ class General {
       }
     });
   }
+  /**
+  * Collects values of a target attribute that occur together in records with
+  * each value of another category attribute.
+  * Each record has a single value of the target attribute.
+  * Each record can have either a single or multiple values of the category
+  * attribute.
+  * These collections do not necessarily include only unique values of the
+  * target attribute.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.target Name of attribute in records to collect
+  * for each category.
+  * @param {string} parameters.category Name of attribute in records to create
+  * categories.
+  * @param {Array<Object>} parameters.records Records with target and category
+  * attributes.
+  * @returns {Object<Array<string>>} Values of the target attribute that occur
+  * together in records with each value of the category attribute.
+  */
+  static collectRecordsTargetsByCategories({target, category, records} = {}) {
+    // Collect values of the target attribute that occur together in records
+    // with each value of the category attribute.
+    // Iterate on records.
+    return records.reduce(function (recordsCollection, record) {
+      // Determine record's values of the category attribute.
+      var values = record[category];
+      // Include record's value of the target attribute in collections for each
+      // of record's values of the category attribute.
+      // Collect attributes according to the count of category attributes in the
+      // record.
+      if (Array.isArray(values)) {
+        var categoriesValues = values;
+        var recordCollection = General.collectRecordTargetByCategories({
+          target: record[target],
+          categories: categoriesValues,
+          recordsCollection: recordsCollection
+        });
+      } else {
+        var categoryValue = [values];
+        var recordCollection = General.collectRecordTargetByCategory({
+          target: record[target],
+          category: categoryValue,
+          collection: recordsCollection
+        });
+      }
+      return recordCollection;
+    }, {});
+  }
+  /**
+  * Collects the value of a target attribute within collections for each value
+  * of a category attribute.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.target Value of a target attribute for a single
+  * record.
+  * @param {Array<string>} parameters.categories Values of a category attribute
+  * for a single record.
+  * @param {Object<Array<string>>} parameters.recordsCollection Values of the
+  * target attribute that occur together in records with each value of the
+  * category attribute.
+  * @returns {Object<Array<string>>} Values of the target attribute that occur
+  * together in records with each value of the category attribute.
+  */
+  static collectRecordTargetByCategories({
+    target, categories, recordsCollection
+  } = {}) {
+    // Iterate on values of the category attribute.
+    return categories.reduce(function (categoriesCollection, category) {
+      var categoryCollection = General.collectRecordTargetByCategory({
+        target: target,
+        category: category,
+        collection: categoriesCollection
+      });
+      return categoryCollection;
+    }, recordsCollection);
+  }
+  /**
+  * Collects the value of a target attribute within the collection for a value
+  * of a category attribute.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.target Value of a target attribute for a single
+  * record.
+  * @param {string} parameters.category Value of a category attribute for a
+  * single record.
+  * @param {Object<Array<string>>} parameters.collection Values of the target
+  * attribute that occur together in records with each value of the category
+  * attribute.
+  * @returns {Object<Array<string>>} Values of the target attribute that occur
+  * together in records with each value of the category attribute.
+  */
+  static collectRecordTargetByCategory({
+    target, category, collection
+  } = {}) {
+    // Determine whether the collection includes a record for the value of the
+    // category attribute.
+    if (collection.hasOwnProperty(category)) {
+      // The collection includes a record for the value of the category
+      // attribute.
+      // Include the value of the target attribute in the record.
+      var previousTargets = collection[category];
+      var currentTargets = [].concat(previousTargets, target);
+      var novelRecord = {
+        [category]: currentTargets
+      };
+    } else {
+      // The collection does not include a record for the value of the
+      // category attribute.
+      // Create a novel record for the value of the category attribute.
+      // Include the value of the target attribute in this record.
+      var novelRecord = {
+        [category]: [target]
+      };
+    }
+    // Include in the collection the novel record.
+    return Object.assign ({}, collection, novelRecord);
+  }
+
+
 
   // TODO: I don't think I use this function "extractAssemblyEntitiesSets".
 

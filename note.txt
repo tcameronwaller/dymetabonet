@@ -4,6 +4,23 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+19 October 2017
+
+----------
+Data Organization
+
+Copying information is computationally expensive.
+The process of copying information by value (deep copy) rather than by reference is itself expensive.
+Also replicate information is inefficient in memory and is also difficult to maintain.
+Replicate information is comparable to replicate code in its difficulty to maintain.
+
+In an application, avoid replicate code and replicate information!
+
+Separate different types of information.
+It is beneficial to avoid excessive copy or mutation of data.
+Separating different types of information can make it possible to change only specific types of information as the application changes.
+
+--------------------------------------------------
 18 October 2017
 
 ----------

@@ -11,27 +11,30 @@ class Cardinality {
   * Determines cardinalities of entities in sets for all values of all
   * attributes.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.entities Current entities of interest.
-  * @param {boolean} parameters.filter Current filter selection.
-  * @param {Object} parameters.metabolites Records with information about
-  * metabolites.
-  * @param {Object} parameters.reactions Records with information about
-  * reactions.
-  * @param {Object} parameters.currentMetabolites Records with information
-  * about metabolites and values of their attributes that pass filters.
-  * @param {Object} parameters.currentReactions Records with information
-  * about reactions and values of their attributes that pass filters.
+  * @param {string} parameters.setsEntities Selection of type of entities for
+  * sets' cardinalities.
+  * @param {boolean} parameters.setsFilter Selection of whether to filter sets'
+  * entities for summary.
+  * @param {Array<Object>} parameters.setsCurrentReactions Information about
+  * reactions' metabolites and sets that pass filters.
+  * @param {Array<Object>} parameters.setsCurrentMetabolites Information about
+  * metabolites' reactions and sets that pass filters.
+  * @param {Array<Object>} parameters.setsTotalReactions Information about all
+  * reactions' metabolites and sets.
+  * @param {Array<Object>} parameters.setsTotalMetabolites Information about all
+  * metabolites' reactions and sets.
   * @returns {Object<Object<number>>} Cardinalities of entities in sets by
   * attributes and values.
   */
   static determineSetsCardinalities({
-    entities,
-    filter,
-    metabolites,
-    reactions,
-    currentMetabolites,
-    currentReactions
+    setsEntities,
+    setsFilter,
+    setsCurrentReactions,
+    setsCurrentMetabolites,
+    setsTotalReactions,
+    setsTotalMetabolites
   } = {}) {
+    // TODO: I need to update the procedure for the new variables.
     // Determine for which collection of entities to count cardinalities of
     // sets.
     if (entities === "metabolites") {
