@@ -50,7 +50,8 @@ class Model {
       // entity belongs by its values of attributes.
       // Information includes references to attributes "metabolites",
       // "reactions", "compartments", and "processes".
-      // Information derives from attribute "setsTotalReactions".
+      // Information derives from attributes "setsTotalReactions" and
+      // "reactions".
       "setsTotalMetabolites",
       // Attribute "setsSelections" stores information about selections of sets
       // by values of entities' attributes.
@@ -66,8 +67,8 @@ class Model {
       // values of attributes that pass filters.
       // Information includes references to attributes "reactions",
       // "metabolites", "compartments", and "processes".
-      // Information derives from attributes "setsTotalReactions" and
-      // "setsSelections".
+      // Information derives from attributes "setsSelections",
+      // "setsTotalReactions", and "reactions".
       "setsCurrentReactions",
       // Attribute "setsCurrentMetabolites" stores information for each
       // metabolite about the reactions in which it participates and the sets to
@@ -76,7 +77,8 @@ class Model {
       // values of attributes that pass filters.
       // Information includes references to attributes "metabolites",
       // "reactions", "compartments", and "processes".
-      // Information derives from attribute "setsCurrentReactions".
+      // Information derives from attributes "setsCurrentReactions" and
+      // "reactions".
       "setsCurrentMetabolites",
       // Attribute "setsEntities" stores information about the type of entities,
       // metabolites or reactions, to represent in the sets' summary.
@@ -89,9 +91,9 @@ class Model {
       // entities that belong to each set by their values of attributes.
       // Information includes references to attributes "compartments" and
       // "processes".
-      // Information derives from attributes "setsTotalReactions",
-      // "setsTotalMetabolites", "setsCurrentReactions",
-      // "setsCurrentMetabolites", "setsEntities", and "setsFilter".
+      // Information derives from attributes "setsEntities", "setsFilter",
+      // "setsCurrentReactions", "setsCurrentMetabolites", "setsTotalReactions",
+      // "setsTotalMetabolites".
       "setsCardinalities",
       // Attribute "setsSummary" stores information about the counts of entities
       // that belong to each set by their values of attributes.
@@ -144,7 +146,6 @@ class Model {
 
 
       // Network.
-      "simplification",
       "metabolitesNodes", "reactionsNodes", "links",
       "network",
       // Subnetwork.
@@ -152,8 +153,6 @@ class Model {
       "pathOrigin", "pathDestination", "pathDirection", "pathCount",
       "currentMetabolitesNodes", "currentReactionsNodes", "currentLinks",
       "subNetwork",
-      // Old.
-      "currentMetabolites", "currentReactions",
     ];
   }
   /**

@@ -227,10 +227,12 @@ class Action {
     // metabolic entities and sets.
     // Remove the current file selection from the application's state.
     var file = null;
-    // Initialize values of application's attributes for sets of entities.
+    // Determine entities' attribution to sets.
     var setsTotalEntities = Action
     .createSetsTotalEntities(metabolicEntitiesSets.reactions);
+    // Initialize selections for entities' sets.
     var setsEntitiesSelections = Action.initializeSetsEntitiesSelections();
+    // Determine sets' cardinalities.
     var setsEntitiesCardinalities = Action.determineSetsEntitiesCardinalities({
       setsSelections: setsEntitiesSelections.setsSelections,
       setsEntities: setsEntitiesSelections.setsEntities,
@@ -239,6 +241,11 @@ class Action {
       setsTotalMetabolites: setsTotalEntities.setsTotalMetabolites,
       reactions: metabolicEntitiesSets.reactions
     });
+    // Initialize selection for compartmentalization's relevance.
+    var compartmentalization = initializeCompartmentalizationSelection();
+
+    // TODO: Create the context-dependent (ie compartmentalization) entities.
+    // TODO: Maybe adapt some processes from the network definition procedure.
 
 
     // Initialize application's attributes for sets of entities.
@@ -261,6 +268,7 @@ class Action {
       setsTotalEntities,
       setsEntitiesSelections,
       setsEntitiesCardinalities,
+      compartmentalization,
       //networkDefinitionAttributes,
       //networkElementsAttributes,
       novelAttributesValues
@@ -732,13 +740,11 @@ class Action {
   * @returns {Object} Persistent representation of the application's state.
   */
   static createPersistentState(model) {
-    return model
-    .attributeNames
-    .reduce(function (collection, attributeName) {
-      var newRecord = {
+    return model.attributeNames.reduce(function (collection, attributeName) {
+      var novelRecord = {
         [attributeName]: model[attributeName]
       };
-      return Object.assign({}, collection, newRecord);
+      return Object.assign({}, collection, novelRecord);
     }, {});
   }
   /**
@@ -820,7 +826,6 @@ class Action {
     .collectMetabolitesReactionsAttributesValues(
       setsCurrentReactions, reactions
     );
-    // TODO: create the sets' cardinalities...
     // Determine sets' cardinalities.
     var setsCardinalities = Cardinality.determineSetsCardinalities({
       setsEntities: setsEntities,
@@ -830,21 +835,33 @@ class Action {
       setsTotalReactions: setsTotalReactions,
       setsTotalMetabolites: setsTotalMetabolites
     });
-
-
-
-
+    // Prepare summary of sets of entities.
+    var setsSummary = Cardinality.prepareSetsSummary(setsCardinalities);
     // Compile novel values of attributes.
     var attributesValues = {
       setsCurrentReactions: setsCurrentReactions,
-      setsCurrentMetabolites: setsCurrentMetabolites//,
-      //setsCardinalities: setsCardinalities,
-      //setsSummary: setsSummary
+      setsCurrentMetabolites: setsCurrentMetabolites,
+      setsCardinalities: setsCardinalities,
+      setsSummary: setsSummary
     };
     // Return novel values of attributes.
     return attributesValues;
-
   }
+  /**
+  * Initializes information about selection of compartmentalization's relevance.
+  * @returns {Object} Collection of multiple attributes.
+  */
+  static initializeCompartmentalizationSelection() {
+    // Initialize selection of whether to represent compartmentalization.
+    var compartmentalization = true;
+    // Compile novel values of attributes.
+    var attributesValues = {
+      compartmentalization: compartmentalization
+    };
+    // Return novel values of attributes.
+    return attributesValues;
+  }
+
 
 
 

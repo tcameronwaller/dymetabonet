@@ -34,74 +34,66 @@ class Cardinality {
     setsTotalReactions,
     setsTotalMetabolites
   } = {}) {
-    // TODO: I need to update the procedure for the new variables.
-    // Determine for which collection of entities to count cardinalities of
-    // sets.
-    if (entities === "metabolites") {
+    // Determine for which type of entities to count sets' cardinalities.
+    if (setsEntities === "metabolites") {
       // Entities of interest are metabolites.
-      if (filter) {
+      // Determine whether to consider filters in sets' cardinalities.
+      if (setsFilter) {
         // Filter selection is true.
-        // Consider only entities that pass current filters.
-        var entitiesRecords = currentMetabolites;
+        // Consider only entities and their attributes that pass filters.
+        var setsEntities = setsCurrentMetabolites;
       } else {
         // Filter selection is false.
         // Consider all entities.
-        var entitiesRecords = metabolites;
+        var setsEntities = setsTotalMetabolites;
       }
-    } else if (entities === "reactions") {
+    } else if (setsEntities === "reactions") {
       // Entities of interest are reactions.
-      if (filter) {
+      // Determine whether to consider filters in sets' cardinalities.
+      if (setsFilter) {
         // Filter selection is true.
-        // Consider only entities that pass current filters.
-        var entitiesRecords = currentReactions;
+        // Consider only entities and their attributes that pass filters.
+        var setsEntities = setsCurrentReactions;
       } else {
         // Filter selection is false.
         // Consider all entities.
-        var entitiesRecords = reactions;
+        var setsEntities = setsTotalReactions;
       }
     }
-    // There are 3 dimensions of information within records for entities'
-    // values of attributes.
+    // There are 3 dimensions of information within records for entities' values
+    // of attributes.
     // Dimension 1 includes the records for entities.
     // Dimension 2 includes the attributes for each entity.
     // Dimension 3 includes the values of each attribute.
     // Collect counts of entities with each value of each attribute.
     // Iterate separately across entities, attributes, and values.
     // Each iteration only needs access to information about its dimension.
-    return Cardinality.collectEntitiesAttributesValues({
-      entitiesRecords: entitiesRecords
-    });
+    return Cardinality.collectEntitiesAttributesValues(setsEntities);
   }
   /**
   * Collects cardinalities across entities.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.entitiesRecords Records with information about
-  * entities and their values of attributes.
+  * @param {Array<Object>} setsEntities Information about entities' attribution
+  * to sets.
   * @returns {Object<Object<number>>} Cardinalities of entities in sets by
   * attributes and values.
   */
-  static collectEntitiesAttributesValues({entitiesRecords} = {}) {
+  static collectEntitiesAttributesValues(setsEntities) {
     // Iterate on entities.
-    var entitiesIdentifiers = Object.keys(entitiesRecords);
-    return entitiesIdentifiers
-    .reduce(function (entitiesCollection, entityIdentifier) {
-      var entityRecord = entitiesRecords[entityIdentifier];
+    return setsEntities.reduce(function (entitiesCollection, entityRecord) {
       // Collect counts of entities with each value of each attribute.
-      var attributesCollection = Cardinality
-      .collectAttributesValues({
+      var attributesCollection = Cardinality.collectAttributesValues({
         entityRecord: entityRecord,
         entitiesCollection: entitiesCollection
       });
-      // Include information from current entity within the
-      // collection.
+      // Include information for entity within the collection.
       return attributesCollection;
     }, {});
   }
   /**
   * Collects cardinalities across attributes of a single entity.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.entityRecord Record with values of attributes
-  * for a single entity.
+  * @param {Object} parameters.entityRecord Information about an entity's
+  * attribution to sets.
   * @param {Object<Object<number>>} parameters.entitiesCollection
   * Cardinalities of entities in sets by attributes and values.
   * @returns {Object<Object<number>>} Cardinalities of entities in sets by
@@ -111,7 +103,7 @@ class Cardinality {
     entityRecord,
     entitiesCollection
   } = {}) {
-    // Determine attributes in entity record.
+    // Determine attributes in entity's record.
     var attributes = Object.keys(entityRecord).filter(function (key) {
       return (key === "compartments" || key === "processes");
     });
@@ -123,39 +115,38 @@ class Cardinality {
       if (attributesCollection.hasOwnProperty(attribute)) {
         // Collection has a record for the current attribute.
         // Preserve existing records in the collection.
-        var valuesCollection = Object
+        var previousValuesCollection = Object
         .assign({}, attributesCollection[attribute]);
       } else {
         // Collection does not have a record for the current attribute.
         // Create a new record.
-        var valuesCollection = {};
+        var previousValuesCollection = {};
       }
-      var newValuesCollection = Cardinality.collectValues({
+      var currentValuesCollection = Cardinality.collectValues({
         attributeRecord: attributeRecord,
-        oldValuesCollection: valuesCollection
+        previousValuesCollection: previousValuesCollection
       });
-      // Include information from current attribute record within the
-      // collection.
-      var newAttributeRecord = {
-        [attribute]: newValuesCollection
+      // Include information from attribute record within the collection.
+      var novelAttributeRecord = {
+        [attribute]: currentValuesCollection
       };
-      var newAttributesCollection = Object
-      .assign({}, attributesCollection, newAttributeRecord);
-      return newAttributesCollection;
+      var novelAttributesCollection = Object
+      .assign({}, attributesCollection, novelAttributeRecord);
+      return novelAttributesCollection;
     }, entitiesCollection);
   }
   /**
   * Collects cardinalities across values.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<string>} parameters.attributeRecord Record with values of
-  * a single attribute.
-  * @param {Object<number>} parameters.oldValuesCollection Collection across
-  * values.
-  * @returns {Object<number>} Cardinalities of sets by values.
+  * @param {Array<string>} parameters.attributeRecord Information about values
+  * of a single attribute.
+  * @param {Object<number>} parameters.previousValuesCollection Cardinalities of
+  * entities in sets by values.
+  * @returns {Object<number>} Cardinalities of entities in sets by values.
   */
   static collectValues({
     attributeRecord,
-    oldValuesCollection
+    previousValuesCollection
   } = {}) {
     // Determine values of attribute in entity record.
     var values = attributeRecord;
@@ -172,38 +163,31 @@ class Cardinality {
         // Initialize count in a new record.
         var count = 1;
       }
-      var newValueRecord = {
+      var novelValueRecord = {
         [value]: count
       };
-      var newValuesCollection = Object
-      .assign({}, valuesCollection, newValueRecord);
-      return newValuesCollection;
-    }, oldValuesCollection);
+      var currentValuesCollection = Object
+      .assign({}, valuesCollection, novelValueRecord);
+      return currentValuesCollection;
+    }, previousValuesCollection);
   }
 
   // Master control of procedure to prepare summary of set cardinality.
 
   /**
   * Prepares summary of cardinalities of sets of entities.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object<string>>} parameters.selections Selections of
-  * attributes' values.
-  * @param {Object<Object<number>>} parameters.setsCardinalities Cardinalities
-  * of entities in sets by attributes and values.
+  * @param {Object<Object<number>>} setsCardinalities Cardinalities of entities
+  * in sets by attributes and values.
   * @returns {Array<Object<Array<Object>>>} Summary of sets of entities with
-  * information about cardinalities, selections of attributes' values,
-  * incremental sums, and total sums, with organization by attributes and values
-  * and with records in ascending order.
+  * information about cardinalities, incremental sums, and total sums, with
+  * organization by attributes and values and with records in ascending order.
   */
-  static prepareSetsSummary({selections, setsCardinalities} = {}) {
+  static prepareSetsSummary(setsCardinalities) {
     // Prepare the set summary for visual representation.
     // Organize the basic information of sets cardinalities by attributes and
     // values.
     // Include information about selections of attributes and values.
-    var basicSetsSummary = Cardinality.organizeSetsSummary({
-      selections: selections,
-      setsCardinalities: setsCardinalities
-    });
+    var basicSetsSummary = Cardinality.organizeSetsSummary(setsCardinalities);
     // Sort attribute values by increasing cardinality counts.
     var sortSetsSummary = Cardinality.sortSetsSummary(basicSetsSummary);
     // Calculate incremental counts in set summary.
@@ -214,16 +198,12 @@ class Cardinality {
   }
   /**
   * Organizes basic information in set summary.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object<string>>} parameters.selections Selections of
-  * attributes' values.
-  * @param {Object<Object<number>>} parameters.setsCardinalities Cardinalities
-  * of entities in sets by attributes and values.
+  * @param {Object<Object<number>>} setsCardinalities Cardinalities of entities
+  * in sets by attributes and values.
   * @returns {Array<Object<Array<Object>>>} Summary of sets of entities with
-  * information about cardinalities and selections of attributes' values, with
-  * organization by attributes and values.
+  * information about cardinalities with organization by attributes and values.
   */
-  static organizeSetsSummary({selections, setsCardinalities} = {}) {
+  static organizeSetsSummary(setsCardinalities) {
     // Prepare records for attributes.
     var attributes = Object.keys(setsCardinalities);
     return attributes.map(function (attribute) {
@@ -231,16 +211,10 @@ class Cardinality {
       var values = Object.keys(setsCardinalities[attribute]);
       var valueRecords = values.map(function (value) {
         var count = setsCardinalities[attribute][value];
-        var selection = Attribution.determineSelectionMatch({
-          value: value,
-          attribute: attribute,
-          selections: selections
-        });
         return {
           attribute: attribute,
           count: count,
-          value: value,
-          selection: selection
+          value: value
         };
       });
       return {
@@ -251,11 +225,11 @@ class Cardinality {
   }
   /**
   * Sorts records for attributes and values within set summary.
-  * @param {Array<Object<Array<Object>>>} basicSetsSummary Basic information
-  * for set summary.
+  * @param {Array<Object<Array<Object>>>} basicSetsSummary Basic information for
+  * sets' summary.
   * @returns {Array<Object<Array<Object>>>} Summary of sets of entities with
-  * information about cardinalities and selections of attributes' values, with
-  * organization by attributes and values and with records in ascending order.
+  * information about cardinalities with organization by attributes and values
+  * and with records in ascending order.
   */
   static sortSetsSummary(basicSetsSummary) {
     // Sort records for attributes.
@@ -287,9 +261,8 @@ class Cardinality {
   * @returns {Array<Object<Array<Object>>>} sortSetsSummary Basic information
   * for set summary in sort order.
   * @returns {Array<Object<Array<Object>>>} Summary of sets of entities with
-  * information about cardinalities, selections of attributes' values,
-  * incremental sums, and total sums, with organization by attributes and values
-  * and with records in ascending order.
+  * information about cardinalities, incremental sums, and total sums, with
+  * organization by attributes and values and with records in ascending order.
   */
   static incrementSetsSummary(sortSetsSummary) {
     return sortSetsSummary.map(function (attributeRecord) {

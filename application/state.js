@@ -111,8 +111,8 @@ class State {
   act() {}
   // Methods to evaluate application's state.
   /**
-  * Determines whether or not the application's state has information about
-  * metabolic entities and sets.
+  * Determines whether the application's state has information about metabolic
+  * entities and sets.
   */
   determineMetabolicEntitiesSets() {
     return (
@@ -124,13 +124,13 @@ class State {
     );
   }
   /**
-  * Determines whether or not the application's state has information about
-  * values of attributes of metabolic entities.
+  * Determines whether the application's state has information about all
+  * entities' attribution to sets.
   */
-  determineCurrentEntities() {
+  determineSetsTotalEntities() {
     return (
-      !(this.model.currentMetabolites === null) &&
-      !(this.model.currentReactions === null)
+      !(this.model.setsTotalReactions === null) &&
+      !(this.model.setsTotalMetabolites === null)
     );
   }
   /**
