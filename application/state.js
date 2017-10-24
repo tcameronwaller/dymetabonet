@@ -54,7 +54,7 @@ class State {
     // interface for set.
     if (
       this.determineMetabolicEntitiesSets() &&
-      this.determineCurrentEntities() &&
+      this.determineTotalEntities() &&
       this.determineEntitiesAttributesSets()
     ) {
       // Initialize instance of interface.

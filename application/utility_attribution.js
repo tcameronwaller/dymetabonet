@@ -374,8 +374,6 @@ class Attribution {
     return (compartments && processes && metabolites);
   }
 
-
-
   /**
   * Records new selection in collection of selections of attributes and
   * values for filters.
@@ -432,7 +430,7 @@ class Attribution {
   }
 
 
-
+// TODO: This stuff might be obsolete.
   /**
   * Filters metabolites and their values of attributes that they inherit from
   * reactions in which they participate.

@@ -109,30 +109,31 @@ class Model {
       // represent compartmentalization of metabolites.
       "compartmentalization",
 
-      // Attribute "entitiesReactions" stores information for each reaction
+      // Attribute "simplificationReactions" stores information about selections
+      // of reactions for simplification by omission.
+      // Information includes references to attribute "contextReactions".
+      "simplificationReactions",
+      // Attribute "simplificationMetabolites" stores information about
+      // selections of metabolites for simplification either by replication or
+      // omission.
+      // Information includes references to attribute "contextMetabolites".
+      "simplificationMetabolites",
+
+      // Attribute "contextReactions" stores information for each reaction
       // about the metabolites that participate.
       // Information includes compartmentalization of metabolites.
       // Information includes references to attributes "reactions",
       // "metabolites", and "compartments".
-      // Information derives from attributes "setsCurrentReactions",
-      // "reactions", and "compartmentalization".
-      "entitiesReactions",
-      // Attribute "entitiesMetabolites" stores information for each metabolite
+      // Information derives from attributes "compartmentalization",
+      // "setsCurrentReactions", and "reactions".
+      "contextReactions",
+      // Attribute "contextMetabolites" stores information for each metabolite
       // about the reactions in which it participates.
       // Information includes compartmentalization of metabolites.
       // Information includes references to attributes "metabolites",
       // "reactions", and "compartments".
-      // Information derives from attribute "entitiesReactions".
-      "entitiesMetabolites",
-      // Attribute "reactionsSimplification" stores information about selections
-      // of reactions for simplification by omission.
-      // Information includes references to attribute "entitiesReactions".
-      "reactionsSimplification",
-      // Attribute "metabolitesSimplification" stores information about
-      // selections of metabolites for simplification either by replication or
-      // omission.
-      // Information includes references to attribute "entitiesMetabolites".
-      "metabolitesSimplification",
+      // Information derives from attribute "contextReactions".
+      "contextMetabolites",
 
       // Network.
       "networkNodesReactions",

@@ -368,6 +368,7 @@ class Network {
       }
     }
   }
+  
   /**
   * Determines consensual information about a reaction from any relevant,
   * redundant replicates.
@@ -595,6 +596,11 @@ class Network {
       return Extraction.copyEntityRecord(reactions[reactionsIdentifiers[0]]);
     }
   }
+
+
+
+
+
   /**
   * Creates novel node for a reaction and includes this in a collection of
   * network's elements.
