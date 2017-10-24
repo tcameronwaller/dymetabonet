@@ -124,6 +124,9 @@ class Network {
       }
     }, initialNetworkElements);
   }
+
+
+
   /**
   * Determines whether to include in the network representations for a reaction
   * and its metabolites.
@@ -368,7 +371,10 @@ class Network {
       }
     }
   }
-  
+
+
+
+
   /**
   * Determines consensual information about a reaction from any relevant,
   * redundant replicates.
@@ -676,6 +682,9 @@ class Network {
     };
     return Object.assign({}, copyAttributes, novelAttributes);
   }
+
+
+
   /**
   * Collects network elements, nodes and links, across all metabolites that
   * participate in a single reaction.

@@ -4,6 +4,37 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+24 October 2017
+
+----------
+Interdependence of Entities' Relevance
+
+Reactions and metabolites derive their relevance from each other.
+Selections of metabolites for simplification influence the relevance of dependent reactions and vice versa.
+I need to preserve accessibility of entities to change these selections.
+Selection of a metabolite for simplification will also select any dependent reactions for simplification.
+Canceling a metabolite's selection for simplification will also cancel the simplification of any dependent reactions.
+Maintenance of accurate references for relations between entities will be important.
+
+----------
+Entities' Contextual Relevance
+
+A major task of the application is to select entities (metabolites and reactions) according to specific interest.
+The application supports multiple layers for this selection of entities.
+
+1. Filtration by values of attributes
+Reactions and metabolites associate with specific values of attributes for processes and compartments.
+Selections of values of these attributes inform filters.
+
+2. Simplfication of individual entities
+Entities that pass filters and maintain relevance in context are accessible for selections for simplification.
+Simplification can involve omission from the network for reactions, or either omission or replication for metabolites.
+While selections for simplification influence entities' relevance for representation in the network, these selections do not omit any entities from accessibility for further selections.
+
+3. Topological traversal of network
+
+
+--------------------------------------------------
 19 October 2017
 
 ----------

@@ -431,6 +431,7 @@ class Attribution {
 
 
 // TODO: This stuff might be obsolete.
+
   /**
   * Filters metabolites and their values of attributes that they inherit from
   * reactions in which they participate.

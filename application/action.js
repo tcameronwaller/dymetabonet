@@ -244,8 +244,7 @@ class Action {
     // Initialize selection for compartmentalization's relevance.
     var compartmentalization = Action.initializeCompartmentalizationSelection();
     // TODO: Any change to the compartmentalization selection should re-initialize the simplification selections.
-
-    // Initialize selection for compartmentalization's relevance.
+    // Initialize selections for entities' simplification.
     var simplifications = Action.initializeSimplificationSelections();
     // Determine entities that are relevant to context of interest.
     var contextEntities = Action.createContextEntities({
@@ -899,8 +898,8 @@ class Action {
   * Creates information about entities and relations between them that match the
   * context of interest.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} parameters.compartmentalization Selection of whether to
-  * represent compartmentalization.
+  * @param {boolean} parameters.compartmentalization Whether to represent
+  * compartmentalization.
   * @param {Array<Object<string>>} parameters.simplificationReactions Selections
   * of reactions for simplification.
   * @param {Array<Object<string>>} parameters.simplificationMetabolites
@@ -917,12 +916,28 @@ class Action {
     setsCurrentReactions,
     reactions
   } = {}) {
+
+
+    // TODO: Filter simplification selections to eliminate those created by dependency.
+    // TODO: I need to re-determine these dependency selections each time to account for changes.
+    // TODO: Alternatively, I could filter these within the action that changes selections... (a new action)
+
+
+
+    // The relevance of individual entities and relations between them depends
+    // on the context of interest.
+    // A reaction's relevance depends on filtration
+    //
+    // compartmental context, its own
+    // operation, and metabolites' participation.
+    // A metabolite's relevance depends on the compartmental context and the
+    // reactions in which it participates.
+
+
+
+
     // This procedure determines the relevance of individual entities and
     // relations between them in the context of interest.
-    // A reaction's relevance depends on the compartmental context, its own
-    // operation, and the relevance of metabolites that participate.
-    // A metabolite's relevance depends on the compartmental context and the
-    // relevance of reactions in which it participates.
     // Selections of individual entities for simplification directly indicate
     // the relevance of these entities.
     // A selection for simplification does not omit an entity from its list of
@@ -933,6 +948,8 @@ class Action {
     // relevance.
     var contextReactions = Context.collectContextReactionsMetabolites({
       compartmentalization: compartmentalization,
+      simplificationReactions: simplificationReactions,
+      simplificationMetabolites: simplificationMetabolites,
       setsCurrentReactions: setsCurrentReactions,
       reactions: reactions
     });
