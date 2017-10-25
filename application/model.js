@@ -143,6 +143,8 @@ class Model {
       "subNetworkNodesReactions",
       "subNetworkLinks",
 
+      // TODO: Maybe include "relevantEntities" that represent entities that pass filters, are preserved as candidates, represented in network, and also part of specific subnetwork.
+
 
 
 

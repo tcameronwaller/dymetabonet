@@ -916,6 +916,16 @@ class Action {
     setsCurrentReactions,
     reactions
   } = {}) {
+    // TODO: Rename "context entities" to "candidate entities" since these are
+    // TODO: representations of entities that are elligible candidates for representation in the network.
+    // Candidate entities are entities that are elligible candidates for
+    // representation in the network.
+    // An entity's elligibility depends on filters by its values of attributes,
+    // the context of interest (especially in terms of compartmentalization),
+    // and the elligibility of other entities that relate.
+    // The purpose of candidate entities is to enable the user to access
+    // information about individual entities and to change their
+    // representations in the network.
 
 
     // TODO: Filter simplification selections to eliminate those created by dependency.

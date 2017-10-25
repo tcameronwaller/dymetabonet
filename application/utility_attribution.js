@@ -310,8 +310,8 @@ class Attribution {
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<string>} parameters.metabolites Identifiers of metabolites
   * that participate in a reaction.
-  * @param {Array<string>} parameters.compartments Identifiers of a
-  * reaction's compartments that pass filters.
+  * @param {Array<string>} parameters.compartments Identifiers of a reaction's
+  * compartments that pass filters.
   * @param {Array<Object<string>>} parameters.participants Information about
   * metabolites' participation in a reaction.
   * @returns {Array<string>} Identifiers of a reaction's metabolites that

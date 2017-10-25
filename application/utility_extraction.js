@@ -683,7 +683,7 @@ class Extraction {
   * metabolites that participate as its reactants and products.
   * @param {Array<Object<string>>} participants Information about metabolites'
   * participation in a reaction.
-  * @returns {boolean} Whether reaction involves chemical conversion.
+  * @returns {boolean} Whether the reaction involves chemical conversion.
   */
   static determineReactionChemicalConversion(participants) {
     // Collect identifiers of metabolites that participate as reactants.
@@ -718,8 +718,8 @@ class Extraction {
   * Determines whether a reaction involves transport of chemically identical
   * metabolites between compartments.
   * @param {Array<Object<string>>} transports Information about a reaction's
-  * transports.
-  * @returns {boolean} Whether the reaction involves transport.
+  * transport events.
+  * @returns {boolean} Whether the reaction involves physical transport.
   */
   static determineReactionTransport(transports) {
     return (transports.length > 0);
@@ -730,7 +730,8 @@ class Extraction {
   * but in different compartments.
   * @param {Array<Object<string>>} participants Information about
   * metabolites' participation in a reaction.
-  * @returns {Array<Object<string>>} Information about a reaction's transports.
+  * @returns {Array<Object<string>>} Information about a reaction's transport
+  * events.
   */
   static createReactionTransports(participants) {
     // Collect participants that are reactants.
