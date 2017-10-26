@@ -1031,6 +1031,30 @@ class General {
     // Include in the collection the novel record.
     return Object.assign ({}, collection, novelRecord);
   }
+  /**
+  * Accesses a record within an object by the record's identifier, creating a
+  * reference to the record.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a record.
+  * @param {Object<Object>} parameters.records Object of records.
+  * @returns {Object} Record.
+  */
+  static accessObjectRecordByIdentifier(identifier, records) {
+    return records[identifier];
+  }
+  /**
+  * Accesses a record within an array by the record's identifier, creating a
+  * reference to the record.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a record.
+  * @param {Array<Object>} parameters.records Array of records.
+  * @returns {Object} Record.
+  */
+  static accessArrayRecordByIdentifier(identifier, records) {
+    return records.find(function (record) {
+      return record.identifier === identifier;
+    });
+  }
 
 
 
