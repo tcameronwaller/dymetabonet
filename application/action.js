@@ -246,14 +246,16 @@ class Action {
     // TODO: Any change to the compartmentalization selection should re-initialize the simplification selections.
     // Initialize selections for entities' simplification.
     var simplifications = Action.initializeSimplificationSelections();
-    // Determine entities that are relevant to context of interest.
-    var contextEntities = Action.createContextEntities({
-      compartmentalization: compartmentalization,
-      simplificationReactions: simplificationReactions,
-      simplificationMetabolites: simplificationMetabolites,
-      setsCurrentReactions: setsEntitiesCardinalities.setsCurrentReactions,
-      reactions: metabolicEntitiesSets.reactions
-    });
+    if (false) {
+      // Determine entities that are relevant to context of interest.
+      var contextEntities = Action.createContextEntities({
+        compartmentalization: compartmentalization,
+        simplificationReactions: simplifications.simplificationReactions,
+        simplificationMetabolites: simplifications.simplificationMetabolites,
+        setsCurrentReactions: setsEntitiesCardinalities.setsCurrentReactions,
+        reactions: metabolicEntitiesSets.reactions
+      });
+    }
 
     // Initialize selections for simplification of entities, reactions or
     // metabolites. (after creating the entities in the first place)
@@ -284,6 +286,7 @@ class Action {
       setsEntitiesSelections,
       setsEntitiesCardinalities,
       compartmentalization,
+      simplifications,
       //networkDefinitionAttributes,
       //networkElementsAttributes,
       novelAttributesValues
@@ -738,6 +741,16 @@ class Action {
 
     //Action.createNetwork(model);
     //Action.summarizeMetabolitesParticipationReactions(model);
+
+    // Determine entities that are relevant to context of interest.
+    var contextEntities = Action.createContextEntities({
+      compartmentalization: model.compartmentalization,
+      simplificationReactions: model.simplificationReactions,
+      simplificationMetabolites: model.simplificationMetabolites,
+      setsCurrentReactions: model.setsCurrentReactions,
+      reactions: model.reactions
+    });
+
 
     // Terminate process timer.
     //console.timeEnd("timer");

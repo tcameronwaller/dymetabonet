@@ -44,7 +44,7 @@ class Model {
       // Information includes references to attributes "reactions",
       // "metabolites", "compartments", and "processes".
       // Information derives from attribute "reactions".
-      "setsTotalReactions",
+      "setsTotalReactions", // TODO: Change name to totalReactionsSets
       // Attribute "setsTotalMetabolites" stores information for each metabolite
       // about the reactions in which it participates and the sets to which the
       // entity belongs by its values of attributes.
@@ -69,7 +69,7 @@ class Model {
       // "metabolites", "compartments", and "processes".
       // Information derives from attributes "setsSelections",
       // "setsTotalReactions", and "reactions".
-      "setsCurrentReactions",
+      "setsCurrentReactions", // TODO: Change name to currentReactionsSets
       // Attribute "setsCurrentMetabolites" stores information for each
       // metabolite about the reactions in which it participates and the sets to
       // which the entity belongs by its values of attributes.
