@@ -641,7 +641,7 @@ class Extraction {
       return record.reactions.includes(identifier);
     }).reactions;
     var replication = replicates.length > 1;
-    // Compile reaction's attributes.
+    // Compile attributes.
     var attributes = {
       conversion: conversion,
       dispersal: dispersal,
@@ -656,7 +656,7 @@ class Extraction {
       transport: transport,
       transports: transports
     };
-    // Create reaction's record.
+    // Create record.
     var record = {
       [identifier]: attributes
     };
@@ -891,14 +891,14 @@ class Extraction {
     // for compartmental metabolites.
     // Determine identifier of general metabolite.
     var identifier = Clean.extractMetaboliteIdentifier(metabolite.id);
-    // Compile metabolite's attributes.
+    // Compile attributes.
     var attributes = {
       charge: metabolite.charge,
       formula: metabolite.formula,
       identifier: identifier,
       name: metabolite.name
     };
-    // Create metabolite's record.
+    // Create record.
     var record = {
       [identifier]: attributes
     };

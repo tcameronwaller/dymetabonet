@@ -298,6 +298,10 @@ class Action {
       model: model
     });
   }
+
+
+  // TODO: Repair changeSetsEntities.
+
   /**
   * Changes the entities of interest for the sets' summary.
   * Also prepares new sets' summary.
@@ -345,6 +349,9 @@ class Action {
       model: model
     });
   }
+
+  // TODO: Repair changeSetsFilter.
+
   /**
   * Changes the specification of filter for the sets' summary.
   * Also determines new sets' cardinalities and prepares new sets' summary.
@@ -411,57 +418,41 @@ class Action {
       attribute: attribute,
       previousSelections: model.setsSelections
     });
-    // Determine entities and their values of attributes that pass filters from
-    // selections.
-    // The filtration procedure is computationally expensive, especially in
-    // collection of attributes from all reactions in which a metabolite
-    // participates.
-    // Determine whether there are any selections of atttributes' values to
-    // apply as filters.
-    if (setsSelections.length === 0) {
-      // There are not any selections of attributes' values to apply as filters.
-      // Copy information about metabolic entities.
-      var currentMetabolites = General.copyValueJSON(model.metabolites);
-      var currentReactions = General.copyValueJSON(model.reactions);
-    } else {
-      // There are selections of attributes' values to apply as filters.
-      // Filter the metabolic entities and their values of attributes.
-      // Filter against complete collections of entities to account for any
-      // changes to selections of filters.
-      var currentReactions = Attribution.filterReactionsAttributesValues({
-        selections: setsSelections,
-        reactions: model.reactions
-      });
-      var currentMetabolites = Attribution.filterMetabolitesAttributesValues({
-        metabolites: model.metabolites,
-        reactions: currentReactions
-      });
-    }
-    // Determine values of attributes that summarize cardinalities of sets of
-    // entities.
-    var setsCardinalitiesAttributes = Action
-    .determineEntitiesSetsCardinalitiesAttributes({
-      entities: model.setsEntities,
-      filter: model.setsFilter,
-      selections: setsSelections,
-      metabolites: model.metabolites,
-      reactions: model.reactions,
-      currentMetabolites: currentMetabolites,
-      currentReactions: currentReactions
+    // Determine sets' cardinalities.
+    var setsEntitiesCardinalities = Action.determineSetsEntitiesCardinalities({
+      setsSelections: model.setsSelections,
+      setsEntities: model.setsEntities,
+      setsFilter: model.setsFilter,
+      setsTotalReactions: model.setsTotalReactions,
+      setsTotalMetabolites: model.setsTotalMetabolites,
+      reactions: model.reactions
     });
-    // Initialize network's elements.
-    var networkElementsAttributes = Action
-    .initializeNetworkElementsAttributes();
+
+    if (false) {
+      // Determine values of attributes that summarize cardinalities of sets of
+      // entities.
+      var setsCardinalitiesAttributes = Action
+      .determineEntitiesSetsCardinalitiesAttributes({
+        entities: model.setsEntities,
+        filter: model.setsFilter,
+        selections: setsSelections,
+        metabolites: model.metabolites,
+        reactions: model.reactions,
+        currentMetabolites: currentMetabolites,
+        currentReactions: currentReactions
+      });
+      // Initialize network's elements.
+      var networkElementsAttributes = Action
+      .initializeNetworkElementsAttributes();
+    }
+
     // Compile novel values of attributes.
     var novelAttributesValues = {
-      setsSelections: setsSelections,
-      currentMetabolites: currentMetabolites,
-      currentReactions: currentReactions
+      setsSelections: setsSelections
     };
     var attributesValues = Object.assign(
       {},
-      setsCardinalitiesAttributes,
-      networkElementsAttributes,
+      setsEntitiesCardinalities,
       novelAttributesValues
     );
     // Submit novel values of attributes to the model of the application's
@@ -471,6 +462,9 @@ class Action {
       model: model
     });
   }
+
+  // TODO: Repair restoreSetsSummary();
+
   /**
   * Restores sets' summary to its initial state.
   * @param {Object} model Model of the application's comprehensive state.
@@ -503,6 +497,9 @@ class Action {
       model: model
     });
   }
+
+  // TODO: Repair changeCompartmentalization
+
   /**
   * Changes the specification of compartmentalization for the network's
   * assembly.
@@ -736,27 +733,14 @@ class Action {
   static executeTemporaryProcedure(model) {
     // Initiate process timer.
     //console.time("timer");
-    //var startTime = window.performance.now();
+    var startTime = window.performance.now();
     // Execute process.
-
-    //Action.createNetwork(model);
-    //Action.summarizeMetabolitesParticipationReactions(model);
-
-    // Determine entities that are relevant to context of interest.
-    var contextEntities = Action.createContextEntities({
-      compartmentalization: model.compartmentalization,
-      simplificationReactions: model.simplificationReactions,
-      simplificationMetabolites: model.simplificationMetabolites,
-      setsCurrentReactions: model.setsCurrentReactions,
-      reactions: model.reactions
-    });
-
 
     // Terminate process timer.
     //console.timeEnd("timer");
-    //var endTime = window.performance.now();
-    //var duration = Math.round(endTime - startTime);
-    //console.log("process duration: " + duration + " milliseconds");
+    var endTime = window.performance.now();
+    var duration = Math.round(endTime - startTime);
+    console.log("process duration: " + duration + " milliseconds");
   }
 
   // Secondary actions relevant to application's state.
@@ -841,20 +825,38 @@ class Action {
     setsSelections, setsEntities, setsFilter, setsTotalReactions,
     setsTotalMetabolites, reactions
   } = {}) {
-    // Filter for each reaction the metabolites that participate and to which
-    // sets it belongs by its values of attributes.
-    var setsCurrentReactions = Attribution
-    .filterReactionsMetabolitesAttributesValues({
-      setsSelections: setsSelections,
-      setsTotalReactions: setsTotalReactions,
-      reactions: reactions
-    });
-    // Determine for each metabolite the reactions in which it participates and
-    // to which sets it belongs by its values of attributes.
-    var setsCurrentMetabolites = Attribution
-    .collectMetabolitesReactionsAttributesValues(
-      setsCurrentReactions, reactions
-    );
+    // Determine entities and their values of attributes that pass filters from
+    // selections.
+    // The filtration procedure is computationally expensive.
+    // Determine whether there are any selections of attributes' values to apply
+    // as filters.
+    if (setsSelections.length === 0) {
+      // There are not any selections of attributes' values to apply as filters.
+      // Copy information about metabolic entities.
+      var setsCurrentReactions = General.copyValueJSON(setsTotalReactions);
+      var setsCurrentMetabolites = General.copyValueJSON(setsTotalMetabolites);
+    } else {
+      // There are selections of attributes' values to apply as filters.
+      // Filter the metabolic entities and their values of attributes.
+      // Filter against complete collections of entities to account for any
+      // changes to selections of filters.
+      // Filter for each reaction the metabolites that participate and to which
+      // sets it belongs by its values of attributes.
+      var setsCurrentReactions = Attribution
+      .filterReactionsMetabolitesAttributesValues({
+        setsSelections: setsSelections,
+        setsTotalReactions: setsTotalReactions,
+        reactions: reactions
+      });
+      // Determine for each metabolite the reactions in which it participates
+      // and to which sets it belongs by its values of attributes.
+      var setsCurrentMetabolites = Attribution
+      .filterMetabolitesReactionsAttributesValues({
+        setsTotalMetabolites: setsTotalMetabolites,
+        setsCurrentReactions: setsCurrentReactions,
+        reactions: reactions
+      });
+    }
     // Determine sets' cardinalities.
     var setsCardinalities = Cardinality.determineSetsCardinalities({
       setsEntities: setsEntities,
@@ -969,13 +971,15 @@ class Action {
     // In contrast, simplification of an entity does influence the relevance of
     // entities of the other type that rely on the entity for their own
     // relevance.
-    var contextReactions = Context.collectContextReactionsMetabolites({
-      compartmentalization: compartmentalization,
-      simplificationReactions: simplificationReactions,
-      simplificationMetabolites: simplificationMetabolites,
-      setsCurrentReactions: setsCurrentReactions,
-      reactions: reactions
-    });
+    if (false) {
+      var contextReactions = Context.collectContextReactionsMetabolites({
+        compartmentalization: compartmentalization,
+        simplificationReactions: simplificationReactions,
+        simplificationMetabolites: simplificationMetabolites,
+        setsCurrentReactions: setsCurrentReactions,
+        reactions: reactions
+      });
+    }
 
     // TODO: I need records for all entities, including those with selections for omission.
     // TODO: The idea is to give access to each entity and enable selections for simplification.

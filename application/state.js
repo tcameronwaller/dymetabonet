@@ -54,8 +54,9 @@ class State {
     // interface for set.
     if (
       this.determineMetabolicEntitiesSets() &&
-      this.determineTotalEntities() &&
-      this.determineEntitiesAttributesSets()
+      this.determineSetsTotalEntities() &&
+      this.determineSetsCurrentEntities() &&
+      this.determineSetsSummary()
     ) {
       // Initialize instance of interface.
       // Pass this instance a reference to the model of the application's
@@ -110,6 +111,7 @@ class State {
   */
   act() {}
   // Methods to evaluate application's state.
+
   /**
   * Determines whether the application's state has information about metabolic
   * entities and sets.
@@ -134,12 +136,22 @@ class State {
     );
   }
   /**
+  * Determines whether the application's state has information about current
+  * entities' attribution to sets.
+  */
+  determineSetsCurrentEntities() {
+    return (
+      !(this.model.setsSelections === null) &&
+      !(this.model.setsCurrentReactions === null) &&
+      !(this.model.setsCurrentMetabolites === null)
+    );
+  }
+  /**
   * Determines whether or not the application's state has information about
   * sets of metabolic entities by their values of attributes.
   */
-  determineEntitiesAttributesSets() {
+  determineSetsSummary() {
     return (
-      !(this.model.valuesSelections === null) &&
       !(this.model.setsEntities === null) &&
       !(this.model.setsFilter === null) &&
       !(this.model.setsCardinalities === null) &&

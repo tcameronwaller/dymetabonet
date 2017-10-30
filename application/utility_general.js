@@ -1043,6 +1043,19 @@ class General {
     return records[identifier];
   }
   /**
+  * Determines whether a record exists within an array by the record's
+  * identifier.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a record.
+  * @param {Array<Object>} parameters.records Array of records.
+  * @returns {boolean} Whether the record exists within the array.
+  */
+  static determineArrayRecordByIdentifier(identifier, records) {
+    return records.some(function (record) {
+      return record.identifier === identifier;
+    });
+  }
+  /**
   * Accesses a record within an array by the record's identifier, creating a
   * reference to the record.
   * @param {Object} parameters Destructured object of parameters.

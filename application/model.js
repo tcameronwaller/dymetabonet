@@ -126,7 +126,7 @@ class Model {
       // "metabolites", and "compartments".
       // Information derives from attributes "compartmentalization",
       // "setsCurrentReactions", and "reactions".
-      "contextReactions",
+      "contextReactions", // TODO: Change to "candidateReactions" or "reactionCandidates"
       // Attribute "contextMetabolites" stores information for each metabolite
       // about the reactions in which it participates.
       // Information includes compartmentalization of metabolites.
@@ -185,8 +185,4 @@ class Model {
     // Pass this instance a reference to the model.
     new State(model);
   }
-
-  // TODO: I might want functionality to print a representation of the model to the console.
-  // TODO: I might also want the ability to save a JSON of the model to allow session persistence and restoration.
-
 }

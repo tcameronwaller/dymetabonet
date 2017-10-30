@@ -35,7 +35,7 @@ class Context {
     var initialCollection = {
       contextReactions: [],
       simplificationReactions: simplificationReactions,
-      contextReactionsMetabolites: {}
+      reactionsMetabolites: {}
     };
     // Iterate on reactions.
     return setsCurrentReactions
@@ -44,6 +44,7 @@ class Context {
       return Context.collectContextReactionMetabolites({
         setsCurrentReaction: setsCurrentReaction,
         compartmentalization: compartmentalization,
+        simplificationReactions: simplificationReactions,
         simplificationMetabolites: simplificationMetabolites,
         reactionsCollection: reactionsCollection,
         setsCurrentReactions: setsCurrentReactions,
@@ -60,6 +61,8 @@ class Context {
   * reaction's metabolites and sets that pass filters.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant in the context of interest.
+  * @param {Array<Object<string>>} parameters.simplificationReactions Selections
+  * of reactions for simplification.
   * @param {Array<Object<string>>} parameters.simplificationMetabolites
   * Selections of candidate metabolites for simplification.
   * @param {Array<Object>} parameters.reactionsCollection Information about
@@ -73,67 +76,64 @@ class Context {
   static collectContextReactionMetabolites({
     setsCurrentReaction,
     compartmentalization,
+    simplificationReactions,
     simplificationMetabolites,
     reactionsCollection,
     setsCurrentReactions,
     reactions
   } = {}) {
+    //var initialCollection = {
+    //  contextReactions: [],
+    //  simplificationReactions: simplificationReactions,
+    //  reactionsMetabolites: {}
+    //};
     // Evaluate reaction's candidacy.
     var reactionIdentifier = setsCurrentReaction.reaction;
     var candidacy = Context.evaluateReactionCandidacy({
       reactionIdentifier: reactionIdentifier,
       compartmentalization: compartmentalization,
       setsCurrentReactions: setsCurrentReactions,
-      reactions: reactions
+      reactions: reactions,
+      collection: reactionsCollection
     });
-    console.log(candidacy);
-    if (false) {
-      // Determine whether reaction is a viable candidate for the collection.
-      if (candidacy.relevance && candidacy.priority) {
-        // Reaction is a viable candidate.
-        // Determine whether reaction is novel in the collection.
-        var novelty = !reactionsCollection
-        .contextReactions.some(function (record) {
-          return record.reaction === reactionIdentifier;
-        });
-        if (novelty) {
-          // Reaction is novel in the collection.
-          // Include reaction in collection.
-          // Collect information about reaction's metabolites.
-          var reactionMetabolites = Context.collectCandidateReactionMetabolites({
-            reactionIdentifier: reactionIdentifier,
-            compartmentalization: compartmentalization,
-            setsCurrentReactions: setsCurrentReactions,
-            reactions: reactions
-          });
+    // Determine whether reaction is a viable candidate for the collection.
+    if (candidacy.relevance && candidacy.priority && candidacy.novelty) {
+      // Reaction is a viable candidate.
+      // Include reaction in collection.
+      // Collect information about reaction's metabolites.
+      var reactionMetabolites = Context.collectCandidateReactionMetabolites({
+        reactionIdentifier: reactionIdentifier,
+        compartmentalization: compartmentalization,
+        setsCurrentReactions: setsCurrentReactions,
+        reactions: reactions
+      });
+      // Include novel metabolites in collection.
+      var currentReactionsMetabolites = Object
+      .assign(reactionsCollection.reactionsMetabolites, reactionMetabolites);
+      // Collect information about reaction.
+      var novelReactionRecord = Context.createCandidateReactionRecord({
+        reactionIdentifier: reactionIdentifier,
+        replicates: candidacy.replicates,
+        setsCurrentReactions: setsCurrentReactions,
+        reactions: reactions
+      });
+      // Include record for novel reaction in collection.
+      //var currentReactionsCollection = []
+      //.concat(reactionsCollection.contextReactions, novelReactionRecord);
 
-          // Compile consensus information from all redundant replicates.
-          var novelRecord = Context.createReactionCandidate({
-            reactionIdentifier: reactionIdentifier,
-            replicates: candidacy.replicates,
-            compartmentalization: compartmentalization,
-            setsCurrentReactions: setsCurrentReactions,
-            reactions: reactions
-          });
-          // Include record for novel reaction in collection.
-          var currentReactionsCollection = []
-          .concat(reactionsCollection.contextReactions, novelRecord);
+      // TODO: Update selections for simplification, if necessary.
 
-          // TODO: Update selections for simplification, if necessary.
-
-        } else {
-          // Reaction is not novel in the collection.
-          // Exclude reaction from collection.
-          // Preserve collection.
-          return reactionsCollection;
-        }
-      } else {
-        // Reaction is not a viable candidate.
-        // Exclude reaction from collection.
-        // Preserve collection.
-        return reactionsCollection;
-      }
-
+      var currentReactionsCollection = {
+        contextReactions: reactionsCollection.contextReactions,
+        simplificationReactions: simplificationReactions,
+        reactionsMetabolites: currentReactionsMetabolites
+      };
+      return currentReactionsCollection;
+    } else {
+      // Reaction is not a viable candidate.
+      // Exclude reaction from collection.
+      // Preserve collection.
+      return reactionsCollection;
     }
   }
   /**
@@ -145,10 +145,16 @@ class Context {
   * @param {Array<Object>} parameters.setsCurrentReactions Information about
   * reactions' metabolites and sets that pass filters.
   * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Array<Object>} parameters.collection Information about relevant
+  * reactions and their metabolites.
   * @returns {Object} Information about reaction's candidacy.
   */
   static evaluateReactionCandidacy({
-    reactionIdentifier, compartmentalization, setsCurrentReactions, reactions
+    reactionIdentifier,
+    compartmentalization,
+    setsCurrentReactions,
+    reactions,
+    collection
   } = {}) {
     // Access information about reaction.
     var reaction = General
@@ -156,8 +162,6 @@ class Context {
     var reactionSets = General.accessArrayRecordByIdentifier(
       reactionIdentifier, setsCurrentReactions
     );
-    console.log("evaluateReactionCandidacy");
-    console.log(reactionSets);
     // Determine whether reaction is relevant.
     var relevance = Context.determineReactionContextRelevance({
       reaction: reaction,
@@ -182,21 +186,37 @@ class Context {
           reactionIdentifier: reaction.identifier,
           replicateReactions: redundantReplicates
         });
+        if (priority) {
+          // Reaction is a priority.
+          // Determine whether reaction is novel in the collection.
+          var novelty = !collection.contextReactions.some(function (record) {
+            return record.identifier === reactionIdentifier;
+          });
+        } else {
+          // Reaction is not a priority.
+          var novelty = false;
+        }
       } else {
         // Reaction does not have redundant replicates.
         // Reaction is a priority.
         var priority = true;
+        // Determine whether reaction is novel in the collection.
+        var novelty = !collection.contextReactions.some(function (record) {
+          return record.identifier === reactionIdentifier;
+        });
       }
     } else {
       // Reaction is irrelevant in the context of interest.
       // Exclude the reaction from the collection of candidates.
       var priority = false;
+      var novelty = false;
       var redundantReplicates = [];
     }
     // Compile values.
     var candidacy = {
       relevance: relevance,
       priority: priority,
+      novelty: novelty,
       replicates: redundantReplicates
     };
     // Return values.
@@ -255,8 +275,8 @@ class Context {
     metabolites,
     compartments,
   } = {}) {
-    // Filter participants for those with relevant metabolites and compartments
-    // that pass filters.
+    // Filter reaction's participants for those with relevant metabolites and
+    // compartments that pass filters.
     var relevantParticipants = Extraction.filterReactionParticipants({
       criteria: {metabolites: metabolites, compartments: compartments},
       participants: participants
@@ -430,9 +450,9 @@ class Context {
         if (!identity) {
           // Replicate reaction is not identical to the comparison reaction.
           // Determine whether replicate reaction passes filters.
-          var pass = setsCurrentReactions.some(function (setsCurrentReaction) {
-            return setsCurrentReaction.reaction === replicateIdentifier;
-          });
+          var pass = General.determineArrayRecordByIdentifier(
+            replicateIdentifier, setsCurrentReactions
+          );
           if (pass) {
             // Replicate reaction passes filters.
             // Access information about replicate reaction.
@@ -609,8 +629,8 @@ class Context {
   } = {}) {
     return firstParticipants.every(function (firstParticipant) {
       return secondParticipants.some(function (secondParticipant) {
-        return factors.every(function (factor) {
-          firstParticipant[factor] === secondParticipant[factor];
+        return attributes.every(function (attribute) {
+          firstParticipant[attribute] === secondParticipant[attribute];
         });
       });
     });
@@ -637,8 +657,6 @@ class Context {
     // Determine whether reaction is the priority replicate.
     return reactionIdentifier === priorityReactionIdentifier;
   }
-
-
   /**
   * Collects information about metabolites that participate in a candidate
   * reaction.
@@ -674,11 +692,18 @@ class Context {
     });
     var reactionMetabolites = participants
     .reduce(function (collection, participant) {
+      // Create identifier for candidate metabolite.
       var identifier = Context.createCandidateMetaboliteIdentifier({
         metabolite: participant.metabolite,
         compartment: participant.compartment,
         compartmentalization: compartmentalization
       }, {});
+      // Determine whether to represent the metabolite's compartment.
+      if (compartmentalization) {
+        var compartment = participant.compartment;
+      } else {
+        var compartment = null;
+      }
       // Determine whether collection already includes information about the
       // metabolite.
       if (collection.hasOwnProperty(identifier)) {
@@ -687,18 +712,18 @@ class Context {
       } else {
         // Collection does not include information about the metabolite.
         // Include the metabolite in the collection.
-        var record = {
-          [identifier]: {
-            identifier: identifier,
-            metabolite: participant.metabolite,
-            compartment: participant.compartment
-          }
+        // Compile attributes.
+        var attributes = {
+          identifier: identifier,
+          metabolite: participant.metabolite,
+          compartment: compartment
         };
+        // Create record.
+        var record = {
+          [identifier]: attributes
+        };
+        return record;
       }
-
-
-
-      return reactionMetabolites;
     }, {});
     return reactionMetabolites;
   }
@@ -742,36 +767,6 @@ class Context {
     setsCurrentReactions,
     reactions
   } = {}) {
-    // Access information about reaction.
-    var reaction = General
-    .accessObjectRecordByIdentifier(reactionIdentifier, reactions);
-    var reactionSets = General.accessArrayRecordByIdentifier(
-      reactionIdentifier, setsCurrentReactions
-    );
-    // Prepare information about reaction's metabolites.
-    // Filter information about reaction's participants for metabolites and
-    // compartments that are relevant in the context of interest.
-    var participants = Context.filterReactionParticipantsContextRelevance({
-      participants: reaction.participants,
-      metabolites: reactionSets.metabolites,
-      compartments: reactionSets.compartments,
-    });
-    var metabolitesIdentifiers = participants.map(function (participant) {
-      var identifier = Context.createCandidateMetaboliteIdentifier({
-        metabolite: metabolite,
-        compartment: compartment,
-        compartmentalization: compartmentalization
-      });
-      return identifier;
-    });
-    // Compile information about candidate reaction.
-    var record = {
-      identifier: reaction.identifier,
-      reaction: reaction.identifier,
-      replicates: replicates,
-      metabolites: metaboliteIdentifiers
-    };
-    return record;
   }
 
 

@@ -596,7 +596,12 @@ class SetView {
     options.text(function (element, index, nodes) {
       // Determine whether the option corresponds to a current selection of the
       // attribute's value.
-      if (element.selection) {
+      var selection = SetView.determineAttributeValueSelection({
+        value: element.value,
+        attribute: element.attribute,
+        model: self.model
+      });
+      if (selection) {
         var selection = "selection";
       } else {
         var selection = "";
@@ -799,10 +804,18 @@ class SetView {
     barMarks
     .classed("mark", true)
     .classed("normal", function (element, index, nodes) {
-      return !element.selection;
+      return !SetView.determineAttributeValueSelection({
+        value: element.value,
+        attribute: element.attribute,
+        model: self.model
+      });
     })
     .classed("emphasis", function (element, index, nodes) {
-      return element.selection;
+      return SetView.determineAttributeValueSelection({
+        value: element.value,
+        attribute: element.attribute,
+        model: self.model
+      });
     })
     .attr("width", function (element, index) {
       // Determine scale between value and graph's dimension.
@@ -923,6 +936,26 @@ class SetView {
     attribute, valueIdentifier, model
   } = {}) {
     return model[attribute][valueIdentifier].name;
+  }
+  /**
+  * Determines whether an attribute's value has a selection from references in
+  * the model of the application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.value Identifier of a value of the attribute.
+  * @param {string} parameters.attribute Name of an attribute.
+  * @param {Object} parameters.model Model of the application's comprehensive
+  * state.
+  * @returns {boolean} Whether a selection exists for the value of the
+  * attribute.
+  */
+  static determineAttributeValueSelection({
+    value, attribute, model
+  } = {}) {
+    return Attribution.determineSelectionMatch({
+      value: value,
+      attribute: attribute,
+      selections: model.setsSelections
+    });
   }
 }
 
