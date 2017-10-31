@@ -87,13 +87,6 @@ class Attribution {
   static collectMetabolitesReactionsAttributesValues(reactionsSets, reactions) {
     // A metabolite inherits its attributes that are relevant to sets and
     // filtration from the reactions in which it participates.
-    // A metabolite only passes filters if it participates in at least a single
-    // reaction in a context that passes filters.
-    // Filtration ensures that information about reactions' metabolites and sets
-    // only includes values of attributes that pass filters and metabolites that
-    // participate in contexts that pass filters.
-    // Information about metabolites' reactions and sets derives from comparable
-    // information about reactions, so the filtration applies.
     // Collect the identifiers of reactions in which each metabolite
     // participates.
     var metabolitesReactions = General.collectRecordsTargetsByCategories({
@@ -118,8 +111,8 @@ class Attribution {
         reactionsSets: reactionsSets,
         reactions: reactions
       });
-      // Compile metabolite's attributes.
-      // Create metabolite's record.
+      // Compile values of attributes.
+      // Create record.
       var novelAttributesValues = {
         identifier: metaboliteIdentifier,
         metabolite: metaboliteIdentifier,
@@ -150,8 +143,6 @@ class Attribution {
     reactionsSets,
     reactions
   } = {}) {
-    // Collect attributes that metabolite inherits from the reactions in which
-    // it participates.
     // Initialize collection.
     var initialCollection = {
       compartments: [],
@@ -160,14 +151,13 @@ class Attribution {
     var totalAttributes = reactionsIdentifiers
     .reduce(function (collection, reactionIdentifier) {
       // Collect values of attributes that metabolite inherits from reaction.
-      var inheritance = Attribution
-      .collectMetaboliteReactionAttributesValues({
+      var inheritance = Attribution.collectMetaboliteReactionAttributesValues({
         metaboliteIdentifier: metaboliteIdentifier,
         reactionIdentifier: reactionIdentifier,
         reactionsSets: reactionsSets,
         reactions: reactions
       });
-      // Compile collection's values of attributes.
+      // Compile values of attributes.
       var currentCompartments = []
       .concat(collection.compartments, inheritance.compartments);
       var currentProcesses = []
@@ -176,7 +166,7 @@ class Attribution {
         compartments: currentCompartments,
         processes: currentProcesses
       };
-      // Preserve collection.
+      // Propagate collection.
       return currentCollection;
     }, initialCollection);
     // Collect unique values of attributes.
@@ -607,7 +597,8 @@ class Attribution {
         // Preserve collection.
         return currentCollection;
       } else {
-        // Reaction neither passes nor claims.
+        // Metabolite's reaction does not pass filters or does not claim the
+        // metabolite.
         return collection;
       }
     }, initialCollection);
@@ -674,9 +665,7 @@ class Attribution {
   */
   static determineSelectionMatch({value, attribute, selections} = {}) {
     return selections.some(function (selection) {
-      return (
-        selection.attribute === attribute && selection.value === value
-      );
+      return (selection.attribute === attribute && selection.value === value);
     });
   }
 }
