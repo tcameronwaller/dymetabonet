@@ -1,3 +1,33 @@
+/*
+Profondeur supports visual exploration and analysis of metabolic networks.
+Copyright (C) 2017 Thomas Cameron Waller
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program.
+If not, see <http://www.gnu.org/licenses/>.
+
+This file is part of project Profondeur.
+Project repository's address: https://github.com/tcameronwaller/profondeur/
+Author's electronic address: tcameronwaller@gmail.com
+Author's physical address:
+T Cameron Waller
+Scientific Computing and Imaging Institute
+University of Utah
+72 South Central Campus Drive Room 3750
+Salt Lake City, Utah 84112
+United States of America
+*/
+
 /**
 * Model of the comprehensive state of the application.
 * This class stores attributes that represent the entire state of the
@@ -13,6 +43,7 @@ class Model {
     // It is the role of the model to know which attributes and which values
     // of these attributes describe the application.
     // Specify attributes for the model to expect and accept.
+    // TODO: Consider splitting up attributes into categories and then concatenating them into attributeNames.
     this.attributeNames = [
 
       // Source.
@@ -38,21 +69,21 @@ class Model {
       "processes",
 
       // Sets.
-      // Attribute "setsTotalReactions" stores information for each reaction
+      // Attribute "totalReactionsSets" stores information for each reaction
       // about the metabolites that participate and the sets to which the entity
       // belongs by its values of attributes.
       // Information includes references to attributes "reactions",
       // "metabolites", "compartments", and "processes".
       // Information derives from attribute "reactions".
-      "setsTotalReactions", // TODO: Change name to totalReactionsSets
-      // Attribute "setsTotalMetabolites" stores information for each metabolite
+      "totalReactionsSets",
+      // Attribute "totalMetabolitesSets" stores information for each metabolite
       // about the reactions in which it participates and the sets to which the
       // entity belongs by its values of attributes.
       // Information includes references to attributes "metabolites",
       // "reactions", "compartments", and "processes".
-      // Information derives from attributes "setsTotalReactions" and
+      // Information derives from attributes "totalReactionsSets" and
       // "reactions".
-      "setsTotalMetabolites",
+      "totalMetabolitesSets",
       // Attribute "setsSelections" stores information about selections of sets
       // by values of entities' attributes.
       // These selections inform the filtration of entities by their values of
@@ -60,7 +91,7 @@ class Model {
       // Information includes references to attributes "compartments" and
       // "processes".
       "setsSelections",
-      // Attribute "setsCurrentReactions" stores information for each reaction
+      // Attribute "currentReactionsSets" stores information for each reaction
       // about the metabolites that participate and the sets to which the entity
       // belongs by its values of attributes.
       // Information only includes entities that pass filters and those of their
@@ -68,18 +99,18 @@ class Model {
       // Information includes references to attributes "reactions",
       // "metabolites", "compartments", and "processes".
       // Information derives from attributes "setsSelections",
-      // "setsTotalReactions", and "reactions".
-      "setsCurrentReactions", // TODO: Change name to currentReactionsSets
-      // Attribute "setsCurrentMetabolites" stores information for each
+      // "totalReactionsSets", and "reactions".
+      "currentReactionsSets",
+      // Attribute "currentMetabolitesSets" stores information for each
       // metabolite about the reactions in which it participates and the sets to
       // which the entity belongs by its values of attributes.
       // Information only includes entities that pass filters and those of their
       // values of attributes that pass filters.
       // Information includes references to attributes "metabolites",
       // "reactions", "compartments", and "processes".
-      // Information derives from attributes "setsCurrentReactions" and
-      // "reactions".
-      "setsCurrentMetabolites",
+      // Information derives from attributes "totalMetabolitesSets",
+      // "currentReactionsSets" and "reactions".
+      "currentMetabolitesSets",
       // Attribute "setsEntities" stores information about the type of entities,
       // metabolites or reactions, to represent in the sets' summary.
       "setsEntities",
@@ -92,8 +123,8 @@ class Model {
       // Information includes references to attributes "compartments" and
       // "processes".
       // Information derives from attributes "setsEntities", "setsFilter",
-      // "setsCurrentReactions", "setsCurrentMetabolites", "setsTotalReactions",
-      // "setsTotalMetabolites".
+      // "currentReactionsSets", "currentMetabolitesSets", "totalReactionsSets",
+      // "totalMetabolitesSets".
       "setsCardinalities",
       // Attribute "setsSummary" stores information about the counts of entities
       // that belong to each set by their values of attributes.
@@ -109,31 +140,32 @@ class Model {
       // represent compartmentalization of metabolites.
       "compartmentalization",
 
-      // Attribute "simplificationReactions" stores information about selections
-      // of reactions for simplification by omission.
-      // Information includes references to attribute "contextReactions".
-      "simplificationReactions",
-      // Attribute "simplificationMetabolites" stores information about
+      // Attribute "reactionsSimplifications" stores information about
+      // selections of reactions for simplification by omission.
+      // Information includes references to attribute "reactionsCandidates".
+      "reactionsSimplifications",
+      // Attribute "metabolitesSimplifications" stores information about
       // selections of metabolites for simplification either by replication or
       // omission.
-      // Information includes references to attribute "contextMetabolites".
-      "simplificationMetabolites",
+      // Information includes references to attribute "metabolitesCandidates".
+      "metabolitesSimplifications",
 
-      // Attribute "contextReactions" stores information for each reaction
+      // TODO: Update this information after I develop the procedure further...
+      // Attribute "reactionsCandidates" stores information for each reaction
       // about the metabolites that participate.
       // Information includes compartmentalization of metabolites.
       // Information includes references to attributes "reactions",
       // "metabolites", and "compartments".
       // Information derives from attributes "compartmentalization",
-      // "setsCurrentReactions", and "reactions".
-      "contextReactions", // TODO: Change to "candidateReactions" or "reactionCandidates"
-      // Attribute "contextMetabolites" stores information for each metabolite
-      // about the reactions in which it participates.
+      // "currentReactionsSets", and "reactions".
+      "reactionsCandidates",
+      // Attribute "metabolitesCandidates" stores information for each
+      // metabolite about the reactions in which it participates.
       // Information includes compartmentalization of metabolites.
       // Information includes references to attributes "metabolites",
       // "reactions", and "compartments".
-      // Information derives from attribute "contextReactions".
-      "contextMetabolites",
+      // Information derives from attribute "reactionsCandidates".
+      "metabolitesCandidates",
 
       // Network.
       "networkNodesReactions",

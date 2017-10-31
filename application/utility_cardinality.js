@@ -1,8 +1,38 @@
+/*
+Profondeur supports visual exploration and analysis of metabolic networks.
+Copyright (C) 2017 Thomas Cameron Waller
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program.
+If not, see <http://www.gnu.org/licenses/>.
+
+This file is part of project Profondeur.
+Project repository's address: https://github.com/tcameronwaller/profondeur/
+Author's electronic address: tcameronwaller@gmail.com
+Author's physical address:
+T Cameron Waller
+Scientific Computing and Imaging Institute
+University of Utah
+72 South Central Campus Drive Room 3750
+Salt Lake City, Utah 84112
+United States of America
+*/
+
 /**
 * Functionality of utility for counting the metabolic entities that belong to
 * sets according to their values of attributes.
-* This class does not store any attributes and does not require instantiation.
 * This class stores methods for external utility.
+* This class does not store any attributes and does not require instantiation.
 */
 class Cardinality {
   // Master control of procedure to count set cardinality.
@@ -15,13 +45,13 @@ class Cardinality {
   * sets' cardinalities.
   * @param {boolean} parameters.setsFilter Selection of whether to filter sets'
   * entities for summary.
-  * @param {Array<Object>} parameters.setsCurrentReactions Information about
+  * @param {Array<Object>} parameters.currentReactionsSets Information about
   * reactions' metabolites and sets that pass filters.
-  * @param {Array<Object>} parameters.setsCurrentMetabolites Information about
+  * @param {Array<Object>} parameters.currentMetabolitesSets Information about
   * metabolites' reactions and sets that pass filters.
-  * @param {Array<Object>} parameters.setsTotalReactions Information about all
+  * @param {Array<Object>} parameters.totalReactionsSets Information about all
   * reactions' metabolites and sets.
-  * @param {Array<Object>} parameters.setsTotalMetabolites Information about all
+  * @param {Array<Object>} parameters.totalMetabolitesSets Information about all
   * metabolites' reactions and sets.
   * @returns {Object<Object<number>>} Cardinalities of entities in sets by
   * attributes and values.
@@ -29,10 +59,10 @@ class Cardinality {
   static determineSetsCardinalities({
     setsEntities,
     setsFilter,
-    setsCurrentReactions,
-    setsCurrentMetabolites,
-    setsTotalReactions,
-    setsTotalMetabolites
+    currentReactionsSets,
+    currentMetabolitesSets,
+    totalReactionsSets,
+    totalMetabolitesSets
   } = {}) {
     // Determine for which type of entities to count sets' cardinalities.
     if (setsEntities === "metabolites") {
@@ -41,11 +71,11 @@ class Cardinality {
       if (setsFilter) {
         // Filter selection is true.
         // Consider only entities and their attributes that pass filters.
-        var setsEntities = setsCurrentMetabolites;
+        var setsEntities = currentMetabolitesSets;
       } else {
         // Filter selection is false.
         // Consider all entities.
-        var setsEntities = setsTotalMetabolites;
+        var setsEntities = totalMetabolitesSets;
       }
     } else if (setsEntities === "reactions") {
       // Entities of interest are reactions.
@@ -53,11 +83,11 @@ class Cardinality {
       if (setsFilter) {
         // Filter selection is true.
         // Consider only entities and their attributes that pass filters.
-        var setsEntities = setsCurrentReactions;
+        var setsEntities = currentReactionsSets;
       } else {
         // Filter selection is false.
         // Consider all entities.
-        var setsEntities = setsTotalReactions;
+        var setsEntities = totalReactionsSets;
       }
     }
     // There are 3 dimensions of information within records for entities' values

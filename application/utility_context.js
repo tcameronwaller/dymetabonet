@@ -1,8 +1,38 @@
+/*
+Profondeur supports visual exploration and analysis of metabolic networks.
+Copyright (C) 2017 Thomas Cameron Waller
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program.
+If not, see <http://www.gnu.org/licenses/>.
+
+This file is part of project Profondeur.
+Project repository's address: https://github.com/tcameronwaller/profondeur/
+Author's electronic address: tcameronwaller@gmail.com
+Author's physical address:
+T Cameron Waller
+Scientific Computing and Imaging Institute
+University of Utah
+72 South Central Campus Drive Room 3750
+Salt Lake City, Utah 84112
+United States of America
+*/
+
 /**
 * Functionality of utility for controlling compartmental context, simplification
 * of entities, and selections of entities of interest.
-* This class does not store any attributes and does not require instantiation.
 * This class stores methods for external utility.
+* This class does not store any attributes and does not require instantiation.
 */
 class Context {
   /**
@@ -12,11 +42,11 @@ class Context {
   * @param {Object} parameters Destructured object of parameters.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant in the context of interest.
-  * @param {Array<Object<string>>} parameters.simplificationReactions Selections
-  * of reactions for simplification.
-  * @param {Array<Object<string>>} parameters.simplificationMetabolites
+  * @param {Array<Object<string>>} parameters.reactionsSimplifications
+  * Selections of reactions for simplification.
+  * @param {Array<Object<string>>} parameters.metabolitesSimplifications
   * Selections of metabolites for simplification.
-  * @param {Array<Object>} parameters.setsCurrentReactions Information about
+  * @param {Array<Object>} parameters.currentReactionsSets Information about
   * reactions' metabolites and sets that pass filters.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Array<Object>} Information about relevant reactions and their
@@ -24,30 +54,30 @@ class Context {
   */
   static collectContextReactionsMetabolites({
     compartmentalization,
-    simplificationReactions,
-    simplificationMetabolites,
-    setsCurrentReactions,
+    reactionsSimplifications,
+    metabolitesSimplifications,
+    currentReactionsSets,
     reactions
   } = {}) {
     // Collect information about reactions and their metabolites' participation
     // that are relevant in context of interest.
     // Initialize collection.
     var initialCollection = {
-      contextReactions: [],
-      simplificationReactions: simplificationReactions,
+      reactionsCandidates: [],
+      reactionsSimplifications: reactionsSimplifications,
       reactionsMetabolites: {}
     };
     // Iterate on reactions.
-    return setsCurrentReactions
+    return currentReactionsSets
     .reduce(function (reactionsCollection, setsCurrentReaction) {
       // Collect information about individual reaction and its metabolites.
       return Context.collectContextReactionMetabolites({
         setsCurrentReaction: setsCurrentReaction,
         compartmentalization: compartmentalization,
-        simplificationReactions: simplificationReactions,
-        simplificationMetabolites: simplificationMetabolites,
+        reactionsSimplifications: reactionsSimplifications,
+        metabolitesSimplifications: metabolitesSimplifications,
         reactionsCollection: reactionsCollection,
-        setsCurrentReactions: setsCurrentReactions,
+        currentReactionsSets: currentReactionsSets,
         reactions: reactions
       });
     }, initialCollection);
@@ -61,13 +91,13 @@ class Context {
   * reaction's metabolites and sets that pass filters.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant in the context of interest.
-  * @param {Array<Object<string>>} parameters.simplificationReactions Selections
-  * of reactions for simplification.
-  * @param {Array<Object<string>>} parameters.simplificationMetabolites
+  * @param {Array<Object<string>>} parameters.reactionsSimplifications
+  * Selections of reactions for simplification.
+  * @param {Array<Object<string>>} parameters.metabolitesSimplifications
   * Selections of candidate metabolites for simplification.
   * @param {Array<Object>} parameters.reactionsCollection Information about
   * relevant reactions and their metabolites.
-  * @param {Array<Object>} parameters.setsCurrentReactions Information about
+  * @param {Array<Object>} parameters.currentReactionsSets Information about
   * reactions' metabolites and sets that pass filters.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Array<Object>} Information about relevant reactions and their
@@ -76,15 +106,15 @@ class Context {
   static collectContextReactionMetabolites({
     setsCurrentReaction,
     compartmentalization,
-    simplificationReactions,
-    simplificationMetabolites,
+    reactionsSimplifications,
+    metabolitesSimplifications,
     reactionsCollection,
-    setsCurrentReactions,
+    currentReactionsSets,
     reactions
   } = {}) {
     //var initialCollection = {
-    //  contextReactions: [],
-    //  simplificationReactions: simplificationReactions,
+    //  reactionsCandidates: [],
+    //  reactionsSimplifications: reactionsSimplifications,
     //  reactionsMetabolites: {}
     //};
     // Evaluate reaction's candidacy.
@@ -92,7 +122,7 @@ class Context {
     var candidacy = Context.evaluateReactionCandidacy({
       reactionIdentifier: reactionIdentifier,
       compartmentalization: compartmentalization,
-      setsCurrentReactions: setsCurrentReactions,
+      currentReactionsSets: currentReactionsSets,
       reactions: reactions,
       collection: reactionsCollection
     });
@@ -104,7 +134,7 @@ class Context {
       var reactionMetabolites = Context.collectCandidateReactionMetabolites({
         reactionIdentifier: reactionIdentifier,
         compartmentalization: compartmentalization,
-        setsCurrentReactions: setsCurrentReactions,
+        currentReactionsSets: currentReactionsSets,
         reactions: reactions
       });
       // Include novel metabolites in collection.
@@ -114,18 +144,18 @@ class Context {
       var novelReactionRecord = Context.createCandidateReactionRecord({
         reactionIdentifier: reactionIdentifier,
         replicates: candidacy.replicates,
-        setsCurrentReactions: setsCurrentReactions,
+        currentReactionsSets: currentReactionsSets,
         reactions: reactions
       });
       // Include record for novel reaction in collection.
       //var currentReactionsCollection = []
-      //.concat(reactionsCollection.contextReactions, novelReactionRecord);
+      //.concat(reactionsCollection.reactionsCandidates, novelReactionRecord);
 
       // TODO: Update selections for simplification, if necessary.
 
       var currentReactionsCollection = {
-        contextReactions: reactionsCollection.contextReactions,
-        simplificationReactions: simplificationReactions,
+        reactionsCandidates: reactionsCollection.reactionsCandidates,
+        reactionsSimplifications: reactionsSimplifications,
         reactionsMetabolites: currentReactionsMetabolites
       };
       return currentReactionsCollection;
@@ -142,7 +172,7 @@ class Context {
   * @param {string} parameters.reactionIdentifier Identifier of a reaction.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant in the context of interest.
-  * @param {Array<Object>} parameters.setsCurrentReactions Information about
+  * @param {Array<Object>} parameters.currentReactionsSets Information about
   * reactions' metabolites and sets that pass filters.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @param {Array<Object>} parameters.collection Information about relevant
@@ -152,7 +182,7 @@ class Context {
   static evaluateReactionCandidacy({
     reactionIdentifier,
     compartmentalization,
-    setsCurrentReactions,
+    currentReactionsSets,
     reactions,
     collection
   } = {}) {
@@ -160,7 +190,7 @@ class Context {
     var reaction = General
     .accessObjectRecordByIdentifier(reactionIdentifier, reactions);
     var reactionSets = General.accessArrayRecordByIdentifier(
-      reactionIdentifier, setsCurrentReactions
+      reactionIdentifier, currentReactionsSets
     );
     // Determine whether reaction is relevant.
     var relevance = Context.determineReactionContextRelevance({
@@ -174,7 +204,7 @@ class Context {
       var redundantReplicates = Context.collectRedundantReplicateReactions({
         comparisonIdentifier: reaction.identifier,
         compartmentalization: compartmentalization,
-        setsCurrentReactions: setsCurrentReactions,
+        currentReactionsSets: currentReactionsSets,
         reactions: reactions
       });
       if (redundantReplicates.length > 0) {
@@ -189,7 +219,7 @@ class Context {
         if (priority) {
           // Reaction is a priority.
           // Determine whether reaction is novel in the collection.
-          var novelty = !collection.contextReactions.some(function (record) {
+          var novelty = !collection.reactionsCandidates.some(function (record) {
             return record.identifier === reactionIdentifier;
           });
         } else {
@@ -201,7 +231,7 @@ class Context {
         // Reaction is a priority.
         var priority = true;
         // Determine whether reaction is novel in the collection.
-        var novelty = !collection.contextReactions.some(function (record) {
+        var novelty = !collection.reactionsCandidates.some(function (record) {
           return record.identifier === reactionIdentifier;
         });
       }
@@ -413,13 +443,13 @@ class Context {
   * which to compare all other replicate reactions.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant in the context of interest.
-  * @param {Array<Object>} parameters.setsCurrentReactions Information about
+  * @param {Array<Object>} parameters.currentReactionsSets Information about
   * reactions' metabolites and sets that pass filters.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Array<string>} Identifiers of reactions.
   */
   static collectRedundantReplicateReactions({
-    comparisonIdentifier, compartmentalization, setsCurrentReactions, reactions
+    comparisonIdentifier, compartmentalization, currentReactionsSets, reactions
   } = {}) {
     // Replicate reactions have identical metabolites that participate as
     // reactants and products.
@@ -432,7 +462,7 @@ class Context {
     var comparisonReaction = General
     .accessObjectRecordByIdentifier(comparisonIdentifier, reactions);
     var comparisonSets = General.accessArrayRecordByIdentifier(
-      comparisonIdentifier, setsCurrentReactions
+      comparisonIdentifier, currentReactionsSets
     );
     // Determine whether the comparison reaction has replicates.
     if (comparisonReaction.replication) {
@@ -451,7 +481,7 @@ class Context {
           // Replicate reaction is not identical to the comparison reaction.
           // Determine whether replicate reaction passes filters.
           var pass = General.determineArrayRecordByIdentifier(
-            replicateIdentifier, setsCurrentReactions
+            replicateIdentifier, currentReactionsSets
           );
           if (pass) {
             // Replicate reaction passes filters.
@@ -460,7 +490,7 @@ class Context {
               replicateIdentifier, reactions
             );
             var replicateSets = General.accessArrayRecordByIdentifier(
-              replicateIdentifier, setsCurrentReactions
+              replicateIdentifier, currentReactionsSets
             );
             // Determine whether replicate reaction is relevant in the context
             // of interest.
@@ -664,7 +694,7 @@ class Context {
   * @param {string} parameters.reactionIdentifier Identifier of a reaction.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant in the context of interest.
-  * @param {Array<Object>} parameters.setsCurrentReactions Information about
+  * @param {Array<Object>} parameters.currentReactionsSets Information about
   * reactions' metabolites and sets that pass filters.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Object<Object>} Information about a candidate reaction's
@@ -673,14 +703,14 @@ class Context {
   static collectCandidateReactionMetabolites({
     reactionIdentifier,
     compartmentalization,
-    setsCurrentReactions,
+    currentReactionsSets,
     reactions
   } = {}) {
     // Access information about reaction.
     var reaction = General
     .accessObjectRecordByIdentifier(reactionIdentifier, reactions);
     var reactionSets = General.accessArrayRecordByIdentifier(
-      reactionIdentifier, setsCurrentReactions
+      reactionIdentifier, currentReactionsSets
     );
     // Prepare information about reaction's metabolites.
     // Filter information about reaction's participants for metabolites and
@@ -755,7 +785,7 @@ class Context {
   * @param {Array<string>} parameters.replicates Identifiers of reactions.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant in the context of interest.
-  * @param {Array<Object>} parameters.setsCurrentReactions Information about
+  * @param {Array<Object>} parameters.currentReactionsSets Information about
   * reactions' metabolites and sets that pass filters.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Object} Information about a candidate reaction.
@@ -764,7 +794,7 @@ class Context {
     reactionIdentifier,
     replicates,
     compartmentalization,
-    setsCurrentReactions,
+    currentReactionsSets,
     reactions
   } = {}) {
   }
@@ -783,7 +813,7 @@ class Context {
   * metabolites' participation in a reaction.
   * @param {boolean} parameters.compartmentalization Whether to represent
   * compartmentalization.
-  * @param {Array<Object<string>>} parameters.simplificationMetabolites
+  * @param {Array<Object<string>>} parameters.metabolitesSimplifications
   * Selections of candidate metabolites for simplification.
   * @returns {Array<Object<string>>} Information about participants in a
   * reaction.
@@ -791,7 +821,7 @@ class Context {
   static filterReactionParticipantsNotSimplification({
     participants,
     compartmentalization,
-    simplificationMetabolites
+    metabolitesSimplifications
   }) {
     // Filter participants for those whose metabolites do not have selections
     // for simplification.
@@ -804,7 +834,7 @@ class Context {
         compartment: participant.compartment,
         compartmentalization: compartmentalization
       });
-      var simplification = simplificationMetabolites.some(function (record) {
+      var simplification = metabolitesSimplifications.some(function (record) {
         return record.identifier === identifier;
       });
       return !simplification;
@@ -820,18 +850,18 @@ class Context {
   * Collects for each reaction information about the compartmental metabolites
   * that participate.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object>} parameters.setsCurrentReactions Information about
+  * @param {Array<Object>} parameters.currentReactionsSets Information about
   * reactions' metabolites and sets that pass filters.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Array<Object>} Information about reactions' metabolites.
   */
   static collectInterestReactionsCompartmentalMetabolites({
-    setsCurrentReactions, reactions
+    currentReactionsSets, reactions
   } = {}) {
     // Collect reactions along with compartmental representations of their
     // metabolites.
     // Iterate on reactions.
-    return setsCurrentReactions.map(function (reactionRecord) {
+    return currentReactionsSets.map(function (reactionRecord) {
       var reactionReference = reactionRecord.reaction;
       var identifier = reactionRecord.reaction;
       // Set reference to reaction.
@@ -854,18 +884,18 @@ class Context {
   * Collects for each reaction information about the general metabolites that
   * participate.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object>} parameters.setsCurrentReactions Information about
+  * @param {Array<Object>} parameters.currentReactionsSets Information about
   * reactions' metabolites and sets that pass filters.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Array<Object>} Information about reactions' metabolites.
   */
   static collectInterestReactionsGeneralMetabolites({
-    setsCurrentReactions, reactions
+    currentReactionsSets, reactions
   } = {}) {
     // Collect reactions along with general representations of their
     // metabolites.
     // Iterate on reactions.
-    return setsCurrentReactions.map(function (reactionRecord) {
+    return currentReactionsSets.map(function (reactionRecord) {
       var reactionReference = reactionRecord.reaction;
       var identifier = reactionRecord.reaction;
       var metabolites = reactionRecord.metabolites.slice();

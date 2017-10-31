@@ -1,3 +1,33 @@
+/*
+Profondeur supports visual exploration and analysis of metabolic networks.
+Copyright (C) 2017 Thomas Cameron Waller
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program.
+If not, see <http://www.gnu.org/licenses/>.
+
+This file is part of project Profondeur.
+Project repository's address: https://github.com/tcameronwaller/profondeur/
+Author's electronic address: tcameronwaller@gmail.com
+Author's physical address:
+T Cameron Waller
+Scientific Computing and Imaging Institute
+University of Utah
+72 South Central Campus Drive Room 3750
+Salt Lake City, Utah 84112
+United States of America
+*/
+
 /**
 * Actions that modify the state of the application.
 * This class does not store any attributes and does not require instantiation.
@@ -237,8 +267,8 @@ class Action {
       setsSelections: setsEntitiesSelections.setsSelections,
       setsEntities: setsEntitiesSelections.setsEntities,
       setsFilter: setsEntitiesSelections.setsFilter,
-      setsTotalReactions: setsTotalEntities.setsTotalReactions,
-      setsTotalMetabolites: setsTotalEntities.setsTotalMetabolites,
+      totalReactionsSets: setsTotalEntities.totalReactionsSets,
+      totalMetabolitesSets: setsTotalEntities.totalMetabolitesSets,
       reactions: metabolicEntitiesSets.reactions
     });
     // Initialize selection for compartmentalization's relevance.
@@ -250,9 +280,9 @@ class Action {
       // Determine entities that are relevant to context of interest.
       var contextEntities = Action.createContextEntities({
         compartmentalization: compartmentalization,
-        simplificationReactions: simplifications.simplificationReactions,
-        simplificationMetabolites: simplifications.simplificationMetabolites,
-        setsCurrentReactions: setsEntitiesCardinalities.setsCurrentReactions,
+        reactionsSimplifications: simplifications.reactionsSimplifications,
+        metabolitesSimplifications: simplifications.metabolitesSimplifications,
+        currentReactionsSets: setsEntitiesCardinalities.currentReactionsSets,
         reactions: metabolicEntitiesSets.reactions
       });
     }
@@ -298,6 +328,12 @@ class Action {
       model: model
     });
   }
+
+
+
+
+
+
 
 
   // TODO: Repair changeSetsEntities.
@@ -423,8 +459,8 @@ class Action {
       setsSelections: model.setsSelections,
       setsEntities: model.setsEntities,
       setsFilter: model.setsFilter,
-      setsTotalReactions: model.setsTotalReactions,
-      setsTotalMetabolites: model.setsTotalMetabolites,
+      totalReactionsSets: model.totalReactionsSets,
+      totalMetabolitesSets: model.totalMetabolitesSets,
       reactions: model.reactions
     });
 
@@ -743,6 +779,14 @@ class Action {
     console.log("process duration: " + duration + " milliseconds");
   }
 
+
+
+
+
+
+
+
+
   // Secondary actions relevant to application's state.
 
   /**
@@ -769,16 +813,16 @@ class Action {
   static createSetsTotalEntities(reactions) {
     // Determine for each reaction the metabolites that participate and to which
     // sets it belongs by its values of attributes.
-    var setsTotalReactions = Attribution
+    var totalReactionsSets = Attribution
     .collectReactionsMetabolitesAttributesValues(reactions);
     // Determine for each metabolite the reactions in which it participates and
     // to which sets it belongs by its values of attributes.
-    var setsTotalMetabolites = Attribution
-    .collectMetabolitesReactionsAttributesValues(setsTotalReactions, reactions);
+    var totalMetabolitesSets = Attribution
+    .collectMetabolitesReactionsAttributesValues(totalReactionsSets, reactions);
     // Compile novel values of attributes.
     var attributesValues = {
-      setsTotalReactions: setsTotalReactions,
-      setsTotalMetabolites: setsTotalMetabolites
+      totalReactionsSets: totalReactionsSets,
+      totalMetabolitesSets: totalMetabolitesSets
     };
     // Return novel values of attributes.
     return attributesValues;
@@ -814,16 +858,16 @@ class Action {
   * sets' cardinalities.
   * @param {boolean} parameters.setsFilter Selection of whether to filter sets'
   * entities for summary.
-  * @param {Array<Object>} parameters.setsTotalReactions Information about all
+  * @param {Array<Object>} parameters.totalReactionsSets Information about all
   * reactions' metabolites and sets.
-  * @param {Array<Object>} parameters.setsTotalMetabolites Information about all
+  * @param {Array<Object>} parameters.totalMetabolitesSets Information about all
   * metabolites' reactions and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Object} Collection of multiple attributes.
   */
   static determineSetsEntitiesCardinalities({
-    setsSelections, setsEntities, setsFilter, setsTotalReactions,
-    setsTotalMetabolites, reactions
+    setsSelections, setsEntities, setsFilter, totalReactionsSets,
+    totalMetabolitesSets, reactions
   } = {}) {
     // Determine entities and their values of attributes that pass filters from
     // selections.
@@ -833,8 +877,8 @@ class Action {
     if (setsSelections.length === 0) {
       // There are not any selections of attributes' values to apply as filters.
       // Copy information about metabolic entities.
-      var setsCurrentReactions = General.copyValueJSON(setsTotalReactions);
-      var setsCurrentMetabolites = General.copyValueJSON(setsTotalMetabolites);
+      var currentReactionsSets = General.copyValueJSON(totalReactionsSets);
+      var currentMetabolitesSets = General.copyValueJSON(totalMetabolitesSets);
     } else {
       // There are selections of attributes' values to apply as filters.
       // Filter the metabolic entities and their values of attributes.
@@ -842,18 +886,18 @@ class Action {
       // changes to selections of filters.
       // Filter for each reaction the metabolites that participate and to which
       // sets it belongs by its values of attributes.
-      var setsCurrentReactions = Attribution
+      var currentReactionsSets = Attribution
       .filterReactionsMetabolitesAttributesValues({
         setsSelections: setsSelections,
-        setsTotalReactions: setsTotalReactions,
+        totalReactionsSets: totalReactionsSets,
         reactions: reactions
       });
       // Determine for each metabolite the reactions in which it participates
       // and to which sets it belongs by its values of attributes.
-      var setsCurrentMetabolites = Attribution
+      var currentMetabolitesSets = Attribution
       .filterMetabolitesReactionsAttributesValues({
-        setsTotalMetabolites: setsTotalMetabolites,
-        setsCurrentReactions: setsCurrentReactions,
+        totalMetabolitesSets: totalMetabolitesSets,
+        currentReactionsSets: currentReactionsSets,
         reactions: reactions
       });
     }
@@ -861,17 +905,17 @@ class Action {
     var setsCardinalities = Cardinality.determineSetsCardinalities({
       setsEntities: setsEntities,
       setsFilter: setsFilter,
-      setsCurrentReactions: setsCurrentReactions,
-      setsCurrentMetabolites: setsCurrentMetabolites,
-      setsTotalReactions: setsTotalReactions,
-      setsTotalMetabolites: setsTotalMetabolites
+      currentReactionsSets: currentReactionsSets,
+      currentMetabolitesSets: currentMetabolitesSets,
+      totalReactionsSets: totalReactionsSets,
+      totalMetabolitesSets: totalMetabolitesSets
     });
     // Prepare summary of sets of entities.
     var setsSummary = Cardinality.prepareSetsSummary(setsCardinalities);
     // Compile novel values of attributes.
     var attributesValues = {
-      setsCurrentReactions: setsCurrentReactions,
-      setsCurrentMetabolites: setsCurrentMetabolites,
+      currentReactionsSets: currentReactionsSets,
+      currentMetabolitesSets: currentMetabolitesSets,
       setsCardinalities: setsCardinalities,
       setsSummary: setsSummary
     };
@@ -898,13 +942,13 @@ class Action {
   */
   static initializeSimplificationSelections() {
     // Initialize selections of reactions for simplification.
-    var simplificationReactions = [];
+    var reactionsSimplifications = [];
     // Initialize selections of reactions for simplification.
-    var simplificationMetabolites = [];
+    var metabolitesSimplifications = [];
     // Compile novel values of attributes.
     var attributesValues = {
-      simplificationReactions: simplificationReactions,
-      simplificationMetabolites: simplificationMetabolites
+      reactionsSimplifications: reactionsSimplifications,
+      metabolitesSimplifications: metabolitesSimplifications
     };
     // Return novel values of attributes.
     return attributesValues;
@@ -915,20 +959,20 @@ class Action {
   * @param {Object} parameters Destructured object of parameters.
   * @param {boolean} parameters.compartmentalization Whether to represent
   * compartmentalization.
-  * @param {Array<Object<string>>} parameters.simplificationReactions Selections
-  * of reactions for simplification.
-  * @param {Array<Object<string>>} parameters.simplificationMetabolites
+  * @param {Array<Object<string>>} parameters.reactionsSimplifications
+  * Selections of reactions for simplification.
+  * @param {Array<Object<string>>} parameters.metabolitesSimplifications
   * Selections of metabolites for simplification.
-  * @param {Array<Object>} parameters.setsCurrentReactions Information about
+  * @param {Array<Object>} parameters.currentReactionsSets Information about
   * reactions' metabolites and sets that pass filters.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Object} Collection of multiple attributes.
   */
   static createContextEntities({
     compartmentalization,
-    simplificationReactions,
-    simplificationMetabolites,
-    setsCurrentReactions,
+    reactionsSimplifications,
+    metabolitesSimplifications,
+    currentReactionsSets,
     reactions
   } = {}) {
     // TODO: Rename "context entities" to "candidate entities" since these are
@@ -972,11 +1016,11 @@ class Action {
     // entities of the other type that rely on the entity for their own
     // relevance.
     if (false) {
-      var contextReactions = Context.collectContextReactionsMetabolites({
+      var reactionsCandidates = Context.collectContextReactionsMetabolites({
         compartmentalization: compartmentalization,
-        simplificationReactions: simplificationReactions,
-        simplificationMetabolites: simplificationMetabolites,
-        setsCurrentReactions: setsCurrentReactions,
+        reactionsSimplifications: reactionsSimplifications,
+        metabolitesSimplifications: metabolitesSimplifications,
+        currentReactionsSets: currentReactionsSets,
         reactions: reactions
       });
     }
@@ -985,38 +1029,38 @@ class Action {
     // TODO: The idea is to give access to each entity and enable selections for simplification.
 
     // TODO: Create the context-dependent (ie compartmentalization) entities.
-    // TODO: These records will be very similar to the setsCurrentReactions and setsCurrentMetabolites...
+    // TODO: These records will be very similar to the currentReactionsSets and currentMetabolitesSets...
     // TODO: They only need references to their respective entity, reaction or metabolite...
     // TODO: ... and to the reactions or metabolites to which they relate
     // TODO: These relations need to reflect current filters AND compartmentalization.
     // TODO: Maybe adapt some processes from the network definition procedure.
 
     // TODO: Procedure for reactions...
-    // TODO: Iterate on setsCurrentReactions
+    // TODO: Iterate on currentReactionsSets
     // TODO: For each current reaction...
     // TODO: If compartmentalization is false...
-    // TODO: ... then copy the reaction reference and metabolite references from setsCurrentReactions... done
+    // TODO: ... then copy the reaction reference and metabolite references from currentReactionsSets... done
     // TODO: If compartmentalization is true...
     // TODO: ... then access the reaction's record and determine in which compartment each metabolite participates
     // TODO: ... only consider compartments that pass filters
     // TODO: ... create compartmental identifiers for the metabolites
     // TODO: ... store references to these compartmental metabolites within the record.
     //
-    // TODO: Maybe collect metabolite's reference identifiers and compartments while preparing contextReactions???
+    // TODO: Maybe collect metabolite's reference identifiers and compartments while preparing reactionsCandidates???
     //
     // TODO: Procedure for metabolites...
     // TODO: I suppose just derive the metabolites from the reactions as usual
     // TODO: Compartmental metabolites need their own compartmental identifiers, such as "pyr_c".
     // TODO: Compartmental metabolites also need references to their metabolite records and to their compartment.
     // TODO: Derive the compartmental name as needed, such as "pyruvate cytosol".
-    // TODO: For simplicity, just derive metabolite and compartment identifiers from the ID (such as "pyr_c") within contextReactions record.
+    // TODO: For simplicity, just derive metabolite and compartment identifiers from the ID (such as "pyr_c") within reactionsCandidates record.
 
 
     if (false) {
       // Compile novel values of attributes.
       var attributesValues = {
-        setsCurrentReactions: setsCurrentReactions,
-        setsCurrentMetabolites: setsCurrentMetabolites,
+        currentReactionsSets: currentReactionsSets,
+        currentMetabolitesSets: currentMetabolitesSets,
         setsCardinalities: setsCardinalities,
         setsSummary: setsSummary
       };
@@ -1025,6 +1069,14 @@ class Action {
 
     }
   }
+
+
+
+
+
+
+
+
 
   // TODO: SOME of these methods might be obsolete...
 
