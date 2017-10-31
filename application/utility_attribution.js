@@ -442,6 +442,10 @@ class Attribution {
     // This filtration procedure selects which metabolites to preserve, which of
     // their reactions to preserve, and which of their values of attributes to
     // preserve.
+    // A metabolite's values of attributes determine its attribution to sets, so
+    // it is also important to filter these values.
+    // Metabolites inherit attributes relevant to filtration from the reactions
+    // in which they participate.
     // Filter metabolites, their reactions, and their values of attributes.
     return setsTotalMetabolites.reduce(function (collection, setsMetabolite) {
       // Filter metabolite's reactions and values of attributes that it inherits
@@ -633,98 +637,5 @@ class Attribution {
         selection.attribute === attribute && selection.value === value
       );
     });
-  }
-
-
-// TODO: This stuff might be obsolete.
-
-  /**
-  * Filters metabolites and their values of attributes that they inherit from
-  * reactions in which they participate.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.metabolites Records with information about
-  * metabolites.
-  * @param {Object} parameters.reactions Records with information about
-  * reactions.
-  * @returns {Object} Records with information about metabolites and values
-  * of their attributes that pass filters.
-  */
-  static filterMetabolitesAttributesValues({
-    metabolites, reactions
-  } = {}) {
-    // This filtration procedure selects both which metabolites to preserve and
-    // which of their values of attributes to preserve.
-    // A metabolite's values of attributes determine its attribution to sets, so
-    // it is also important to filter these values.
-    // Metabolites inherit attributes relevant to filtration from the reactions
-    // in which they participate.
-    // Filter metabolites and their values of attributes.
-    var metabolitesIdentifiers = Object.keys(metabolites);
-    return metabolitesIdentifiers
-    .reduce(function (collection, metaboliteIdentifier) {
-      // Set reference to metabolite's record.
-      var metabolite = metabolites[metaboliteIdentifier];
-      // Filter metabolite's reactions and values of attributes that it inherits
-      // from its reactions.
-      var filterMetabolite = Attribution.filterMetaboliteAttributesValues({
-        metabolite: metabolite,
-        reactions: reactions
-      });
-      // Determine whether the metabolite passes filters.
-      var pass = Attribution.determineMetabolitePassFilters(filterMetabolite);
-      if (pass) {
-        // Metabolite passes filters.
-        // Include metabolite in the collection.
-        var novelRecord = {
-          [filterMetabolite.identifier]: filterMetabolite
-        };
-        var currentCollection = Object.assign({}, collection, novelRecord);
-      } else {
-        // Metabolite does not pass filters.
-        // Omit metabolite from the collection.
-        var currentCollection = collection;
-      }
-      return currentCollection;
-    }, {});
-  }
-  /**
-  * Filters a single metabolite's values of attributes that it inherits from
-  * reactions in which it participates.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.metabolite Record with information about a
-  * single metabolite.
-  * @param {Object} parameters.reactions Records with information about
-  * reactions.
-  * @returns {Object} Record with information about a single metabolite and
-  * values of its attributes that pass filters.
-  */
-  static filterMetaboliteAttributesValues({
-    metabolite, reactions
-  } = {}) {
-    // Determine values of attributes that metabolite inherits from the
-    // reactions in which it participates.
-    var reactionsAttributes = Extraction.collectMetaboliteReactionsAttributes({
-      metaboliteIdentifier: metabolite.identifier,
-      reactionsIdentifiers: metabolite.reactions,
-      reactions: reactions
-    });
-    // Copy all of metabolite's attributes.
-    var metaboliteAttributes = General.copyValueJSON(metabolite);
-    // Replace metabolite's original attributes with those that pass filters.
-    return Object.assign({}, metaboliteAttributes, reactionsAttributes);
-  }
-  /**
-  * Determines whether or not a metabolite passes filters.
-  * @param {Object} metabolite Record with information about a metabolite and
-  * its attributes' values that pass filters.
-  * @returns {boolean} Whether or not the metabolite passes filters.
-  */
-  static determineMetabolitePassFilters(metabolite) {
-    // Attributes relevant to filtration are compartments and processes.
-    // Metabolites inherit these attributes from the reactions in which they
-    // participate.
-    // To pass filters, a metabolite must participate in at least a single
-    // reaction in a context that passes filters.
-    return metabolite.reactions.length > 0;
   }
 }

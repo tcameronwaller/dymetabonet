@@ -1026,13 +1026,7 @@ class Action {
     }
   }
 
-
-
-
-
-
-
-
+  // TODO: SOME of these methods might be obsolete...
 
   /**
   * Initializes values of attributes that relate to sets of current entities.
@@ -1152,6 +1146,7 @@ class Action {
     // Return attributes' values.
     return attributesValues;
   }
+
   /**
   * Initializes values of attributes that relate to network's elements.
   * @returns {Object} Collection of multiple attributes that relate to network's
@@ -1180,35 +1175,5 @@ class Action {
     };
     // Return attributes' values.
     return attributesValues;
-  }
-
-
-
-
-  /**
-  * Loads from a file at a specific path on client's system a default
-  * representation of the application's state.
-  * @param {string} path Directory path and file name of file with
-  * information about application state.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
-  */
-  static loadDefaultState(path, model) {
-    var data = General.loadObjectByPath(path);
-    var newAttributes = Object.keys(data).map(function (key) {
-      return {
-        attribute: key,
-        value: data[key]
-      };
-    });
-    model.restore(newAttributes, model);
-
-    // Scrap... I think...
-    // Load data for assembly from file.
-    //var assembly = General.loadFileByPath(path);
-    // Extract attributes from assembly.
-    //var newAttributes = General.extractAssemblyEntitiesSets(assembly);
-    // Pass attributes from assembly to model.
-    //model.restore(newAttributes);
   }
 }

@@ -181,8 +181,8 @@ class Evaluation {
   static createMetabolitesParticipationSummary(metabolites) {
     // Transfer records for metabolites from a collection in an object to a
     // collection in an array.
-    var metabolitesRecords = Extraction
-    .copyEntitiesRecordsObjectArray(metabolites);
+    var metabolitesRecords = General
+    .copyRecordsObjectArray(metabolites);
     // Summarize the identifier, name, and count of reactions for each
     // metabolite.
     var metabolitesSummaries = metabolitesRecords.map(function (metabolite) {
