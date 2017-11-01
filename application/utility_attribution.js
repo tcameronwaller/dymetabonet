@@ -205,7 +205,7 @@ class Attribution {
     });
     // Collect reaction's processes.
     // Metabolite inherits all of reactions' processes.
-    var processes = reaction.processes;
+    var processes = reactionSets.processes;
     // Compile values of attributes.
     var attributesValues = {
       compartments: compartments,

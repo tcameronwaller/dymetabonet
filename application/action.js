@@ -249,33 +249,48 @@ class Action {
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.metabolicEntitiesSets Information about metabolic
   * entities and sets.
-  * @param {Object} parameters.model Model of the comprehensive state of the
-  * application.
+  * @param {Object} parameters.model Model of the application's comprehensive
+  * state.
   */
   static initializeApplicationInformation({metabolicEntitiesSets, model} = {}) {
     // Initialize values of application's attributes for information about
     // metabolic entities and sets.
     // Remove the current file selection from the application's state.
     var file = null;
-    // Determine entities' attribution to sets.
-    var setsTotalEntities = Action
-    .createSetsTotalEntities(metabolicEntitiesSets.reactions);
-    // Initialize selections for entities' sets.
-    var setsEntitiesSelections = Action.initializeSetsEntitiesSelections();
-    // Determine sets' cardinalities.
-    var setsEntitiesCardinalities = Action.determineSetsEntitiesCardinalities({
-      setsSelections: setsEntitiesSelections.setsSelections,
-      setsEntities: setsEntitiesSelections.setsEntities,
-      setsFilter: setsEntitiesSelections.setsFilter,
-      totalReactionsSets: setsTotalEntities.totalReactionsSets,
-      totalMetabolitesSets: setsTotalEntities.totalMetabolitesSets,
+    // Determine total entities' attribution to sets.
+    var totalEntitiesSets = Action
+    .createTotalEntitiesSets(metabolicEntitiesSets.reactions);
+    // Initialize selections of entities' sets.
+    var entitiesSetsSelections = Action.initializeEntitiesSetsSelections();
+    // Determine current entities' attribution to sets.
+    var currentEntitiesSets = Action.determineCurrentEntitiesSets({
+      setsSelections: entitiesSetsSelections.setsSelections,
+      totalReactionsSets: totalEntitiesSets.totalReactionsSets,
+      totalMetabolitesSets: totalEntitiesSets.totalMetabolitesSets,
       reactions: metabolicEntitiesSets.reactions
+    });
+    // Initialize selections that influence sets' cardinalities.
+    var setsCardinalitiesSelections = Action
+    .initializeSetsCardinalitiesSelections();
+    // Determine sets' cardinalities.
+    var entitiesSetsCardinalities = Action.determineEntitiesSetsCardinalities({
+      setsEntities: setsCardinalitiesSelections.setsEntities,
+      setsFilter: setsCardinalitiesSelections.setsFilter,
+      currentReactionsSets: currentEntitiesSets.currentReactionsSets,
+      currentMetabolitesSets: currentEntitiesSets.currentMetabolitesSets,
+      totalReactionsSets: totalEntitiesSets.totalReactionsSets,
+      totalMetabolitesSets: totalEntitiesSets.totalMetabolitesSets
     });
     // Initialize selection for compartmentalization's relevance.
     var compartmentalization = Action.initializeCompartmentalizationSelection();
-    // TODO: Any change to the compartmentalization selection should re-initialize the simplification selections.
     // Initialize selections for entities' simplification.
-    var simplifications = Action.initializeSimplificationSelections();
+    // Simplifications are specific to candidate entities, which are specific to
+    // the context of interest, of which compartmentalization is part.
+    var simplifications = Action.initializeSimplificationsSelections();
+
+    // TODO: I'll need to include the procedure for entitiesCandidates once it's complete.
+    // TODO: I'll also need to include this procedure for other actions that will change the candidates...
+    // TODO: ... changes to compartmentalization, selections of sets, selections of entities for simplification
     if (false) {
       // Determine entities that are relevant to context of interest.
       var contextEntities = Action.createContextEntities({
@@ -287,17 +302,7 @@ class Action {
       });
     }
 
-    // Initialize selections for simplification of entities, reactions or
-    // metabolites. (after creating the entities in the first place)
-    // TODO: Initialize selections of simplification for reactions and metabolites.
-    // TODO: Reactions can only have simplification by omission.
-    // TODO: Metabolites can have simplification by either omission or replication.
-
-
-
-    // Initialize application's attributes for sets of entities.
-    //var currentEntitiesSetsAttributes = Action
-    //.initializeCurrentEntitiesSetsAttributes(entitiesSets);
+    // TODO: I'll also need to include procedure for definition of network's elements.
 
     // Initialize application's attributes for individual entities.
     //var networkDefinitionAttributes = Action
@@ -312,9 +317,11 @@ class Action {
     var attributesValues = Object.assign(
       {},
       metabolicEntitiesSets,
-      setsTotalEntities,
-      setsEntitiesSelections,
-      setsEntitiesCardinalities,
+      totalEntitiesSets,
+      entitiesSetsSelections,
+      currentEntitiesSets,
+      setsCardinalitiesSelections,
+      entitiesSetsCardinalities,
       compartmentalization,
       simplifications,
       //networkDefinitionAttributes,
@@ -328,107 +335,86 @@ class Action {
       model: model
     });
   }
-
-
-
-
-
-
-
-
-  // TODO: Repair changeSetsEntities.
-
   /**
-  * Changes the entities of interest for the sets' summary.
-  * Also prepares new sets' summary.
-  * Submits new values to the model of the application's state.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
+  * Changes the selection of entities of interest for the sets' summary.
+  * @param {Object} model Model of the application's comprehensive state.
   */
   static changeSetsEntities(model) {
-    // Determine new entities of interest.
+    // Determine entities of interest.
     var previousEntities = model.setsEntities;
     if (previousEntities === "metabolites") {
       var currentEntities = "reactions";
     } else if (previousEntities === "reactions") {
       var currentEntities = "metabolites";
     }
-    // Determine values of attributes that summarize cardinalities of sets
-    // of entities.
-    var setsCardinalitiesAttributes = Action
-    .determineEntitiesSetsCardinalitiesAttributes({
-      entities: currentEntities,
-      filter: model.setsFilter,
-      selections: model.setsSelections,
-      metabolites: model.metabolites,
-      reactions: model.reactions,
-      currentMetabolites: model.currentMetabolites,
-      currentReactions: model.currentReactions
+    // Determine sets' cardinalities.
+    var entitiesSetsCardinalities = Action.determineEntitiesSetsCardinalities({
+      setsEntities: currentEntities,
+      setsFilter: model.setsFilter,
+      currentReactionsSets: model.currentReactionsSets,
+      currentMetabolitesSets: model.currentMetabolitesSets,
+      totalReactionsSets: model.totalReactionsSets,
+      totalMetabolitesSets: model.totalMetabolitesSets
     });
+
+    // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
     // Initialize network's elements.
-    var networkElementsAttributes = Action
-    .initializeNetworkElementsAttributes();
-    // Compile new values of attributes.
+    //var networkElementsAttributes = Action
+    //.initializeNetworkElementsAttributes();
+
+    // Compile novel values of attributes.
     var novelAttributesValues = {
       setsEntities: currentEntities
     };
     var attributesValues = Object.assign(
       {},
-      setsCardinalitiesAttributes,
-      networkElementsAttributes,
+      entitiesSetsCardinalities,
       novelAttributesValues
     );
-    // Submit new values of attributes to the model of the application's
+    // Submit novel values of attributes to the model of the application's
     // state.
     Action.submitAttributes({
       attributesValues: attributesValues,
       model: model
     });
   }
-
-  // TODO: Repair changeSetsFilter.
-
   /**
-  * Changes the specification of filter for the sets' summary.
-  * Also determines new sets' cardinalities and prepares new sets' summary.
-  * Submits new values to the model of the application's state.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
+  * Changes the selection of filter for the sets' summary.
+  * @param {Object} model Model of the application's comprehensive state.
   */
   static changeSetsFilter(model) {
-    // Determine new filter.
+    // Determine filter.
     var previousFilter = model.setsFilter;
     if (previousFilter) {
       var currentFilter = false;
     } else {
       var currentFilter = true;
     }
-    // Determine values of attributes that summarize cardinalities of sets
-    // of entities.
-    var setsCardinalitiesAttributes = Action
-    .determineEntitiesSetsCardinalitiesAttributes({
-      entities: model.setsEntities,
-      filter: currentFilter,
-      selections: model.setsSelections,
-      metabolites: model.metabolites,
-      reactions: model.reactions,
-      currentMetabolites: model.currentMetabolites,
-      currentReactions: model.currentReactions
+    // Determine sets' cardinalities.
+    var entitiesSetsCardinalities = Action.determineEntitiesSetsCardinalities({
+      setsEntities: model.setsEntities,
+      setsFilter: currentFilter,
+      currentReactionsSets: model.currentReactionsSets,
+      currentMetabolitesSets: model.currentMetabolitesSets,
+      totalReactionsSets: model.totalReactionsSets,
+      totalMetabolitesSets: model.totalMetabolitesSets
     });
+
+    // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
     // Initialize network's elements.
-    var networkElementsAttributes = Action
-    .initializeNetworkElementsAttributes();
-    // Compile new values of attributes.
+    //var networkElementsAttributes = Action
+    //.initializeNetworkElementsAttributes();
+
+    // Compile novel values of attributes.
     var novelAttributesValues = {
       setsFilter: currentFilter
     };
     var attributesValues = Object.assign(
       {},
-      setsCardinalitiesAttributes,
-      networkElementsAttributes,
+      entitiesSetsCardinalities,
       novelAttributesValues
     );
-    // Submit new values of attributes to the model of the application's
+    // Submit novel values of attributes to the model of the application's
     // state.
     Action.submitAttributes({
       attributesValues: attributesValues,
@@ -436,13 +422,12 @@ class Action {
     });
   }
   /**
-  * Selects an attribute's value from the sets' summary.
-  * Submits new values to the model of the application's state.
+  * Selects an attribute's value.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.value Value of attribute in current selection.
   * @param {string} parameters.attribute Attribute in current selection.
-  * @param {Object} parameters.model Model of the comprehensive state of the
-  * application.
+  * @param {Object} parameters.model Model of the application's comprehensive
+  * state.
   */
   static selectSetsAttributeValue({value, attribute, model} = {}) {
     // Record current selection in collection of selections of attributes
@@ -454,33 +439,27 @@ class Action {
       attribute: attribute,
       previousSelections: model.setsSelections
     });
-    // Determine sets' cardinalities.
-    var setsEntitiesCardinalities = Action.determineSetsEntitiesCardinalities({
-      setsSelections: model.setsSelections,
-      setsEntities: model.setsEntities,
-      setsFilter: model.setsFilter,
+    // Determine current entities' attribution to sets.
+    var currentEntitiesSets = Action.determineCurrentEntitiesSets({
+      setsSelections: setsSelections,
       totalReactionsSets: model.totalReactionsSets,
       totalMetabolitesSets: model.totalMetabolitesSets,
       reactions: model.reactions
     });
+    // Determine sets' cardinalities.
+    var entitiesSetsCardinalities = Action.determineEntitiesSetsCardinalities({
+      setsEntities: model.setsEntities,
+      setsFilter: model.setsFilter,
+      currentReactionsSets: currentEntitiesSets.currentReactionsSets,
+      currentMetabolitesSets: currentEntitiesSets.currentMetabolitesSets,
+      totalReactionsSets: model.totalReactionsSets,
+      totalMetabolitesSets: model.totalMetabolitesSets
+    });
 
-    if (false) {
-      // Determine values of attributes that summarize cardinalities of sets of
-      // entities.
-      var setsCardinalitiesAttributes = Action
-      .determineEntitiesSetsCardinalitiesAttributes({
-        entities: model.setsEntities,
-        filter: model.setsFilter,
-        selections: setsSelections,
-        metabolites: model.metabolites,
-        reactions: model.reactions,
-        currentMetabolites: currentMetabolites,
-        currentReactions: currentReactions
-      });
-      // Initialize network's elements.
-      var networkElementsAttributes = Action
-      .initializeNetworkElementsAttributes();
-    }
+    // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
+    // Initialize network's elements.
+    //var networkElementsAttributes = Action
+    //.initializeNetworkElementsAttributes();
 
     // Compile novel values of attributes.
     var novelAttributesValues = {
@@ -488,7 +467,8 @@ class Action {
     };
     var attributesValues = Object.assign(
       {},
-      setsEntitiesCardinalities,
+      currentEntitiesSets,
+      entitiesSetsCardinalities,
       novelAttributesValues
     );
     // Submit novel values of attributes to the model of the application's
@@ -498,33 +478,45 @@ class Action {
       model: model
     });
   }
-
-  // TODO: Repair restoreSetsSummary();
-
   /**
-  * Restores sets' summary to its initial state.
+  * Restores sets' summary to initial state.
   * @param {Object} model Model of the application's comprehensive state.
   */
   static restoreSetsSummary(model) {
-    // Compile information about metabolic entities and sets.
-    var entitiesSets = {
-      compartments: model.compartments,
-      genes: model.genes,
-      processes: model.processes,
-      metabolites: model.metabolites,
+    // Initialize selections of entities' sets.
+    var entitiesSetsSelections = Action.initializeEntitiesSetsSelections();
+    // Determine current entities' attribution to sets.
+    var currentEntitiesSets = Action.determineCurrentEntitiesSets({
+      setsSelections: entitiesSetsSelections.setsSelections,
+      totalReactionsSets: model.totalReactionsSets,
+      totalMetabolitesSets: model.totalMetabolitesSets,
       reactions: model.reactions
-    };
-    // Initialize application's attributes for entities' sets.
-    var entitiesSetsAttributes = Action
-    .initializeCurrentEntitiesSetsAttributes(entitiesSets);
+    });
+    // Initialize selections that influence sets' cardinalities.
+    var setsCardinalitiesSelections = Action
+    .initializeSetsCardinalitiesSelections();
+    // Determine sets' cardinalities.
+    var entitiesSetsCardinalities = Action.determineEntitiesSetsCardinalities({
+      setsEntities: setsCardinalitiesSelections.setsEntities,
+      setsFilter: setsCardinalitiesSelections.setsFilter,
+      currentReactionsSets: currentEntitiesSets.currentReactionsSets,
+      currentMetabolitesSets: currentEntitiesSets.currentMetabolitesSets,
+      totalReactionsSets: model.totalReactionsSets,
+      totalMetabolitesSets: model.totalMetabolitesSets
+    });
+
+    // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
     // Initialize network's elements.
-    var networkElementsAttributes = Action
-    .initializeNetworkElementsAttributes();
+    //var networkElementsAttributes = Action
+    //.initializeNetworkElementsAttributes();
+
     // Compile novel values of attributes.
     var attributesValues = Object.assign(
       {},
-      entitiesSetsAttributes,
-      networkElementsAttributes
+      entitiesSetsSelections,
+      currentEntitiesSets,
+      setsCardinalitiesSelections,
+      entitiesSetsCardinalities
     );
     // Submit novel values of attributes to the model of the application's
     // state.
@@ -533,9 +525,6 @@ class Action {
       model: model
     });
   }
-
-  // TODO: Repair changeCompartmentalization
-
   /**
   * Changes the specification of compartmentalization for the network's
   * assembly.
@@ -544,7 +533,6 @@ class Action {
   * application.
   */
   static changeCompartmentalization(model) {
-    // TODO: Any change to the compartmentalization selection should re-initialize the simplification selections.
     // Change compartmentalization.
     var previousValue = model.compartmentalization;
     if (previousValue) {
@@ -552,25 +540,36 @@ class Action {
     } else {
       var currentValue = true;
     }
+    // Initialize selections for entities' simplification.
+    // Simplifications are specific to candidate entities, which are specific to
+    // the context of interest, of which compartmentalization is part.
+    var simplifications = Action.initializeSimplificationsSelections();
+
+    // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
     // Initialize network's elements.
-    var networkElementsAttributes = Action
-    .initializeNetworkElementsAttributes();
-    // Compile new values of attributes.
+    //var networkElementsAttributes = Action
+    //.initializeNetworkElementsAttributes();
+
+    // Compile novel values of attributes.
     var novelAttributesValues = {
       compartmentalization: currentValue
     };
     var attributesValues = Object.assign(
       {},
-      networkElementsAttributes,
+      simplifications,
       novelAttributesValues
     );
-    // Submit new values of attributes to the model of the application's
+    // Submit novel values of attributes to the model of the application's
     // state.
     Action.submitAttributes({
       attributesValues: attributesValues,
       model: model
     });
   }
+
+
+  // ???
+
   /**
   * Restores controls for network's assembly to initial state.
   * @param {Object} model Model of the comprehensive state of the
@@ -719,19 +718,6 @@ class Action {
     }
   }
   /**
-  * Summarizes the counts of reactions in which each metabolite participates.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
-  */
-  static summarizeMetabolitesParticipationReactions(model) {
-    // Prepare summary of metabolites' participation in reactions.
-    var summary = Extraction
-    .createMetabolitesParticipationSummary(model.currentMetabolites);
-    console.log("summary of metabolites' participation in reactions...");
-    console.log(summary);
-    General.saveObject("metabolites_reactions.json", summary);
-  }
-  /**
   * Designates a single metabolite for simplification.
   * Submits new values to the model of the application's state.
   * @param {Object} parameters Destructured object of parameters.
@@ -781,12 +767,6 @@ class Action {
 
 
 
-
-
-
-
-
-
   // Secondary actions relevant to application's state.
 
   /**
@@ -810,7 +790,7 @@ class Action {
   * @param {Object<Object>} reactions Information about reactions.
   * @returns {Object} Collection of multiple attributes.
   */
-  static createSetsTotalEntities(reactions) {
+  static createTotalEntitiesSets(reactions) {
     // Determine for each reaction the metabolites that participate and to which
     // sets it belongs by its values of attributes.
     var totalReactionsSets = Attribution
@@ -828,36 +808,24 @@ class Action {
     return attributesValues;
   }
   /**
-  * Initializes information about selections that influence cardinalities of
-  * sets of entities.
+  * Initializes information about selections of sets by values of attributes.
   * @returns {Object} Collection of multiple attributes.
   */
-  static initializeSetsEntitiesSelections() {
+  static initializeEntitiesSetsSelections() {
     // Initialize selections of values of attributes for sets.
     var setsSelections = [];
-    // Initialize selection of entities for sets' cardinalities.
-    var setsEntities = "metabolites";
-    // Initialize selection of whether to filter sets' entities for summary.
-    var setsFilter = false;
     // Compile novel values of attributes.
     var attributesValues = {
-      setsSelections: setsSelections,
-      setsEntities: setsEntities,
-      setsFilter: setsFilter
+      setsSelections: setsSelections
     };
     // Return novel values of attributes.
     return attributesValues;
   }
   /**
-  * Determines information about the sets to which current entities belong by
-  * their values of attributes and the cardinalities of these sets.
+  * Determines which entities and values of their attributes pass filters.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<Object<string>>} parameters.setsSelections Selections of
-  * attributes' values.
-  * @param {string} parameters.setsEntities Selection of type of entities for
-  * sets' cardinalities.
-  * @param {boolean} parameters.setsFilter Selection of whether to filter sets'
-  * entities for summary.
+  * sets by values of attributes.
   * @param {Array<Object>} parameters.totalReactionsSets Information about all
   * reactions' metabolites and sets.
   * @param {Array<Object>} parameters.totalMetabolitesSets Information about all
@@ -865,9 +833,8 @@ class Action {
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Object} Collection of multiple attributes.
   */
-  static determineSetsEntitiesCardinalities({
-    setsSelections, setsEntities, setsFilter, totalReactionsSets,
-    totalMetabolitesSets, reactions
+  static determineCurrentEntitiesSets({
+    setsSelections, totalReactionsSets, totalMetabolitesSets, reactions
   } = {}) {
     // Determine entities and their values of attributes that pass filters from
     // selections.
@@ -884,8 +851,8 @@ class Action {
       // Filter the metabolic entities and their values of attributes.
       // Filter against complete collections of entities to account for any
       // changes to selections of filters.
-      // Filter for each reaction the metabolites that participate and to which
-      // sets it belongs by its values of attributes.
+      // Determine for each reaction the metabolites that participate and to
+      // which sets it belongs by its values of attributes.
       var currentReactionsSets = Attribution
       .filterReactionsMetabolitesAttributesValues({
         setsSelections: setsSelections,
@@ -901,6 +868,57 @@ class Action {
         reactions: reactions
       });
     }
+    // Compile novel values of attributes.
+    var attributesValues = {
+      currentReactionsSets: currentReactionsSets,
+      currentMetabolitesSets: currentMetabolitesSets
+    };
+    // Return novel values of attributes.
+    return attributesValues;
+  }
+  /**
+  * Initializes information about selections that influence cardinalities of
+  * sets of entities.
+  * @returns {Object} Collection of multiple attributes.
+  */
+  static initializeSetsCardinalitiesSelections() {
+    // Initialize selection of entities for sets' cardinalities.
+    var setsEntities = "metabolites";
+    // Initialize selection of whether to filter sets' entities for summary.
+    var setsFilter = false;
+    // Compile novel values of attributes.
+    var attributesValues = {
+      setsEntities: setsEntities,
+      setsFilter: setsFilter
+    };
+    // Return novel values of attributes.
+    return attributesValues;
+  }
+  /**
+  * Determines counts or cardinalities of entities' in sets.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.setsEntities Selection of type of entities for
+  * sets' cardinalities.
+  * @param {boolean} parameters.setsFilter Selection of whether to filter sets'
+  * entities for summary.
+  * @param {Array<Object>} parameters.currentReactionsSets Information about
+  * current reactions' metabolites and sets.
+  * @param {Array<Object>} parameters.currentMetabolitesSets Information about
+  * current metabolites' reactions and sets.
+  * @param {Array<Object>} parameters.totalReactionsSets Information about all
+  * reactions' metabolites and sets.
+  * @param {Array<Object>} parameters.totalMetabolitesSets Information about all
+  * metabolites' reactions and sets.
+  * @returns {Object} Collection of multiple attributes.
+  */
+  static determineEntitiesSetsCardinalities({
+    setsEntities,
+    setsFilter,
+    currentReactionsSets,
+    currentMetabolitesSets,
+    totalReactionsSets,
+    totalMetabolitesSets
+  } = {}) {
     // Determine sets' cardinalities.
     var setsCardinalities = Cardinality.determineSetsCardinalities({
       setsEntities: setsEntities,
@@ -914,8 +932,6 @@ class Action {
     var setsSummary = Cardinality.prepareSetsSummary(setsCardinalities);
     // Compile novel values of attributes.
     var attributesValues = {
-      currentReactionsSets: currentReactionsSets,
-      currentMetabolitesSets: currentMetabolitesSets,
       setsCardinalities: setsCardinalities,
       setsSummary: setsSummary
     };
@@ -940,7 +956,7 @@ class Action {
   * Initializes information about selections of simplifications.
   * @returns {Object} Collection of multiple attributes.
   */
-  static initializeSimplificationSelections() {
+  static initializeSimplificationsSelections() {
     // Initialize selections of reactions for simplification.
     var reactionsSimplifications = [];
     // Initialize selections of reactions for simplification.
@@ -953,6 +969,10 @@ class Action {
     // Return novel values of attributes.
     return attributesValues;
   }
+
+
+
+
   /**
   * Creates information about entities and relations between them that match the
   * context of interest.
@@ -1071,104 +1091,8 @@ class Action {
   }
 
 
-
-
-
-
-
-
-
   // TODO: SOME of these methods might be obsolete...
 
-  /**
-  * Initializes values of attributes that relate to sets of current entities.
-  * @param {Object} entitiesSets Information about metabolic entities and
-  * sets.
-  * @returns {Object} Collection of multiple attributes that relate to sets
-  * of current entities by their attributes.
-  */
-  static initializeCurrentEntitiesSetsAttributes(entitiesSets) {
-    // Specify entities of interest for sets' summary.
-    var setsEntities = "metabolites";
-    // Specify filter option for sets' summary.
-    var setsFilter = false;
-    // Copy information about metabolic entities.
-    var currentMetabolites = General.copyValueJSON(entitiesSets.metabolites);
-    var currentReactions = General.copyValueJSON(entitiesSets.reactions);
-    // Determine values of attributes that summarize cardinalities of sets
-    // of entities.
-    var setsCardinalitiesAttributes = Action
-    .determineEntitiesSetsCardinalitiesAttributes({
-      entities: setsEntities,
-      filter: setsFilter,
-      selections: setsSelections,
-      metabolites: entitiesSets.metabolites,
-      reactions: entitiesSets.reactions,
-      currentMetabolites: currentMetabolites,
-      currentReactions: currentReactions
-    });
-    // Compile novel values of attributes.
-    var novelAttributesValues = {
-      setsSelections: setsSelections,
-      setsEntities: setsEntities,
-      setsFilter: setsFilter,
-      currentMetabolites: currentMetabolites,
-      currentReactions: currentReactions
-    };
-    var attributesValues = Object
-    .assign({}, setsCardinalitiesAttributes, novelAttributesValues);
-    // Return novel values of attributes.
-    return attributesValues;
-  }
-  /**
-  * Determines values of all attributes that summarize cardinalities of sets
-  * of entities.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.entities Current entities of interest.
-  * @param {boolean} parameters.filter Current filter selection.
-  * @param {Array<Object<string>>} parameters.selections Selections of attributes'
-  * values from the sets' summary.
-  * @param {Object} parameters.metabolites Records with information about
-  * metabolites.
-  * @param {Object} parameters.reactions Records with information about
-  * reactions.
-  * @param {Object} parameters.currentMetabolites Records with information
-  * about metabolites and values of their attributes that pass filters.
-  * @param {Object} parameters.currentReactions Records with information
-  * about reactions and values of their attributes that pass filters.
-  * @returns {Object} Collection of multiple attributes that derive from
-  * current entities' attributes.
-  */
-  static determineEntitiesSetsCardinalitiesAttributes({
-    entities,
-    filter,
-    selections,
-    metabolites,
-    reactions,
-    currentMetabolites,
-    currentReactions
-  } = {}) {
-    // Determine cardinalities of sets of metabolic entities.
-    var setsCardinalities = Cardinality.determineSetsCardinalities({
-      entities: entities,
-      filter: filter,
-      metabolites: metabolites,
-      reactions: reactions,
-      currentMetabolites: currentMetabolites,
-      currentReactions: currentReactions
-    });
-    // Prepare summary of sets of entities.
-    // The sets' summary derives from sets' cardinalities and sets' selections.
-    var setsSummary = Cardinality.prepareSetsSummary({
-      selections: selections,
-      setsCardinalities: setsCardinalities
-    });
-    // Return new values of attributes.
-    return {
-      setsCardinalities: setsCardinalities,
-      setsSummary: setsSummary
-    };
-  }
   /**
   * Initializes values of attributes that relate to definition and assembly of
   * network's elements from metabolic entities.

@@ -4,6 +4,56 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+1 November 2017
+
+----------
+On 30 October 2017 I met with Jared P Rutter and Alexander Lex and discussed the project.
+We considered goals for the project.
+
+----------
+Goals by 4 December 2017...
+
+1. table of individual entities (metabolites and reactions)
+-entity name
+-entity degree (ie how many reactions for each metabolite etc)
+-entity degree independent of selections for simplification (needs further consideration...)
+-entity simplification by replication or omission (replication only applies to metabolites)
+-selections for simplification control representation of network
+
+2. move sets menu to side panel
+-scrollable (and searchable?) lists of sets of entities
+-labels for names of processes or compartments
+-bars to represent sets' cardinalities
+-sortable by cardinality or by alphabetical name
+-selections control filters on entities, affecting entities table and network (downstream selections/filters)
+
+3. summary of filters and current selection(s) ... ?
+-in main panel if network too large to draw automatically
+-information about counts of entities in current selection? ... possibly redundant with entities table
+-override button to draw anyway (drawing large networks can require up to 15 minutes)
+
+4. future ambitions
+-get ideas/plans for post-doctoral work
+
+----------
+Goals beyond 4 December 2017...
+
+1. import/representation of custom user's data
+
+2. aggregation of network's elements by sets
+
+3. HCI usability issues (originally in goals for 4 December, but I'm not sure if they'll all make it by then, especially the TBD)
+-light background (dark for now for the sake of presentations... changing soon)
+-data management and persistence of user's selections (raw data ~ 3 MB... clean and extraction of raw data is slow > 2 minutes... clean extracted data ~ 10 MB... maybe use URL settings for persistence instead/in addition to downloadable file)
+-aesthetics
+-TBD...
+
+4. feedback from users/application on real data
+-we could do our own case demonstration on some public data set
+
+5. publication March 2018
+
+--------------------------------------------------
 24 October 2017
 
 ----------
