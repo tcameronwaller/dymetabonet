@@ -258,8 +258,8 @@ class Action {
     // Remove the current file selection from the application's state.
     var file = null;
     // Determine total entities' attribution to sets.
-    var totalEntitiesSets = Action
-    .createTotalEntitiesSets(metabolicEntitiesSets.reactions);
+    var totalEntitiesSets = Attribution
+    .determineTotalEntitiesSets(metabolicEntitiesSets.reactions);
     // Initialize selections of entities' sets.
     var entitiesSetsSelections = Action.initializeEntitiesSetsSelections();
     // Determine current entities' attribution to sets.
@@ -785,29 +785,6 @@ class Action {
     }, {});
   }
   /**
-  * Creates information about the sets to which all entities belong by their
-  * values of attributes.
-  * @param {Object<Object>} reactions Information about reactions.
-  * @returns {Object} Collection of multiple attributes.
-  */
-  static createTotalEntitiesSets(reactions) {
-    // Determine for each reaction the metabolites that participate and to which
-    // sets it belongs by its values of attributes.
-    var totalReactionsSets = Attribution
-    .collectReactionsMetabolitesAttributesValues(reactions);
-    // Determine for each metabolite the reactions in which it participates and
-    // to which sets it belongs by its values of attributes.
-    var totalMetabolitesSets = Attribution
-    .collectMetabolitesReactionsAttributesValues(totalReactionsSets, reactions);
-    // Compile novel values of attributes.
-    var attributesValues = {
-      totalReactionsSets: totalReactionsSets,
-      totalMetabolitesSets: totalMetabolitesSets
-    };
-    // Return novel values of attributes.
-    return attributesValues;
-  }
-  /**
   * Initializes information about selections of sets by values of attributes.
   * @returns {Object} Collection of multiple attributes.
   */
@@ -817,61 +794,6 @@ class Action {
     // Compile novel values of attributes.
     var attributesValues = {
       setsSelections: setsSelections
-    };
-    // Return novel values of attributes.
-    return attributesValues;
-  }
-  /**
-  * Determines which entities and values of their attributes pass filters.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object<string>>} parameters.setsSelections Selections of
-  * sets by values of attributes.
-  * @param {Array<Object>} parameters.totalReactionsSets Information about all
-  * reactions' metabolites and sets.
-  * @param {Array<Object>} parameters.totalMetabolitesSets Information about all
-  * metabolites' reactions and sets.
-  * @param {Object<Object>} parameters.reactions Information about reactions.
-  * @returns {Object} Collection of multiple attributes.
-  */
-  static determineCurrentEntitiesSets({
-    setsSelections, totalReactionsSets, totalMetabolitesSets, reactions
-  } = {}) {
-    // Determine entities and their values of attributes that pass filters from
-    // selections.
-    // The filtration procedure is computationally expensive.
-    // Determine whether there are any selections of attributes' values to apply
-    // as filters.
-    if (setsSelections.length === 0) {
-      // There are not any selections of attributes' values to apply as filters.
-      // Copy information about metabolic entities.
-      var currentReactionsSets = General.copyValueJSON(totalReactionsSets);
-      var currentMetabolitesSets = General.copyValueJSON(totalMetabolitesSets);
-    } else {
-      // There are selections of attributes' values to apply as filters.
-      // Filter the metabolic entities and their values of attributes.
-      // Filter against complete collections of entities to account for any
-      // changes to selections of filters.
-      // Determine for each reaction the metabolites that participate and to
-      // which sets it belongs by its values of attributes.
-      var currentReactionsSets = Attribution
-      .filterReactionsMetabolitesAttributesValues({
-        setsSelections: setsSelections,
-        totalReactionsSets: totalReactionsSets,
-        reactions: reactions
-      });
-      // Determine for each metabolite the reactions in which it participates
-      // and to which sets it belongs by its values of attributes.
-      var currentMetabolitesSets = Attribution
-      .filterMetabolitesReactionsAttributesValues({
-        totalMetabolitesSets: totalMetabolitesSets,
-        currentReactionsSets: currentReactionsSets,
-        reactions: reactions
-      });
-    }
-    // Compile novel values of attributes.
-    var attributesValues = {
-      currentReactionsSets: currentReactionsSets,
-      currentMetabolitesSets: currentMetabolitesSets
     };
     // Return novel values of attributes.
     return attributesValues;

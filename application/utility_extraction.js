@@ -35,6 +35,7 @@ United States of America
 * This class does not store any attributes and does not require instantiation.
 */
 class Extraction {
+
   // Master control of extraction procedure.
 
   /**
@@ -61,13 +62,15 @@ class Extraction {
     var metabolites = Extraction.createMetabolitesRecords(data.metabolites);
     var genes = Extraction.createGenesRecords(data.genes);
     // Compile information.
-    return {
+    var metabolicEntitiesSets = {
       compartments: compartments,
       genes: genes,
       processes: processes,
       metabolites: metabolites,
       reactions: reactions
     };
+    // Return information.
+    return metabolicEntitiesSets;
   }
 
   // Extract sets.
@@ -459,8 +462,8 @@ class Extraction {
   * which they participate.
   * @param {Object<number>} reactionMetabolites Information about metabolites
   * that participate in a reaction.
-  * @returns {Array<Object<string>>} Information about metabolites'
-  * participation in a reaction.
+  * @returns {Array<Object<string>>} Information about metabolites' and
+  * compartments' participation in a reaction.
   */
   static createReactionParticipants(reactionMetabolites) {
     return Object.keys(reactionMetabolites).map(function (identifier) {

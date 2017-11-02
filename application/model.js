@@ -69,16 +69,20 @@ class Model {
       "processes",
 
       // Sets.
-      // Attribute "totalReactionsSets" stores information for each reaction
-      // about the metabolites that participate and the sets to which the entity
-      // belongs by its values of attributes.
+      // Attribute "totalReactionsSets" stores information for all reactions
+      // about all the metabolites that participate in each reaction and the
+      // sets to which each reaction belongs by all its values of attributes.
+      // The purpose of attribute "totalReactionsSets" is to provide complete
+      // information against which to apply filters.
       // Information includes references to attributes "reactions",
       // "metabolites", "compartments", and "processes".
       // Information derives from attribute "reactions".
       "totalReactionsSets",
-      // Attribute "totalMetabolitesSets" stores information for each metabolite
-      // about the reactions in which it participates and the sets to which the
-      // entity belongs by its values of attributes.
+      // Attribute "totalMetabolitesSets" stores information for all metabolites
+      // about all the reactions in which each metabolite participates and the
+      // sets to which each metabolite belongs by all its values of attributes.
+      // The purpose of attribute "totalMetabolitesSets" is to provide complete
+      // information against which to apply filters.
       // Information includes references to attributes "metabolites",
       // "reactions", "compartments", and "processes".
       // Information derives from attributes "totalReactionsSets" and
@@ -86,31 +90,55 @@ class Model {
       "totalMetabolitesSets",
       // Attribute "setsSelections" stores information about selections of sets
       // by values of entities' attributes.
-      // These selections inform the filtration of entities by their values of
-      // attributes.
+      // The purpose of attribute "setsSelections" is to inform the definition
+      // of filters for filtration of entities by their values of attributes.
       // Information includes references to attributes "compartments" and
       // "processes".
       "setsSelections",
-      // Attribute "currentReactionsSets" stores information for each reaction
-      // about the metabolites that participate and the sets to which the entity
-      // belongs by its values of attributes.
-      // Information only includes entities that pass filters and those of their
-      // values of attributes that pass filters.
+      // Attribute "accessReactionsSets" stores information for reactions that
+      // pass filters about all the metabolites that participate in each
+      // reaction and the sets to which each reaction belongs by all its values
+      // of attributes.
+      // The purpose of attribute "accessReactionsSets" is to constrain the
+      // accessibility of sets for selection in the sets' menu.
       // Information includes references to attributes "reactions",
       // "metabolites", "compartments", and "processes".
       // Information derives from attributes "setsSelections",
       // "totalReactionsSets", and "reactions".
-      "currentReactionsSets",
-      // Attribute "currentMetabolitesSets" stores information for each
-      // metabolite about the reactions in which it participates and the sets to
-      // which the entity belongs by its values of attributes.
-      // Information only includes entities that pass filters and those of their
-      // values of attributes that pass filters.
+      "accessReactionsSets",
+      // Attribute "accessMetabolitesSets" stores information for metabolites
+      // that pass filters about all the reactions in which each metabolite
+      // participates and the sets to which each metabolite belongs by all its
+      // values of attributes.
+      // The purpose of attribute "accessMetabolitesSets" is to constrain the
+      // accessibility of sets for selection in the sets' menu.
       // Information includes references to attributes "metabolites",
       // "reactions", "compartments", and "processes".
       // Information derives from attributes "totalMetabolitesSets",
-      // "currentReactionsSets" and "reactions".
-      "currentMetabolitesSets",
+      // "accessReactionsSets" and "reactions".
+      "accessMetabolitesSets",
+      // Attribute "filterReactionsSets" stores information for reactions that
+      // pass filters about the metabolites that participate in each reaction in
+      // contexts that pass filters and the sets to which each reaction belongs
+      // by its values of attributes that pass filters.
+      // The purpose of attribute "filterReactionsSets" is to define reactions,
+      // metabolites, and their attributes that pass filters.
+      // Information includes references to attributes "reactions",
+      // "metabolites", "compartments", and "processes".
+      // Information derives from attributes "setsSelections",
+      // "totalReactionsSets", and "reactions".
+      "filterReactionsSets", // TODO: Change "currentReactionsSets" to "filterReactionsSets"
+      // Attribute "filterMetabolitesSets" stores information for metabolites
+      // that pass filters about the reactions in which each metabolite
+      // participates in contexts that pass filters and the sets to which each
+      // metabolite belongs by its values of attributes that pass filters.
+      // The purpose of attribute "filterMetabolitesSets" is to define
+      // metabolites and their attributes that pass filters.
+      // Information includes references to attributes "metabolites",
+      // "reactions", "compartments", and "processes".
+      // Information derives from attributes "totalMetabolitesSets",
+      // "filterReactionsSets" and "reactions".
+      "filterMetabolitesSets", // TODO: Change "currentMetabolitesSets" to "filterMetabolitesSets"
       // Attribute "setsEntities" stores information about the type of entities,
       // metabolites or reactions, to represent in the sets' summary.
       "setsEntities",
