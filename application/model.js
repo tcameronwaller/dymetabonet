@@ -88,13 +88,13 @@ class Model {
       // Information derives from attributes "totalReactionsSets" and
       // "reactions".
       "totalMetabolitesSets",
-      // Attribute "setsSelections" stores information about selections of sets
-      // by values of entities' attributes.
-      // The purpose of attribute "setsSelections" is to inform the definition
-      // of filters for filtration of entities by their values of attributes.
+      // Attribute "setsFilters" stores information about selections of sets
+      // by values of entities' attributes to apply as filters.
+      // The purpose of attribute "setsFilters" is to define filters for
+      // filtration of entities by their values of attributes.
       // Information includes references to attributes "compartments" and
       // "processes".
-      "setsSelections",
+      "setsFilters",
       // Attribute "accessReactionsSets" stores information for reactions that
       // pass filters about all the metabolites that participate in each
       // reaction and the sets to which each reaction belongs by all its values
@@ -103,7 +103,7 @@ class Model {
       // accessibility of sets for selection in the sets' menu.
       // Information includes references to attributes "reactions",
       // "metabolites", "compartments", and "processes".
-      // Information derives from attributes "setsSelections",
+      // Information derives from attributes "setsFilters",
       // "totalReactionsSets", and "reactions".
       "accessReactionsSets",
       // Attribute "accessMetabolitesSets" stores information for metabolites
@@ -125,7 +125,7 @@ class Model {
       // metabolites, and their attributes that pass filters.
       // Information includes references to attributes "reactions",
       // "metabolites", "compartments", and "processes".
-      // Information derives from attributes "setsSelections",
+      // Information derives from attributes "setsFilters",
       // "totalReactionsSets", and "reactions".
       "filterReactionsSets", // TODO: Change "currentReactionsSets" to "filterReactionsSets"
       // Attribute "filterMetabolitesSets" stores information for metabolites

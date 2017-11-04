@@ -626,7 +626,7 @@ class SetView {
     options.text(function (element, index, nodes) {
       // Determine whether the option corresponds to a current selection of the
       // attribute's value.
-      var selection = SetView.determineAttributeValueSelection({
+      var selection = SetView.determineSetSelection({
         value: element.value,
         attribute: element.attribute,
         model: self.model
@@ -834,14 +834,14 @@ class SetView {
     barMarks
     .classed("mark", true)
     .classed("normal", function (element, index, nodes) {
-      return !SetView.determineAttributeValueSelection({
+      return !SetView.determineSetSelection({
         value: element.value,
         attribute: element.attribute,
         model: self.model
       });
     })
     .classed("emphasis", function (element, index, nodes) {
-      return SetView.determineAttributeValueSelection({
+      return SetView.determineSetSelection({
         value: element.value,
         attribute: element.attribute,
         model: self.model
@@ -978,13 +978,13 @@ class SetView {
   * @returns {boolean} Whether a selection exists for the value of the
   * attribute.
   */
-  static determineAttributeValueSelection({
+  static determineSetSelection({
     value, attribute, model
   } = {}) {
-    return Attribution.determineSelectionMatch({
+    return Attribution.determineSetsFilter({
       value: value,
       attribute: attribute,
-      selections: model.setsSelections
+      setsFilters: model.setsFilters
     });
   }
 }

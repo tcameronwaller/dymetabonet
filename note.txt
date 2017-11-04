@@ -4,6 +4,24 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+4 November 2017
+
+----------
+Optimization of efficiency of procedure for filtration
+
+Accessing records within arrays involves expensive iteration.
+Accessing records within objects involves simple look-up.
+
+Metabolites inherit values of attributes from the reactions in which they participate.
+The procedure for filtration of metabolites' sets requires very many repetitive accesses of information about reactions' sets.
+
+Current information about reactions' s sets is in arrays, so these accesses are very expensive.
+
+The current procedure for filtration of metabolites' sets by the cytosolic compartment requires about 18-20 seconds.
+
+Organize information about entities' sets within objects to make access more efficient.
+
+--------------------------------------------------
 1 November 2017
 
 ----------

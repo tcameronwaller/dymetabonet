@@ -975,11 +975,16 @@ class General {
   * @returns {Object<Array<string>>} Values of the target attribute that occur
   * together in records with each value of the category attribute.
   */
-  static collectRecordsTargetsByCategories({target, category, records} = {}) {
+  static collectArrayRecordsTargetsByCategories({target, category, records} = {}) {
     // Collect values of the target attribute that occur together in records
     // with each value of the category attribute.
     // Iterate on records.
-    return records.reduce(function (recordsCollection, record) {
+    if (Array.isArray(records)) {
+      var iterationRecords = records;
+    } else {
+      var iterationRecords = Object.keys(records);
+    }
+    return iterationRecords.reduce(function (recordsCollection, iterationRecord) {
       // Determine record's values of the category attribute.
       var values = record[category];
       // Include record's value of the target attribute in collections for each

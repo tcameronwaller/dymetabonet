@@ -261,10 +261,10 @@ class Action {
     var totalEntitiesSets = Attribution
     .determineTotalEntitiesSets(metabolicEntitiesSets.reactions);
     // Initialize selections of entities' sets.
-    var entitiesSetsSelections = Action.initializeEntitiesSetsSelections();
+    var entitiesSetsFilters = Action.initializeEntitiesSetsFilters();
     // Determine current entities' attribution to sets.
     var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
-      setsSelections: entitiesSetsSelections.setsSelections,
+      setsFilters: entitiesSetsFilters.setsFilters,
       totalReactionsSets: totalEntitiesSets.totalReactionsSets,
       totalMetabolitesSets: totalEntitiesSets.totalMetabolitesSets,
       reactions: metabolicEntitiesSets.reactions
@@ -319,7 +319,7 @@ class Action {
       {},
       metabolicEntitiesSets,
       totalEntitiesSets,
-      entitiesSetsSelections,
+      entitiesSetsFilters,
       currentEntitiesSets,
       setsCardinalitiesSelections,
       setsCardinalitiesSummary,
@@ -433,18 +433,15 @@ class Action {
   * state.
   */
   static selectSetsAttributeValue({value, attribute, model} = {}) {
-    // Record current selection in collection of selections of attributes
-    // and values for set view.
-    // These selections determine which attributes and values define filters
-    // against entities' attributes.
-    var setsSelections = Attribution.recordFilterSelection({
+    // Record set's selection for filters.
+    var setsFilters = Attribution.recordSetSelectionFilters({
       value: value,
       attribute: attribute,
-      previousSelections: model.setsSelections
+      setsFilters: model.setsFilters
     });
     // Determine current entities' attribution to sets.
     var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
-      setsSelections: setsSelections,
+      setsFilters: setsFilters,
       totalReactionsSets: model.totalReactionsSets,
       totalMetabolitesSets: model.totalMetabolitesSets,
       reactions: model.reactions
@@ -467,7 +464,7 @@ class Action {
 
     // Compile novel values of attributes.
     var novelAttributesValues = {
-      setsSelections: setsSelections
+      setsFilters: setsFilters
     };
     var attributesValues = Object.assign(
       {},
@@ -488,10 +485,10 @@ class Action {
   */
   static restoreSetsSummary(model) {
     // Initialize selections of entities' sets.
-    var entitiesSetsSelections = Action.initializeEntitiesSetsSelections();
+    var entitiesSetsFilters = Action.initializeEntitiesSetsFilters();
     // Determine current entities' attribution to sets.
     var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
-      setsSelections: entitiesSetsSelections.setsSelections,
+      setsFilters: entitiesSetsFilters.setsFilters,
       totalReactionsSets: model.totalReactionsSets,
       totalMetabolitesSets: model.totalMetabolitesSets,
       reactions: model.reactions
@@ -518,7 +515,7 @@ class Action {
     // Compile novel values of attributes.
     var attributesValues = Object.assign(
       {},
-      entitiesSetsSelections,
+      entitiesSetsFilters,
       currentEntitiesSets,
       setsCardinalitiesSelections,
       setsCardinalitiesSummary
@@ -793,12 +790,12 @@ class Action {
   * Initializes information about selections of sets by values of attributes.
   * @returns {Object} Collection of multiple attributes.
   */
-  static initializeEntitiesSetsSelections() {
+  static initializeEntitiesSetsFilters() {
     // Initialize selections of values of attributes for sets.
-    var setsSelections = [];
+    var setsFilters = Attribution.createInitialSetsFilters();
     // Compile novel values of attributes.
     var attributesValues = {
-      setsSelections: setsSelections
+      setsFilters: setsFilters
     };
     // Return novel values of attributes.
     return attributesValues;
