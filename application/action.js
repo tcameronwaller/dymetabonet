@@ -263,7 +263,7 @@ class Action {
     // Initialize selections of entities' sets.
     var entitiesSetsSelections = Action.initializeEntitiesSetsSelections();
     // Determine current entities' attribution to sets.
-    var currentEntitiesSets = Action.determineCurrentEntitiesSets({
+    var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
       setsSelections: entitiesSetsSelections.setsSelections,
       totalReactionsSets: totalEntitiesSets.totalReactionsSets,
       totalMetabolitesSets: totalEntitiesSets.totalMetabolitesSets,
@@ -273,13 +273,14 @@ class Action {
     var setsCardinalitiesSelections = Action
     .initializeSetsCardinalitiesSelections();
     // Determine sets' cardinalities.
-    var entitiesSetsCardinalities = Action.determineEntitiesSetsCardinalities({
+    var setsCardinalitiesSummary = Cardinality
+    .determineSetsCardinalitiesSummary({
       setsEntities: setsCardinalitiesSelections.setsEntities,
       setsFilter: setsCardinalitiesSelections.setsFilter,
-      currentReactionsSets: currentEntitiesSets.currentReactionsSets,
-      currentMetabolitesSets: currentEntitiesSets.currentMetabolitesSets,
-      totalReactionsSets: totalEntitiesSets.totalReactionsSets,
-      totalMetabolitesSets: totalEntitiesSets.totalMetabolitesSets
+      accessReactionsSets: currentEntitiesSets.accessReactionsSets,
+      accessMetabolitesSets: currentEntitiesSets.accessMetabolitesSets,
+      filterReactionsSets: currentEntitiesSets.filterReactionsSets,
+      filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets
     });
     // Initialize selection for compartmentalization's relevance.
     var compartmentalization = Action.initializeCompartmentalizationSelection();
@@ -321,7 +322,7 @@ class Action {
       entitiesSetsSelections,
       currentEntitiesSets,
       setsCardinalitiesSelections,
-      entitiesSetsCardinalities,
+      setsCardinalitiesSummary,
       compartmentalization,
       simplifications,
       //networkDefinitionAttributes,
@@ -348,13 +349,14 @@ class Action {
       var currentEntities = "metabolites";
     }
     // Determine sets' cardinalities.
-    var entitiesSetsCardinalities = Action.determineEntitiesSetsCardinalities({
+    var setsCardinalitiesSummary = Cardinality
+    .determineSetsCardinalitiesSummary({
       setsEntities: currentEntities,
       setsFilter: model.setsFilter,
-      currentReactionsSets: model.currentReactionsSets,
-      currentMetabolitesSets: model.currentMetabolitesSets,
-      totalReactionsSets: model.totalReactionsSets,
-      totalMetabolitesSets: model.totalMetabolitesSets
+      accessReactionsSets: model.accessReactionsSets,
+      accessMetabolitesSets: model.accessMetabolitesSets,
+      filterReactionsSets: model.filterReactionsSets,
+      filterMetabolitesSets: model.filterMetabolitesSets
     });
 
     // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
@@ -368,7 +370,7 @@ class Action {
     };
     var attributesValues = Object.assign(
       {},
-      entitiesSetsCardinalities,
+      setsCardinalitiesSummary,
       novelAttributesValues
     );
     // Submit novel values of attributes to the model of the application's
@@ -391,13 +393,14 @@ class Action {
       var currentFilter = true;
     }
     // Determine sets' cardinalities.
-    var entitiesSetsCardinalities = Action.determineEntitiesSetsCardinalities({
+    var setsCardinalitiesSummary = Cardinality
+    .determineSetsCardinalitiesSummary({
       setsEntities: model.setsEntities,
       setsFilter: currentFilter,
-      currentReactionsSets: model.currentReactionsSets,
-      currentMetabolitesSets: model.currentMetabolitesSets,
-      totalReactionsSets: model.totalReactionsSets,
-      totalMetabolitesSets: model.totalMetabolitesSets
+      accessReactionsSets: model.accessReactionsSets,
+      accessMetabolitesSets: model.accessMetabolitesSets,
+      filterReactionsSets: model.filterReactionsSets,
+      filterMetabolitesSets: model.filterMetabolitesSets
     });
 
     // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
@@ -411,7 +414,7 @@ class Action {
     };
     var attributesValues = Object.assign(
       {},
-      entitiesSetsCardinalities,
+      setsCardinalitiesSummary,
       novelAttributesValues
     );
     // Submit novel values of attributes to the model of the application's
@@ -440,20 +443,21 @@ class Action {
       previousSelections: model.setsSelections
     });
     // Determine current entities' attribution to sets.
-    var currentEntitiesSets = Action.determineCurrentEntitiesSets({
+    var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
       setsSelections: setsSelections,
       totalReactionsSets: model.totalReactionsSets,
       totalMetabolitesSets: model.totalMetabolitesSets,
       reactions: model.reactions
     });
     // Determine sets' cardinalities.
-    var entitiesSetsCardinalities = Action.determineEntitiesSetsCardinalities({
+    var setsCardinalitiesSummary = Cardinality
+    .determineSetsCardinalitiesSummary({
       setsEntities: model.setsEntities,
       setsFilter: model.setsFilter,
-      currentReactionsSets: currentEntitiesSets.currentReactionsSets,
-      currentMetabolitesSets: currentEntitiesSets.currentMetabolitesSets,
-      totalReactionsSets: model.totalReactionsSets,
-      totalMetabolitesSets: model.totalMetabolitesSets
+      accessReactionsSets: currentEntitiesSets.accessReactionsSets,
+      accessMetabolitesSets: currentEntitiesSets.accessMetabolitesSets,
+      filterReactionsSets: currentEntitiesSets.filterReactionsSets,
+      filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets
     });
 
     // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
@@ -468,7 +472,7 @@ class Action {
     var attributesValues = Object.assign(
       {},
       currentEntitiesSets,
-      entitiesSetsCardinalities,
+      setsCardinalitiesSummary,
       novelAttributesValues
     );
     // Submit novel values of attributes to the model of the application's
@@ -486,7 +490,7 @@ class Action {
     // Initialize selections of entities' sets.
     var entitiesSetsSelections = Action.initializeEntitiesSetsSelections();
     // Determine current entities' attribution to sets.
-    var currentEntitiesSets = Action.determineCurrentEntitiesSets({
+    var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
       setsSelections: entitiesSetsSelections.setsSelections,
       totalReactionsSets: model.totalReactionsSets,
       totalMetabolitesSets: model.totalMetabolitesSets,
@@ -496,13 +500,14 @@ class Action {
     var setsCardinalitiesSelections = Action
     .initializeSetsCardinalitiesSelections();
     // Determine sets' cardinalities.
-    var entitiesSetsCardinalities = Action.determineEntitiesSetsCardinalities({
+    var setsCardinalitiesSummary = Cardinality
+    .determineSetsCardinalitiesSummary({
       setsEntities: setsCardinalitiesSelections.setsEntities,
       setsFilter: setsCardinalitiesSelections.setsFilter,
-      currentReactionsSets: currentEntitiesSets.currentReactionsSets,
-      currentMetabolitesSets: currentEntitiesSets.currentMetabolitesSets,
-      totalReactionsSets: model.totalReactionsSets,
-      totalMetabolitesSets: model.totalMetabolitesSets
+      accessReactionsSets: currentEntitiesSets.accessReactionsSets,
+      accessMetabolitesSets: currentEntitiesSets.accessMetabolitesSets,
+      filterReactionsSets: currentEntitiesSets.filterReactionsSets,
+      filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets
     });
 
     // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
@@ -516,7 +521,7 @@ class Action {
       entitiesSetsSelections,
       currentEntitiesSets,
       setsCardinalitiesSelections,
-      entitiesSetsCardinalities
+      setsCardinalitiesSummary
     );
     // Submit novel values of attributes to the model of the application's
     // state.
@@ -816,50 +821,8 @@ class Action {
     // Return novel values of attributes.
     return attributesValues;
   }
-  /**
-  * Determines counts or cardinalities of entities' in sets.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.setsEntities Selection of type of entities for
-  * sets' cardinalities.
-  * @param {boolean} parameters.setsFilter Selection of whether to filter sets'
-  * entities for summary.
-  * @param {Array<Object>} parameters.currentReactionsSets Information about
-  * current reactions' metabolites and sets.
-  * @param {Array<Object>} parameters.currentMetabolitesSets Information about
-  * current metabolites' reactions and sets.
-  * @param {Array<Object>} parameters.totalReactionsSets Information about all
-  * reactions' metabolites and sets.
-  * @param {Array<Object>} parameters.totalMetabolitesSets Information about all
-  * metabolites' reactions and sets.
-  * @returns {Object} Collection of multiple attributes.
-  */
-  static determineEntitiesSetsCardinalities({
-    setsEntities,
-    setsFilter,
-    currentReactionsSets,
-    currentMetabolitesSets,
-    totalReactionsSets,
-    totalMetabolitesSets
-  } = {}) {
-    // Determine sets' cardinalities.
-    var setsCardinalities = Cardinality.determineSetsCardinalities({
-      setsEntities: setsEntities,
-      setsFilter: setsFilter,
-      currentReactionsSets: currentReactionsSets,
-      currentMetabolitesSets: currentMetabolitesSets,
-      totalReactionsSets: totalReactionsSets,
-      totalMetabolitesSets: totalMetabolitesSets
-    });
-    // Prepare summary of sets of entities.
-    var setsSummary = Cardinality.prepareSetsSummary(setsCardinalities);
-    // Compile novel values of attributes.
-    var attributesValues = {
-      setsCardinalities: setsCardinalities,
-      setsSummary: setsSummary
-    };
-    // Return novel values of attributes.
-    return attributesValues;
-  }
+
+
   /**
   * Initializes information about selection of compartmentalization's relevance.
   * @returns {Object} Collection of multiple attributes.

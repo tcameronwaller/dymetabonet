@@ -3,6 +3,47 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
+3 November 2017
+
+----------
+  /**
+  * Determines whether a reaction passes filters by its values of attributes.
+  * @param {Object} parameters.filterSets Information about a reaction's
+  * metabolites and sets that pass filters.
+  * @param {Object} reaction Information about a reaction.
+  * @returns {boolean} Whether the reaction passes filters.
+  */
+  static determineReactionPassFilters(filterSets, reaction) {
+    // TODO: I'll need a separate function for the access reactions...
+    // TODO: Eliminate the special requirement for transport reactions... I'll worry about that with candidate reactions.
+    // Requirements for reaction to pass filters depend on the reaction's main
+    // behavior.
+    // Determine whether reaction involves transport.
+    if (reaction.transport) {
+      // Reaction involves transport of a metabolite between different
+      // compartments.
+      // A single reaction can facilitate multiple transport events.
+      // Reaction only passes filters by compartment if multiple compartments of
+      // any transport event pass filters.
+      var compartments = reaction.transports.some(function (transport) {
+        var matches = transport.compartments.filter(function (compartment) {
+          return filterSets.compartments.includes(compartment);
+        });
+        return matches.length > 1;
+      });
+    } else {
+      // Reaction does not involve transport of a metabolite between different
+      // compartments.
+      // Reaction only passes filters by compartment if it has any compartments
+      // that pass filters.
+      var compartments = filterSets.compartments.length > 0;
+    }
+    var processes = reactionRecord.processes.length > 0;
+    var metabolites = reactionRecord.metabolites.length > 0;
+    return (compartments && processes && metabolites);
+  }
+
+--------------------------------------------------
 17 September 2017
 
 ----------

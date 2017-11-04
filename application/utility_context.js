@@ -35,6 +35,12 @@ United States of America
 * This class does not store any attributes and does not require instantiation.
 */
 class Context {
+
+  // TODO: Account for transport reactions and whether they're relevant.
+  // TODO: I removed the consideration of transport reactions from the attribution/filtration procedure
+
+
+
   /**
   * Collects information about reactions and their metabolites' participation
   * that are relevant in the context of compartmentalization, operation,

@@ -45,16 +45,15 @@ class Attribution {
   static determineTotalEntitiesSets(reactions) {
     // Attributes that are relevant to sets and filters include processes and
     // compartments.
+    // Reactions involve participation from metabolites as either reactants or
+    // products.
     // Reactions belong to processes directly by their operations in either
     // chemical conversion or physical transport.
     // Reactions localize to the compartments in which their metabolites
     // participate.
-    // Reactions involve participation from metabolites as either reactants or
-    // products.
-    // Records within attribute "totalReactionsSets" retain all processes,
-    // compartments, and metabolites from their reaction.
-    // Determine for each reaction the metabolites that participate and to which
-    // sets it belongs by its values of attributes.
+    // Records within attribute "totalReactionsSets" include information about
+    // all reactions and all their metabolites, processes, and compartments.
+    // Collect information about reactions' metabolites and sets.
     var totalReactionsSets = Attribution
     .collectReactionsMetabolitesAttributesValues(reactions);
     // Metabolites participate in reactions.
@@ -62,11 +61,10 @@ class Attribution {
     // the reactions' processses.
     // Metabolites inherit from the reactions in which they participate only the
     // compartments in which they occur and participate in the reaction.
-    // Records within attribute "totalMetabolitesSets" inherit all processes,
-    // and all compartments of participation from the reactions in which their
-    // metabolites participate.
-    // Determine for each metabolite the reactions in which it participates and
-    // to which sets it belongs by its values of attributes.
+    // Records within attribute "totalMetabolitesSets" include information about
+    // all metabolites and all processes and compartments of participation that
+    // they inherit from the reactions in which they participate.
+    // Collect information about metabolites' reactions and sets.
     var totalMetabolitesSets = Attribution
     .collectMetabolitesReactionsAttributesValues(totalReactionsSets, reactions);
     // Compile information.
@@ -93,48 +91,75 @@ class Attribution {
   static determineCurrentEntitiesSets({
     setsSelections, totalReactionsSets, totalMetabolitesSets, reactions
   } = {}) {
-    // TODO: Include descriptions of accessEntitiesSets and filterEntitiesSets as I did for totalEntitiesSets.
-    // Determine entities and their values of attributes that pass filters from
-    // selections.
-    // The filtration procedure is computationally expensive.
+    // The filtration procedures are computationally expensive.
     // Determine whether there are any selections of attributes' values to apply
     // as filters.
-    if (setsSelections.length === 0) {
+    if (setsSelections.length < 1) {
       // There are not any selections of attributes' values to apply as filters.
-      // Copy information about metabolic entities.
-      var currentReactionsSets = General.copyValueJSON(totalReactionsSets);
-      var currentMetabolitesSets = General.copyValueJSON(totalMetabolitesSets);
+      // Copy information about entities' sets.
+      var accessReactionsSets = General.copyValueJSON(totalReactionsSets);
+      var accessMetabolitesSets = General.copyValueJSON(totalMetabolitesSets);
+      var filterReactionsSets = General.copyValueJSON(totalReactionsSets);
+      var filterMetabolitesSets = General.copyValueJSON(totalMetabolitesSets);
     } else {
       // There are selections of attributes' values to apply as filters.
-      // Filter the metabolic entities and their values of attributes.
-      // Filter against complete collections of entities to account for any
-      // changes to selections of filters.
-      // Determine for each reaction the metabolites that participate and to
-      // which sets it belongs by its values of attributes.
-      var currentReactionsSets = Attribution
+      // Filter entities and their values of attributes.
+      // Filter against all entities and their sets.
+      // Records within attribute "accessReactionsSets" retain information about
+      // reactions with any processes or compartments that pass filters, and
+      // they only retain processes or compartments if any values of the other
+      // reciprocal attribute pass filters.
+      // Filter information about reactions' metabolites and sets.
+      var accessReactionsSets = Attribution
+      .filterAccessReactionsAttributesValues({
+        setsSelections: setsSelections,
+        totalReactionsSets: totalReactionsSets,
+        reactions: reactions
+      });
+      // Records within attribute "accessMetabolitesSets" retain information
+      // about metabolites with any processes or compartments that pass filters,
+      // and they only retain processes or compartments if any values of the
+      // other reciprocal attribute pass filters.
+      // Filter information about metabolites' reactions and sets.
+      var accessMetabolitesSets = Attribution
+      .filterMetabolitesReactionsAttributesValues({
+        totalMetabolitesSets: totalMetabolitesSets,
+        reactionsSets: accessReactionsSets,
+        reactions: reactions
+      });
+      // Records within attribute "filterReactionsSets" retain information about
+      // reactions with any metabolites, processes, and compartments that pass
+      // filters, and they only retain metabolites, processes, compartments that
+      // match filters.
+      // Filter information about reactions' metabolites and sets.
+      var filterReactionsSets = Attribution
       .filterReactionsMetabolitesAttributesValues({
         setsSelections: setsSelections,
         totalReactionsSets: totalReactionsSets,
         reactions: reactions
       });
-      // Determine for each metabolite the reactions in which it participates
-      // and to which sets it belongs by its values of attributes.
-      var currentMetabolitesSets = Attribution
+      // Records within attribute "filterMetabolitesSets" retain information
+      // about metabolites with any reactions, processes, and compartments that
+      // pass filters, and they only retain reactions, processes, compartments
+      // that match filters.
+      // Filter information about metabolites' reactions and sets.
+      var filterMetabolitesSets = Attribution
       .filterMetabolitesReactionsAttributesValues({
         totalMetabolitesSets: totalMetabolitesSets,
-        currentReactionsSets: currentReactionsSets,
+        reactionsSets: filterReactionsSets,
         reactions: reactions
       });
     }
-    // Compile novel values of attributes.
-    var attributesValues = {
-      currentReactionsSets: currentReactionsSets,
-      currentMetabolitesSets: currentMetabolitesSets
+    // Compile information.
+    var currentEntitiesSets = {
+      accessReactionsSets: accessReactionsSets,
+      accessMetabolitesSets: accessMetabolitesSets,
+      filterReactionsSets: filterReactionsSets,
+      filterMetabolitesSets: filterMetabolitesSets
     };
-    // Return novel values of attributes.
-    return attributesValues;
+    // Return information.
+    return currentEntitiesSets;
   }
-
 
   // Attribution of entities to sets by values of attributes.
 
@@ -288,13 +313,13 @@ class Attribution {
       return currentCollection;
     }, initialCollection);
     // Collect unique values of attributes.
-    var filterAttributes = {
+    var attributesValues = {
       reactions: General.collectUniqueElements(totalAttributes.reactions),
       compartments: General.collectUniqueElements(totalAttributes.compartments),
       processes: General.collectUniqueElements(totalAttributes.processes)
     };
     // Return information.
-    return filterAttributes;
+    return attributesValues;
   }
   /**
   * Determines whether a reaction passes any filters and whether a metabolite's
@@ -315,6 +340,7 @@ class Attribution {
       reactionIdentifier, reactionsSets
     );
     if (pass) {
+      // Access information about reaction's sets.
       var reactionSets = General.accessArrayRecordByIdentifier(
         reactionIdentifier, reactionsSets
       );
@@ -371,7 +397,7 @@ class Attribution {
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.metaboliteIdentifier Identifier of a metabolite.
   * @param {Array<string>} parameters.compartments Identifiers of a reaction's
-  * compartments.
+  * compartments that pass any filters.
   * @param {Array<Object<string>>} parameters.participants Information about
   * metabolites' and compartments' participation in a reaction.
   * @returns {Array<string>} Identifiers of compartments that pass any filters
@@ -455,8 +481,8 @@ class Attribution {
     });
   }
   /**
-  * Filters for each reaction information about the metabolites that participate
-  * and the sets to which the entity belongs by its values of attributes.
+  * Filters for each reaction information about the sets to which the entity
+  * belongs by its values of attributes.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<Object<string>>} parameters.setsSelections Selections of
   * attributes' values.
@@ -466,33 +492,34 @@ class Attribution {
   * @returns {Array<Object>} Information about reactions' metabolites and sets
   * that pass filters.
   */
-  static filterReactionsMetabolitesAttributesValues({
+  static filterAccessReactionsAttributesValues({
     setsSelections, totalReactionsSets, reactions
   } = {}) {
-    // TODO: Follow patterns as much as possible.
-    // This filtration procedure selects which reactions to preserve, which of
-    // their metabolites to preserve, and which of their values of attributes to
-    // preserve.
     // Determine filters from selections of sets.
     var filters = Attribution.translateSelectionsFilters(setsSelections);
     // Filter reactions, their metabolites, and their values of attributes.
-    return totalReactionsSets.reduce(function (collection, reactionRecord) {
-      // Set reference to reaction.
-      var reaction = reactions[reactionRecord.reaction];
-      // Filter reaction's attributes.
-      var filterRecord = Attribution.filterReactionMetabolitesAttributesValues({
-        reactionRecord: reactionRecord,
+    return totalReactionsSets.reduce(function (collection, reactionSets) {
+      // Access information about reaction.
+      var reaction = General
+      .accessObjectRecordByIdentifier(reactionSets.reaction, reactions);
+      // Filter reaction's values of attributes.
+      var filterSets = Attribution.filterAccessReactionAttributesValues({
         filters: filters,
+        reactionSets: reactionSets,
         reaction: reaction
       });
       // Determine whether the reaction passes filters.
-      var pass = Attribution.determineReactionPassFilters(
-        filterRecord, reaction
+      var pass = Attribution.determineAccessReactionPassFilters(
+        filterSets, reaction
       );
       if (pass) {
         // Reaction passes filters.
-        // Include reaction in the collection.
-        var currentCollection = [].concat(collection, filterRecord);
+        // Compile information about reaction and its values of attributes.
+        // Replace reaction's original values of attributes with those that pass
+        // filters.
+        var record = Object.assign({}, reactionSets, filterSets);
+        // Include reaction's record in the collection.
+        var currentCollection = [].concat(collection, record);
       } else {
         // Reaction does not pass filters.
         // Omit reaction from the collection.
@@ -520,55 +547,89 @@ class Attribution {
     return filters;
   }
   /**
-  * Filters a reaction's information about the metabolites that participate
-  * and the sets to which the entity belongs by its values of attributes.
+  * Filters a reaction's information about the sets to which the entity belongs
+  * by its values of attributes.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.reactionRecord Information about a reaction's
-  * metabolites and sets.
   * @param {Object<Array<string>>} parameters.filters Values of attributes to
   * apply as filters.
+  * @param {Object} parameters.reactionSets Information about a reaction's
+  * metabolites and sets.
   * @param {Object} parameters.reaction Information about a reaction.
   * @returns {Object} Information about a reaction's metabolites and sets that
   * pass filters.
   */
-  static filterReactionMetabolitesAttributesValues({
-    reactionRecord, filters, reaction
+  static filterAccessReactionAttributesValues({
+    filters, reactionSets, reaction
   } = {}) {
-    // Determine reaction's values of relevant attributes that pass filters.
-    // Filter processes.
-    var processes = Attribution.filterAttributeValues({
-      values: reactionRecord.processes,
-      attribute: "processes",
+    // Determine which of reaction's values of attributes to retain for
+    // accessibility of sets.
+    // Filter values of attributes reciprocally.
+    var processes = Attribution.filterReciprocalAttributeValues({
+      trialValues: reactionSets.processes,
+      trialAttribute: "processes",
+      qualifierValues: reactionSets.compartments,
+      qualifierAttribute: "compartments",
       filters: filters
     });
-    // Filter compartments.
-    var compartments = Attribution.filterAttributeValues({
-      values: reactionRecord.compartments,
-      attribute: "compartments",
+    var compartments = Attribution.filterReciprocalAttributeValues({
+      trialValues: reactionSets.compartments,
+      trialAttribute: "compartments",
+      qualifierValues: reactionSets.processes,
+      qualifierAttribute: "processes",
       filters: filters
     });
-    // Filter metabolites.
-    var metabolites = Attribution.filterReactionMetabolites({
-      metabolites: reactionRecord.metabolites,
-      compartments: compartments,
-      participants: reaction.participants
-    });
-    // Compile reaction's values of attributes that pass filters.
-    var filterAttributes = {
+    // Do not filter reaction's metabolites.
+    var metabolites = reactionSets.metabolites.slice();
+    // It is necessary to retain metabolites to retain accessibility of sets.
+    // Compile information.
+    var filterAttributesValues = {
       metabolites: metabolites,
-      compartments: compartments,
-      processes: processes
+      processes: processes,
+      compartments: compartments
     };
-    // Create reaction's record.
-    // Replace reaction's original values of attributes with those that pass
-    // filters.
-    return Object.assign({}, reactionRecord, filterAttributes);
+    // Return information.
+    return filterAttributesValues;
   }
   /**
-  * Filters values of a reaction's attribute.
+  * Filters values of an attribute reciprocally.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<string>} parameters.values Values of a single attribute.
-  * @param {string} parameters.attribute A single attribute.
+  * @param {Array<string>} parameters.trialValues Values of an attribute on
+  * trial.
+  * @param {string} parameters.trialAttribute Name of an attribute on trial.
+  * @param {Array<string>} parameters.qualifierValues Values of an attribute to
+  * use for qualification.
+  * @param {string} parameters.qualifierAttribute Name of an attribute to use
+  * for qualification.
+  * @param {Object<Array<string>>} parameters.filters Values of attributes to
+  * apply as filters.
+  * @returns {Array<string>} Attribute's values that pass filters.
+  */
+  static filterReciprocalAttributeValues({
+    trialValues, trialAttribute, qualifierValues, qualifierAttribute, filters
+  } = {}) {
+    // Determine values of qualifier attribute that pass filters.
+    var filterQualifiers = Attribution.filterAttributeValues({
+      values: qualifierValues,
+      attribute: qualifierAttribute,
+      filters: filters
+    });
+    // Determine whether any values of qualifier attribute pass filters.
+    if (filterQualifiers.length > 0) {
+      // Some values of qualifier attribute pass filters.
+      // Retain all values of trial attribute.
+      var values = trialValues.slice();
+    } else {
+      // Not any values of qualifier attribute pass filters.
+      // Do not retain any values of trial attribute.
+      var values = [];
+    }
+    return values;
+  }
+  /**
+  * Filters values of an attribute.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.values Values of an attribute.
+  * @param {string} parameters.attribute Name of an attribute.
   * @param {Object<Array<string>>} parameters.filters Values of attributes to
   * apply as filters.
   * @returns {Array<string>} Attribute's values that pass filters.
@@ -577,29 +638,130 @@ class Attribution {
     values, attribute, filters
   } = {}) {
     // Determine if there is a filter for the attribute.
-    if (!filters.hasOwnProperty(attribute)) {
-      // There is not a filter for the attribute.
-      // Copy the attribute's values.
-      var matchValues = values.slice();
-    } else {
+    if (filters.hasOwnProperty(attribute)) {
       // There is a filter for the attribute.
       // Filter the attribute's values.
-      var matchValues = values.filter(function (value) {
+      var filterValues = values.filter(function (value) {
         return filters[attribute].includes(value);
       });
+    } else {
+      // There is not a filter for the attribute.
+      // Copy the attribute's values.
+      var filterValues = values.slice();
     }
     // Return values of the attribute that pass filters.
-    return matchValues;
+    return filterValues;
+  }
+  /**
+  * Determines whether a reaction passes filters by its values of attributes.
+  * @param {Object} parameters.filterSets Information about a reaction's sets
+  * that pass filters.
+  * @param {Object} reaction Information about a reaction.
+  * @returns {boolean} Whether the reaction passes filters.
+  */
+  static determineAccessReactionPassFilters(filterSets, reaction) {
+    var metabolites = filterSets.metabolites.length > 0;
+    var processes = filterSets.processes.length > 0;
+    var compartments = filterSets.compartments.length > 0;
+    return (metabolites && (processes || compartments));
+  }
+  /**
+  * Filters for each reaction information about the metabolites that participate
+  * and the sets to which the entity belongs by its values of attributes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object<string>>} parameters.setsSelections Selections of
+  * attributes' values.
+  * @param {Array<Object>} parameters.totalReactionsSets Information about all
+  * reactions' metabolites and sets.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @returns {Array<Object>} Information about reactions' metabolites and sets
+  * that pass filters.
+  */
+  static filterReactionsMetabolitesAttributesValues({
+    setsSelections, totalReactionsSets, reactions
+  } = {}) {
+    // Determine filters from selections of sets.
+    var filters = Attribution.translateSelectionsFilters(setsSelections);
+    // Filter reactions, their metabolites, and their values of attributes.
+    return totalReactionsSets.reduce(function (collection, reactionSets) {
+      // Access information about reaction.
+      var reaction = General
+      .accessObjectRecordByIdentifier(reactionSets.reaction, reactions);
+      // Filter reaction's values of attributes.
+      var filterSets = Attribution.filterReactionMetabolitesAttributesValues({
+        filters: filters,
+        reactionSets: reactionSets,
+        reaction: reaction
+      });
+      // Determine whether the reaction passes filters.
+      var pass = Attribution.determineReactionPassFilters(filterSets, reaction);
+      if (pass) {
+        // Reaction passes filters.
+        // Compile information about reaction and its values of attributes.
+        // Replace reaction's original values of attributes with those that pass
+        // filters.
+        var record = Object.assign({}, reactionSets, filterSets);
+        // Include reaction's record in the collection.
+        var currentCollection = [].concat(collection, record);
+      } else {
+        // Reaction does not pass filters.
+        // Omit reaction from the collection.
+        var currentCollection = collection;
+      }
+      return currentCollection;
+    }, []);
+  }
+  /**
+  * Filters a reaction's information about the metabolites that participate
+  * and the sets to which the entity belongs by its values of attributes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Array<string>>} parameters.filters Values of attributes to
+  * apply as filters.
+  * @param {Object} parameters.reactionSets Information about a reaction's
+  * metabolites and sets.
+  * @param {Object} parameters.reaction Information about a reaction.
+  * @returns {Object} Information about a reaction's metabolites and sets that
+  * pass filters.
+  */
+  static filterReactionMetabolitesAttributesValues({
+    filters, reactionSets, reaction
+  } = {}) {
+    // Determine reaction's values of relevant attributes that pass filters.
+    // Filter processes.
+    var processes = Attribution.filterAttributeValues({
+      values: reactionSets.processes,
+      attribute: "processes",
+      filters: filters
+    });
+    // Filter compartments.
+    var compartments = Attribution.filterAttributeValues({
+      values: reactionSets.compartments,
+      attribute: "compartments",
+      filters: filters
+    });
+    // Filter metabolites.
+    var metabolites = Attribution.filterReactionMetabolites({
+      metabolites: reactionSets.metabolites,
+      compartments: compartments,
+      participants: reaction.participants
+    });
+    // Compile information.
+    var filterAttributesValues = {
+      metabolites: metabolites,
+      compartments: compartments,
+      processes: processes
+    };
+    // Return information.
+    return filterAttributesValues;
   }
   /**
   * Filters metabolites that participate in a reaction.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<string>} parameters.metabolites Identifiers of metabolites
-  * that participate in a reaction.
+  * @param {Array<string>} parameters.metabolites Identifiers of metabolites.
   * @param {Array<string>} parameters.compartments Identifiers of a reaction's
   * compartments that pass filters.
   * @param {Array<Object<string>>} parameters.participants Information about
-  * metabolites' participation in a reaction.
+  * metabolites' and compartments' participation in a reaction.
   * @returns {Array<string>} Identifiers of a reaction's metabolites that
   * pass filters.
   */
@@ -620,48 +782,22 @@ class Attribution {
     });
   }
   /**
-  * Determines whether a reaction passes filters.
-  * @param {Object} reactionRecord Information about a reaction's metabolites
-  * and sets that pass filters.
+  * Determines whether a reaction passes filters by its values of attributes.
+  * @param {Object} parameters.filterSets Information about a reaction's
+  * metabolites and sets that pass filters.
   * @param {Object} reaction Information about a reaction.
   * @returns {boolean} Whether the reaction passes filters.
   */
-  static determineReactionPassFilters(reactionRecord, reaction) {
-    // Requirements for reaction to pass filters depend on the reaction's main
-    // behavior.
-    // Determine whether reaction involves transport.
-    if (reaction.transport) {
-      // Reaction involves transport of a metabolite between different
-      // compartments.
-      // A single reaction can facilitate multiple transport events.
-      // Reactions that involve transport only pass filters if multiple
-      // compartments of any transport event pass filters.
-      var compartments = reaction.transports.some(function (transport) {
-        var matches = transport.compartments.filter(function (compartment) {
-          return reactionRecord.compartments.includes(compartment);
-        });
-        return matches.length > 1;
-      });
-    } else {
-      // Reaction does not involve transport of a metabolite between different
-      // compartments.
-      // Reaction passes filters if it has any processes, compartments, and
-      // metabolites that pass filters.
-      var compartments = reactionRecord.compartments.length > 0;
-    }
-    // Combinations of criteria between different values of the same attribute
-    // use OR logic, since any value that passes fulfills the requirement for
-    // the attribute.
-    // Combinations of criteria between different attributes use AND logic,
-    // since all attributes must pass to fulfill the requirement for the
-    // reaction.
-    var processes = reactionRecord.processes.length > 0;
-    var metabolites = reactionRecord.metabolites.length > 0;
-    return (compartments && processes && metabolites);
+  static determineReactionPassFilters(filterSets, reaction) {
+    // Combinations of filters against different values of the same attribute
+    // use OR logic, since any value of the attribute must pass filters.
+    // Combinations of filters against different attributes use AND logic,
+    // since all attributes must pass filters.
+    var metabolites = filterSets.metabolites.length > 0;
+    var processes = filterSets.processes.length > 0;
+    var compartments = filterSets.compartments.length > 0;
+    return (metabolites && compartments && processes);
   }
-
-
-  // TODO: Use this same procedure for both accessMetabolitesSets and filterMetabolitesSets...
   /**
   * Filters for each metabolite information about the reactions in which it
   * participates and the sets to which the entity belongs by its values of
@@ -669,37 +805,34 @@ class Attribution {
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<Object>} parameters.totalMetabolitesSets Information about all
   * metabolites' reactions and sets.
-  * @param {Array<Object>} parameters.currentReactionsSets Information about
-  * reactions' metabolites and sets that pass filters.
+  * @param {Array<Object>} parameters.reactionsSets Information about reactions'
+  * metabolites and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Array<Object>} Information about metabolites' reactions and sets
   * that pass filters.
   */
   static filterMetabolitesReactionsAttributesValues({
-    totalMetabolitesSets, currentReactionsSets, reactions
+    totalMetabolitesSets, reactionsSets, reactions
   } = {}) {
-    // This filtration procedure selects which metabolites to preserve, which of
-    // their reactions to preserve, and which of their values of attributes to
-    // preserve.
-    // A metabolite's values of attributes determine its attribution to sets, so
-    // it is also important to filter these values.
-    // Metabolites inherit attributes relevant to filtration from the reactions
-    // in which they participate.
     // Filter metabolites, their reactions, and their values of attributes.
-    return totalMetabolitesSets.reduce(function (collection, setsMetabolite) {
+    return totalMetabolitesSets.reduce(function (collection, metaboliteSets) {
       // Filter metabolite's reactions and values of attributes that it inherits
       // from these reactions.
-      var filterRecord = Attribution.filterMetaboliteReactionsAttributesValues({
-        setsMetabolite: setsMetabolite,
-        currentReactionsSets: currentReactionsSets,
+      var filterSets = Attribution.filterMetaboliteReactionsAttributesValues({
+        metaboliteSets: metaboliteSets,
+        reactionsSets: reactionsSets,
         reactions: reactions
       });
       // Determine whether the metabolite passes filters.
-      var pass = Attribution.determineMetabolitePassFilters(filterRecord);
+      var pass = Attribution.determineMetabolitePassFilters(filterSets);
       if (pass) {
         // Metabolite passes filters.
-        // Include metabolite in the collection.
-        var currentCollection = [].concat(collection, filterRecord);
+        // Compile information about metabolite and its values of attributes.
+        // Replace metabolite's original values of attributes with those that
+        // pass filters.
+        var record = Object.assign({}, metaboliteSets, filterSets);
+        // Include metabolite's record in the collection.
+        var currentCollection = [].concat(collection, record);
       } else {
         // Metabolite does not pass filters.
         // Omit metabolite from the collection.
@@ -713,39 +846,38 @@ class Attribution {
   * participates and the sets to which the entity belongs by its values of
   * attributes.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object>} parameters.setsMetabolite Information about a
-  * metabolite's reactions and sets.
-  * @param {Array<Object>} parameters.currentReactionsSets Information about
-  * reactions' metabolites and sets that pass filters.
+  * @param {Object} parameters.metaboliteSets Information about a metabolite's
+  * reactions and sets.
+  * @param {Array<Object>} parameters.reactionsSets Information about reactions'
+  * metabolites and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Array<Object>} Information about metabolites' reactions and sets
   * that pass filters.
   */
   static filterMetaboliteReactionsAttributesValues({
-    setsMetabolite, currentReactionsSets, reactions
+    metaboliteSets, reactionsSets, reactions
   } = {}) {
-    // Iterate on metabolite's reactions.
-    var totalAttributes = setsMetabolite
-    .reactions.reduce(function (collection, reactionIdentifier) {
-    }, initialCollection);
-    // Create metabolite's record.
-    // Replace metabolite's original values of attributes with those that pass
-    // filters.
-    return Object.assign({}, setsMetabolite, filterAttributes);
+    // Collect values of attributes that the metabolite inherits from
+    // reactions in which it participates.
+    var reactionsAttributesValues = Attribution
+    .collectMetaboliteReactionsAttributesValues({
+      metaboliteIdentifier: metaboliteSets.metabolite,
+      reactionsIdentifiers: metaboliteSets.reactions,
+      reactionsSets: reactionsSets,
+      reactions: reactions
+    });
+    // Return information.
+    return reactionsAttributesValues;
   }
-  // TODO: I think I can use the same metabolite pass filters method for access and filter metabolites.
   /**
   * Determines whether a metabolite passes filters.
-  * @param {Object} metaboliteRecord Information about a metabolite's reactions
-  * and sets that pass filters.
+  * @param {Object} parameters.filterSets Information about a metabolite's
+  * reactions and sets that pass filters.
   * @returns {boolean} Whether the metabolite passes filters.
   */
-  static determineMetabolitePassFilters(metaboliteRecord) {
+  static determineMetabolitePassFilters(filterSets) {
     // Metabolite passes filters if it relates to at least a single reaction
     // that passes filters.
-    return metaboliteRecord.reactions.length > 0;
+    return filterSets.reactions.length > 0;
   }
-
-
-
 }
