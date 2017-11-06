@@ -260,7 +260,7 @@ class Action {
     // Determine total entities' attribution to sets.
     var totalEntitiesSets = Attribution
     .determineTotalEntitiesSets(metabolicEntitiesSets.reactions);
-    // Initialize selections of entities' sets.
+    // Initialize filters against entities' sets.
     var entitiesSetsFilters = Action.initializeEntitiesSetsFilters();
     // Determine current entities' attribution to sets.
     var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
@@ -293,12 +293,12 @@ class Action {
     // TODO: I'll also need to include this procedure for other actions that will change the candidates...
     // TODO: ... changes to compartmentalization, selections of sets, selections of entities for simplification
     if (false) {
-      // Determine entities that are relevant to context of interest.
-      var contextEntities = Action.createContextEntities({
-        compartmentalization: compartmentalization,
+      // Determine entities that are candidates of interest.
+      var candidateEntities = Candidacy.determineCandidateEntities({
+        compartmentalization: compartmentalization.compartmentalization,
         reactionsSimplifications: simplifications.reactionsSimplifications,
         metabolitesSimplifications: simplifications.metabolitesSimplifications,
-        currentReactionsSets: setsEntitiesCardinalities.currentReactionsSets,
+        filterReactionsSets: currentEntitiesSets.filterReactionsSets,
         reactions: metabolicEntitiesSets.reactions
       });
     }
@@ -484,7 +484,7 @@ class Action {
   * @param {Object} model Model of the application's comprehensive state.
   */
   static restoreSetsSummary(model) {
-    // Initialize selections of entities' sets.
+    // Initialize filters against entities' sets.
     var entitiesSetsFilters = Action.initializeEntitiesSetsFilters();
     // Determine current entities' attribution to sets.
     var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
@@ -791,7 +791,7 @@ class Action {
   * @returns {Object} Collection of multiple attributes.
   */
   static initializeEntitiesSetsFilters() {
-    // Initialize selections of values of attributes for sets.
+    // Initialize filters against entities' sets.
     var setsFilters = Attribution.createInitialSetsFilters();
     // Compile novel values of attributes.
     var attributesValues = {
@@ -821,7 +821,7 @@ class Action {
 
 
   /**
-  * Initializes information about selection of compartmentalization's relevance.
+  * Initializes information about compartmentalization's relevance.
   * @returns {Object} Collection of multiple attributes.
   */
   static initializeCompartmentalizationSelection() {
@@ -839,6 +839,9 @@ class Action {
   * @returns {Object} Collection of multiple attributes.
   */
   static initializeSimplificationsSelections() {
+    // TODO: Is it better to organize simplifications within arrays or within objects?
+    // TODO: It'll probably be better to organize simplifications within objects.
+    // TODO: It will be necessary to determine many many times (for each candidate entity) whether a simplification exists.
     // Initialize selections of reactions for simplification.
     var reactionsSimplifications = [];
     // Initialize selections of reactions for simplification.
@@ -851,127 +854,6 @@ class Action {
     // Return novel values of attributes.
     return attributesValues;
   }
-
-
-
-
-  /**
-  * Creates information about entities and relations between them that match the
-  * context of interest.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} parameters.compartmentalization Whether to represent
-  * compartmentalization.
-  * @param {Array<Object<string>>} parameters.reactionsSimplifications
-  * Selections of reactions for simplification.
-  * @param {Array<Object<string>>} parameters.metabolitesSimplifications
-  * Selections of metabolites for simplification.
-  * @param {Array<Object>} parameters.currentReactionsSets Information about
-  * reactions' metabolites and sets that pass filters.
-  * @param {Object<Object>} parameters.reactions Information about reactions.
-  * @returns {Object} Collection of multiple attributes.
-  */
-  static createContextEntities({
-    compartmentalization,
-    reactionsSimplifications,
-    metabolitesSimplifications,
-    currentReactionsSets,
-    reactions
-  } = {}) {
-    // TODO: Rename "context entities" to "candidate entities" since these are
-    // TODO: representations of entities that are elligible candidates for representation in the network.
-    // Candidate entities are entities that are elligible candidates for
-    // representation in the network.
-    // An entity's elligibility depends on filters by its values of attributes,
-    // the context of interest (especially in terms of compartmentalization),
-    // and the elligibility of other entities that relate.
-    // The purpose of candidate entities is to enable the user to access
-    // information about individual entities and to change their
-    // representations in the network.
-
-
-    // TODO: Filter simplification selections to eliminate those created by dependency.
-    // TODO: I need to re-determine these dependency selections each time to account for changes.
-    // TODO: Alternatively, I could filter these within the action that changes selections... (a new action)
-
-
-
-    // The relevance of individual entities and relations between them depends
-    // on the context of interest.
-    // A reaction's relevance depends on filtration
-    //
-    // compartmental context, its own
-    // operation, and metabolites' participation.
-    // A metabolite's relevance depends on the compartmental context and the
-    // reactions in which it participates.
-
-
-
-
-    // This procedure determines the relevance of individual entities and
-    // relations between them in the context of interest.
-    // Selections of individual entities for simplification directly indicate
-    // the relevance of these entities.
-    // A selection for simplification does not omit an entity from its list of
-    // entities, such that the entity is still accessible for changes to the
-    // selection.
-    // In contrast, simplification of an entity does influence the relevance of
-    // entities of the other type that rely on the entity for their own
-    // relevance.
-    if (false) {
-      var reactionsCandidates = Context.collectContextReactionsMetabolites({
-        compartmentalization: compartmentalization,
-        reactionsSimplifications: reactionsSimplifications,
-        metabolitesSimplifications: metabolitesSimplifications,
-        currentReactionsSets: currentReactionsSets,
-        reactions: reactions
-      });
-    }
-
-    // TODO: I need records for all entities, including those with selections for omission.
-    // TODO: The idea is to give access to each entity and enable selections for simplification.
-
-    // TODO: Create the context-dependent (ie compartmentalization) entities.
-    // TODO: These records will be very similar to the currentReactionsSets and currentMetabolitesSets...
-    // TODO: They only need references to their respective entity, reaction or metabolite...
-    // TODO: ... and to the reactions or metabolites to which they relate
-    // TODO: These relations need to reflect current filters AND compartmentalization.
-    // TODO: Maybe adapt some processes from the network definition procedure.
-
-    // TODO: Procedure for reactions...
-    // TODO: Iterate on currentReactionsSets
-    // TODO: For each current reaction...
-    // TODO: If compartmentalization is false...
-    // TODO: ... then copy the reaction reference and metabolite references from currentReactionsSets... done
-    // TODO: If compartmentalization is true...
-    // TODO: ... then access the reaction's record and determine in which compartment each metabolite participates
-    // TODO: ... only consider compartments that pass filters
-    // TODO: ... create compartmental identifiers for the metabolites
-    // TODO: ... store references to these compartmental metabolites within the record.
-    //
-    // TODO: Maybe collect metabolite's reference identifiers and compartments while preparing reactionsCandidates???
-    //
-    // TODO: Procedure for metabolites...
-    // TODO: I suppose just derive the metabolites from the reactions as usual
-    // TODO: Compartmental metabolites need their own compartmental identifiers, such as "pyr_c".
-    // TODO: Compartmental metabolites also need references to their metabolite records and to their compartment.
-    // TODO: Derive the compartmental name as needed, such as "pyruvate cytosol".
-    // TODO: For simplicity, just derive metabolite and compartment identifiers from the ID (such as "pyr_c") within reactionsCandidates record.
-
-
-    if (false) {
-      // Compile novel values of attributes.
-      var attributesValues = {
-        currentReactionsSets: currentReactionsSets,
-        currentMetabolitesSets: currentMetabolitesSets,
-        setsCardinalities: setsCardinalities,
-        setsSummary: setsSummary
-      };
-      // Return novel values of attributes.
-      return attributesValues;
-
-    }
-  }
-
 
   // TODO: SOME of these methods might be obsolete...
 

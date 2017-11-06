@@ -127,7 +127,7 @@ class Model {
       // "metabolites", "compartments", and "processes".
       // Information derives from attributes "setsFilters",
       // "totalReactionsSets", and "reactions".
-      "filterReactionsSets", // TODO: Change "currentReactionsSets" to "filterReactionsSets"
+      "filterReactionsSets",
       // Attribute "filterMetabolitesSets" stores information for metabolites
       // that pass filters about the reactions in which each metabolite
       // participates in contexts that pass filters and the sets to which each
@@ -138,7 +138,7 @@ class Model {
       // "reactions", "compartments", and "processes".
       // Information derives from attributes "totalMetabolitesSets",
       // "filterReactionsSets" and "reactions".
-      "filterMetabolitesSets", // TODO: Change "currentMetabolitesSets" to "filterMetabolitesSets"
+      "filterMetabolitesSets",
       // Attribute "setsEntities" stores information about the type of entities,
       // metabolites or reactions, to represent in the sets' summary.
       "setsEntities",
