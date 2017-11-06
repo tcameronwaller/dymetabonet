@@ -970,21 +970,20 @@ class General {
   * for each category.
   * @param {string} parameters.category Name of attribute in records to create
   * categories.
-  * @param {Array<Object>} parameters.records Records with target and category
+  * @param {Object<Object>} parameters.records Records with target and category
   * attributes.
   * @returns {Object<Array<string>>} Values of the target attribute that occur
   * together in records with each value of the category attribute.
   */
-  static collectArrayRecordsTargetsByCategories({target, category, records} = {}) {
+  static collectRecordsTargetsByCategories({target, category, records} = {}) {
     // Collect values of the target attribute that occur together in records
     // with each value of the category attribute.
     // Iterate on records.
-    if (Array.isArray(records)) {
-      var iterationRecords = records;
-    } else {
-      var iterationRecords = Object.keys(records);
-    }
-    return iterationRecords.reduce(function (recordsCollection, iterationRecord) {
+    var recordsIdentifiers = Object.keys(records);
+    return recordsIdentifiers
+    .reduce(function (recordsCollection, recordIdentifier) {
+      // Access information about record.
+      var record = records[recordIdentifier];
       // Determine record's values of the category attribute.
       var values = record[category];
       // Include record's value of the target attribute in collections for each
@@ -993,20 +992,19 @@ class General {
       // record.
       if (Array.isArray(values)) {
         var categoriesValues = values;
-        var recordCollection = General.collectRecordTargetByCategories({
+        return General.collectRecordTargetByCategories({
           target: record[target],
           categories: categoriesValues,
           recordsCollection: recordsCollection
         });
       } else {
         var categoryValue = [values];
-        var recordCollection = General.collectRecordTargetByCategory({
+        return General.collectRecordTargetByCategory({
           target: record[target],
           category: categoryValue,
           collection: recordsCollection
         });
       }
-      return recordCollection;
     }, {});
   }
   /**
@@ -1028,12 +1026,11 @@ class General {
   } = {}) {
     // Iterate on values of the category attribute.
     return categories.reduce(function (categoriesCollection, category) {
-      var categoryCollection = General.collectRecordTargetByCategory({
+      return General.collectRecordTargetByCategory({
         target: target,
         category: category,
         collection: categoriesCollection
       });
-      return categoryCollection;
     }, recordsCollection);
   }
   /**
@@ -1061,20 +1058,14 @@ class General {
       // Include the value of the target attribute in the record.
       var previousTargets = collection[category];
       var currentTargets = [].concat(previousTargets, target);
-      var novelRecord = {
-        [category]: currentTargets
-      };
+      return collection[category] = currentTargets;
     } else {
       // The collection does not include a record for the value of the
       // category attribute.
       // Create a novel record for the value of the category attribute.
       // Include the value of the target attribute in this record.
-      var novelRecord = {
-        [category]: [target]
-      };
+      return collection[category] = [target];
     }
-    // Include in the collection the novel record.
-    return Object.assign ({}, collection, novelRecord);
   }
   /**
   * Accesses a record within an object by the record's identifier, creating a

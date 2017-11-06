@@ -32,6 +32,11 @@ United States of America
 // TODO: Simply calling these procedures from respective class instances and passing "self" will work.
 // TODO: Maybe group this general functionality within some sort of utility class...
 
+// TODO: Eliminate the self = view pattern.
+// TODO: Just accept the calling variable as "self"...
+// TODO: classMethodName (self) {} instead of classMethodName (view) {}
+
+
 /**
 * Interface to select file, check and extract information about metabolic
 * entities and sets, and restore application's state.

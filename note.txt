@@ -4,6 +4,129 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+5 November 2017
+
+----------
+Computational performance of array versus object
+
+Creation of records (keys, values) within an object might be less efficient than creation of records within an array.
+
+Iteration on an object requires a pattern using the object's keys.
+This code transfers an object's values to an array.
+var keys = Object.keys(object);
+var array = keys.map(function (key) {
+  return object[key];
+});
+
+Iteration on records of an object might be less efficient than iteration on records of an array.
+Filtraton of reactions' sets required 1 second with records in arrays, but the procedure required 38 seconds with records in objects.
+
+Access to specific records of an object is much more efficient that access to specific records of an array.
+Access to records of an array requires sequential, iterative search by a method such as the array's method for find.
+Storing information in records within an object is more efficient if it is necessary to access records from the object frequently.
+Filtration of metabolites' sets, which involves many accesses of information about reactions, required 19 seconds with records in arrays, but the procedure required 5 seconds with records in objects.
+
+----------
+Computational performance of mutation versus copy
+
+In my application, I have tried to copy information rather than mutate it as much as is practical.
+I mutate values of attributes that define the application's state.
+Otherwise I copy values of variables.
+I use pure functions that avoid side effects.
+
+Copy is computationally much more expensive than mutation.
+
+I learned a valuable lesson today.
+I misunderstood the most effective use of JavaScript's array methods, such as map, filter, and reduce.
+I use these methods extensively to avoid mutation.
+Previously I copied values that I returned from array methods to avoid mutation.
+I learned that these copies are unnecessary and extremely inefficient.
+
+Previous pattern...
+
+function collectRecords(records) {
+  // Parameter "records" is an array of objects.
+  // Collect records that pass some filter.
+  var recordsIdentifiers = Object.keys(records);
+  return recordsIdentifiers.reduce(function (collection, recordIdentifier) {
+    var record = records[recordIdentifier];
+    if (filter(record)) {
+      // Record passes filter.
+      // Create new record.
+      var newRecord = {
+        [record.identifier]: record
+      };
+      // Include record in collection.
+      return Object.assign({}, collection, newRecord);
+    } else {
+      // Record does not pass filter.
+      // Omit record from collection.
+      return collection;
+    }
+  }, {});
+}
+
+JavaScript's array methods avoid mutation inherently such that it is unnecessary to copy values.
+
+Current pattern...
+
+function collectRecords(records) {
+  // Parameter "records" is an array of objects.
+  // Collect records that pass some filter.
+  var recordsIdentifiers = Object.keys(records);
+  return recordsIdentifiers.reduce(function (collection, recordIdentifier) {
+    var record = records[recordIdentifier];
+    if (filter(record)) {
+      // Record passes filter.
+      // Create new record.
+      var newRecord = {
+        [record.identifier]: record
+      };
+      // Include record in collection.
+      return Object.assign(collection, newRecord);
+      // Same as...
+      //return collection[record.identifier] = record;
+    } else {
+      // Record does not pass filter.
+      // Omit record from collection.
+      return collection;
+    }
+  }, {});
+}
+
+JavaScript's Object.assign copies properties from source objects to the target object.
+Properties in source objects replace properties in target object with same key.
+
+This statement copies properties from source object to a new target object.
+Object.assign({}, object);
+
+These statements both include new properties from the source object in the target object.
+Object.assign(collection, record);
+collection[record.identifier] = record;
+
+A helpful example of using mutation within an array's reduce method comes from the documentation for this method.
+
+"
+var names = ['Alice', 'Bob', 'Tiff', 'Bruce', 'Alice'];
+
+var countedNames = names.reduce(function (allNames, name) { 
+  if (name in allNames) {
+    allNames[name]++;
+  }
+  else {
+    allNames[name] = 1;
+  }
+  return allNames;
+}, {});
+// countedNames is:
+// { 'Alice': 2, 'Bob': 1, 'Tiff': 1, 'Bruce': 1 }
+"
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce?v=a
+
+Using unnecessary copies within an array's reduce method, my procedure to filter reactions' and metabolites' sets required about 43 seconds.
+Using mutations within an array's reduce method, my procedure to filter reactions' and metabolites' sets required about 0.25 seconds.
+
+--------------------------------------------------
 4 November 2017
 
 ----------

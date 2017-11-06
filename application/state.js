@@ -84,9 +84,9 @@ class State {
     // interface for set.
     if (
       this.determineMetabolicEntitiesSets() &&
-      this.determineSetsTotalEntities() &&
-      this.determineSetsCurrentEntities() &&
-      this.determineSetsSummary()
+      this.determineTotalEntitiesSets() &&
+      this.determineCurrentEntitiesSets() &&
+      this.determineSetsCardinalities()
     ) {
       // Initialize instance of interface.
       // Pass this instance a reference to the model of the application's
@@ -96,9 +96,8 @@ class State {
     // If application's state has appropriate information then create
     // interface for control of network's assembly.
     if (
-      this.determineMetabolicEntitiesSets() &&
-      this.determineCurrentEntities() &&
-      this.determineNetworkAssembly()
+      this.determineCandidateContext() &&
+      this.determineCandidateEntities()
     ) {
       // Initialize instance of interface.
       // Pass this instance a reference to the model of the application's
@@ -108,9 +107,8 @@ class State {
     // If application's state has appropriate information then create
     // interface for place-holder in bottom of interface.
     if (
-      this.determineMetabolicEntitiesSets() &&
-      this.determineCurrentEntities() &&
-      !this.determineNetworkElements()
+      this.determineCandidateContext() &&
+      this.determineCandidateEntities()
     ) {
       // Initialize instance of interface.
       // Pass this instance a reference to the model of the application's
@@ -125,9 +123,8 @@ class State {
     // TODO: necessarily draw the network until I have the current network's elements...
     // TODO: those currently of interest for drawing...
     if (
-      this.determineMetabolicEntitiesSets() &&
-      this.determineCurrentEntities() &&
-      this.determineNetworkElements()
+      this.determineCandidateContext() &&
+      this.determineCandidateEntities()
     ) {
       // Initialize instance of interface.
       // Pass this instance a reference to the model of the application's
@@ -159,7 +156,7 @@ class State {
   * Determines whether the application's state has information about all
   * entities' attribution to sets.
   */
-  determineSetsTotalEntities() {
+  determineTotalEntitiesSets() {
     return (
       !(this.model.totalReactionsSets === null) &&
       !(this.model.totalMetabolitesSets === null)
@@ -169,18 +166,20 @@ class State {
   * Determines whether the application's state has information about current
   * entities' attribution to sets.
   */
-  determineSetsCurrentEntities() {
+  determineCurrentEntitiesSets() {
     return (
-      !(this.model.setsSelections === null) &&
-      !(this.model.currentReactionsSets === null) &&
-      !(this.model.currentMetabolitesSets === null)
+      !(this.model.setsFilters === null) &&
+      !(this.model.accessReactionsSets === null) &&
+      !(this.model.accessMetabolitesSets === null) &&
+      !(this.model.filterReactionsSets === null) &&
+      !(this.model.filterMetabolitesSets === null)
     );
   }
   /**
   * Determines whether or not the application's state has information about
   * sets of metabolic entities by their values of attributes.
   */
-  determineSetsSummary() {
+  determineSetsCardinalities() {
     return (
       !(this.model.setsEntities === null) &&
       !(this.model.setsFilter === null) &&
@@ -188,6 +187,30 @@ class State {
       !(this.model.setsSummary === null)
     );
   }
+  /**
+  * Determines whether or not the application's state has information about
+  * context of interest for candidate entities.
+  */
+  determineCandidateContext() {
+    return (
+      !(this.model.compartmentalization === null) &&
+      !(this.model.reactionsSimplifications === null) &&
+      !(this.model.metabolitesSimplifications === null)
+    );
+  }
+  /**
+  * Determines whether or not the application's state has information about
+  * candidate entities.
+  */
+  determineCandidateEntities() {
+    return (
+      !(this.model.reactionsCandidates === null) &&
+      !(this.model.metabolitesCandidates === null)
+    );
+  }
+
+
+
   /**
   * Determines whether or not the application's state has information about
   * options for assembly of a network of relations between metabolic

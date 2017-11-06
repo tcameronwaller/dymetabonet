@@ -40,18 +40,18 @@ class Cardinality {
   * Determines cardinalities of entities in sets and prepares a summary of these
   * sets' cardinalities.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.setsEntities Selection of type of entities for
-  * sets' cardinalities.
-  * @param {boolean} parameters.setsFilter Selection of whether to filter sets'
-  * entities for summary.
-  * @param {Array<Object>} parameters.accessReactionsSets Information about
-  * reactions' metabolites and sets that constrain access.
-  * @param {Array<Object>} parameters.accessMetabolitesSets Information about
-  * metabolites' reactions and sets that constrain access.
-  * @param {Array<Object>} parameters.filterReactionsSets Information about
-  * reactions' metabolites and sets that pass filters.
-  * @param {Array<Object>} parameters.filterMetabolitesSets Information about
-  * metabolites' reactions and sets that pass filters.
+  * @param {string} parameters.setsEntities Type of entities, metabolites or
+  * reactions for sets' cardinalities.
+  * @param {boolean} parameters.setsFilter Whether to filter sets' entities for
+  * summary.
+  * @param {Object<Object>} parameters.accessReactionsSets Information about
+  * reactions' metabolites and sets that pass filtration by access method.
+  * @param {Object<Object>} parameters.accessMetabolitesSets Information about
+  * metabolites' reactions and sets that pass filtration by access method.
+  * @param {Object<Object>} parameters.filterReactionsSets Information about
+  * reactions' metabolites and sets that pass filtration by filter method.
+  * @param {Object<Object>} parameters.filterMetabolitesSets Information about
+  * metabolites' reactions and sets that pass filtration by filter method.
   * @returns {Object} Cardinalities of entities in sets and summary of these
   * sets' cardinalities.
   */
@@ -89,18 +89,18 @@ class Cardinality {
   * Determines cardinalities of entities in sets for all values of all
   * attributes.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.setsEntities Selection of type of entities for
-  * sets' cardinalities.
-  * @param {boolean} parameters.setsFilter Selection of whether to filter sets'
-  * entities for summary.
-  * @param {Array<Object>} parameters.accessReactionsSets Information about
-  * reactions' metabolites and sets that constrain access.
-  * @param {Array<Object>} parameters.accessMetabolitesSets Information about
-  * metabolites' reactions and sets that constrain access.
-  * @param {Array<Object>} parameters.filterReactionsSets Information about
-  * reactions' metabolites and sets that pass filters.
-  * @param {Array<Object>} parameters.filterMetabolitesSets Information about
-  * metabolites' reactions and sets that pass filters.
+  * @param {string} parameters.setsEntities Type of entities, metabolites or
+  * reactions for sets' cardinalities.
+  * @param {boolean} parameters.setsFilter Whether to filter sets' entities for
+  * summary.
+  * @param {Object<Object>} parameters.accessReactionsSets Information about
+  * reactions' metabolites and sets that pass filtration by access method.
+  * @param {Object<Object>} parameters.accessMetabolitesSets Information about
+  * metabolites' reactions and sets that pass filtration by access method.
+  * @param {Object<Object>} parameters.filterReactionsSets Information about
+  * reactions' metabolites and sets that pass filtration by filter method.
+  * @param {Object<Object>} parameters.filterMetabolitesSets Information about
+  * metabolites' reactions and sets that pass filtration by filter method.
   * @returns {Object<Object<number>>} Cardinalities of entities in sets by
   * attributes and values.
   */
@@ -150,14 +150,18 @@ class Cardinality {
   }
   /**
   * Collects cardinalities across entities.
-  * @param {Array<Object>} setsEntities Information about entities' attribution
+  * @param {Object<Object>} entitiesSets Information about entities' attribution
   * to sets.
   * @returns {Object<Object<number>>} Cardinalities of entities in sets by
   * attributes and values.
   */
-  static collectEntitiesAttributesValues(setsEntities) {
+  static collectEntitiesAttributesValues(entitiesSets) {
     // Iterate on entities.
-    return setsEntities.reduce(function (entitiesCollection, entityRecord) {
+    var entitiesIdentifiers = Object.keys(entitiesSets);
+    return entitiesIdentifiers
+    .reduce(function (entitiesCollection, entityIdentifier) {
+      // Access information about entity.
+      var entityRecord = entitiesSets[entityIdentifier];
       // Collect counts of entities with each value of each attribute.
       var attributesCollection = Cardinality.collectAttributesValues({
         entityRecord: entityRecord,
