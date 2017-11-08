@@ -287,7 +287,7 @@ class Action {
     // Initialize selections for entities' simplification.
     // Simplifications are specific to candidate entities, which are specific to
     // the context of interest, of which compartmentalization is part.
-    var simplifications = Action.initializeSimplificationsSelections();
+    var simplifications = Action.initializeEntitiesSimplifications();
 
     // TODO: I'll need to include the procedure for entitiesCandidates once it's complete.
     // TODO: I'll also need to include this procedure for other actions that will change the candidates...
@@ -760,6 +760,17 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
+    var reactionsCandidates = Candidacy.collectCandidateReactionsMetabolites({
+      compartmentalization: model.compartmentalization,
+      reactionsSimplifications: model.reactionsSimplifications,
+      metabolitesSimplifications: model.metabolitesSimplifications,
+      reactionsSets: model.filterReactionsSets,
+      reactions: model.reactions
+    });
+    console.log("testing reactionsCandidates");
+    console.log(reactionsCandidates);
+
+
     // Terminate process timer.
     //console.timeEnd("timer");
     var endTime = window.performance.now();
@@ -838,14 +849,13 @@ class Action {
   * Initializes information about selections of simplifications.
   * @returns {Object} Collection of multiple attributes.
   */
-  static initializeSimplificationsSelections() {
-    // TODO: Is it better to organize simplifications within arrays or within objects?
-    // TODO: It'll probably be better to organize simplifications within objects.
-    // TODO: It will be necessary to determine many many times (for each candidate entity) whether a simplification exists.
+  static initializeEntitiesSimplifications() {
     // Initialize selections of reactions for simplification.
-    var reactionsSimplifications = [];
+    var reactionsSimplifications = Candidacy
+    .createInitialReactionsSimplifications();
     // Initialize selections of reactions for simplification.
-    var metabolitesSimplifications = [];
+    var metabolitesSimplifications = Candidacy
+    .createInitialMetabolitesSimplifications();
     // Compile novel values of attributes.
     var attributesValues = {
       reactionsSimplifications: reactionsSimplifications,

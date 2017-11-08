@@ -614,6 +614,52 @@ class General {
   // Methods for management of values.
 
   /**
+  * Includes or excludes a single entry in an object of entries.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.value Entry's value with identifier.
+  * @param {Object<Object>} parameters.entries Entries.
+  * @returns {Object<Object>} Copy of entries with or without the single entry.
+  */
+  static includeExcludeObjectEntry({value, entries} = {}) {
+    // Determine whether entries include an entry for the value.
+    if (entries.hasOwnProperty(value.identifier)) {
+      // Entries include an entry for the value.
+      // Remove the value's entry.
+      // Copy all entries and exclude the entry for the value.
+      var keys = Object.keys(entries);
+      return keys.reduce(function (collection, key) {
+        // Determine whether to exclude the current key's entry.
+        if (key === value.identifier) {
+          // Exclude the current key's entry.
+          return collection;
+        } else {
+          // Include the current key's entry.
+          // Copy information from current key's entry.
+          var valueCopy = General.copyValue(entries[key]);
+          // Create entry.
+          var entry = {
+            [key]: valueCopy
+          };
+          // Include entry.
+          return Object.assign(collection, entry);
+        }
+      }, {});
+    } else {
+      // Entries do not include an entry for the value.
+      // Include an entry for the value.
+      // Copy entries.
+      var entriesCopy = General.copyDeepObjectEntries(entries, true);
+      // Copy value.
+      var valueCopy = General.copyValue(value);
+      // Create entry.
+      var entry = {
+        [valueCopy.identifier]: valueCopy
+      };
+      // Include entry.
+      return Object.assign(collection, entry);
+    }
+  }
+  /**
   * Copies information in records from an object to an array.
   * @param {Object<Object>} records Records in an object.
   * @returns {Array<Object>} Copy of records in an array.
@@ -652,7 +698,7 @@ class General {
       var novelEntry = {
         [key]: valueCopy
       };
-      return Object.assign({}, collection, novelEntry);
+      return Object.assign(collection, novelEntry);
     }, {});
   }
   /**
@@ -733,7 +779,7 @@ class General {
             var novelRecord = {
               [key]: objectValueCopy
             };
-            return Object.assign({}, collection, novelRecord);
+            return Object.assign(collection, novelRecord);
           }, {});
         }
       }
@@ -1058,13 +1104,22 @@ class General {
       // Include the value of the target attribute in the record.
       var previousTargets = collection[category];
       var currentTargets = [].concat(previousTargets, target);
-      return collection[category] = currentTargets;
+      // Create entry.
+      var entry = {
+        [category]: currentTargets
+      };
+      return Object.assign(collection, entry);
     } else {
       // The collection does not include a record for the value of the
       // category attribute.
       // Create a novel record for the value of the category attribute.
       // Include the value of the target attribute in this record.
-      return collection[category] = [target];
+      // Create entry.
+      var entry = {
+        [category]: [target]
+      };
+      // Include entry.
+      return Object.assign(collection, entry);
     }
   }
   /**

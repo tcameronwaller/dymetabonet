@@ -42,6 +42,25 @@ class Candidacy {
 
   // TODO: Test the code sooner rather than later!!! Start simple and build complexity with frequent testing.
 
+  // TODO: Store candidate entities within objects.
+
+  // TODO: Something weird is going on with collecting reactions' metabolites...
+
+
+  /**
+  * Creates initial, empty, information about reactions for simplification.
+  * @returns {Object<Object>} Information about simplification of reactions.
+  */
+  static createInitialReactionsSimplifications() {
+    return {};
+  }
+  /**
+  * Creates initial, empty, information about metabolites for simplification.
+  * @returns {Object<Object>} Information about simplification of metabolites.
+  */
+  static createInitialMetabolitesSimplifications() {
+    return {};
+  }
   /**
   * Determines entities and relations between that are candidates for relevance
   * in the context of interest.
@@ -52,7 +71,7 @@ class Candidacy {
   * Information about simplification of reactions.
   * @param {Object<Object>} parameters.metabolitesSimplifications
   * Information about simplification of metabolites.
-  * @param {Object<Object>} parameters.filterReactionsSets Information about
+  * @param {Object<Object>} parameters.reactionsSets Information about
   * reactions' metabolites and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Object} Collection of multiple attributes.
@@ -61,7 +80,7 @@ class Candidacy {
     compartmentalization,
     reactionsSimplifications,
     metabolitesSimplifications,
-    filterReactionsSets,
+    reactionsSets,
     reactions
   } = {}) {
     // TODO: Rename "context entities" to "candidate entities" since these are
@@ -97,11 +116,11 @@ class Candidacy {
     // entities of the other type that rely on the entity for their own
     // relevance.
     if (false) {
-      var reactionsCandidates = Context.collectCandidateReactionsMetabolites({
+      var reactionsCandidates = Candidacy.collectCandidateReactionsMetabolites({
         compartmentalization: compartmentalization,
         reactionsSimplifications: reactionsSimplifications,
         metabolitesSimplifications: metabolitesSimplifications,
-        filterReactionsSets: filterReactionsSets,
+        reactionsSets: reactionsSets,
         reactions: reactions
       });
     }
@@ -149,7 +168,6 @@ class Candidacy {
 
     }
   }
-
   /**
   * Collects information about reactions and their metabolites that are relevant
   * in the context of compartmentalization, operation, replication, and
@@ -161,7 +179,7 @@ class Candidacy {
   * Information about simplification of reactions.
   * @param {Object<Object>} parameters.metabolitesSimplifications
   * Information about simplification of metabolites.
-  * @param {Object<Object>} parameters.filterReactionsSets Information about
+  * @param {Object<Object>} parameters.reactionsSets Information about
   * reactions' metabolites and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Object<Object>} Information about candidate reactions and their
@@ -171,36 +189,30 @@ class Candidacy {
     compartmentalization,
     reactionsSimplifications,
     metabolitesSimplifications,
-    filterReactionsSets,
+    reactionsSets,
     reactions
   } = {}) {
     // Collect information about reactions and their metabolites' participation
     // that are relevant in context of interest.
     // Initialize collection.
-    // TODO: reactionsMetabolites will store identifiers of metabolites and compartments and associate these with ID's of compartmental metabolites.
     var initialCollection = {
-      reactionsCandidates: [],
+      reactionsCandidates: {},
       reactionsSimplifications: reactionsSimplifications,
       reactionsMetabolites: {}
     };
     // Iterate on reactions.
-    var reactionsIdentifiers = Object.keys(filterReactionsSets);
-    return filterReactionsSets
-    .reduce(function (reactionsCollection, reactionSets) {
-      // Access information about reaction.
-      var reaction = reactions[reactionIdentifier];
-
-      // TODO: Just pass the current reaction's identifier if I still need access to all reactions and reactionsSets...
-
-      // Collect information about individual reaction and its metabolites.
-      return Context.collectContextReactionMetabolites({
-        setsCurrentReaction: setsCurrentReaction,
+    var reactionsIdentifiers = Object.keys(reactionsSets);
+    return reactionsIdentifiers
+    .reduce(function (collection, reactionIdentifier) {
+      // Collect information about reaction and its metabolites.
+      return Candidacy.collectCandidateReactionMetabolites({
+        reactionIdentifier: reactionIdentifier,
         compartmentalization: compartmentalization,
         reactionsSimplifications: reactionsSimplifications,
         metabolitesSimplifications: metabolitesSimplifications,
-        reactionsCollection: reactionsCollection,
-        currentReactionsSets: currentReactionsSets,
-        reactions: reactions
+        reactionsSets: reactionsSets,
+        reactions: reactions,
+        collection: collection
       });
     }, initialCollection);
   }
@@ -209,90 +221,171 @@ class Candidacy {
   * that are relevant in the context of compartmentalization, operation,
   * replication, and simplification.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.setsCurrentReaction Information about a
-  * reaction's metabolites and sets that pass filters.
+  * @param {string} parameters.reactionIdentifier Identifier of a reaction.
   * @param {boolean} parameters.compartmentalization Whether
-  * compartmentalization is relevant in the context of interest.
-  * @param {Array<Object<string>>} parameters.reactionsSimplifications
-  * Selections of reactions for simplification.
-  * @param {Array<Object<string>>} parameters.metabolitesSimplifications
-  * Selections of candidate metabolites for simplification.
-  * @param {Array<Object>} parameters.reactionsCollection Information about
-  * relevant reactions and their metabolites.
-  * @param {Array<Object>} parameters.currentReactionsSets Information about
-  * reactions' metabolites and sets that pass filters.
+  * compartmentalization is relevant.
+  * @param {Object<Object>} parameters.reactionsSimplifications
+  * Information about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications
+  * Information about simplification of metabolites.
+  * @param {Object<Object>} parameters.reactionsSets Information about
+  * reactions' metabolites and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
-  * @returns {Array<Object>} Information about relevant reactions and their
+  * @param {Object<Object>} parameters.collection Information about candidate
+  * reactions and their metabolites.
+  * @returns {Object<Object>} Information about candidate reactions and their
   * metabolites.
   */
-  static collectContextReactionMetabolites({
-    setsCurrentReaction,
+  static collectCandidateReactionMetabolites({
+    reactionIdentifier,
     compartmentalization,
     reactionsSimplifications,
     metabolitesSimplifications,
-    reactionsCollection,
-    currentReactionsSets,
-    reactions
+    reactionsSets,
+    reactions,
+    collection
   } = {}) {
-    //var initialCollection = {
-    //  reactionsCandidates: [],
-    //  reactionsSimplifications: reactionsSimplifications,
-    //  reactionsMetabolites: {}
-    //};
     // Evaluate reaction's candidacy.
-    var reactionIdentifier = setsCurrentReaction.reaction;
     var candidacy = Candidacy.evaluateReactionCandidacy({
       reactionIdentifier: reactionIdentifier,
       compartmentalization: compartmentalization,
-      currentReactionsSets: currentReactionsSets,
+      reactionsSets: reactionsSets,
       reactions: reactions,
-      collection: reactionsCollection
+      collection: collection
     });
-    // Determine whether reaction is a viable candidate for the collection.
+    // Determine whether reaction is a valid candidate.
     if (candidacy.relevance && candidacy.priority && candidacy.novelty) {
-      // Reaction is a viable candidate.
-      // Include reaction in collection.
+      // Reaction is a valid candidate.
+      // Access information about reaction.
+      var reaction = reactions[reactionIdentifier];
+      var reactionSets = reactionsSets[reactionIdentifier];
+      // Include information about candidate reaction in collection.
       // Collect information about reaction's metabolites.
-      var reactionMetabolites = Context.collectCandidateReactionMetabolites({
-        reactionIdentifier: reactionIdentifier,
-        compartmentalization: compartmentalization,
-        currentReactionsSets: currentReactionsSets,
-        reactions: reactions
+      var reactionMetabolites = Candidacy.collectReactionMetabolites({
+        reaction: reaction,
+        reactionSets: reactionSets,
+        compartmentalization: compartmentalization
       });
-      // Include novel metabolites in collection.
-      var currentReactionsMetabolites = Object
-      .assign(reactionsCollection.reactionsMetabolites, reactionMetabolites);
-      // Collect information about reaction.
-      var novelReactionRecord = Context.createCandidateReactionRecord({
-        reactionIdentifier: reactionIdentifier,
+      // Include information about novel metabolites in collection.
+      var reactionsMetabolites = Object
+      .assign(collection.reactionsMetabolites, reactionMetabolites);
+      // Collect identifiers of reaction's metabolites.
+      var metabolitesIdentifiers = Object.keys(reactionsMetabolites);
+      // Compile information.
+      var information = {
+        identifier: reactionIdentifier,
+        reaction: reactionIdentifier,
         replicates: candidacy.replicates,
-        currentReactionsSets: currentReactionsSets,
-        reactions: reactions
-      });
-      // Include record for novel reaction in collection.
-      //var currentReactionsCollection = []
-      //.concat(reactionsCollection.reactionsCandidates, novelReactionRecord);
-
-      // TODO: Update selections for simplification, if necessary.
-
-      var currentReactionsCollection = {
-        reactionsCandidates: reactionsCollection.reactionsCandidates,
-        reactionsSimplifications: reactionsSimplifications,
-        reactionsMetabolites: currentReactionsMetabolites
+        metabolites: metabolitesIdentifiers
       };
-      return currentReactionsCollection;
+      // Create entry.
+      var entry = {
+        [reactionIdentifier]: information
+      };
+      // Include record in collection.
+      var reactionsCandidates = Object
+      .assign(collection.reactionsCandidates, entry);
+      // Collect reactions for simplification.
+      var reactionsSimplifications = Candidacy.collectReactionsSimplifications({
+        reaction: reaction,
+        reactionSets: reactionSets,
+        compartmentalization: compartmentalization,
+        reactionsSimplifications: reactionsSimplifications,
+        metabolitesSimplifications: metabolitesSimplifications
+      });
+      // Compile information.
+      return {
+        reactionsCandidates: reactionsCandidates,
+        reactionsSimplifications: reactionsSimplifications,
+        reactionsMetabolites: reactionsMetabolites
+      };
     } else {
-      // Reaction is not a viable candidate.
+      // Reaction is not a valid candidate.
       // Exclude reaction from collection.
       // Preserve collection.
-      return reactionsCollection;
+      return collection;
     }
   }
-
-
-  // TODO: Code that I've reviewed and seems fairly functional.
-  //////////////////////////////////////////////////////////////////////////////
-
+  /**
+  * Evaluates a reaction's candidacy for inclusion in a collection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.reactionIdentifier Identifier of a reaction.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
+  * @param {Object<Object>} parameters.reactionsSets Information about
+  * reactions' metabolites and sets.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object<Object>} parameters.collection Information about candidate
+  * reactions and their metabolites.
+  * @returns {Object} Information about reaction's candidacy.
+  */
+  static evaluateReactionCandidacy({
+    reactionIdentifier,
+    compartmentalization,
+    reactionsSets,
+    reactions,
+    collection
+  } = {}) {
+    // Access information about reaction.
+    var reaction = reactions[reactionIdentifier];
+    var reactionSets = reactionsSets[reactionIdentifier];
+    // Determine whether reaction is relevant.
+    var relevance = Candidacy.determineReactionContextRelevance({
+      reaction: reaction,
+      reactionSets: reactionSets,
+      compartmentalization: compartmentalization
+    });
+    if (relevance) {
+      // Reaction is relevant.
+      // Collect any redundant replicates.
+      var redundantReplicates = Candidacy.collectRedundantReplicateReactions({
+        reactionIdentifier: reactionIdentifier,
+        compartmentalization: compartmentalization,
+        reactionsSets: reactionsSets,
+        reactions: reactions
+      });
+      // Determine whether reaction has redundant replicates
+      if (redundantReplicates.length > 0) {
+        // Reaction has redundant replicates.
+        // Preserve references to redundant replicates.
+        // Determine whether reaction is the priority of the redundant
+        // replicates.
+        var priority = Candidacy.determineReactionReplicatePriority({
+          reactionIdentifier: reactionIdentifier,
+          replicateIdentifiers: redundantReplicates
+        });
+        if (priority) {
+          // Reaction is the priority replicate.
+          // Determine whether reaction is novel in the collection.
+          var novelty = !collection
+          .reactionsCandidates.hasOwnProperty(reactionIdentifier);
+        } else {
+          // Reaction is not a priority.
+          var novelty = false;
+        }
+      } else {
+        // Reaction does not have redundant replicates.
+        // Reaction is a priority.
+        var priority = true;
+        // Determine whether reaction is novel in the collection.
+        var novelty = !collection
+        .reactionsCandidates.hasOwnProperty(reactionIdentifier);
+      }
+    } else {
+      // Reaction is irrelevant in the context of interest.
+      // Exclude the reaction from the collection of candidates.
+      var priority = false;
+      var novelty = false;
+      var redundantReplicates = [];
+    }
+    // Compile information.
+    return {
+      relevance: relevance,
+      priority: priority,
+      novelty: novelty,
+      replicates: redundantReplicates
+    };
+  }
   /**
   * Determines whether a reaction is relevant in the context of interest.
   * @param {Object} parameters Destructured object of parameters.
@@ -442,111 +535,20 @@ class Candidacy {
     });
     return transportation;
   }
-
-  //////////////////////////////////////////////////////////////////////////////
-
-  // TODO: Does the function evaluateReactionCandidacy make sense?
-
-  /**
-  * Evaluates a reaction's candidacy for inclusion in a collection.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.reactionIdentifier Identifier of a reaction.
-  * @param {boolean} parameters.compartmentalization Whether
-  * compartmentalization is relevant in the context of interest.
-  * @param {Array<Object>} parameters.currentReactionsSets Information about
-  * reactions' metabolites and sets that pass filters.
-  * @param {Object<Object>} parameters.reactions Information about reactions.
-  * @param {Array<Object>} parameters.collection Information about relevant
-  * reactions and their metabolites.
-  * @returns {Object} Information about reaction's candidacy.
-  */
-  static evaluateReactionCandidacy({
-    reactionIdentifier,
-    compartmentalization,
-    filterReactionsSets,
-    reactions,
-    collection
-  } = {}) {
-    // Access information about reaction.
-    var reaction = reactions[reactionIdentifier];
-    var reactionSets = filterReactionsSets[reactionIdentifier];
-    // Determine whether reaction is relevant.
-    var relevance = Candidacy.determineReactionContextRelevance({
-      reaction: reaction,
-      reactionSets: reactionSets,
-      compartmentalization: compartmentalization
-    });
-    if (relevance) {
-      // Reaction is relevant.
-      // Determine whether reaction has redundant replicates.
-      var redundantReplicates = Candidacy.collectRedundantReplicateReactions({
-        comparisonIdentifier: reaction.identifier,
-        compartmentalization: compartmentalization,
-        currentReactionsSets: currentReactionsSets,
-        reactions: reactions
-      });
-      if (redundantReplicates.length > 0) {
-        // Reaction has redundant replicates.
-        // Preserve references to redundant replicates.
-        // Determine whether reaction is the priority of the redundant
-        // replicates.
-        var priority = Candidacy.determineReactionReplicatePriority({
-          reactionIdentifier: reaction.identifier,
-          replicateReactions: redundantReplicates
-        });
-        if (priority) {
-          // Reaction is the priority.
-          // Determine whether reaction is novel in the collection.
-          var novelty = !collection.reactionsCandidates.some(function (record) {
-            return record.identifier === reactionIdentifier;
-          });
-        } else {
-          // Reaction is not a priority.
-          var novelty = false;
-        }
-      } else {
-        // Reaction does not have redundant replicates.
-        // Reaction is a priority.
-        var priority = true;
-        // Determine whether reaction is novel in the collection.
-        var novelty = !collection.reactionsCandidates.some(function (record) {
-          return record.identifier === reactionIdentifier;
-        });
-      }
-    } else {
-      // Reaction is irrelevant in the context of interest.
-      // Exclude the reaction from the collection of candidates.
-      var priority = false;
-      var novelty = false;
-      var redundantReplicates = [];
-    }
-    // Compile information.
-    return {
-      relevance: relevance,
-      priority: priority,
-      novelty: novelty,
-      replicates: redundantReplicates
-    };
-  }
-
-
-
-
   /**
   * Collects identifiers of replicate reactions that are also redundant in the
   * context of interest.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.comparisonIdentifier Identifier of a reaction to
-  * which to compare all other replicate reactions.
+  * @param {string} parameters.reactionIdentifier Identifier of a reaction.
   * @param {boolean} parameters.compartmentalization Whether
-  * compartmentalization is relevant in the context of interest.
-  * @param {Array<Object>} parameters.currentReactionsSets Information about
-  * reactions' metabolites and sets that pass filters.
+  * compartmentalization is relevant.
+  * @param {Object<Object>} parameters.reactionsSets Information about
+  * reactions' metabolites and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Array<string>} Identifiers of reactions.
   */
   static collectRedundantReplicateReactions({
-    comparisonIdentifier, compartmentalization, currentReactionsSets, reactions
+    reactionIdentifier, compartmentalization, reactionsSets, reactions
   } = {}) {
     // Replicate reactions have identical metabolites that participate as
     // reactants and products.
@@ -555,144 +557,120 @@ class Candidacy {
     // A major factor in this context of interest is compartmentalization.
     // Participants of many replicate reactions are only distinct due to
     // compartmentalization.
-    // Create references to information about comparison reaction.
-    var comparisonReaction = General
-    .accessObjectRecordByIdentifier(comparisonIdentifier, reactions);
-    var comparisonSets = General.accessArrayRecordByIdentifier(
-      comparisonIdentifier, currentReactionsSets
-    );
-    // Determine whether the comparison reaction has replicates.
-    if (comparisonReaction.replication) {
-      // Reaction has replicates.
-      // Collect replicate reactions that are also redundant.
-      var redundantReplicates = comparisonReaction.replicates
-      .filter(function (replicateIdentifier) {
-        // Determine whether replicate reaction is identical to the comparison
-        // reaction.
-        // Lists of replicate reactions originally include the comparison
-        // reaction.
-        var identity = (
-          comparisonReaction.identifier === replicateIdentifier
-        );
-        if (!identity) {
-          // Replicate reaction is not identical to the comparison reaction.
-          // Determine whether replicate reaction passes filters.
-          var pass = General.determineArrayRecordByIdentifier(
-            replicateIdentifier, currentReactionsSets
-          );
-          if (pass) {
-            // Replicate reaction passes filters.
-            // Access information about replicate reaction.
-            var replicateReaction = General.accessObjectRecordByIdentifier(
-              replicateIdentifier, reactions
-            );
-            var replicateSets = General.accessArrayRecordByIdentifier(
-              replicateIdentifier, currentReactionsSets
-            );
-            // Determine whether replicate reaction is relevant in the context
-            // of interest.
-            var relevance = Context.determineReactionContextRelevance({
-              reaction: replicateReaction,
-              setsCurrentReaction: replicateSets,
+    // Access information about comparison reaction.
+    var comparisonIdentifier = reactionIdentifier;
+    var comparisonReaction = reactions[comparisonIdentifier];
+    var comparisonSets = reactionsSets[comparisonIdentifier];
+    // Collect any replicate reactions that are also redundant.
+    return comparisonReaction.replicates.filter(function (replicateIdentifier) {
+      // Determine whether replicate reaction is identical to the comparison
+      // reaction.
+      // Lists of replicate reactions originally include the comparison
+      // reaction.
+      var identity = (comparisonIdentifier === replicateIdentifier);
+      if (!identity) {
+        // Replicate reaction is not identical to the comparison reaction.
+        // Determine whether replicate reaction passes filters.
+        var pass = reactionsSets.hasOwnProperty(replicateIdentifier);
+        if (pass) {
+          // Replicate reaction passes filters.
+          // Access information about comparison reaction.
+          var replicateReaction = reactions[replicateIdentifier];
+          var replicateSets = reactionsSets[replicateIdentifier];
+          // Determine whether replicate reaction is relevant.
+          var relevance = Candidacy.determineReactionContextRelevance({
+            reaction: replicateReaction,
+            reactionSets: replicateSets,
+            compartmentalization: compartmentalization
+          });
+          if (relevance) {
+            // Replicate reaction is relevant.
+            // Determine whether replicate reaction is redundant to comparison
+            // reaction in context of interest.
+            // Compare relevant participants of each reaction.
+            return Candidacy.determineReactionsRedundancy({
+              firstReaction: comparisonReaction,
+              secondReaction: replicateReaction,
+              firstSets: comparisonSets,
+              secondSets: replicateSets,
               compartmentalization: compartmentalization
             });
-            if (relevance) {
-              // Replicate reaction is relevant in the context of interest.
-              // Determine whether replicate reaction is redundant, indistinct
-              // from comparison reaction in context of interest.
-              // Compare participants of each reaction that are relevant in
-              // context of interest.
-              var redundancy = Context.determineReactionsRedundancy({
-                firstReaction: comparisonReaction,
-                secondReaction: replicateReaction,
-                firstSets: comparisonSets,
-                secondSets: replicateSets,
-                compartmentalization: compartmentalization
-              });
-              return redundancy;
-            } else {
-              // Replicate reaction is not relevant in the context of interest.
-              // Replicate reaction is not redundant.
-              return false;
-            }
           } else {
-            // Replicate reaction does not pass filters.
+            // Replicate reaction is irrelevant.
             // Replicate reaction is not redundant.
             return false;
           }
         } else {
-          // Replicate reaction is identical to the comparison reaction.
+          // Replicate reaction does not pass filters.
           // Replicate reaction is not redundant.
           return false;
         }
-      });
-    } else {
-      // Reaction does not have replicates.
-      var redundantReplicates = [];
-    }
-    return redundantReplicates;
+      } else {
+        // Replicate reaction is identical to the comparison reaction.
+        // Replicate reaction is not redundant.
+        return false;
+      }
+    });
   }
   /**
   * Determines whether two reactions are redundant by comparison of their
-  * participants that are relevant in the context of interest.
+  * relevant participants.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.firstReaction Information about first reaction.
-  * @param {Object} parameters.secondReaction Information about second reaction.
-  * @param {Object} parameters.firstSets Information about first reaction's
-  * metabolites and sets that pass filters.
-  * @param {Object} parameters.secondSets Information about second reaction's
-  * metabolites and sets that pass filters.
+  * @param {Object} parameters.firstReaction Information about a reaction.
+  * @param {Object} parameters.secondReaction Information about a reaction.
+  * @param {Object} parameters.firstSets Information about a reaction's
+  * metabolites and sets.
+  * @param {Object} parameters.secondSets Information about a reaction's
+  * metabolites and sets.
   * @param {boolean} parameters.compartmentalization Whether
-  * compartmentalization is relevant in the context of interest.
+  * compartmentalization is relevant.
   * @returns {boolean} Whether reactions are redundant.
   */
   static determineReactionsRedundancy({
     firstReaction, secondReaction, firstSets, secondSets, compartmentalization
   } = {}) {
     // Only compare relevant participants of each reaction.
-    // Filter information about reactions' participants for metabolites and
-    // compartments that are relevant in the context of interest.
-    var firstParticipants = Context.filterReactionParticipantsContextRelevance({
-      participants: firstReaction.participants,
-      metabolites: firstSets.metabolites,
-      compartments: firstSets.compartments,
+    // Filter for reactions' relevant participants.
+    var firstParticipants = Extraction.filterReactionParticipants({
+      criteria: {
+        metabolites: firstSets.metabolites,
+        compartments: firstSets.compartments
+      },
+      participants: firstReaction.participants
     });
-    var secondParticipants = Context
-    .filterReactionParticipantsContextRelevance({
-      participants: secondReaction.participants,
-      metabolites: secondSets.metabolites,
-      compartments: secondSets.compartments,
+    var secondParticipants = Extraction.filterReactionParticipants({
+      criteria: {
+        metabolites: secondSets.metabolites,
+        compartments: secondSets.compartments
+      },
+      participants: secondReaction.participants
     });
-    // Determine whether reactions' relevant participants are redundant in the
-    // context of interest.
-    var redundancy = Context.determineParticipantsRedundancy({
+    // Determine whether reactions' relevant participants are redundant.
+    return Candidacy.determineParticipantsRedundancy({
       firstParticipants: firstParticipants,
       secondParticipants: secondParticipants,
       compartmentalization: compartmentalization
     });
-    return redundancy;
   }
   /**
-  * Determines whether participants of two reactions are redundant in the
-  * context of interest.
+  * Determines whether reactions' participants of are redundant.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<Object<string>>} parameters.firstParticipants Information
-  * about metabolites' participation in a reaction.
+  * about metabolites' and compartments' participation in a reaction.
   * @param {Array<Object<string>>} parameters.secondParticipants Information
-  * about metabolites' participation in a reaction.
+  * about metabolites' and compartments' participation in a reaction.
   * @param {boolean} parameters.compartmentalization Whether
-  * compartmentalization is relevant in the context of interest.
+  * compartmentalization is relevant.
   * @returns {boolean} Whether participants are redundant.
   */
   static determineParticipantsRedundancy({
     firstParticipants, secondParticipants, compartmentalization
   } = {}) {
-    // Determine whether compartmentalization is relevant in the context of
-    // interest.
+    // Determine whether compartmentalization is relevant.
     if (compartmentalization) {
       // Compartmentalization is relevant.
       // Compare participants by metabolites, compartments, and roles.
-      var redundancy = Context.determineParticipantsAttributesMutualRedundancy({
+      return Candidacy.determineParticipantsAttributesMutualRedundancy({
         firstParticipants: firstParticipants,
         secondParticipants: secondParticipants,
         attributes: ["metabolite", "compartment", "role"]
@@ -700,22 +678,21 @@ class Candidacy {
     } else {
       // Compartmentalization is irrelevant.
       // Compare participants by metabolites and roles.
-      var redundancy = Context.determineParticipantsAttributesMutualRedundancy({
+      return Candidacy.determineParticipantsAttributesMutualRedundancy({
         firstParticipants: firstParticipants,
         secondParticipants: secondParticipants,
         attributes: ["metabolite", "role"]
       });
     }
-    return redundancy;
   }
   /**
-  * Determines whether two collections of reactions' participants have identical
-  * values of specific attributes.
+  * Determines whether reactions' participants have identical values of specific
+  * attributes.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<Object<string>>} parameters.firstParticipants Information
-  * about metabolites' participation in a reaction.
+  * about metabolites' and compartments' participation in a reaction.
   * @param {Array<Object<string>>} parameters.secondParticipants Information
-  * about metabolites' participation in a reaction.
+  * about metabolites' and compartments' participation in a reaction.
   * @param {Array<string>} parameters.attributes Attributes common of all
   * participants.
   * @returns {boolean} Whether the participants have identical values of
@@ -724,28 +701,26 @@ class Candidacy {
   static determineParticipantsAttributesMutualRedundancy({
     firstParticipants, secondParticipants, attributes
   } = {}) {
-    var firstComparison = Context
-    .determineParticipantsAttributesRedundancy({
+    var firstComparison = Candidacy.determineParticipantsAttributesRedundancy({
       firstParticipants: firstParticipants,
       secondParticipants: secondParticipants,
       attributes: attributes
     });
-    var secondComparison = Context
-    .determineParticipantsAttributesRedundancy({
+    var secondComparison = Candidacy.determineParticipantsAttributesRedundancy({
       firstParticipants: secondParticipants,
       secondParticipants: firstParticipants,
       attributes: attributes
     });
-    return firstComparison && secondComparison;
+    return (firstComparison && secondComparison);
   }
   /**
-  * Determines whether two collections of reactions' participants have identical
-  * values of specific attributes.
+  * Determines whether reactions' participants have identical values of specific
+  * attributes.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<Object<string>>} parameters.firstParticipants Information
-  * about metabolites' participation in a reaction.
+  * about metabolites' and compartments' participation in a reaction.
   * @param {Array<Object<string>>} parameters.secondParticipants Information
-  * about metabolites' participation in a reaction.
+  * about metabolites' and compartments' participation in a reaction.
   * @param {Array<string>} parameters.attributes Attributes common of all
   * participants.
   * @returns {boolean} Whether the participants have identical values of
@@ -757,25 +732,25 @@ class Candidacy {
     return firstParticipants.every(function (firstParticipant) {
       return secondParticipants.some(function (secondParticipant) {
         return attributes.every(function (attribute) {
-          firstParticipant[attribute] === secondParticipant[attribute];
+          return (firstParticipant[attribute] === secondParticipant[attribute]);
         });
       });
     });
   }
   /**
-  * Determines whether a reaction is the priority replicate.
+  * Determines whether a reaction is the priority of replicates.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.reactionIdentifier Identifier of a reaction.
-  * @param {Array<string>} parameters.replicateReactions Identifiers of
+  * @param {Array<string>} parameters.replicateIdentifiers Identifiers of
   * reactions.
   * @returns {boolean} Whether reaction is the priority replicate.
   */
   static determineReactionReplicatePriority({
-    reactionIdentifier, replicateReactions
+    reactionIdentifier, replicateIdentifiers
   } = {}) {
     // Include the reaction's identifier in the list of replicates.
     var reactionsIdentifiers = []
-    .concat(reactionIdentifier, replicateReactions);
+    .concat(reactionIdentifier, replicateIdentifiers);
     // Sort reactions' identifiers by alphabetical order.
     var sortReactionsIdentifiers = General
     .sortArrayElementsByCharacter(reactionsIdentifiers);
@@ -788,43 +763,34 @@ class Candidacy {
   * Collects information about metabolites that participate in a candidate
   * reaction.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.reactionIdentifier Identifier of a reaction.
+  * @param {Object} parameters.reaction Information about a single reaction.
+  * @param {Object} parameters.reactionSets Information about a reaction's
+  * metabolites and sets.
   * @param {boolean} parameters.compartmentalization Whether
-  * compartmentalization is relevant in the context of interest.
-  * @param {Array<Object>} parameters.currentReactionsSets Information about
-  * reactions' metabolites and sets that pass filters.
-  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * compartmentalization is relevant.
   * @returns {Object<Object>} Information about a candidate reaction's
   * metabolites.
   */
-  static collectCandidateReactionMetabolites({
-    reactionIdentifier,
+  static collectReactionMetabolites({
+    reaction,
+    reactionSets,
     compartmentalization,
-    currentReactionsSets,
-    reactions
   } = {}) {
-    // Access information about reaction.
-    var reaction = General
-    .accessObjectRecordByIdentifier(reactionIdentifier, reactions);
-    var reactionSets = General.accessArrayRecordByIdentifier(
-      reactionIdentifier, currentReactionsSets
-    );
-    // Prepare information about reaction's metabolites.
-    // Filter information about reaction's participants for metabolites and
-    // compartments that are relevant in the context of interest.
-    var participants = Context.filterReactionParticipantsContextRelevance({
-      participants: reaction.participants,
-      metabolites: reactionSets.metabolites,
-      compartments: reactionSets.compartments,
+    // Filter for reaction's relevant participants.
+    var relevantParticipants = Extraction.filterReactionParticipants({
+      criteria: {
+        metabolites: reactionSets.metabolites,
+        compartments: reactionSets.compartments
+      },
+      participants: reaction.participants
     });
-    var reactionMetabolites = participants
-    .reduce(function (collection, participant) {
+    return relevantParticipants.reduce(function (collection, participant) {
       // Create identifier for candidate metabolite.
-      var identifier = Context.createCandidateMetaboliteIdentifier({
+      var identifier = Candidacy.createCandidateMetaboliteIdentifier({
         metabolite: participant.metabolite,
         compartment: participant.compartment,
         compartmentalization: compartmentalization
-      }, {});
+      });
       // Determine whether to represent the metabolite's compartment.
       if (compartmentalization) {
         var compartment = participant.compartment;
@@ -839,28 +805,28 @@ class Candidacy {
       } else {
         // Collection does not include information about the metabolite.
         // Include the metabolite in the collection.
-        // Compile attributes.
-        var attributes = {
+        // Compile information.
+        var information = {
           identifier: identifier,
           metabolite: participant.metabolite,
           compartment: compartment
         };
         // Create record.
         var record = {
-          [identifier]: attributes
+          [identifier]: information
         };
-        return record;
+        // Include record in collection.
+        return Object.assign(collection, record);
       }
     }, {});
-    return reactionMetabolites;
   }
   /**
   * Creates the identifier for a candidate metabolite.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.metabolite Identifier of a general metabolite.
   * @param {string} parameters.compartment Identifier of a compartment.
-  * @param {boolean} parameters.compartmentalization Whether to represent
-  * compartmentalization.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
   * @returns {string} Identifier for a candidate metabolite.
   */
   static createCandidateMetaboliteIdentifier({
@@ -869,35 +835,129 @@ class Candidacy {
     compartmentalization
   } = {}) {
     if (compartmentalization) {
-      var identifier = (metabolite + "_" + compartment);
+      return (metabolite + "_" + compartment);
     } else {
-      var identifier = metabolite;
+      return metabolite;
     }
-    return identifier;
   }
   /**
-  * Creates a record with information about a candidate reaction.
+  * Collects candidate reactions for simplification.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.reactionIdentifier Identifier of a reaction.
-  * @param {Array<string>} parameters.replicates Identifiers of reactions.
+  * @param {Object} parameters.reaction Information about a single reaction.
+  * @param {Object} parameters.reactionSets Information about a reaction's
+  * metabolites and sets.
   * @param {boolean} parameters.compartmentalization Whether
-  * compartmentalization is relevant in the context of interest.
-  * @param {Array<Object>} parameters.currentReactionsSets Information about
-  * reactions' metabolites and sets that pass filters.
-  * @param {Object<Object>} parameters.reactions Information about reactions.
-  * @returns {Object} Information about a candidate reaction.
+  * compartmentalization is relevant.
+  * @param {Object<Object>} parameters.reactionsSimplifications
+  * Information about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications
+  * Information about simplification of metabolites.
+  * @returns {Object<Object>} Information about simplification of reactions.
   */
-  static createReactionCandidate({
-    reactionIdentifier,
-    replicates,
+  static collectReactionsSimplifications({
+    reaction,
+    reactionSets,
     compartmentalization,
-    currentReactionsSets,
-    reactions
+    reactionsSimplifications,
+    metabolitesSimplifications
   } = {}) {
+    // Determine whether the reaction has a designation for simplification.
+    if (reactionsSimplifications.hasOwnProperty(reaction.identifier)) {
+      // Reaction has a designation for simplification.
+      // Do not modify information about simplification of reactions.
+      return reactionsSimplifications;
+    } else {
+      // Reaction does not have a designation for simplification.
+      // Determine whether reaction qualifies for simplification by dependency.
+      var simplification = Candidacy.determineReactionSimplificationDependency({
+        reaction: reaction,
+        reactionSets: reactionSets,
+        compartmentalization: compartmentalization,
+        metabolitesSimplifications: metabolitesSimplifications
+      });
+      if (simplification) {
+        // Reaction qualifies for simplification by dependency.
+        // Designate reaction for simplification.
+        // Compile information.
+        var information = {
+          identifier: reaction.identifier,
+          reaction: reaction.identifier,
+          method: "omission",
+          dependency: true
+        };
+        // Include designation for simplification of reaction.
+        return General.includeExcludeObjectEntry({
+          value: information,
+          entries: reactionsSimplifications
+        });
+      } else {
+        // Reaction does not qualify for simplification by dependency.
+        // Do not modify information about simplification of reactions.
+        return reactionsSimplifications;
+      }
+    }
   }
-
-
-
+  /**
+  * Determines whether a reaction qualifies for simplification by dependency on
+  * its metabolites.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.reaction Information about a single reaction.
+  * @param {Object} parameters.reactionSets Information about a reaction's
+  * metabolites and sets.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
+  * @param {Object<Object>} parameters.metabolitesSimplifications
+  * Information about simplification of metabolites.
+  * @returns {boolean} Whether the reaction qualifies for simplification by
+  * dependency on its metabolites.
+  */
+  static determineReactionSimplificationDependency({
+    reaction,
+    reactionSets,
+    compartmentalization,
+    metabolitesSimplifications
+  } = {}) {
+    // Determine whether reaction merits simplification by dependency.
+    // A reaction's relevance depends on the relevance of its metabolites that
+    // participate.
+    // Simplification of a reaction's metabolites might qualify the reaction
+    // for simplification by dependency.
+    // Simplification of a reaction's metabolites will not affect the reaction's
+    // redundancy or status as priority replicate.
+    // Simplification of a reaction's metabolites also will not affect the
+    // reaction's novelty in the collection.
+    // Filter for reaction's participants that pass filters and do not qualify
+    // for simplification.
+    var relevantParticipants = reaction
+    .participants.filter(function (participant) {
+      // Determine whether participant's metabolite and compartment pass
+      // filters.
+      var metabolite = reactionSets
+      .metabolites.includes(participant.metabolite);
+      var compartment = reactionSets
+      .compartments.includes(participant.compartment);
+      // Determine whether the participant qualifies for simplification.
+      // Create identifier for participant's candidate metabolite.
+      var identifier = Candidacy.createCandidateMetaboliteIdentifier({
+        metabolite: participant.metabolite,
+        compartment: participant.compartment,
+        compartmentalization: compartmentalization
+      });
+      var simplification = metabolitesSimplifications
+      .hasOwnProperty(identifier);
+      // Determine whether participant passes filters and does not qualify for
+      // simplification.
+      return (metabolite && compartment && !simplification);
+    });
+    // Determine whether reaction is relevant.
+    return !Candidacy.determineReactionParticipantsOperationRelevance({
+      participants: relevantParticipants,
+      conversion: reaction.conversion,
+      transport: reaction.transport,
+      transports: reaction.transports,
+      compartmentalization: compartmentalization
+    });
+  }
 
 //////////////////////
 ////////////////////// In progres...

@@ -191,6 +191,8 @@ class Extraction {
     // compartmentalization.
     // Collect identifiers of reactions with each combination of reactants and
     // products.
+    // TODO: Maybe I could use General.collectRecordsTargetsByCategories() in the procedure for replicate reactions...
+    // TODO: Do something similar to collecting metabolites' reactions in the attribution procedure.
     var replicateReactions = Extraction
     .collectReactionsReactantsProducts(reactions);
     // Create records for reactions.
