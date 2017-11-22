@@ -625,25 +625,36 @@ class General {
     if (entries.hasOwnProperty(value.identifier)) {
       // Entries include an entry for the value.
       // Remove the value's entry.
-      // Copy all entries and exclude the entry for the value.
-      var keys = Object.keys(entries);
-      return keys.reduce(function (collection, key) {
-        // Determine whether to exclude the current key's entry.
-        if (key === value.identifier) {
-          // Exclude the current key's entry.
-          return collection;
-        } else {
-          // Include the current key's entry.
-          // Copy information from current key's entry.
-          var valueCopy = General.copyValue(entries[key]);
-          // Create entry.
-          var entry = {
-            [key]: valueCopy
-          };
-          // Include entry.
-          return Object.assign(collection, entry);
-        }
-      }, {});
+      function filter(entryValue) {
+        return entryValue.identifier === value.identifier;
+      };
+      return General.filterObjectEntries({
+        filter: filter,
+        entries: entries
+      });
+
+      // TODO: I need to make sure the General.filterObjectEntries() works properly...
+      if (false) {
+        // Copy all entries and exclude the entry for the value.
+        var keys = Object.keys(entries);
+        return keys.reduce(function (collection, key) {
+          // Determine whether to exclude the current key's entry.
+          if (key === value.identifier) {
+            // Exclude the current key's entry.
+            return collection;
+          } else {
+            // Include the current key's entry.
+            // Copy information from current key's entry.
+            var valueCopy = General.copyValue(entries[key]);
+            // Create entry.
+            var entry = {
+              [key]: valueCopy
+            };
+            // Include entry.
+            return Object.assign(collection, entry);
+          }
+        }, {});
+      }
     } else {
       // Entries do not include an entry for the value.
       // Include an entry for the value.
@@ -659,6 +670,36 @@ class General {
       return Object.assign(entriesCopy, entry);
     }
   }
+  /**
+  * Filters an object's entries by whether their values pass a filter.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.filter Filter function against an entry's value
+  * to determine whether to keep the entry.
+  * @param {Object<Object>} parameters.entries Entries.
+  * @returns {Object<Object>} Copy of entries that pass the filter.
+  */
+  static filterObjectEntries({filter, entries} = {}) {
+    // Copy and include all entries whose values pass filter.
+    // Exclude entries whose values do not pass filter.
+    var keys = Object.keys(entries);
+    return keys.reduce(function (collection, key) {
+      // Determine whether entry's value passes filter.
+      if (filter(entries[key])) {
+        // Copy and include entry.
+        var valueCopy = General.copyValue(entries[key]);
+        // Create entry.
+        var entry = {
+          [key]: valueCopy
+        };
+        // Include entry.
+        return Object.assign(collection, entry);
+      } else {
+        // Exclude entry.
+        return collection;
+      }
+    }, {});
+  }
+
   /**
   * Copies information in records from an object to an array.
   * @param {Object<Object>} records Records in an object.

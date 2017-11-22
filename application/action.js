@@ -298,7 +298,7 @@ class Action {
         compartmentalization: compartmentalization.compartmentalization,
         reactionsSimplifications: simplifications.reactionsSimplifications,
         metabolitesSimplifications: simplifications.metabolitesSimplifications,
-        filterReactionsSets: currentEntitiesSets.filterReactionsSets,
+        reactionsSets: currentEntitiesSets.filterReactionsSets,
         reactions: metabolicEntitiesSets.reactions
       });
     }
@@ -457,6 +457,8 @@ class Action {
       filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets
     });
 
+    // TODO: Any change to filters should also change the candidate entities...
+
     // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
     // Initialize network's elements.
     //var networkElementsAttributes = Action
@@ -507,6 +509,8 @@ class Action {
       filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets
     });
 
+    // TODO: Any change to filters should also change the candidate entities...
+
     // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
     // Initialize network's elements.
     //var networkElementsAttributes = Action
@@ -546,6 +550,8 @@ class Action {
     // Simplifications are specific to candidate entities, which are specific to
     // the context of interest, of which compartmentalization is part.
     var simplifications = Action.initializeEntitiesSimplifications();
+
+    // TODO: Any change to compartmentalization should also change the candidate entities...
 
     // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
     // Initialize network's elements.
@@ -760,23 +766,16 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
-    var reactionsCollection = Candidacy.collectCandidateReactionsMetabolites({
+    var entitiesCandidates = Candidacy.determineCandidateEntities({
       compartmentalization: model.compartmentalization,
       reactionsSimplifications: model.reactionsSimplifications,
       metabolitesSimplifications: model.metabolitesSimplifications,
       reactionsSets: model.filterReactionsSets,
       reactions: model.reactions
     });
-    console.log("testing reactionsCandidates");
-    console.log(reactionsCollection);
-    var metabolitesCollection = Candidacy.collectCandidateMetabolitesReactions({
-      reactionsCandidates: reactionsCollection.reactionsCandidates,
-      reactionsMetabolites: reactionsCollection.reactionsMetabolites,
-      reactionsSimplifications: reactionsCollection.reactionsSimplifications,
-      metabolitesSimplifications: model.metabolitesSimplifications
-    });
-    console.log("testing metabolitesCandidates");
-    console.log(metabolitesCollection);
+
+    console.log("testing candidates");
+    console.log(entitiesCandidates);
 
 
 

@@ -4,6 +4,17 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+22 November 2017
+
+----------
+Candidacy
+
+I am in the process of reorganizing the procedure to collect candidate entities and implicit simplifications.
+
+I currently need to update the Candidacy.collectCandidateReactionsMetabolites() function.
+I need to make it convenient to separate the collection of implicit simplifications for actions that only require changes to simplifications.
+
+--------------------------------------------------
 21 November 2017
 
 ----------
@@ -18,12 +29,6 @@ I confirmed that the procedure for inheritance of simplification by dependency w
 Metabolite "agm_m" depends on reactions "AGMTm" and "ARGDCm".
 
 Reactions "ACS", "ADK1", "ADPT", "COAtg" and others depend on metabolites "coa_c", "accoa_c", "amp_c", "ppi_c", "atp_c", and "ac_c".
-
-Issues
-#79
-#72
-#69
-#66
 
 --------------------------------------------------
 8 November 2017
