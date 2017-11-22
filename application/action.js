@@ -545,7 +545,7 @@ class Action {
     // Initialize selections for entities' simplification.
     // Simplifications are specific to candidate entities, which are specific to
     // the context of interest, of which compartmentalization is part.
-    var simplifications = Action.initializeSimplificationsSelections();
+    var simplifications = Action.initializeEntitiesSimplifications();
 
     // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
     // Initialize network's elements.
@@ -760,7 +760,7 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
-    var reactionsCandidates = Candidacy.collectCandidateReactionsMetabolites({
+    var reactionsCollection = Candidacy.collectCandidateReactionsMetabolites({
       compartmentalization: model.compartmentalization,
       reactionsSimplifications: model.reactionsSimplifications,
       metabolitesSimplifications: model.metabolitesSimplifications,
@@ -768,7 +768,16 @@ class Action {
       reactions: model.reactions
     });
     console.log("testing reactionsCandidates");
-    console.log(reactionsCandidates);
+    console.log(reactionsCollection);
+    var metabolitesCollection = Candidacy.collectCandidateMetabolitesReactions({
+      reactionsCandidates: reactionsCollection.reactionsCandidates,
+      reactionsMetabolites: reactionsCollection.reactionsMetabolites,
+      reactionsSimplifications: reactionsCollection.reactionsSimplifications,
+      metabolitesSimplifications: model.metabolitesSimplifications
+    });
+    console.log("testing metabolitesCandidates");
+    console.log(metabolitesCollection);
+
 
 
     // Terminate process timer.

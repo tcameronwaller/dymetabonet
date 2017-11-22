@@ -4,6 +4,41 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+21 November 2017
+
+----------
+Candidate Entities
+
+I completed implementation of procedures to create candidate reactions and candidate metabolites.
+Of special interest is the interdependence of reactions and metabolites for their respective candidacies.
+Both reactions and metabolites can inherit simplification by dependency on their metabolites or reactions respectively.
+
+I confirmed that the procedure for inheritance of simplification by dependency works both for reactions and metabolites.
+
+Metabolite "agm_m" depends on reactions "AGMTm" and "ARGDCm".
+
+Reactions "ACS", "ADK1", "ADPT", "COAtg" and others depend on metabolites "coa_c", "accoa_c", "amp_c", "ppi_c", "atp_c", and "ac_c".
+
+Issues
+#79
+#72
+#69
+#66
+
+--------------------------------------------------
+8 November 2017
+
+----------
+Meet with Alexander Lex
+
+Alex recommends that I pursue the goal to implement a functional prototype of the application with interface as soon as possible.
+Once a prototype is available, Alex recommends that I consult with several prospective users of the tool.
+Alex recommends that I prepare some type of formal structure for an interview.
+I will plan about 30 minutes of the meeting to discuss use cases and tasks with the user.
+I will plan about 30 minutes of the meeting to allow the user to try the application.
+I will record notes on suggestions.
+
+--------------------------------------------------
 5 November 2017
 
 ----------

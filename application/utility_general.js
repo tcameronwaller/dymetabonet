@@ -656,7 +656,7 @@ class General {
         [valueCopy.identifier]: valueCopy
       };
       // Include entry.
-      return Object.assign(collection, entry);
+      return Object.assign(entriesCopy, entry);
     }
   }
   /**

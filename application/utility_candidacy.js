@@ -46,6 +46,7 @@ class Candidacy {
 
   // TODO: Something weird is going on with collecting reactions' metabolites...
 
+  // Manage simplifications of candidate entities.
 
   /**
   * Creates initial, empty, information about reactions for simplification.
@@ -61,9 +62,12 @@ class Candidacy {
   static createInitialMetabolitesSimplifications() {
     return {};
   }
+
+  // Master procedure for definition of candidate entities.
+
   /**
-  * Determines entities and relations between that are candidates for relevance
-  * in the context of interest.
+  * Determines entities and relations between that are candidates for
+  * representation in the network.
   * @param {Object} parameters Destructured object of parameters.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
@@ -168,10 +172,12 @@ class Candidacy {
 
     }
   }
+
+  // Definition of candidate reactions.
+
   /**
-  * Collects information about reactions and their metabolites that are relevant
-  * in the context of compartmentalization, operation, replication, and
-  * simplification.
+  * Collects information about reactions and their metabolites that are
+  * candidates for representation in the network.
   * @param {Object} parameters Destructured object of parameters.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
@@ -193,7 +199,7 @@ class Candidacy {
     reactions
   } = {}) {
     // Collect information about reactions and their metabolites' participation
-    // that are relevant in context of interest.
+    // that are candidates for representation in the network.
     // Initialize collection.
     var initialCollection = {
       reactionsCandidates: {},
@@ -208,7 +214,6 @@ class Candidacy {
       return Candidacy.collectCandidateReactionMetabolites({
         reactionIdentifier: reactionIdentifier,
         compartmentalization: compartmentalization,
-        reactionsSimplifications: reactionsSimplifications,
         metabolitesSimplifications: metabolitesSimplifications,
         reactionsSets: reactionsSets,
         reactions: reactions,
@@ -217,15 +222,12 @@ class Candidacy {
     }, initialCollection);
   }
   /**
-  * Collects information about a reaction and its metabolites' participation
-  * that are relevant in the context of compartmentalization, operation,
-  * replication, and simplification.
+  * Collects information about a reaction and its metabolites that are
+  * candidates for representation in the network.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.reactionIdentifier Identifier of a reaction.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
-  * @param {Object<Object>} parameters.reactionsSimplifications
-  * Information about simplification of reactions.
   * @param {Object<Object>} parameters.metabolitesSimplifications
   * Information about simplification of metabolites.
   * @param {Object<Object>} parameters.reactionsSets Information about
@@ -239,7 +241,6 @@ class Candidacy {
   static collectCandidateReactionMetabolites({
     reactionIdentifier,
     compartmentalization,
-    reactionsSimplifications,
     metabolitesSimplifications,
     reactionsSets,
     reactions,
@@ -270,7 +271,7 @@ class Candidacy {
       var reactionsMetabolites = Object
       .assign(collection.reactionsMetabolites, reactionMetabolites);
       // Collect identifiers of reaction's metabolites.
-      var metabolitesIdentifiers = Object.keys(reactionsMetabolites);
+      var metabolitesIdentifiers = Object.keys(reactionMetabolites);
       // Compile information.
       var information = {
         identifier: reactionIdentifier,
@@ -290,14 +291,14 @@ class Candidacy {
         reaction: reaction,
         reactionSets: reactionSets,
         compartmentalization: compartmentalization,
-        reactionsSimplifications: reactionsSimplifications,
+        reactionsSimplifications: collection.reactionsSimplifications,
         metabolitesSimplifications: metabolitesSimplifications
       });
       // Compile information.
       return {
         reactionsCandidates: reactionsCandidates,
-        reactionsSimplifications: reactionsSimplifications,
-        reactionsMetabolites: reactionsMetabolites
+        reactionsMetabolites: reactionsMetabolites,
+        reactionsSimplifications: reactionsSimplifications
       };
     } else {
       // Reaction is not a valid candidate.
@@ -917,7 +918,7 @@ class Candidacy {
     compartmentalization,
     metabolitesSimplifications
   } = {}) {
-    // Determine whether reaction merits simplification by dependency.
+    // Determine whether reaction qualifies for simplification by dependency.
     // A reaction's relevance depends on the relevance of its metabolites that
     // participate.
     // Simplification of a reaction's metabolites might qualify the reaction
@@ -959,113 +960,192 @@ class Candidacy {
     });
   }
 
-//////////////////////
-////////////////////// In progres...
+  // Definition of candidate metabolites.
 
   /**
-  * Filters information about participants in a reaction for metabolites that do
-  * not have selections for simplification.
+  * Collects information about metabolites and their reactions that are
+  * candidates for representation in the network.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object<string>>} parameters.participants Information about
-  * metabolites' participation in a reaction.
-  * @param {boolean} parameters.compartmentalization Whether to represent
-  * compartmentalization.
-  * @param {Array<Object<string>>} parameters.metabolitesSimplifications
-  * Selections of candidate metabolites for simplification.
-  * @returns {Array<Object<string>>} Information about participants in a
-  * reaction.
+  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.reactionsMetabolites Information about
+  * metabolites that participate in candidate reactions.
+  * @param {Object<Object>} parameters.reactionsSimplifications
+  * Information about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications
+  * Information about simplification of metabolites.
+  * @returns {Object<Object>} Information about candidate metabolites.
   */
-  static filterReactionParticipantsNotSimplification({
-    participants,
-    compartmentalization,
+  static collectCandidateMetabolitesReactions({
+    reactionsCandidates,
+    reactionsMetabolites,
+    reactionsSimplifications,
     metabolitesSimplifications
-  }) {
-    // Filter participants for those whose metabolites do not have selections
-    // for simplification.
-    var notSimplificationParticipants = participants
-    .filter(function (participant) {
-      // Create identifier for candidate metabolite according to whether
-      // compartmentalization is relevant.
-      var identifier = Context.createCandidateMetaboliteIdentifier({
-        metabolite: participant.metabolite,
-        compartment: participant.compartment,
-        compartmentalization: compartmentalization
-      });
-      var simplification = metabolitesSimplifications.some(function (record) {
-        return record.identifier === identifier;
-      });
-      return !simplification;
-    });
-    return notSimplificationParticipants;
-  }
-
-
-
-  //TODO: Scrap...
-
-  /**
-  * Collects for each reaction information about the compartmental metabolites
-  * that participate.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object>} parameters.currentReactionsSets Information about
-  * reactions' metabolites and sets that pass filters.
-  * @param {Object<Object>} parameters.reactions Information about reactions.
-  * @returns {Array<Object>} Information about reactions' metabolites.
-  */
-  static collectInterestReactionsCompartmentalMetabolites({
-    currentReactionsSets, reactions
   } = {}) {
-    // Collect reactions along with compartmental representations of their
-    // metabolites.
-    // Iterate on reactions.
-    return currentReactionsSets.map(function (reactionRecord) {
-      var reactionReference = reactionRecord.reaction;
-      var identifier = reactionRecord.reaction;
-      // Set reference to reaction.
-      var reaction = reactions[reactionRecord.reaction];
-
-      var metabolites = reactionRecord.metabolites.slice();
-      // Compile reaction's attributes.
-      // Create reaction's record.
-      var record = {
-        identifier: identifier,
-        reaction: reaction,
-        metabolites: metabolites
-      };
-      return record;
+    // Collect the identifiers of candidate reactions in which each candidate
+    // metabolite participates.
+    var metabolitesReactions = General.collectRecordsTargetsByCategories({
+      target: "reaction",
+      category: "metabolites",
+      records: reactionsCandidates
     });
-
-
+    // Collect information about metabolites and their reactions that are
+    // candidates for representation in the network.
+    // Initialize collection.
+    var initialCollection = {
+      metabolitesCandidates: {},
+      metabolitesSimplifications: metabolitesSimplifications
+    };
+    // Iterate on metabolites.
+    var metabolitesIdentifiers = Object.keys(metabolitesReactions);
+    return metabolitesIdentifiers
+    .reduce(function (collection, metaboliteIdentifier) {
+      // Access information about the candidate metabolite.
+      var reactionMetabolite = reactionsMetabolites[metaboliteIdentifier];
+      // Collect the identifiers of unique reactions in which the metabolite
+      // participates.
+      var reactionsIdentifiers = General.collectUniqueElements(
+        metabolitesReactions[metaboliteIdentifier]
+      );
+      // Collect information about metabolite and its reactions.
+      return Candidacy.collectCandidateMetaboliteReactions({
+        reactionMetabolite: reactionMetabolite,
+        reactionsIdentifiers: reactionsIdentifiers,
+        reactionsSimplifications: reactionsSimplifications,
+        collection: collection
+      });
+    }, initialCollection);
   }
   /**
-  * Collects for each reaction information about the general metabolites that
-  * participate.
+  * Collects information about a metabolite and its reactions that are
+  * candidates for representation in the network.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object>} parameters.currentReactionsSets Information about
-  * reactions' metabolites and sets that pass filters.
-  * @param {Object<Object>} parameters.reactions Information about reactions.
-  * @returns {Array<Object>} Information about reactions' metabolites.
+  * @param {Object<string>} parameters.reactionMetabolite Information about a
+  * candidate metabolite.
+  * @param {Array<string>} parameters.reactionsIdentifiers Identifiers of
+  * reactions.
+  * @param {Object<Object>} parameters.reactionsSimplifications
+  * Information about simplification of reactions.
+  * @param {Object<Object>} parameters.collection Information about candidate
+  * metabolites and their reactions.
+  * @returns {Object<Object>} Information about candidate metabolites.
   */
-  static collectInterestReactionsGeneralMetabolites({
-    currentReactionsSets, reactions
+  static collectCandidateMetaboliteReactions({
+    reactionMetabolite,
+    reactionsIdentifiers,
+    reactionsSimplifications,
+    collection
   } = {}) {
-    // Collect reactions along with general representations of their
-    // metabolites.
-    // Iterate on reactions.
-    return currentReactionsSets.map(function (reactionRecord) {
-      var reactionReference = reactionRecord.reaction;
-      var identifier = reactionRecord.reaction;
-      var metabolites = reactionRecord.metabolites.slice();
-      // Compile reaction's attributes.
-      // Create reaction's record.
-      var record = {
-        identifier: identifier,
-        reaction: reactionReference,
-        metabolites: metabolites
-      };
-      return record;
+    // Metabolite is a valid candidate.
+    // Include information about candidate metabolite in collection.
+    // Compile information.
+    var information = {
+      identifier: reactionMetabolite.identifier,
+      metabolite: reactionMetabolite.metabolite,
+      compartment: reactionMetabolite.compartment,
+      reactions: reactionsIdentifiers,
+    };
+    // Create entry.
+    var entry = {
+      [reactionMetabolite.identifier]: information
+    };
+    // Include record in collection.
+    var metabolitesCandidates = Object
+    .assign(collection.metabolitesCandidates, entry);
+    // Collect metabolites for simplification.
+    var metabolitesSimplifications = Candidacy
+    .collectMetabolitesSimplifications({
+      metaboliteCandidate: information,
+      reactionsSimplifications: reactionsSimplifications,
+      metabolitesSimplifications: collection.metabolitesSimplifications
     });
+    // Compile information.
+    return {
+      metabolitesCandidates: metabolitesCandidates,
+      metabolitesSimplifications: metabolitesSimplifications
+    };
   }
-
-
+  /**
+  * Collects candidate metabolites for simplification.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.metaboliteCandidate Information about a candidate
+  * metabolite.
+  * @param {Object<Object>} parameters.reactionsSimplifications
+  * Information about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications
+  * Information about simplification of metabolites.
+  * @returns {Object<Object>} Information about simplification of metabolites.
+  */
+  static collectMetabolitesSimplifications({
+    metaboliteCandidate,
+    reactionsSimplifications,
+    metabolitesSimplifications
+  } = {}) {
+    // Determine whether the metabolite has a designation for simplification.
+    if (
+      metabolitesSimplifications.hasOwnProperty(metaboliteCandidate.identifier)
+    ) {
+      // Metabolite has a designation for simplification.
+      // Do not modify information about simplification of metabolites.
+      return metabolitesSimplifications;
+    } else {
+      // Metabolite does not have a designation for simplification.
+      // Determine whether metabolite qualifies for simplification by
+      // dependency.
+      var simplification = Candidacy
+      .determineMetaboliteSimplificationDependency({
+        reactionsIdentifiers: metaboliteCandidate.reactions,
+        reactionsSimplifications: reactionsSimplifications
+      });
+      if (simplification) {
+        // Metabolite qualifies for simplification by dependency.
+        // Designate metabolite for simplification.
+        // Compile information.
+        var information = {
+          identifier: metaboliteCandidate.identifier,
+          metabolite: metaboliteCandidate.metabolite,
+          method: "omission",
+          dependency: true
+        };
+        // Include designation for simplification of metabolite.
+        return General.includeExcludeObjectEntry({
+          value: information,
+          entries: metabolitesSimplifications
+        });
+      } else {
+        // Metabolite does not qualify for simplification by dependency.
+        // Do not modify information about simplification of metabolites.
+        return metabolitesSimplifications;
+      }
+    }
+  }
+  /**
+  * Determines whether a metabolite qualifies for simplification by dependency
+  * on its reactions.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.reactionsIdentifiers Identifiers of
+  * reactions.
+  * @param {Object<Object>} parameters.reactionsSimplifications
+  * Information about simplification of reactions.
+  * @returns {boolean} Whether the metabolite qualifies for simplification by
+  * dependency on its reactions.
+  */
+  static determineMetaboliteSimplificationDependency({
+    reactionsIdentifiers,
+    reactionsSimplifications
+  } = {}) {
+    // Determine whether metabolite qualifies for simplification by dependency.
+    // A metabolite's relevance depends on the relevance of its reactions in
+    // which it participates.
+    // Simplification of all of a metabolite's reactions qualifies the
+    // metabolite for simplification by dependency.
+    // Filter for metabolite's reactions that do not have designations for
+    // simplification.
+    var relevantReactions = reactionsIdentifiers.filter(function (identifier) {
+      // Determine whether the reaction has a designation for simplification.
+      return !reactionsSimplifications.hasOwnProperty(identifier);
+    });
+    // Determine whether any of the metabolite's reactions are relevant.
+    return relevantReactions.length < 1;
+  }
 }

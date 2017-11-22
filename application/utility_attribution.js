@@ -200,7 +200,7 @@ class Attribution {
     var metabolitesIdentifiers = Object.keys(metabolitesReactions);
     return metabolitesIdentifiers
     .reduce(function (collection, metaboliteIdentifier) {
-      // Determine the identifiers of unique reactions in which the metabolite
+      // Collect the identifiers of unique reactions in which the metabolite
       // participates.
       var reactionsIdentifiers = General.collectUniqueElements(
         metabolitesReactions[metaboliteIdentifier]
@@ -471,8 +471,8 @@ class Attribution {
   * @returns {boolean} Whether sets' filters include the attribute's value.
   */
   static determineSetsFilter({value, attribute, setsFilters} = {}) {
-      // Determine whether attribute's values include the value.
-      return setsFilters[attribute].includes(value);
+    // Determine whether attribute's values include the value.
+    return setsFilters[attribute].includes(value);
   }
 
   // Filtration of reactions.
