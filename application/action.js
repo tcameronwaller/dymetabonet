@@ -787,7 +787,6 @@ class Action {
   }
 
 
-
   // Secondary actions relevant to application's state.
 
   /**

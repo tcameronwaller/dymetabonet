@@ -614,7 +614,7 @@ class General {
   // Methods for management of values.
 
   /**
-  * Includes or excludes a single entry in an object of entries.
+  * Copies an object's entries and includes or excludes a single entry.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.value Entry's value with identifier.
   * @param {Object<Object>} parameters.entries Entries.
@@ -624,16 +624,13 @@ class General {
     // Determine whether entries include an entry for the value.
     if (entries.hasOwnProperty(value.identifier)) {
       // Entries include an entry for the value.
-      // Remove the value's entry.
-      function filter(entryValue) {
-        return entryValue.identifier === value.identifier;
-      };
-      return General.filterObjectEntries({
-        filter: filter,
+      // Copy other entries and exclude the value's entry.
+      return General.excludeObjectEntry({
+        key: value.identifier,
         entries: entries
       });
-
       // TODO: I need to make sure the General.filterObjectEntries() works properly...
+      // TODO: temporary... old way of doing things...
       if (false) {
         // Copy all entries and exclude the entry for the value.
         var keys = Object.keys(entries);
@@ -657,18 +654,39 @@ class General {
       }
     } else {
       // Entries do not include an entry for the value.
-      // Include an entry for the value.
-      // Copy entries.
-      var entriesCopy = General.copyDeepObjectEntries(entries, true);
-      // Copy value.
-      var valueCopy = General.copyValue(value);
-      // Create entry.
-      var entry = {
-        [valueCopy.identifier]: valueCopy
-      };
-      // Include entry.
-      return Object.assign(entriesCopy, entry);
+      // Copy other entries and include an entry for the value.
+      return General.includeObjectEntry({
+        value: value,
+        entries: entries
+      });
     }
+  }
+  /**
+  * Copies an object's entries and excludes a single entry.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.key Entry's key.
+  * @param {Object<Object>} parameters.entries Entries.
+  * @returns {Object<Object>} Copy of entries without the single entry.
+  */
+  static excludeObjectEntry({key, entries} = {}) {
+    // Copy and include all entries except the entry with the key.
+    var entriesKeys = Object.keys(entries);
+    return entriesKeys.reduce(function (collection, entryKey) {
+      // Determine whether to include key's entry.
+      if (entryKey === key) {
+        // Exclude entry.
+        return collection;
+      } else {
+        // Copy and include entry.
+        var valueCopy = General.copyValue(entries[entryKey]);
+        // Create entry.
+        var entry = {
+          [entryKey]: valueCopy
+        };
+        // Include entry.
+        return Object.assign(collection, entry);
+      }
+    }, {});
   }
   /**
   * Filters an object's entries by whether their values pass a filter.
@@ -699,7 +717,25 @@ class General {
       }
     }, {});
   }
-
+  /**
+  * Copies an object's entries and includes a single entry.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.value Entry's value with identifier.
+  * @param {Object<Object>} parameters.entries Entries.
+  * @returns {Object<Object>} Copy of entries with the single entry.
+  */
+  static includeObjectEntry({value, entries} = {}) {
+    // Copy entries.
+    var entriesCopy = General.copyDeepObjectEntries(entries, true);
+    // Copy value.
+    var valueCopy = General.copyValue(value);
+    // Create entry.
+    var entry = {
+      [valueCopy.identifier]: valueCopy
+    };
+    // Include entry.
+    return Object.assign(entriesCopy, entry);
+  }
   /**
   * Copies information in records from an object to an array.
   * @param {Object<Object>} records Records in an object.

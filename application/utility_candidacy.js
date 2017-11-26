@@ -86,29 +86,61 @@ class Candidacy {
     return candidatesSimplifications;
   }
 
-  static changeSimplifications({} = {}) {
-    // Candidacy.changeSimplifications()
+  /**
+  * Changes designations of entities for simplification.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {string} parameters.method Method for simplification, omission or
+  * replication.
+  * @param {string} parameters.type Type of entities, metabolites or reactions.
+  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.reactionsSets Information about
+  * reactions' metabolites and sets.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
+  * @param {Object<Object>} parameters.reactionsSimplifications
+  * Information about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications
+  * Information about simplification of metabolites.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static changeSimplifications({
+    identifier,
+    method,
+    type,
+    reactionsCandidates,
+    metabolitesCandidates,
+    reactionsSets,
+    reactions,
+    compartmentalization,
+    reactionsSimplifications,
+    metabolitesSimplifications
+  } = {}) {
+    // TODO: ...
     // In response to change to a single explicit simplification (either change to type or whether to include)
-    // 1. Candidacy.filterExplicitSimplifications()
-    // 2. Candidacy.changeExplicitSimplification()
-    // 3. Candidacy.collectImplicitSimplifications() TODO: make separate from the candidacy procedure...
-
     // Filter information about simplifications for entities to omit those that
     // are implicit and include only those that are explicit.
     var explicitSimplifications = Candidacy.filterExplicitSimplifications({
       metabolitesSimplifications: metabolitesSimplifications,
       reactionsSimplifications: reactionsSimpliciations
     });
-
-    // TODO: ...
-
-    //var novelSimplifications = Candidacy.changeExplicitSimplification();
-
-
+    // Change information about explicit simplification of entities to represent
+    // change to a single entity.
+    var novelSimplifications = Candidacy.changeTypeExplicitSimplifications({
+      identifier: identifier,
+      method: method,
+      type: type,
+      metabolitesSimplifications: explicitSimplifications
+      .metabolitesSimplifications,
+      reactionsSimplifications: explicitSimplifications.reactionsSimplifications
+    });
     // Collect information about any implicit simplifications for entities and
     // include with information about explicit simplifications.
-    var completeSimplifications = Candidacy
-    .collectImplicitSimplifications({
+    var completeSimplifications = Candidacy.collectImplicitSimplifications({
       reactionsCandidates: reactionsCandidates,
       metabolitesCandidates: metabolitesCandidates,
       reactionsSets: reactionsSets,
@@ -121,21 +153,6 @@ class Candidacy {
     // Return information.
     return completeSimplifications;
   }
-
-  // TODO: Implement functionality to include/exclude new designations for simplification of an entity.
-  // TODO: Use that new functionality to test the filter process...
-  // TODO: Also, procedure for new simplifications is slightly different from procedure for determining candidates.
-  // TODO: I need to filter simplifications to remove implicits before include/exclude of new selection.
-
-  // New selection for simplification...
-  // Need to know...
-  // entity type (metabolite/reaction)
-  // identifier of candidate entity
-  // method for simplification (omission true/false and replication true/false)
-
-
-
-
 
   // Management of candidate entities.
 
@@ -1062,72 +1079,156 @@ class Candidacy {
     // Return information.
     return simplifications;
   }
-
-  // TODO: This function needs implementation...
-
+  /**
+  * Changes information about explicit simplifications of entities to represent
+  * change to a single entity.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {string} parameters.method Method for simplification, omission or
+  * replication.
+  * @param {string} parameters.type Type of entities, metabolites or reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications
+  * Information about simplification of metabolites.
+  * @param {Object<Object>} parameters.reactionsSimplifications
+  * Information about simplification of reactions.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static changeTypeExplicitSimplifications({
+    identifier,
+    method,
+    type,
+    metabolitesSimplifications,
+    reactionsSimplifications
+  } = {}) {
+    // Determine whether to change simplifications of metabolites or reactions.
+    if (type === "metabolites") {
+      // Change simplifications of metabolites.
+      var metabolitesNovelSimplifications = Candidacy
+      .changeExplicitSimplification({
+        identifier: identifier,
+        method: method,
+        simplifications: metabolitesSimplifications
+      });
+      // Preserve simplifications of reactions.
+      reactionsNovelSimplifications = reactionsSimplifications;
+    } else if (type === "reactions") {
+      // Change simplifications of reactions.
+      var reactionsNovelSimplifications = Candidacy
+      .changeExplicitSimplification({
+        identifier: identifier,
+        method: method,
+        simplifications: reactionsSimplifications
+      });
+      // Preserve simplifications of metabolites.
+      metabolitesNovelSimplifications = metabolitesSimplifications;
+    }
+    // Compile information.
+    var simplifications = {
+      metabolitesSimplifications: metabolitesNovelSimplifications,
+      reactionsSimplifications: reactionsNovelSimplifications
+    };
+    // Return information.
+    return simplifications;
+  }
   /**
   * Changes designation of a single entity for simplification.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a candidate entity.
-  * @param {string} parameters.type Type of entity, metabolite or reaction.
-  * @param {method} parameters.method Method for simplification, omission or
+  * @param {string} parameters.method Method for simplification, omission or
   * replication.
   * @param {Object<Object>} parameters.simplifications Information about
   * simplification of entities.
   * @returns {Object<Object>} Information about simplification of entities.
   */
-  static changeExplicitSimplification({identifier, type, method} = {}) {
-    // Filter simplifications to remove those that are implicit and preserve
-    // only those that are explicit.
-    var explicitReactionsSimplifications = Candidacy
-    .filterExplicitSimplifications(reactionsSimplifications);
-    var explicitMetabolitesSimplifications = Candidacy
-    .filterExplicitSimplifications(metabolitesSimplifications);
-
-    // Filter to remove all implicit simplifications.
-    //
-    // I need to know...
-    // 1. does an explicit designation already exist for the entity's simplification
-    // 2. if a designation already exists, is it for the same method or the other method.
-    // if for same method, remove designation
-    // if for other method, change designation's method
-    // Determine whether the metabolite has a designation for simplification.
+  static changeExplicitSimplification({
+    identifier, method, simplifications
+  } = {}) {
+    // Determine whether the entity has a designation for simplification.
     if (
-      metabolitesSimplifications.hasOwnProperty(metaboliteCandidate.identifier)
+      simplifications.hasOwnProperty(identifier)
     ) {
-      // Metabolite has a designation for simplification.
-      // Do not modify information about simplification of metabolites.
-      return metabolitesSimplifications;
-    } else {
-      // Metabolite does not have a designation for simplification.
-      // Determine whether metabolite qualifies for simplification by
-      // dependency.
-      var simplification = Candidacy
-      .determineMetaboliteSimplificationDependency({
-        reactionsIdentifiers: metaboliteCandidate.reactions,
-        reactionsSimplifications: reactionsSimplifications
-      });
-      if (simplification) {
-        // Metabolite qualifies for simplification by dependency.
-        // Designate metabolite for simplification.
-        // Compile information.
-        var information = {
-          identifier: metaboliteCandidate.identifier,
-          method: "omission",
-          dependency: true
-        };
-        // Include designation for simplification of metabolite.
-        return General.includeExcludeObjectEntry({
-          value: information,
-          entries: metabolitesSimplifications
+      // Entity has a designation for simplification.
+      // Determine whether entity's designation for simplification matches
+      // current specifications.
+      var match = (
+        simplifications[identifier].identifier === identifier &&
+        simplifications[identifier].method === method
+      );
+      if (match) {
+        // Entity's designation for simplification matches current
+        // specifications.
+        // Exclude entity's designation for simplification.
+        return Candidacy.excludeSimplification({
+          identifier: identifier,
+          simplifications: simplifications
         });
       } else {
-        // Metabolite does not qualify for simplification by dependency.
-        // Do not modify information about simplification of metabolites.
-        return metabolitesSimplifications;
+        // Entity's designation for simplification does not match current
+        // specifications.
+        // Replace entity's designation for simplification.
+        var exclusionSimplifications = Candidacy.excludeSimplification({
+          identifier: identifier,
+          simplifications: simplifications
+        });
+        return Candidacy.includeSimplification({
+          identifier: identifier,
+          method: method,
+          dependency: false,
+          simplifications: exclusionSimplifications
+        });
       }
+    } else {
+      // Entity does not have a designation for simplification.
+      // Include a designation for the entity's simplification.
+      return Candidacy.includeSimplification({
+        identifier: identifier,
+        method: method,
+        dependency: false,
+        simplifications: simplifications
+      });
     }
-
+  }
+  /**
+  * Includes a designation of a single entity for simplification.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {string} parameters.method Method for simplification, omission or
+  * replication.
+  * @param {boolean} parameters.dependency Whether designation for
+  * simplification derives from explicit selection or implicit dependency.
+  * @param {Object<Object>} parameters.simplifications Information about
+  * simplification of entities.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static includeSimplification({
+    identifier, method, dependency, simplifications
+  } = {}) {
+    // Compile information.
+    var information = {
+      identifier: identifier,
+      method: omission,
+      dependency: dependency
+    };
+    // Include designation for entity's simplification.
+    return General.includeObjectEntry({
+      value: information,
+      entries: simplifications
+    });
+  }
+  /**
+  * Excludes a designation of a single entity for simplification.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {Object<Object>} parameters.simplifications Information about
+  * simplification of entities.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static excludeSimplification({identifier, simplifications} = {}) {
+    // Exclude entity's designation for simplification.
+    return General.excludeObjectEntry({
+      key: identifier,
+      entries: simplifications
+    });
   }
   /**
   * Collects information about any implicit simplifications for entities and
@@ -1146,7 +1247,7 @@ class Candidacy {
   * Information about simplification of reactions.
   * @param {Object<Object>} parameters.metabolitesSimplifications
   * Information about simplification of metabolites.
-  * @returns {Object} Information about candidate entities' simplifications.
+  * @returns {Object<Object>} Information about simplification of entities.
   */
   static collectImplicitSimplifications({
     reactionsCandidates,
@@ -1157,9 +1258,10 @@ class Candidacy {
     reactionsSimplifications,
     metabolitesSimplificiations
   } = {}) {
+    // The default method for implicit simplifications is omission.
     // Collect information about any implicit simplifications for entities and
     // include with information about explicit simplifications.
-    var reactionsSimplifications = Candidacy
+    var reactionsCompleteSimplifications = Candidacy
     .collectReactionsImplicitSimplifications({
       reactionsCandidates: reactionsCandidates,
       reactionsSets: reactionsSets,
@@ -1168,7 +1270,7 @@ class Candidacy {
       reactionsSimplifications: reactionsSimplifications,
       metabolitesSimplifications: metabolitesSimplifications
     });
-    var metabolitesSimplifications = Candidacy
+    var metabolitesCompleteSimplifications = Candidacy
     .collectMetabolitesImplicitSimplifications({
       metabolitesCandidates: metabolitesCandidates,
       reactionsSimplifications: reactionsSimplifications,
@@ -1176,8 +1278,8 @@ class Candidacy {
     });
     // Compile information.
     var simplifications = {
-      reactionsSimplifications: reactionsSimplifications,
-      metabolitesSimplifications: metabolitesSimplifications
+      reactionsSimplifications: reactionsCompleteSimplifications,
+      metabolitesSimplifications: metabolitesCompleteSimplifications
     };
     // Return information.
     return simplifications;
@@ -1271,18 +1373,12 @@ class Candidacy {
       });
       if (simplification) {
         // Reaction qualifies for simplification by dependency.
-        // Designate reaction for simplification.
-        // TODO: Maybe call the function for changing simplifications (either implicit or explicit), and tell to set dependency to true...
-        // Compile information.
-        var information = {
+        // Include a designation for the reaction's simplification.
+        return Candidacy.includeSimplification({
           identifier: reactionCandidate.identifier,
           method: "omission",
-          dependency: true
-        };
-        // Include designation for simplification of reaction.
-        return General.includeExcludeObjectEntry({
-          value: information,
-          entries: reactionsSimplifications
+          dependency: true,
+          simplifications: reactionsSimplifications
         });
       } else {
         // Reaction does not qualify for simplification by dependency.
@@ -1422,17 +1518,12 @@ class Candidacy {
       });
       if (simplification) {
         // Metabolite qualifies for simplification by dependency.
-        // Designate metabolite for simplification.
-        // Compile information.
-        var information = {
+        // Include a designation for the metabolite's simplification.
+        return Candidacy.includeSimplification({
           identifier: metaboliteCandidate.identifier,
           method: "omission",
-          dependency: true
-        };
-        // Include designation for simplification of metabolite.
-        return General.includeExcludeObjectEntry({
-          value: information,
-          entries: metabolitesSimplifications
+          dependency: true,
+          simplifications: metabolitesSimplifications
         });
       } else {
         // Metabolite does not qualify for simplification by dependency.
@@ -1470,6 +1561,4 @@ class Candidacy {
     // Determine whether any of the metabolite's reactions are relevant.
     return relevantReactions.length < 1;
   }
-
-
 }
