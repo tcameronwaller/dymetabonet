@@ -32,8 +32,10 @@ United States of America
 * Actions that modify the state of the application.
 * This class does not store any attributes and does not require instantiation.
 * This class stores methods that control all actions that modify the model for
-* the state of the application. The methods require a reference to the instance
-* of the model. These methods also call external methods as necessary.
+* the state of the application.
+* The methods require a reference to the instance
+* of the model.
+* These methods also call external methods as necessary.
 */
 class Action {
   // Methods herein intend to comprise discrete actions that impart changes to
@@ -50,30 +52,26 @@ class Action {
   // Methods for general functionality relevant to application actions.
 
   /**
-  * Submits a new value for an attribute to the model of the application's
-  * state.
+  * Submits a novel attribute's value to the application's state.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.value Value of the attribute.
   * @param {string} parameters.attribute Name of the attribute.
-  * @param {Object} parameters.model Model of the comprehensive state of the
-  * application.
+  * @param {Object} parameters.state Application's state.
   */
-  static submitAttribute({value, attribute, model} = {}) {
+  static submitAttribute({value, attribute, state} = {}) {
     var novelAttribute = [{
       attribute: attribute,
       value: value
     }];
-    model.restore(novelAttribute, model);
+    state.restore(novelAttribute, state);
   }
   /**
-  * Submits new values for attributes to the model of the application's
-  * state.
+  * Submits novel attributes' values to the application's state.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.attributesValues New values of attributes.
-  * @param {Object} parameters.model Model of the comprehensive state of the
-  * application.
+  * @param {Object} parameters.state Application's state.
   */
-  static submitAttributes({attributesValues, model} = {}) {
+  static submitAttributes({attributesValues, state} = {}) {
     var novelAttributes = Object
     .keys(attributesValues).map(function (attribute) {
       return {
@@ -81,182 +79,175 @@ class Action {
         value: attributesValues[attribute]
       };
     });
-    model.restore(novelAttributes, model);
+    state.restore(novelAttributes, state);
   }
   /**
-  * Removes the value of an attribute in the model of the application's state
-  * by submitting a null value for the attribute.
-  * @param {string} name Name of the attribute.
-  * @param {Object} model Model of the application's comprehensive state.
+  * Removes an attribute's value from the application's state by submitting a
+  * null value.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.name Name of the attribute.
+  * @param {Object} parameters.state Application's state.
   */
-  static removeAttribute(name, model) {
+  static removeAttribute({name, state} = {}) {
     Action.submitAttribute({
       value: null,
       attribute: name,
-      model: model
+      state: state
     });
   }
 
   // Load information from file and call another action.
 
   /**
-  * Loads from file a persistent representation of the application's state
-  * and passes it to a procedure to restore the application to this state.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
+  * Loads from source file information about the application's state and passes
+  * it to a procedure to restore the application to this state.
+  * @param {Object} state Application's state.
   */
-  static loadRestoreState(model) {
+  static loadRestoreState(state) {
     General.loadPassObject({
-      file: model.file,
+      file: state.source,
       call: Action.restoreState,
-      parameters: {model: model}
+      parameters: {state: state}
     });
   }
   /**
   * Loads from file information about metabolic entities and sets and passes
-  * it to a procedure for check and clean.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
+  * it to a procedure to check and clean.
+  * @param {Object} state Application's state.
   */
-  static loadCheckMetabolicEntitiesSets(model) {
+  static loadCheckMetabolicEntitiesSets(state) {
     General.loadPassObject({
-      file: model.file,
+      file: state.source,
       call: Action.checkCleanMetabolicEntitiesSets,
-      parameters: {model: model}
+      parameters: {state: state}
     });
   }
   /**
   * Loads from file information about metabolic entities and sets and passes
   * it to a procedure for extraction and initialization.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
+  * @param {Object} state Application's state.
   */
-  static loadExtractInitializeMetabolicEntitiesSets(model) {
+  static loadExtractInitializeMetabolicEntitiesSets(state) {
     General.loadPassObject({
-      file: model.file,
+      file: state.source,
       call: Action.extractInitializeMetabolicEntitiesSets,
-      parameters: {model: model}
+      parameters: {state: state}
     });
   }
 
   // Primary actions relevant to application's state.
 
   /**
-  * Initializes the model of the application's state by submitting null values
-  * for all attributes.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
+  * Initializes the application's state by submitting null values of all
+  * attributes.
+  * @param {Object} state Application's state.
   */
-  static initializeApplication(model) {
-    var attributesValues = model
+  static initializeApplication(state) {
+    var attributesValues = state
     .attributeNames.reduce(function (collection, attributeName) {
-      var novelRecord = {[attributeName]: null};
-      return Object.assign({}, collection, novelRecord);
+      var entry = {[attributeName]: null};
+      return Object.assign(collection, entry);
     }, {});
     Action.submitAttributes({
       attributesValues: attributesValues,
-      model: model
+      state: state
     });
   }
   /**
-  * Saves to a new file on client's system a persistent representation of the
+  * Saves to a novel file on client's system a persistent representation of the
   * application's state.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
+  * @param {Object} state Application's state.
   */
-  static saveState(model) {
-    var persistence = Action.createPersistentState(model);
+  static saveState(state) {
+    var persistence = Action.createPersistentState(state);
     console.log("application's persistent state...");
     console.log(persistence);
     General.saveObject("state.json", persistence);
   }
   /**
-  * Restores the application to a state from a persistent representation.
+  * Restores the application to a state from a persistent source.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Persistent representation of the
+  * @param {Object} parameters.data Persistent source of information about
   * application's state.
-  * @param {Object} parameters.model Model of the comprehensive state of the
-  * application.
+  * @param {Object} parameters.state Application's state.
   */
-  static restoreState({data, model} = {}) {
-    // Remove any current file selection from the application's state.
-    var novelFile = {
-      file: null
+  static restoreState({data, state} = {}) {
+    // Remove any information about source from the application's state.
+    var source = null;
+    // Compile novel attributes' values.
+    var novelAttributesValues = {
+      source: source
     };
-    // Submit new values of attributes to the model of the application's
-    // state.
-    var attributesValues = Object.assign({}, data, novelFile);
+    var attributesValues = Object.assign(data, novelAttributesValues);
+    // Submit novel attributes' values to the application's state.
     Action.submitAttributes({
       attributesValues: attributesValues,
-      model: model
+      state: state
     });
   }
   /**
-  * Submits a new value for the file to the model of the application's state.
-  * @param {Object} file File object.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
+  * Submits a novel source to the application's state.
+  * @param {Object} source Reference to file object.
+  * @param {Object} state Application's state.
   */
-  static submitFile(file, model) {
+  static submitSource(source, state) {
     Action.submitAttribute({
-      value: file,
-      attribute: "file",
-      model: model
+      value: source,
+      attribute: "source",
+      state: state
     });
   }
   /**
-  * Checks and cleans information about metabolic entities and sets in a
-  * raw model of metabolism.
-  * Saves this information to a new file on client's system.
-  * Removes the current file selection from the application's state.
+  * Checks and cleans information about metabolic entities and sets in a raw
+  * model of metabolism.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.data Information about metabolic entities and
   * sets.
-  * @param {Object} parameters.model Model of the comprehensive state of the
-  * application.
+  * @param {Object} parameters.state Application's state.
   */
-  static checkCleanMetabolicEntitiesSets({data, model} = {}) {
+  static checkCleanMetabolicEntitiesSets({data, state} = {}) {
     var cleanData = Clean.checkCleanMetabolicEntitiesSetsRecon2(data);
     General.saveObject("clean_data.json", cleanData);
-    // Remove the current file selection from the application's state.
-    Action.removeAttribute("file", model);
+    // Remove the former source from the application's state.
+    Action.removeAttribute({
+      name: "source",
+      state: state
+    });
   }
   /**
   * Extracts information about metabolic entities and sets from a clean model
-  * of metabolism and uses this information to initialize the application.
+  * of metabolism and initializes the application's state from this information.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.data Information about metabolic entities and
   * sets.
-  * @param {Object} parameters.model Model of the comprehensive state of the
-  * application.
+  * @param {Object} parameters.state Application's state.
   */
-  static extractInitializeMetabolicEntitiesSets({data, model} = {}) {
+  static extractInitializeMetabolicEntitiesSets({data, state} = {}) {
     // Extract information about metabolic entities and sets.
-    // The full model has 2652 metabolites.
-    // The full model has 7785 reactions.
+    // The complete model has 2652 metabolites.
+    // The complete model has 7785 reactions.
     var metabolicEntitiesSets = Extraction
     .extractMetabolicEntitiesSetsRecon2(data);
-    // Initialize application from information about metabolic entities and
-    // sets.
+    // Initialize application's state from information about metabolic entities
+    // and sets.
     Action.initializeApplicationInformation({
       metabolicEntitiesSets: metabolicEntitiesSets,
-      model: model
+      state: state
     });
   }
   /**
-  * Initializes application from information about metabolic entities and
-  * sets from a clean model of metabolism.
+  * Initializes application's state from information about metabolic entities
+  * and sets.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.metabolicEntitiesSets Information about metabolic
   * entities and sets.
-  * @param {Object} parameters.model Model of the application's comprehensive
-  * state.
+  * @param {Object} parameters.state Application's state.
   */
-  static initializeApplicationInformation({metabolicEntitiesSets, model} = {}) {
-    // Initialize values of application's attributes for information about
-    // metabolic entities and sets.
-    // Remove the current file selection from the application's state.
-    var file = null;
+  static initializeApplicationInformation({metabolicEntitiesSets, state} = {}) {
+    // Initialize application's state from information about metabolic entities
+    // and sets.
+    // Remove any information about source from the application's state.
+    var source = null;
     // Determine total entities' attribution to sets.
     var totalEntitiesSets = Attribution
     .determineTotalEntitiesSets(metabolicEntitiesSets.reactions);
@@ -311,12 +302,17 @@ class Action {
     //var networkElementsAttributes = Action
     //.initializeNetworkElementsAttributes();
 
-    // Compile novel values of attributes.
+
+    //////////////////////////////////////////
+
+
+    //////////////////////////////////////////
+
+    // Compile novel attributes' values.
     var novelAttributesValues = {
-      file: file
+      source: source
     };
     var attributesValues = Object.assign(
-      {},
       metabolicEntitiesSets,
       totalEntitiesSets,
       entitiesSetsFilters,
@@ -329,13 +325,16 @@ class Action {
       //networkElementsAttributes,
       novelAttributesValues
     );
-    // Submit novel values of attributes to the model of the application's
-    // state.
+    // Submit novel attributes' values to the application's state.
     Action.submitAttributes({
       attributesValues: attributesValues,
-      model: model
+      state: state
     });
   }
+
+
+
+  
   /**
   * Changes the selection of entities of interest for the sets' summary.
   * @param {Object} model Model of the application's comprehensive state.

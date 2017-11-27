@@ -29,211 +29,215 @@ United States of America
 */
 
 /**
-* Representation of the state of the application.
-* ...
-* This class stores methods that control the creation of a representation of
-* the current state of the application. As part of this process, the methods
-* evaluate the current state of the application to respond appropriately. These
-* methods also call external methods as necessary.
+* The application's state.
+* This class stores values of attributes that define the application's state.
+* The class accepts and stores appropriate values of attributes that define the
+* application's state.
 */
 class State {
   /**
   * Initializes an instance of the class.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
   */
-  constructor(model) {
-    // Reference to model of application's state.
-    this.model = model;
-    // Control representation and behavior according to application's state.
-    // Each change to the model of the application's state calls this class to
-    // interpret the state.
-    this.represent();
-    // Control action on the state of the model.
-    this.act();
+  constructor() {
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Specify state's attributes.
+    this.attributeNames = [
 
-  }
-  /**
-  * Evaluates the context of the application's state and creates an
-  * appropriate representation in a visual interface.
-  */
-  represent() {
-    // If application's state has appropriate information then create
-    // interface for source.
-    if (!this.determineMetabolicEntitiesSets()) {
-      // Initialize instance of interface.
-      // Pass this instance a reference to the model of the application's
-      // state.
-      new SourceView(this.model);
-      // Load from file a default persistent state of the application.
-      // The intent is for this action to be temporary during development.
-      //var path = "../model/homo-sapiens/model_sets_network.json";
-      //Action.loadDefaultState(path, this.model);
-      // TODO: Get rid of the source view after extraction... then the view
-      // TODO: should be blank or something until all state attributes are available for set and entity views.
-    }
-    // If application's state has appropriate information then create
-    // interface for persistence.
-    if (this.determineMetabolicEntitiesSets()) {
-      // Initialize instance of interface.
-      // Pass this instance a reference to the model of the application's
-      // state.
-      new PersistenceView(this.model);
-    }
-    // If application's state has appropriate information then create
-    // interface for set.
-    if (
-      this.determineMetabolicEntitiesSets() &&
-      this.determineTotalEntitiesSets() &&
-      this.determineCurrentEntitiesSets() &&
-      this.determineSetsCardinalities()
-    ) {
-      // Initialize instance of interface.
-      // Pass this instance a reference to the model of the application's
-      // state.
-      new SetView(this.model);
-    }
-    // If application's state has appropriate information then create
-    // interface for control of network's assembly.
-    if (
-      this.determineCandidateContext() &&
-      this.determineCandidateEntities()
-    ) {
-      // Initialize instance of interface.
-      // Pass this instance a reference to the model of the application's
-      // state.
-      new AssemblyView(this.model);
-    }
-    // If application's state has appropriate information then create
-    // interface for place-holder in bottom of interface.
-    if (
-      this.determineCandidateContext() &&
-      this.determineCandidateEntities()
-    ) {
-      // Initialize instance of interface.
-      // Pass this instance a reference to the model of the application's
-      // state.
-      new BottomView(this.model);
-    }
-    // If application's state has appropriate information then create
-    // interface for visual representation of network's topology.
-    // TODO: Eventually, I think I'll need to split "determineNetworkElements"
-    // TODO: to consider network's elements and subnetwork's elements... ie, I'll
-    // TODO: need network's elements to allow topological traversal, but I won't
-    // TODO: necessarily draw the network until I have the current network's elements...
-    // TODO: those currently of interest for drawing...
-    if (
-      this.determineCandidateContext() &&
-      this.determineCandidateEntities()
-    ) {
-      // Initialize instance of interface.
-      // Pass this instance a reference to the model of the application's
-      // state.
-      new TopologyView(this.model);
-    }
-  }
-  /**
-  * Evaluates the context of the application's state and executes automatic
-  * actions as appropriate.
-  */
-  act() {}
-  // Methods to evaluate application's state.
+      // Source.
+      // Attribute "source" stores a reference to a file on client's system that
+      // is a source of information.
+      "source",
 
-  /**
-  * Determines whether the application's state has information about metabolic
-  * entities and sets.
-  */
-  determineMetabolicEntitiesSets() {
-    return (
-      !(this.model.metabolites === null) &&
-      !(this.model.reactions === null) &&
-      !(this.model.compartments === null) &&
-      !(this.model.genes === null) &&
-      !(this.model.processes === null)
-    );
-  }
-  /**
-  * Determines whether the application's state has information about all
-  * entities' attribution to sets.
-  */
-  determineTotalEntitiesSets() {
-    return (
-      !(this.model.totalReactionsSets === null) &&
-      !(this.model.totalMetabolitesSets === null)
-    );
-  }
-  /**
-  * Determines whether the application's state has information about current
-  * entities' attribution to sets.
-  */
-  determineCurrentEntitiesSets() {
-    return (
-      !(this.model.setsFilters === null) &&
-      !(this.model.accessReactionsSets === null) &&
-      !(this.model.accessMetabolitesSets === null) &&
-      !(this.model.filterReactionsSets === null) &&
-      !(this.model.filterMetabolitesSets === null)
-    );
-  }
-  /**
-  * Determines whether or not the application's state has information about
-  * sets of metabolic entities by their values of attributes.
-  */
-  determineSetsCardinalities() {
-    return (
-      !(this.model.setsEntities === null) &&
-      !(this.model.setsFilter === null) &&
-      !(this.model.setsCardinalities === null) &&
-      !(this.model.setsSummary === null)
-    );
-  }
-  /**
-  * Determines whether or not the application's state has information about
-  * context of interest for candidate entities.
-  */
-  determineCandidateContext() {
-    return (
-      !(this.model.compartmentalization === null) &&
-      !(this.model.reactionsSimplifications === null) &&
-      !(this.model.metabolitesSimplifications === null)
-    );
-  }
-  /**
-  * Determines whether or not the application's state has information about
-  * candidate entities.
-  */
-  determineCandidateEntities() {
-    return (
-      !(this.model.reactionsCandidates === null) &&
-      !(this.model.metabolitesCandidates === null)
-    );
-  }
+      // Metabolic entities and sets.
+      // Attribute "metabolites" stores information about chemically-unique
+      // metabolites.
+      "metabolites",
+      // Attribute "reactions" stores information about reactions that
+      // facilitate chemical conversion or physical transport of metabolites.
+      // Information includes references to attributes "metabolites",
+      // "compartments", and "processes".
+      "reactions",
+      // Attribute "genes" stores information about genes.
+      "genes",
+      // Attribute "compartments" stores information about compartments within a
+      // cell.
+      "compartments",
+      // Attribute "processes" stores information about processes or pathways.
+      "processes",
+
+      // Sets.
+      // Attribute "totalReactionsSets" stores information for all reactions
+      // about all the metabolites that participate in each reaction and the
+      // sets to which each reaction belongs by all its values of attributes.
+      // The purpose of attribute "totalReactionsSets" is to provide complete
+      // information against which to apply filters.
+      // Information includes references to attributes "reactions",
+      // "metabolites", "compartments", and "processes".
+      // Information derives from attribute "reactions".
+      "totalReactionsSets",
+      // Attribute "totalMetabolitesSets" stores information for all metabolites
+      // about all the reactions in which each metabolite participates and the
+      // sets to which each metabolite belongs by all its values of attributes.
+      // The purpose of attribute "totalMetabolitesSets" is to provide complete
+      // information against which to apply filters.
+      // Information includes references to attributes "metabolites",
+      // "reactions", "compartments", and "processes".
+      // Information derives from attributes "totalReactionsSets" and
+      // "reactions".
+      "totalMetabolitesSets",
+      // Attribute "setsFilters" stores information about selections of sets
+      // by values of entities' attributes to apply as filters.
+      // The purpose of attribute "setsFilters" is to define filters for
+      // filtration of entities by their values of attributes.
+      // Information includes references to attributes "compartments" and
+      // "processes".
+      "setsFilters",
+      // Attribute "accessReactionsSets" stores information for reactions that
+      // pass filters about all the metabolites that participate in each
+      // reaction and the sets to which each reaction belongs by all its values
+      // of attributes.
+      // The purpose of attribute "accessReactionsSets" is to constrain the
+      // accessibility of sets for selection in the sets' menu.
+      // Information includes references to attributes "reactions",
+      // "metabolites", "compartments", and "processes".
+      // Information derives from attributes "setsFilters",
+      // "totalReactionsSets", and "reactions".
+      "accessReactionsSets",
+      // Attribute "accessMetabolitesSets" stores information for metabolites
+      // that pass filters about all the reactions in which each metabolite
+      // participates and the sets to which each metabolite belongs by all its
+      // values of attributes.
+      // The purpose of attribute "accessMetabolitesSets" is to constrain the
+      // accessibility of sets for selection in the sets' menu.
+      // Information includes references to attributes "metabolites",
+      // "reactions", "compartments", and "processes".
+      // Information derives from attributes "totalMetabolitesSets",
+      // "accessReactionsSets" and "reactions".
+      "accessMetabolitesSets",
+      // Attribute "filterReactionsSets" stores information for reactions that
+      // pass filters about the metabolites that participate in each reaction in
+      // contexts that pass filters and the sets to which each reaction belongs
+      // by its values of attributes that pass filters.
+      // The purpose of attribute "filterReactionsSets" is to define reactions,
+      // metabolites, and their attributes that pass filters.
+      // Information includes references to attributes "reactions",
+      // "metabolites", "compartments", and "processes".
+      // Information derives from attributes "setsFilters",
+      // "totalReactionsSets", and "reactions".
+      "filterReactionsSets",
+      // Attribute "filterMetabolitesSets" stores information for metabolites
+      // that pass filters about the reactions in which each metabolite
+      // participates in contexts that pass filters and the sets to which each
+      // metabolite belongs by its values of attributes that pass filters.
+      // The purpose of attribute "filterMetabolitesSets" is to define
+      // metabolites and their attributes that pass filters.
+      // Information includes references to attributes "metabolites",
+      // "reactions", "compartments", and "processes".
+      // Information derives from attributes "totalMetabolitesSets",
+      // "filterReactionsSets" and "reactions".
+      "filterMetabolitesSets",
+      // Attribute "setsEntities" stores information about the type of entities,
+      // metabolites or reactions, to represent in the sets' summary.
+      "setsEntities",
+      // Attribute "setsFilter" stores information about whether to represent
+      // entities and their values of attributes after filtration in the sets'
+      // summary.
+      "setsFilter",
+      // Attribute "setsCardinalitites" stores information about the counts of
+      // entities that belong to each set by their values of attributes.
+      // Information includes references to attributes "compartments" and
+      // "processes".
+      // Information derives from attributes "setsEntities", "setsFilter",
+      // "currentReactionsSets", "currentMetabolitesSets", "totalReactionsSets",
+      // "totalMetabolitesSets".
+      "setsCardinalities",
+      // Attribute "setsSummary" stores information about the counts of entities
+      // that belong to each set by their values of attributes.
+      // Information includes additional details for representation in the sets'
+      // summary.
+      // Information includes references to attributes "compartments" and
+      // "processes".
+      // Information derives from attribute "setsCardinalities".
+      "setsSummary",
+
+      // Entities.
+      // Attribute "compartmentalization" stores information about whether to
+      // represent compartmentalization of metabolites.
+      "compartmentalization",
+
+      // Attribute "reactionsSimplifications" stores information about
+      // selections of reactions for simplification by omission.
+      // Information includes references to attribute "reactionsCandidates".
+      "reactionsSimplifications",
+      // Attribute "metabolitesSimplifications" stores information about
+      // selections of metabolites for simplification either by replication or
+      // omission.
+      // Information includes references to attribute "metabolitesCandidates".
+      "metabolitesSimplifications",
+
+      // Attribute "reactionsCandidates" stores information for each reaction
+      // about the metabolites that participate.
+      // Information includes compartmentalization of metabolites.
+      // Information includes references to attributes "reactions",
+      // "metabolites", and "compartments".
+      // Information derives from attributes "compartmentalization",
+      // "filterReactionsSets", and "reactions".
+      "reactionsCandidates",
+      // Attribute "metabolitesCandidates" stores information for each
+      // metabolite about the reactions in which it participates.
+      // Information includes compartmentalization of metabolites.
+      // Information includes references to attributes "metabolites",
+      // "reactions", and "compartments".
+      // Information derives from attribute "reactionsCandidates".
+      "metabolitesCandidates",
+
+      // Network.
+      "networkNodesReactions",
+      "networkNodesMetabolites",
+      "networkLinks",
+      "subNetworkNodesMetabolites",
+      "subNetworkNodesReactions",
+      "subNetworkLinks",
+
+      // TODO: Maybe include "relevantEntities" that represent entities that pass filters, are preserved as candidates, represented in network, and also part of specific subnetwork.
 
 
 
-  /**
-  * Determines whether or not the application's state has information about
-  * options for assembly of a network of relations between metabolic
-  * entities.
-  */
-  determineNetworkAssembly() {
-    return (
-      !(this.model.compartmentalization === null) &&
-      !(this.model.simplification === null)
-    );
+
+      // Network.
+      "metabolitesNodes", "reactionsNodes", "links",
+      "network",
+      // Subnetwork.
+      "proximityFocus", "proximityDirection", "proximityDepth",
+      "pathOrigin", "pathDestination", "pathDirection", "pathCount",
+      "currentMetabolitesNodes", "currentReactionsNodes", "currentLinks",
+      "subNetwork",
+    ];
   }
   /**
-  * Determines whether or not the application's state has information about
-  * a network and subnetwork of relations between metabolic entities.
+  * Restores the values of attributes in application's state and initializes
+  * representation.
+  * @param {Array<Object>} novelAttributes Novel values of attributes to replace
+  * former values of attributes in application's state.
+  * @param {Object} state Application's state.
   */
-  determineNetworkElements() {
-    return (
-      !(this.model.metabolitesNodes === null) &&
-      !(this.model.reactionsNodes === null) &&
-      !(this.model.links === null) &&
-      !(this.model.currrentMetabolitesNodes === null) &&
-      !(this.model.currentReactionsNodes === null) &&
-      !(this.model.currentLinks === null)
-    );
+  restore(novelAttributes, state) {
+    // Accept novel values of attributes and assign them to the state.
+    novelAttributes.forEach(function (novelAttribute) {
+      // Confirm that the entry for the attribute's value is valid.
+      if (
+        novelAttribute.hasOwnProperty("attribute") &&
+        novelAttribute.hasOwnProperty("value")
+      ) {
+        // Confirm that the attribute is valid in the state.
+        if (state.attributeNames.includes(novelAttribute.attribute)) {
+          state[novelAttribute.attribute] = novelAttribute.value;
+        }
+      }
+    });
+    // Initialize instance of state's model.
+    // Pass this instance a reference to the state.
+    new Model(state);
   }
 }

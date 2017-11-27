@@ -94,7 +94,7 @@ class SourceView {
     self.selector.setAttribute("type", "file");
     self.selector.addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
-      Action.submitFile(event.currentTarget.files[0], self.model);
+      Action.submitSource(event.currentTarget.files[0], self.model);
     });
     self.container.appendChild(self.selector);
     // Display a facade, any element, to control the file selector.
@@ -238,7 +238,6 @@ class PersistenceView {
       Action.executeTemporaryProcedure(self.model);
     });
     self.container.appendChild(self.document.createElement("br"));
-
   }
 }
 
@@ -1564,10 +1563,9 @@ class TopologyView {
   * @param {Object} model Model of the application's comprehensive state.
   */
   constructor (model) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
+    // Set reference to class' current instance to persist across scopes.
     var self = this;
-    // Set reference to model of application's state.
+    // Set reference to application's state.
     self.model = model;
     // Set reference to document object model (DOM).
     self.document = document;
