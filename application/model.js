@@ -66,26 +66,26 @@ class Model {
       // Initialize or restore instances of interface's views.
       // Pass these instances a reference to the application's state.
       // Initialize or restore views within control view.
-      var controlViews = ["state-view"];
-      new ControlView(controlViews, self.state);
+      var controlContents = ["state"];
+      new ControlView(controlContents, self.state);
       new StateView(self.state);
       // Initialize or restore views within exploration view.
-      var explorationViews = ["summary-view"];
-      new ExplorationView(explorationViews, self.state);
+      var explorationContents = ["summary"];
+      new ExplorationView(explorationContents, self.state);
       new SummaryView(self.state);
     }
     if (Model.determineMetabolicEntitiesSets(self.state)) {
       // Initialize or restore instances of interface's views.
       // Pass these instances a reference to the application's state.
       // Initialize or restore views within control view.
-      var controlViews = ["state-view", "set-view", "context-view"];
-      new ControlView(controlViews, self.state);
+      var controlContents = ["state", "set", "context"];
+      new ControlView(controlContents, self.state);
       new StateView(self.state);
       new SetView(self.state);
       new ContextView(self.state);
       // Initialize or restore views within exploration view.
-      var explorationViews = ["topology-view"];
-      new ExplorationView(explorationViews, self.state);
+      var explorationContents = ["topology"];
+      new ExplorationView(explorationContents, self.state);
       new TopologyView(self.state);
     }
 

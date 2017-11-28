@@ -36,6 +36,197 @@ United States of America
 // TODO: Just accept the calling variable as "self"...
 // TODO: classMethodName (self) {} instead of classMethodName (view) {}
 
+/**
+* Functionality of utility for managing elements in the document object model
+* (DOM).
+* This class stores methods for external utility.
+* This class does not store any attributes and does not require instantiation.
+*/
+class View {
+  /**
+  * Initializes a view's container.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of view's container
+  * element.
+  * @param {string} parameters.parent Identifier of view's parent element.
+  * @param {Object} parameters.self Instance of a class.
+  */
+  static initializeContainer({identifier, parent, self} = {}) {
+    // Select parent element of view's container element in document.
+    self.parent = self.document.getElementById(parent);
+    // Determine whether view's container exists in the document.
+    if (!self.document.getElementById(identifier)) {
+      // View's container does not exist in the document.
+      // Create view's container.
+      self.container = self.document.createElement("div");
+      self.parent.appendChild(self.container);
+      self.container.setAttribute("id", identifier);
+    } else {
+      // View's container exists in the document.
+      // Set reference to view's container.
+      self.container = self.document.getElementById(identifier);
+    }
+  }
+}
+
+
+
+/**
+* Interface to contain other interfaces for controls.
+*/
+class ControlView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Array<string>} contents Identifiers of contents within view.
+  * @param {Object} state Application's state.
+  */
+  constructor (contents, state) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(contents, self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Initialize view's container.
+    View.initializeContainer({
+      identifier: "control",
+      parent: "view",
+      self: self
+    });
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Array<string>} contents Identifiers of contents within view.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(contents, self) {
+    // Remove any extraneous content from view.
+    General.filterRemoveDocumentElements({
+      values: contents,
+      attribute: "id",
+      elements: self.container.children
+    });
+  }
+}
+/**
+* Interface to contain other interfaces for exploration.
+*/
+class ExplorationView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Array<string>} contents Identifiers of contents within view.
+  * @param {Object} state Application's state.
+  */
+  constructor (contents, state) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(contents, self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Initialize view's container.
+    View.initializeContainer({
+      identifier: "exploration",
+      parent: "view",
+      self: self
+    });
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Array<string>} contents Identifiers of contents within view.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(contents, self) {
+    // Remove any extraneous content from view.
+    General.filterRemoveDocumentElements({
+      values: contents,
+      attribute: "id",
+      elements: self.container.children
+    });
+  }
+}
+/**
+* Interface for controls to load and save application's state.
+*/
+class StateView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} state Application's state.
+  */
+  constructor (state) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Initialize view's container.
+    View.initializeContainer({
+      identifier: "state",
+      parent: "control",
+      self: self
+    });
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Array<string>} contents Identifiers of contents within view.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(contents, self) {
+    // This part should probably control the event listeners on the buttons.
+    // Remove any extraneous content from view.
+    General.filterRemoveDocumentElements({
+      values: contents,
+      attribute: "id",
+      elements: self.container.children
+    });
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 
 /**
 * Interface to select file, check and extract information about metabolic
@@ -48,13 +239,6 @@ class SourceView {
   * application.
   */
   constructor(model) {
-    // Reference current instance of class to transfer across changes in
-    // scope.
-    var self = this;
-    // Reference model of application's state.
-    self.model = model;
-    // Reference document object model.
-    self.document = document;
     // Select view in document object model.
     self.view = self.document.getElementById("view");
     // Remove any extraneous content within view.
@@ -1575,9 +1759,8 @@ class TopologyView {
     self.restoreView(self);
   }
   /**
-  * Initializes the interface's view.
-  * Controls aspects of view's composition and behavior that persist with
-  * changes to the application's state.
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
   * @param {Object} view Instance of interface's current view.
   */
   initializeView(view) {
@@ -1713,9 +1896,8 @@ class TopologyView {
     }
   }
   /**
-  * Restores the interface's view.
-  * Controls aspects of view's composition and behavior that vary with changes
-  * to the application's state.
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
   * @param {Object} view Instance of interface's current view.
   */
   restoreView(view) {
