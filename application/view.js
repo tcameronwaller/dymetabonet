@@ -28,14 +28,6 @@ Salt Lake City, Utah 84112
 United States of America
 */
 
-// TODO: Organize common procedures for constructor's and initializeContainer's within another function.
-// TODO: Simply calling these procedures from respective class instances and passing "self" will work.
-// TODO: Maybe group this general functionality within some sort of utility class...
-
-// TODO: Eliminate the self = view pattern.
-// TODO: Just accept the calling variable as "self"...
-// TODO: classMethodName (self) {} instead of classMethodName (view) {}
-
 /**
 * Functionality of utility for managing elements in the document object model
 * (DOM).
@@ -44,14 +36,14 @@ United States of America
 */
 class View {
   /**
-  * Initializes a view's container.
+  * Creates or sets reference to a view's container.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.identifier Identifier of view's container
-  * element.
-  * @param {string} parameters.parent Identifier of view's parent element.
+  * @param {string} parameters.identifier Identifier of element for view's
+  * container.
+  * @param {string} parameters.parent Identifier of parent element.
   * @param {Object} parameters.self Instance of a class.
   */
-  static initializeContainer({identifier, parent, self} = {}) {
+  static createReferenceContainer({identifier, parent, self} = {}) {
     // Select parent element of view's container element in document.
     self.parent = self.document.getElementById(parent);
     // Determine whether view's container exists in the document.
@@ -67,9 +59,23 @@ class View {
       self.container = self.document.getElementById(identifier);
     }
   }
+  /**
+  * Creates a button.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.name Name of element's reference within view.
+  * @param {string} parameters.label Label for element.
+  * @param {string} parameters.parent Name of parent element's reference within
+  * view.
+  * @param {Object} parameters.self Instance of a class.
+  */
+  static createButton({name, label, parent, self} = {}) {
+    self[name] = self.document.createElement("button");
+    self[parent].appendChild(self[name]);
+    self[name].textContent = label;
+  }
 }
 
-
+// Control view and views within control view.
 
 /**
 * Interface to contain other interfaces for controls.
@@ -101,59 +107,8 @@ class ControlView {
   */
   initializeView(self) {
     // Initialize view's container.
-    View.initializeContainer({
+    View.createReferenceContainer({
       identifier: "control",
-      parent: "view",
-      self: self
-    });
-  }
-  /**
-  * Restores aspects of the view's composition and behavior that vary with
-  * changes to the application's state.
-  * @param {Array<string>} contents Identifiers of contents within view.
-  * @param {Object} self Instance of a class.
-  */
-  restoreView(contents, self) {
-    // Remove any extraneous content from view.
-    General.filterRemoveDocumentElements({
-      values: contents,
-      attribute: "id",
-      elements: self.container.children
-    });
-  }
-}
-/**
-* Interface to contain other interfaces for exploration.
-*/
-class ExplorationView {
-  /**
-  * Initializes an instance of a class.
-  * @param {Array<string>} contents Identifiers of contents within view.
-  * @param {Object} state Application's state.
-  */
-  constructor (contents, state) {
-    // Set common references.
-    // Set reference to class' current instance to persist across scopes.
-    var self = this;
-    // Set reference to application's state.
-    self.state = state;
-    // Set reference to document object model (DOM).
-    self.document = document;
-    // Control view's composition and behavior.
-    // Initialize view.
-    self.initializeView(self);
-    // Restore view.
-    self.restoreView(contents, self);
-  }
-  /**
-  * Initializes aspects of the view's composition and behavior that do not vary
-  * with changes to the application's state.
-  * @param {Object} self Instance of a class.
-  */
-  initializeView(self) {
-    // Initialize view's container.
-    View.initializeContainer({
-      identifier: "exploration",
       parent: "view",
       self: self
     });
@@ -201,10 +156,113 @@ class StateView {
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-    // Initialize view's container.
-    View.initializeContainer({
+    // Create or set reference to view's container.
+    View.createReferenceContainer({
       identifier: "state",
       parent: "control",
+      self: self
+    });
+    // Determine whether the view's container is empty.
+    if (!self.container.children) {
+      // View's container is empty.
+      // Create text.
+      // TODO: Create container for the text label... the actual text will change as state changes...
+      // Create and activate file selector.
+      //if (!self.container.querySelector("input")) {}
+      self.fileSelector = self.document.createElement("input");
+      self.container.appendChild(self.fileSelector);
+      self.fileSelector.setAttribute("type", "file");
+      self.fileSelector.addEventListener("change", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.submitSource(event.currentTarget.files[0], self.state);
+      });
+      // Create and activate buttons.
+      View.createButton({
+        name: "save",
+        label: "save",
+        parent: "container",
+        self: self
+      });
+      self.save.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.saveState(self.state);
+      });
+      // Load button is a facade for the file selector.
+      View.createButton({
+        name: "load",
+        label: "load",
+        parent: "container",
+        self: self
+      });
+      self.load.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        self.fileSelector.click();
+      });
+      View.createButton({
+        name: "restore",
+        label: "restore",
+        parent: "container",
+        self: self
+      });
+      self.restore.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        // TODO: I need a new action, probably called loadRestoreState
+        // TODO: This action needs to respond appropriately according to the application's state...
+        Action.restoreState(self.state);
+      });
+
+    }
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // TODO: This part should probably control the event listeners on the buttons.
+  }
+}
+
+
+// Exploration view and views within exploration view.
+
+/**
+* Interface to contain other interfaces for exploration.
+*/
+class ExplorationView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Array<string>} contents Identifiers of contents within view.
+  * @param {Object} state Application's state.
+  */
+  constructor (contents, state) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(contents, self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Initialize view's container.
+    View.createReferenceContainer({
+      identifier: "exploration",
+      parent: "view",
       self: self
     });
   }
@@ -215,13 +273,56 @@ class StateView {
   * @param {Object} self Instance of a class.
   */
   restoreView(contents, self) {
-    // This part should probably control the event listeners on the buttons.
     // Remove any extraneous content from view.
     General.filterRemoveDocumentElements({
       values: contents,
       attribute: "id",
       elements: self.container.children
     });
+  }
+}
+/**
+* Interface for communication of summary information about selections.
+*/
+class SummaryView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} state Application's state.
+  */
+  constructor (state) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Initialize view's container.
+    View.createReferenceContainer({
+      identifier: "summary",
+      parent: "exploration",
+      self: self
+    });
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // TODO: This part should control the communication of summary info.
   }
 }
 
@@ -239,22 +340,6 @@ class SourceView {
   * application.
   */
   constructor(model) {
-    // Select view in document object model.
-    self.view = self.document.getElementById("view");
-    // Remove any extraneous content within view.
-    General.filterRemoveDocumentElements({
-      values: ["source"],
-      attribute: "id",
-      elements: self.view.children
-    });
-    // Create container for interface within view.
-    if (!self.document.getElementById("source")) {
-      self.container = self.document.createElement("div");
-      self.container.setAttribute("id", "source");
-      self.view.appendChild(self.container);
-    } else {
-      self.container = self.document.getElementById("source");
-    }
     // Remove all contents of container.
     General.removeDocumentChildren(self.container);
     //
@@ -351,43 +436,6 @@ class PersistenceView {
   * application.
   */
   constructor (model) {
-    // Reference current instance of class to transfer across changes in
-    // scope.
-    var self = this;
-    // Reference model of application's state.
-    self.model = model;
-    // Reference document object model.
-    self.document = document;
-    // Select view in document object model.
-    self.view = self.document.getElementById("view");
-    // Remove any extraneous content within view.
-    General.filterRemoveDocumentElements({
-      values: ["top", "bottom"],
-      attribute: "id",
-      elements: self.view.children
-    });
-    // Create container for interfaces within top of view.
-    if (!self.document.getElementById("top")) {
-      self.top = self.document.createElement("div");
-      self.top.setAttribute("id", "top");
-      self.view.appendChild(self.top);
-    } else {
-      self.top = self.document.getElementById("top");
-    }
-    // Remove any extraneous content within top.
-    General.filterRemoveDocumentElements({
-      values: ["persistence", "set"],
-      attribute: "id",
-      elements: self.top.children
-    });
-    // Create container for interface within top.
-    if (!self.document.getElementById("persistence")) {
-      self.container = self.document.createElement("div");
-      self.container.setAttribute("id", "persistence");
-      self.top.appendChild(self.container);
-    } else {
-      self.container = self.document.getElementById("persistence");
-    }
     // Remove all contents of container.
     General.removeDocumentChildren(self.container);
     //
@@ -537,10 +585,6 @@ class SetView {
       // TODO: This control is temporary for the sake of demonstration on 10 October 2017.
       // Create and control for compartmentalization.
       self.createActivateCompartmentalizationControl(self);
-
-
-
-
       // Create table's body.
       self.tableBody = self.document.createElement("tbody");
       self.table.appendChild(self.tableBody);
@@ -560,13 +604,8 @@ class SetView {
       self.reactionsControl = self
       .document.getElementById("sets-entities-reactions");
       self.filterControl = self.document.getElementById("sets-filter");
-
-
       self.compartmentalizationControl = self
       .document.getElementById("compartmentalization");
-
-
-
       self.tableBody = self.container.getElementsByTagName("tbody").item(0);
     }
   }

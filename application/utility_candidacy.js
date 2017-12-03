@@ -1324,8 +1324,8 @@ class Candidacy {
         reactionsSets: reactionsSets,
         reactions: reactions,
         compartmentalization: compartmentalization,
-        metabolitesSimplifications: metabolitesSimplifications
-        reactionsSimplifications: collection,
+        metabolitesSimplifications: metabolitesSimplifications,
+        reactionsSimplifications: collection
       });
     }, reactionsSimplifications);
   }
@@ -1478,8 +1478,8 @@ class Candidacy {
       // and include with information about simplifications for other reactions.
       return Candidacy.collectMetaboliteImplicitSimplification({
         metaboliteCandidate: metaboliteCandidate,
-        reactionsSimplifications: reactionsSimplifications
-        metabolitesSimplifications: collection,
+        reactionsSimplifications: reactionsSimplifications,
+        metabolitesSimplifications: collection
       });
     }, metabolitesSimplifications);
   }

@@ -36,8 +36,7 @@ United States of America
 * it.
 */
 (function () {
-
-  //initializeInterface();
-  var model = new Model();
-  Action.initializeApplication(model);
+  // Initialize application.
+  var state = new State();
+  Action.initializeApplication(state);
 })();

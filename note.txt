@@ -4,6 +4,22 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+2 December 2017
+
+----------
+State View
+
+The restore button needs to call a single action.
+
+That single action needs to evaluate the application's state and perform the appropriate action.
+
+1. clean raw model
+2. extract information from clean model
+3. restore application to a previous state
+
+I also need some sort of flag to indicate whether the model is raw or clean.
+
+--------------------------------------------------
 22 November 2017
 
 ----------
