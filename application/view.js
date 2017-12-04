@@ -378,6 +378,8 @@ class StateView {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
+    // Create view's variant elements.
+    // Activate variant behavior of view's elements.
     // Determine whether the application's state includes a source file.
     if (Model.determineSource(self.state)) {
       // Application's state includes a source file.
@@ -437,9 +439,9 @@ class SetView {
       self.createActivateRestore(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
-      // Create list of processes.
+      // Create list for sets by processes.
       self.createSetsList("processes", self);
-      // Create list of compartments.
+      // Create list for sets by compartments.
       self.createSetsList("compartments", self);
 
       // TODO: I haven't figured out the stuff below here yet...
@@ -475,10 +477,17 @@ class SetView {
       // View's container is not empty.
       // Set references to view's variant elements.
       self.metabolites = self
-      .document.getElementById("sets-entities-metabolites");
+      .document.getElementById("set-metabolites");
       self.reactions = self
-      .document.getElementById("sets-entities-reactions");
-      self.filter = self.document.getElementById("sets-filter");
+      .document.getElementById("set-reactions");
+      self.filter = self.document.getElementById("set-filter");
+      self.processesContainer = self.document.getElementById("set-processes");
+      self.compartmentsContainer = self
+      .document.getElementById("set-compartments");
+      self.processes = self
+      .processesContainer.getElementsByTagName("ul").item(0);
+      self.compartments = self
+      .compartmentsContainer.getElementsByTagName("ul").item(0);
     }
   }
   /**
@@ -488,7 +497,7 @@ class SetView {
   */
   createActivateEntitiesControl(entities, self) {
     // Create control for type of entities.
-    var identifier = "sets-entities-" + entities;
+    var identifier = "set-" + entities;
     self[entities] = View.createRadioButtonLabel({
       identifier: identifier,
       value: entities,
@@ -511,7 +520,7 @@ class SetView {
   */
   createActivateFilterControl(self) {
     // Create control for filter.
-    var identifier = "sets-filter";
+    var identifier = "set-filter";
     self.filter = View.createCheckLabel({
       identifier: identifier,
       value: "filter",
@@ -551,29 +560,297 @@ class SetView {
   * @param {Object} self Instance of a class.
   */
   createSetsList(sets, self) {
-    // Create container.
-    var identifier = "sets-" + sets;
-    var reference = sets + "-container";
-    self[reference] = self.document.createElement("div");
-    self.container.appendChild(self[reference]);
-    self[reference].setAttribute("id", identifier);
     // Create title.
     var title = self.document.createElement("span");
     self.container.appendChild(title);
     title.textContent = sets;
     // Create break.
     self.container.appendChild(self.document.createElement("br"));
+    // Create container.
+    var identifier = "set-" + sets;
+    var reference = sets + "Container";
+    self[reference] = self.document.createElement("div");
+    self.container.appendChild(self[reference]);
+    self[reference].setAttribute("id", identifier);
+    self[reference].classList.add("menu");
     // Create list.
     self[sets] = self.document.createElement("ul");
-    self.container.appendChild(self[sets]);
+    self[reference].appendChild(self[sets]);
   }
-
   /**
   * Restores aspects of the view's composition and behavior that vary with
   * changes to the application's state.
   * @param {Object} self Instance of a class.
   */
-  restoreView(self) {}
+  restoreView(self) {
+    // Create view's variant elements.
+    // Activate variant behavior of view's elements.
+    self.metabolites.checked = SetView
+    .determineEntityMatch("metabolites", self.state);
+    self.reactions.checked = SetView
+    .determineEntityMatch("reactions", self.state);
+    self.filter.checked = SetView.determineFilter(self.state);
+    //self.compartmentalizationControl.checked = self.determineCompartmentalization(self);
+
+    // Create and activate summaries of sets in lists.
+    self.createActivateSetsLists(self);
+  }
+  /**
+  * Determines whether a type of entities matches the value in the application's
+  * state.
+  * @param {string} type Type of entities, metabolites or reactions.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether type of entities matches the value in the
+  * application's state.
+  */
+  static determineEntityMatch(type, state) {
+    var value = state.setsEntities;
+    return value === type;
+  }
+  /**
+  * Determines whether the filter has a true value in the application's state.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether filter has a true value in the application's
+  * state.
+  */
+  static determineFilter(state) {
+    return state.setsFilter;
+  }
+  /**
+  * Creates and activates summaries of sets in lists.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateSetsLists(self) {
+    // Create and activate summaries of sets for processes.
+    self.createActivateSetsList("processes", self);
+    // Create and activate summaries of sets for compartments.
+    self.createActivateSetsList("compartments", self);
+
+    if (false) {
+      // Select summary table's body.
+      var body = d3.select(self.tableBody);
+      // Append rows to table with association to data.
+      var dataRows = body.selectAll("tr").data(self.model.setsSummary);
+      dataRows.exit().remove();
+      var newRows = dataRows.enter().append("tr");
+      var rows = newRows.merge(dataRows);
+      // Append cells to table with association to data.
+      var dataCells = rows.selectAll("td").data(function (element, index) {
+        // Organize data for table cells in each row.
+        return [].concat(
+          {
+            type: "attribute",
+            attribute: element.attribute,
+            values: element.values
+          },
+          {
+            type: "value",
+            attribute: element.attribute,
+            values: element.values
+          }
+        );
+      });
+      dataCells.exit().remove();
+      var newCells = dataCells.enter().append("td");
+      self.tableBodyCells = newCells.merge(dataCells);
+      // Create and activate summary table's cells.
+      self.createActivateSummaryBodyCellsAttributes(self);
+      self.createActivateSummaryBodyCellsValues(self);
+    }
+  }
+  /**
+  * Creates and activates summaries of sets in a list for a specific attribute.
+  * @param {string} sets Type of sets, processes or compartments.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateSetsList(sets, self) {
+    // TODO: Temporary work-around... I need to change the structure of the sets' summary.
+    // TODO: I need an easy way to determine the maximum count of all the sets.
+    // TODO: Instead of the total that I included with each value before, do a maximum with each value.
+    // TODO: I need to decide how I want to structure these data now...
+    if (sets === "processes") {
+      var index = 0;
+      var max = 714;
+    } else if (sets === "compartments") {
+      var index = 1;
+      var max = 1918;
+    }
+    // Create graphs to represent sets' cardinalities.
+    // It is possible to contain a graph's visual representations and textual
+    // annotations within separate groups in order to segregate these within
+    // separate layers.
+    // This strategy avoids occlusion of textual annotations by visual
+    // representations.
+    // In these graphs, this occlusion is impossible, so a simpler structure is
+    // preferrable.
+    // Graph structure.
+    // - graphs (scalable vector graphical container)
+    // -- bases (rectangle)
+    // -- barGroups (group)
+    // --- barTitles (title)
+    // --- barMarks (rectangle)
+    // --- barLabels (text)
+
+    // Create items in list.
+    // Select parent.
+    var list = d3.select(self[sets]);
+    // Create children elements by association to data.
+    var dataElements = list
+    .selectAll("li").data(self.state.setsSummary[index].values);
+    dataElements.exit().remove();
+    var novelElements = dataElements.enter().append("li");
+    var items = novelElements.merge(dataElements);
+    // Create graph for each item in list.
+    // Create children elements by association to data.
+    var dataElements = items
+    .selectAll("svg").data(function (element, index, nodes) {
+      return [element];
+    });
+    dataElements.exit().remove();
+    var novelElements = dataElements.enter().append("svg");
+    var graphs = novelElements.merge(dataElements);
+    // Assign attributes to elements.
+    graphs.classed("graph", true);
+    // Determine graphs' dimensions.
+    var graph = self[sets].getElementsByClassName("graph").item(0);
+    self.graphWidth = General.determineElementDimension(graph, "width");
+    self.graphHeight = General.determineElementDimension(graph, "height");
+    // Create base for each graph.
+    // Create children elements by association to data.
+    var dataElements = graphs
+    .selectAll("rect").data(function (element, index, nodes) {
+      return [element];
+    });
+    dataElements.exit().remove();
+    var novelElements = dataElements.enter().append("rect");
+    var bases = novelElements.merge(dataElements);
+    // Assign attributes to elements.
+    bases.classed("base", true);
+    // Create children elements by association to data.
+    var dataElements = graphs
+    .selectAll("g").data(function (element, index, nodes) {
+      return [element];
+    });
+    dataElements.exit().remove();
+    var novelElements = dataElements.enter().append("g");
+    var barGroups = novelElements.merge(dataElements);
+    // Assign attributes to elements.
+    barGroups.classed("group", true);
+    // Create children elements by association to data.
+    var dataElements = barGroups
+    .selectAll("title").data(function (element, index, nodes) {
+      return [element];
+    });
+    dataElements.exit().remove();
+    var novelElements = dataElements.enter().append("title");
+    var barTitles = novelElements.merge(dataElements);
+    // Assign attributes to elements.
+    barTitles.text(function (element, index, nodes) {
+      var name = SetView.accessAttributeValueName({
+        attribute: element.attribute,
+        value: element.value,
+        state: self.state
+      });
+      var message = (name + " (" + element.count + ")");
+      return message;
+    });
+    // Create children elements by association to data.
+    var dataElements = barGroups
+    .selectAll("rect").data(function (element, index, nodes) {
+      return [element];
+    });
+    dataElements.exit().remove();
+    var novelElements = dataElements.enter().append("rect");
+    var barMarks = novelElements.merge(dataElements);
+    // Assign attributes to elements.
+    barMarks
+    .classed("mark", true)
+    .classed("normal", function (element, index, nodes) {
+      return !SetView.determineSetSelection({
+        value: element.value,
+        attribute: element.attribute,
+        state: self.state
+      });
+    })
+    .classed("emphasis", function (element, index, nodes) {
+      return SetView.determineSetSelection({
+        value: element.value,
+        attribute: element.attribute,
+        state: self.state
+      });
+    })
+    .attr("width", function (element, index) {
+      // Determine scale between value and graph's dimension.
+      var scale = d3
+      .scaleLinear()
+      .domain([0, max])
+      .range([0, self.graphWidth]);
+      return scale(element.count);
+    })
+    .attr("height", self.graphHeight);
+    // Create children elements by association to data.
+    var dataElements = barGroups
+    .selectAll("text").data(function (element, index, nodes) {
+      return [element];
+    });
+    dataElements.exit().remove();
+    var novelElements = dataElements.enter().append("text");
+    var barLabels = novelElements.merge(dataElements);
+    // Assign attributes to elements.
+    barLabels
+    .classed("label", true)
+    .text(function (element, index, nodes) {
+      // Determine width of available space.
+      var width = self.graphWidth;
+      // Determine dimension of label's characters.
+      var documentElement = nodes[index];
+      var character = General
+      .determineElementDimension(documentElement, "fontSize");
+      // Determine count of characters that will fit on available space.
+      var count = (width / character) * 1.5;
+      // Prepare name.
+      var name = SetView.accessAttributeValueName({
+        attribute: element.attribute,
+        value: element.value,
+        state: self.state
+      });
+      return name.slice(0, count);
+    })
+    .attr("transform", function (element, index) {
+      var x = 3;
+      var y = self.graphHeight / 2;
+      return "translate(" + x + "," + y + ")";
+    });
+  }
+  /**
+  * Accesses the name of a value of an attribute.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.attribute Name of an attribute.
+  * @param {string} parameters.value Identifier of a value.
+  * @param {Object} parameters.state Application's state.
+  * @returns {string} Name of the value of the attribute.
+  */
+  static accessAttributeValueName({attribute, value, state} = {}) {
+    return state[attribute][value].name;
+  }
+  /**
+  * Determines whether an attribute's value has a selection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.value Identifier of a value.
+  * @param {string} parameters.attribute Name of an attribute.
+  * @param {Object} parameters.state Application's state.
+  * @returns {boolean} Whether a selection exists for the value of the
+  * attribute.
+  */
+  static determineSetSelection({
+    value, attribute, state
+  } = {}) {
+    return Attribution.determineSetsFilter({
+      value: value,
+      attribute: attribute,
+      setsFilters: state.setsFilters
+    });
+  }
 }
 
 
@@ -758,6 +1035,8 @@ class SetViewOld {
     }
   }
 
+
+  // TODO: I need to move the compartmentalization control...
   /**
   * Creates and activates control to select whether to represent
   * compartmentalization in the network.
@@ -786,74 +1065,8 @@ class SetViewOld {
     compartmentalizationLabel.setAttribute("for", identifier);
     compartmentalizationLabel.textContent = "compartmentalization";
   }
-  /**
-  * Restores the menu to summarize sets' cardinalities.
-  * @param {Object} view Instance of interface's current view.
-  */
-  restoreSummaryMenu(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and restore elements that vary across interactive, dynamic changes
-    // to the application's state.
-    // Activate behavior that varies across interactive, dynamic changes to the
-    // application's state.
-    // Restore the summary menu to match the application's dynamic state.
-    // Restore state's of controls.
-    self.metabolitesControl.checked = self
-    .determineEntityMatch("metabolites", self);
-    self.reactionsControl.checked = self
-    .determineEntityMatch("reactions", self);
-    self.filterControl.checked = self.determineFilter(self);
-    self.compartmentalizationControl.checked = self
-    .determineCompartmentalization(self);
-    // Create and activate data-dependent summary's menu.
-    self.createActivateSummaryBody(self);
-  }
-  /**
-  * Creates and activates body of summary table.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateSummaryBody(view) {
 
-    // TODO: Attribute Search Menu... make them always present...
-    // TODO: Handle text overflow of options in search menu.
-    // TODO: Handle scrolling through options in search menu.
-    // TODO: Include some indicator of selection status in options in search menu.
 
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Select summary table's body.
-    var body = d3.select(self.tableBody);
-    // Append rows to table with association to data.
-    var dataRows = body.selectAll("tr").data(self.model.setsSummary);
-    dataRows.exit().remove();
-    var newRows = dataRows.enter().append("tr");
-    var rows = newRows.merge(dataRows);
-    // Append cells to table with association to data.
-    var dataCells = rows.selectAll("td").data(function (element, index) {
-      // Organize data for table cells in each row.
-      return [].concat(
-        {
-          type: "attribute",
-          attribute: element.attribute,
-          values: element.values
-        },
-        {
-          type: "value",
-          attribute: element.attribute,
-          values: element.values
-        }
-      );
-    });
-    dataCells.exit().remove();
-    var newCells = dataCells.enter().append("td");
-    self.tableBodyCells = newCells.merge(dataCells);
-    // Create and activate summary table's cells.
-    self.createActivateSummaryBodyCellsAttributes(self);
-    self.createActivateSummaryBodyCellsValues(self);
-  }
   /**
   * Creates and activates cells for data's attributes in body of summary table.
   * @param {Object} view Instance of interface's current view.
@@ -1025,67 +1238,7 @@ class SetViewOld {
   * @param {Object} view Instance of interface's current view.
   */
   createActivateSummaryBodyCellsValues(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Select cells for data's values.
-    self.tableBodyCellsValues = self
-    .tableBodyCells.filter(function (data, index) {
-      return data.type === "value";
-    });
-    // Assign attributes to cells in value column.
-    self.tableBodyCellsValues.classed("value", true);
-    // Create graphs to represent sets' cardinalities.
-    // It is possible to contain a graph's visual representations and textual
-    // annotations within separate groups in order to segregate these within
-    // separate layers.
-    // This strategy avoids occlusion of textual annotations by visual
-    // representations.
-    // In these graphs, this occlusion is impossible, so a simpler structure is
-    // preferrable.
-    // Graph structure.
-    // - graph (scalable vector graphical container)
-    // -- barsGroup (group)
-    // --- barGroups (groups)
-    // ---- barTitles (titles)
-    // ---- barMarks (rectangles)
-    // ---- barLabels (text)
-    // Graphs need access to the same data as their parent cells without any
-    // transformation.
-    // Append graphs to the enter selections to avoid replication upon
-    // restorations.
-    var dataGraphs = self
-    .tableBodyCellsValues.selectAll("svg").data(function (element, index) {
-      return [element];
-    });
-    dataGraphs.exit().remove();
-    var novelGraphs = dataGraphs.enter().append("svg");
-    var graphs = novelGraphs.merge(dataGraphs);
-    graphs.classed("graph", true);
-    // Determine graphs' dimensions of graphs.
-    // Set references graphs' dimensions.
-    var graph = self.tableBody.getElementsByClassName("graph").item(0);
-    self.graphWidth = General.determineElementDimension(graph, "width");
-    self.graphHeight = General.determineElementDimension(graph, "height");
-    // Create bars within graphs to represent sets' cardinalities.
-    // Create groups to contain all bars' visual representations and textual
-    // annotations.
-    var dataBarsGroup = graphs.selectAll("g").data(function (element, index) {
-      return [element];
-    });
-    dataBarsGroup.exit().remove();
-    var novelBarsGroup = dataBarsGroup.enter().append("g");
-    var barsGroup = novelBarsGroup.merge(dataBarsGroup);
-    // Create groups to contain individual bars' visual representations and
-    // textual annotations.
-    var dataBarGroups = barsGroup
-    .selectAll("g").data(function (element, index) {
-      return element.values;
-    });
-    dataBarGroups.exit().remove();
-    var novelBarGroups = dataBarGroups.enter().append("g");
-    self.tableBodyCellsValuesGraphBarGroups = novelBarGroups
-    .merge(dataBarGroups);
+
     // Assign attributes.
     self.tableBodyCellsValuesGraphBarGroups
     .classed("group", true)
@@ -1099,93 +1252,8 @@ class SetViewOld {
       var y = 0;
       return "translate(" + x + "," + y + ")";
     });
-    // Create titles for individual bars.
-    var dataBarTitles = self.tableBodyCellsValuesGraphBarGroups
-    .selectAll("title").data(function (element, index) {
-      return [element];
-    });
-    dataBarTitles.exit().remove();
-    var novelBarTitles = dataBarTitles.enter().append("title");
-    var barTitles = novelBarTitles.merge(dataBarTitles);
-    // Assign attributes.
-    barTitles.text(function (element, index, nodes) {
-      var name = SetView.determineAttributeValueName({
-        attribute: element.attribute,
-        valueIdentifier: element.value,
-        model: self.model
-      });
-      var message = (name + " (" + element.count + ")");
-      return message;
-    });
-    // Create marks for individual bars.
-    var dataBarMarks = self.tableBodyCellsValuesGraphBarGroups
-    .selectAll("rect").data(function (element, index) {
-      return [element];
-    });
-    dataBarMarks.exit().remove();
-    var novelBarMarks = dataBarMarks.enter().append("rect");
-    var barMarks = novelBarMarks.merge(dataBarMarks);
-    // Assign attributes.
-    barMarks
-    .classed("mark", true)
-    .classed("normal", function (element, index, nodes) {
-      return !SetView.determineSetSelection({
-        value: element.value,
-        attribute: element.attribute,
-        model: self.model
-      });
-    })
-    .classed("emphasis", function (element, index, nodes) {
-      return SetView.determineSetSelection({
-        value: element.value,
-        attribute: element.attribute,
-        model: self.model
-      });
-    })
-    .attr("width", function (element, index) {
-      // Determine scale between value and graph's dimension.
-      var scale = d3
-      .scaleLinear()
-      .domain([0, element.total])
-      .range([0, self.graphWidth]);
-      return scale(element.count);
-    })
-    .attr("height", self.graphHeight);
-    // Create labels for individual bars.
-    var dataBarLabels = self.tableBodyCellsValuesGraphBarGroups
-    .selectAll("text").data(function (element, index) {
-      return [element];
-    });
-    dataBarLabels.exit().remove();
-    var novelBarLabels = dataBarLabels.enter().append("text");
-    var barLabels = novelBarLabels.merge(dataBarLabels);
-    // Assign attributes.
-    barLabels
-    .classed("label", true)
-    .text(function (element, index, nodes) {
-      // Determine width of bar's rectangle.
-      var scale = d3
-      .scaleLinear().domain([0, element.total]).range([0, self.graphWidth]);
-      var width = scale(element.count);
-      // Determine dimension of label's characters.
-      var documentElement = nodes[index];
-      var character = General
-      .determineElementDimension(documentElement, "fontSize");
-      // Determine count of characters that will fit on bar's rectangle.
-      var count = (width / character) * 1.5;
-      // Prepare name.
-      var name = SetView.determineAttributeValueName({
-        attribute: element.attribute,
-        valueIdentifier: element.value,
-        model: self.model
-      });
-      return name.slice(0, count);
-    })
-    .attr("transform", function (element, index) {
-      var x = 3;
-      var y = self.graphHeight / 2;
-      return "translate(" + x + "," + y + ")";
-    });
+
+
     // Activate cells for data's values.
     self.activateSummaryBodyCellsValues(self);
   }
@@ -1211,31 +1279,6 @@ class SetViewOld {
     });
   }
   /**
-  * Determines whether or not a specific type of entities matches the selection
-  * in the application's state.
-  * @param {string} match Type of entities, metabolites or reactions, to compare
-  * to the selection in application's state.
-  * @param {Object} view Instance of interface's current view.
-  */
-  determineEntityMatch(match, view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    var selection = self.model.setsEntities;
-    return selection === match;
-  }
-  /**
-  * Determines the current selection in the application's state of whether to
-  * filter the menu to summarize sets' cardinalities.
-  * @param {Object} view Instance of interface's current view.
-  */
-  determineFilter(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    return self.model.setsFilter;
-  }
-  /**
   * Determines the current selection in the application's state of whether to
   * represent compartmentalization in the network.
   * @param {Object} view Instance of interface's current view.
@@ -1245,42 +1288,6 @@ class SetViewOld {
     // in scope.
     var self = view;
     return self.model.compartmentalization;
-  }
-  /**
-  * Determines the name of an attribute's value from references in the model of
-  * the application's state.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.attribute Name of an attribute.
-  * @param {string} parameters.valueIdentifier Identifier of a value of the
-  * attribute.
-  * @param {Object} parameters.model Model of the application's comprehensive
-  * state.
-  * @returns {string} Name of the value of the attribute.
-  */
-  static determineAttributeValueName({
-    attribute, valueIdentifier, model
-  } = {}) {
-    return model[attribute][valueIdentifier].name;
-  }
-  /**
-  * Determines whether an attribute's value has a selection from references in
-  * the model of the application's state.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.value Identifier of a value of the attribute.
-  * @param {string} parameters.attribute Name of an attribute.
-  * @param {Object} parameters.model Model of the application's comprehensive
-  * state.
-  * @returns {boolean} Whether a selection exists for the value of the
-  * attribute.
-  */
-  static determineSetSelection({
-    value, attribute, model
-  } = {}) {
-    return Attribution.determineSetsFilter({
-      value: value,
-      attribute: attribute,
-      setsFilters: model.setsFilters
-    });
   }
 }
 

@@ -90,19 +90,69 @@ flex-direction: column;
 /* State View */
 /******************************************************************************/
 
+#state {
+  background-color: rgba(150, 150, 150, 1);
+  display: block;
+  height: 1.25cm;
+  width: 100%;
+}
+
 #state input {
   display: none;
 }
 
 #state button {
-  width: 1.5cm;
+  width: 1.7cm;
 }
 
-#state {
-  background-color: rgba(150, 150, 150, 1);
+/******************************************************************************/
+/* Set View */
+/******************************************************************************/
+
+#set {
+  background-color: rgba(200, 200, 200, 1);
   display: block;
+  width: 100%;
+}
+
+#set div.menu {
+  background-color: rgba(255, 255, 255, 1);
   height: 3cm;
-  width: 90%;
+  width: 100%;
+  overflow: auto;
+}
+
+#set div.menu ul {
+  list-style-type: none;
+  list-style-position: outside;
+  padding-left: 0.1cm;
+}
+
+#set div.menu ul li svg.graph {
+  height: 0.75cm;
+  width: 100%;
+}
+
+#set div.menu ul li svg.graph rect.base {
+  fill: rgba(200, 200, 200, 1);
+  height: 100%;
+  width: 100%;
+}
+
+#set div.menu ul li svg.graph g rect.mark.normal {
+  fill: rgba(0, 100, 255, 1);
+}
+
+#set div.menu ul li svg.graph g rect.mark.emphasis {
+  fill: rgba(255, 100, 0, 1);
+}
+
+#set div.menu ul li svg.graph g text.label {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 13px;
+  fill: rgba(0, 0, 0, 1);
 }
 
 /******************************************************************************/
@@ -125,13 +175,6 @@ flex-direction: column;
 /* Set View */
 /******************************************************************************/
 
-#set {
-  /*display: inline;*/
-  /*float: left;*/
-  background-color: rgba(50, 50, 50, 1);
-  flex: 1;
-  font-family: sans-serif;
-}
 
 #set table {
   border-collapse: collapse;

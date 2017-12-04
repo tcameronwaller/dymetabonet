@@ -191,15 +191,63 @@ class Action {
     var duration = Math.round(endTime - startTime);
     console.log("process duration: " + duration + " milliseconds");
   }
+  /**
+  * Restores sets' summary to initial state.
+  * @param {Object} state Application's state.
+  */
+  static restoreSetsSummary(state) {
+    // Initialize filters against entities' sets.
+    var entitiesSetsFilters = Action.initializeEntitiesSetsFilters();
+    // Determine current entities' attribution to sets.
+    var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
+      setsFilters: entitiesSetsFilters.setsFilters,
+      totalReactionsSets: state.totalReactionsSets,
+      totalMetabolitesSets: state.totalMetabolitesSets,
+      reactions: state.reactions
+    });
+    // Initialize selections that influence sets' cardinalities.
+    var setsCardinalitiesSelections = Action
+    .initializeSetsCardinalitiesSelections();
+    // Determine sets' cardinalities.
+    var setsCardinalitiesSummary = Cardinality
+    .determineSetsCardinalitiesSummary({
+      setsEntities: setsCardinalitiesSelections.setsEntities,
+      setsFilter: setsCardinalitiesSelections.setsFilter,
+      accessReactionsSets: currentEntitiesSets.accessReactionsSets,
+      accessMetabolitesSets: currentEntitiesSets.accessMetabolitesSets,
+      filterReactionsSets: currentEntitiesSets.filterReactionsSets,
+      filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets
+    });
 
+    // TODO: Any change to filters should also change the candidate entities...
 
+    // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
+    // Initialize network's elements.
+    //var networkElementsAttributes = Action
+    //.initializeNetworkElementsAttributes();
+
+    // Compile novel values of attributes.
+    var attributesValues = Object.assign(
+      {},
+      entitiesSetsFilters,
+      currentEntitiesSets,
+      setsCardinalitiesSelections,
+      setsCardinalitiesSummary
+    );
+    // Submit novel values of attributes to the model of the application's
+    // state.
+    Action.submitAttributes({
+      attributesValues: attributesValues,
+      state: state
+    });
+  }
   /**
   * Changes the selection of entities of interest for the sets' summary.
-  * @param {Object} model Model of the application's comprehensive state.
+  * @param {Object} state Application's state.
   */
-  static changeSetsEntities(model) {
+  static changeSetsEntities(state) {
     // Determine entities of interest.
-    var previousEntities = model.setsEntities;
+    var previousEntities = state.setsEntities;
     if (previousEntities === "metabolites") {
       var currentEntities = "reactions";
     } else if (previousEntities === "reactions") {
@@ -209,11 +257,11 @@ class Action {
     var setsCardinalitiesSummary = Cardinality
     .determineSetsCardinalitiesSummary({
       setsEntities: currentEntities,
-      setsFilter: model.setsFilter,
-      accessReactionsSets: model.accessReactionsSets,
-      accessMetabolitesSets: model.accessMetabolitesSets,
-      filterReactionsSets: model.filterReactionsSets,
-      filterMetabolitesSets: model.filterMetabolitesSets
+      setsFilter: state.setsFilter,
+      accessReactionsSets: state.accessReactionsSets,
+      accessMetabolitesSets: state.accessMetabolitesSets,
+      filterReactionsSets: state.filterReactionsSets,
+      filterMetabolitesSets: state.filterMetabolitesSets
     });
 
     // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
@@ -234,16 +282,16 @@ class Action {
     // state.
     Action.submitAttributes({
       attributesValues: attributesValues,
-      model: model
+      state: state
     });
   }
   /**
   * Changes the selection of filter for the sets' summary.
-  * @param {Object} model Model of the application's comprehensive state.
+  * @param {Object} state Application's state.
   */
-  static changeSetsFilter(model) {
+  static changeSetsFilter(state) {
     // Determine filter.
-    var previousFilter = model.setsFilter;
+    var previousFilter = state.setsFilter;
     if (previousFilter) {
       var currentFilter = false;
     } else {
@@ -252,12 +300,12 @@ class Action {
     // Determine sets' cardinalities.
     var setsCardinalitiesSummary = Cardinality
     .determineSetsCardinalitiesSummary({
-      setsEntities: model.setsEntities,
+      setsEntities: state.setsEntities,
       setsFilter: currentFilter,
-      accessReactionsSets: model.accessReactionsSets,
-      accessMetabolitesSets: model.accessMetabolitesSets,
-      filterReactionsSets: model.filterReactionsSets,
-      filterMetabolitesSets: model.filterMetabolitesSets
+      accessReactionsSets: state.accessReactionsSets,
+      accessMetabolitesSets: state.accessMetabolitesSets,
+      filterReactionsSets: state.filterReactionsSets,
+      filterMetabolitesSets: state.filterMetabolitesSets
     });
 
     // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
@@ -278,18 +326,19 @@ class Action {
     // state.
     Action.submitAttributes({
       attributesValues: attributesValues,
-      model: model
+      state: state
     });
   }
+
+
   /**
   * Selects an attribute's value.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.value Value of attribute in current selection.
   * @param {string} parameters.attribute Attribute in current selection.
-  * @param {Object} parameters.model Model of the application's comprehensive
-  * state.
+  * @param {Object} state Application's state.
   */
-  static selectSetsAttributeValue({value, attribute, model} = {}) {
+  static selectSetsAttributeValue({value, attribute, state} = {}) {
     // Record set's selection for filters.
     var setsFilters = Attribution.recordSetSelectionFilters({
       value: value,
@@ -338,56 +387,8 @@ class Action {
       model: model
     });
   }
-  /**
-  * Restores sets' summary to initial state.
-  * @param {Object} model Model of the application's comprehensive state.
-  */
-  static restoreSetsSummary(model) {
-    // Initialize filters against entities' sets.
-    var entitiesSetsFilters = Action.initializeEntitiesSetsFilters();
-    // Determine current entities' attribution to sets.
-    var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
-      setsFilters: entitiesSetsFilters.setsFilters,
-      totalReactionsSets: model.totalReactionsSets,
-      totalMetabolitesSets: model.totalMetabolitesSets,
-      reactions: model.reactions
-    });
-    // Initialize selections that influence sets' cardinalities.
-    var setsCardinalitiesSelections = Action
-    .initializeSetsCardinalitiesSelections();
-    // Determine sets' cardinalities.
-    var setsCardinalitiesSummary = Cardinality
-    .determineSetsCardinalitiesSummary({
-      setsEntities: setsCardinalitiesSelections.setsEntities,
-      setsFilter: setsCardinalitiesSelections.setsFilter,
-      accessReactionsSets: currentEntitiesSets.accessReactionsSets,
-      accessMetabolitesSets: currentEntitiesSets.accessMetabolitesSets,
-      filterReactionsSets: currentEntitiesSets.filterReactionsSets,
-      filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets
-    });
 
-    // TODO: Any change to filters should also change the candidate entities...
 
-    // TODO: Optionally re-initialize network definitions to avoid re-drawing the same network.
-    // Initialize network's elements.
-    //var networkElementsAttributes = Action
-    //.initializeNetworkElementsAttributes();
-
-    // Compile novel values of attributes.
-    var attributesValues = Object.assign(
-      {},
-      entitiesSetsFilters,
-      currentEntitiesSets,
-      setsCardinalitiesSelections,
-      setsCardinalitiesSummary
-    );
-    // Submit novel values of attributes to the model of the application's
-    // state.
-    Action.submitAttributes({
-      attributesValues: attributesValues,
-      model: model
-    });
-  }
   /**
   * Changes the specification of compartmentalization for the network's
   * assembly.
