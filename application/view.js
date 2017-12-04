@@ -38,40 +38,182 @@ class View {
   /**
   * Creates or sets reference to a view's container.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.identifier Identifier of element for view's
-  * container.
+  * @param {string} parameters.identifier Identifier of element.
   * @param {string} parameters.parent Identifier of parent element.
-  * @param {Object} parameters.self Instance of a class.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
   */
-  static createReferenceContainer({identifier, parent, self} = {}) {
+  static createReferenceContainer({
+    identifier, parent, documentReference
+  } = {}) {
     // Select parent element of view's container element in document.
-    self.parent = self.document.getElementById(parent);
+    var parent = documentReference.getElementById(parent);
     // Determine whether view's container exists in the document.
-    if (!self.document.getElementById(identifier)) {
+    if (!documentReference.getElementById(identifier)) {
       // View's container does not exist in the document.
       // Create view's container.
-      self.container = self.document.createElement("div");
-      self.parent.appendChild(self.container);
-      self.container.setAttribute("id", identifier);
+      var container = documentReference.createElement("div");
+      parent.appendChild(container);
+      container.setAttribute("id", identifier);
     } else {
       // View's container exists in the document.
       // Set reference to view's container.
-      self.container = self.document.getElementById(identifier);
+      var container = documentReference.getElementById(identifier);
     }
+    return container;
   }
   /**
-  * Creates a button.
+  * Creates a button with a label.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.name Name of element's reference within view.
   * @param {string} parameters.label Label for element.
-  * @param {string} parameters.parent Name of parent element's reference within
-  * view.
-  * @param {Object} parameters.self Instance of a class.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
   */
-  static createButton({name, label, parent, self} = {}) {
-    self[name] = self.document.createElement("button");
-    self[parent].appendChild(self[name]);
-    self[name].textContent = label;
+  static createButton({label, parent, documentReference} = {}) {
+    var button = documentReference.createElement("button");
+    parent.appendChild(button);
+    button.textContent = label;
+    return button;
+  }
+  /**
+  * Creates a radio button with a label.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier for element.
+  * @param {string} parameters.value Value for element.
+  * @param {string} parameters.name Name for element's group.
+  * @param {string} parameters.className Class for element.
+  * @param {string} parameters.label Label for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createRadioButtonLabel({
+    identifier, value, name, className, label, parent, documentReference
+  } = {}) {
+    // Create button.
+    var button = View.createRadioButton({
+      identifier: identifier,
+      value: value,
+      name: name,
+      className: className,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Create label.
+    var label = View.createLabel({
+      identifier: identifier,
+      label: label,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Return reference to element.
+    return button;
+  }
+  /**
+  * Creates a radio button.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier for element.
+  * @param {string} parameters.value Value for element.
+  * @param {string} parameters.name Name for element's group.
+  * @param {string} parameters.className Class for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createRadioButton({
+    identifier, value, name, className, parent, documentReference
+  } = {}) {
+    // Create element.
+    var button = documentReference.createElement("input");
+    parent.appendChild(button);
+    button.setAttribute("id", identifier);
+    button.setAttribute("type", "radio");
+    button.setAttribute("value", value);
+    button.setAttribute("name", name);
+    button.classList.add(className);
+    // Return reference to element.
+    return button;
+  }
+  /**
+  * Creates a check box with a label.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier for element.
+  * @param {string} parameters.value Value for element.
+  * @param {string} parameters.className Class for element.
+  * @param {string} parameters.label Label for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createCheckLabel({
+    identifier, value, className, label, parent, documentReference
+  } = {}) {
+    // Create check.
+    var check = View.createCheck({
+      identifier: identifier,
+      value: value,
+      className: className,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Create label.
+    var label = View.createLabel({
+      identifier: identifier,
+      label: label,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Return reference to element.
+    return check;
+  }
+  /**
+  * Creates a check box.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier for element.
+  * @param {string} parameters.value Value for element.
+  * @param {string} parameters.className Class for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createCheck({
+    identifier, value, className, parent, documentReference
+  } = {}) {
+    // Create element.
+    var check = documentReference.createElement("input");
+    parent.appendChild(check);
+    check.setAttribute("id", identifier);
+    check.setAttribute("type", "checkbox");
+    check.setAttribute("value", value);
+    check.classList.add(className);
+    // Return reference to element.
+    return check;
+  }
+  /**
+  * Creates a label for another element.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier for element.
+  * @param {string} parameters.label Label for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createLabel({identifier, label, parent, documentReference} = {}) {
+    // Create element.
+    var labelReference = documentReference.createElement("label");
+    parent.appendChild(labelReference);
+    labelReference.setAttribute("for", identifier);
+    labelReference.textContent = label;
+    // Return reference to element.
+    return labelReference;
   }
 }
 
@@ -106,11 +248,11 @@ class ControlView {
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-    // Initialize view's container.
-    View.createReferenceContainer({
+    // Create or set reference to view's container.
+    self.container = View.createReferenceContainer({
       identifier: "control",
       parent: "view",
-      self: self
+      documentReference: self.document
     });
   }
   /**
@@ -157,16 +299,21 @@ class StateView {
   */
   initializeView(self) {
     // Create or set reference to view's container.
-    View.createReferenceContainer({
+    self.container = View.createReferenceContainer({
       identifier: "state",
       parent: "control",
-      self: self
+      documentReference: self.document
     });
     // Determine whether the view's container is empty.
-    if (!self.container.children) {
+    if (self.container.children.length === 0) {
       // View's container is empty.
+      // Create view's invariant elements.
+      // Activate invariant behavior of view's elements.
       // Create text.
-      // TODO: Create container for the text label... the actual text will change as state changes...
+      self.sourceLabel = self.document.createElement("span");
+      self.container.appendChild(self.sourceLabel);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
       // Create and activate file selector.
       //if (!self.container.querySelector("input")) {}
       self.fileSelector = self.document.createElement("input");
@@ -178,11 +325,10 @@ class StateView {
         Action.submitSource(event.currentTarget.files[0], self.state);
       });
       // Create and activate buttons.
-      View.createButton({
-        name: "save",
+      self.save = View.createButton({
         label: "save",
-        parent: "container",
-        self: self
+        parent: self.container,
+        documentReference: self.document
       });
       self.save.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
@@ -190,31 +336,40 @@ class StateView {
         Action.saveState(self.state);
       });
       // Load button is a facade for the file selector.
-      View.createButton({
-        name: "load",
+      self.load = View.createButton({
         label: "load",
-        parent: "container",
-        self: self
+        parent: self.container,
+        documentReference: self.document
       });
       self.load.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
         self.fileSelector.click();
       });
-      View.createButton({
-        name: "restore",
+      self.restore = View.createButton({
         label: "restore",
-        parent: "container",
-        self: self
+        parent: self.container,
+        documentReference: self.document
       });
       self.restore.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        // TODO: I need a new action, probably called loadRestoreState
-        // TODO: This action needs to respond appropriately according to the application's state...
-        Action.restoreState(self.state);
+        Action.evaluateLoadSource(self.state);
       });
-
+      self.execute = View.createButton({
+        label: "execute",
+        parent: self.container,
+        documentReference: self.document
+      });
+      self.execute.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.executeTemporaryProcedure(self.state);
+      });
+    } else {
+      // View's container is not empty.
+      // Set references to view's variant elements.
+      self.sourceLabel = self.container.getElementsByTagName("span").item(0);
     }
   }
   /**
@@ -223,9 +378,205 @@ class StateView {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
-    // TODO: This part should probably control the event listeners on the buttons.
+    // Determine whether the application's state includes a source file.
+    if (Model.determineSource(self.state)) {
+      // Application's state includes a source file.
+      self.fileName = self.state.source.name;
+    } else {
+      // Application's state does not include a source file.
+      self.fileName = "select source file...";
+    }
+    self.sourceLabel.textContent = self.fileName;
   }
 }
+/**
+* Interface for summary of sets of entities.
+*/
+class SetView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} state Application's state.
+  */
+  constructor (state) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to view's container.
+    self.container = View.createReferenceContainer({
+      identifier: "set",
+      parent: "control",
+      documentReference: self.document
+    });
+    // Determine whether the view's container is empty.
+    if (self.container.children.length === 0) {
+      // View's container is empty.
+      // Create view's invariant elements.
+      // Activate invariant behavior of view's elements.
+      // Create and activate controls for type of entities.
+      self.createActivateEntitiesControl("metabolites", self);
+      self.createActivateEntitiesControl("reactions", self);
+      // Create and activate control for filter.
+      self.createActivateFilterControl(self);
+      // Create and activate restore.
+      self.createActivateRestore(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create list of processes.
+      self.createSetsList("processes", self);
+      // Create list of compartments.
+      self.createSetsList("compartments", self);
+
+      // TODO: I haven't figured out the stuff below here yet...
+      if (false) {
+        // TODO: This control is temporary for the sake of demonstration on 10 October 2017.
+        // Create and control for compartmentalization.
+        self.createActivateCompartmentalizationControl(self);
+
+
+        // TODO: I'm not going to use a table any more.
+
+        // Create table.
+        self.table = self.document.createElement("table");
+        self.container.appendChild(self.table);
+        // Create table's header.
+        self.tableHead = self.document.createElement("thead");
+        self.table.appendChild(self.tableHead);
+        var tableHeadRow = self.document.createElement("tr");
+        self.tableHead.appendChild(tableHeadRow);
+        var tableHeadRowCellAttribute = self.document.createElement("th");
+        tableHeadRow.appendChild(tableHeadRowCellAttribute);
+        tableHeadRowCellAttribute.textContent = "Attribute";
+        tableHeadRowCellAttribute.classList.add("attribute");
+        self.tableHeadRowCellValue = self.document.createElement("th");
+        tableHeadRow.appendChild(self.tableHeadRowCellValue);
+        self.tableHeadRowCellValue.classList.add("value");
+
+        // Create table's body.
+        self.tableBody = self.document.createElement("tbody");
+        self.table.appendChild(self.tableBody);
+      }
+    } else {
+      // View's container is not empty.
+      // Set references to view's variant elements.
+      self.metabolites = self
+      .document.getElementById("sets-entities-metabolites");
+      self.reactions = self
+      .document.getElementById("sets-entities-reactions");
+      self.filter = self.document.getElementById("sets-filter");
+    }
+  }
+  /**
+  * Creates and activates a control for the type of entities.
+  * @param {string} entities Type of entities, metabolites or reactions.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateEntitiesControl(entities, self) {
+    // Create control for type of entities.
+    var identifier = "sets-entities-" + entities;
+    self[entities] = View.createRadioButtonLabel({
+      identifier: identifier,
+      value: entities,
+      name: "entities",
+      className: "entities",
+      label: entities,
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate control for type of entities.
+    self[entities].addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.changeSetsEntities(self.state);
+    });
+  }
+  /**
+  * Creates and activates a control for the filter.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateFilterControl(self) {
+    // Create control for filter.
+    var identifier = "sets-filter";
+    self.filter = View.createCheckLabel({
+      identifier: identifier,
+      value: "filter",
+      className: "filter",
+      label: "filter",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate control for filter.
+    self.filter.addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.changeSetsFilter(self.state);
+    });
+  }
+  /**
+  * Creates and activates a button to restore the menu.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestore(self) {
+    // Create button for restoration.
+    self.restore = View.createButton({
+      label: "restore",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate button for restoration.
+    self.restore.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.restoreSetsSummary(self.state);
+    });
+  }
+  /**
+  * Creates a list for sets.
+  * @param {string} sets Type of sets, processes or compartments.
+  * @param {Object} self Instance of a class.
+  */
+  createSetsList(sets, self) {
+    // Create container.
+    var identifier = "sets-" + sets;
+    var reference = sets + "-container";
+    self[reference] = self.document.createElement("div");
+    self.container.appendChild(self[reference]);
+    self[reference].setAttribute("id", identifier);
+    // Create title.
+    var title = self.document.createElement("span");
+    self.container.appendChild(title);
+    title.textContent = sets;
+    // Create break.
+    self.container.appendChild(self.document.createElement("br"));
+    // Create list.
+    self[sets] = self.document.createElement("ul");
+    self.container.appendChild(self[sets]);
+  }
+
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {}
+}
+
+
 
 
 // Exploration view and views within exploration view.
@@ -259,11 +610,11 @@ class ExplorationView {
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-    // Initialize view's container.
-    View.createReferenceContainer({
+    // Create or set reference to view's container.
+    self.container = View.createReferenceContainer({
       identifier: "exploration",
       parent: "view",
-      self: self
+      documentReference: self.document
     });
   }
   /**
@@ -309,11 +660,11 @@ class SummaryView {
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-    // Initialize view's container.
-    View.createReferenceContainer({
+    // Create or set reference to view's container.
+    self.container = View.createReferenceContainer({
       identifier: "summary",
       parent: "exploration",
-      self: self
+      documentReference: self.document
     });
   }
   /**
@@ -329,101 +680,6 @@ class SummaryView {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
-* Interface to select file, check and extract information about metabolic
-* entities and sets, and restore application's state.
-*/
-class SourceView {
-  /**
-  * Initializes an instance of the class.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
-  */
-  constructor(model) {
-    // Remove all contents of container.
-    General.removeDocumentChildren(self.container);
-    //
-    // Display current selection of file.
-    if (!self.determineFile()) {
-      // Application does not have a current selection of file.
-      self.fileName = "Please select a file.";
-    } else {
-      // Application has a current file selection.
-      self.fileName = self.model.file.name;
-    }
-    self.fileLabel = self.document.createElement("span");
-    self.fileLabel.textContent = self.fileName;
-    self.container.appendChild(self.fileLabel);
-    self.container.appendChild(self.document.createElement("br"));
-    // Create and activate file selector.
-    // File selector needs to be accessible always to change selection of
-    // file.
-    //if (!self.container.querySelector("input")) {}
-    self.selector = self.document.createElement("input");
-    self.selector.setAttribute("type", "file");
-    self.selector.addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      Action.submitSource(event.currentTarget.files[0], self.model);
-    });
-    self.container.appendChild(self.selector);
-    // Display a facade, any element, to control the file selector.
-    // Alternatively use a label that references the file selector.
-    self.facade = self.document.createElement("button");
-    self.facade.textContent = "Select";
-    self.facade.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      self.selector.click();
-    });
-    self.container.appendChild(self.facade);
-    self.container.appendChild(self.document.createElement("br"));
-    // Create and activate interface controls according to file selection.
-    if (self.determineFile()) {
-      // Application state has a current file selection.
-      // Create and activate button to check and clean a raw model of
-      // metabolism.
-      self.clean = self.document.createElement("button");
-      self.clean.textContent = "Clean";
-      self.clean.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Check and clean a raw model of metabolism.
-        Action.loadCheckMetabolicEntitiesSets(self.model);
-      });
-      self.container.appendChild(self.clean);
-      //self.container.appendChild(self.document.createElement("br"));
-      // Create and activate button to extract information about metabolic
-      // entities and sets from a raw model of metabolism.
-      self.extractor = self.document.createElement("button");
-      self.extractor.textContent = "Extract";
-      self.extractor.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Extract information about metabolic entities and sets from a
-        // clean model of metabolism and use this information to
-        // initialize the application.
-        Action.loadExtractInitializeMetabolicEntitiesSets(self.model);
-      });
-      self.container.appendChild(self.extractor);
-      //self.container.appendChild(self.document.createElement("br"));
-      // Create and activate button to restore application to a state from
-      // a persistent representation.
-      self.restoration = self.document.createElement("button");
-      self.restoration.textContent = "Restore";
-      self.restoration.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Restore state from persistent representation.
-        Action.loadRestoreState(self.model);
-      });
-      self.container.appendChild(self.restoration);
-      //self.container.appendChild(self.document.createElement("br"));
-    }
-  }
-  /**
-  * Determines whether or not the application's state has information about a
-  * file.
-  */
-  determineFile() {
-    return this.model.file;
-  }
-}
 
 // TODO: Consider re-naming "PersistenceView" as "StateView" or something...
 /**
@@ -477,117 +733,14 @@ class PersistenceView {
 * Interface to represent summary of sets of metabolic entities and to select
 * filters for these entities.
 */
-class SetView {
-  /**
-  * Initializes an instance of the class.
-  * @param {Object} model Model of the application's comprehensive state.
-  */
-  constructor (model) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = this;
-    // Set reference to model of application's state.
-    self.model = model;
-    // Set reference to document object model (DOM).
-    self.document = document;
-    // Initialize container for interface.
-    self.initializeContainer(self);
-    // Initialize menu for summary of sets' cardinalities.
-    self.initializeSummaryMenu(self);
-    // Restore menu for summary of sets' cardinalitites.
-    self.restoreSummaryMenu(self);
-  }
-  /**
-  * Initializes the container for the interface.
-  * @param {Object} view Instance of interface's current view.
-  */
-  initializeContainer(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and set references to elements for interface.
-    // Select view in document object model.
-    self.view = self.document.getElementById("view");
-    // Remove any extraneous content within view.
-    // Initialization of the persistence view already removes extraneous
-    // content from view.
-    General.filterRemoveDocumentElements({
-      values: ["top", "bottom"],
-      attribute: "id",
-      elements: self.view.children
-    });
-    // Create container for interfaces within top of view.
-    // Initialization of the persistence view already creates the top
-    // container.
-    if (!self.document.getElementById("top")) {
-      self.top = self.document.createElement("div");
-      self.top.setAttribute("id", "top");
-      self.view.appendChild(self.top);
-    } else {
-      self.top = self.document.getElementById("top");
-    }
-    // Remove any extraneous content within top.
-    General.filterRemoveDocumentElements({
-      values: ["persistence", "set"],
-      attribute: "id",
-      elements: self.top.children
-    });
-    // Create container for interface within top.
-    // Set reference to current interface's container.
-    if (!self.document.getElementById("set")) {
-      self.container = self.document.createElement("div");
-      self.container.setAttribute("id", "set");
-      self.top.appendChild(self.container);
-    } else {
-      self.container = self.document.getElementById("set");
-    }
-  }
-  /**
-  * Initializes the menu to summarize sets' cardinalities.
-  * Creates elements that do not yet exist.
-  * Sets references to elements that already exist.
-  * @param {Object} view Instance of interface's current view.
-  */
+class SetViewOld {
   initializeSummaryMenu(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
     // Create elements that persist across interactive, dynamic changes to the
     // application's state.
     // Activate behavior that is consistent across interactive, dynamic changes
     // to the application's state.
     // Determine whether the summary's menu already exists within the view.
     if (!self.container.getElementsByTagName("table").item(0)) {
-      // Interface's container does not include a table element.
-      // Create table.
-      self.table = self.document.createElement("table");
-      self.container.appendChild(self.table);
-      // Create table's header.
-      self.tableHead = self.document.createElement("thead");
-      self.table.appendChild(self.tableHead);
-      var tableHeadRow = self.document.createElement("tr");
-      self.tableHead.appendChild(tableHeadRow);
-      var tableHeadRowCellAttribute = self.document.createElement("th");
-      tableHeadRow.appendChild(tableHeadRowCellAttribute);
-      tableHeadRowCellAttribute.textContent = "Attribute";
-      tableHeadRowCellAttribute.classList.add("attribute");
-      self.tableHeadRowCellValue = self.document.createElement("th");
-      tableHeadRow.appendChild(self.tableHeadRowCellValue);
-      self.tableHeadRowCellValue.classList.add("value");
-      // Create and activate controls for entities.
-      self.createActivateEntitiesControl("metabolites", self);
-      self.createActivateEntitiesControl("reactions", self);
-      // Create and activate control for filter.
-      self.createActivateFilterControl(self);
-      // Create and activate reset button.
-      self.createActivateRestore(self);
-
-      // TODO: This control is temporary for the sake of demonstration on 10 October 2017.
-      // Create and control for compartmentalization.
-      self.createActivateCompartmentalizationControl(self);
-      // Create table's body.
-      self.tableBody = self.document.createElement("tbody");
-      self.table.appendChild(self.tableBody);
     } else {
       // Interface's container includes a table element.
       // Establish references to existing elements.
@@ -599,97 +752,12 @@ class SetView {
       var tableHeadRow = self.tableHead.getElementsByTagName("tr").item(0);
       self.tableHeadRowCellValue = tableHeadRow
       .getElementsByClassName("value").item(0);
-      self.metabolitesControl = self
-      .document.getElementById("sets-entities-metabolites");
-      self.reactionsControl = self
-      .document.getElementById("sets-entities-reactions");
-      self.filterControl = self.document.getElementById("sets-filter");
       self.compartmentalizationControl = self
       .document.getElementById("compartmentalization");
       self.tableBody = self.container.getElementsByTagName("tbody").item(0);
     }
   }
-  /**
-  * Creates and activates controls to select the type of entity in the menu to
-  * summarize sets' cardinalities.
-  * @param {string} entities Type of entities, metabolites or reactions, for
-  * which to create and activate selector.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateEntitiesControl(entities, view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create entity selector.
-    var entitiesControl = entities + "Control";
-    var identifier = "sets-entities-" + entities;
-    self[entitiesControl] = self.document.createElement("input");
-    self.tableHeadRowCellValue.appendChild(self[entitiesControl]);
-    self[entitiesControl].setAttribute("id", identifier);
-    self[entitiesControl].setAttribute("type", "radio");
-    self[entitiesControl].setAttribute("value", entities);
-    self[entitiesControl].setAttribute("name", "entities");
-    self[entitiesControl].classList.add("entities");
-    self[entitiesControl].addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Change current selection of entity in application's state.
-      //var radios = self
-      //    .tableHeadRowCellValue.getElementsByClassName("entity");
-      //var value = General.determineRadioGroupValue(radios);
-      //Action.submitSetViewEntity(value, self.model);
-      Action.changeSetsEntities(self.model);
-    });
-    var entityLabel = self.document.createElement("label");
-    self.tableHeadRowCellValue.appendChild(entityLabel);
-    entityLabel.setAttribute("for", identifier);
-    entityLabel.textContent = entities;
-  }
-  /**
-  * Creates and activates control to select whether to filter the menu to
-  * summarize sets' cardinalities.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateFilterControl(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and activate filter selector.
-    var identifier = "sets-filter";
-    self.filterControl = self.document.createElement("input");
-    self.tableHeadRowCellValue.appendChild(self.filterControl);
-    self.filterControl.setAttribute("id", identifier);
-    self.filterControl.setAttribute("type", "checkbox");
-    self.filterControl.setAttribute("value", "filter");
-    self.filterControl.classList.add("filter");
-    self.filterControl.addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Change current selection of filter in application's state.
-      Action.changeSetsFilter(self.model);
-    });
-    var filterLabel = self.document.createElement("label");
-    self.tableHeadRowCellValue.appendChild(filterLabel);
-    filterLabel.setAttribute("for", identifier);
-    filterLabel.textContent = "filter";
-  }
-  /**
-  * Creates and activates control to restore the menu to summarize sets'
-  * cardinalities to its original state.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateRestore(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and activate button to restore application to initial state.
-    self.restore = self.document.createElement("button");
-    self.tableHeadRowCellValue.appendChild(self.restore);
-    self.restore.textContent = "restore";
-    self.restore.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Restore sets' summary to initial state.
-      Action.restoreSetsSummary(self.model);
-    });
-  }
+
   /**
   * Creates and activates control to select whether to represent
   * compartmentalization in the network.

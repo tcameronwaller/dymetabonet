@@ -82,11 +82,11 @@ class Model {
       new ControlView(controlContents, self.state);
       new StateView(self.state);
       new SetView(self.state);
-      new ContextView(self.state);
+      //new ContextView(self.state);
       // Initialize or restore views within exploration view.
       var explorationContents = ["topology"];
       new ExplorationView(explorationContents, self.state);
-      new TopologyView(self.state);
+      //new TopologyView(self.state);
     }
 
     // TODO: The ControlView and ExplorationView should remove all of their sub-views except those with IDs that match their parameters.
@@ -97,65 +97,66 @@ class Model {
 
 
     // TODO: Scrap below here (until the evaluation methods)
-
-    // If application's state has appropriate information then create
-    // interface for persistence.
-    if (this.determineMetabolicEntitiesSets()) {
-      // Initialize instance of interface.
-      // Pass this instance a reference to the model of the application's
-      // state.
-      new PersistenceView(self.state);
-    }
-    // If application's state has appropriate information then create
-    // interface for set.
-    if (
-      this.determineMetabolicEntitiesSets() &&
-      this.determineTotalEntitiesSets() &&
-      this.determineCurrentEntitiesSets() &&
-      this.determineSetsCardinalities()
-    ) {
-      // Initialize instance of interface.
-      // Pass this instance a reference to the model of the application's
-      // state.
-      new SetView(self.state);
-    }
-    // If application's state has appropriate information then create
-    // interface for control of network's assembly.
-    if (
-      this.determineCandidateContext() &&
-      this.determineCandidateEntities()
-    ) {
-      // Initialize instance of interface.
-      // Pass this instance a reference to the model of the application's
-      // state.
-      new AssemblyView(self.state);
-    }
-    // If application's state has appropriate information then create
-    // interface for place-holder in bottom of interface.
-    if (
-      this.determineCandidateContext() &&
-      this.determineCandidateEntities()
-    ) {
-      // Initialize instance of interface.
-      // Pass this instance a reference to the model of the application's
-      // state.
-      new BottomView(self.state);
-    }
-    // If application's state has appropriate information then create
-    // interface for visual representation of network's topology.
-    // TODO: Eventually, I think I'll need to split "determineNetworkElements"
-    // TODO: to consider network's elements and subnetwork's elements... ie, I'll
-    // TODO: need network's elements to allow topological traversal, but I won't
-    // TODO: necessarily draw the network until I have the current network's elements...
-    // TODO: those currently of interest for drawing...
-    if (
-      this.determineCandidateContext() &&
-      this.determineCandidateEntities()
-    ) {
-      // Initialize instance of interface.
-      // Pass this instance a reference to the model of the application's
-      // state.
-      new TopologyView(self.state);
+    if (false) {
+      // If application's state has appropriate information then create
+      // interface for persistence.
+      if (this.determineMetabolicEntitiesSets()) {
+        // Initialize instance of interface.
+        // Pass this instance a reference to the model of the application's
+        // state.
+        new PersistenceView(self.state);
+      }
+      // If application's state has appropriate information then create
+      // interface for set.
+      if (
+        this.determineMetabolicEntitiesSets() &&
+        this.determineTotalEntitiesSets() &&
+        this.determineCurrentEntitiesSets() &&
+        this.determineSetsCardinalities()
+      ) {
+        // Initialize instance of interface.
+        // Pass this instance a reference to the model of the application's
+        // state.
+        new SetView(self.state);
+      }
+      // If application's state has appropriate information then create
+      // interface for control of network's assembly.
+      if (
+        this.determineCandidateContext() &&
+        this.determineCandidateEntities()
+      ) {
+        // Initialize instance of interface.
+        // Pass this instance a reference to the model of the application's
+        // state.
+        new AssemblyView(self.state);
+      }
+      // If application's state has appropriate information then create
+      // interface for place-holder in bottom of interface.
+      if (
+        this.determineCandidateContext() &&
+        this.determineCandidateEntities()
+      ) {
+        // Initialize instance of interface.
+        // Pass this instance a reference to the model of the application's
+        // state.
+        new BottomView(self.state);
+      }
+      // If application's state has appropriate information then create
+      // interface for visual representation of network's topology.
+      // TODO: Eventually, I think I'll need to split "determineNetworkElements"
+      // TODO: to consider network's elements and subnetwork's elements... ie, I'll
+      // TODO: need network's elements to allow topological traversal, but I won't
+      // TODO: necessarily draw the network until I have the current network's elements...
+      // TODO: those currently of interest for drawing...
+      if (
+        this.determineCandidateContext() &&
+        this.determineCandidateEntities()
+      ) {
+        // Initialize instance of interface.
+        // Pass this instance a reference to the model of the application's
+        // state.
+        new TopologyView(self.state);
+      }
     }
   }
 

@@ -51,6 +51,8 @@ class Action {
   // method a reference to the current instance of the model.
   // Methods for general functionality relevant to application actions.
 
+  // Submission to application's state.
+
   /**
   * Submits a novel attribute's value to the application's state.
   * @param {Object} parameters Destructured object of parameters.
@@ -96,46 +98,7 @@ class Action {
     });
   }
 
-  // Load information from file and call another action.
-
-  /**
-  * Loads from source file information about the application's state and passes
-  * it to a procedure to restore the application to this state.
-  * @param {Object} state Application's state.
-  */
-  static loadRestoreState(state) {
-    General.loadPassObject({
-      file: state.source,
-      call: Action.restoreState,
-      parameters: {state: state}
-    });
-  }
-  /**
-  * Loads from file information about metabolic entities and sets and passes
-  * it to a procedure to check and clean.
-  * @param {Object} state Application's state.
-  */
-  static loadCheckMetabolicEntitiesSets(state) {
-    General.loadPassObject({
-      file: state.source,
-      call: Action.checkCleanMetabolicEntitiesSets,
-      parameters: {state: state}
-    });
-  }
-  /**
-  * Loads from file information about metabolic entities and sets and passes
-  * it to a procedure for extraction and initialization.
-  * @param {Object} state Application's state.
-  */
-  static loadExtractInitializeMetabolicEntitiesSets(state) {
-    General.loadPassObject({
-      file: state.source,
-      call: Action.extractInitializeMetabolicEntitiesSets,
-      parameters: {state: state}
-    });
-  }
-
-  // Primary actions relevant to application's state.
+  // Direct actions.
 
   /**
   * Initializes the application's state by submitting null values of all
@@ -165,27 +128,6 @@ class Action {
     General.saveObject("state.json", persistence);
   }
   /**
-  * Restores the application to a state from a persistent source.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Persistent source of information about
-  * application's state.
-  * @param {Object} parameters.state Application's state.
-  */
-  static restoreState({data, state} = {}) {
-    // Remove any information about source from the application's state.
-    var source = null;
-    // Compile novel attributes' values.
-    var novelAttributesValues = {
-      source: source
-    };
-    var attributesValues = Object.assign(data, novelAttributesValues);
-    // Submit novel attributes' values to the application's state.
-    Action.submitAttributes({
-      attributesValues: attributesValues,
-      state: state
-    });
-  }
-  /**
   * Submits a novel source to the application's state.
   * @param {Object} source Reference to file object.
   * @param {Object} state Application's state.
@@ -198,143 +140,59 @@ class Action {
     });
   }
   /**
-  * Checks and cleans information about metabolic entities and sets in a raw
-  * model of metabolism.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Information about metabolic entities and
-  * sets.
-  * @param {Object} parameters.state Application's state.
+  * Evaluates and loads from file a source of information about the
+  * application's state, passing this information to another procedure to
+  * restore the application's state.
+  * @param {Object} state Application's state.
   */
-  static checkCleanMetabolicEntitiesSets({data, state} = {}) {
-    var cleanData = Clean.checkCleanMetabolicEntitiesSetsRecon2(data);
-    General.saveObject("clean_data.json", cleanData);
-    // Remove the former source from the application's state.
-    Action.removeAttribute({
-      name: "source",
-      state: state
-    });
-  }
-  /**
-  * Extracts information about metabolic entities and sets from a clean model
-  * of metabolism and initializes the application's state from this information.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Information about metabolic entities and
-  * sets.
-  * @param {Object} parameters.state Application's state.
-  */
-  static extractInitializeMetabolicEntitiesSets({data, state} = {}) {
-    // Extract information about metabolic entities and sets.
-    // The complete model has 2652 metabolites.
-    // The complete model has 7785 reactions.
-    var metabolicEntitiesSets = Extraction
-    .extractMetabolicEntitiesSetsRecon2(data);
-    // Initialize application's state from information about metabolic entities
-    // and sets.
-    Action.initializeApplicationInformation({
-      metabolicEntitiesSets: metabolicEntitiesSets,
-      state: state
-    });
-  }
-  /**
-  * Initializes application's state from information about metabolic entities
-  * and sets.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.metabolicEntitiesSets Information about metabolic
-  * entities and sets.
-  * @param {Object} parameters.state Application's state.
-  */
-  static initializeApplicationInformation({metabolicEntitiesSets, state} = {}) {
-    // Initialize application's state from information about metabolic entities
-    // and sets.
-    // Remove any information about source from the application's state.
-    var source = null;
-    // Determine total entities' attribution to sets.
-    var totalEntitiesSets = Attribution
-    .determineTotalEntitiesSets(metabolicEntitiesSets.reactions);
-    // Initialize filters against entities' sets.
-    var entitiesSetsFilters = Action.initializeEntitiesSetsFilters();
-    // Determine current entities' attribution to sets.
-    var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
-      setsFilters: entitiesSetsFilters.setsFilters,
-      totalReactionsSets: totalEntitiesSets.totalReactionsSets,
-      totalMetabolitesSets: totalEntitiesSets.totalMetabolitesSets,
-      reactions: metabolicEntitiesSets.reactions
-    });
-    // Initialize selections that influence sets' cardinalities.
-    var setsCardinalitiesSelections = Action
-    .initializeSetsCardinalitiesSelections();
-    // Determine sets' cardinalities.
-    var setsCardinalitiesSummary = Cardinality
-    .determineSetsCardinalitiesSummary({
-      setsEntities: setsCardinalitiesSelections.setsEntities,
-      setsFilter: setsCardinalitiesSelections.setsFilter,
-      accessReactionsSets: currentEntitiesSets.accessReactionsSets,
-      accessMetabolitesSets: currentEntitiesSets.accessMetabolitesSets,
-      filterReactionsSets: currentEntitiesSets.filterReactionsSets,
-      filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets
-    });
-    // Initialize selection for compartmentalization's relevance.
-    var compartmentalization = Action.initializeCompartmentalizationSelection();
-    // Initialize selections for entities' simplification.
-    // Simplifications are specific to candidate entities, which are specific to
-    // the context of interest, of which compartmentalization is part.
-    var simplifications = Action.initializeEntitiesSimplifications();
-
-    // TODO: I'll need to include the procedure for entitiesCandidates once it's complete.
-    // TODO: I'll also need to include this procedure for other actions that will change the candidates...
-    // TODO: ... changes to compartmentalization, selections of sets, selections of entities for simplification
-    if (false) {
-      // Determine entities that are candidates of interest.
-      var candidateEntities = Candidacy.determineCandidateEntities({
-        compartmentalization: compartmentalization.compartmentalization,
-        reactionsSimplifications: simplifications.reactionsSimplifications,
-        metabolitesSimplifications: simplifications.metabolitesSimplifications,
-        reactionsSets: currentEntitiesSets.filterReactionsSets,
-        reactions: metabolicEntitiesSets.reactions
+  static evaluateLoadSource(state) {
+    // Determine whether the application's state includes a source file.
+    if (Model.determineSource(state)) {
+      // Application's state includes a source file.
+      General.loadPassObject({
+        file: state.source,
+        call: Action.evaluateRestoreState,
+        parameters: {state: state}
       });
+    } else {
+      // Application's state does not include a source file.
+      // Display error message.
+      // Report message to remind user to select source file.
+      var message = "please select a source file...";
+      window.alert(message);
     }
+  }
+  /**
+  * Executes a temporary procedure.
+  * @param {Object} state Application's state.
+  */
+  static executeTemporaryProcedure(state) {
+    // Initiate process timer.
+    //console.time("timer");
+    var startTime = window.performance.now();
+    // Execute process.
 
-    // TODO: I'll also need to include procedure for definition of network's elements.
-
-    // Initialize application's attributes for individual entities.
-    //var networkDefinitionAttributes = Action
-    //.initializeNetworkDefinitionAttributes();
-    //var networkElementsAttributes = Action
-    //.initializeNetworkElementsAttributes();
-
-
-    //////////////////////////////////////////
-
-
-    //////////////////////////////////////////
-
-    // Compile novel attributes' values.
-    var novelAttributesValues = {
-      source: source
-    };
-    var attributesValues = Object.assign(
-      metabolicEntitiesSets,
-      totalEntitiesSets,
-      entitiesSetsFilters,
-      currentEntitiesSets,
-      setsCardinalitiesSelections,
-      setsCardinalitiesSummary,
-      compartmentalization,
-      simplifications,
-      //networkDefinitionAttributes,
-      //networkElementsAttributes,
-      novelAttributesValues
-    );
-    // Submit novel attributes' values to the application's state.
-    Action.submitAttributes({
-      attributesValues: attributesValues,
-      state: state
+    var entitiesCandidates = Candidacy.determineCandidateEntities({
+      compartmentalization: model.compartmentalization,
+      reactionsSimplifications: model.reactionsSimplifications,
+      metabolitesSimplifications: model.metabolitesSimplifications,
+      reactionsSets: model.filterReactionsSets,
+      reactions: model.reactions
     });
+
+    console.log("testing candidates");
+    console.log(entitiesCandidates);
+
+
+
+    // Terminate process timer.
+    //console.timeEnd("timer");
+    var endTime = window.performance.now();
+    var duration = Math.round(endTime - startTime);
+    console.log("process duration: " + duration + " milliseconds");
   }
 
 
-
-  
   /**
   * Changes the selection of entities of interest for the sets' summary.
   * @param {Object} model Model of the application's comprehensive state.
@@ -574,8 +432,199 @@ class Action {
     });
   }
 
+  // Indirect actions.
 
-  // ???
+  /**
+  * Creates persistent representation of the model of the application's
+  * state.
+  * @param {Object} model Model of the comprehensive state of the
+  * application.
+  * @returns {Object} Persistent representation of the application's state.
+  */
+  static createPersistentState(model) {
+    return model.attributeNames.reduce(function (collection, attributeName) {
+      var novelRecord = {
+        [attributeName]: model[attributeName]
+      };
+      return Object.assign({}, collection, novelRecord);
+    }, {});
+  }
+  /**
+  * Evaluates information from a persistent source to restore the application's
+  * state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.data Persistent source of information about
+  * application's state.
+  * @param {Object} parameters.state Application's state.
+  */
+  static evaluateRestoreState({data, state} = {}) {
+    // Determine appropriate procedure for source information.
+    var model = (data.id === "MODEL1603150001");
+    var clean = data.clean;
+    if (!model) {
+      Action.restoreState({
+        data: data,
+        state: state
+      });
+    } else if (model && clean) {
+      Action.extractInitializeMetabolicEntitiesSets({
+        data: data,
+        state: state
+      });
+    } else if (model && !clean) {
+      var cleanData = Clean.checkCleanMetabolicEntitiesSetsRecon2(data);
+      Action.extractInitializeMetabolicEntitiesSets({
+        data: cleanData,
+        state: state
+      });
+    }
+  }
+  /**
+  * Restores the application to a state from a persistent source.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.data Persistent source of information about
+  * application's state.
+  * @param {Object} parameters.state Application's state.
+  */
+  static restoreState({data, state} = {}) {
+    // Remove any information about source from the application's state.
+    var source = null;
+    // Compile novel attributes' values.
+    var novelAttributesValues = {
+      source: source
+    };
+    var attributesValues = Object.assign(data, novelAttributesValues);
+    // Submit novel attributes' values to the application's state.
+    Action.submitAttributes({
+      attributesValues: attributesValues,
+      state: state
+    });
+  }
+  /**
+  * Extracts information about metabolic entities and sets from a clean model
+  * of metabolism and initializes the application's state from this information.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.data Information about metabolic entities and
+  * sets.
+  * @param {Object} parameters.state Application's state.
+  */
+  static extractInitializeMetabolicEntitiesSets({data, state} = {}) {
+    // Extract information about metabolic entities and sets.
+    // The complete model has 2652 metabolites.
+    // The complete model has 7785 reactions.
+    var metabolicEntitiesSets = Extraction
+    .extractMetabolicEntitiesSetsRecon2(data);
+    // Initialize application's state from information about metabolic entities
+    // and sets.
+    Action.initializeApplicationInformation({
+      metabolicEntitiesSets: metabolicEntitiesSets,
+      state: state
+    });
+  }
+  /**
+  * Initializes application's state from information about metabolic entities
+  * and sets.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.metabolicEntitiesSets Information about metabolic
+  * entities and sets.
+  * @param {Object} parameters.state Application's state.
+  */
+  static initializeApplicationInformation({metabolicEntitiesSets, state} = {}) {
+    // Initialize application's state from information about metabolic entities
+    // and sets.
+    // Remove any information about source from the application's state.
+    var source = null;
+    // Determine total entities' attribution to sets.
+    var totalEntitiesSets = Attribution
+    .determineTotalEntitiesSets(metabolicEntitiesSets.reactions);
+    // Initialize filters against entities' sets.
+    var entitiesSetsFilters = Action.initializeEntitiesSetsFilters();
+    // Determine current entities' attribution to sets.
+    var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
+      setsFilters: entitiesSetsFilters.setsFilters,
+      totalReactionsSets: totalEntitiesSets.totalReactionsSets,
+      totalMetabolitesSets: totalEntitiesSets.totalMetabolitesSets,
+      reactions: metabolicEntitiesSets.reactions
+    });
+    // Initialize selections that influence sets' cardinalities.
+    var setsCardinalitiesSelections = Action
+    .initializeSetsCardinalitiesSelections();
+    // Determine sets' cardinalities.
+    var setsCardinalitiesSummary = Cardinality
+    .determineSetsCardinalitiesSummary({
+      setsEntities: setsCardinalitiesSelections.setsEntities,
+      setsFilter: setsCardinalitiesSelections.setsFilter,
+      accessReactionsSets: currentEntitiesSets.accessReactionsSets,
+      accessMetabolitesSets: currentEntitiesSets.accessMetabolitesSets,
+      filterReactionsSets: currentEntitiesSets.filterReactionsSets,
+      filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets
+    });
+    // Initialize selection for compartmentalization's relevance.
+    var compartmentalization = Action.initializeCompartmentalizationSelection();
+    // Initialize selections for entities' simplification.
+    // Simplifications are specific to candidate entities, which are specific to
+    // the context of interest, of which compartmentalization is part.
+    var simplifications = Action.initializeEntitiesSimplifications();
+
+    // TODO: I'll need to include the procedure for entitiesCandidates once it's complete.
+    // TODO: I'll also need to include this procedure for other actions that will change the candidates...
+    // TODO: ... changes to compartmentalization, selections of sets, selections of entities for simplification
+    if (false) {
+      // Determine entities that are candidates of interest.
+      var candidateEntities = Candidacy.determineCandidateEntities({
+        compartmentalization: compartmentalization.compartmentalization,
+        reactionsSimplifications: simplifications.reactionsSimplifications,
+        metabolitesSimplifications: simplifications.metabolitesSimplifications,
+        reactionsSets: currentEntitiesSets.filterReactionsSets,
+        reactions: metabolicEntitiesSets.reactions
+      });
+    }
+
+    // TODO: I'll also need to include procedure for definition of network's elements.
+
+    // Initialize application's attributes for individual entities.
+    //var networkDefinitionAttributes = Action
+    //.initializeNetworkDefinitionAttributes();
+    //var networkElementsAttributes = Action
+    //.initializeNetworkElementsAttributes();
+
+
+    //////////////////////////////////////////
+
+
+    //////////////////////////////////////////
+
+    // Compile novel attributes' values.
+    var novelAttributesValues = {
+      source: source
+    };
+    var attributesValues = Object.assign(
+      metabolicEntitiesSets,
+      totalEntitiesSets,
+      entitiesSetsFilters,
+      currentEntitiesSets,
+      setsCardinalitiesSelections,
+      setsCardinalitiesSummary,
+      compartmentalization,
+      simplifications,
+      //networkDefinitionAttributes,
+      //networkElementsAttributes,
+      novelAttributesValues
+    );
+    // Submit novel attributes' values to the application's state.
+    Action.submitAttributes({
+      attributesValues: attributesValues,
+      state: state
+    });
+  }
+
+
+
+
+
+
+
+  ////////////////////////////////////////////////////////////////////////// ???
 
   /**
   * Restores controls for network's assembly to initial state.
@@ -755,54 +804,10 @@ class Action {
     var metabolite = metabolites[identifier];
     Extraction.changeMetaboliteSimplification(metabolite);
   }
-  /**
-  * Executes a temporary procedure of utility for application's development.
-  * @param {Object} model Model of the application's comprehensive state.
-  */
-  static executeTemporaryProcedure(model) {
-    // Initiate process timer.
-    //console.time("timer");
-    var startTime = window.performance.now();
-    // Execute process.
-
-    var entitiesCandidates = Candidacy.determineCandidateEntities({
-      compartmentalization: model.compartmentalization,
-      reactionsSimplifications: model.reactionsSimplifications,
-      metabolitesSimplifications: model.metabolitesSimplifications,
-      reactionsSets: model.filterReactionsSets,
-      reactions: model.reactions
-    });
-
-    console.log("testing candidates");
-    console.log(entitiesCandidates);
-
-
-
-    // Terminate process timer.
-    //console.timeEnd("timer");
-    var endTime = window.performance.now();
-    var duration = Math.round(endTime - startTime);
-    console.log("process duration: " + duration + " milliseconds");
-  }
 
 
   // Secondary actions relevant to application's state.
 
-  /**
-  * Creates persistent representation of the model of the application's
-  * state.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
-  * @returns {Object} Persistent representation of the application's state.
-  */
-  static createPersistentState(model) {
-    return model.attributeNames.reduce(function (collection, attributeName) {
-      var novelRecord = {
-        [attributeName]: model[attributeName]
-      };
-      return Object.assign({}, collection, novelRecord);
-    }, {});
-  }
   /**
   * Initializes information about selections of sets by values of attributes.
   * @returns {Object} Collection of multiple attributes.
@@ -871,6 +876,8 @@ class Action {
     return attributesValues;
   }
 
+
+  //////////////////////////////////////////////////////////////////////////////
   // TODO: SOME of these methods might be obsolete...
 
   /**

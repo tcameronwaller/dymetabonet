@@ -54,6 +54,7 @@ class Clean {
       data.reactions, metabolites, genes
     );
     return {
+      clean: true,
       compartments: compartments,
       genes: genes,
       id: data.id,
