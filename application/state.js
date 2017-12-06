@@ -152,14 +152,19 @@ class State {
       // "currentReactionsSets", "currentMetabolitesSets", "totalReactionsSets",
       // "totalMetabolitesSets".
       "setsCardinalities",
-      // Attribute "setsSummary" stores information about the counts of entities
-      // that belong to each set by their values of attributes.
+      // Attribute "setsSorts" stores information about the sort criteria and
+      // orders for the summaries of sets' cardinalities.
+      // Information includes references to attributes "compartments" and
+      // "processes".
+      "setsSorts",
+      // Attribute "setsSummaries" stores information about the counts of
+      // entities that belong to each set by their values of attributes.
       // Information includes additional details for representation in the sets'
       // summary.
       // Information includes references to attributes "compartments" and
       // "processes".
       // Information derives from attribute "setsCardinalities".
-      "setsSummary",
+      "setsSummaries",
 
       // Entities.
       // Attribute "compartmentalization" stores information about whether to

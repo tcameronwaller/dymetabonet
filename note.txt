@@ -4,6 +4,25 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+5 December 2017
+
+----------
+Progress
+
+Implement the action to change specifications to sort sets' summaries.
+
+----------
+Technical terminology
+
+A record is an object within an array.
+An entry is an object or any key-value pair within an object.
+
+----------
+Data Structure
+
+Consider the most efficient way to organize, store, and access information relevant to the sets' menu.
+
+--------------------------------------------------
 4 December 2017
 
 ----------
@@ -19,6 +38,62 @@ Meeting with Jared P Rutter and Alexander Lex
 Plan
 -prototype
 -trials with prospective users
+
+----------
+Goals by 8 January 2018
+
+1. move sets menu to side panel
+-table
+-column for set's name
+-column for set's cardinality with bars and scale
+-scrollable
+-search menus
+-sortable by cardinality or by alphabetical name
+-selections control filters on entities
+
+2. include table of candidate entities (metabolites and reactions)
+-entity name
+-entity degree with constraint of simplification (ie how many candidate reactions for each metabolite etc)
+-entity simplification by replication or omission (replication only applies to metabolites)
+
+3. include visual representation of network
+-filters and simplifications control definition of network's elements
+-represent network's elements according to simplifications
+
+4. improve usability
+-color scheme with light background
+-data management and persistence of user's selections (raw data ~ 3 MB... clean and extraction of raw data is slow > 1 minute... clean extracted data ~ 10 MB... maybe use URL settings for persistence instead/in addition to downloadable file)
+-aesthetics
+-TBD...
+
+5. summarize filters and current selection(s)... low priority right now...
+-in main panel if network too large to draw automatically
+-information about counts of entities in current selection? ... possibly redundant with entities table
+-override button to draw anyway (drawing large networks can require up to 15 minutes)
+
+6. select data sets for development and demonstration
+-coordinate data for metabolites, proteins, and transcripts
+-evaluate identifier mapping
+-wrangle data separately, maybe in Python
+
+7. include custom data in application... maybe to preliminary extent
+-import data from file
+-represent data in table
+-user can select between multiple quantities to represent on the network
+-only represent one set of values at a time for each entity or node type (metabolites or reactions)
+
+8. feedback from users/application on real data... be thinking about it at this point
+
+9. opportunities for post-doctoral work
+-watch for near-term applications
+-search for individual teams to which to apply
+
+----------
+Goals beyond 8 January 2018
+
+1. aggregation of network's elements by sets?
+
+2. publication March 2018
 
 --------------------------------------------------
 2 December 2017

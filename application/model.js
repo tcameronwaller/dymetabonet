@@ -242,7 +242,7 @@ class Model {
       !(state.setsEntities === null) &&
       !(state.setsFilter === null) &&
       !(state.setsCardinalities === null) &&
-      !(state.setsSummary === null)
+      !(state.setsSummaries === null)
     );
   }
   /**

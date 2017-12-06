@@ -297,6 +297,11 @@ class Action {
     } else {
       var currentFilter = true;
     }
+
+    // TODO: Do all the relevant stuff...
+
+
+
     // Determine sets' cardinalities.
     var setsCardinalitiesSummary = Cardinality
     .determineSetsCardinalitiesSummary({
@@ -329,6 +334,71 @@ class Action {
       state: state
     });
   }
+  /**
+  * Changes the specifications to sort sets' summaries.
+  * @param {string} attribute Name of attribute.
+  * @param {string} criterion Criterion for sort.
+  * @param {Object} state Application's state.
+  */
+  static changeSetsSorts(attribute, criterion, state) {
+    // TODO: if criterion is new (not current), set to default order
+    // TODO: if criterion is current, change order
+
+    var temp = {
+      processes: {
+        criterion: "count", // or "name"
+        order: "descend" // or "ascend"
+      },
+      compartments: {
+        criterion: "count",
+        order: "descend"
+      }
+    };
+    // Determine whether current criterion matches previous criterion.
+    if (criterion === state.setsSorts[attribute].criterion) {
+      // Current criterion matches previous criterion.
+      // Change the specification's order.
+      if (state.setsSorts[attribute].order === "descend") {
+        var order = "ascend";
+      } else if (state.setsSorts[attribute].order === "ascend") {
+        var order = "descend";
+      }
+    } else {
+      // Current criterion does not match previous criterion.
+      // Change the specification to the current criterion with default order.
+      var order = "descend";
+    }
+
+
+
+    // Determine entities of interest.
+    var previousEntities = state.setsEntities;
+    if (previousEntities === "metabolites") {
+      var currentEntities = "reactions";
+    } else if (previousEntities === "reactions") {
+      var currentEntities = "metabolites";
+    }
+
+    // TODO: Do all the relevant stuff...
+
+
+    // Compile novel values of attributes.
+    var novelAttributesValues = {
+      setsEntities: currentEntities
+    };
+    var attributesValues = Object.assign(
+      {},
+      setsCardinalitiesSummary,
+      novelAttributesValues
+    );
+    // Submit novel values of attributes to the model of the application's
+    // state.
+    Action.submitAttributes({
+      attributesValues: attributesValues,
+      state: state
+    });
+  }
+
 
 
   /**
@@ -387,7 +457,6 @@ class Action {
       model: model
     });
   }
-
 
   /**
   * Changes the specification of compartmentalization for the network's
@@ -539,7 +608,7 @@ class Action {
     var totalEntitiesSets = Attribution
     .determineTotalEntitiesSets(metabolicEntitiesSets.reactions);
     // Initialize filters against entities' sets.
-    var entitiesSetsFilters = Action.initializeEntitiesSetsFilters();
+    var setsFilters = Attribution.createInitialSetsFilters();
     // Determine current entities' attribution to sets.
     var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
       setsFilters: entitiesSetsFilters.setsFilters,
@@ -551,8 +620,7 @@ class Action {
     var setsCardinalitiesSelections = Action
     .initializeSetsCardinalitiesSelections();
     // Determine sets' cardinalities.
-    var setsCardinalitiesSummary = Cardinality
-    .determineSetsCardinalitiesSummary({
+    var setsCardinalities = Cardinality.determineSetsCardinalities({
       setsEntities: setsCardinalitiesSelections.setsEntities,
       setsFilter: setsCardinalitiesSelections.setsFilter,
       accessReactionsSets: currentEntitiesSets.accessReactionsSets,
@@ -560,6 +628,20 @@ class Action {
       filterReactionsSets: currentEntitiesSets.filterReactionsSets,
       filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets
     });
+    // TODO: I need to split the setsCardinalities from the setsSummaries...
+    // TODO: for the sake of efficiency...
+    // Initialize specifications to sort sets' summaries.
+    var setsSorts = Cardinality.createInitialSetsSorts();
+    // Create sets' summaries.
+
+    // Sort sets' summaries.
+
+
+
+    // Determine sets' cardinalities.
+
+
+
     // Initialize selection for compartmentalization's relevance.
     var compartmentalization = Action.initializeCompartmentalizationSelection();
     // Initialize selections for entities' simplification.
@@ -597,7 +679,10 @@ class Action {
 
     // Compile novel attributes' values.
     var novelAttributesValues = {
-      source: source
+      source: source,
+      setsFilters: setsFilters,
+      setsCardinalities: setsCardinalitites,
+      setsSorts: setsSorts
     };
     var attributesValues = Object.assign(
       metabolicEntitiesSets,
@@ -605,7 +690,6 @@ class Action {
       entitiesSetsFilters,
       currentEntitiesSets,
       setsCardinalitiesSelections,
-      setsCardinalitiesSummary,
       compartmentalization,
       simplifications,
       //networkDefinitionAttributes,
@@ -617,6 +701,24 @@ class Action {
       attributesValues: attributesValues,
       state: state
     });
+  }
+  /**
+  * Initializes information about selections that influence cardinalities of
+  * sets of entities.
+  * @returns {Object} Collection of multiple attributes.
+  */
+  static initializeSetsCardinalitiesSelections() {
+    // Initialize selection of entities for sets' cardinalities.
+    var setsEntities = "metabolites";
+    // Initialize selection of whether to filter sets' entities for summary.
+    var setsFilter = false;
+    // Compile novel values of attributes.
+    var attributesValues = {
+      setsEntities: setsEntities,
+      setsFilter: setsFilter
+    };
+    // Return novel values of attributes.
+    return attributesValues;
   }
 
 
@@ -808,40 +910,6 @@ class Action {
 
 
   // Secondary actions relevant to application's state.
-
-  /**
-  * Initializes information about selections of sets by values of attributes.
-  * @returns {Object} Collection of multiple attributes.
-  */
-  static initializeEntitiesSetsFilters() {
-    // Initialize filters against entities' sets.
-    var setsFilters = Attribution.createInitialSetsFilters();
-    // Compile novel values of attributes.
-    var attributesValues = {
-      setsFilters: setsFilters
-    };
-    // Return novel values of attributes.
-    return attributesValues;
-  }
-  /**
-  * Initializes information about selections that influence cardinalities of
-  * sets of entities.
-  * @returns {Object} Collection of multiple attributes.
-  */
-  static initializeSetsCardinalitiesSelections() {
-    // Initialize selection of entities for sets' cardinalities.
-    var setsEntities = "metabolites";
-    // Initialize selection of whether to filter sets' entities for summary.
-    var setsFilter = false;
-    // Compile novel values of attributes.
-    var attributesValues = {
-      setsEntities: setsEntities,
-      setsFilter: setsFilter
-    };
-    // Return novel values of attributes.
-    return attributesValues;
-  }
-
 
   /**
   * Initializes information about compartmentalization's relevance.
