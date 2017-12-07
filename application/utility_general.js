@@ -1081,6 +1081,53 @@ class General {
     });
   }
   /**
+  * Sorts records in arrray.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.array Array of records.
+  * @param {string} parameters.key Key of value in records by which to sort.
+  * @param {string} parameters.order Direction, ascend or descend, in which to
+  * sort records.
+  * @returns {Array<string>} Shallow copy of array with records in sort order.
+  */
+  static sortArrayRecords({array, key, order} = {}) {
+    // Determine type of value by which to sort records.
+    // Assume that all records have values of the same type.
+    var type = General.determineValueType(array[0][key]);
+    // Sort records.
+    return array.slice().sort(function (firstRecord, secondRecord) {
+      if (type === "string") {
+        // Convert values to lower case for comparison.
+        var firstValue = firstRecord[key].toLowerCase();
+        var secondValue = secondRecord[key].toLowerCase();
+      } else if (type === "number") {
+        // Access values.
+        var firstValue = firstRecord[key];
+        var secondValue = secondRecord[key];
+      }
+      // Compare values.
+      if (firstValue < secondValue) {
+        if (order === "ascend") {
+          // Place first element before second element.
+          return -1;
+        } else if (order === "descend") {
+          // Place first element after second element.
+          return 1;
+        }
+      } else if (firstValue > secondValue) {
+        if (order === "ascend") {
+          // Place first element after second element.
+          return 1;
+        } else if (order === "descend") {
+          // Place first element before second element.
+          return -1;
+        }
+      } else {
+        // Preserve current relative placements of elements.
+        return 0;
+      }
+    });
+  }
+  /**
   * Collects values of a target attribute that occur together in records with
   * each value of another category attribute.
   * Each record has a single value of the target attribute.

@@ -4,6 +4,40 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+7 December 2017
+
+----------
+Progress
+
+Restore procedures for all interactions with the sets' summary.
+Manage the split between sets' cardinalities and sets' summaries.
+
+initializeApplicationInformation
+-determineSetsCardinalitiesSummaries
+-determineCandidateEntities
+
+restoreSetsSummary
+-determineSetsCardinalitiesSummaries
+-determineCandidateEntities
+
+changeSetsEntities
+-determineSetsCardinalitiesSummaries
+-determineCandidateEntities
+
+changeSetsFilter
+-determineSetsCardinalitiesSummaries
+
+changeSetsSorts
+-sortSetsSummaries
+
+selectSetsAttributeValue
+-determineSetsCardinalitiesSummaries
+-determineCandidateEntities
+
+changeCompartmentalization
+-determineCandidateEntities
+
+--------------------------------------------------
 5 December 2017
 
 ----------

@@ -341,19 +341,11 @@ class Action {
   * @param {Object} state Application's state.
   */
   static changeSetsSorts(attribute, criterion, state) {
-    // TODO: if criterion is new (not current), set to default order
-    // TODO: if criterion is current, change order
-
-    var temp = {
-      processes: {
-        criterion: "count", // or "name"
-        order: "descend" // or "ascend"
-      },
-      compartments: {
-        criterion: "count",
-        order: "descend"
-      }
-    };
+    // Each attribute has its own specification of criterion and order to sort
+    // its sets' summaries.
+    // Preserve specification for other attribute.
+    var copySetsSorts = General.copyValue(state.setsSorts, true);
+    // Change the specification for the specific attribute.
     // Determine whether current criterion matches previous criterion.
     if (criterion === state.setsSorts[attribute].criterion) {
       // Current criterion matches previous criterion.
@@ -368,27 +360,24 @@ class Action {
       // Change the specification to the current criterion with default order.
       var order = "descend";
     }
-
-
-
-    // Determine entities of interest.
-    var previousEntities = state.setsEntities;
-    if (previousEntities === "metabolites") {
-      var currentEntities = "reactions";
-    } else if (previousEntities === "reactions") {
-      var currentEntities = "metabolites";
-    }
+    // Create entry.
+    var entry = {
+      [attribute]: {
+        criterion: criterion,
+        order: order
+      }
+    };
+    // Include entry.
+    var setsSorts = Object.assign(copySetsSorts, entry);
 
     // TODO: Do all the relevant stuff...
 
-
     // Compile novel values of attributes.
     var novelAttributesValues = {
-      setsEntities: currentEntities
+      setsSorts: setsSorts
     };
     var attributesValues = Object.assign(
       {},
-      setsCardinalitiesSummary,
       novelAttributesValues
     );
     // Submit novel values of attributes to the model of the application's
@@ -398,8 +387,6 @@ class Action {
       state: state
     });
   }
-
-
 
   /**
   * Selects an attribute's value.
@@ -619,26 +606,17 @@ class Action {
     // Initialize selections that influence sets' cardinalities.
     var setsCardinalitiesSelections = Action
     .initializeSetsCardinalitiesSelections();
-    // Determine sets' cardinalities.
-    var setsCardinalities = Cardinality.determineSetsCardinalities({
+    // Determine sets' cardinalities and prepare sets' summaries.
+    var setsCardinalitiesSummaries = Cardinality
+    .determineSetsCardinalitiesSummaries({
       setsEntities: setsCardinalitiesSelections.setsEntities,
       setsFilter: setsCardinalitiesSelections.setsFilter,
       accessReactionsSets: currentEntitiesSets.accessReactionsSets,
       accessMetabolitesSets: currentEntitiesSets.accessMetabolitesSets,
       filterReactionsSets: currentEntitiesSets.filterReactionsSets,
-      filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets
+      filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets,
+      setsSorts: setsCardinalitiesSelections.setsSorts,
     });
-    // TODO: I need to split the setsCardinalities from the setsSummaries...
-    // TODO: for the sake of efficiency...
-    // Initialize specifications to sort sets' summaries.
-    var setsSorts = Cardinality.createInitialSetsSorts();
-    // Create sets' summaries.
-
-    // Sort sets' summaries.
-
-
-
-    // Determine sets' cardinalities.
 
 
 
@@ -680,9 +658,7 @@ class Action {
     // Compile novel attributes' values.
     var novelAttributesValues = {
       source: source,
-      setsFilters: setsFilters,
-      setsCardinalities: setsCardinalitites,
-      setsSorts: setsSorts
+      setsFilters: setsFilters
     };
     var attributesValues = Object.assign(
       metabolicEntitiesSets,
@@ -690,6 +666,7 @@ class Action {
       entitiesSetsFilters,
       currentEntitiesSets,
       setsCardinalitiesSelections,
+      setsCardinalitiesSummaries,
       compartmentalization,
       simplifications,
       //networkDefinitionAttributes,
@@ -712,10 +689,13 @@ class Action {
     var setsEntities = "metabolites";
     // Initialize selection of whether to filter sets' entities for summary.
     var setsFilter = false;
+    // Initialize specifications to sort sets' summaries.
+    var setsSorts = Cardinality.createInitialSetsSorts();
     // Compile novel values of attributes.
     var attributesValues = {
       setsEntities: setsEntities,
-      setsFilter: setsFilter
+      setsFilter: setsFilter,
+      setsSorts: setsSorts
     };
     // Return novel values of attributes.
     return attributesValues;

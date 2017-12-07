@@ -37,8 +37,8 @@ United States of America
 class Cardinality {
 
   /**
-  * Determines cardinalities of entities in sets and prepares a summary of these
-  * sets' cardinalities.
+  * Determines cardinalities of entities in sets and prepares a summaries of
+  * these sets' cardinalities.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.setsEntities Type of entities, metabolites or
   * reactions for sets' cardinalities.
@@ -52,16 +52,19 @@ class Cardinality {
   * reactions' metabolites and sets that pass filtration by filter method.
   * @param {Object<Object>} parameters.filterMetabolitesSets Information about
   * metabolites' reactions and sets that pass filtration by filter method.
-  * @returns {Object} Cardinalities of entities in sets and summary of these
+  * @param {Object<Object<string>>} setsSorts Specifications to sort sets'
+  * summaries.
+  * @returns {Object} Cardinalities of entities in sets and summaries of these
   * sets' cardinalities.
   */
-  static determineSetsCardinalitiesSummary({
+  static determineSetsCardinalitiesSummaries({
     setsEntities,
     setsFilter,
     accessReactionsSets,
     accessMetabolitesSets,
     filterReactionsSets,
-    filterMetabolitesSets
+    filterMetabolitesSets,
+    setsSorts
   } = {}) {
     // Determine sets' cardinalities.
     var setsCardinalities = Cardinality.determineSetsCardinalities({
@@ -72,15 +75,16 @@ class Cardinality {
       filterReactionsSets: filterReactionsSets,
       filterMetabolitesSets: filterMetabolitesSets
     });
-    // Prepare summary of sets' cardinalities.
-    var setsSummary = Cardinality.prepareSetsSummary(setsCardinalities);
+    // Prepare summaries of sets' cardinalities.
+    var setsSummaries = Cardinality
+    .prepareSetsSummaries(setsCardinalities, setsSorts);
     // Compile information.
-    var setsCardinalitiesSummary = {
+    var setsCardinalitiesSummaries = {
       setsCardinalities: setsCardinalities,
-      setsSummary: setsSummary
+      setsSummaries: setsSummaries
     };
     // Return information.
-    return setsCardinalitiesSummary;
+    return setsCardinalitiesSummaries;
   }
 
   // Master control of procedure to count set cardinality.
@@ -256,11 +260,6 @@ class Cardinality {
 
   // Master control of procedure to prepare summary of sets' cardinalities.
 
-  // TODO: Sets' summary needs...
-  // TODO: Top level object with "processes" and "compartments" like in setsCardinalities.
-  // TODO: Array of sets for each value of attributes
-  // TODO: Elements in array are objects with info: count or cardinality of set, max cardinality for any set for that attribute
-
   /**
   * Creates initial specifications to sort sets' summaries.
   * @returns {Object<Object<string>>} Specifications to sort sets' summaries.
@@ -283,25 +282,24 @@ class Cardinality {
   * in sets by attributes and values.
   * @param {Object<Object<string>>} setsSorts Specifications to sort sets'
   * summaries.
-  * @returns {Object<Array<Object>>} Summaries of sets cardinalities.
+  * @returns {Object<Array<Object>>} Summaries of sets' cardinalities.
   */
   static prepareSetsSummaries(setsCardinalities, setsSorts) {
     // Create sets' summaries.
-    var basicSetsSummary = Cardinality.createSetsSummary(setsCardinalities);
-    console.log(basicSetsSummary);
+    var setsSummaries = Cardinality.createSetsSummaries(setsCardinalities);
+    console.log(setsSummaries);
     // Sort sets' summaries.
-    var sortSetsSummary = Cardinality
-    .sortSetsSummary(basicSetsSummary, setsSorts);
-    return sortSetsSummary;
+    var sortSetsSummaries = Cardinality
+    .sortSetsSummaries(setsSummaries, setsSorts);
+    return sortSetsSummaries;
   }
   /**
   * Creates summary of sets' cardinalities.
   * @param {Object<Object<number>>} setsCardinalities Cardinalities of entities
   * in sets by attributes and values.
-  * @returns {Object<Array<Object>>} Summary of sets of entities with
-  * information about cardinalities with organization by attributes and values.
+  * @returns {Object<Array<Object>>} Summaries of sets' cardinalities.
   */
-  static createSetsSummary(setsCardinalities) {
+  static createSetsSummaries(setsCardinalities) {
     // Prepare records for attributes.
     var attributes = Object.keys(setsCardinalities);
     return attributes.reduce(function (collection, attribute) {
@@ -335,52 +333,35 @@ class Cardinality {
     }, {});
   }
   /**
-  * Sorts records for attributes and values within set summary.
-  * @param {Array<Object<Array<Object>>>} basicSetsSummary Basic information for
-  * sets' summary.
-  * @returns {Array<Object<Array<Object>>>} Summary of sets of entities with
-  * information about cardinalities with organization by attributes and values
-  * and with records in ascending order.
+  * Sorts sets' summaries.
+  * @param {Object<Array<Object>>} setsSummaries Summaries of sets'
+  * cardinalities.
+  * @param {Object<Object<string>>} setsSorts Specifications to sort sets'
+  * summaries.
+  * @returns {Object<Array<Object>>} Summaries of sets' cardinalities.
   */
-  static sortSetsSummary(basicSetsSummary) {
-    // TODO: New state variable...
-    // TODO: call it setsSorts
-    var sort = {
-      processes: {
-        criterion: "name or count",
-        order: "ascend or descend"
-      },
-      compartments: {
-        criterion: "name or count",
-        order: "ascend or descend"
-      }
-    };
-
-
-
-    // Sort records for attributes.
-    var sortSetAttributes = basicSetsSummary
-    .slice().sort(function (firstValue, secondValue) {
-      // Sort attributes in custom order.
-      var order = {
-        compartments: 2,
-        processes: 1
-      };
-      return order[firstValue.attribute] - order[secondValue.attribute];
-    });
-    return sortSetAttributes.map(function (attributeRecord) {
+  static sortSetsSummaries(setsSummaries, setsSorts) {
+    var attributes = Object.keys(setsSummaries);
+    return attributes.reduce(function (collection, attribute) {
+      // Access information about attributes' values.
+      var values = setsSummaries[attribute];
+      // Determine appropriate sort function.
       // Sort records for values.
-      var novelValues = attributeRecord
-      .values.slice().sort(function (firstValue, secondValue) {
-        return firstValue.count - secondValue.count;
+      var sortValues = General.sortArrayRecords({
+        array: values,
+        key: setsSorts[attribute].criterion,
+        order: setsSorts[attribute].order
       });
-      var novelValuesRecords = {
-        values: novelValues
+      // Create entry.
+      var entry = {
+        [attribute]: sortValues
       };
-      // Copy existing values in the record and introduce new value.
-      return Object.assign({}, attributeRecord, novelValuesRecords);
-    });
+      // Include entry in collection.
+      return Object.assign(collection, entry);
+    }, {});
   }
+
+
   /**
   * Increments counts of cardinalities of sets in set summary in their
   * current order.
