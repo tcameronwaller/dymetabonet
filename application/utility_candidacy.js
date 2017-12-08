@@ -63,16 +63,11 @@ class Candidacy {
     metabolitesSimplifications,
     reactionsSimplifications
   } = {}) {
-    // In response to change sets filters or change compartmentalization
-    // ie any change to context
-    // 1. Candidacy.filterExplicitSimplifications()
-    // 2. Candidacy.collectCandidatesSimplifications()
-
     // Filter information about simplifications for entities to omit those that
     // are implicit and include only those that are explicit.
     var simplifications = Candidacy.filterExplicitSimplifications({
       metabolitesSimplifications: metabolitesSimplifications,
-      reactionsSimplifications: reactionsSimpliciations
+      reactionsSimplifications: reactionsSimplifications
     });
     // Collect information about candidate entities and their simplifications.
     var candidatesSimplifications = Candidacy.collectCandidatesSimplifications({
@@ -120,13 +115,11 @@ class Candidacy {
     reactionsSimplifications,
     metabolitesSimplifications
   } = {}) {
-    // TODO: ...
-    // In response to change to a single explicit simplification (either change to type or whether to include)
     // Filter information about simplifications for entities to omit those that
     // are implicit and include only those that are explicit.
     var explicitSimplifications = Candidacy.filterExplicitSimplifications({
       metabolitesSimplifications: metabolitesSimplifications,
-      reactionsSimplifications: reactionsSimpliciations
+      reactionsSimplifications: reactionsSimplifications
     });
     // Change information about explicit simplification of entities to represent
     // change to a single entity.
@@ -1024,25 +1017,17 @@ class Candidacy {
   // Management of simplifications of candidate entities.
 
   /**
-  * Creates initial, empty, information about reactions for simplification.
-  * @returns {Object<Object>} Information about simplification of reactions.
+  * Creates initial, empty, information about entities for simplification.
+  * @returns {Object<Object>} Information about simplification of entities.
   */
-  static createInitialReactionsSimplifications() {
-    //var information = {
-    //  identifier: reaction.identifier,
-    //  method: "omission",
-    //  dependency: true
-    //};
-
-    //var value_1 = {}
-    return {};
-  }
-  /**
-  * Creates initial, empty, information about metabolites for simplification.
-  * @returns {Object<Object>} Information about simplification of metabolites.
-  */
-  static createInitialMetabolitesSimplifications() {
-    return {};
+  static createInitialSimplifications() {
+    // Compile information.
+    var simplifications = {
+      reactionsSimplifications: {},
+      metabolitesSimplifications: {}
+    };
+    // Return information.
+    return simplifications;
   }
   /**
   * Filters designations of entities for simplification to omit implicit

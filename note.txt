@@ -4,38 +4,78 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
-7 December 2017
+8 December 2017
 
 ----------
 Progress
 
+The application data are in order.
+The application's actions to manipulate data are in order.
+
+Develop the application's interface to filter and simplify entities.
+
+----------
+Actions
+
+Complete implementation of procedure for candidate entities.
+Include this procedure in appropriate actions.
+
 Restore procedures for all interactions with the sets' summary.
 Manage the split between sets' cardinalities and sets' summaries.
 
-initializeApplicationInformation
--determineSetsCardinalitiesSummaries
--determineCandidateEntities
+initializeApplicationTotalState
+-source
+-entities
+-sets
+-totalEntitiesSets
+-setsFilters
+-currentEntitiesSets
+-setsEntities
+-setsFilter
+-setsCardinalities
+-setsSorts
+-setsSummaries
+-context
+-candidateEntities
 
-restoreSetsSummary
--determineSetsCardinalitiesSummaries
--determineCandidateEntities
+restoreApplicationInitialState
+-setsFilters
+-currentEntitiesSets
+-setsEntities
+-setsFilter
+-setsCardinalities
+-setsSorts
+-setsSummaries
+-context
+-candidateEntities
+
+changeSetsFilters
+-setsFilters
+-currentEntitiesSets
+-setsCardinalities
+-setsSummaries
+-candidateEntities
 
 changeSetsEntities
--determineSetsCardinalitiesSummaries
--determineCandidateEntities
+-setsEntities
+-setsCardinalities
+-setsSummaries
 
 changeSetsFilter
--determineSetsCardinalitiesSummaries
+-setsFilter
+-setsCardinalities
+-setsSummaries
 
 changeSetsSorts
--sortSetsSummaries
-
-selectSetsAttributeValue
--determineSetsCardinalitiesSummaries
--determineCandidateEntities
+-setsSorts
+-setsSummaries
 
 changeCompartmentalization
--determineCandidateEntities
+-context
+-candidateEntities
+
+changeSimplification
+-context
 
 --------------------------------------------------
 5 December 2017

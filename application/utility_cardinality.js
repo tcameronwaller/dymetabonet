@@ -287,7 +287,6 @@ class Cardinality {
   static prepareSetsSummaries(setsCardinalities, setsSorts) {
     // Create sets' summaries.
     var setsSummaries = Cardinality.createSetsSummaries(setsCardinalities);
-    console.log(setsSummaries);
     // Sort sets' summaries.
     var sortSetsSummaries = Cardinality
     .sortSetsSummaries(setsSummaries, setsSorts);
@@ -361,6 +360,8 @@ class Cardinality {
     }, {});
   }
 
+
+  // TODO: I don't need the increment anymore...
 
   /**
   * Increments counts of cardinalities of sets in set summary in their

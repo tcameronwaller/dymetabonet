@@ -42,13 +42,13 @@ class State {
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Specify state's attributes.
-    this.attributeNames = [
-
+    var source = [
       // Source.
       // Attribute "source" stores a reference to a file on client's system that
       // is a source of information.
-      "source",
-
+      "source"
+    ];
+    var entities = [
       // Metabolic entities and sets.
       // Attribute "metabolites" stores information about chemically-unique
       // metabolites.
@@ -57,16 +57,18 @@ class State {
       // facilitate chemical conversion or physical transport of metabolites.
       // Information includes references to attributes "metabolites",
       // "compartments", and "processes".
-      "reactions",
+      "reactions"
+    ];
+    var sets = [
       // Attribute "genes" stores information about genes.
       "genes",
       // Attribute "compartments" stores information about compartments within a
       // cell.
       "compartments",
       // Attribute "processes" stores information about processes or pathways.
-      "processes",
-
-      // Sets.
+      "processes"
+    ];
+    var totalEntitiesSets = [
       // Attribute "totalReactionsSets" stores information for all reactions
       // about all the metabolites that participate in each reaction and the
       // sets to which each reaction belongs by all its values of attributes.
@@ -85,14 +87,18 @@ class State {
       // "reactions", "compartments", and "processes".
       // Information derives from attributes "totalReactionsSets" and
       // "reactions".
-      "totalMetabolitesSets",
+      "totalMetabolitesSets"
+    ];
+    var entitiesSetsFilters = [
       // Attribute "setsFilters" stores information about selections of sets
       // by values of entities' attributes to apply as filters.
       // The purpose of attribute "setsFilters" is to define filters for
       // filtration of entities by their values of attributes.
       // Information includes references to attributes "compartments" and
       // "processes".
-      "setsFilters",
+      "setsFilters"
+    ];
+    var currentEntitiesSets = [
       // Attribute "accessReactionsSets" stores information for reactions that
       // pass filters about all the metabolites that participate in each
       // reaction and the sets to which each reaction belongs by all its values
@@ -136,7 +142,9 @@ class State {
       // "reactions", "compartments", and "processes".
       // Information derives from attributes "totalMetabolitesSets",
       // "filterReactionsSets" and "reactions".
-      "filterMetabolitesSets",
+      "filterMetabolitesSets"
+    ];
+    var setsCardinalitiesSummaries = [
       // Attribute "setsEntities" stores information about the type of entities,
       // metabolites or reactions, to represent in the sets' summary.
       "setsEntities",
@@ -164,13 +172,12 @@ class State {
       // Information includes references to attributes "compartments" and
       // "processes".
       // Information derives from attribute "setsCardinalities".
-      "setsSummaries",
-
-      // Entities.
+      "setsSummaries"
+    ];
+    var context = [
       // Attribute "compartmentalization" stores information about whether to
       // represent compartmentalization of metabolites.
       "compartmentalization",
-
       // Attribute "reactionsSimplifications" stores information about
       // selections of reactions for simplification by omission.
       // Information includes references to attribute "reactionsCandidates".
@@ -179,8 +186,9 @@ class State {
       // selections of metabolites for simplification either by replication or
       // omission.
       // Information includes references to attribute "metabolitesCandidates".
-      "metabolitesSimplifications",
-
+      "metabolitesSimplifications"
+    ];
+    var candidateEntities = [
       // Attribute "reactionsCandidates" stores information for each reaction
       // about the metabolites that participate.
       // Information includes compartmentalization of metabolites.
@@ -195,7 +203,9 @@ class State {
       // Information includes references to attributes "metabolites",
       // "reactions", and "compartments".
       // Information derives from attribute "reactionsCandidates".
-      "metabolitesCandidates",
+      "metabolitesCandidates"
+    ];
+    var inProgress = [
 
       // Network.
       "networkNodesReactions",
@@ -204,10 +214,6 @@ class State {
       "subNetworkNodesMetabolites",
       "subNetworkNodesReactions",
       "subNetworkLinks",
-
-      // TODO: Maybe include "relevantEntities" that represent entities that pass filters, are preserved as candidates, represented in network, and also part of specific subnetwork.
-
-
 
 
       // Network.
@@ -219,6 +225,17 @@ class State {
       "currentMetabolitesNodes", "currentReactionsNodes", "currentLinks",
       "subNetwork",
     ];
+    self.attributeNames = [].concat(
+      source,
+      entities,
+      sets,
+      totalEntitiesSets,
+      entitiesSetsFilters,
+      currentEntitiesSets,
+      setsCardinalitiesSummaries,
+      context,
+      candidateEntities
+    );
   }
   /**
   * Restores the values of attributes in application's state and initializes

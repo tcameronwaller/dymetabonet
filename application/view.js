@@ -551,7 +551,7 @@ class SetView {
     self.restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.restoreSetsSummary(self.state);
+      Action.restoreApplicationInitialState(self.state);
     });
   }
   /**
