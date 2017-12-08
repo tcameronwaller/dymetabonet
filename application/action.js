@@ -199,6 +199,8 @@ class Action {
     // Initialize application's variant state.
     var variantStateVariables = Action.initializeApplicationVariantState({
       reactions: state.reactions,
+      compartments: state.compartments,
+      processes: state.processes,
       totalReactionsSets: state.totalReactionsSets,
       totalMetabolitesSets: state.totalMetabolitesSets
     });
@@ -241,6 +243,8 @@ class Action {
       filterReactionsSets: currentEntitiesSets.filterReactionsSets,
       filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets,
       setsSorts: state.setsSorts,
+      compartments: state.compartments,
+      processes: state.processes
     });
     // Determine candidate entities and their simplifications.
     var candidateEntitiesSimplifications = Candidacy
@@ -289,6 +293,8 @@ class Action {
       filterReactionsSets: state.filterReactionsSets,
       filterMetabolitesSets: state.filterMetabolitesSets,
       setsSorts: state.setsSorts,
+      compartments: state.compartments,
+      processes: state.processes
     });
     // Compile attributes' values.
     var novelAttributesValues = {
@@ -326,6 +332,8 @@ class Action {
       filterReactionsSets: state.filterReactionsSets,
       filterMetabolitesSets: state.filterMetabolitesSets,
       setsSorts: state.setsSorts,
+      compartments: state.compartments,
+      processes: state.processes
     });
     // Compile attributes' values.
     var novelAttributesValues = {
@@ -379,8 +387,12 @@ class Action {
     // Include entry.
     var setsSorts = Object.assign(copySetsSorts, entry);
     // Prepare summaries of sets' cardinalities.
-    var setsSummaries = Cardinality
-    .prepareSetsSummaries(state.setsCardinalities, setsSorts);
+    var setsSummaries = Cardinality.prepareSetsSummaries({
+      setsCardinalities: state.setsCardinalities,
+      setsSorts: setsSorts,
+      compartments: state.compartments,
+      processes: state.processes
+    });
     // Compile attributes' values.
     var novelAttributesValues = {
       setsSorts: setsSorts,
@@ -560,9 +572,7 @@ class Action {
   * entities and sets.
   * @param {Object} parameters.state Application's state.
   */
-  static initializeApplicationTotalState({
-    metabolicEntitiesSets, state
-  } = {}) {
+  static initializeApplicationTotalState({metabolicEntitiesSets, state} = {}) {
     // Initialize application's state from information about metabolic entities
     // and sets.
     // Remove any information about source from the application's state.
@@ -573,6 +583,8 @@ class Action {
     // Initialize application's variant state.
     var variantStateVariables = Action.initializeApplicationVariantState({
       reactions: metabolicEntitiesSets.reactions,
+      compartments: metabolicEntitiesSets.compartments,
+      processes: metabolicEntitiesSets.processes,
       totalReactionsSets: totalEntitiesSets.totalReactionsSets,
       totalMetabolitesSets: totalEntitiesSets.totalMetabolitesSets
     });
@@ -597,6 +609,8 @@ class Action {
   * implicit simplifications.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
   * @param {Object<Object>} parameters.totalReactionsSets Information about all
   * reactions' metabolites and sets.
   * @param {Object<Object>} parameters.totalMetabolitesSets Information about
@@ -604,7 +618,7 @@ class Action {
   * @returns {Object} Values of multiple attributes.
   */
   static initializeApplicationVariantState({
-    reactions, totalReactionsSets, totalMetabolitesSets
+    reactions, compartments, processes, totalReactionsSets, totalMetabolitesSets
   } = {}) {
     // Initialize filters against entities' sets.
     var setsFilters = Attribution.createInitialSetsFilters();
@@ -628,6 +642,8 @@ class Action {
       filterReactionsSets: currentEntitiesSets.filterReactionsSets,
       filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets,
       setsSorts: setsCardinalitiesSelections.setsSorts,
+      compartments: compartments,
+      processes: processes
     });
     // Initialize compartmentalization's relevance.
     var compartmentalization = true;

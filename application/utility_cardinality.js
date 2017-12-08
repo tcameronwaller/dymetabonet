@@ -52,8 +52,10 @@ class Cardinality {
   * reactions' metabolites and sets that pass filtration by filter method.
   * @param {Object<Object>} parameters.filterMetabolitesSets Information about
   * metabolites' reactions and sets that pass filtration by filter method.
-  * @param {Object<Object<string>>} setsSorts Specifications to sort sets'
-  * summaries.
+  * @param {Object<Object<string>>} parameters.setsSorts Specifications to sort
+  * sets' summaries.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
   * @returns {Object} Cardinalities of entities in sets and summaries of these
   * sets' cardinalities.
   */
@@ -64,7 +66,9 @@ class Cardinality {
     accessMetabolitesSets,
     filterReactionsSets,
     filterMetabolitesSets,
-    setsSorts
+    setsSorts,
+    compartments,
+    processes
   } = {}) {
     // Determine sets' cardinalities.
     var setsCardinalities = Cardinality.determineSetsCardinalities({
@@ -76,8 +80,12 @@ class Cardinality {
       filterMetabolitesSets: filterMetabolitesSets
     });
     // Prepare summaries of sets' cardinalities.
-    var setsSummaries = Cardinality
-    .prepareSetsSummaries(setsCardinalities, setsSorts);
+    var setsSummaries = Cardinality.prepareSetsSummaries({
+      setsCardinalities: setsCardinalities,
+      setsSorts: setsSorts,
+      compartments: compartments,
+      processes: processes
+    });
     // Compile information.
     var setsCardinalitiesSummaries = {
       setsCardinalities: setsCardinalities,
@@ -278,18 +286,27 @@ class Cardinality {
   }
   /**
   * Prepares summaries of sets's cardinalities.
-  * @param {Object<Object<number>>} setsCardinalities Cardinalities of entities
-  * in sets by attributes and values.
-  * @param {Object<Object<string>>} setsSorts Specifications to sort sets'
-  * summaries.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Object<number>>} parameters.setsCardinalities Cardinalities
+  * of entities in sets by attributes and values.
+  * @param {Object<Object<string>>} parameters.setsSorts Specifications to sort
+  * sets' summaries.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
   * @returns {Object<Array<Object>>} Summaries of sets' cardinalities.
   */
-  static prepareSetsSummaries(setsCardinalities, setsSorts) {
+  static prepareSetsSummaries({
+    setsCardinalities, setsSorts, compartments, processes
+  } = {}) {
     // Create sets' summaries.
     var setsSummaries = Cardinality.createSetsSummaries(setsCardinalities);
     // Sort sets' summaries.
-    var sortSetsSummaries = Cardinality
-    .sortSetsSummaries(setsSummaries, setsSorts);
+    var sortSetsSummaries = Cardinality.sortSetsSummaries({
+      setsSummaries: setsSummaries,
+      setsSorts: setsSorts,
+      compartments: compartments,
+      processes: processes
+    });
     return sortSetsSummaries;
   }
   /**
@@ -333,15 +350,25 @@ class Cardinality {
   }
   /**
   * Sorts sets' summaries.
-  * @param {Object<Array<Object>>} setsSummaries Summaries of sets'
+  * @param {Object<Array<Object>>} parameters.setsSummaries Summaries of sets'
   * cardinalities.
-  * @param {Object<Object<string>>} setsSorts Specifications to sort sets'
-  * summaries.
+  * @param {Object<Object<string>>} parameters.setsSorts Specifications to sort
+  * sets' summaries.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
   * @returns {Object<Array<Object>>} Summaries of sets' cardinalities.
   */
-  static sortSetsSummaries(setsSummaries, setsSorts) {
+  static sortSetsSummaries({
+    setsSummaries, setsSorts, compartments, processes
+  }) {
     var attributes = Object.keys(setsSummaries);
     return attributes.reduce(function (collection, attribute) {
+      // Determine reference for values' names.
+      if (attribute === "compartments") {
+        var reference = compartments;
+      } else if (attribute === "processes") {
+        var reference = processes;
+      }
       // Access information about attributes' values.
       var values = setsSummaries[attribute];
       // Determine appropriate sort function.
@@ -349,7 +376,8 @@ class Cardinality {
       var sortValues = General.sortArrayRecords({
         array: values,
         key: setsSorts[attribute].criterion,
-        order: setsSorts[attribute].order
+        order: setsSorts[attribute].order,
+        reference: reference,
       });
       // Create entry.
       var entry = {
@@ -359,7 +387,6 @@ class Cardinality {
       return Object.assign(collection, entry);
     }, {});
   }
-
 
   // TODO: I don't need the increment anymore...
 

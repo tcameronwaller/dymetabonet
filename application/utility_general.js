@@ -1087,18 +1087,25 @@ class General {
   * @param {string} parameters.key Key of value in records by which to sort.
   * @param {string} parameters.order Direction, ascend or descend, in which to
   * sort records.
+  * @param {Object} parameters.reference Information about values' names.
   * @returns {Array<string>} Shallow copy of array with records in sort order.
   */
-  static sortArrayRecords({array, key, order} = {}) {
+  static sortArrayRecords({array, key, order, reference} = {}) {
     // Determine type of value by which to sort records.
     // Assume that all records have values of the same type.
     var type = General.determineValueType(array[0][key]);
     // Sort records.
     return array.slice().sort(function (firstRecord, secondRecord) {
       if (type === "string") {
-        // Convert values to lower case for comparison.
-        var firstValue = firstRecord[key].toLowerCase();
-        var secondValue = secondRecord[key].toLowerCase();
+        if (reference) {
+          // Convert values to lower case for comparison.
+          var firstValue = reference[firstRecord[key]].toLowerCase();
+          var secondValue = reference[secondRecord[key]].toLowerCase();
+        } else {
+          // Convert values to lower case for comparison.
+          var firstValue = firstRecord[key].toLowerCase();
+          var secondValue = secondRecord[key].toLowerCase();
+        }
       } else if (type === "number") {
         // Access values.
         var firstValue = firstRecord[key];
