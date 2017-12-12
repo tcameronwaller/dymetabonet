@@ -167,6 +167,10 @@ flex-direction: column;
   width: 0.5cm;
 }
 
+#set div.menu table thead th svg.sort polygon {
+  fill: rgba(255, 255, 255, 1);
+}
+
 #set div.menu table thead th svg.scale {
   height: 0.5cm;
   width: 100%;

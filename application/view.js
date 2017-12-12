@@ -659,10 +659,6 @@ class SetView {
     });
   }
 
-
-
-
-
   /**
   * Restores aspects of the view's composition and behavior that vary with
   * changes to the application's state.
@@ -677,13 +673,10 @@ class SetView {
     .determineEntityMatch("reactions", self.state);
     self.filter.checked = SetView.determineFilter(self.state);
     //self.compartmentalizationControl.checked = self.determineCompartmentalization(self);
-
-    // TODO: Probably better to put all the sort representations in another function...
-
     self.representSetsSorts(self);
 
-    // Create and activate summaries of sets in lists.
-    //self.createActivateSetsLists(self);
+    // Create and activate menus of sets' summaries.
+    self.createActivateSetsMenus(self);
   }
   /**
   * Determines whether a type of entities matches the value in the application's
@@ -757,10 +750,18 @@ class SetView {
         // Sort is in descending order.
         var orientation = "down";
       }
-      var mark = self
-      .document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-      graph.appendChild(mark);
-      mark.classList.add("sort");
+      // Determine whether the graphical container contains a polygon.
+      if (graph.getElementsByTagName("polygon").length === 0) {
+        // Graphical container does not contain a polygon.
+        // Create polygon.
+        var mark = self
+        .document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        graph.appendChild(mark);
+      } else {
+        // Graphical container contains a polygon.
+        // Set reference to polygon.
+        var mark = graph.getElementsByTagName("polygon").item(0);
+      }
       var base = 10;
       var altitude = 10;
       // Determine
@@ -770,59 +771,29 @@ class SetView {
         orientation: orientation
       });
       mark.setAttribute("points", points);
-
       // Determine the dimensions of the graphical container.
       var width = General.determineElementDimension(graph, "width");
       var height = General.determineElementDimension(graph, "height");
       var x = (width / 2) - (base / 2);
-      var y = (height / 2) - (altitude / 2);
+      var y = (height / 2);
       mark.setAttribute("transform", "translate(" + x + "," + y + ")");
     } else {
-
-
-      // TODO: I guess remove any previously-existing marks?
-      //
-      //
-      // 
+      // The criterion does not define the sort.
+      // Remove any marks for the criterion.
+      General.removeDocumentChildren(graph);
     }
   }
   /**
   * Creates and activates summaries of sets in lists.
   * @param {Object} self Instance of a class.
   */
-  createActivateSetsLists(self) {
-    // Create and activate summaries of sets for processes.
-    self.createActivateSetsList("processes", self);
-    // Create and activate summaries of sets for compartments.
-    self.createActivateSetsList("compartments", self);
+  createActivateSetsMenus(self) {
+    // Create and activate menu of sets' summaries for processes.
+    self.createActivateSetsMenu("processes", self);
+    // Create and activate menu of sets' summaries for compartments.
+    self.createActivateSetsMenu("compartments", self);
 
     if (false) {
-      // Select summary table's body.
-      var body = d3.select(self.tableBody);
-      // Append rows to table with association to data.
-      var dataRows = body.selectAll("tr").data(self.model.setsSummary);
-      dataRows.exit().remove();
-      var newRows = dataRows.enter().append("tr");
-      var rows = newRows.merge(dataRows);
-      // Append cells to table with association to data.
-      var dataCells = rows.selectAll("td").data(function (element, index) {
-        // Organize data for table cells in each row.
-        return [].concat(
-          {
-            type: "attribute",
-            attribute: element.attribute,
-            values: element.values
-          },
-          {
-            type: "value",
-            attribute: element.attribute,
-            values: element.values
-          }
-        );
-      });
-      dataCells.exit().remove();
-      var newCells = dataCells.enter().append("td");
-      self.tableBodyCells = newCells.merge(dataCells);
       // Create and activate summary table's cells.
       self.createActivateSummaryBodyCellsAttributes(self);
       self.createActivateSummaryBodyCellsValues(self);
@@ -833,18 +804,7 @@ class SetView {
   * @param {string} sets Type of sets, processes or compartments.
   * @param {Object} self Instance of a class.
   */
-  createActivateSetsList(sets, self) {
-    // TODO: Temporary work-around... I need to change the structure of the sets' summary.
-    // TODO: I need an easy way to determine the maximum count of all the sets.
-    // TODO: Instead of the total that I included with each value before, do a maximum with each value.
-    // TODO: I need to decide how I want to structure these data now...
-    if (sets === "processes") {
-      var index = 0;
-      var max = 714;
-    } else if (sets === "compartments") {
-      var index = 1;
-      var max = 1918;
-    }
+  createActivateSetsMenu(sets, self) {
     // Create graphs to represent sets' cardinalities.
     // It is possible to contain a graph's visual representations and textual
     // annotations within separate groups in order to segregate these within
@@ -863,13 +823,48 @@ class SetView {
 
     // Create items in list.
     // Select parent.
-    var list = d3.select(self[sets]);
+    var body = d3.select(self[sets]);
+
+    // TODO: Create and activate rows in a separate function...
+    // TODO: hover over a row should do something...
+    // TODO: Clicking on a row should select the corresponding set...
+
+    // Create and activate rows.
     // Create children elements by association to data.
-    var dataElements = list
-    .selectAll("li").data(self.state.setsSummary[index].values);
+    var dataElements = body
+    .selectAll("tr").data(self.state.setsSummaries[sets]);
     dataElements.exit().remove();
-    var novelElements = dataElements.enter().append("li");
-    var items = novelElements.merge(dataElements);
+    var novelElements = dataElements.enter().append("tr");
+    var rows = novelElements.merge(dataElements);
+    // Create cells for names and counts.
+    var cellsReference = sets + "Cells";
+    // Create children elements by association to data.
+    var dataElements = rows
+    .selectAll("td").data(function (element, index, nodes) {
+      // Organize data.
+      return [].concat(
+        {
+          type: "name",
+          attribute: element.attribute,
+          value: element.value
+        },
+        {
+          type: "count",
+          attribute: element.attribute,
+          count: element.count,
+          maximum: element.maximum
+        }
+      );
+    });
+    dataElements.exit().remove();
+    var novelElements = dataElements.enter().append("td");
+    self[cellsReference] = novelElements.merge(dataElements);
+
+    // TODO: Create different types of cells in separate functions.
+
+
+
+
     // Create graph for each item in list.
     // Create children elements by association to data.
     var dataElements = items
