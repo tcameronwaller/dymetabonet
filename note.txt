@@ -4,6 +4,16 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+10 December 2017
+
+----------
+Progress
+
+Prepare an organization of candidate entities within an array.
+This structure will be necessary for sorts.
+Follow the pattern of the setsCardinalities and setsSummary.
+
+--------------------------------------------------
 8 December 2017
 
 ----------

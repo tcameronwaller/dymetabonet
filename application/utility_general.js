@@ -335,20 +335,35 @@ class General {
   * @param {Object} parameters Destructured object of parameters.
   * @param {number} parameters.base Dimension of triangle's base.
   * @param {number} parameters.altitude Dimension of triangle's altitude.
-  * @param {string} parameters.direction Direction, right or left, in which the
-  * horizontal triangle's apex faces.
+  * @param {string} parameters.orientation Orientation, up, right, down, or left
+  * in which the triangle's apex faces.
   * @returns {string} Definitions of points for an horizontal, isosceles
   * triangle.
   */
-  static createHorizontalIsoscelesTrianglePoints({
-    base, altitude, direction
+  static createIsoscelesTrianglePoints({
+    base, altitude, orientation
   } = {}) {
     // The coordinates of scalable vector graphs originate at the top left
     // corner.
     // Coordinates of the x-axis or abscissa increase towards the right.
     // Coordinates of the y-axis or ordinate increase towards the bottom.
     // Determine direction in which triangle's apex faces.
-    if (direction === "right") {
+    if (orientation === "up") {
+      // Triangle's apex faces up.
+      // Determine coordinates of triangle's vertices.
+      var vertex1 = {
+        x: (base / 2),
+        y: 0
+      };
+      var vertex2 = {
+        x: base,
+        y: altitude
+      };
+      var vertex3 = {
+        x: 0,
+        y: altitude
+      };
+    } else if (orientation === "right") {
       // Triangle's apex faces right.
       // Determine coordinates of triangle's vertices.
       var vertex1 = {
@@ -363,7 +378,22 @@ class General {
         x: 0,
         y: base
       };
-    } else if (direction === "left") {
+    } else if (orientation === "down") {
+      // Triangle's apex faces down.
+      // Determine coordinates of triangle's vertices.
+      var vertex1 = {
+        x: 0,
+        y: 0
+      };
+      var vertex2 = {
+        x: base,
+        y: 0
+      };
+      var vertex3 = {
+        x: (base / 2),
+        y: altitude
+      };
+    } else if (orientation === "left") {
       // Triangle's apex faces left.
       // Determine coordinates of triangle's vertices.
       var vertex1 = {

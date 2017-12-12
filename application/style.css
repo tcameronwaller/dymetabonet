@@ -81,7 +81,7 @@ flex-direction: column;
 
 #control {
   background-color: rgba(200, 200, 200, 1);
-  flex-basis: 7.5cm;
+  flex-basis: 9cm;
   height: 100%;
   overflow: auto;
 }
@@ -122,15 +122,58 @@ flex-direction: column;
   overflow: auto;
 }
 
-#set div.menu ul {
-  list-style-type: none;
-  list-style-position: outside;
-  padding-left: 0.1cm;
+#set div.menu table {
+  table-layout: fixed;
+  text-align: left;
+  border-collapse: collapse;
+  border-style: solid;
+  overflow-x: hidden;
+  width: 100%;
 }
 
-#set div.menu ul li svg.graph {
-  height: 0.75cm;
+#set div.menu table thead {
+  background-color: rgba(50, 50, 50, 1);
+  color: rgba(255, 255, 255, 1);
+  font-size: medium;
+  font-weight: bold;
+}
+
+#set div.menu table thead th {
+  vertical-align: middle;
+  border-color: rgba(200, 200, 200, 1);
+  border-style: solid;
+  border-width: 1mm;
+  padding: 1mm;
+}
+
+#set div.menu table tr {
+  vertical-align: middle;
+}
+
+#set div.menu table thead th.name {
+  width: 1.75cm;
+}
+
+#set div.menu table thead th.count {
+  width: auto;
+}
+
+#set div.menu table thead span.sort {
+  background-color: rgba(100, 100, 100, 1);
+}
+
+#set div.menu table thead th svg.sort {
+  height: 0.5cm;
+  width: 0.5cm;
+}
+
+#set div.menu table thead th svg.scale {
+  height: 0.5cm;
   width: 100%;
+}
+
+
+#set div.menu table tbody td svg.graph {
 }
 
 #set div.menu ul li svg.graph rect.base {
@@ -175,40 +218,7 @@ flex-direction: column;
 /* Set View */
 /******************************************************************************/
 
-
-#set table {
-  border-collapse: collapse;
-  border-style: solid;
-  width: 100%;
-  table-layout: auto;
-  text-align: left;
-}
-
-#set table thead {
-  background-color: rgba(50, 50, 50, 1);
-  color: rgba(255, 255, 255, 1);
-  font-size: medium;
-  font-weight: bold;
-}
-
-#set table thead tr {
-  height: 0.75cm;
-  vertical-align: middle;
-}
-
-#set table thead th {
-  border-color: rgba(200, 200, 200, 1);
-  border-style: solid;
-  border-width: 1mm;
-  padding: 1mm;
-}
-
-#set table tbody tr {
-  height: 0.75cm;
-  vertical-align: middle;
-}
-
-#set table tbody td {
+#setold table tbody td {
   border-color: rgba(200, 200, 200, 1);
   border-style: solid;
   border-width: 1mm;
@@ -218,7 +228,7 @@ flex-direction: column;
   white-space: nowrap;
 }
 
-#set table tbody td.attribute {
+#setold table tbody td.attribute {
   background-color: rgba(50, 50, 50, 1);
   color: rgba(255, 255, 255, 1);
   font-size: medium;
@@ -226,40 +236,40 @@ flex-direction: column;
   width: 3cm;
 }
 
-#set table tbody td.attribute div.search input {
+#setold table tbody td.attribute div.search input {
   /*size: 10cm;*/
 }
 
-#set table tbody td.value {
+#setold table tbody td.value {
   background-color: rgba(255, 255, 255, 1);
 }
 
-#set table tbody td.value svg.graph {
+#setold table tbody td.value svg.graph {
   height: 0.75cm;
   width: 100%;
 }
 
-#set table tbody td.value .mark {
+#setold table tbody td.value .mark {
   /*fill: rgba(200, 20, 20, 1);*/
 }
 
-#set table tbody td.value svg.graph g.group:nth-child(odd) .mark.normal {
+#setold table tbody td.value svg.graph g.group:nth-child(odd) .mark.normal {
   fill: rgba(0, 255, 100, 1);
 }
 
-#set table tbody td.value svg.graph g.group:nth-child(even) .mark.normal {
+#setold table tbody td.value svg.graph g.group:nth-child(even) .mark.normal {
   fill: rgba(0, 100, 255, 1);
 }
 
-#set table tbody td.value svg.graph g.group:nth-child(odd) .mark.emphasis {
+#setold table tbody td.value svg.graph g.group:nth-child(odd) .mark.emphasis {
   fill: rgba(255, 100, 0, 1);
 }
 
-#set table tbody td.value svg.graph g.group:nth-child(even) .mark.emphasis {
+#setold table tbody td.value svg.graph g.group:nth-child(even) .mark.emphasis {
   fill: rgba(255, 0, 0, 1);
 }
 
-#set table tbody td.value svg.graph text.label {
+#setold table tbody td.value svg.graph text.label {
   font-family: sans-serif;
   font-style: normal;
   font-weight: bold;

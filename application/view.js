@@ -215,6 +215,17 @@ class View {
     // Return reference to element.
     return labelReference;
   }
+  /**
+  * Creates a scalable vector graphical container.
+  * @param {Object} documentReference Reference to document object model.
+  * @returns {Object} Reference to element.
+  */
+  static createGraph(documentReference) {
+    // Create graph.
+    var graph = documentReference
+    .createElementNS("http://www.w3.org/2000/svg", "svg");
+    return graph;
+  }
 }
 
 // Control view and views within control view.
@@ -439,55 +450,52 @@ class SetView {
       self.createActivateRestore(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
-      // Create list for sets by processes.
-      self.createSetsList("processes", self);
-      // Create list for sets by compartments.
-      self.createSetsList("compartments", self);
+      // Create menu for sets by processes.
+      self.createSetsMenu("processes", self);
+      // Create menu for sets by compartments.
+      self.createSetsMenu("compartments", self);
 
-      // TODO: I haven't figured out the stuff below here yet...
       if (false) {
         // TODO: This control is temporary for the sake of demonstration on 10 October 2017.
         // Create and control for compartmentalization.
         self.createActivateCompartmentalizationControl(self);
-
-
-        // TODO: I'm not going to use a table any more.
-
-        // Create table.
-        self.table = self.document.createElement("table");
-        self.container.appendChild(self.table);
-        // Create table's header.
-        self.tableHead = self.document.createElement("thead");
-        self.table.appendChild(self.tableHead);
-        var tableHeadRow = self.document.createElement("tr");
-        self.tableHead.appendChild(tableHeadRow);
-        var tableHeadRowCellAttribute = self.document.createElement("th");
-        tableHeadRow.appendChild(tableHeadRowCellAttribute);
-        tableHeadRowCellAttribute.textContent = "Attribute";
-        tableHeadRowCellAttribute.classList.add("attribute");
-        self.tableHeadRowCellValue = self.document.createElement("th");
-        tableHeadRow.appendChild(self.tableHeadRowCellValue);
-        self.tableHeadRowCellValue.classList.add("value");
-
-        // Create table's body.
-        self.tableBody = self.document.createElement("tbody");
-        self.table.appendChild(self.tableBody);
       }
     } else {
       // View's container is not empty.
       // Set references to view's variant elements.
+      // Control for type of entities.
       self.metabolites = self
       .document.getElementById("set-metabolites");
       self.reactions = self
       .document.getElementById("set-reactions");
+      // Control for filter.
       self.filter = self.document.getElementById("set-filter");
-      self.processesContainer = self.document.getElementById("set-processes");
+      // Containers of sets' menus.
+      self.processesContainer = self
+      .document.getElementById("set-processes-container");
       self.compartmentsContainer = self
-      .document.getElementById("set-compartments");
+      .document.getElementById("set-compartments-container");
+      // Sets' searches.
+      // TODO: create and activate sets' searches.
+      // Sets' sorts.
+      self.processesNameSort = self
+      .processesContainer.querySelector("table thead tr th.name svg.sort");
+      self.processesCountSort = self
+      .processesContainer.querySelector("table thead tr th.count svg.sort");
+      self.compartmentsNameSort = self
+      .compartmentsContainer.querySelector("table thead tr th.name svg.sort");
+      self.compartmentsCountSort = self
+      .compartmentsContainer.querySelector("table thead tr th.count svg.sort");
+      // Count scales.
+      self.processesScale = self
+      .processesContainer.querySelector("table thead tr th.count svg.scale");
+      self.compartmentsScale = self
+      .compartmentsContainer.querySelector("table thead tr th.count svg.scale");
+      // Sets' summaries.
       self.processes = self
-      .processesContainer.getElementsByTagName("ul").item(0);
+      .processesContainer.getElementsByTagName("tbody").item(0);
       self.compartments = self
-      .compartmentsContainer.getElementsByTagName("ul").item(0);
+      .compartmentsContainer.getElementsByTagName("tbody").item(0);
     }
   }
   /**
@@ -507,7 +515,7 @@ class SetView {
       parent: self.container,
       documentReference: self.document
     });
-    // Activate control for type of entities.
+    // Activate behavior.
     self[entities].addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
@@ -529,7 +537,7 @@ class SetView {
       parent: self.container,
       documentReference: self.document
     });
-    // Activate control for filter.
+    // Activate behavior.
     self.filter.addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
@@ -542,41 +550,119 @@ class SetView {
   */
   createActivateRestore(self) {
     // Create button for restoration.
-    self.restore = View.createButton({
+    var restore = View.createButton({
       label: "restore",
       parent: self.container,
       documentReference: self.document
     });
-    // Activate button for restoration.
-    self.restore.addEventListener("click", function (event) {
+    // Activate behavior.
+    restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
       Action.restoreApplicationInitialState(self.state);
     });
   }
   /**
-  * Creates a list for sets.
+  * Creates a menu for sets.
   * @param {string} sets Type of sets, processes or compartments.
   * @param {Object} self Instance of a class.
   */
-  createSetsList(sets, self) {
+  createSetsMenu(sets, self) {
     // Create title.
     var title = self.document.createElement("span");
     self.container.appendChild(title);
     title.textContent = sets;
+    // TODO: Create the search menu by the title...
     // Create break.
     self.container.appendChild(self.document.createElement("br"));
     // Create container.
-    var identifier = "set-" + sets;
-    var reference = sets + "Container";
-    self[reference] = self.document.createElement("div");
-    self.container.appendChild(self[reference]);
-    self[reference].setAttribute("id", identifier);
-    self[reference].classList.add("menu");
-    // Create list.
-    self[sets] = self.document.createElement("ul");
-    self[reference].appendChild(self[sets]);
+    var containerIdentifier = "set-" + sets + "-container";
+    var containerReference = sets + "Container";
+    self[containerReference] = self.document.createElement("div");
+    self.container.appendChild(self[containerReference]);
+    self[containerReference].setAttribute("id", containerIdentifier);
+    self[containerReference].classList.add("menu");
+    // Create menu.
+    // Create table.
+    var table = self.document.createElement("table");
+    self[containerReference].appendChild(table);
+    // Create table's header.
+    var tableHead = self.document.createElement("thead");
+    table.appendChild(tableHead);
+    var tableHeadRow = self.document.createElement("tr");
+    tableHead.appendChild(tableHeadRow);
+    // Create titles and scale in table's header.
+    // Create header for sets' names.
+    var tableHeadRowCellName = self.document.createElement("th");
+    tableHeadRow.appendChild(tableHeadRowCellName);
+    tableHeadRowCellName.classList.add("name");
+    self.createActivateTableColumnHead({
+      title: "Name",
+      attribute: "name",
+      sets: sets,
+      parent: tableHeadRowCellName,
+      self: self
+    });
+    // Create header for sets' counts.
+    var tableHeadRowCellCount = self.document.createElement("th");
+    tableHeadRow.appendChild(tableHeadRowCellCount);
+    tableHeadRowCellCount.classList.add("count");
+    self.createActivateTableColumnHead({
+      title: "Count",
+      attribute: "count",
+      sets: sets,
+      parent: tableHeadRowCellCount,
+      self: self
+    });
+    // Create break.
+    tableHeadRowCellCount.appendChild(self.document.createElement("br"));
+    // Create graphical container for scale.
+    var scaleReference = sets + "Scale";
+    self[scaleReference] = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    tableHeadRowCellCount.appendChild(self[scaleReference]);
+    self[scaleReference].classList.add("scale");
+    // Create table's body.
+    var bodyReference = sets;
+    self[bodyReference] = self.document.createElement("tbody");
+    table.appendChild(self[bodyReference]);
   }
+  /**
+  * Creates and activates a control for sort criterion and order.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.title Title for column head.
+  * @param {string} parameters.attribute Name of sets' attribute.
+  * @param {string} parameters.sets Type of sets, processes or compartments.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.self Instance of a class.
+  */
+  createActivateTableColumnHead({title, attribute, sets, parent, self} = {}) {
+    // Create elements.
+    var container = self.document.createElement("span");
+    parent.appendChild(container);
+    container.textContent = title;
+    container.classList.add("sort");
+    var reference = sets + title + "Sort";
+    self[reference] = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    container.appendChild(self[reference]);
+    self[reference].classList.add("sort");
+    // Activate behavior.
+    container.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.changeSetsSorts({
+        attribute: sets,
+        criterion: attribute,
+        state: self.state
+      });
+    });
+  }
+
+
+
+
+
   /**
   * Restores aspects of the view's composition and behavior that vary with
   * changes to the application's state.
@@ -592,8 +678,12 @@ class SetView {
     self.filter.checked = SetView.determineFilter(self.state);
     //self.compartmentalizationControl.checked = self.determineCompartmentalization(self);
 
+    // TODO: Probably better to put all the sort representations in another function...
+
+    self.representSetsSorts(self);
+
     // Create and activate summaries of sets in lists.
-    self.createActivateSetsLists(self);
+    //self.createActivateSetsLists(self);
   }
   /**
   * Determines whether a type of entities matches the value in the application's
@@ -615,6 +705,86 @@ class SetView {
   */
   static determineFilter(state) {
     return state.setsFilter;
+  }
+  /**
+  * Represents specifications to sort sets' summaries.
+  * @param {Object} self Instance of a class.
+  */
+  representSetsSorts(self) {
+    self.representSetSort({
+      graph: self.processesNameSort,
+      attribute: "processes",
+      criterion: "name",
+      self: self
+    });
+    self.representSetSort({
+      graph: self.processesCountSort,
+      attribute: "processes",
+      criterion: "count",
+      self: self
+    });
+    self.representSetSort({
+      graph: self.compartmentsNameSort,
+      attribute: "compartments",
+      criterion: "name",
+      self: self
+    });
+    self.representSetSort({
+      graph: self.compartmentsCountSort,
+      attribute: "compartments",
+      criterion: "count",
+      self: self
+    });
+  }
+  /**
+  * Represents specifications to sort set's summary.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.graph Reference to graphical container.
+  * @param {string} parameters.attribute Name of sets' attribute.
+  * @param {string} parameters.criterion Criterion for sort.
+  * @param {Object} parameters.self Instance of a class.
+  */
+  representSetSort({graph, attribute, criterion, self} = {}) {
+    // Determine whether the criterion defines the sort for the attribute's
+    // sets.
+    if (self.state.setsSorts[attribute].criterion === criterion) {
+      // The criterion defines the sort.
+      // Determine the sort order.
+      if (self.state.setsSorts[attribute].order === "ascend") {
+        // Sort is in ascending order.
+        var orientation = "up";
+      } else if (self.state.setsSorts[attribute].order === "descend") {
+        // Sort is in descending order.
+        var orientation = "down";
+      }
+      var mark = self
+      .document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+      graph.appendChild(mark);
+      mark.classList.add("sort");
+      var base = 10;
+      var altitude = 10;
+      // Determine
+      var points = General.createIsoscelesTrianglePoints({
+        base: base,
+        altitude: altitude,
+        orientation: orientation
+      });
+      mark.setAttribute("points", points);
+
+      // Determine the dimensions of the graphical container.
+      var width = General.determineElementDimension(graph, "width");
+      var height = General.determineElementDimension(graph, "height");
+      var x = (width / 2) - (base / 2);
+      var y = (height / 2) - (altitude / 2);
+      mark.setAttribute("transform", "translate(" + x + "," + y + ")");
+    } else {
+
+
+      // TODO: I guess remove any previously-existing marks?
+      //
+      //
+      // 
+    }
   }
   /**
   * Creates and activates summaries of sets in lists.
@@ -842,9 +1012,7 @@ class SetView {
   * @returns {boolean} Whether a selection exists for the value of the
   * attribute.
   */
-  static determineSetSelection({
-    value, attribute, state
-  } = {}) {
+  static determineSetSelection({value, attribute, state} = {}) {
     return Attribution.determineSetsFilter({
       value: value,
       attribute: attribute,
@@ -3003,19 +3171,19 @@ class TopologyView {
     leftDirectionalMarks
     .filter("polygon")
     .attr("points", function (data) {
-      return General.createHorizontalIsoscelesTrianglePoints({
+      return General.createIsoscelesTrianglePoints({
         base: height,
         altitude: width,
-        direction: "left"
+        orientation: "left"
       });
     });
     rightDirectionalMarks
     .filter("polygon")
     .attr("points", function (data) {
-      return General.createHorizontalIsoscelesTrianglePoints({
+      return General.createIsoscelesTrianglePoints({
         base: height,
         altitude: width,
-        direction: "right"
+        orientation: "right"
       });
     });
     leftDirectionalMarks
