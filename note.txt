@@ -4,10 +4,40 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+13 December 2017
+
+----------
+Summaries for candidate entities
+
+candidatesSummaries
+-metabolites
+--array of records
+---record
+----entities: "metabolites"
+----count (of candidate reactions in which participates)
+----maximum (for bars' scale)
+----identifier (of candidate metabolite... candidate metabolite needs name)
+-reactions
+--array of records
+---record
+----entities: "reactions"
+----count (of candidate metabolites that participate)
+----maximum (for bars' scale)
+----identifier (of candidate reaction... candidate reaction needs name)
+
+Sort candidatesSummaries by either count or name.
+Also create state variable for candidatesSorts.
+
+--------------------------------------------------
 12 December 2017
 
 ----------
 Progress
+
+Implement a novel state's attribute to organize and sort information about candidate entities.
+
+Implement a table for candidate metabolites and another table for candidate reactions.
+Give each row the name of the entity, its degree, and controls for its simplification.
 
 I implemented the set view.
 Functionality of the view includes selection of type of entities, selection of filter, restore, searchable list of sets, sortable summaries of sets by name or cardinalities, and selection of sets for filters.

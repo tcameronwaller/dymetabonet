@@ -285,7 +285,7 @@ class Cardinality {
     };
   }
   /**
-  * Prepares summaries of sets's cardinalities.
+  * Prepares summaries of sets' cardinalities.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object<Object<number>>} parameters.setsCardinalities Cardinalities
   * of entities in sets by attributes and values.
@@ -310,7 +310,7 @@ class Cardinality {
     return sortSetsSummaries;
   }
   /**
-  * Creates summary of sets' cardinalities.
+  * Creates summaries of sets' cardinalities.
   * @param {Object<Object<number>>} setsCardinalities Cardinalities of entities
   * in sets by attributes and values.
   * @returns {Object<Array<Object>>} Summaries of sets' cardinalities.
@@ -319,7 +319,7 @@ class Cardinality {
     // Prepare records for attributes.
     var attributes = Object.keys(setsCardinalities);
     return attributes.reduce(function (collection, attribute) {
-      // Access attributes' values.
+      // Access attribute's values.
       var values = Object.keys(setsCardinalities[attribute]);
       // Determine maximal count of sets for attribute's values.
       var maximum = values.reduce(function (maximum, value) {

@@ -199,6 +199,7 @@ class Action {
     // Initialize application's variant state.
     var variantStateVariables = Action.initializeApplicationVariantState({
       reactions: state.reactions,
+      metabolites: state.metabolites,
       compartments: state.compartments,
       processes: state.processes,
       totalReactionsSets: state.totalReactionsSets,
@@ -246,14 +247,17 @@ class Action {
       compartments: state.compartments,
       processes: state.processes
     });
-    // Determine candidate entities and their simplifications.
-    var candidateEntitiesSimplifications = Candidacy
+    // Determine candidate entities, their simplifications, and summaries.
+    var candidatesSimplificationsSummaries = Candidacy
     .evaluateCandidacyContext({
       reactionsSets: currentEntitiesSets.filterReactionsSets,
       reactions: state.reactions,
+      metabolites: state.metabolites,
       compartmentalization: state.compartmentalization,
       metabolitesSimplifications: state.metabolitesSimplifications,
-      reactionsSimplifications: state.reactionsSimplifications
+      reactionsSimplifications: state.reactionsSimplifications,
+      candidatesSorts: state.candidatesSorts,
+      compartments: state.compartments
     });
     // Compile attributes' values.
     var novelAttributesValues = {
@@ -263,7 +267,7 @@ class Action {
       {},
       currentEntitiesSets,
       setsCardinalitiesSummaries,
-      candidateEntitiesSimplifications,
+      candidatesSimplificationsSummaries,
       novelAttributesValues
     );
     // Submit attributes' values to the application's state.
@@ -420,21 +424,24 @@ class Action {
     // Simplifications are specific to candidate entities, which are specific to
     // the context of interest, of which compartmentalization is part.
     var simplifications = Candidacy.createInitialSimplifications();
-    // Determine candidate entities and their simplifications.
-    var candidateEntitiesSimplifications = Candidacy
+    // Determine candidate entities, their simplifications, and summaries.
+    var candidatesSimplificationsSummaries = Candidacy
     .evaluateCandidacyContext({
       reactionsSets: state.filterReactionsSets,
       reactions: state.reactions,
+      metabolites: state.metabolites,
       compartmentalization: compartmentalization,
       metabolitesSimplifications: simplifications.metabolitesSimplifications,
-      reactionsSimplifications: simplifications.reactionsSimplifications
+      reactionsSimplifications: simplifications.reactionsSimplifications,
+      candidatesSorts: state.candidatesSorts,
+      compartments: state.compartments
     });
     // Compile attributes' values.
     var novelAttributesValues = {
       compartmentalization: compartmentalization,
     };
     var attributesValues = Object.assign(
-      candidateEntitiesSimplifications,
+      candidatesSimplificationsSummaries,
       novelAttributesValues
     );
     // Submit attributes' values to the application's state.
@@ -474,6 +481,67 @@ class Action {
       state: state
     });
   }
+  /**
+  * Changes the specifications to sort candidates' summaries.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.entity Type of entities.
+  * @param {string} parameters.criterion Criterion for sort.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeCandidatesSorts({attribute, criterion, state} = {}) {
+
+    // TODO: Adapt for candidates.
+
+
+
+    // Each attribute has its own specification of criterion and order to sort
+    // its sets' summaries.
+    // Preserve specification for other attribute.
+    var copySetsSorts = General.copyValue(state.setsSorts, true);
+    // Change the specification for the specific attribute.
+    // Determine whether current criterion matches previous criterion.
+    if (criterion === state.setsSorts[attribute].criterion) {
+      // Current criterion matches previous criterion.
+      // Change the specification's order.
+      if (state.setsSorts[attribute].order === "descend") {
+        var order = "ascend";
+      } else if (state.setsSorts[attribute].order === "ascend") {
+        var order = "descend";
+      }
+    } else {
+      // Current criterion does not match previous criterion.
+      // Change the specification to the current criterion with default order.
+      var order = "descend";
+    }
+    // Create entry.
+    var entry = {
+      [attribute]: {
+        criterion: criterion,
+        order: order
+      }
+    };
+    // Include entry.
+    var setsSorts = Object.assign(copySetsSorts, entry);
+    // Prepare summaries of sets' cardinalities.
+    var setsSummaries = Cardinality.prepareSetsSummaries({
+      setsCardinalities: state.setsCardinalities,
+      setsSorts: setsSorts,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    // Compile attributes' values.
+    var novelAttributesValues = {
+      setsSorts: setsSorts,
+      setsSummaries: setsSummaries
+    };
+    var attributesValues = novelAttributesValues;
+    // Submit attributes' values to the application's state.
+    Action.submitAttributes({
+      attributesValues: attributesValues,
+      state: state
+    });
+  }
+
 
   // Indirect actions.
 
@@ -583,6 +651,7 @@ class Action {
     // Initialize application's variant state.
     var variantStateVariables = Action.initializeApplicationVariantState({
       reactions: metabolicEntitiesSets.reactions,
+      metabolites: metabolicEntitiesSets.metabolites,
       compartments: metabolicEntitiesSets.compartments,
       processes: metabolicEntitiesSets.processes,
       totalReactionsSets: totalEntitiesSets.totalReactionsSets,
@@ -609,6 +678,8 @@ class Action {
   * implicit simplifications.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
   * @param {Object} parameters.compartments Information about compartments.
   * @param {Object} parameters.processes Information about processes.
   * @param {Object<Object>} parameters.totalReactionsSets Information about all
@@ -618,7 +689,12 @@ class Action {
   * @returns {Object} Values of multiple attributes.
   */
   static initializeApplicationVariantState({
-    reactions, compartments, processes, totalReactionsSets, totalMetabolitesSets
+    reactions,
+    metabolites,
+    compartments,
+    processes,
+    totalReactionsSets,
+    totalMetabolitesSets
   } = {}) {
     // Initialize filters against entities' sets.
     var setsFilters = Attribution.createInitialSetsFilters();
@@ -651,14 +727,19 @@ class Action {
     // Simplifications are specific to candidate entities, which are specific to
     // the context of interest, of which compartmentalization is part.
     var simplifications = Candidacy.createInitialSimplifications();
-    // Determine candidate entities and their simplifications.
-    var candidateEntitiesSimplifications = Candidacy
+    // Initialize specifications to sort candidates' summaries.
+    var candidatesSorts = Candidacy.createInitialCandidatesSorts();
+    // Determine candidate entities, their simplifications, and summaries.
+    var candidatesSimplificationsSummaries = Candidacy
     .evaluateCandidacyContext({
       reactionsSets: currentEntitiesSets.filterReactionsSets,
       reactions: reactions,
+      metabolites: metabolites,
       compartmentalization: compartmentalization,
       metabolitesSimplifications: simplifications.metabolitesSimplifications,
-      reactionsSimplifications: simplifications.reactionsSimplifications
+      reactionsSimplifications: simplifications.reactionsSimplifications,
+      candidatesSorts: candidatesSorts,
+      compartments: compartments
     });
 
     // TODO: I'll also need to include procedure for definition of network's elements.
@@ -666,13 +747,14 @@ class Action {
     // Compile information.
     var novelAttributesValues = {
       setsFilters: setsFilters,
-      compartmentalization: compartmentalization
+      compartmentalization: compartmentalization,
+      candidatesSorts: candidatesSorts
     };
     var attributesValues = Object.assign(
       currentEntitiesSets,
       setsCardinalitiesSelections,
       setsCardinalitiesSummaries,
-      candidateEntitiesSimplifications,
+      candidatesSimplificationsSummaries,
       novelAttributesValues
     );
     // Return information.

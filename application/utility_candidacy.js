@@ -37,8 +37,8 @@ United States of America
 */
 class Candidacy {
 
-  // Master procedures for collection of candidate entities and collection of
-  // their simplifications.
+  // Master procedures for collection of candidate entities, collection of their
+  // simplifications, and preparation of summaries.
 
   /**
   * Evaluates the context of interest and collects candidate entities and their
@@ -47,21 +47,29 @@ class Candidacy {
   * @param {Object<Object>} parameters.reactionsSets Information about
   * reactions' metabolites and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
   * @param {Object<Object>} parameters.metabolitesSimplifications
   * Information about simplification of metabolites.
   * @param {Object<Object>} parameters.reactionsSimplifications
   * Information about simplification of reactions.
-  * @returns {Object} Information about candidate entities and their
-  * simplifications.
+  * @param {Object<Object<string>>} parameters.candidatesSorts Specifications to
+  * sort candidates' summaries.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @returns {Object} Information about candidate entities, their
+  * simplifications, and summaries.
   */
   static evaluateCandidacyContext({
     reactionsSets,
     reactions,
+    metabolites,
     compartmentalization,
     metabolitesSimplifications,
-    reactionsSimplifications
+    reactionsSimplifications,
+    candidatesSorts,
+    compartments
   } = {}) {
     // Filter information about simplifications for entities to omit those that
     // are implicit and include only those that are explicit.
@@ -73,12 +81,30 @@ class Candidacy {
     var candidatesSimplifications = Candidacy.collectCandidatesSimplifications({
       reactionsSets: reactionsSets,
       reactions: reactions,
+      metabolites: metabolites,
       compartmentalization: compartmentalization,
       metabolitesSimplifications: simplifications.metabolitesSimplifications,
-      reactionsSimplifications: simplifications.reactionsSimplifications
+      reactionsSimplifications: simplifications.reactionsSimplifications,
+      compartments: compartments
     });
+    // Prepare summaries of candidates' degrees.
+    var candidatesSummaries = Candidacy.prepareCandidatesSummaries({
+      reactionsCandidates: candidatesSimplifications.reactionsCandidates,
+      metabolitesCandidates: candidatesSimplifications.metabolitesCandidates,
+      candidatesSorts: candidatesSorts
+    });
+    // Compile information.
+    var candidatesSimplificationsSummaries = {
+      reactionsCandidates: candidatesSimplifications.reactionsCandidates,
+      metabolitesCandidates: candidatesSimplifications.metabolitesCandidates,
+      reactionsSimplifications: candidatesSimplifications
+      .reactionsSimplifications,
+      metabolitesSimplifications: candidatesSimplifications
+      .metabolitesSimplifications,
+      candidatesSummaries: candidatesSummaries
+    };
     // Return information.
-    return candidatesSimplifications;
+    return candidatesSimplificationsSummaries;
   }
 
   /**
@@ -156,21 +182,26 @@ class Candidacy {
   * @param {Object<Object>} parameters.reactionsSets Information about
   * reactions' metabolites and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
   * @param {Object<Object>} parameters.metabolitesSimplifications
   * Information about simplification of metabolites.
   * @param {Object<Object>} parameters.reactionsSimplifications
   * Information about simplification of reactions.
+  * @param {Object} parameters.compartments Information about compartments.
   * @returns {Object} Information about candidate entities and their
   * simplifications.
   */
   static collectCandidatesSimplifications({
     reactionsSets,
     reactions,
+    metabolites,
     compartmentalization,
     metabolitesSimplifications,
-    reactionsSimplifications
+    reactionsSimplifications,
+    compartments
   } = {}) {
     // Candidate entities are entities that are elligible candidates for
     // representation in the network.
@@ -201,9 +232,11 @@ class Candidacy {
     .collectCandidateReactionsMetabolitesSimplifications({
       reactionsSets: reactionsSets,
       reactions: reactions,
+      metabolites: metabolites,
       compartmentalization: compartmentalization,
       metabolitesSimplifications: metabolitesSimplifications,
       reactionsSimplifications: reactionsSimplifications,
+      compartments: compartments
     });
     var metabolitesCollection = Candidacy
     .collectCandidateMetabolitesReactionsSimplifications({
@@ -236,10 +269,13 @@ class Candidacy {
   * @param {Object<Object>} parameters.reactionsSets Information about
   * reactions' metabolites and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
   * @param {Object<Object>} parameters.metabolitesSimplifications
   * Information about simplification of metabolites.
   * @param {Object<Object>} parameters.reactionsSimplifications
   * Information about simplification of reactions.
+  * @param {Object} parameters.compartments Information about compartments.
   * @returns {Object<Object>} Information about candidate reactions, their
   * metabolites, and their simplifications.
   */
@@ -247,8 +283,10 @@ class Candidacy {
     compartmentalization,
     reactionsSets,
     reactions,
+    metabolites,
     metabolitesSimplifications,
-    reactionsSimplifications
+    reactionsSimplifications,
+    compartments
   } = {}) {
     // Collect information about reactions and their metabolites that are
     // candidates for representation in the network.
@@ -268,8 +306,10 @@ class Candidacy {
         reactionIdentifier: reactionIdentifier,
         reactionsSets: reactionsSets,
         reactions: reactions,
+        metabolites: metabolites,
         compartmentalization: compartmentalization,
         metabolitesSimplifications: metabolitesSimplifications,
+        compartments: compartments,
         collection: collection
       });
     }, initialCollection);
@@ -283,10 +323,13 @@ class Candidacy {
   * @param {Object<Object>} parameters.reactionsSets Information about
   * reactions' metabolites and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
   * @param {Object<Object>} parameters.metabolitesSimplifications
   * Information about simplification of metabolites.
+  * @param {Object} parameters.compartments Information about compartments.
   * @param {Object<Object>} parameters.collection Information about candidate
   * reactions, their metabolites, and their simplifications.
   * @returns {Object<Object>} Information about candidate reactions, their
@@ -296,8 +339,10 @@ class Candidacy {
     reactionIdentifier,
     reactionsSets,
     reactions,
+    metabolites,
     compartmentalization,
     metabolitesSimplifications,
+    compartments,
     collection
   } = {}) {
     // Evaluate reaction's candidacy.
@@ -319,7 +364,9 @@ class Candidacy {
       var reactionMetabolites = Candidacy.collectReactionMetabolites({
         reaction: reaction,
         reactionSets: reactionSets,
-        compartmentalization: compartmentalization
+        compartmentalization: compartmentalization,
+        metabolites: metabolites,
+        compartments: compartments
       });
       // Include information about novel metabolites in collection.
       var reactionsMetabolites = Object
@@ -331,7 +378,8 @@ class Candidacy {
         identifier: reactionIdentifier,
         reaction: reactionIdentifier,
         replicates: candidacy.replicates,
-        metabolites: metabolitesIdentifiers
+        metabolites: metabolitesIdentifiers,
+        name: reaction.name
       };
       // Create entry.
       var entry = {
@@ -826,6 +874,9 @@ class Candidacy {
   * metabolites and sets.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
+  * @param {Object} parameters.compartments Information about compartments.
   * @returns {Object<Object>} Information about a candidate reaction's
   * metabolites.
   */
@@ -833,6 +884,8 @@ class Candidacy {
     reaction,
     reactionSets,
     compartmentalization,
+    metabolites,
+    compartments
   } = {}) {
     // Filter for reaction's relevant participants.
     var relevantParticipants = Extraction.filterReactionParticipants({
@@ -849,12 +902,6 @@ class Candidacy {
         compartment: participant.compartment,
         compartmentalization: compartmentalization
       });
-      // Determine whether to represent the metabolite's compartment.
-      if (compartmentalization) {
-        var compartment = participant.compartment;
-      } else {
-        var compartment = null;
-      }
       // Determine whether collection already includes information about the
       // metabolite.
       if (collection.hasOwnProperty(identifier)) {
@@ -863,11 +910,28 @@ class Candidacy {
       } else {
         // Collection does not include information about the metabolite.
         // Include the metabolite in the collection.
+        // Determine whether to represent the metabolite's compartment.
+        if (compartmentalization) {
+          var compartment = participant.compartment;
+        } else {
+          var compartment = null;
+        }
+        // Access information about metabolite.
+        var metabolite = metabolites[participant.metabolite];
+        // Access information about compartment.
+        var compartment = compartments[participant.compartment];
+        // Create name for candidate metabolite.
+        var name = Candidacy.createCandidateMetaboliteName({
+          metabolite: metabolite.name,
+          compartment: compartment.name,
+          compartmentalization: compartmentalization
+        });
         // Compile information.
         var information = {
           identifier: identifier,
           metabolite: participant.metabolite,
-          compartment: compartment
+          compartment: compartment,
+          name: name
         };
         // Create record.
         var record = {
@@ -898,6 +962,28 @@ class Candidacy {
       return metabolite;
     }
   }
+  /**
+  * Creates the name for a candidate metabolite.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.metabolite Name of a general metabolite.
+  * @param {string} parameters.compartment Name of a compartment.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
+  * @returns {string} Name for a candidate metabolite.
+  */
+  static createCandidateMetaboliteName({
+    metabolite,
+    compartment,
+    compartmentalization
+  } = {}) {
+    if (compartmentalization) {
+      return (metabolite + " (" + compartment + ")");
+    } else {
+      return metabolite;
+    }
+  }
+
+
 
   // Definition of candidate metabolites.
 
@@ -990,7 +1076,8 @@ class Candidacy {
       identifier: reactionMetabolite.identifier,
       metabolite: reactionMetabolite.metabolite,
       compartment: reactionMetabolite.compartment,
-      reactions: reactionsIdentifiers,
+      name: reactionMetabolite.name,
+      reactions: reactionsIdentifiers
     };
     // Create entry.
     var entry = {
@@ -1545,5 +1632,158 @@ class Candidacy {
     });
     // Determine whether any of the metabolite's reactions are relevant.
     return relevantReactions.length < 1;
+  }
+
+  // Preparation of candidates' summaries.
+
+  /**
+  * Creates initial specifications to sort candidates' summaries.
+  * @returns {Object<Object<string>>} Specifications to sort candidates'
+  * summaries.
+  */
+  static createInitialCandidatesSorts() {
+    return {
+      metabolites: {
+        criterion: "count", // or "name"
+        order: "descend" // or "ascend"
+      },
+      reactions: {
+        criterion: "count",
+        order: "descend"
+      }
+    };
+  }
+  /**
+  * Prepares summaries of candidates' degrees.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * candidate metabolites.
+  * @param {Object<Object<string>>} parameters.candidatesSorts Specifications to
+  * sort candidates' summaries.
+  * @returns {Object<Array<Object>>} Summaries of candidates' degrees.
+  */
+  static prepareCandidatesSummaries({
+    reactionsCandidates, metabolitesCandidates, candidatesSorts
+  } = {}) {
+    // Create candidates' summaries.
+    var candidatesSummaries = Candidacy.createCandidatesSummaries({
+      reactionsCandidates: reactionsCandidates,
+      metabolitesCandidates: metabolitesCandidates
+    });
+    // Sort candidates' summaries.
+    var sortCandidatesSummaries = candidatesSummaries;
+    //var sortCandidatesSummaries = Candidacy.sortCandidatesSummaries({
+    //  candidatesSummaries: candidatesSummaries,
+    //  candidatesSorts: candidatesSorts,
+    //  reactionsCandidates: reactionsCandidates,
+    //  metabolitesCandidates: metabolitesCandidates
+    //});
+    return sortCandidatesSummaries;
+  }
+  /**
+  * Creates summaries of candidates' degrees.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * candidate metabolites.
+  * @returns {Object<Array<Object>>} Summaries of candidates' degrees.
+  */
+  static createCandidatesSummaries({
+    reactionsCandidates, metabolitesCandidates
+  } = {}) {
+    // Prepare records for entities.
+    var entities = ["metabolites", "reactions"];
+    return entities.reduce(function (collection, entity) {
+      // Access information about candidates of the entity's type.
+      if (entity === "metabolites") {
+        var candidates = metabolitesCandidates;
+        var relations = "reactions";
+      } else if (entity === "reactions") {
+        var candidates = reactionsCandidates;
+        var relations = "metabolites";
+      }
+      var identifiers = Object.keys(candidates);
+      // Determine maximal count of sets for attribute's values.
+      var maximum = identifiers.reduce(function (maximum, identifier) {
+        // Access count of degree for candidate.
+        var count = candidates[identifier][relations].length;
+        return Math.max(maximum, count);
+      }, 0);
+      // Create records for candidates' summaries.
+      var records = identifiers.map(function (identifier) {
+        // Access count of degree candidate.
+        var count = candidates[identifier][relations].length;
+        // Create record.
+        // Return record.
+        return {
+          entity: entity,
+          count: count,
+          candidate: identifier,
+          maximum: maximum
+        };
+      });
+      // Create entry.
+      var entry = {
+        [entity]: records
+      };
+      // Include entry in collection.
+      return Object.assign(collection, entry);
+    }, {});
+  }
+
+  // TODO: Implement the sort function for candidates...
+
+
+  /**
+  * Sorts candidates' summaries.
+  * @param {Object<Array<Object>>} parameters.candidatesSummaries Summaries of
+  * candidates' degrees.
+  * @param {Object<Object<string>>} parameters.candidatesSorts Specifications to
+  * sort candidates' summaries.
+  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * candidate metabolites.
+  * @returns {Object<Array<Object>>} Summaries of candidates' degrees.
+  */
+  static sortCandidatesSummaries({
+    candidatesSummaries,
+    candidatesSorts,
+    reactionsCandidates,
+    metabolitesCandidates
+  }) {
+    var entities = Object.keys(candidatesSummaries);
+    return entities.reduce(function (collection, entity) {
+      // Determine reference for candidates' names.
+      if (entity === "metabolites") {
+        var reference = metabolitesCandidates;
+      } else if (entity === "reactions") {
+        var reference = reactionsCandidates;
+      }
+      // Access information about candidates of the entity's type.
+      var records = candidatesSummaries[entity];
+      // Determine appropriate value by which to sort records.
+      if (candidatesSorts[entity].criterion === "count") {
+        var key = candidatesSorts[entity].criterion;
+      } else if (candidatesSorts[entity].criterion === "name") {
+        var key = "candidate";
+      }
+      // Sort records.
+      var sortRecords = General.sortArrayRecords({
+        array: records,
+        key: key,
+        order: candidatesSorts[entity].order,
+        reference: reference,
+      });
+      // Create entry.
+      var entry = {
+        [entity]: sortRecords
+      };
+      // Include entry in collection.
+      return Object.assign(collection, entry);
+    }, {});
   }
 }

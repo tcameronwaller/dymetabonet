@@ -167,11 +167,11 @@ class State {
       "setsSorts",
       // Attribute "setsSummaries" stores information about the counts of
       // entities that belong to each set by their values of attributes.
-      // Information includes additional details for representation in the sets'
-      // summary.
+      // Information includes additional details for representation in menus.
       // Information includes references to attributes "compartments" and
       // "processes".
-      // Information derives from attribute "setsCardinalities".
+      // Information derives from attributes "setsCardinalities" and
+      // "setsSorts".
       "setsSummaries"
     ];
     var context = [
@@ -188,7 +188,7 @@ class State {
       // Information includes references to attribute "metabolitesCandidates".
       "metabolitesSimplifications"
     ];
-    var candidateEntities = [
+    var candidatesSummaries = [
       // Attribute "reactionsCandidates" stores information for each reaction
       // about the metabolites that participate.
       // Information includes compartmentalization of metabolites.
@@ -203,7 +203,20 @@ class State {
       // Information includes references to attributes "metabolites",
       // "reactions", and "compartments".
       // Information derives from attribute "reactionsCandidates".
-      "metabolitesCandidates"
+      "metabolitesCandidates",
+      // Attribute "candidatesSorts" stores information about the sort criteria
+      // and orders for the summaries of candidates' degrees.
+      // Information includes references to attributes "reactionsCandidates" and
+      // "metabolitesCandidates".
+      "candidatesSorts",
+      // Attribute "candidatesSummaries" stores information about the counts of
+      // other candidate entities to which each candidate entity relates.
+      // Information includes additional details for representation in menus.
+      // Information includes references to attributes "reactionsCandidates" and
+      // "metabolitesCandidates".
+      // Information derives from attributes "reactionsCandidates",
+      // "metabolitesCandidates", and "candidatesSorts".
+      "candidatesSummaries"
     ];
     var inProgress = [
 
@@ -234,7 +247,7 @@ class State {
       currentEntitiesSets,
       setsCardinalitiesSummaries,
       context,
-      candidateEntities
+      candidatesSummaries
     );
   }
   /**
