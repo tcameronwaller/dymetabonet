@@ -117,7 +117,7 @@ flex-direction: column;
 
 #set div.menu {
   background-color: rgba(255, 255, 255, 1);
-  height: 3cm;
+  height: 5cm;
   width: 100%;
   overflow: auto;
 }
@@ -158,7 +158,7 @@ flex-direction: column;
   width: auto;
 }
 
-#set div.menu table thead span.sort {
+#set div.menu table thead span.title {
   background-color: rgba(100, 100, 100, 1);
 }
 
@@ -176,30 +176,48 @@ flex-direction: column;
   width: 100%;
 }
 
+#set div.menu table tbody tr.normal:nth-child(odd) {
+  background-color: rgba(200, 200, 200, 1);
+}
 
-#set div.menu table tbody td svg.graph {
+#set div.menu table tbody tr.normal:nth-child(even) {
+  background-color: rgba(175, 175, 175, 1);
+}
+
+#set div.menu table tbody tr.emphasis {
+  background-color: rgba(150, 150, 200, 1);
+}
+
+#set div.menu table tbody td.name {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#set div.menu table tbody td.count {
+}
+
+#set div.menu table tbody td.count svg.graph {
+  height: 0.5cm;
+  width: 100%;
+}
+
+#set div.menu table tbody td.count svg.graph rect.mark.normal {
+  fill: rgba(0, 100, 255, 1);
+}
+
+#set div.menu table tbody td.count svg.graph rect.mark.emphasis {
+  fill: rgba(255, 100, 0, 1);
 }
 
 #set div.menu ul li svg.graph rect.base {
   fill: rgba(200, 200, 200, 1);
   height: 100%;
   width: 100%;
-}
-
-#set div.menu ul li svg.graph g rect.mark.normal {
-  fill: rgba(0, 100, 255, 1);
-}
-
-#set div.menu ul li svg.graph g rect.mark.emphasis {
-  fill: rgba(255, 100, 0, 1);
-}
-
-#set div.menu ul li svg.graph g text.label {
-  font-family: sans-serif;
-  font-style: normal;
-  font-weight: bold;
-  font-size: 13px;
-  fill: rgba(0, 0, 0, 1);
 }
 
 /******************************************************************************/

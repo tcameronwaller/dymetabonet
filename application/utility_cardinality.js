@@ -371,11 +371,16 @@ class Cardinality {
       }
       // Access information about attributes' values.
       var values = setsSummaries[attribute];
-      // Determine appropriate sort function.
+      // Determine appropriate value by which to sort records.
+      if (setsSorts[attribute].criterion === "count") {
+        var key = setsSorts[attribute].criterion;
+      } else if (setsSorts[attribute].criterion === "name") {
+        var key = "value";
+      }
       // Sort records for values.
       var sortValues = General.sortArrayRecords({
         array: values,
-        key: setsSorts[attribute].criterion,
+        key: key,
         order: setsSorts[attribute].order,
         reference: reference,
       });

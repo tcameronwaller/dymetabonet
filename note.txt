@@ -4,6 +4,17 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+12 December 2017
+
+----------
+Progress
+
+I implemented the set view.
+Functionality of the view includes selection of type of entities, selection of filter, restore, searchable list of sets, sortable summaries of sets by name or cardinalities, and selection of sets for filters.
+
+closes #76, closes #73, closes #71, closes #70, 
+
+--------------------------------------------------
 10 December 2017
 
 ----------

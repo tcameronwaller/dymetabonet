@@ -125,6 +125,18 @@ class General {
     });
   }
   /**
+  * Extracts the values from elements in the Document Object Model (DOM).
+  * @param {Object} elements Elements in the Document Object Model (DOM).
+  * @returns {Array<string>} Values from elements.
+  */
+  static extractValuesDocumentElements(elements) {
+    var values = [];
+    Array.from(elements).forEach(function (element) {
+      values.push(element.value);
+    });
+    return values;
+  }
+  /**
   * Determines the value of the only active radio button in a group.
   * @param {Object} radios Live collection of radio button elements in the
   * Document Object Model (DOM).
@@ -1129,8 +1141,8 @@ class General {
       if (type === "string") {
         if (reference) {
           // Convert values to lower case for comparison.
-          var firstValue = reference[firstRecord[key]].toLowerCase();
-          var secondValue = reference[secondRecord[key]].toLowerCase();
+          var firstValue = reference[firstRecord[key]].name.toLowerCase();
+          var secondValue = reference[secondRecord[key]].name.toLowerCase();
         } else {
           // Convert values to lower case for comparison.
           var firstValue = firstRecord[key].toLowerCase();
