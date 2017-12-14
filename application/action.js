@@ -357,39 +357,19 @@ class Action {
   /**
   * Changes the specifications to sort sets' summaries.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.attribute Name of attribute.
+  * @param {string} parameters.category Name of category.
   * @param {string} parameters.criterion Criterion for sort.
   * @param {Object} parameters.state Application's state.
   */
-  static changeSetsSorts({attribute, criterion, state} = {}) {
-    // Each attribute has its own specification of criterion and order to sort
-    // its sets' summaries.
-    // Preserve specification for other attribute.
-    var copySetsSorts = General.copyValue(state.setsSorts, true);
-    // Change the specification for the specific attribute.
-    // Determine whether current criterion matches previous criterion.
-    if (criterion === state.setsSorts[attribute].criterion) {
-      // Current criterion matches previous criterion.
-      // Change the specification's order.
-      if (state.setsSorts[attribute].order === "descend") {
-        var order = "ascend";
-      } else if (state.setsSorts[attribute].order === "ascend") {
-        var order = "descend";
-      }
-    } else {
-      // Current criterion does not match previous criterion.
-      // Change the specification to the current criterion with default order.
-      var order = "descend";
-    }
-    // Create entry.
-    var entry = {
-      [attribute]: {
-        criterion: criterion,
-        order: order
-      }
-    };
-    // Include entry.
-    var setsSorts = Object.assign(copySetsSorts, entry);
+  static changeSetsSorts({category, criterion, state} = {}) {
+
+    // Change the specifications to sort candidates' summaries.
+    var setsSorts = Action.changeCategoriesSortCriterionOrder({
+      category: category,
+      criterion: criterion,
+      sorts: state.setsSorts
+    });
+
     // Prepare summaries of sets' cardinalities.
     var setsSummaries = Cardinality.prepareSetsSummaries({
       setsCardinalities: state.setsCardinalities,
@@ -484,44 +464,21 @@ class Action {
   /**
   * Changes the specifications to sort candidates' summaries.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.entity Type of entities.
+  * @param {string} parameters.category Name of category.
   * @param {string} parameters.criterion Criterion for sort.
   * @param {Object} parameters.state Application's state.
   */
-  static changeCandidatesSorts({attribute, criterion, state} = {}) {
+  static changeCandidatesSorts({category, criterion, state} = {}) {
+    // Change the specifications to sort candidates' summaries.
+    var candidatesSorts = Action.changeCategoriesSortCriterionOrder({
+      category: category,
+      criterion: criterion,
+      sorts: state.candidatesSorts
+    });
 
-    // TODO: Adapt for candidates.
+    // TODO: Unnecessary to prepare the entire summary... no need to re-create...
+    // TODO: Only sort the existing summary.
 
-
-
-    // Each attribute has its own specification of criterion and order to sort
-    // its sets' summaries.
-    // Preserve specification for other attribute.
-    var copySetsSorts = General.copyValue(state.setsSorts, true);
-    // Change the specification for the specific attribute.
-    // Determine whether current criterion matches previous criterion.
-    if (criterion === state.setsSorts[attribute].criterion) {
-      // Current criterion matches previous criterion.
-      // Change the specification's order.
-      if (state.setsSorts[attribute].order === "descend") {
-        var order = "ascend";
-      } else if (state.setsSorts[attribute].order === "ascend") {
-        var order = "descend";
-      }
-    } else {
-      // Current criterion does not match previous criterion.
-      // Change the specification to the current criterion with default order.
-      var order = "descend";
-    }
-    // Create entry.
-    var entry = {
-      [attribute]: {
-        criterion: criterion,
-        order: order
-      }
-    };
-    // Include entry.
-    var setsSorts = Object.assign(copySetsSorts, entry);
     // Prepare summaries of sets' cardinalities.
     var setsSummaries = Cardinality.prepareSetsSummaries({
       setsCardinalities: state.setsCardinalities,
@@ -780,6 +737,45 @@ class Action {
     };
     // Return information.
     return attributesValues;
+  }
+  /**
+  * Changes the specifications to sort records in multiple categories.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Name of category.
+  * @param {string} parameters.criterion Criterion for sort.
+  * @param {Object<Object<string>>} parameters.sorts Specifications to sort
+  * records in multiple categories.
+  * @returns {Object<Object<string>>} Specifications to sort records in multiple
+  * categories.
+  */
+  static changeCategoriesSortCriterionOrder({category, criterion, sorts} = {}) {
+    // Change the specification only for the specific category.
+    // Determine whether current criterion matches previous criterion.
+    if (criterion === sorts[category].criterion) {
+      // Current criterion matches previous criterion.
+      // Change the specification's order.
+      if (sorts[category].order === "descend") {
+        var order = "ascend";
+      } else if (sorts[category].order === "ascend") {
+        var order = "descend";
+      }
+    } else {
+      // Current criterion does not match previous criterion.
+      // Change the specification to the current criterion with default order.
+      var order = "descend";
+    }
+    // Create entry.
+    var entry = {
+      [category]: {
+        criterion: criterion,
+        order: order
+      }
+    };
+    // Copy specifications.
+    var copySorts = General.copyValue(sorts, true);
+    // Include entry.
+    var novelSorts = Object.assign(copySorts, entry);
+    return novelSorts;
   }
 
 

@@ -784,7 +784,7 @@ class SetMenuView {
       // Element on which the event originated is event.currentTarget.
       // Call action.
       Action.changeSetsSorts({
-        attribute: self.sets,
+        category: self.sets,
         criterion: attribute,
         state: self.state
       });

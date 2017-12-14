@@ -983,8 +983,6 @@ class Candidacy {
     }
   }
 
-
-
   // Definition of candidate metabolites.
 
   /**
@@ -1673,13 +1671,12 @@ class Candidacy {
       metabolitesCandidates: metabolitesCandidates
     });
     // Sort candidates' summaries.
-    var sortCandidatesSummaries = candidatesSummaries;
-    //var sortCandidatesSummaries = Candidacy.sortCandidatesSummaries({
-    //  candidatesSummaries: candidatesSummaries,
-    //  candidatesSorts: candidatesSorts,
-    //  reactionsCandidates: reactionsCandidates,
-    //  metabolitesCandidates: metabolitesCandidates
-    //});
+    var sortCandidatesSummaries = Candidacy.sortCandidatesSummaries({
+      candidatesSummaries: candidatesSummaries,
+      candidatesSorts: candidatesSorts,
+      reactionsCandidates: reactionsCandidates,
+      metabolitesCandidates: metabolitesCandidates
+    });
     return sortCandidatesSummaries;
   }
   /**

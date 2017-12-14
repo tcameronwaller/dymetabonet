@@ -7,6 +7,34 @@ Research With Alexander Lex
 13 December 2017
 
 ----------
+Progress
+
+Complete implementation of sort procedures for sets' summaries and candidates' summaries.
+
+Complete implementation of actions to change sort specifications for sets' summaries and candidates' summaries.
+
+Implement novel method to filter summaries by strings in search text fields.
+Include novel search tools for sets' summaries and candidates' summaries.
+
+Create menus for candidates' summaries.
+
+Define and represent network's elements from candidate entities.
+
+----------
+Meet with Alexander Lex
+
+Develop a custom search method.
+Typing the name of an item will dynamically filter the items in the table.
+Use a simple text field.
+As the field changes, filter just the setsSummary to include only those items whose name includes the string from the text field.
+This strategy will make it simpler to access summaries within the table, especially for tables with many candidates.
+Use this strategy both for the sets menus and for the candidates menus.
+Treat the search's results as a selection rather than a filter.
+Store the search string in a state attribute.
+
+Implement the definition and representation of network's elements as soon as possible.
+
+----------
 Summaries for candidate entities
 
 candidatesSummaries
