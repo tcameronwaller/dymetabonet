@@ -44,9 +44,7 @@ class View {
   * model.
   * @returns {Object} Reference to element.
   */
-  static createReferenceContainer({
-    identifier, parent, documentReference
-  } = {}) {
+  static createReferenceContainer({identifier, parent, documentReference} = {}) {
     // Select parent element of view's container element in document.
     var parent = documentReference.getElementById(parent);
     // Determine whether view's container exists in the document.
@@ -91,9 +89,7 @@ class View {
   * model.
   * @returns {Object} Reference to element.
   */
-  static createRadioButtonLabel({
-    identifier, value, name, className, label, parent, documentReference
-  } = {}) {
+  static createRadioButtonLabel({identifier, value, name, className, label, parent, documentReference} = {}) {
     // Create button.
     var button = View.createRadioButton({
       identifier: identifier,
@@ -125,9 +121,7 @@ class View {
   * model.
   * @returns {Object} Reference to element.
   */
-  static createRadioButton({
-    identifier, value, name, className, parent, documentReference
-  } = {}) {
+  static createRadioButton({identifier, value, name, className, parent, documentReference} = {}) {
     // Create element.
     var button = documentReference.createElement("input");
     parent.appendChild(button);
@@ -151,9 +145,7 @@ class View {
   * model.
   * @returns {Object} Reference to element.
   */
-  static createCheckLabel({
-    identifier, value, className, label, parent, documentReference
-  } = {}) {
+  static createCheckLabel({identifier, value, className, label, parent, documentReference} = {}) {
     // Create check.
     var check = View.createCheck({
       identifier: identifier,
@@ -183,9 +175,7 @@ class View {
   * model.
   * @returns {Object} Reference to element.
   */
-  static createCheck({
-    identifier, value, className, parent, documentReference
-  } = {}) {
+  static createCheck({identifier, value, className, parent, documentReference} = {}) {
     // Create element.
     var check = documentReference.createElement("input");
     parent.appendChild(check);
@@ -331,6 +321,7 @@ class StateView {
       self.fileSelector = self.document.createElement("input");
       self.container.appendChild(self.fileSelector);
       self.fileSelector.setAttribute("type", "file");
+      self.fileSelector.setAttribute("accept", ".json");
       self.fileSelector.addEventListener("change", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
@@ -456,6 +447,29 @@ class SetView {
       self.createActivateRestore(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
+
+
+      /////////
+      // Test
+
+      var search = self.document.createElement("input");
+      self.container.appendChild(search);
+      search.setAttribute("type", "text");
+      search.setAttribute("placeholder", "search dynamically!!!");
+      // Activate behavior.
+      search.addEventListener("input", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        console.log("input trigger");
+      });
+
+
+
+      ///////////////////////////
+
+
+
+
       // Create menu for sets by processes.
       new SetMenuView("processes", self.state);
       // Create menu for sets by compartments.

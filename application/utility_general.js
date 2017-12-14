@@ -203,9 +203,7 @@ class General {
   * @returns {Array<Object>} Records of coordinates for points around a central
   * origin.
   */
-  static convertNormalizeRadialCoordinates({
-    pointsCoordinates, originCoordinates, graphHeight
-  } = {}) {
+  static convertNormalizeRadialCoordinates({pointsCoordinates, originCoordinates, graphHeight} = {}) {
     // Convert and normalize points' coordinates.
     return pointsCoordinates.map(function (pointCoordinates) {
       // Convert coordinates relative to origin on standard coordinate plane.
@@ -244,9 +242,7 @@ class General {
   * @param {number} parameters.height Height in pixels of scalable vector graph.
   * @returns {Object<number>} Coordinates of point.
   */
-  static convertGraphCoordinates({
-    pointX, pointY, originX, originY, height
-  } = {}) {
+  static convertGraphCoordinates({pointX, pointY, originX, originY, height} = {}) {
     // The coordinates of scalable vector graphs originate at the top left
     // corner.
     // Coordinates of the x-axis or abscissa increase towards the right.
@@ -352,9 +348,7 @@ class General {
   * @returns {string} Definitions of points for an horizontal, isosceles
   * triangle.
   */
-  static createIsoscelesTrianglePoints({
-    base, altitude, orientation
-  } = {}) {
+  static createIsoscelesTrianglePoints({base, altitude, orientation} = {}) {
     // The coordinates of scalable vector graphs originate at the top left
     // corner.
     // Coordinates of the x-axis or abscissa increase towards the right.
@@ -1240,9 +1234,7 @@ class General {
   * @returns {Object<Array<string>>} Values of the target attribute that occur
   * together in records with each value of the category attribute.
   */
-  static collectRecordTargetByCategories({
-    target, categories, recordsCollection
-  } = {}) {
+  static collectRecordTargetByCategories({target, categories, recordsCollection} = {}) {
     // Iterate on values of the category attribute.
     return categories.reduce(function (categoriesCollection, category) {
       return General.collectRecordTargetByCategory({
@@ -1266,9 +1258,7 @@ class General {
   * @returns {Object<Array<string>>} Values of the target attribute that occur
   * together in records with each value of the category attribute.
   */
-  static collectRecordTargetByCategory({
-    target, category, collection
-  } = {}) {
+  static collectRecordTargetByCategory({target, category, collection} = {}) {
     // Determine whether the collection includes a record for the value of the
     // category attribute.
     if (collection.hasOwnProperty(category)) {

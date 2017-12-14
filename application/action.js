@@ -214,6 +214,35 @@ class Action {
     });
   }
   /**
+  * Changes the string to filter sets' summaries.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.string String to which to compare records' names.
+  * @param {Object} state Application's state.
+  */
+  static changeSetsSearch({string, state} = {}) {
+
+    // TODO: I need a state variable "setsSearch"...
+    var setsSearch = string.toLowerCase();
+    // Filter sets' summaries.
+    var setsSummaries = Cardinality.filterSetsSummaries({
+      setsSummaries: state.setsSummaries,
+      match: setsSearch,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    // Compile attributes' values.
+    var novelAttributesValues = {
+      setsSearch: setsSearch,
+      setsSummaries: setsSummaries
+    };
+    var attributesValues = novelAttributesValues;
+    // Submit attributes' values to the application's state.
+    Action.submitAttributes({
+      attributesValues: attributesValues,
+      state: state
+    });
+  }
+  /**
   * Changes the values of attributes to apply as filters to sets.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.value Value of attribute in current selection.
@@ -362,17 +391,15 @@ class Action {
   * @param {Object} parameters.state Application's state.
   */
   static changeSetsSorts({category, criterion, state} = {}) {
-
     // Change the specifications to sort candidates' summaries.
     var setsSorts = Action.changeCategoriesSortCriterionOrder({
       category: category,
       criterion: criterion,
       sorts: state.setsSorts
     });
-
-    // Prepare summaries of sets' cardinalities.
-    var setsSummaries = Cardinality.prepareSetsSummaries({
-      setsCardinalities: state.setsCardinalities,
+    // Sort sets' summaries.
+    var setsSummaries = Cardinality.sortSetsSummaries({
+      setsSummaries: state.setsSummaries,
       setsSorts: setsSorts,
       compartments: state.compartments,
       processes: state.processes
@@ -475,21 +502,17 @@ class Action {
       criterion: criterion,
       sorts: state.candidatesSorts
     });
-
-    // TODO: Unnecessary to prepare the entire summary... no need to re-create...
-    // TODO: Only sort the existing summary.
-
-    // Prepare summaries of sets' cardinalities.
-    var setsSummaries = Cardinality.prepareSetsSummaries({
-      setsCardinalities: state.setsCardinalities,
-      setsSorts: setsSorts,
-      compartments: state.compartments,
-      processes: state.processes
+    // Sort candidates' summaries.
+    var candidatesSummaries = Candidacy.sortCandidatesSummaries({
+      candidatesSummaries: state.candidatesSummaries,
+      candidatesSorts: candidatesSorts,
+      reactionsCandidates: state.reactionsCandidates,
+      metabolitesCandidates: state.metabolitesCandidates
     });
     // Compile attributes' values.
     var novelAttributesValues = {
-      setsSorts: setsSorts,
-      setsSummaries: setsSummaries
+      candidatesSorts: candidatesSorts,
+      candidatesSummaries: candidatesSummaries
     };
     var attributesValues = novelAttributesValues;
     // Submit attributes' values to the application's state.
@@ -509,10 +532,10 @@ class Action {
   * application.
   * @returns {Object} Persistent representation of the application's state.
   */
-  static createPersistentState(model) {
-    return model.attributeNames.reduce(function (collection, attributeName) {
+  static createPersistentState(state) {
+    return state.attributeNames.reduce(function (collection, attributeName) {
       var novelRecord = {
-        [attributeName]: model[attributeName]
+        [attributeName]: state[attributeName]
       };
       return Object.assign({}, collection, novelRecord);
     }, {});
@@ -645,14 +668,7 @@ class Action {
   * all metabolites' reactions and sets.
   * @returns {Object} Values of multiple attributes.
   */
-  static initializeApplicationVariantState({
-    reactions,
-    metabolites,
-    compartments,
-    processes,
-    totalReactionsSets,
-    totalMetabolitesSets
-  } = {}) {
+  static initializeApplicationVariantState({reactions, metabolites, compartments, processes, totalReactionsSets, totalMetabolitesSets} = {}) {
     // Initialize filters against entities' sets.
     var setsFilters = Attribution.createInitialSetsFilters();
     // Determine current entities' attribution to sets.

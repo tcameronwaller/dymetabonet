@@ -4,6 +4,21 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+14 December 2017
+
+----------
+Progress
+
+Create state variables "setsSearch" and "candidatesSearch".
+These variables will store strings from text input search menus.
+Apply the "filterSetsSummaries" with every preparation of setsSummary.
+That way any current search strings will apply with updates to state.
+It will also be necessary to assign the values of the text input search menus from the respective state variable.
+If the state variables are empty "", then display the place holder message.
+
+Implement very similar strategy for the candidatesSummaries.
+
+--------------------------------------------------
 13 December 2017
 
 ----------

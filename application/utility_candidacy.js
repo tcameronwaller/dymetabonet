@@ -61,16 +61,7 @@ class Candidacy {
   * @returns {Object} Information about candidate entities, their
   * simplifications, and summaries.
   */
-  static evaluateCandidacyContext({
-    reactionsSets,
-    reactions,
-    metabolites,
-    compartmentalization,
-    metabolitesSimplifications,
-    reactionsSimplifications,
-    candidatesSorts,
-    compartments
-  } = {}) {
+  static evaluateCandidacyContext({reactionsSets, reactions, metabolites, compartmentalization, metabolitesSimplifications, reactionsSimplifications, candidatesSorts, compartments} = {}) {
     // Filter information about simplifications for entities to omit those that
     // are implicit and include only those that are explicit.
     var simplifications = Candidacy.filterExplicitSimplifications({
@@ -129,18 +120,7 @@ class Candidacy {
   * Information about simplification of metabolites.
   * @returns {Object<Object>} Information about simplification of entities.
   */
-  static changeSimplifications({
-    identifier,
-    method,
-    type,
-    reactionsCandidates,
-    metabolitesCandidates,
-    reactionsSets,
-    reactions,
-    compartmentalization,
-    reactionsSimplifications,
-    metabolitesSimplifications
-  } = {}) {
+  static changeSimplifications({identifier, method, type, reactionsCandidates, metabolitesCandidates, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
     // Filter information about simplifications for entities to omit those that
     // are implicit and include only those that are explicit.
     var explicitSimplifications = Candidacy.filterExplicitSimplifications({
@@ -194,15 +174,7 @@ class Candidacy {
   * @returns {Object} Information about candidate entities and their
   * simplifications.
   */
-  static collectCandidatesSimplifications({
-    reactionsSets,
-    reactions,
-    metabolites,
-    compartmentalization,
-    metabolitesSimplifications,
-    reactionsSimplifications,
-    compartments
-  } = {}) {
+  static collectCandidatesSimplifications({reactionsSets, reactions, metabolites, compartmentalization, metabolitesSimplifications, reactionsSimplifications, compartments} = {}) {
     // Candidate entities are entities that are elligible candidates for
     // representation in the network.
     // An entity's candidacy depends on filters by its values of attributes,
@@ -279,15 +251,7 @@ class Candidacy {
   * @returns {Object<Object>} Information about candidate reactions, their
   * metabolites, and their simplifications.
   */
-  static collectCandidateReactionsMetabolitesSimplifications({
-    compartmentalization,
-    reactionsSets,
-    reactions,
-    metabolites,
-    metabolitesSimplifications,
-    reactionsSimplifications,
-    compartments
-  } = {}) {
+  static collectCandidateReactionsMetabolitesSimplifications({compartmentalization, reactionsSets, reactions, metabolites, metabolitesSimplifications, reactionsSimplifications, compartments} = {}) {
     // Collect information about reactions and their metabolites that are
     // candidates for representation in the network.
     // Collect information about reactions' implicit simplifications and include
@@ -335,16 +299,7 @@ class Candidacy {
   * @returns {Object<Object>} Information about candidate reactions, their
   * metabolites, and their simplifications.
   */
-  static collectCandidateReactionMetabolitesSimplification({
-    reactionIdentifier,
-    reactionsSets,
-    reactions,
-    metabolites,
-    compartmentalization,
-    metabolitesSimplifications,
-    compartments,
-    collection
-  } = {}) {
+  static collectCandidateReactionMetabolitesSimplification({reactionIdentifier, reactionsSets, reactions, metabolites, compartmentalization, metabolitesSimplifications, compartments, collection} = {}) {
     // Evaluate reaction's candidacy.
     var candidacy = Candidacy.evaluateReactionCandidacy({
       reactionIdentifier: reactionIdentifier,
@@ -425,13 +380,7 @@ class Candidacy {
   * reactions, their metabolites, and their simplifications.
   * @returns {Object} Information about reaction's candidacy.
   */
-  static evaluateReactionCandidacy({
-    reactionIdentifier,
-    reactionsSets,
-    reactions,
-    compartmentalization,
-    collection
-  } = {}) {
+  static evaluateReactionCandidacy({reactionIdentifier, reactionsSets, reactions, compartmentalization, collection} = {}) {
     // Access information about reaction.
     var reaction = reactions[reactionIdentifier];
     var reactionSets = reactionsSets[reactionIdentifier];
@@ -502,11 +451,7 @@ class Candidacy {
   * compartmentalization is relevant.
   * @returns {boolean} Whether the reaction is relevant.
   */
-  static determineReactionContextRelevance({
-    reaction,
-    reactionSets,
-    compartmentalization
-  } = {}) {
+  static determineReactionContextRelevance({reaction, reactionSets, compartmentalization} = {}) {
     // Filter for reaction's relevant participants.
     var relevantParticipants = Extraction.filterReactionParticipants({
       criteria: {
@@ -540,13 +485,7 @@ class Candidacy {
   * compartmentalization is relevant.
   * @returns {boolean} Whether the reaction is relevant.
   */
-  static determineReactionParticipantsOperationRelevance({
-    participants,
-    conversion,
-    transport,
-    transports,
-    compartmentalization
-  } = {}) {
+  static determineReactionParticipantsOperationRelevance({participants, conversion, transport, transports, compartmentalization} = {}) {
     // Determine whether reaction's operation.
     if (conversion) {
       // Reaction's performs chemical conversion.
@@ -653,9 +592,7 @@ class Candidacy {
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Array<string>} Identifiers of reactions.
   */
-  static collectRedundantReplicateReactions({
-    reactionIdentifier, compartmentalization, reactionsSets, reactions
-  } = {}) {
+  static collectRedundantReplicateReactions({reactionIdentifier, compartmentalization, reactionsSets, reactions} = {}) {
     // Replicate reactions have identical metabolites that participate as
     // reactants and products.
     // Redundant replicate reactions are also relevant and have participants
@@ -732,9 +669,7 @@ class Candidacy {
   * compartmentalization is relevant.
   * @returns {boolean} Whether reactions are redundant.
   */
-  static determineReactionsRedundancy({
-    firstReaction, secondReaction, firstSets, secondSets, compartmentalization
-  } = {}) {
+  static determineReactionsRedundancy({firstReaction, secondReaction, firstSets, secondSets, compartmentalization} = {}) {
     // Only compare relevant participants of each reaction.
     // Filter for reactions' relevant participants.
     var firstParticipants = Extraction.filterReactionParticipants({
@@ -769,9 +704,7 @@ class Candidacy {
   * compartmentalization is relevant.
   * @returns {boolean} Whether participants are redundant.
   */
-  static determineParticipantsRedundancy({
-    firstParticipants, secondParticipants, compartmentalization
-  } = {}) {
+  static determineParticipantsRedundancy({firstParticipants, secondParticipants, compartmentalization} = {}) {
     // Determine whether compartmentalization is relevant.
     if (compartmentalization) {
       // Compartmentalization is relevant.
@@ -804,9 +737,7 @@ class Candidacy {
   * @returns {boolean} Whether the participants have identical values of
   * attributes.
   */
-  static determineParticipantsAttributesMutualRedundancy({
-    firstParticipants, secondParticipants, attributes
-  } = {}) {
+  static determineParticipantsAttributesMutualRedundancy({firstParticipants, secondParticipants, attributes} = {}) {
     var firstComparison = Candidacy.determineParticipantsAttributesRedundancy({
       firstParticipants: firstParticipants,
       secondParticipants: secondParticipants,
@@ -832,9 +763,7 @@ class Candidacy {
   * @returns {boolean} Whether the participants have identical values of
   * attributes.
   */
-  static determineParticipantsAttributesRedundancy({
-    firstParticipants, secondParticipants, attributes
-  } = {}) {
+  static determineParticipantsAttributesRedundancy({firstParticipants, secondParticipants, attributes} = {}) {
     return firstParticipants.every(function (firstParticipant) {
       return secondParticipants.some(function (secondParticipant) {
         return attributes.every(function (attribute) {
@@ -851,9 +780,7 @@ class Candidacy {
   * reactions.
   * @returns {boolean} Whether reaction is the priority replicate.
   */
-  static determineReactionReplicatePriority({
-    reactionIdentifier, replicateIdentifiers
-  } = {}) {
+  static determineReactionReplicatePriority({reactionIdentifier, replicateIdentifiers} = {}) {
     // Include the reaction's identifier in the list of replicates.
     var reactionsIdentifiers = []
     .concat(reactionIdentifier, replicateIdentifiers);
@@ -880,13 +807,7 @@ class Candidacy {
   * @returns {Object<Object>} Information about a candidate reaction's
   * metabolites.
   */
-  static collectReactionMetabolites({
-    reaction,
-    reactionSets,
-    compartmentalization,
-    metabolites,
-    compartments
-  } = {}) {
+  static collectReactionMetabolites({reaction, reactionSets, compartmentalization, metabolites, compartments} = {}) {
     // Filter for reaction's relevant participants.
     var relevantParticipants = Extraction.filterReactionParticipants({
       criteria: {
@@ -951,11 +872,7 @@ class Candidacy {
   * compartmentalization is relevant.
   * @returns {string} Identifier for a candidate metabolite.
   */
-  static createCandidateMetaboliteIdentifier({
-    metabolite,
-    compartment,
-    compartmentalization
-  } = {}) {
+  static createCandidateMetaboliteIdentifier({metabolite, compartment, compartmentalization} = {}) {
     if (compartmentalization) {
       return (metabolite + "_" + compartment);
     } else {
@@ -971,11 +888,7 @@ class Candidacy {
   * compartmentalization is relevant.
   * @returns {string} Name for a candidate metabolite.
   */
-  static createCandidateMetaboliteName({
-    metabolite,
-    compartment,
-    compartmentalization
-  } = {}) {
+  static createCandidateMetaboliteName({metabolite, compartment, compartmentalization} = {}) {
     if (compartmentalization) {
       return (metabolite + " (" + compartment + ")");
     } else {
@@ -1001,12 +914,7 @@ class Candidacy {
   * @returns {Object<Object>} Information about candidate metabolites and their
   * simplifications.
   */
-  static collectCandidateMetabolitesReactionsSimplifications({
-    reactionsCandidates,
-    reactionsMetabolites,
-    reactionsSimplifications,
-    metabolitesSimplifications
-  } = {}) {
+  static collectCandidateMetabolitesReactionsSimplifications({reactionsCandidates, reactionsMetabolites, reactionsSimplifications, metabolitesSimplifications} = {}) {
     // Collect the identifiers of candidate reactions in which each candidate
     // metabolite participates.
     var metabolitesReactions = General.collectRecordsTargetsByCategories({
@@ -1053,13 +961,7 @@ class Candidacy {
   * @returns {Object<Object>} Information about candidate metabolites and their
   * simplifications.
   */
-  static collectCandidateMetaboliteReactionsSimplification({
-    metaboliteIdentifier,
-    reactionsMetabolites,
-    metabolitesReactions,
-    reactionsSimplifications,
-    collection
-  } = {}) {
+  static collectCandidateMetaboliteReactionsSimplification({metaboliteIdentifier, reactionsMetabolites, metabolitesReactions, reactionsSimplifications, collection} = {}) {
     // Metabolite is a valid candidate.
     // Access information about metabolite.
     var reactionMetabolite = reactionsMetabolites[metaboliteIdentifier];
@@ -1124,9 +1026,7 @@ class Candidacy {
   * Information about simplification of reactions.
   * @returns {Object<Object>} Information about simplification of entities.
   */
-  static filterExplicitSimplifications({
-    metabolitesSimplifications, reactionsSimplifications
-  } = {}) {
+  static filterExplicitSimplifications({metabolitesSimplifications, reactionsSimplifications} = {}) {
     // Define function for filter against simplifications.
     function filter(entryValue) {
       return !entryValue.dependency;
@@ -1163,13 +1063,7 @@ class Candidacy {
   * Information about simplification of reactions.
   * @returns {Object<Object>} Information about simplification of entities.
   */
-  static changeTypeExplicitSimplifications({
-    identifier,
-    method,
-    type,
-    metabolitesSimplifications,
-    reactionsSimplifications
-  } = {}) {
+  static changeTypeExplicitSimplifications({identifier, method, type, metabolitesSimplifications, reactionsSimplifications} = {}) {
     // Determine whether to change simplifications of metabolites or reactions.
     if (type === "metabolites") {
       // Change simplifications of metabolites.
@@ -1210,9 +1104,7 @@ class Candidacy {
   * simplification of entities.
   * @returns {Object<Object>} Information about simplification of entities.
   */
-  static changeExplicitSimplification({
-    identifier, method, simplifications
-  } = {}) {
+  static changeExplicitSimplification({identifier, method, simplifications} = {}) {
     // Determine whether the entity has a designation for simplification.
     if (
       simplifications.hasOwnProperty(identifier)
@@ -1270,9 +1162,7 @@ class Candidacy {
   * simplification of entities.
   * @returns {Object<Object>} Information about simplification of entities.
   */
-  static includeSimplification({
-    identifier, method, dependency, simplifications
-  } = {}) {
+  static includeSimplification({identifier, method, dependency, simplifications} = {}) {
     // Compile information.
     var information = {
       identifier: identifier,
@@ -1319,15 +1209,7 @@ class Candidacy {
   * Information about simplification of metabolites.
   * @returns {Object<Object>} Information about simplification of entities.
   */
-  static collectImplicitSimplifications({
-    reactionsCandidates,
-    metabolitesCandidates,
-    reactionsSets,
-    reactions,
-    compartmentalization,
-    reactionsSimplifications,
-    metabolitesSimplificiations
-  } = {}) {
+  static collectImplicitSimplifications({reactionsCandidates, metabolitesCandidates, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplificiations} = {}) {
     // The default method for implicit simplifications is omission.
     // Collect information about any implicit simplifications for entities and
     // include with information about explicit simplifications.
@@ -1371,14 +1253,7 @@ class Candidacy {
   * Information about simplification of metabolites.
   * @returns {Object<Object>} Information about simplification of reactions.
   */
-  static collectReactionsImplicitSimplifications({
-    reactionsCandidates,
-    reactionsSets,
-    reactions,
-    compartmentalization,
-    reactionsSimplifications,
-    metabolitesSimplifications
-  } = {}) {
+  static collectReactionsImplicitSimplifications({reactionsCandidates, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
     // Collect information about reactions' implicit simplifications and include
     // with information about reactions' explicit simplifications.
     // Iterate on reactions.
@@ -1416,14 +1291,7 @@ class Candidacy {
   * Information about simplification of reactions.
   * @returns {Object<Object>} Information about simplification of reactions.
   */
-  static collectReactionImplicitSimplification({
-    reactionCandidate,
-    reactionsSets,
-    reactions,
-    compartmentalization,
-    metabolitesSimplifications,
-    reactionsSimplifications
-  } = {}) {
+  static collectReactionImplicitSimplification({reactionCandidate, reactionsSets, reactions, compartmentalization, metabolitesSimplifications, reactionsSimplifications} = {}) {
     // Determine whether the reaction has a designation for simplification.
     if (reactionsSimplifications.hasOwnProperty(reactionCandidate.identifier)) {
       // Reaction has a designation for simplification.
@@ -1471,12 +1339,7 @@ class Candidacy {
   * @returns {boolean} Whether the reaction qualifies for simplification by
   * dependency on its metabolites.
   */
-  static determineReactionSimplificationDependency({
-    reaction,
-    reactionSets,
-    compartmentalization,
-    metabolitesSimplifications
-  } = {}) {
+  static determineReactionSimplificationDependency({reaction, reactionSets, compartmentalization, metabolitesSimplifications} = {}) {
     // Determine whether reaction qualifies for simplification by dependency.
     // A reaction's relevance depends on the relevance of its metabolites that
     // participate.
@@ -1531,11 +1394,7 @@ class Candidacy {
   * Information about simplification of metabolites.
   * @returns {Object<Object>} Information about simplification of metabolites.
   */
-  static collectMetabolitesImplicitSimplifications({
-    metabolitesCandidates,
-    reactionsSimplifications,
-    metabolitesSimplifications
-  } = {}) {
+  static collectMetabolitesImplicitSimplifications({metabolitesCandidates, reactionsSimplifications, metabolitesSimplifications} = {}) {
     // Collect information about metabolites' implicit simplifications and
     // include with information about metabolites' explicit simplifications.
     // Iterate on metabolites.
@@ -1565,11 +1424,7 @@ class Candidacy {
   * Information about simplification of metabolites.
   * @returns {Object<Object>} Information about simplification of metabolites.
   */
-  static collectMetaboliteImplicitSimplification({
-    metaboliteCandidate,
-    reactionsSimplifications,
-    metabolitesSimplifications
-  } = {}) {
+  static collectMetaboliteImplicitSimplification({metaboliteCandidate, reactionsSimplifications, metabolitesSimplifications} = {}) {
     // Determine whether the metabolite has a designation for simplification.
     if (
       metabolitesSimplifications.hasOwnProperty(metaboliteCandidate.identifier)
@@ -1613,10 +1468,7 @@ class Candidacy {
   * @returns {boolean} Whether the metabolite qualifies for simplification by
   * dependency on its reactions.
   */
-  static determineMetaboliteSimplificationDependency({
-    reactionsIdentifiers,
-    reactionsSimplifications
-  } = {}) {
+  static determineMetaboliteSimplificationDependency({reactionsIdentifiers, reactionsSimplifications} = {}) {
     // Determine whether metabolite qualifies for simplification by dependency.
     // A metabolite's relevance depends on the relevance of its reactions in
     // which it participates.
@@ -1662,9 +1514,7 @@ class Candidacy {
   * sort candidates' summaries.
   * @returns {Object<Array<Object>>} Summaries of candidates' degrees.
   */
-  static prepareCandidatesSummaries({
-    reactionsCandidates, metabolitesCandidates, candidatesSorts
-  } = {}) {
+  static prepareCandidatesSummaries({reactionsCandidates, metabolitesCandidates, candidatesSorts} = {}) {
     // Create candidates' summaries.
     var candidatesSummaries = Candidacy.createCandidatesSummaries({
       reactionsCandidates: reactionsCandidates,
@@ -1688,9 +1538,7 @@ class Candidacy {
   * candidate metabolites.
   * @returns {Object<Array<Object>>} Summaries of candidates' degrees.
   */
-  static createCandidatesSummaries({
-    reactionsCandidates, metabolitesCandidates
-  } = {}) {
+  static createCandidatesSummaries({reactionsCandidates, metabolitesCandidates} = {}) {
     // Prepare records for entities.
     var entities = ["metabolites", "reactions"];
     return entities.reduce(function (collection, entity) {
@@ -1730,10 +1578,6 @@ class Candidacy {
       return Object.assign(collection, entry);
     }, {});
   }
-
-  // TODO: Implement the sort function for candidates...
-
-
   /**
   * Sorts candidates' summaries.
   * @param {Object<Array<Object>>} parameters.candidatesSummaries Summaries of
@@ -1746,38 +1590,34 @@ class Candidacy {
   * candidate metabolites.
   * @returns {Object<Array<Object>>} Summaries of candidates' degrees.
   */
-  static sortCandidatesSummaries({
-    candidatesSummaries,
-    candidatesSorts,
-    reactionsCandidates,
-    metabolitesCandidates
-  }) {
-    var entities = Object.keys(candidatesSummaries);
-    return entities.reduce(function (collection, entity) {
-      // Determine reference for candidates' names.
-      if (entity === "metabolites") {
+  static sortCandidatesSummaries({candidatesSummaries, candidatesSorts, reactionsCandidates, metabolitesCandidates}) {
+    // Iterate on categories.
+    var categories = Object.keys(candidatesSummaries);
+    return categories.reduce(function (collection, category) {
+      // Determine reference.
+      if (category === "metabolites") {
         var reference = metabolitesCandidates;
-      } else if (entity === "reactions") {
+      } else if (category === "reactions") {
         var reference = reactionsCandidates;
       }
-      // Access information about candidates of the entity's type.
-      var records = candidatesSummaries[entity];
+      // Access category's records.
+      var records = candidatesSummaries[category];
       // Determine appropriate value by which to sort records.
-      if (candidatesSorts[entity].criterion === "count") {
-        var key = candidatesSorts[entity].criterion;
-      } else if (candidatesSorts[entity].criterion === "name") {
+      if (candidatesSorts[category].criterion === "count") {
+        var key = candidatesSorts[category].criterion;
+      } else if (candidatesSorts[category].criterion === "name") {
         var key = "candidate";
       }
       // Sort records.
       var sortRecords = General.sortArrayRecords({
         array: records,
         key: key,
-        order: candidatesSorts[entity].order,
+        order: candidatesSorts[category].order,
         reference: reference,
       });
       // Create entry.
       var entry = {
-        [entity]: sortRecords
+        [category]: sortRecords
       };
       // Include entry in collection.
       return Object.assign(collection, entry);

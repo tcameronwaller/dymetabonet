@@ -88,9 +88,7 @@ class Attribution {
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Object} Information about current entities' sets.
   */
-  static determineCurrentEntitiesSets({
-    setsFilters, totalReactionsSets, totalMetabolitesSets, reactions
-  } = {}) {
+  static determineCurrentEntitiesSets({setsFilters, totalReactionsSets, totalMetabolitesSets, reactions} = {}) {
     // The filtration procedures are computationally expensive.
     // Determine whether there are any selections of attributes' values to apply
     // as filters.
@@ -243,12 +241,7 @@ class Attribution {
   * participates and values of attributes that the metabolite inherits from
   * these reactions.
   */
-  static collectMetaboliteReactionsAttributesValues({
-    metaboliteIdentifier,
-    reactionsIdentifiers,
-    reactionsSets,
-    reactions
-  } = {}) {
+  static collectMetaboliteReactionsAttributesValues({metaboliteIdentifier, reactionsIdentifiers, reactionsSets, reactions} = {}) {
     // Collect reactions that pass any filters and in which metabolite's
     // participation passes any filters.
     // Collect attributes that pass any filters from these reactions.
@@ -315,9 +308,7 @@ class Attribution {
   * @returns {boolean} Whether the reaction passes any filters and whether
   * metabolite's participation in the reaction passes any filters.
   */
-  static determineMetaboliteReactionPassClaim({
-    metaboliteIdentifier, reactionIdentifier, reactionsSets
-  } = {}) {
+  static determineMetaboliteReactionPassClaim({metaboliteIdentifier, reactionIdentifier, reactionsSets} = {}) {
     // Determine whether reaction passes filters.
     var pass = reactionsSets.hasOwnProperty(reactionIdentifier);
     if (pass) {
@@ -343,9 +334,7 @@ class Attribution {
   * @returns {Object} Values of attributes that a metabolite inherits from the
   * reaction in which it participates.
   */
-  static collectMetaboliteReactionAttributesValues({
-    metaboliteIdentifier, reactionIdentifier, reactionsSets, reactions
-  } = {}) {
+  static collectMetaboliteReactionAttributesValues({metaboliteIdentifier, reactionIdentifier, reactionsSets, reactions} = {}) {
     // Access information about reaction.
     var reaction = reactions[reactionIdentifier];
     var reactionSets = reactionsSets[reactionIdentifier];
@@ -379,11 +368,7 @@ class Attribution {
   * @returns {Array<string>} Identifiers of compartments that pass any filters
   * and in which metabolite participates in the reaction.
   */
-  static collectMetaboliteReactionCompartments({
-    metaboliteIdentifier,
-    compartments,
-    participants
-  } = {}) {
+  static collectMetaboliteReactionCompartments({metaboliteIdentifier, compartments, participants} = {}) {
     // Metabolite inherits from a reaction only the compartments in which it
     // participates.
     // Filter reaction's participants for those that match the metabolite and
@@ -423,9 +408,7 @@ class Attribution {
   * attributes' values.
   * @returns {Object<Array<string>>} Sets' filters by attributes' values.
   */
-  static recordSetSelectionFilters({
-    value, attribute, setsFilters
-  } = {}) {
+  static recordSetSelectionFilters({value, attribute, setsFilters} = {}) {
     // Determine whether the attribute is valid.
     if (setsFilters.hasOwnProperty(attribute)) {
       // Attribute is valid.
@@ -489,9 +472,7 @@ class Attribution {
   * @returns {Object<Object>} Information about reactions' metabolites
   * and sets.
   */
-  static filterReactionsMetabolitesAttributesValues({
-    setsFilters, totalReactionsSets, reactions
-  } = {}) {
+  static filterReactionsMetabolitesAttributesValues({setsFilters, totalReactionsSets, reactions} = {}) {
     // Filter reactions, their metabolites, and their values of attributes.
     // Initialize collection.
     var initialCollection = {
@@ -557,9 +538,7 @@ class Attribution {
   * metabolites and sets.
   * @returns {Object<Object>} Information about reactions' metabolites and sets.
   */
-  static filterCollectReactionsSets({
-    method, setsFilters, reactionSets, reaction, collection
-  } = {}) {
+  static filterCollectReactionsSets({method, setsFilters, reactionSets, reaction, collection} = {}) {
     // Determine which method to follow for filtration.
     if (method === "access") {
       // Filter reaction's values of attributes.
@@ -609,9 +588,7 @@ class Attribution {
   * @returns {Object} Information about a reaction's metabolites and sets that
   * pass filters.
   */
-  static filterAccessReactionAttributesValues({
-    setsFilters, reactionSets, reaction
-  } = {}) {
+  static filterAccessReactionAttributesValues({setsFilters, reactionSets, reaction} = {}) {
     // Determine which of reaction's values of attributes to retain for
     // accessibility of sets.
     // Filter values of attributes reciprocally.
@@ -653,13 +630,7 @@ class Attribution {
   * attributes' values.
   * @returns {Array<string>} Attribute's values that pass filters.
   */
-  static filterReciprocalAttributeValues({
-    trialValues,
-    trialAttribute,
-    qualifierValues,
-    qualifierAttribute,
-    setsFilters
-  } = {}) {
+  static filterReciprocalAttributeValues({trialValues, trialAttribute, qualifierValues, qualifierAttribute, setsFilters} = {}) {
     // Determine values of qualifier attribute that pass filters.
     var filterQualifiers = Attribution.filterAttributeValues({
       values: qualifierValues,
@@ -687,9 +658,7 @@ class Attribution {
   * attributes' values.
   * @returns {Array<string>} Attribute's values that pass filters.
   */
-  static filterAttributeValues({
-    values, attribute, setsFilters
-  } = {}) {
+  static filterAttributeValues({values, attribute, setsFilters} = {}) {
     // Determine if there is a filter for the attribute.
     if (setsFilters[attribute].length > 0) {
       // There is a filter for the attribute.
@@ -729,9 +698,7 @@ class Attribution {
   * @returns {Object} Information about a reaction's metabolites and sets that
   * pass filters.
   */
-  static filterReactionMetabolitesAttributesValues({
-    setsFilters, reactionSets, reaction
-  } = {}) {
+  static filterReactionMetabolitesAttributesValues({setsFilters, reactionSets, reaction} = {}) {
     // Determine reaction's values of relevant attributes that pass filters.
     // Filter processes.
     var processes = Attribution.filterAttributeValues({
@@ -769,9 +736,7 @@ class Attribution {
   * @returns {Array<string>} Identifiers of a reaction's metabolites that
   * pass filters.
   */
-  static filterReactionMetabolites({
-    metabolites, compartments, participants
-  } = {}) {
+  static filterReactionMetabolites({metabolites, compartments, participants} = {}) {
     // Filter metabolites by the compartments in which they participate in the
     // reaction.
     // Metabolites pass filters if they participate in a compartment that passes
@@ -818,9 +783,7 @@ class Attribution {
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Object<Object>} Information about metabolites' reactions and sets.
   */
-  static filterMetabolitesReactionsAttributesValues({
-    totalMetabolitesSets, accessReactionsSets, filterReactionsSets, reactions
-  } = {}) {
+  static filterMetabolitesReactionsAttributesValues({totalMetabolitesSets, accessReactionsSets, filterReactionsSets, reactions} = {}) {
     // Filter metabolites, their reactions, and their values of attributes.
     // Initialize collection.
     var initialCollection = {
@@ -869,9 +832,7 @@ class Attribution {
   * reactions and sets.
   * @returns {Object<Object>} Information about metabolites' reactions and sets.
   */
-  static filterCollectMetabolitesSets({
-    metaboliteSets, reactionsSets, reactions, collection
-  } = {}) {
+  static filterCollectMetabolitesSets({metaboliteSets, reactionsSets, reactions, collection} = {}) {
     // Filter metabolite's reactions and values of attributes that it inherits
     // from these reactions.
     var filterSets = Attribution.filterMetaboliteReactionsAttributesValues({
@@ -911,9 +872,7 @@ class Attribution {
   * @returns {Object<Object>} Information about metabolites' reactions and sets
   * that pass filters.
   */
-  static filterMetaboliteReactionsAttributesValues({
-    metaboliteSets, reactionsSets, reactions
-  } = {}) {
+  static filterMetaboliteReactionsAttributesValues({metaboliteSets, reactionsSets, reactions} = {}) {
     // Collect values of attributes that the metabolite inherits from
     // reactions in which it participates.
     var reactionsAttributesValues = Attribution
