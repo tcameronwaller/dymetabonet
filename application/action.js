@@ -172,19 +172,6 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
-    var entitiesCandidates = Candidacy.determineCandidateEntities({
-      compartmentalization: model.compartmentalization,
-      reactionsSimplifications: model.reactionsSimplifications,
-      metabolitesSimplifications: model.metabolitesSimplifications,
-      reactionsSets: model.filterReactionsSets,
-      reactions: model.reactions
-    });
-
-    console.log("testing candidates");
-    console.log(entitiesCandidates);
-
-
-
     // Terminate process timer.
     //console.timeEnd("timer");
     var endTime = window.performance.now();
@@ -214,25 +201,31 @@ class Action {
     });
   }
   /**
-  * Changes the string to filter sets' summaries.
+  * Changes the searches to filter sets' summaries.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.string String to which to compare records' names.
+  * @param {string} parameters.category Name of category.
+  * @param {string} parameters.string Search string by which to filter
+  * records' names.
   * @param {Object} state Application's state.
   */
-  static changeSetsSearch({string, state} = {}) {
-
-    // TODO: I need a state variable "setsSearch"...
-    var setsSearch = string.toLowerCase();
+  static changeSetsSearches({category, string, state} = {}) {
+    // Change the specifications to sort candidates' summaries.
+    var setsSearches = Action.changeCategoriesSearchString({
+      category: category,
+      string: string,
+      searches: state.setsSearches
+    });
     // Filter sets' summaries.
-    var setsSummaries = Cardinality.filterSetsSummaries({
-      setsSummaries: state.setsSummaries,
-      match: setsSearch,
+    var setsSummaries = Cardinality.prepareSetsSummaries({
+      setsCardinalities: state.setsCardinalities,
+      setsSearches: setsSearches,
+      setsSorts: state.setsSorts,
       compartments: state.compartments,
       processes: state.processes
     });
     // Compile attributes' values.
     var novelAttributesValues = {
-      setsSearch: setsSearch,
+      setsSearches: setsSearches,
       setsSummaries: setsSummaries
     };
     var attributesValues = novelAttributesValues;
@@ -272,6 +265,7 @@ class Action {
       accessMetabolitesSets: currentEntitiesSets.accessMetabolitesSets,
       filterReactionsSets: currentEntitiesSets.filterReactionsSets,
       filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets,
+      setsSearches: state.setsSearches,
       setsSorts: state.setsSorts,
       compartments: state.compartments,
       processes: state.processes
@@ -325,6 +319,7 @@ class Action {
       accessMetabolitesSets: state.accessMetabolitesSets,
       filterReactionsSets: state.filterReactionsSets,
       filterMetabolitesSets: state.filterMetabolitesSets,
+      setsSearches: state.setsSearches,
       setsSorts: state.setsSorts,
       compartments: state.compartments,
       processes: state.processes
@@ -364,6 +359,7 @@ class Action {
       accessMetabolitesSets: state.accessMetabolitesSets,
       filterReactionsSets: state.filterReactionsSets,
       filterMetabolitesSets: state.filterMetabolitesSets,
+      setsSearches: state.setsSearches,
       setsSorts: state.setsSorts,
       compartments: state.compartments,
       processes: state.processes
@@ -690,6 +686,7 @@ class Action {
       accessMetabolitesSets: currentEntitiesSets.accessMetabolitesSets,
       filterReactionsSets: currentEntitiesSets.filterReactionsSets,
       filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets,
+      setsSearches: setsCardinalitiesSelections.setsSearches,
       setsSorts: setsCardinalitiesSelections.setsSorts,
       compartments: compartments,
       processes: processes
@@ -743,12 +740,15 @@ class Action {
     var setsEntities = "metabolites";
     // Initialize selection of whether to filter sets' entities for summary.
     var setsFilter = false;
+    // Initialize search's string.
+    var setsSearches = Cardinality.createInitialSetsSearches();
     // Initialize specifications to sort sets' summaries.
     var setsSorts = Cardinality.createInitialSetsSorts();
     // Compile information.
     var attributesValues = {
       setsEntities: setsEntities,
       setsFilter: setsFilter,
+      setsSearches: setsSearches,
       setsSorts: setsSorts
     };
     // Return information.
@@ -793,6 +793,28 @@ class Action {
     var novelSorts = Object.assign(copySorts, entry);
     return novelSorts;
   }
+  /**
+  * Changes the searches to filter records in multiple categories.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Name of category.
+  * @param {string} parameters.string String by which to filter records' names.
+  * @param {Object<string>} parameters.searches Searches to filter records in
+  * multiple categories.
+  * @returns {Object<string>} Searches to filter sets' summaries.
+  */
+  static changeCategoriesSearchString({category, string, searches} = {}) {
+    // Change the specification only for the specific category.
+    // Create entry.
+    var entry = {
+      [category]: string.toLowerCase()
+    };
+    // Copy specifications.
+    var copySearches = General.copyValue(searches, true);
+    // Include entry.
+    var novelSearches = Object.assign(copySearches, entry);
+    return novelSearches;
+  }
+
 
 
   ////////////////////////////////////////////////////////////////////////// ???

@@ -52,6 +52,8 @@ class Cardinality {
   * reactions' metabolites and sets that pass filtration by filter method.
   * @param {Object<Object>} parameters.filterMetabolitesSets Information about
   * metabolites' reactions and sets that pass filtration by filter method.
+  * @param {Object<string>} parameters.setsSearches Searches to filter sets'
+  * summaries.
   * @param {Object<Object<string>>} parameters.setsSorts Specifications to sort
   * sets' summaries.
   * @param {Object} parameters.compartments Information about compartments.
@@ -59,7 +61,7 @@ class Cardinality {
   * @returns {Object} Cardinalities of entities in sets and summaries of these
   * sets' cardinalities.
   */
-  static determineSetsCardinalitiesSummaries({setsEntities, setsFilter, accessReactionsSets, accessMetabolitesSets, filterReactionsSets, filterMetabolitesSets, setsSorts, compartments, processes} = {}) {
+  static determineSetsCardinalitiesSummaries({setsEntities, setsFilter, accessReactionsSets, accessMetabolitesSets, filterReactionsSets, filterMetabolitesSets, setsSearches, setsSorts, compartments, processes} = {}) {
     // Determine sets' cardinalities.
     var setsCardinalities = Cardinality.determineSetsCardinalities({
       setsEntities: setsEntities,
@@ -72,6 +74,7 @@ class Cardinality {
     // Prepare summaries of sets' cardinalities.
     var setsSummaries = Cardinality.prepareSetsSummaries({
       setsCardinalities: setsCardinalities,
+      setsSearches: setsSearches,
       setsSorts: setsSorts,
       compartments: compartments,
       processes: processes
@@ -262,22 +265,41 @@ class Cardinality {
     };
   }
   /**
+  * Creates initial searches to filter sets' summaries.
+  * @returns {Object<string>} Searches to filter sets' summaries.
+  */
+  static createInitialSetsSearches() {
+    return {
+      processes: "",
+      compartments: ""
+    };
+  }
+  /**
   * Prepares summaries of sets' cardinalities.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object<Object<number>>} parameters.setsCardinalities Cardinalities
   * of entities in sets by attributes and values.
   * @param {Object<Object<string>>} parameters.setsSorts Specifications to sort
   * sets' summaries.
+  * @param {Object<string>} parameters.setsSearches Searches to filter sets'
+  * summaries.
   * @param {Object} parameters.compartments Information about compartments.
   * @param {Object} parameters.processes Information about processes.
   * @returns {Object<Array<Object>>} Summaries of sets' cardinalities.
   */
-  static prepareSetsSummaries({setsCardinalities, setsSorts, compartments, processes} = {}) {
+  static prepareSetsSummaries({setsCardinalities, setsSearches, setsSorts, compartments, processes} = {}) {
     // Create sets' summaries.
     var setsSummaries = Cardinality.createSetsSummaries(setsCardinalities);
+    // Filter sets' summaries.
+    var filterSetsSummaries = Cardinality.filterSetsSummaries({
+      setsSummaries: setsSummaries,
+      setsSearches: setsSearches,
+      compartments: compartments,
+      processes: processes
+    });
     // Sort sets' summaries.
     var sortSetsSummaries = Cardinality.sortSetsSummaries({
-      setsSummaries: setsSummaries,
+      setsSummaries: filterSetsSummaries,
       setsSorts: setsSorts,
       compartments: compartments,
       processes: processes
@@ -324,6 +346,47 @@ class Cardinality {
     }, {});
   }
   /**
+  * Filters sets' summaries.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Array<Object>>} parameters.setsSummaries Summaries of sets'
+  * cardinalities.
+  * @param {Object<string>} parameters.setsSearches Searches to filter sets'
+  * summaries.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
+  * @returns {Object<Array<Object>>} Summaries of sets' cardinalities.
+  */
+  static filterSetsSummaries({setsSummaries, setsSearches, compartments, processes} = {}) {
+    // Iterate on categories.
+    var categories = Object.keys(setsSummaries);
+    return categories.reduce(function (collection, category) {
+      // Determine reference.
+      if (category === "compartments") {
+        var reference = compartments;
+      } else if (category === "processes") {
+        var reference = processes;
+      }
+      // Access category's records.
+      var records = setsSummaries[category];
+      // Filter records.
+      var filterRecords = records.filter(function (record) {
+        var name = reference[record.value].name.toLowerCase();
+        return name.includes(setsSearches[category]);
+      });
+      if (filterRecords.length > 0) {
+        var finalRecords = filterRecords;
+      } else {
+        var finalRecords = records;
+      }
+      // Create entry.
+      var entry = {
+        [category]: finalRecords
+      };
+      // Include entry in collection.
+      return Object.assign(collection, entry);
+    }, {});
+  }
+  /**
   * Sorts sets' summaries.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object<Array<Object>>} parameters.setsSummaries Summaries of sets'
@@ -362,41 +425,6 @@ class Cardinality {
       // Create entry.
       var entry = {
         [category]: sortRecords
-      };
-      // Include entry in collection.
-      return Object.assign(collection, entry);
-    }, {});
-  }
-  /**
-  * Filters sets' summaries.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Array<Object>>} parameters.setsSummaries Summaries of sets'
-  * cardinalities.
-  * @param {string} parameters.match String to which to compare records' names.
-  * @param {Object} parameters.compartments Information about compartments.
-  * @param {Object} parameters.processes Information about processes.
-  * @returns {Object<Array<Object>>} Summaries of sets' cardinalities.
-  */
-  static filterSetsSummaries({setsSummaries, match, compartments, processes} = {}) {
-    // Iterate on categories.
-    var categories = Object.keys(setsSummaries);
-    return categories.reduce(function (collection, category) {
-      // Determine reference.
-      if (category === "compartments") {
-        var reference = compartments;
-      } else if (category === "processes") {
-        var reference = processes;
-      }
-      // Access category's records.
-      var records = setsSummaries[category];
-      // Filter records.
-      var filterRecords = records.filter(function (record) {
-        var name = reference[record.value].name.toLowerCase();
-        return name.includes(comparison);
-      });
-      // Create entry.
-      var entry = {
-        [category]: filterRecords
       };
       // Include entry in collection.
       return Object.assign(collection, entry);

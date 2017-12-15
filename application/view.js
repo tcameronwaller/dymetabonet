@@ -447,29 +447,6 @@ class SetView {
       self.createActivateRestore(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
-
-
-      /////////
-      // Test
-
-      var search = self.document.createElement("input");
-      self.container.appendChild(search);
-      search.setAttribute("type", "text");
-      search.setAttribute("placeholder", "search dynamically!!!");
-      // Activate behavior.
-      search.addEventListener("input", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        console.log("input trigger");
-      });
-
-
-
-      ///////////////////////////
-
-
-
-
       // Create menu for sets by processes.
       new SetMenuView("processes", self.state);
       // Create menu for sets by compartments.
@@ -597,10 +574,10 @@ class SetView {
 class SetMenuView {
   /**
   * Initializes an instance of a class.
-  * @param {string} sets Type of sets, processes or compartments.
+  * @param {string} category Name of category.
   * @param {Object} state Application's state.
   */
-  constructor (sets, state) {
+  constructor (category, state) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -609,7 +586,7 @@ class SetMenuView {
     // Set reference to document object model (DOM).
     self.document = document;
     // Set reference to type of sets.
-    self.sets = sets;
+    self.category = category;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -624,7 +601,7 @@ class SetMenuView {
   initializeView(self) {
     // Create or set reference to view's container.
     self.container = View.createReferenceContainer({
-      identifier: "set-" + self.sets + "-menu",
+      identifier: "set-" + self.category + "-menu",
       parent: "set",
       documentReference: self.document
     });
@@ -645,11 +622,8 @@ class SetMenuView {
     } else {
       // View's container is not empty.
       // Set references to view's variant elements.
-      // Sets' search list.
-      self.list = self
-      .document.getElementById("set-" + self.sets + "-options-list");
-      // Sets' search options.
-      self.options = self.list.getElementsByTagName("option");
+      // Sets' search.
+      self.search = self.container.querySelector("input.search");
       // Sets' sorts.
       self.nameSort = self
       .container.querySelector("table thead tr th.name svg.sort");
@@ -671,63 +645,86 @@ class SetMenuView {
     var title = self.document.createElement("span");
     self.container.appendChild(title);
     title.classList.add("title");
-    title.textContent = self.sets;
+    title.textContent = self.category;
   }
   /**
   * Creates and activates a search.
   * @param {Object} self Instance of a class.
   */
   createActivateSearch(self) {
-    // Create container.
-    var container = self.document.createElement("span");
-    self.container.appendChild(container);
-    // Create list of options.
-    var listIdentifier = "set-" + self.sets + "-options-list";
-    self.list = self.document.createElement("datalist");
-    container.appendChild(self.list);
-    self.list.setAttribute("id", listIdentifier);
-    // Create search tool.
-    var search = self.document.createElement("input");
-    container.appendChild(search);
-    search.setAttribute("type", "search");
-    search.setAttribute("list", listIdentifier);
-    search.setAttribute("placeholder", "search " + self.sets);
-    search.setAttribute("autocomplete", "off");
+    // Create tool for search.
+    self.search = self.document.createElement("input");
+    self.container.appendChild(self.search);
+    self.search.setAttribute("type", "text");
+    self.search.classList.add("search");
+    self.search.setAttribute("placeholder", "search " + self.category + "...");
     // Activate behavior.
-    // Options from datalist elements do not report events.
-    // Rather, search input elements report events.
-    // Respond to event on input search element and access relevant information
-    // that associates with the element.
-    search.addEventListener("change", function (event) {
+    self.search.addEventListener("input", function (event) {
       // Element on which the event originated is event.currentTarget.
-      // Determine the search's value, the name of the attribute's value.
-      var name = event.currentTarget.value;
-      // Determine the search's list.
-      var list = event.currentTarget.list;
-      var options = list.getElementsByTagName("option");
-      var names = General.extractValuesDocumentElements(options);
-      // Determine whether the search value matches a valid option.
-      if (names.includes(name)) {
-        // The search value matches a valid option.
-        // Determine the identifier of the attribute's value.
-        var valueRecord = self.state.setsSummaries[self.sets].find(function (record) {
-          var recordName = SetMenuView.accessAttributeValueName({
-            attribute: self.sets,
-            value: record.value,
+      // Determine the search's value.
+      var value = event.currentTarget.value;
+      // Call action.
+      Action.changeSetsSearches({
+        category: self.category,
+        string: value,
+        state: self.state
+      });
+    });
+
+
+
+    if (false) {
+      // Create container.
+      var container = self.document.createElement("span");
+      self.container.appendChild(container);
+      // Create list of options.
+      var listIdentifier = "set-" + self.category + "-options-list";
+      self.list = self.document.createElement("datalist");
+      container.appendChild(self.list);
+      self.list.setAttribute("id", listIdentifier);
+      // Create search tool.
+      var search = self.document.createElement("input");
+      container.appendChild(search);
+      search.setAttribute("type", "search");
+      search.setAttribute("list", listIdentifier);
+      search.setAttribute("placeholder", "search " + self.category);
+      search.setAttribute("autocomplete", "off");
+      // Activate behavior.
+      // Options from datalist elements do not report events.
+      // Rather, search input elements report events.
+      // Respond to event on input search element and access relevant information
+      // that associates with the element.
+      search.addEventListener("change", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Determine the search's value, the name of the attribute's value.
+        var name = event.currentTarget.value;
+        // Determine the search's list.
+        var list = event.currentTarget.list;
+        var options = list.getElementsByTagName("option");
+        var names = General.extractValuesDocumentElements(options);
+        // Determine whether the search value matches a valid option.
+        if (names.includes(name)) {
+          // The search value matches a valid option.
+          // Determine the identifier of the attribute's value.
+          var valueRecord = self.state.setsSummaries[self.category].find(function (record) {
+            var recordName = SetMenuView.accessAttributeValueName({
+              attribute: self.category,
+              value: record.value,
+              state: self.state
+            });
+            return recordName === name;
+          });
+          // Call action.
+          Action.changeSetsFilters({
+            value: valueRecord.value,
+            attribute: self.category,
             state: self.state
           });
-          return recordName === name;
-        });
-        // Call action.
-        Action.changeSetsFilters({
-          value: valueRecord.value,
-          attribute: self.sets,
-          state: self.state
-        });
-      }
-      // Remove the search's value.
-      event.currentTarget.value = "";
-    });
+        }
+        // Remove the search's value.
+        event.currentTarget.value = "";
+      });
+    }
   }
   /**
   * Creates and activates a table.
@@ -798,7 +795,7 @@ class SetMenuView {
       // Element on which the event originated is event.currentTarget.
       // Call action.
       Action.changeSetsSorts({
-        category: self.sets,
+        category: self.category,
         criterion: attribute,
         state: self.state
       });
@@ -810,7 +807,7 @@ class SetMenuView {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
-    self.createSearchOptions(self);
+    self.restoreSearch(self);
     self.representSetsSorts(self);
     self.createActivateSetsSummaries(self);
   }
@@ -818,41 +815,45 @@ class SetMenuView {
   * Creates search's options.
   * @param {Object} self Instance of a class.
   */
-  createSearchOptions(self) {
-    // Create options within list.
-    // Select parent.
-    var list = d3.select(self.list);
-    // Create children elements by association to data.
-    var dataElements = list
-    .selectAll("option").data(self.state.setsSummaries[self.sets]);
-    dataElements.exit().remove();
-    var novelElements = dataElements.enter().append("option");
-    self.options = novelElements.merge(dataElements);
-    // Assign attributes to elements.
-    self.options
-    .text(function (element, index, nodes) {
-      // Determine whether the option corresponds to a current selection of the
-      // attribute's value.
-      var selection = SetMenuView.determineSetSelection({
-        value: element.value,
-        attribute: element.attribute,
-        state: self.state
+  restoreSearch(self) {
+    // Assign value of tool for search.
+    self.search.value = self.state.setsSearches[self.category];
+    if (false) {
+      // Create options within list.
+      // Select parent.
+      var list = d3.select(self.list);
+      // Create children elements by association to data.
+      var dataElements = list
+      .selectAll("option").data(self.state.setsSummaries[self.category]);
+      dataElements.exit().remove();
+      var novelElements = dataElements.enter().append("option");
+      self.options = novelElements.merge(dataElements);
+      // Assign attributes to elements.
+      self.options
+      .text(function (element, index, nodes) {
+        // Determine whether the option corresponds to a current selection of the
+        // attribute's value.
+        var selection = SetMenuView.determineSetSelection({
+          value: element.value,
+          attribute: element.attribute,
+          state: self.state
+        });
+        if (selection) {
+          var selection = "selection";
+        } else {
+          var selection = "";
+        }
+        return selection;
+      })
+      .attr("value", function (element, index, nodes) {
+        var name = SetMenuView.accessAttributeValueName({
+          attribute: element.attribute,
+          value: element.value,
+          state: self.state
+        });
+        return name;
       });
-      if (selection) {
-        var selection = "selection";
-      } else {
-        var selection = "";
-      }
-      return selection;
-    })
-    .attr("value", function (element, index, nodes) {
-      var name = SetMenuView.accessAttributeValueName({
-        attribute: element.attribute,
-        value: element.value,
-        state: self.state
-      });
-      return name;
-    });
+    }
   }
   /**
   * Represents specifications to sort sets' summaries.
@@ -861,13 +862,13 @@ class SetMenuView {
   representSetsSorts(self) {
     self.representSetsSort({
       graph: self.nameSort,
-      attribute: self.sets,
+      attribute: self.category,
       criterion: "name",
       self: self
     });
     self.representSetsSort({
       graph: self.countSort,
-      attribute: self.sets,
+      attribute: self.category,
       criterion: "count",
       self: self
     });
@@ -946,7 +947,7 @@ class SetMenuView {
     var body = d3.select(self.body);
     // Create children elements by association to data.
     var dataElements = body
-    .selectAll("tr").data(self.state.setsSummaries[self.sets]);
+    .selectAll("tr").data(self.state.setsSummaries[self.category]);
     dataElements.exit().remove();
     var novelElements = dataElements.enter().append("tr");
     self.rows = novelElements.merge(dataElements);

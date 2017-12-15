@@ -160,6 +160,9 @@ class State {
       // "currentReactionsSets", "currentMetabolitesSets", "totalReactionsSets",
       // "totalMetabolitesSets".
       "setsCardinalities",
+      // Attribute "setsSearches" stores information about searches' strings by
+      // which to filter the summaries of sets' cardinalities.
+      "setsSearches",
       // Attribute "setsSorts" stores information about the sort criteria and
       // orders for the summaries of sets' cardinalities.
       // Information includes references to attributes "compartments" and
@@ -170,8 +173,8 @@ class State {
       // Information includes additional details for representation in menus.
       // Information includes references to attributes "compartments" and
       // "processes".
-      // Information derives from attributes "setsCardinalities" and
-      // "setsSorts".
+      // Information derives from attributes "setsCardinalities", "setsSearch",
+      // and "setsSorts".
       "setsSummaries"
     ];
     var context = [
