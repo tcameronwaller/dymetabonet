@@ -216,6 +216,21 @@ class View {
     .createElementNS("http://www.w3.org/2000/svg", "svg");
     return graph;
   }
+  /**
+  * Creates elements by association to data in data driven documents (D3).
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.parent Selection of parent element.
+  * @param {string} parameters.type Type of element to create.
+  * @param {Object} parameters.accessor Function to access data.
+  * @returns {Object} Selection of elements.
+  */
+  static createElementsData({parent, type, accessor} = {}) {
+    // Create children elements by association to data.
+    var dataElements = parent.selectAll(type).data(accessor);
+    dataElements.exit().remove();
+    var novelElements = dataElements.enter().append(type);
+    return novelElements.merge(dataElements);
+  }
 }
 
 // Control view and views within control view.
@@ -395,10 +410,6 @@ class StateView {
   }
 }
 
-
-// TODO: Create a SetMenuView within the SetView...
-// TODO: Each menu should be its own instance of the menu view...
-
 /**
 * Interface for sets of entities.
 */
@@ -568,6 +579,8 @@ class SetView {
   }
 }
 
+// TODO: Create scale within SetMenuView...
+
 /**
 * Interface for menu of sets of entities.
 */
@@ -629,9 +642,13 @@ class SetMenuView {
       .container.querySelector("table thead tr th.name svg.sort");
       self.countSort = self
       .container.querySelector("table thead tr th.count svg.sort");
-      // Count scales.
-      self.scale = self
+      // Count scale.
+      self.scaleGraph = self
       .container.querySelector("table thead tr th.count svg.scale");
+      self.graphWidth = General
+      .determineElementDimension(self.scaleGraph, "width");
+      self.graphHeight = General
+      .determineElementDimension(self.scaleGraph, "height");
       // Table body.
       self.body = self.container.getElementsByTagName("tbody").item(0);
     }
@@ -670,61 +687,6 @@ class SetMenuView {
         state: self.state
       });
     });
-
-
-
-    if (false) {
-      // Create container.
-      var container = self.document.createElement("span");
-      self.container.appendChild(container);
-      // Create list of options.
-      var listIdentifier = "set-" + self.category + "-options-list";
-      self.list = self.document.createElement("datalist");
-      container.appendChild(self.list);
-      self.list.setAttribute("id", listIdentifier);
-      // Create search tool.
-      var search = self.document.createElement("input");
-      container.appendChild(search);
-      search.setAttribute("type", "search");
-      search.setAttribute("list", listIdentifier);
-      search.setAttribute("placeholder", "search " + self.category);
-      search.setAttribute("autocomplete", "off");
-      // Activate behavior.
-      // Options from datalist elements do not report events.
-      // Rather, search input elements report events.
-      // Respond to event on input search element and access relevant information
-      // that associates with the element.
-      search.addEventListener("change", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Determine the search's value, the name of the attribute's value.
-        var name = event.currentTarget.value;
-        // Determine the search's list.
-        var list = event.currentTarget.list;
-        var options = list.getElementsByTagName("option");
-        var names = General.extractValuesDocumentElements(options);
-        // Determine whether the search value matches a valid option.
-        if (names.includes(name)) {
-          // The search value matches a valid option.
-          // Determine the identifier of the attribute's value.
-          var valueRecord = self.state.setsSummaries[self.category].find(function (record) {
-            var recordName = SetMenuView.accessAttributeValueName({
-              attribute: self.category,
-              value: record.value,
-              state: self.state
-            });
-            return recordName === name;
-          });
-          // Call action.
-          Action.changeSetsFilters({
-            value: valueRecord.value,
-            attribute: self.category,
-            state: self.state
-          });
-        }
-        // Remove the search's value.
-        event.currentTarget.value = "";
-      });
-    }
   }
   /**
   * Creates and activates a table.
@@ -751,22 +713,27 @@ class SetMenuView {
       self: self
     });
     // Create header for sets' counts.
-    var tableHeadRowCellCount = self.document.createElement("th");
-    tableHeadRow.appendChild(tableHeadRowCellCount);
-    tableHeadRowCellCount.classList.add("count");
+    self.tableHeadRowCellCount = self.document.createElement("th");
+    tableHeadRow.appendChild(self.tableHeadRowCellCount);
+    self.tableHeadRowCellCount.classList.add("count");
     self.createActivateTableColumnHead({
       title: "Count",
       attribute: "count",
-      parent: tableHeadRowCellCount,
+      parent: self.tableHeadRowCellCount,
       self: self
     });
     // Create break.
-    tableHeadRowCellCount.appendChild(self.document.createElement("br"));
+    self.tableHeadRowCellCount.appendChild(self.document.createElement("br"));
     // Create graphical container for scale.
-    self.scale = self
+    self.scaleGraph = self
     .document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    tableHeadRowCellCount.appendChild(self.scale);
-    self.scale.classList.add("scale");
+    self.tableHeadRowCellCount.appendChild(self.scaleGraph);
+    self.scaleGraph.classList.add("scale");
+    // Determine graphs' dimensions.
+    self.graphWidth = General
+    .determineElementDimension(self.scaleGraph, "width");
+    self.graphHeight = General
+    .determineElementDimension(self.scaleGraph, "height");
     // Create table's body.
     self.body = self.document.createElement("tbody");
     table.appendChild(self.body);
@@ -807,53 +774,19 @@ class SetMenuView {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
-    self.restoreSearch(self);
+    self.representSearch(self);
     self.representSetsSorts(self);
+    self.createScale(self);
+    self.representScale(self);
     self.createActivateSetsSummaries(self);
   }
   /**
-  * Creates search's options.
+  * Represents search's value.
   * @param {Object} self Instance of a class.
   */
-  restoreSearch(self) {
+  representSearch(self) {
     // Assign value of tool for search.
     self.search.value = self.state.setsSearches[self.category];
-    if (false) {
-      // Create options within list.
-      // Select parent.
-      var list = d3.select(self.list);
-      // Create children elements by association to data.
-      var dataElements = list
-      .selectAll("option").data(self.state.setsSummaries[self.category]);
-      dataElements.exit().remove();
-      var novelElements = dataElements.enter().append("option");
-      self.options = novelElements.merge(dataElements);
-      // Assign attributes to elements.
-      self.options
-      .text(function (element, index, nodes) {
-        // Determine whether the option corresponds to a current selection of the
-        // attribute's value.
-        var selection = SetMenuView.determineSetSelection({
-          value: element.value,
-          attribute: element.attribute,
-          state: self.state
-        });
-        if (selection) {
-          var selection = "selection";
-        } else {
-          var selection = "";
-        }
-        return selection;
-      })
-      .attr("value", function (element, index, nodes) {
-        var name = SetMenuView.accessAttributeValueName({
-          attribute: element.attribute,
-          value: element.value,
-          state: self.state
-        });
-        return name;
-      });
-    }
   }
   /**
   * Represents specifications to sort sets' summaries.
@@ -928,6 +861,33 @@ class SetMenuView {
     }
   }
   /**
+  * Creates scale.
+  * @param {Object} self Instance of a class.
+  */
+  createScale(self) {
+    // Determine maximumal value.
+    var maximalValue = self.state.setsSummaries[self.category][0].maximum;
+    // Create scale.
+    self.determineScaleValue = d3
+    .scaleLinear()
+    .domain([0, maximalValue])
+    .range([0, self.graphWidth]);
+  }
+  /**
+  * Represents scale.
+  * @param {Object} self Instance of a class.
+  */
+  representScale(self) {
+    // I need to clear/empty the scaleGraph before creating a new axis...
+    // TODO: I need to assign ticks and such...
+    General.removeDocumentChildren(self.scaleGraph);
+    var scaleSelection = d3.select(self.scaleGraph);
+    var createAxis = d3.axisTop(self.determineScaleValue);
+    var axisGroup = scaleSelection.append("g").call(createAxis);
+    // Assign attributes.
+    axisGroup.attr("transform", "translate(0," + (self.graphHeight - 1) + ")");
+  }
+  /**
   * Creates and activates sets' summaries.
   * @param {Object} self Instance of a class.
   */
@@ -945,12 +905,16 @@ class SetMenuView {
     // Create and activate rows.
     // Select parent.
     var body = d3.select(self.body);
+    // Define function to access data.
+    function access() {
+      return self.state.setsSummaries[self.category];
+    };
     // Create children elements by association to data.
-    var dataElements = body
-    .selectAll("tr").data(self.state.setsSummaries[self.category]);
-    dataElements.exit().remove();
-    var novelElements = dataElements.enter().append("tr");
-    self.rows = novelElements.merge(dataElements);
+    self.rows = View.createElementsData({
+      parent: body,
+      type: "tr",
+      accessor: access
+    });
     // Assign attributes to elements.
     self.rows.classed("normal", true);
     // Activate behavior.
@@ -985,9 +949,8 @@ class SetMenuView {
   */
   createCells(self) {
     // Create cells for sets' names and counts.
-    // Create children elements by association to data.
-    var dataElements = self.rows
-    .selectAll("td").data(function (element, index, nodes) {
+    // Define function to access data.
+    function access(element, index, nodes) {
       // Organize data.
       return [].concat(
         {
@@ -1003,10 +966,13 @@ class SetMenuView {
           value: element.value
         }
       );
+    };
+    // Create children elements by association to data.
+    self.cells = View.createElementsData({
+      parent: self.rows,
+      type: "td",
+      accessor: access
     });
-    dataElements.exit().remove();
-    var novelElements = dataElements.enter().append("td");
-    self.cells = novelElements.merge(dataElements);
     // Assign attributes to cells for sets' names.
     self.representNames(self);
     // Assign attributes to cells for sets' counts.
@@ -1062,41 +1028,34 @@ class SetMenuView {
     // --- barMarks (rectangle)
     // --- barLabels (text) -- none in this case
     // Create graphs.
-    // Create children elements by association to data.
-    var dataElements = self.counts
-    .selectAll("svg").data(function (element, index, nodes) {
+    // Define function to access data.
+    function access(element, index, nodes) {
       return [element];
+    };
+    // Create children elements by association to data.
+    var graphs = View.createElementsData({
+      parent: self.counts,
+      type: "svg",
+      accessor: access
     });
-    dataElements.exit().remove();
-    var novelElements = dataElements.enter().append("svg");
-    var graphs = novelElements.merge(dataElements);
     // Assign attributes to elements.
     graphs.classed("graph", true);
-    // Determine graphs' dimensions.
-    var graph = self
-    .container.querySelector("table tbody tr td.count svg.graph");
-    var width = General.determineElementDimension(graph, "width");
-    var height = General.determineElementDimension(graph, "height");
     // Create groups.
     // Create children elements by association to data.
-    var dataElements = graphs
-    .selectAll("g").data(function (element, index, nodes) {
-      return [element];
+    var barGroups = View.createElementsData({
+      parent: graphs,
+      type: "g",
+      accessor: access
     });
-    dataElements.exit().remove();
-    var novelElements = dataElements.enter().append("g");
-    var barGroups = novelElements.merge(dataElements);
     // Assign attributes to elements.
     barGroups.classed("group", true);
     // Create titles.
     // Create children elements by association to data.
-    var dataElements = barGroups
-    .selectAll("title").data(function (element, index, nodes) {
-      return [element];
+    var barTitles = View.createElementsData({
+      parent: barGroups,
+      type: "title",
+      accessor: access
     });
-    dataElements.exit().remove();
-    var novelElements = dataElements.enter().append("title");
-    var barTitles = novelElements.merge(dataElements);
     // Assign attributes to elements.
     barTitles.text(function (element, index, nodes) {
       var name = SetMenuView.accessAttributeValueName({
@@ -1109,13 +1068,11 @@ class SetMenuView {
     });
     // Create marks.
     // Create children elements by association to data.
-    var dataElements = barGroups
-    .selectAll("rect").data(function (element, index, nodes) {
-      return [element];
+    var barMarks = View.createElementsData({
+      parent: barGroups,
+      type: "rect",
+      accessor: access
     });
-    dataElements.exit().remove();
-    var novelElements = dataElements.enter().append("rect");
-    var barMarks = novelElements.merge(dataElements);
     // Assign attributes to elements.
     barMarks
     .classed("mark", true)
@@ -1134,14 +1091,9 @@ class SetMenuView {
       });
     })
     .attr("width", function (element, index) {
-      // Determine scale between value and graph's dimension.
-      var scale = d3
-      .scaleLinear()
-      .domain([0, element.maximum])
-      .range([0, width]);
-      return scale(element.count);
+      return self.determineScaleValue(element.count);
     })
-    .attr("height", height);
+    .attr("height", self.graphHeight);
   }
   /**
   * Accesses the name of a value of an attribute.

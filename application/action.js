@@ -518,7 +518,6 @@ class Action {
     });
   }
 
-
   // Indirect actions.
 
   /**

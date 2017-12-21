@@ -3,6 +3,108 @@ Notes: Scrap Code For Project Profondeur
 --------------------------------------------------
 
 --------------------------------------------------
+15 December 2017
+
+----------
+Search Menu
+
+Initialize View
+Create search field and list of options
+
+"
+// Create container.
+var container = self.document.createElement("span");
+self.container.appendChild(container);
+// Create list of options.
+var listIdentifier = "set-" + self.category + "-options-list";
+var list = self.document.createElement("datalist");
+container.appendChild(self.list);
+var list.setAttribute("id", listIdentifier);
+// Create search tool.
+var search = self.document.createElement("input");
+container.appendChild(search);
+search.setAttribute("type", "search");
+search.setAttribute("list", listIdentifier);
+search.setAttribute("placeholder", "search " + self.category);
+search.setAttribute("autocomplete", "off");
+// Activate behavior.
+// Options from datalist elements do not report events.
+// Rather, search input elements report events.
+// Respond to event on input search element and access relevant information
+// that associates with the element.
+search.addEventListener("change", function (event) {
+  // Element on which the event originated is event.currentTarget.
+  // Determine the search's value, the name of the attribute's value.
+  var name = event.currentTarget.value;
+  // Determine the search's list.
+  var list = event.currentTarget.list;
+  var options = list.getElementsByTagName("option");
+  var names = General.extractValuesDocumentElements(options);
+  // Determine whether the search value matches a valid option.
+  if (names.includes(name)) {
+    // The search value matches a valid option.
+    // Determine the identifier of the attribute's value.
+    var valueRecord = self.state.setsSummaries[self.category].find(function (record) {
+      var recordName = SetMenuView.accessAttributeValueName({
+        attribute: self.category,
+        value: record.value,
+        state: self.state
+      });
+      return recordName === name;
+    });
+    // Call action.
+    Action.changeSetsFilters({
+      value: valueRecord.value,
+      attribute: self.category,
+      state: self.state
+    });
+  }
+  // Remove the search's value.
+  event.currentTarget.value = "";
+});
+"
+
+Restore View
+Restore list of options
+
+"
+// Create options within list.
+// Select parent.
+var list = d3.select(self.list);
+// Create children elements by association to data.
+var dataElements = list
+.selectAll("option").data(self.state.setsSummaries[self.category]);
+dataElements.exit().remove();
+var novelElements = dataElements.enter().append("option");
+self.options = novelElements.merge(dataElements);
+// Assign attributes to elements.
+self.options
+.text(function (element, index, nodes) {
+  // Determine whether the option corresponds to a current selection of the
+  // attribute's value.
+  var selection = SetMenuView.determineSetSelection({
+    value: element.value,
+    attribute: element.attribute,
+    state: self.state
+  });
+  if (selection) {
+    var selection = "selection";
+  } else {
+    var selection = "";
+  }
+  return selection;
+})
+.attr("value", function (element, index, nodes) {
+  var name = SetMenuView.accessAttributeValueName({
+    attribute: element.attribute,
+    value: element.value,
+    state: self.state
+  });
+  return name;
+});
+"
+
+--------------------------------------------------
 3 November 2017
 
 ----------

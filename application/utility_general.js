@@ -727,8 +727,8 @@ class General {
   /**
   * Filters an object's entries by whether their values pass a filter.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.filter Filter function against an entry's value
-  * to determine whether to keep the entry.
+  * @param {Object} parameters.filter Function to determine whether to keep each
+  * entry.
   * @param {Object<Object>} parameters.entries Entries.
   * @returns {Object<Object>} Copy of entries that pass the filter.
   */
