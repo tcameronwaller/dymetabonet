@@ -1600,21 +1600,28 @@ class Candidacy {
       } else if (category === "reactions") {
         var reference = reactionsCandidates;
       }
-      // Access category's records.
-      var records = candidatesSummaries[category];
       // Determine appropriate value by which to sort records.
       if (candidatesSorts[category].criterion === "count") {
         var key = candidatesSorts[category].criterion;
       } else if (candidatesSorts[category].criterion === "name") {
         var key = "candidate";
       }
-      // Sort records.
-      var sortRecords = General.sortArrayRecords({
-        array: records,
-        key: key,
-        order: candidatesSorts[category].order,
-        reference: reference,
-      });
+      // Access category's records.
+      var records = candidatesSummaries[category];
+      // Determine whether records exist.
+      if (records.length > 0) {
+        // Records exist.
+        // Sort records.
+        var sortRecords = General.sortArrayRecords({
+          array: records,
+          key: key,
+          order: candidatesSorts[category].order,
+          reference: reference,
+        });
+      } else {
+        // Records do not exist.
+        var sortRecords = records;
+      }
       // Create entry.
       var entry = {
         [category]: sortRecords

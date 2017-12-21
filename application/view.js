@@ -693,12 +693,14 @@ class SetMenuView {
   * @param {Object} self Instance of a class.
   */
   createActivateTable(self) {
-    // Create table.
-    var table = self.document.createElement("table");
-    self.container.appendChild(table);
-    // Create table's header.
+    // Create separate tables for head and body to support stationary head and
+    // scrollable body.
+    // Create head table.
+    var headTable = self.document.createElement("table");
+    self.container.appendChild(headTable);
+    // Create head table's header.
     var tableHead = self.document.createElement("thead");
-    table.appendChild(tableHead);
+    headTable.appendChild(tableHead);
     var tableHeadRow = self.document.createElement("tr");
     tableHead.appendChild(tableHeadRow);
     // Create titles, sorts, and scale in table's header.
@@ -734,9 +736,15 @@ class SetMenuView {
     .determineElementDimension(self.scaleGraph, "width");
     self.graphHeight = General
     .determineElementDimension(self.scaleGraph, "height");
-    // Create table's body.
+    // Create body table.
+    var bodyTableContainer = self.document.createElement("div");
+    self.container.appendChild(bodyTableContainer);
+    bodyTableContainer.classList.add("scroll");
+    var bodyTable = self.document.createElement("table");
+    bodyTableContainer.appendChild(bodyTable);
+    // Create body table's body.
     self.body = self.document.createElement("tbody");
-    table.appendChild(self.body);
+    bodyTable.appendChild(self.body);
   }
   /**
   * Creates and activates a title and sort.
@@ -871,18 +879,19 @@ class SetMenuView {
     self.determineScaleValue = d3
     .scaleLinear()
     .domain([0, maximalValue])
-    .range([0, self.graphWidth]);
+    .range([5, (self.graphWidth * 0.8)])
+    .nice(2);
   }
   /**
   * Represents scale.
   * @param {Object} self Instance of a class.
   */
   representScale(self) {
-    // I need to clear/empty the scaleGraph before creating a new axis...
-    // TODO: I need to assign ticks and such...
+    // Remove contents of scale's container.
     General.removeDocumentChildren(self.scaleGraph);
+    // Create scale's representation.
     var scaleSelection = d3.select(self.scaleGraph);
-    var createAxis = d3.axisTop(self.determineScaleValue);
+    var createAxis = d3.axisTop(self.determineScaleValue).ticks(2);
     var axisGroup = scaleSelection.append("g").call(createAxis);
     // Assign attributes.
     axisGroup.attr("transform", "translate(0," + (self.graphHeight - 1) + ")");
@@ -1048,7 +1057,13 @@ class SetMenuView {
       accessor: access
     });
     // Assign attributes to elements.
-    barGroups.classed("group", true);
+    barGroups
+    .classed("group", true)
+    .attr("transform", function (element, index, nodes) {
+      var x = self.determineScaleValue(0);
+      var y = 0;
+      return "translate(" + x + "," + y + ")";
+    });
     // Create titles.
     // Create children elements by association to data.
     var barTitles = View.createElementsData({

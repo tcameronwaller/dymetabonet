@@ -407,21 +407,28 @@ class Cardinality {
       } else if (category === "processes") {
         var reference = processes;
       }
-      // Access category's records.
-      var records = setsSummaries[category];
       // Determine appropriate value by which to sort records.
       if (setsSorts[category].criterion === "count") {
         var key = setsSorts[category].criterion;
       } else if (setsSorts[category].criterion === "name") {
         var key = "value";
       }
-      // Sort records.
-      var sortRecords = General.sortArrayRecords({
-        array: records,
-        key: key,
-        order: setsSorts[category].order,
-        reference: reference,
-      });
+      // Access category's records.
+      var records = setsSummaries[category];
+      // Determine whether records exist.
+      if (records.length > 0) {
+        // Records exist.
+        // Sort records.
+        var sortRecords = General.sortArrayRecords({
+          array: records,
+          key: key,
+          order: setsSorts[category].order,
+          reference: reference,
+        });
+      } else {
+        // Records do not exist.
+        var sortRecords = records;
+      }
       // Create entry.
       var entry = {
         [category]: sortRecords

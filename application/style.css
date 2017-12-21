@@ -54,6 +54,12 @@ flex-direction: column;
 /******************************************************************************/
 
 /******************************************************************************/
+/* General */
+/******************************************************************************/
+
+/* customize the search menus...*/
+
+/******************************************************************************/
 /* Interface View */
 /******************************************************************************/
 
@@ -109,17 +115,28 @@ flex-direction: column;
 /* Set View */
 /******************************************************************************/
 
+/* maybe separate the styles specific to the menus to generalize for the candidate view... */
+
 #set {
   background-color: rgba(200, 200, 200, 1);
   display: block;
   width: 100%;
 }
 
-#set div.menu {
+#set div.menu span.title {
   background-color: rgba(255, 255, 255, 1);
-  height: 5cm;
   width: 100%;
-  overflow: auto;
+  font-size: large;
+  color: rgba(0, 0, 0, 1);
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+}
+
+#set div.menu div.scroll {
+  display: block;
+  overflow-y: auto;
+  height: 5cm;
 }
 
 #set div.menu table {
@@ -127,11 +144,11 @@ flex-direction: column;
   text-align: left;
   border-collapse: collapse;
   border-style: solid;
-  overflow-x: hidden;
   width: 100%;
 }
 
 #set div.menu table thead {
+  table-layout: fixed;
   background-color: rgba(50, 50, 50, 1);
   color: rgba(255, 255, 255, 1);
   font-size: medium;
@@ -142,7 +159,19 @@ flex-direction: column;
   vertical-align: middle;
   border-color: rgba(200, 200, 200, 1);
   border-style: solid;
-  border-width: 1mm;
+  /*border-width: 1mm;
+  padding: 1mm;*/
+}
+
+#set div.menu table thead th span.title {
+  font-size: medium;
+  color: rgba(255, 255, 255, 1);
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+}
+
+#set div.menu table th,td {
   padding: 1mm;
 }
 
@@ -150,11 +179,18 @@ flex-direction: column;
   vertical-align: middle;
 }
 
-#set div.menu table thead th.name {
-  width: 1.75cm;
+#set div.menu table tbody {
+  table-layout: fixed;
 }
 
-#set div.menu table thead th.count {
+#set div.menu table th.name, td.name {
+  width: 2.5cm;
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+
+#set div.menu table th.count, td.count {
   width: auto;
 }
 
@@ -176,6 +212,14 @@ flex-direction: column;
   width: 100%;
 }
 
+#set div.menu table thead th svg.scale g text {
+  fill: rgba(255, 255, 255, 1);
+}
+
+#set div.menu table thead th svg.scale g path,line {
+  stroke: rgba(255, 255, 255, 1);
+}
+
 #set div.menu table tbody tr.normal:nth-child(odd) {
   background-color: rgba(200, 200, 200, 1);
 }
@@ -193,9 +237,6 @@ flex-direction: column;
   font-style: normal;
   font-weight: bold;
   font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 #set div.menu table tbody td.count {
@@ -214,12 +255,6 @@ flex-direction: column;
   fill: rgba(255, 100, 0, 1);
 }
 
-#set div.menu ul li svg.graph rect.base {
-  fill: rgba(200, 200, 200, 1);
-  height: 100%;
-  width: 100%;
-}
-
 /******************************************************************************/
 /* Exploration View */
 /******************************************************************************/
@@ -228,8 +263,6 @@ flex-direction: column;
   flex: 1;
   height: 100%;
 }
-
-
 
 /******************************************************************************/
 /* Old stuff for scrap (re-use much of it) */
