@@ -417,7 +417,7 @@ class Action {
   * @param {Object} state Application's state.
   */
   static changeCompartmentalization(state) {
-    // Determine filter.
+    // Determine compartmentalization.
     if (state.compartmentalization) {
       var compartmentalization = false;
     } else {
@@ -436,6 +436,7 @@ class Action {
       compartmentalization: compartmentalization,
       metabolitesSimplifications: simplifications.metabolitesSimplifications,
       reactionsSimplifications: simplifications.reactionsSimplifications,
+      candidatesSearches: state.candidatesSearches,
       candidatesSorts: state.candidatesSorts,
       compartments: state.compartments
     });
@@ -517,6 +518,8 @@ class Action {
       state: state
     });
   }
+
+// TODO: changeCandidatesSearches...
 
   // Indirect actions.
 
@@ -696,6 +699,8 @@ class Action {
     // Simplifications are specific to candidate entities, which are specific to
     // the context of interest, of which compartmentalization is part.
     var simplifications = Candidacy.createInitialSimplifications();
+    // Initialize searches.
+    var candidatesSearches = Candidacy.createInitialCandidatesSearches();
     // Initialize specifications to sort candidates' summaries.
     var candidatesSorts = Candidacy.createInitialCandidatesSorts();
     // Determine candidate entities, their simplifications, and summaries.
@@ -707,6 +712,7 @@ class Action {
       compartmentalization: compartmentalization,
       metabolitesSimplifications: simplifications.metabolitesSimplifications,
       reactionsSimplifications: simplifications.reactionsSimplifications,
+      candidatesSearches: candidatesSearches,
       candidatesSorts: candidatesSorts,
       compartments: compartments
     });
@@ -717,6 +723,7 @@ class Action {
     var novelAttributesValues = {
       setsFilters: setsFilters,
       compartmentalization: compartmentalization,
+      candidatesSearches: candidatesSearches,
       candidatesSorts: candidatesSorts
     };
     var attributesValues = Object.assign(
@@ -739,7 +746,7 @@ class Action {
     var setsEntities = "metabolites";
     // Initialize selection of whether to filter sets' entities for summary.
     var setsFilter = false;
-    // Initialize search's string.
+    // Initialize searches.
     var setsSearches = Cardinality.createInitialSetsSearches();
     // Initialize specifications to sort sets' summaries.
     var setsSorts = Cardinality.createInitialSetsSorts();

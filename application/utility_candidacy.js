@@ -55,13 +55,15 @@ class Candidacy {
   * Information about simplification of metabolites.
   * @param {Object<Object>} parameters.reactionsSimplifications
   * Information about simplification of reactions.
+  * @param {Object<string>} parameters.candidatesSearches Searches to filter
+  * candidates' summaries.
   * @param {Object<Object<string>>} parameters.candidatesSorts Specifications to
   * sort candidates' summaries.
   * @param {Object} parameters.compartments Information about compartments.
   * @returns {Object} Information about candidate entities, their
   * simplifications, and summaries.
   */
-  static evaluateCandidacyContext({reactionsSets, reactions, metabolites, compartmentalization, metabolitesSimplifications, reactionsSimplifications, candidatesSorts, compartments} = {}) {
+  static evaluateCandidacyContext({reactionsSets, reactions, metabolites, compartmentalization, metabolitesSimplifications, reactionsSimplifications, candidatesSearches, candidatesSorts, compartments} = {}) {
     // Filter information about simplifications for entities to omit those that
     // are implicit and include only those that are explicit.
     var simplifications = Candidacy.filterExplicitSimplifications({
@@ -82,6 +84,7 @@ class Candidacy {
     var candidatesSummaries = Candidacy.prepareCandidatesSummaries({
       reactionsCandidates: candidatesSimplifications.reactionsCandidates,
       metabolitesCandidates: candidatesSimplifications.metabolitesCandidates,
+      candidatesSearches: candidatesSearches,
       candidatesSorts: candidatesSorts
     });
     // Compile information.
@@ -1504,25 +1507,44 @@ class Candidacy {
     };
   }
   /**
+  * Creates initial searches to filter candidates' summaries.
+  * @returns {Object<string>} Searches to filter candidates' summaries.
+  */
+  static createInitialCandidatesSearches() {
+    return {
+      metabolites: "",
+      reactions: ""
+    };
+  }
+  /**
   * Prepares summaries of candidates' degrees.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object<Object>} parameters.reactionsCandidates Information about
   * candidate reactions.
   * @param {Object<Object>} parameters.metabolitesCandidates Information about
   * candidate metabolites.
+  * @param {Object<string>} parameters.candidatesSearches Searches to filter
+  * candidates' summaries.
   * @param {Object<Object<string>>} parameters.candidatesSorts Specifications to
   * sort candidates' summaries.
   * @returns {Object<Array<Object>>} Summaries of candidates' degrees.
   */
-  static prepareCandidatesSummaries({reactionsCandidates, metabolitesCandidates, candidatesSorts} = {}) {
+  static prepareCandidatesSummaries({reactionsCandidates, metabolitesCandidates, candidatesSearches, candidatesSorts} = {}) {
     // Create candidates' summaries.
     var candidatesSummaries = Candidacy.createCandidatesSummaries({
       reactionsCandidates: reactionsCandidates,
       metabolitesCandidates: metabolitesCandidates
     });
+
+    // TODO: Implement...
+    // Filter candidates' summaries.
+    var filterCandidatesSummaries = Candidacy.filterCandidatesSummaries({});
+
+
+
     // Sort candidates' summaries.
     var sortCandidatesSummaries = Candidacy.sortCandidatesSummaries({
-      candidatesSummaries: candidatesSummaries,
+      candidatesSummaries: filterCandidatesSummaries,
       candidatesSorts: candidatesSorts,
       reactionsCandidates: reactionsCandidates,
       metabolitesCandidates: metabolitesCandidates
@@ -1578,6 +1600,52 @@ class Candidacy {
       return Object.assign(collection, entry);
     }, {});
   }
+
+  /**
+  * Filters candidates' summaries.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Array<Object>>} parameters.candidatesSummaries Summaries of
+  * candidates' degrees.
+  * @param {Object<string>} parameters.candidatesSearches Searches to filter
+  * candidates' summaries.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
+  * @returns {Object<Array<Object>>} Summaries of sets' cardinalities.
+  */
+  static filterCandidatesSummaries({candidatesSummaries, candidatesSearches, compartments, processes} = {}) {
+    // Iterate on categories.
+    var categories = Object.keys(setsSummaries);
+    return categories.reduce(function (collection, category) {
+      // Determine reference.
+      if (category === "compartments") {
+        var reference = compartments;
+      } else if (category === "processes") {
+        var reference = processes;
+      }
+      // Access category's records.
+      var records = setsSummaries[category];
+      // Filter records.
+      var filterRecords = records.filter(function (record) {
+        var name = reference[record.value].name.toLowerCase();
+        return name.includes(setsSearches[category]);
+      });
+      if (filterRecords.length > 0) {
+        var finalRecords = filterRecords;
+      } else {
+        var finalRecords = records;
+      }
+      // Create entry.
+      var entry = {
+        [category]: finalRecords
+      };
+      // Include entry in collection.
+      return Object.assign(collection, entry);
+    }, {});
+  }
+
+
+
+
   /**
   * Sorts candidates' summaries.
   * @param {Object<Array<Object>>} parameters.candidatesSummaries Summaries of

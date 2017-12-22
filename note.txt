@@ -4,6 +4,47 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+21 December 2017
+
+----------
+Plan
+
+Complete implementation of procedures and interfaces for sets' filters and candidates' simplifications.
+Define network's elements.
+Implement procedure and interface for proximity traversal.
+
+Implement algorithms for shortest paths and small, inclusive subnetworks.
+
+Also, consider including more information about metabolites and reactions from databases.
+Do not worry too much about maintaining proximity to Recon 2.2.
+
+----------
+Meet with Jared P Rutter and Kevin G Hicks
+
+Jared and Kevin recommended that I prioritize specific functions of the application for use by investigators of metabolism.
+
+User will begin with a list of a single or multiple target entities, either metabolites or enzymes.
+User will need to match target entities to entities within the metabolic network.
+Tool needs to determine minimal subnetwork that contains and connects by reasonably short paths all targets.
+Alternatively, tool needs to determine proximity or ego subnetworks around a single target.
+Tool needs to represent this subnetwork visually.
+Tool needs to represent sets, compartments and/or processes, on this subnetwork for context.
+User needs to narrow this subnetwork futher by filters by compartments or processes.
+Tool needs to represent experimental measurements visually on the subnetwork.
+User needs to recognize clusters and relations from this visual representation of the network.
+For example, many metabolites might accumulate in a single compartment.
+User needs to generate hypotheses.
+User might need to export summaries of information about entities in the subnetwork.
+
+Initial or default representation of the metabolic network should ignore compartmentalization for simplicity.
+Users will likely tend to want information that is not specific to compartmental versions of metabolites.
+
+It would be neat if the tool could algorithmically and statistically recognize clusters in the network on the basis of trends in experimental measurements.
+
+Representation of flux in the metabolic network is impractical.
+Flux is condition dependent, so the user would need her or his own experimental data about flux anyway.
+
+--------------------------------------------------
 20 December 2017
 
 ----------

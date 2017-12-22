@@ -207,6 +207,9 @@ class State {
       // "reactions", and "compartments".
       // Information derives from attribute "reactionsCandidates".
       "metabolitesCandidates",
+      // Attribute "candidatesSearches" stores information about searches'
+      // strings by which to filter the summaries of candidates' degrees.
+      "candidatesSearches",
       // Attribute "candidatesSorts" stores information about the sort criteria
       // and orders for the summaries of candidates' degrees.
       // Information includes references to attributes "reactionsCandidates" and

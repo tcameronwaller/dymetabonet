@@ -449,6 +449,8 @@ class SetView {
       // View's container is empty.
       // Create view's invariant elements.
       // Activate invariant behavior of view's elements.
+      // Create title.
+      self.createTitle(self);
       // Create and activate controls for type of entities.
       self.createActivateEntitiesControl("metabolites", self);
       self.createActivateEntitiesControl("reactions", self);
@@ -473,6 +475,17 @@ class SetView {
       // Control for filter.
       self.filter = self.document.getElementById("set-filter");
     }
+  }
+  /**
+  * Creates a title.
+  * @param {Object} self Instance of a class.
+  */
+  createTitle(self) {
+    // Create title.
+    var title = self.document.createElement("div");
+    self.container.appendChild(title);
+    title.classList.add("title");
+    title.textContent = "Set";
   }
   /**
   * Creates and activates a control for the type of entities.
@@ -579,8 +592,6 @@ class SetView {
   }
 }
 
-// TODO: Create scale within SetMenuView...
-
 /**
 * Interface for menu of sets of entities.
 */
@@ -662,7 +673,7 @@ class SetMenuView {
     var title = self.document.createElement("span");
     self.container.appendChild(title);
     title.classList.add("title");
-    title.textContent = self.category;
+    title.textContent = self.category + ": ";
   }
   /**
   * Creates and activates a search.
@@ -674,7 +685,7 @@ class SetMenuView {
     self.container.appendChild(self.search);
     self.search.setAttribute("type", "text");
     self.search.classList.add("search");
-    self.search.setAttribute("placeholder", "search " + self.category + "...");
+    self.search.setAttribute("placeholder", "search...");
     // Activate behavior.
     self.search.addEventListener("input", function (event) {
       // Element on which the event originated is event.currentTarget.

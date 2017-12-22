@@ -57,8 +57,6 @@ flex-direction: column;
 /* General */
 /******************************************************************************/
 
-/* customize the search menus...*/
-
 /******************************************************************************/
 /* Interface View */
 /******************************************************************************/
@@ -112,20 +110,10 @@ flex-direction: column;
 }
 
 /******************************************************************************/
-/* Set View */
+/* Menu */
 /******************************************************************************/
 
-/* maybe separate the styles specific to the menus to generalize for the candidate view... */
-
-#set {
-  background-color: rgba(200, 200, 200, 1);
-  display: block;
-  width: 100%;
-}
-
-#set div.menu span.title {
-  background-color: rgba(255, 255, 255, 1);
-  width: 100%;
+div.menu span.title {
   font-size: large;
   color: rgba(0, 0, 0, 1);
   font-family: sans-serif;
@@ -133,13 +121,17 @@ flex-direction: column;
   font-weight: bold;
 }
 
-#set div.menu div.scroll {
+div.menu input.search {
+  width: 5cm;
+}
+
+div.menu div.scroll {
   display: block;
   overflow-y: auto;
   height: 5cm;
 }
 
-#set div.menu table {
+div.menu table {
   table-layout: fixed;
   text-align: left;
   border-collapse: collapse;
@@ -147,15 +139,18 @@ flex-direction: column;
   width: 100%;
 }
 
-#set div.menu table thead {
-  table-layout: fixed;
+div.menu table thead {
   background-color: rgba(50, 50, 50, 1);
   color: rgba(255, 255, 255, 1);
   font-size: medium;
   font-weight: bold;
 }
 
-#set div.menu table thead th {
+div.menu table tr {
+  vertical-align: middle;
+}
+
+div.menu table thead th {
   vertical-align: middle;
   border-color: rgba(200, 200, 200, 1);
   border-style: solid;
@@ -163,7 +158,8 @@ flex-direction: column;
   padding: 1mm;*/
 }
 
-#set div.menu table thead th span.title {
+div.menu table thead th span.title {
+  background-color: rgba(75, 75, 75, 1);
   font-size: medium;
   color: rgba(255, 255, 255, 1);
   font-family: sans-serif;
@@ -171,89 +167,100 @@ flex-direction: column;
   font-weight: bold;
 }
 
-#set div.menu table th,td {
+div.menu table thead th svg.sort {
+  height: 0.5cm;
+  width: 0.5cm;
+}
+
+div.menu table thead th svg.sort polygon {
+  fill: rgba(255, 255, 255, 1);
+}
+
+div.menu table thead th svg.scale {
+  height: 0.5cm;
+  width: 100%;
+}
+
+div.menu table thead th svg.scale g text {
+  fill: rgba(255, 255, 255, 1);
+}
+
+div.menu table thead th svg.scale g path,line {
+  stroke: rgba(255, 255, 255, 1);
+}
+
+div.menu table th,td {
   padding: 1mm;
 }
 
-#set div.menu table tr {
-  vertical-align: middle;
-}
-
-#set div.menu table tbody {
-  table-layout: fixed;
-}
-
-#set div.menu table th.name, td.name {
+div.menu table th.name, td.name {
   width: 2.5cm;
   white-space: nowrap;
   overflow-x: hidden;
   text-overflow: ellipsis;
 }
 
-#set div.menu table th.count, td.count {
+div.menu table th.count, td.count {
   width: auto;
 }
 
-#set div.menu table thead span.title {
-  background-color: rgba(100, 100, 100, 1);
-}
-
-#set div.menu table thead th svg.sort {
-  height: 0.5cm;
-  width: 0.5cm;
-}
-
-#set div.menu table thead th svg.sort polygon {
-  fill: rgba(255, 255, 255, 1);
-}
-
-#set div.menu table thead th svg.scale {
-  height: 0.5cm;
-  width: 100%;
-}
-
-#set div.menu table thead th svg.scale g text {
-  fill: rgba(255, 255, 255, 1);
-}
-
-#set div.menu table thead th svg.scale g path,line {
-  stroke: rgba(255, 255, 255, 1);
-}
-
-#set div.menu table tbody tr.normal:nth-child(odd) {
+div.menu table tbody tr.normal:nth-child(odd) {
   background-color: rgba(200, 200, 200, 1);
 }
 
-#set div.menu table tbody tr.normal:nth-child(even) {
+div.menu table tbody tr.normal:nth-child(even) {
   background-color: rgba(175, 175, 175, 1);
 }
 
-#set div.menu table tbody tr.emphasis {
+div.menu table tbody tr.emphasis {
   background-color: rgba(150, 150, 200, 1);
 }
 
-#set div.menu table tbody td.name {
+div.menu table tbody td.name {
   font-family: sans-serif;
   font-style: normal;
   font-weight: bold;
   font-size: 13px;
 }
 
-#set div.menu table tbody td.count {
-}
-
-#set div.menu table tbody td.count svg.graph {
+div.menu table tbody td.count svg.graph {
   height: 0.5cm;
   width: 100%;
 }
 
-#set div.menu table tbody td.count svg.graph rect.mark.normal {
+div.menu table tbody td.count svg.graph rect.mark.normal {
   fill: rgba(0, 100, 255, 1);
 }
 
-#set div.menu table tbody td.count svg.graph rect.mark.emphasis {
+div.menu table tbody td.count svg.graph rect.mark.emphasis {
   fill: rgba(255, 100, 0, 1);
 }
+
+/******************************************************************************/
+/* Set View */
+/******************************************************************************/
+
+#set {
+  background-color: rgba(200, 200, 200, 1);
+  display: block;
+  width: 100%;
+}
+
+#set > div.title {
+  background-color: rgba(100, 100, 100, 1);
+  font-size: large;
+  color: rgba(255, 255, 255, 1);
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  width: 100%;
+}
+
+
+/******************************************************************************/
+/* Candidacy View */
+/******************************************************************************/
+
 
 /******************************************************************************/
 /* Exploration View */

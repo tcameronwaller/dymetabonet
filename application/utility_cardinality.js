@@ -279,10 +279,10 @@ class Cardinality {
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object<Object<number>>} parameters.setsCardinalities Cardinalities
   * of entities in sets by attributes and values.
-  * @param {Object<Object<string>>} parameters.setsSorts Specifications to sort
-  * sets' summaries.
   * @param {Object<string>} parameters.setsSearches Searches to filter sets'
   * summaries.
+  * @param {Object<Object<string>>} parameters.setsSorts Specifications to sort
+  * sets' summaries.
   * @param {Object} parameters.compartments Information about compartments.
   * @param {Object} parameters.processes Information about processes.
   * @returns {Object<Array<Object>>} Summaries of sets' cardinalities.
