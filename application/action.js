@@ -209,13 +209,13 @@ class Action {
   * @param {Object} state Application's state.
   */
   static changeSetsSearches({category, string, state} = {}) {
-    // Change the specifications to sort candidates' summaries.
+    // Change the search's specifications.
     var setsSearches = Action.changeCategoriesSearchString({
       category: category,
       string: string,
       searches: state.setsSearches
     });
-    // Filter sets' summaries.
+    // Prepare summaries.
     var setsSummaries = Cardinality.prepareSetsSummaries({
       setsCardinalities: state.setsCardinalities,
       setsSearches: setsSearches,
@@ -387,13 +387,13 @@ class Action {
   * @param {Object} parameters.state Application's state.
   */
   static changeSetsSorts({category, criterion, state} = {}) {
-    // Change the specifications to sort candidates' summaries.
+    // Change the sorts' specifications.
     var setsSorts = Action.changeCategoriesSortCriterionOrder({
       category: category,
       criterion: criterion,
       sorts: state.setsSorts
     });
-    // Sort sets' summaries.
+    // Sort summaries.
     var setsSummaries = Cardinality.sortSetsSummaries({
       setsSummaries: state.setsSummaries,
       setsSorts: setsSorts,
@@ -493,13 +493,13 @@ class Action {
   * @param {Object} parameters.state Application's state.
   */
   static changeCandidatesSorts({category, criterion, state} = {}) {
-    // Change the specifications to sort candidates' summaries.
+    // Change the sorts' specifications.
     var candidatesSorts = Action.changeCategoriesSortCriterionOrder({
       category: category,
       criterion: criterion,
       sorts: state.candidatesSorts
     });
-    // Sort candidates' summaries.
+    // Sort summaries.
     var candidatesSummaries = Candidacy.sortCandidatesSummaries({
       candidatesSummaries: state.candidatesSummaries,
       candidatesSorts: candidatesSorts,
@@ -518,8 +518,40 @@ class Action {
       state: state
     });
   }
-
-// TODO: changeCandidatesSearches...
+  /**
+  * Changes the searches to filter candidates' summaries.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Name of category.
+  * @param {string} parameters.string Search string by which to filter
+  * records' names.
+  * @param {Object} state Application's state.
+  */
+  static changeCandidatesSearches({category, string, state} = {}) {
+    // Change the search's specifications.
+    var candidatesSearches = Action.changeCategoriesSearchString({
+      category: category,
+      string: string,
+      searches: state.candidatesSearches
+    });
+    // Prepare summaries.
+    var candidatesSummaries = Candidacy.prepareCandidatesSummaries({
+      reactionsCandidates: state.reactionsCandidates,
+      metabolitesCandidates: state.metabolitesCandidates,
+      candidatesSearches: candidatesSearches,
+      candidatesSorts: state.candidatesSorts
+    });
+    // Compile attributes' values.
+    var novelAttributesValues = {
+      candidatesSearches: candidatesSearches,
+      candidatesSummaries: candidatesSummaries
+    };
+    var attributesValues = novelAttributesValues;
+    // Submit attributes' values to the application's state.
+    Action.submitAttributes({
+      attributesValues: attributesValues,
+      state: state
+    });
+  }
 
   // Indirect actions.
 
@@ -694,7 +726,7 @@ class Action {
       processes: processes
     });
     // Initialize compartmentalization's relevance.
-    var compartmentalization = true;
+    var compartmentalization = false;
     // Initialize selections for entities' simplification.
     // Simplifications are specific to candidate entities, which are specific to
     // the context of interest, of which compartmentalization is part.
@@ -820,8 +852,6 @@ class Action {
     var novelSearches = Object.assign(copySearches, entry);
     return novelSearches;
   }
-
-
 
   ////////////////////////////////////////////////////////////////////////// ???
 

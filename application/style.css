@@ -113,7 +113,7 @@ flex-direction: column;
 /* Menu */
 /******************************************************************************/
 
-div.menu span.title {
+div.menu > span {
   font-size: large;
   color: rgba(0, 0, 0, 1);
   font-family: sans-serif;
@@ -158,7 +158,7 @@ div.menu table thead th {
   padding: 1mm;*/
 }
 
-div.menu table thead th span.title {
+div.menu table thead th span {
   background-color: rgba(75, 75, 75, 1);
   font-size: medium;
   color: rgba(255, 255, 255, 1);

@@ -82,7 +82,7 @@ class Model {
       new ControlView(controlContents, self.state);
       new StateView(self.state);
       new SetView(self.state);
-      //new ContextView(self.state);
+      new CandidacyView(self.state);
       // Initialize or restore views within exploration view.
       var explorationContents = ["topology"];
       new ExplorationView(explorationContents, self.state);

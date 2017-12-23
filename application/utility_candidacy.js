@@ -1535,13 +1535,13 @@ class Candidacy {
       reactionsCandidates: reactionsCandidates,
       metabolitesCandidates: metabolitesCandidates
     });
-
-    // TODO: Implement...
     // Filter candidates' summaries.
-    var filterCandidatesSummaries = Candidacy.filterCandidatesSummaries({});
-
-
-
+    var filterCandidatesSummaries = Candidacy.filterCandidatesSummaries({
+      candidatesSummaries: candidatesSummaries,
+      candidatesSearches: candidatesSearches,
+      reactionsCandidates: reactionsCandidates,
+      metabolitesCandidates: metabolitesCandidates
+    });
     // Sort candidates' summaries.
     var sortCandidatesSummaries = Candidacy.sortCandidatesSummaries({
       candidatesSummaries: filterCandidatesSummaries,
@@ -1600,7 +1600,6 @@ class Candidacy {
       return Object.assign(collection, entry);
     }, {});
   }
-
   /**
   * Filters candidates' summaries.
   * @param {Object} parameters Destructured object of parameters.
@@ -1608,26 +1607,28 @@ class Candidacy {
   * candidates' degrees.
   * @param {Object<string>} parameters.candidatesSearches Searches to filter
   * candidates' summaries.
-  * @param {Object} parameters.compartments Information about compartments.
-  * @param {Object} parameters.processes Information about processes.
-  * @returns {Object<Array<Object>>} Summaries of sets' cardinalities.
+  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * candidate metabolites.
+  * @returns {Object<Array<Object>>} Summaries of candidates' degrees.
   */
-  static filterCandidatesSummaries({candidatesSummaries, candidatesSearches, compartments, processes} = {}) {
+  static filterCandidatesSummaries({candidatesSummaries, candidatesSearches, reactionsCandidates, metabolitesCandidates} = {}) {
     // Iterate on categories.
-    var categories = Object.keys(setsSummaries);
+    var categories = Object.keys(candidatesSummaries);
     return categories.reduce(function (collection, category) {
       // Determine reference.
-      if (category === "compartments") {
-        var reference = compartments;
-      } else if (category === "processes") {
-        var reference = processes;
+      if (category === "metabolites") {
+        var reference = metabolitesCandidates;
+      } else if (category === "reactions") {
+        var reference = reactionsCandidates;
       }
       // Access category's records.
-      var records = setsSummaries[category];
+      var records = candidatesSummaries[category];
       // Filter records.
       var filterRecords = records.filter(function (record) {
-        var name = reference[record.value].name.toLowerCase();
-        return name.includes(setsSearches[category]);
+        var name = reference[record.candidate].name.toLowerCase();
+        return name.includes(candidatesSearches[category]);
       });
       if (filterRecords.length > 0) {
         var finalRecords = filterRecords;
@@ -1642,10 +1643,6 @@ class Candidacy {
       return Object.assign(collection, entry);
     }, {});
   }
-
-
-
-
   /**
   * Sorts candidates' summaries.
   * @param {Object<Array<Object>>} parameters.candidatesSummaries Summaries of
