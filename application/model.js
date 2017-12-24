@@ -63,6 +63,8 @@ class Model {
   represent(self) {
     // Evaluate the application's state and represent it accordingly.
     if (!Model.determineMetabolicEntitiesSets(self.state)) {
+      // Create tip view.
+      new TipView();
       // Initialize or restore instances of interface's views.
       // Pass these instances a reference to the application's state.
       // Initialize or restore views within control view.
@@ -75,6 +77,8 @@ class Model {
       new SummaryView(self.state);
     }
     if (Model.determineMetabolicEntitiesSets(self.state)) {
+      // Create tip view.
+      var tip = new TipView();
       // Initialize or restore instances of interface's views.
       // Pass these instances a reference to the application's state.
       // Initialize or restore views within control view.
@@ -82,7 +86,7 @@ class Model {
       new ControlView(controlContents, self.state);
       new StateView(self.state);
       new SetView(self.state);
-      new CandidacyView(self.state);
+      new CandidacyView(tip, self.state);
       // Initialize or restore views within exploration view.
       var explorationContents = ["topology"];
       new ExplorationView(explorationContents, self.state);
