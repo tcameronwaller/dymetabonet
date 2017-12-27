@@ -105,9 +105,10 @@ class Candidacy {
   * Changes designations of entities for simplification.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {string} parameters.category Category of entities, metabolites or
+  * reactions.
   * @param {string} parameters.method Method for simplification, omission or
   * replication.
-  * @param {string} parameters.type Type of entities, metabolites or reactions.
   * @param {Object<Object>} parameters.reactionsCandidates Information about
   * candidate reactions.
   * @param {Object<Object>} parameters.metabolitesCandidates Information about
@@ -123,7 +124,7 @@ class Candidacy {
   * Information about simplification of metabolites.
   * @returns {Object<Object>} Information about simplification of entities.
   */
-  static changeSimplifications({identifier, method, type, reactionsCandidates, metabolitesCandidates, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
+  static changeSimplifications({identifier, category, method, reactionsCandidates, metabolitesCandidates, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
     // Filter information about simplifications for entities to omit those that
     // are implicit and include only those that are explicit.
     var explicitSimplifications = Candidacy.filterExplicitSimplifications({
@@ -135,7 +136,7 @@ class Candidacy {
     var novelSimplifications = Candidacy.changeTypeExplicitSimplifications({
       identifier: identifier,
       method: method,
-      type: type,
+      type: category,
       metabolitesSimplifications: explicitSimplifications
       .metabolitesSimplifications,
       reactionsSimplifications: explicitSimplifications.reactionsSimplifications
@@ -1169,7 +1170,7 @@ class Candidacy {
     // Compile information.
     var information = {
       identifier: identifier,
-      method: omission,
+      method: method,
       dependency: dependency
     };
     // Include designation for entity's simplification.
@@ -1212,7 +1213,7 @@ class Candidacy {
   * Information about simplification of metabolites.
   * @returns {Object<Object>} Information about simplification of entities.
   */
-  static collectImplicitSimplifications({reactionsCandidates, metabolitesCandidates, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplificiations} = {}) {
+  static collectImplicitSimplifications({reactionsCandidates, metabolitesCandidates, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
     // The default method for implicit simplifications is omission.
     // Collect information about any implicit simplifications for entities and
     // include with information about explicit simplifications.

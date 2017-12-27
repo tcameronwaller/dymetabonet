@@ -355,6 +355,10 @@ class View {
   }
 }
 
+// TODO: Enable the tip view to receive any type of content, including other containers like div or table
+// TODO: Remove children and re-append with each update to tip.
+// TODO: Tip should just accept a child element to append.
+
 /**
 * Interface for tip with information about other elements in any views.
 */
@@ -1579,6 +1583,7 @@ class CandidacyMenuView {
     // Create head table.
     var headTable = self.document.createElement("table");
     self.container.appendChild(headTable);
+    headTable.classList.add(self.category);
     // Create head table's header.
     var tableHead = self.document.createElement("thead");
     headTable.appendChild(tableHead);
@@ -1594,24 +1599,6 @@ class CandidacyMenuView {
       scale: false,
       self: self
     });
-    // Create head for omission.
-    self.createActivateTableColumnHead({
-      text: "Omit",
-      attribute: "omission",
-      parent: tableHeadRow,
-      sort: false,
-      scale: false,
-      self: self
-    });
-    // Create head for replication.
-    self.createActivateTableColumnHead({
-      text: "Rep",
-      attribute: "replication",
-      parent: tableHeadRow,
-      sort: false,
-      scale: false,
-      self: self
-    });
     // Create head for counts.
     self.createActivateTableColumnHead({
       text: "Count",
@@ -1621,6 +1608,26 @@ class CandidacyMenuView {
       scale: true,
       self: self
     });
+    // Create head for omission.
+    self.createActivateTableColumnHead({
+      text: "Omit",
+      attribute: "omission",
+      parent: tableHeadRow,
+      sort: false,
+      scale: false,
+      self: self
+    });
+    if (self.category === "metabolites") {
+      // Create head for replication.
+      self.createActivateTableColumnHead({
+        text: "Rep",
+        attribute: "replication",
+        parent: tableHeadRow,
+        sort: false,
+        scale: false,
+        self: self
+      });
+    }
     // Create body table.
     var bodyTableContainer = self.document.createElement("div");
     self.container.appendChild(bodyTableContainer);
@@ -1630,6 +1637,7 @@ class CandidacyMenuView {
     // Create body table's body.
     self.body = self.document.createElement("tbody");
     bodyTable.appendChild(self.body);
+    bodyTable.classList.add(self.category);
   }
   /**
   * Creates and activates a title and sort.
@@ -1861,21 +1869,25 @@ class CandidacyMenuView {
         entity: element.entity,
         identifier: element.candidate
       };
+      var count = {
+        type: "count",
+        count: element.count
+      };
       var omission = {
         type: "omission",
         entity: element.entity,
         identifier: element.candidate
       };
-      var replication = {
-        type: "replication",
-        entity: element.entity,
-        identifier: element.candidate
-      };
-      var count = {
-        type: "count",
-        count: element.count
-      };
-      return [].concat(name, omission, replication, count);
+      if (self.category === "metabolites") {
+        var replication = {
+          type: "replication",
+          entity: element.entity,
+          identifier: element.candidate
+        };
+        return [].concat(name, count, omission, replication);
+      } else if (self.category === "reactions") {
+        return [].concat(name, count, omission);
+      }
     };
     // Create children elements by association to data.
     self.cells = View.createElementsData({
@@ -1887,7 +1899,17 @@ class CandidacyMenuView {
     self.representNames(self);
     // Assign attributes to cells for counts.
     self.representCounts(self);
+    // Assign attributes to cells for omission.
+    self.representActivateSimplifications("omission", self);
+    if (self.category === "metabolites") {
+      // Assign attributes to cells for replication.
+      self.representActivateSimplifications("replication", self);
+    }
   }
+
+  // TODO: Create/control cells for simplification...
+
+
   /**
   * Represents names.
   * @param {Object} self Instance of a class.
@@ -1978,6 +2000,53 @@ class CandidacyMenuView {
     .attr("height", self.graphHeight);
   }
   /**
+  * Represents and activates controls for simplifications.
+  * @param {string} method Method for simplification, omission or replication.
+  * @param {Object} self Instance of a class.
+  */
+  representActivateSimplifications(method, self) {
+    // Assign attributes to cells for omissions.
+    // Assign attributes to elements.
+    // Select cells for omissions.
+    var reference = (method + "s");
+    self[reference] = self.cells.filter(function (element, index, nodes) {
+      return element.type === method;
+    });
+    self[reference].classed(method, true);
+    // Create check boxes.
+    // Define function to access data.
+    function access(element, index, nodes) {
+      return [element];
+    };
+    // Create children elements by association to data.
+    var checks = View.createElementsData({
+      parent: self[reference],
+      type: "input",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    checks
+    .attr("type", "checkbox")
+    .property("checked", function (element, index, nodes) {
+      return CandidacyMenuView.determineSimplification({
+        identifier: element.identifier,
+        category: element.entity,
+        method: element.type,
+        state: self.state
+      });
+    });
+    // Activate behavior.
+    checks.on("change", function (element, index, nodes) {
+      // Call action.
+      Action.changeSimplification({
+        identifier: element.identifier,
+        method: element.type,
+        category: element.entity,
+        state: self.state
+      });
+    });
+  }
+  /**
   * Accesses the name of a record.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a candidate entity.
@@ -2009,6 +2078,35 @@ class CandidacyMenuView {
       attribute: attribute,
       setsFilters: state.setsFilters
     });
+  }
+  /**
+  * Determines whether a specific candidate entity has a designation for
+  * simplification by a specific method.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {string} parameters.category Name of category for simplifications,
+  * metabolites or reactions.
+  * @param {string} parameters.method Method for simplification, omission or
+  * replication.
+  * @param {Object} parameters.state Application's state.
+  * @returns {boolean} Whether the candidate entity has a designation for
+  * simplification by the method.
+  */
+  static determineSimplification({identifier, category, method, state} = {}) {
+    // Determine reference.
+    if (category === "metabolites") {
+      var simplifications = state.metabolitesSimplifications;
+    } else if (category === "reactions") {
+      var simplifications = state.reactionsSimplifications;
+    }
+    // Determine whether a simplification exists for the entity.
+    if (simplifications.hasOwnProperty(identifier)) {
+      // Determine whether the simplification matches the method.
+      var match = (simplifications[identifier].method === method);
+    } else {
+      var match = false;
+    }
+    return match;
   }
 }
 

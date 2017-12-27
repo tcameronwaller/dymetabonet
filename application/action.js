@@ -279,6 +279,7 @@ class Action {
       compartmentalization: state.compartmentalization,
       metabolitesSimplifications: state.metabolitesSimplifications,
       reactionsSimplifications: state.reactionsSimplifications,
+      candidatesSearches: state.candidatesSearches,
       candidatesSorts: state.candidatesSorts,
       compartments: state.compartments
     });
@@ -458,17 +459,18 @@ class Action {
   * Changes explicit and implicit simplifications.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {string} parameters.category Category of entities, metabolites or
+  * reactions.
   * @param {string} parameters.method Method for simplification, omission or
   * replication.
-  * @param {string} parameters.type Type of entities, metabolites or reactions.
   * @param {Object} parameters.state Application's state.
   */
-  static changeSimplification({identifier, method, type, state} = {}) {
+  static changeSimplification({identifier, category, method, state} = {}) {
     // Change explicit and implicit designations of entities for simplification.
     var simplifications = Candidacy.changeSimplifications({
       identifier: identifier,
+      category: category,
       method: method,
-      type: type,
       reactionsCandidates: state.reactionsCandidates,
       metabolitesCandidates: state.metabolitesCandidates,
       reactionsSets: state.filterReactionsSets,

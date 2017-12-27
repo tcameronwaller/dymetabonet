@@ -4,6 +4,18 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+23 December 2017
+
+----------
+Plan
+
+Implement controls for simplifications within candidates' summaries.
+
+Define network's elements according to context, candidates, and simplifications.
+
+Display network unless it is too large.
+
+--------------------------------------------------
 21 December 2017
 
 ----------
