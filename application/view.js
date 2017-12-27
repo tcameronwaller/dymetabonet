@@ -1906,10 +1906,6 @@ class CandidacyMenuView {
       self.representActivateSimplifications("replication", self);
     }
   }
-
-  // TODO: Create/control cells for simplification...
-
-
   /**
   * Represents names.
   * @param {Object} self Instance of a class.

@@ -230,19 +230,10 @@ class State {
       "networkNodesReactions",
       "networkNodesMetabolites",
       "networkLinks",
-      "subNetworkNodesMetabolites",
-      "subNetworkNodesReactions",
-      "subNetworkLinks",
-
-
-      // Network.
-      "metabolitesNodes", "reactionsNodes", "links",
-      "network",
+      "subnetworkNodesReactions", "subnetworkNodesMetabolites", "subnetworkLinks",
       // Subnetwork.
       "proximityFocus", "proximityDirection", "proximityDepth",
       "pathOrigin", "pathDestination", "pathDirection", "pathCount",
-      "currentMetabolitesNodes", "currentReactionsNodes", "currentLinks",
-      "subNetwork",
     ];
     self.attributeNames = [].concat(
       source,

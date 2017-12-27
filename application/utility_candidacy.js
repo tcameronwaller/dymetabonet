@@ -490,7 +490,7 @@ class Candidacy {
   * @returns {boolean} Whether the reaction is relevant.
   */
   static determineReactionParticipantsOperationRelevance({participants, conversion, transport, transports, compartmentalization} = {}) {
-    // Determine whether reaction's operation.
+    // Determine reaction's operation.
     if (conversion) {
       // Reaction's performs chemical conversion.
       // Reaction's relevance depends on the participation of metabolites as
@@ -1226,10 +1226,12 @@ class Candidacy {
       reactionsSimplifications: reactionsSimplifications,
       metabolitesSimplifications: metabolitesSimplifications
     });
+    // Consider both explicit and implicit simplifications of reactions to
+    // determine metabolites' relevance by dependency.
     var metabolitesCompleteSimplifications = Candidacy
     .collectMetabolitesImplicitSimplifications({
       metabolitesCandidates: metabolitesCandidates,
-      reactionsSimplifications: reactionsSimplifications,
+      reactionsSimplifications: reactionsCompleteSimplifications,
       metabolitesSimplifications: metabolitesSimplifications
     });
     // Compile information.
@@ -1300,6 +1302,8 @@ class Candidacy {
     if (reactionsSimplifications.hasOwnProperty(reactionCandidate.identifier)) {
       // Reaction has a designation for simplification.
       // Do not modify information about simplification of reactions.
+      // Reactions can only have simplification by omission, which is the
+      // default method for implicit simplification.
       return reactionsSimplifications;
     } else {
       // Reaction does not have a designation for simplification.
@@ -1435,6 +1439,9 @@ class Candidacy {
     ) {
       // Metabolite has a designation for simplification.
       // Do not modify information about simplification of metabolites.
+      // Metabolites can have simplification by either omission or replication.
+      // The default method for implicit simplification is omission.
+      // TODO: Maybe I should change an explicit replication to an implicit omission if dependency warrants it?
       return metabolitesSimplifications;
     } else {
       // Metabolite does not have a designation for simplification.
