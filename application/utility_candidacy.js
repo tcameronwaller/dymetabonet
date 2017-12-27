@@ -40,6 +40,9 @@ class Candidacy {
   // Master procedures for collection of candidate entities, collection of their
   // simplifications, and preparation of summaries.
 
+  // TODO: Maybe I should consider reversibility in redundant reactions.
+
+
   /**
   * Evaluates the context of interest and collects candidate entities and their
   * implicit simplifications.
@@ -842,13 +845,13 @@ class Candidacy {
           var compartment = null;
         }
         // Access information about metabolite.
-        var metabolite = metabolites[participant.metabolite];
+        var metaboliteName = metabolites[participant.metabolite].name;
         // Access information about compartment.
-        var compartment = compartments[participant.compartment];
+        var compartmentName = compartments[participant.compartment].name;
         // Create name for candidate metabolite.
         var name = Candidacy.createCandidateMetaboliteName({
-          metabolite: metabolite.name,
-          compartment: compartment.name,
+          metabolite: metaboliteName,
+          compartment: compartmentName,
           compartmentalization: compartmentalization
         });
         // Compile information.

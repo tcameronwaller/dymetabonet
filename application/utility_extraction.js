@@ -299,10 +299,7 @@ class Extraction {
   * @returns {Object<Array<string>>} Identifiers of metabolites that occur in
   * each compartment of a single process.
   */
-  static collectProcessCompartmentsMetabolites({
-    compartmentalMetabolites,
-    oldMetabolitesCollection
-  } = {}) {
+  static collectProcessCompartmentsMetabolites({compartmentalMetabolites, oldMetabolitesCollection} = {}) {
     // Iterate on compartmental metabolites.
     return compartmentalMetabolites
     .reduce(function (metabolitesCollection, compartmentalMetabolite) {
@@ -338,9 +335,7 @@ class Extraction {
   * @returns {Object<Object<Array<string>>>} Metabolites and compartments
   * that are candidates for transport in each process.
   */
-  static determineProcessesTransportCandidates(
-    processesCompartmentsMetabolites
-  ) {
+  static determineProcessesTransportCandidates(processesCompartmentsMetabolites) {
     var processes = Object.keys(processesCompartmentsMetabolites);
     // Iterate on processes.
     return processes.reduce(function (processesCollection, process) {
@@ -559,12 +554,7 @@ class Extraction {
   * of reactants and products.
   * @returns {<Array<Object>} Reactions with each set of reactants and products.
   */
-  static collectReactionReactantsProducts({
-    reaction,
-    reactants,
-    products,
-    reactionsRecords
-  } = {}) {
+  static collectReactionReactantsProducts({reaction, reactants, products, reactionsRecords} = {}) {
     // Determine whether the collection includes a record for the current
     // reactants and products.
     // Determine the index of any matching element in the collection.
@@ -623,9 +613,7 @@ class Extraction {
   * metabolic model.
   * @returns {Object} Record with information about a reaction.
   */
-  static createReactionRecord({
-    reaction, processesTransports, replicateReactions, processes
-  } = {}) {
+  static createReactionRecord({reaction, processesTransports, replicateReactions, processes} = {}) {
     // Determine reaction's identifier.
     var identifier = reaction.id;
     // Determine reaction's name.
