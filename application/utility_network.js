@@ -41,49 +41,45 @@ class Network {
 // TODO: then maybe it would be appropriate to combine the attributes of the original reactions, such as
 // TODO: compartments and processes.
 
-// TODO: Implement createNetworkElements to call collectReactionsMetabolitesNetworkNodesLinks
-
   /**
-  * Creates network elements, nodes and links, to represent metabolic entities,
-  * metabolites and reactions, and relations between them.
-  * Supports reaction-specific replication of nodes for specific metabolites.
-  * Supports definition of network elements with or without consideration of
-  * compartmentalization.
+  * Creates network's elements, nodes and links, to represent metabolic
+  * entities, metabolites and reactions, and relations between them.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} parameters.compartmentalization Indicator of whether to
-  * represent compartmentalization in the network.
-  * @param {string} parameters.simplification Indicator of whether to simplify
-  * nodes for metabolites in the network by replication or by omission.
-  * @param {Object} parameters.metabolites Records with information about
-  * metabolites, values of their attributes that pass filters, and designations
-  * of whether to simplify their representations in the network.
-  * @param {Object} parameters.reactions Records with information about
-  * reactions and values of their attributes that pass filters.
-  * @returns {Object<Array<Object>>} Records with information about nodes and
-  * links in a network.
+  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.reactionsSimplifications
+  * Information about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications
+  * Information about simplification of metabolites.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
+  * @returns {Object<Array<Object>>} Information about network's elements.
   */
-  static createNetworkElements({
-    compartmentalization,
-    simplification,
-    metabolites,
-    reactions
-  } = {}) {
-    // Determine whether to represent compartmentalization in the network.
-    // A compartmental representation uses distinct nodes for compartmental
-    // metabolites.
-    // A non-compartmental representation uses common nodes for general
-    // metabolites.
-    // A non-compartmental representation of the network justifies several
-    // simplifications, including omission of transport reactions and replicate
-    // reactions across compartments.
-    return Network.collectReactionsMetabolitesNetworkNodesLinks({
-      compartmentalization: compartmentalization,
-      simplification: simplification,
+  static createNetworkElements({reactionsCandidates, metabolitesCandidates, reactionsSimplifications, metabolitesSimplifications, reactions, metabolites, compartmentalization} = {}) {
+    // Collect network's elements.
+    var networkNodesLinks = Network.collectReactionsMetabolitesNetworkNodesLinks({
+      reactionsCandidates: reactionsCandidates,
+      metabolitesCandidates: metabolitesCandidates,
+      reactionsSimplifications: reactionsSimplifications,
+      metabolitesSimplifications: metabolitesSimplifications,
+      reactions: reactions,
       metabolites: metabolites,
-      reactions: reactions
+      compartmentalization: compartmentalization
     });
+    // Compile information.
+    var networkElements = {
+      networkNodesReactions: networkNodesLinks.networkNodesReactions,
+      networkNodesMetabolites: networkNodesLinks.networkNodesMetabolites,
+      networkLinks: networkNodesLinks.networkLinks
+    };
+    // Return information.
+    return networkElements;
   }
-
   /**
   * Collects network's elements, nodes and links, across reactions and their
   * metabolites.
@@ -106,9 +102,9 @@ class Network {
   static collectReactionsMetabolitesNetworkNodesLinks({reactionsCandidates, metabolitesCandidates, reactionsSimplifications, metabolitesSimplifications, reactions, metabolites, compartmentalization} = {}) {
     // Initialize collection.
     var initialCollection = {
-      networkNodesReactions: [],
-      networkNodesMetabolites: [],
-      networkLinks: []
+      networkNodesReactions: {},
+      networkNodesMetabolites: {},
+      networkLinks: {}
     };
     // Iterate on reactions.
     var candidateReactionsIdentifiers = Object.keys(reactionsCandidates);
@@ -128,39 +124,6 @@ class Network {
         collectionReactions: collectionReactions
       });
     }, initialCollection);
-
-    if (false) {
-      // Iterate on reactions.
-      var reactionsIdentifiers = Object.keys(reactions);
-      return reactionsIdentifiers
-      .reduce(function (reactionsCollection, reactionIdentifier) {
-        if (pass) {
-          // Create novel node for the reaction, and include this in the
-          // collection.
-          var reactionNetworkElements = Network.createNovelReactionNode({
-            reaction: consensualReaction,
-            previousNetworkElements: reactionsCollection,
-            metabolites: metabolites
-          });
-          // Create novel nodes and links for the reaction's metabolites, and
-          // include these in the collection.
-          var metabolitesNetworkElements = Network.collectNetworkMetabolites({
-            reaction: consensualReaction,
-            compartmentalization: compartmentalization,
-            simplification: simplification,
-            previousNetworkElements: reactionNetworkElements,
-            metabolites: metabolites
-          });
-          // Restore the collection of network elements.
-          return metabolitesNetworkElements;
-        } else {
-          // Omit representations of the reaction and its metabolites from the
-          // network's elements.
-          // Preserve the collection of the network's elements.
-          return reactionsCollection;
-        }
-      }, initialNetworkElements);
-    }
   }
   /**
   * Collects network's elements, nodes and links, for a reaction and its
@@ -201,9 +164,9 @@ class Network {
         reaction: reaction
       });
       // Include node for reaction.
-      var networkNodesReactions = Network.includeNovelRecord({
-        record: networkNodeReaction,
-        collection: collectionReactions.networkNodesReactions
+      var networkNodesReactions = General.includeNovelEntry({
+        value: networkNodeReaction,
+        entries: collectionReactions.networkNodesReactions
       });
       // Create nodes and links for reaction's metabolites.
       // Include nodes and links for reaction's metabolites.
@@ -230,10 +193,14 @@ class Network {
           collectionMetabolites: collectionMetabolites
         });
       }, initialCollection);
-
-      // Compile information?
-      // TODO: compile information as in collectCandidateReactionMetabolitesSimplification
-
+      // Compile information.
+      var information = {
+        networkNodesReactions: networkNodesReactions,
+        networkNodesMetabolites: networkNodesLinksMetabolites
+        .networkNodesMetabolites,
+        networkLinks: networkNodesLinksMetabolites.networkLinks
+      };
+      return information;
     } else {
       // Reaction is not a valid candidate.
       // Exclude reaction from collection.
@@ -280,24 +247,6 @@ class Network {
     };
   }
   /**
-  * Includes a novel record in a collection.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.record Record of information.
-  * @param {Array<Object>} parameters.collection Collection of records.
-  * @returns {Array<Object>} Collection of records.
-  */
-  static includeNovelRecord({record, collection} = {}) {
-    // Determine whether the record is novel in the collection.
-    var match = collection.some(function (collectionRecord) {
-      return collectionRecord.identifier === record.identifier;
-    });
-    if (match) {
-      return collection;
-    } else {
-      return [].concat(collection, record);
-    }
-  }
-  /**
   * Collects network's elements, nodes and links, for a reaction and a
   * metabolite.
   * @param {Object} parameters Destructured object of parameters.
@@ -335,9 +284,9 @@ class Network {
         networkNodeReaction: networkNodeReaction
       });
       // Include node for metabolite.
-      var networkNodesMetabolites = Network.includeNovelRecord({
-        record: networkNodeMetabolite,
-        collection: collectionMetabolites.networkNodesMetabolites
+      var networkNodesMetabolites = General.includeNovelEntry({
+        value: networkNodeMetabolite,
+        entries: collectionMetabolites.networkNodesMetabolites
       });
       // Create links between nodes for reaction and metabolite.
       var novelNetworkLinks = Network.createLinksReactionMetabolite({
@@ -347,13 +296,16 @@ class Network {
         reaction: reaction
       });
       // Include links.
-      var networkLinks = Network.includeNovelRecords({
-        records: novelNetworkLinks,
-        collection: collectionMetabolites.networkLinks
+      var networkLinks = General.includeNovelEntries({
+        values: novelNetworkLinks,
+        entries: collectionMetabolites.networkLinks
       });
-
-      // TODO: Compile information...
-
+      // Compile information.
+      var information = {
+        networkNodesMetabolites: networkNodesMetabolites,
+        networkLinks: networkLinks
+      };
+      return information;
     } else {
       // Metabolite is not a valid candidate.
       // Exclude metabolite from collection.
@@ -460,13 +412,7 @@ class Network {
   * @returns {Array<Object>} Records with information about links for a
   * metabolite's participation in a reaction.
   */
-  static createParticipantLinks({
-    metabolite,
-    replication,
-    reaction,
-    role,
-    reversibility
-  } = {}) {
+  static createParticipantLinks({metabolite, replication, reaction, role, reversibility} = {}) {
     // Reactions do not accommodate redundant participants.
     var attributes = {
       role: role,
@@ -533,35 +479,6 @@ class Network {
     };
     return Object.assign({}, record, attributes);
   }
-  /**
-  * Includes novel records in a collection.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object>} parameters.records Records of information.
-  * @param {Array<Object>} parameters.collection Collection of records.
-  * @returns {Array<Object>} Collection of records.
-  */
-  static includeNovelRecords({records, collection} = {}) {
-    return records.reduce(function (novelCollection, record) {
-      return Network.includeNovelRecord({
-        record: record,
-        collection: novelCollection
-      });
-    }, collection);
-  }
-
-
-
-
-
-
-  // Candidate metabolites have a risk of redundancy.
-  // Create and include a node only for novel candidate metabolite.
-
-  // Nodes for reactions can have links to many nodes for metabolites.
-  // Nodes for metabolites can have links to many nodes for reactions.
-
-
-
 
 
 // Scrap...
@@ -619,54 +536,7 @@ class Network {
     return Object.assign({}, priorityAttributes, combinationAttributes);
   }
 
-  /**
-  * Creates novel node and link for a metabolite and its participation in a
-  * reaction and includes these in a collection of network's elements.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.nodeIdentifier Identifier of a node of type
-  * record for a metabolite.
-  * @param {Object} parameters.metabolite Record with information about a
-  * metabolite, values of its attributes that pass filters, and designation of
-  * whether to simplify its representation in the network.
-  * @param {Object} parameters.participant Record with information about a
-  * metabolite's participation in a reaction.
-  * @param {Object} parameters.reaction Consensual information about a reaction.
-  * @param {boolean} parameters.compartmentalization Indicator of whether to
-  * represent compartmentalization in the network.
-  * @param {Object<Array<Object>>} parameters.previousNetworkElements Records
-  * with information about nodes and links in a network.
-  * @returns {Object<Array<Object>>} Records with information about nodes and
-  * links in a network.
-  */
-  static createNovelMetaboliteNodeLinks({
-    nodeIdentifier,
-    metabolite,
-    participant,
-    reaction,
-    compartmentalization,
-    previousNetworkElements,
-  } = {}) {
-    // Create novel link for the metabolite's participation in the reaction.
-    var metaboliteLinks = Network.createMetaboliteLinks({
-      metabolite: nodeIdentifier,
-      role: participant.role,
-      simplification: metabolite.simplification,
-      reaction: reaction,
-    });
-    // Include metabolite's novel node and links in the collection.
-    var metabolitesLinks = []
-    .concat(previousNetworkElements.links, metaboliteLinks);
-    var currentNetworkElements = {
-      links: metabolitesLinks,
-      metabolitesNodes: metabolitesNodes
-    };
-    var networkElements = Object
-    .assign({}, previousNetworkElements, currentNetworkElements);
-    return networkElements;
-  }
-
-  // TODO: Need function in network module to filter/collect links between source and target nodes...
-  // TODO: Include parallel links between metabolites and reversible reactions.
+  // Maybe still useful...
 
   /**
   * Copies records with information about nodes and links in a network.

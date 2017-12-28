@@ -650,6 +650,79 @@ class General {
   // Methods for management of values.
 
   /**
+  * Includes novel entries in a collection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.values Records of information.
+  * @param {Object} parameters.entries Collection of entries.
+  * @returns {Object} Collection of entries.
+  */
+  static includeNovelEntries({values, entries} = {}) {
+    return values.reduce(function (collection, value) {
+      return General.includeNovelEntry({
+        value: value,
+        entries: collection
+      });
+    }, entries);
+  }
+  /**
+  * Includes novel entry in a collection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.value Record of information.
+  * @param {Object} parameters.entries Collection of entries.
+  * @returns {Object} Collection of entries.
+  */
+  static includeNovelEntry({value, entries} = {}) {
+    // For efficiency, this procedure does not copy values thoroughly.
+    // Determine whether entries include an entry for the value.
+    if (entries.hasOwnProperty(value.identifier)) {
+      // Entries include an entry for the value.
+      // Preserve entries.
+      return entries;
+    } else {
+      // Entries do not include an entry for the value.
+      // Include entry for the value.
+      // Create entry.
+      var entry = {
+        [value.identifier]: value
+      };
+      // Include entry.
+      return Object.assign(entries, entry);
+    }
+  }
+  /**
+  * Includes novel records in a collection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.records Records of information.
+  * @param {Array<Object>} parameters.collection Collection of records.
+  * @returns {Array<Object>} Collection of records.
+  */
+  static includeNovelRecords({records, collection} = {}) {
+    return records.reduce(function (novelCollection, record) {
+      return General.includeNovelRecord({
+        record: record,
+        collection: novelCollection
+      });
+    }, collection);
+  }
+  /**
+  * Includes a novel record in a collection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.record Record of information.
+  * @param {Array<Object>} parameters.collection Collection of records.
+  * @returns {Array<Object>} Collection of records.
+  */
+  static includeNovelRecord({record, collection} = {}) {
+    // Determine whether the record is novel in the collection.
+    var match = collection.some(function (collectionRecord) {
+      return collectionRecord.identifier === record.identifier;
+    });
+    if (match) {
+      return collection;
+    } else {
+      return [].concat(collection, record);
+    }
+  }
+  /**
   * Copies an object's entries and includes or excludes a single entry.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.value Entry's value with identifier.
@@ -665,29 +738,6 @@ class General {
         key: value.identifier,
         entries: entries
       });
-      // TODO: I need to make sure the General.filterObjectEntries() works properly...
-      // TODO: temporary... old way of doing things...
-      if (false) {
-        // Copy all entries and exclude the entry for the value.
-        var keys = Object.keys(entries);
-        return keys.reduce(function (collection, key) {
-          // Determine whether to exclude the current key's entry.
-          if (key === value.identifier) {
-            // Exclude the current key's entry.
-            return collection;
-          } else {
-            // Include the current key's entry.
-            // Copy information from current key's entry.
-            var valueCopy = General.copyValue(entries[key]);
-            // Create entry.
-            var entry = {
-              [key]: valueCopy
-            };
-            // Include entry.
-            return Object.assign(collection, entry);
-          }
-        }, {});
-      }
     } else {
       // Entries do not include an entry for the value.
       // Copy other entries and include an entry for the value.

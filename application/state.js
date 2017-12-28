@@ -192,16 +192,18 @@ class State {
       "metabolitesSimplifications"
     ];
     var candidatesSummaries = [
-      // Attribute "reactionsCandidates" stores information for each reaction
-      // about the metabolites that participate.
+      // Attribute "reactionsCandidates" stores information about reactions and
+      // their metabolites that are relevant in the context of interest and are
+      // candidates for representation in the network.
       // Information includes compartmentalization of metabolites.
       // Information includes references to attributes "reactions",
       // "metabolites", and "compartments".
       // Information derives from attributes "compartmentalization",
       // "filterReactionsSets", and "reactions".
       "reactionsCandidates",
-      // Attribute "metabolitesCandidates" stores information for each
-      // metabolite about the reactions in which it participates.
+      // Attribute "metabolitesCandidates" stores information about metabolites
+      // and their reactions that are relevant in the context of interest and
+      // are candidates for representation in the network.
       // Information includes compartmentalization of metabolites.
       // Information includes references to attributes "metabolites",
       // "reactions", and "compartments".
@@ -224,13 +226,30 @@ class State {
       // "metabolitesCandidates", and "candidatesSorts".
       "candidatesSummaries"
     ];
-    var inProgress = [
-
-      // Network.
+    var network = [
+      // Attribute "networkNodesReactions" stores information about
+      // representations of reactions in the network.
+      // Information includes references to attributes "reactions" and
+      // "reactionsCandidates".
+      // Information derives from attributes "reactions", "reactionsCandidates",
+      // and "reactionsSimplifications".
       "networkNodesReactions",
+      // Attribute "networkNodesMetabolites" stores information about
+      // representations of metabolites in the network.
+      // Information includes references to attributes "metabolites" and
+      // "metabolitesCandidates".
+      // Information derives from attributes "metabolites",
+      // "metabolitesCandidates", and "metabolitesSimplifications".
       "networkNodesMetabolites",
-      "networkLinks",
-      "subnetworkNodesReactions", "subnetworkNodesMetabolites", "subnetworkLinks",
+      // Attribute "networkLinks" stores information about representations of
+      // relations between reactions and metabolites in the network.
+      // Information includes references to attributes "networkNodesReactions"
+      // and "networkNodesMetabolites".
+      // Information derives from attributes "reactions",
+      // "networkNodesReactions", and "networkNodesMetabolites".
+      "networkLinks"
+    ];
+    var inProgress = [
       // Subnetwork.
       "proximityFocus", "proximityDirection", "proximityDepth",
       "pathOrigin", "pathDestination", "pathDirection", "pathCount",
@@ -244,7 +263,8 @@ class State {
       currentEntitiesSets,
       setsCardinalitiesSummaries,
       context,
-      candidatesSummaries
+      candidatesSummaries,
+      network
     );
   }
   /**

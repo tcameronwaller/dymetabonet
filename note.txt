@@ -4,6 +4,37 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+28 December 2017
+
+----------
+Browser Support
+
+The initial procedure to clean and extract information from Recon 2.2 and initialize state variables takes a few minutes.
+
+Mozilla's FireFox browser throws errors during this procedure.
+
+https://support.mozilla.org/en-US/questions/1138132
+https://support.mozilla.org/en-US/kb/warning-unresponsive-script
+
+It is necessary to configure FireFox to allow scripts to run for more time.
+The default allowance is 10 seconds.
+The procedure requires about 2.5 minutes.
+
+----------
+Progress
+
+I implemented the procedure to define network's elements within arrays for metabolites' nodes, reactions' nodes, and links, respectively.
+
+This procedure with arrays is very expensive and slow because it is necessary to check the collection regularly to avoid creating redundant nodes, especially for metabolites.
+The procedure with arrays requires 120.336 seconds for the entire network with compartmentalization.
+
+Change the procedure to collect network's elements within objects instead of arrays.
+It will be simple and convenient to extract information from the objects into arrays for creation of elements.
+
+I changed the procedure to collect network's elements within objects instead of arrays.
+The procedure with objects requires 0.847 seconds for the entire network with compartmentalization.
+
+--------------------------------------------------
 27 December 2017
 
 ----------

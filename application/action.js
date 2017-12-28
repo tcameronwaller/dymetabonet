@@ -172,6 +172,19 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
+    if (false) {
+      var networkElements = Network.collectReactionsMetabolitesNetworkNodesLinks({
+        reactionsCandidates: state.reactionsCandidates,
+        metabolitesCandidates: state.metabolitesCandidates,
+        reactionsSimplifications: state.reactionsSimplifications,
+        metabolitesSimplifications: state.metabolitesSimplifications,
+        reactions: state.reactions,
+        metabolites: state.metabolites,
+        compartmentalization: state.compartmentalization
+      });
+      console.log(networkElements);
+    }
+
     // Terminate process timer.
     //console.timeEnd("timer");
     var endTime = window.performance.now();
@@ -283,6 +296,20 @@ class Action {
       candidatesSorts: state.candidatesSorts,
       compartments: state.compartments
     });
+    // Create network's elements.
+    var networkElements = Network.createNetworkElements({
+      reactionsCandidates: candidatesSimplificationsSummaries
+      .reactionsCandidates,
+      metabolitesCandidates: candidatesSimplificationsSummaries
+      .metabolitesCandidates,
+      reactionsSimplifications: candidatesSimplificationsSummaries
+      .reactionsSimplifications,
+      metabolitesSimplifications: candidatesSimplificationsSummaries
+      .metabolitesSimplifications,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      compartmentalization: state.compartmentalization
+    });
     // Compile attributes' values.
     var novelAttributesValues = {
       setsFilters: setsFilters
@@ -292,6 +319,7 @@ class Action {
       currentEntitiesSets,
       setsCardinalitiesSummaries,
       candidatesSimplificationsSummaries,
+      networkElements,
       novelAttributesValues
     );
     // Submit attributes' values to the application's state.
@@ -441,12 +469,27 @@ class Action {
       candidatesSorts: state.candidatesSorts,
       compartments: state.compartments
     });
+    // Create network's elements.
+    var networkElements = Network.createNetworkElements({
+      reactionsCandidates: candidatesSimplificationsSummaries
+      .reactionsCandidates,
+      metabolitesCandidates: candidatesSimplificationsSummaries
+      .metabolitesCandidates,
+      reactionsSimplifications: candidatesSimplificationsSummaries
+      .reactionsSimplifications,
+      metabolitesSimplifications: candidatesSimplificationsSummaries
+      .metabolitesSimplifications,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      compartmentalization: compartmentalization
+    });
     // Compile attributes' values.
     var novelAttributesValues = {
       compartmentalization: compartmentalization,
     };
     var attributesValues = Object.assign(
       candidatesSimplificationsSummaries,
+      networkElements,
       novelAttributesValues
     );
     // Submit attributes' values to the application's state.
@@ -479,8 +522,21 @@ class Action {
       reactionsSimplifications: state.reactionsSimplifications,
       metabolitesSimplifications: state.metabolitesSimplifications
     });
+    // Create network's elements.
+    var networkElements = Network.createNetworkElements({
+      reactionsCandidates: state.reactionsCandidates,
+      metabolitesCandidates: state.metabolitesCandidates,
+      reactionsSimplifications: simplifications.reactionsSimplifications,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      compartmentalization: state.compartmentalization
+    });
     // Compile attributes' values.
-    var attributesValues = simplifications;
+    var attributesValues = Object.assign(
+      simplifications,
+      networkElements
+    );
     // Submit attributes' values to the application's state.
     Action.submitAttributes({
       attributesValues: attributesValues,
@@ -750,9 +806,20 @@ class Action {
       candidatesSorts: candidatesSorts,
       compartments: compartments
     });
-
-    // TODO: I'll also need to include procedure for definition of network's elements.
-
+    // Create network's elements.
+    var networkElements = Network.createNetworkElements({
+      reactionsCandidates: candidatesSimplificationsSummaries
+      .reactionsCandidates,
+      metabolitesCandidates: candidatesSimplificationsSummaries
+      .metabolitesCandidates,
+      reactionsSimplifications: candidatesSimplificationsSummaries
+      .reactionsSimplifications,
+      metabolitesSimplifications: candidatesSimplificationsSummaries
+      .metabolitesSimplifications,
+      reactions: reactions,
+      metabolites: metabolites,
+      compartmentalization: compartmentalization
+    });
     // Compile information.
     var novelAttributesValues = {
       setsFilters: setsFilters,
@@ -765,6 +832,7 @@ class Action {
       setsCardinalitiesSelections,
       setsCardinalitiesSummaries,
       candidatesSimplificationsSummaries,
+      networkElements,
       novelAttributesValues
     );
     // Return information.
