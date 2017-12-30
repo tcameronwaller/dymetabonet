@@ -4,6 +4,44 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+29 December 2017
+
+----------
+Plan
+
+I need to support multiple active views within the control view.
+Consider using an array for active views instead of individual variables.
+
+I need to implement the summary and topology views.
+I need to draw the network's elements.
+
+----------
+Progress
+
+I condensed code for menu views.
+I organized views within control view.
+
+----------
+Control for representation of application's state in interface's views
+
+The application's state variables change with interaction.
+The application's interface needs to respond to these changes to represent the application's state appropriately.
+There needs to be control between the application's state and the interface's views.
+The purpose of the Model is to provide this control and to organize and separate this functionality from the rest of the application.
+The goal is separation and specialization of interests for modularity.
+
+Options to control representations in interface's views...
+1. Always create every view but only display (display: none) those views that are both relevant and active.
+The problem with this option is that render is expensive so excessive renders are inefficient.
+2. Create all views and let the views themselves determine whether they are both relevant and active.
+The problem with this option is that the control of representation scatters within all the various views.
+There is not good separation of interests.
+3. Create all relevant views and let the views themselves determine whether they are active.
+The problem with this option is the messy mix of functionality between the Model and the View.
+4. Control all high-level representation, such as which views are both relevant and active, in the Model.
+Views create and control themselves whenever they receive the command to do so.
+
+--------------------------------------------------
 28 December 2017
 
 ----------

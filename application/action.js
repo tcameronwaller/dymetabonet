@@ -117,6 +117,32 @@ class Action {
     });
   }
   /**
+  * Changes the selections of active panels within the control view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Category of panel.
+  * @param {Object} state Application's state.
+  */
+  static changeControlPanel({category, state}) {
+    // Determine the state variable.
+    var variable = "control" + General.capitalizeString(category);
+    // Change the panel's selection.
+    if (state[variable]) {
+      var selection = false;
+    } else {
+      var selection = true;
+    }
+    // Compile attributes' values.
+    var novelAttributesValues = {
+      [variable]: selection
+    };
+    var attributesValues = novelAttributesValues;
+    // Submit attributes' values to the application's state.
+    Action.submitAttributes({
+      attributesValues: attributesValues,
+      state: state
+    });
+  }
+  /**
   * Saves to a novel file on client's system a persistent representation of the
   * application's state.
   * @param {Object} state Application's state.
@@ -172,18 +198,15 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
-    if (false) {
-      var networkElements = Network.collectReactionsMetabolitesNetworkNodesLinks({
-        reactionsCandidates: state.reactionsCandidates,
-        metabolitesCandidates: state.metabolitesCandidates,
-        reactionsSimplifications: state.reactionsSimplifications,
-        metabolitesSimplifications: state.metabolitesSimplifications,
-        reactions: state.reactions,
-        metabolites: state.metabolites,
-        compartmentalization: state.compartmentalization
-      });
-      console.log(networkElements);
-    }
+    var container = document.getElementById("control");
+    console.log(container.children);
+    General.filterRemoveDocumentElements({
+      values: ["state", "set", "candidate"],
+      attribute: "id",
+      elements: container.children
+    });
+    console.log(container.children);
+
 
     // Terminate process timer.
     //console.timeEnd("timer");
@@ -214,32 +237,50 @@ class Action {
     });
   }
   /**
-  * Changes the searches to filter sets' summaries.
+  * Changes the searches to filter summaries.
   * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of summaries.
   * @param {string} parameters.category Name of category.
   * @param {string} parameters.string Search string by which to filter
   * records' names.
   * @param {Object} state Application's state.
   */
-  static changeSetsSearches({category, string, state} = {}) {
+  static changeSearches({type, category, string, state} = {}) {
+    // Determine searches.
+    if (type === "sets") {
+      var searchesName = "setsSearches";
+    } else if (type === "candidates") {
+      var searchesName = "candidatesSearches";
+    }
     // Change the search's specifications.
-    var setsSearches = Action.changeCategoriesSearchString({
+    var searches = Action.changeCategoriesSearchString({
       category: category,
       string: string,
-      searches: state.setsSearches
+      searches: state[searchesName]
     });
     // Prepare summaries.
-    var setsSummaries = Cardinality.prepareSetsSummaries({
-      setsCardinalities: state.setsCardinalities,
-      setsSearches: setsSearches,
-      setsSorts: state.setsSorts,
-      compartments: state.compartments,
-      processes: state.processes
-    });
+    if (type === "sets") {
+      var summariesName = "setsSummaries";
+      var summaries = Cardinality.prepareSetsSummaries({
+        setsCardinalities: state.setsCardinalities,
+        setsSearches: searches,
+        setsSorts: state.setsSorts,
+        compartments: state.compartments,
+        processes: state.processes
+      });
+    } else if (type === "candidates") {
+      var summariesName = "candidatesSummaries";
+      var summaries = Candidacy.prepareCandidatesSummaries({
+        reactionsCandidates: state.reactionsCandidates,
+        metabolitesCandidates: state.metabolitesCandidates,
+        candidatesSearches: searches,
+        candidatesSorts: state.candidatesSorts
+      });
+    }
     // Compile attributes' values.
     var novelAttributesValues = {
-      setsSearches: setsSearches,
-      setsSummaries: setsSummaries
+      [searchesName]: searches,
+      [summariesName]: summaries
     };
     var attributesValues = novelAttributesValues;
     // Submit attributes' values to the application's state.
@@ -310,9 +351,13 @@ class Action {
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization
     });
+    // Initialize selection of whether to draw a visual representation of
+    // network's topology.
+    var topology = false;
     // Compile attributes' values.
     var novelAttributesValues = {
-      setsFilters: setsFilters
+      setsFilters: setsFilters,
+      topology: topology
     };
     var attributesValues = Object.assign(
       {},
@@ -409,30 +454,48 @@ class Action {
     });
   }
   /**
-  * Changes the specifications to sort sets' summaries.
+  * Changes the specifications to sort summaries.
   * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of summaries.
   * @param {string} parameters.category Name of category.
   * @param {string} parameters.criterion Criterion for sort.
   * @param {Object} parameters.state Application's state.
   */
-  static changeSetsSorts({category, criterion, state} = {}) {
+  static changeSorts({type, category, criterion, state} = {}) {
+    // Determine sorts.
+    if (type === "sets") {
+      var sortsName = "setsSorts";
+    } else if (type === "candidates") {
+      var sortsName = "candidatesSorts";
+    }
     // Change the sorts' specifications.
-    var setsSorts = Action.changeCategoriesSortCriterionOrder({
+    var sorts = Action.changeCategoriesSortCriterionOrder({
       category: category,
       criterion: criterion,
-      sorts: state.setsSorts
+      sorts: state[sortsName]
     });
     // Sort summaries.
-    var setsSummaries = Cardinality.sortSetsSummaries({
-      setsSummaries: state.setsSummaries,
-      setsSorts: setsSorts,
-      compartments: state.compartments,
-      processes: state.processes
-    });
+    if (type === "sets") {
+      var summariesName = "setsSummaries";
+      var summaries = Cardinality.sortSetsSummaries({
+        setsSummaries: state.setsSummaries,
+        setsSorts: sorts,
+        compartments: state.compartments,
+        processes: state.processes
+      });
+    } else if (type === "candidates") {
+      var summariesName = "candidatesSummaries";
+      var summaries = Candidacy.sortCandidatesSummaries({
+        candidatesSummaries: state.candidatesSummaries,
+        candidatesSorts: sorts,
+        reactionsCandidates: state.reactionsCandidates,
+        metabolitesCandidates: state.metabolitesCandidates
+      });
+    }
     // Compile attributes' values.
     var novelAttributesValues = {
-      setsSorts: setsSorts,
-      setsSummaries: setsSummaries
+      [sortsName]: sorts,
+      [summariesName]: summaries
     };
     var attributesValues = novelAttributesValues;
     // Submit attributes' values to the application's state.
@@ -483,9 +546,13 @@ class Action {
       metabolites: state.metabolites,
       compartmentalization: compartmentalization
     });
+    // Initialize selection of whether to draw a visual representation of
+    // network's topology.
+    var topology = false;
     // Compile attributes' values.
     var novelAttributesValues = {
       compartmentalization: compartmentalization,
+      topology: topology
     };
     var attributesValues = Object.assign(
       candidatesSimplificationsSummaries,
@@ -532,78 +599,18 @@ class Action {
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization
     });
+    // Initialize selection of whether to draw a visual representation of
+    // network's topology.
+    var topology = false;
     // Compile attributes' values.
+    var novelAttributesValues = {
+      topology: topology
+    };
     var attributesValues = Object.assign(
+      novelAttributesValues,
       simplifications,
       networkElements
     );
-    // Submit attributes' values to the application's state.
-    Action.submitAttributes({
-      attributesValues: attributesValues,
-      state: state
-    });
-  }
-  /**
-  * Changes the specifications to sort candidates' summaries.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.category Name of category.
-  * @param {string} parameters.criterion Criterion for sort.
-  * @param {Object} parameters.state Application's state.
-  */
-  static changeCandidatesSorts({category, criterion, state} = {}) {
-    // Change the sorts' specifications.
-    var candidatesSorts = Action.changeCategoriesSortCriterionOrder({
-      category: category,
-      criterion: criterion,
-      sorts: state.candidatesSorts
-    });
-    // Sort summaries.
-    var candidatesSummaries = Candidacy.sortCandidatesSummaries({
-      candidatesSummaries: state.candidatesSummaries,
-      candidatesSorts: candidatesSorts,
-      reactionsCandidates: state.reactionsCandidates,
-      metabolitesCandidates: state.metabolitesCandidates
-    });
-    // Compile attributes' values.
-    var novelAttributesValues = {
-      candidatesSorts: candidatesSorts,
-      candidatesSummaries: candidatesSummaries
-    };
-    var attributesValues = novelAttributesValues;
-    // Submit attributes' values to the application's state.
-    Action.submitAttributes({
-      attributesValues: attributesValues,
-      state: state
-    });
-  }
-  /**
-  * Changes the searches to filter candidates' summaries.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.category Name of category.
-  * @param {string} parameters.string Search string by which to filter
-  * records' names.
-  * @param {Object} state Application's state.
-  */
-  static changeCandidatesSearches({category, string, state} = {}) {
-    // Change the search's specifications.
-    var candidatesSearches = Action.changeCategoriesSearchString({
-      category: category,
-      string: string,
-      searches: state.candidatesSearches
-    });
-    // Prepare summaries.
-    var candidatesSummaries = Candidacy.prepareCandidatesSummaries({
-      reactionsCandidates: state.reactionsCandidates,
-      metabolitesCandidates: state.metabolitesCandidates,
-      candidatesSearches: candidatesSearches,
-      candidatesSorts: state.candidatesSorts
-    });
-    // Compile attributes' values.
-    var novelAttributesValues = {
-      candidatesSearches: candidatesSearches,
-      candidatesSummaries: candidatesSummaries
-    };
-    var attributesValues = novelAttributesValues;
     // Submit attributes' values to the application's state.
     Action.submitAttributes({
       attributesValues: attributesValues,
@@ -711,8 +718,6 @@ class Action {
   static initializeApplicationTotalState({metabolicEntitiesSets, state} = {}) {
     // Initialize application's state from information about metabolic entities
     // and sets.
-    // Remove any information about source from the application's state.
-    var source = null;
     // Determine total entities' attribution to sets.
     var totalEntitiesSets = Attribution
     .determineTotalEntitiesSets(metabolicEntitiesSets.reactions);
@@ -726,14 +731,10 @@ class Action {
       totalMetabolitesSets: totalEntitiesSets.totalMetabolitesSets
     });
     // Compile attributes' values.
-    var novelAttributesValues = {
-      source: source,
-    };
     var attributesValues = Object.assign(
       metabolicEntitiesSets,
       totalEntitiesSets,
-      variantStateVariables,
-      novelAttributesValues
+      variantStateVariables
     );
     // Submit attributes' values to the application's state.
     Action.submitAttributes({
@@ -757,6 +758,8 @@ class Action {
   * @returns {Object} Values of multiple attributes.
   */
   static initializeApplicationVariantState({reactions, metabolites, compartments, processes, totalReactionsSets, totalMetabolitesSets} = {}) {
+    // Initialize controls.
+    var controls = Action.initializeControls();
     // Initialize filters against entities' sets.
     var setsFilters = Attribution.createInitialSetsFilters();
     // Determine current entities' attribution to sets.
@@ -828,6 +831,7 @@ class Action {
       candidatesSorts: candidatesSorts
     };
     var attributesValues = Object.assign(
+      controls,
       currentEntitiesSets,
       setsCardinalitiesSelections,
       setsCardinalitiesSummaries,
@@ -835,6 +839,31 @@ class Action {
       networkElements,
       novelAttributesValues
     );
+    // Return information.
+    return attributesValues;
+  }
+  /**
+  * Initializes information about application's controls.
+  * @returns {Object} Values of multiple attributes.
+  */
+  static initializeControls() {
+    // Remove any information about source.
+    var source = null;
+    // Initialize control panels.
+    var controlState = false;
+    var controlSet = false;
+    var controlCandidacy = false;
+    // Initialize selection of whether to draw a visual representation of
+    // network's topology.
+    var topology = false;
+    // Compile information.
+    var attributesValues = {
+      source: source,
+      controlState: controlState,
+      controlSet: controlSet,
+      controlCandidacy: controlCandidacy,
+      topology: topology
+    };
     // Return information.
     return attributesValues;
   }

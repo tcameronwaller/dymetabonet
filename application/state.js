@@ -42,11 +42,22 @@ class State {
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Specify state's attributes.
-    var source = [
-      // Source.
+    var control = [
       // Attribute "source" stores a reference to a file on client's system that
       // is a source of information.
-      "source"
+      "source",
+      // Attribute "controlState" stores information about whether the state
+      // view within the control view is active.
+      "controlState",
+      // Attribute "controlSet" stores information about whether the set view
+      // within the control view is active.
+      "controlSet",
+      // Attribute "controlCandidacy" stores information about whether the
+      // candidacy view within the control view is active.
+      "controlCandidacy",
+      // Attribute "topology" stores information about whether to draw a visual
+      // representation of the network's topology.
+      "topology"
     ];
     var entities = [
       // Metabolic entities and sets.
@@ -191,7 +202,7 @@ class State {
       // Information includes references to attribute "metabolitesCandidates".
       "metabolitesSimplifications"
     ];
-    var candidatesSummaries = [
+    var candidateEntities = [
       // Attribute "reactionsCandidates" stores information about reactions and
       // their metabolites that are relevant in the context of interest and are
       // candidates for representation in the network.
@@ -208,7 +219,9 @@ class State {
       // Information includes references to attributes "metabolites",
       // "reactions", and "compartments".
       // Information derives from attribute "reactionsCandidates".
-      "metabolitesCandidates",
+      "metabolitesCandidates"
+    ];
+    var candidatesSummaries = [
       // Attribute "candidatesSearches" stores information about searches'
       // strings by which to filter the summaries of candidates' degrees.
       "candidatesSearches",
@@ -255,7 +268,7 @@ class State {
       "pathOrigin", "pathDestination", "pathDirection", "pathCount",
     ];
     self.attributeNames = [].concat(
-      source,
+      control,
       entities,
       sets,
       totalEntitiesSets,
@@ -263,6 +276,7 @@ class State {
       currentEntitiesSets,
       setsCardinalitiesSummaries,
       context,
+      candidateEntities,
       candidatesSummaries,
       network
     );

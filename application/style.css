@@ -114,6 +114,15 @@ flex-direction: column;
   overflow: auto;
 }
 
+#control div.tab.normal {
+  background-color: rgba(0, 200, 200, 1);
+}
+
+#control div.tab.emphasis {
+  background-color: rgba(200, 0, 200, 1);
+}
+
+
 /******************************************************************************/
 /* State View */
 /******************************************************************************/

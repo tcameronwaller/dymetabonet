@@ -52,6 +52,17 @@ class Model {
   * Evaluates the application's state and responds accordingly.
   */
   act(self) {}
+
+
+  // TODO: Try to organize as much control of views as practical here within the Model.
+  // TODO: I think the "controlContents" and "explorationContents" approach does work... so consider using it more.
+  // TODO: Within ControlView, create tabs and containers for all sub-views... I think
+  // TODO: Those sub-views should then establish themselves within approriate containers from ControlView.
+  // TODO: Rendering is expensive, so don't use the display: none strategy
+  // TODO: Instead, only create the content for ControlView's sub-views that are active.
+  // TODO: I think I can create a new state variable to control which sub-view is active? Maybe?
+
+
   /**
   * Evaluates the application's state and represents it accordingly in a visual
   * interface.
@@ -61,35 +72,122 @@ class Model {
   * state.
   */
   represent(self) {
-    // Evaluate the application's state and represent it accordingly.
+    // Evaluate the application's state and represent it appropriately in the
+    // interface's views.
+    // Determine which of interface's views are both relevant and active.
+    // Initialize or restore instances of interface's relevant views.
+    // For efficiency, changes to application's state only restore variant
+    // aspects of views and preserve persistent aspects.
+    // Pass these instances a reference to the application's state.
+    // Pass these instances references to instances of other relevant views.
+
+    // TODO: Control the control panel active views here and within the ControlView.
+
+    // Tip view.
+    var tip = new TipView();
     if (!Model.determineMetabolicEntitiesSets(self.state)) {
-      // Create tip view.
-      new TipView();
-      // Initialize or restore instances of interface's views.
-      // Pass these instances a reference to the application's state.
-      // Initialize or restore views within control view.
-      var controlContents = ["state"];
-      new ControlView(controlContents, self.state);
-      new StateView(self.state);
+      // Control view.
+      var controlContents = {
+        tabs: ["state"],
+        panels: ["state"]
+      };
+      var control = new ControlView({
+        tip: tip,
+        contents: controlContents,
+        state: self.state
+      });
+      // State view.
+      new StateView({
+        tip: tip,
+        control: control,
+        state: self.state
+      });
+      // Exploration view.
+      //var explorationContents = ["summary"];
+      //new ExplorationView(explorationContents, self.state);
+      //new SummaryView(self.state);
+    } else if (Model.determineMetabolicEntitiesSets(self.state)) {
+      if (
+        Model.determineTotalEntitiesSets(self.state) &&
+        Model.determineFiltersEntitiesSets(self.state) &&
+        Model.determineSetsCardinalities(self.state) &&
+        Model.determineContextualInterest(self.state) &&
+        Model.determineCandidateEntities(self.state) &&
+        Model.determineCandidatesSummaries(self.state) &&
+        Model.determineNetworkElements(self.state)
+      ) {
+        // Control view.
+        if (Model.determineControlState(self.state)) {
+          // Control view.
+          var controlContents = {
+            tabs: ["state", "set", "candidacy"],
+            panels: ["state"]
+          };
+          var control = new ControlView({
+            tip: tip,
+            contents: controlContents,
+            state: self.state
+          });
+          // State view.
+          new StateView({
+            tip: tip,
+            control: control,
+            state: self.state
+          });
+        } else if (Model.determineControlSet(self.state)) {
+          // Control view.
+          var controlContents = {
+            tabs: ["state", "set", "candidacy"],
+            panels: ["set"]
+          };
+          var control = new ControlView({
+            tip: tip,
+            contents: controlContents,
+            state: self.state
+          });
+          // Set view.
+          new SetView({
+            tip: tip,
+            control: control,
+            state: self.state
+          });
+        } else if (Model.determineControlCandidacy(self.state)) {
+          // Control view.
+          var controlContents = {
+            tabs: ["state", "set", "candidacy"],
+            panels: ["candidacy"]
+          };
+          var control = new ControlView({
+            tip: tip,
+            contents: controlContents,
+            state: self.state
+          });
+          // Candidacy view.
+          new CandidacyView({
+            tip: tip,
+            control: control,
+            state: self.state
+          });
+        } else {
+          // Control view.
+          var controlContents = {
+            tabs: ["state", "set", "candidacy"],
+            panels: []
+          };
+          var control = new ControlView({
+            tip: tip,
+            contents: controlContents,
+            state: self.state
+          });
+        }
+        // Exploration view.
+
+      }
+
+
       // Initialize or restore views within exploration view.
-      var explorationContents = ["summary"];
-      new ExplorationView(explorationContents, self.state);
-      new SummaryView(self.state);
-    }
-    if (Model.determineMetabolicEntitiesSets(self.state)) {
-      // Create tip view.
-      var tip = new TipView();
-      // Initialize or restore instances of interface's views.
-      // Pass these instances a reference to the application's state.
-      // Initialize or restore views within control view.
-      var controlContents = ["state", "set", "context"];
-      new ControlView(controlContents, self.state);
-      new StateView(self.state);
-      new SetView(self.state);
-      new CandidacyView(tip, self.state);
-      // Initialize or restore views within exploration view.
-      var explorationContents = ["topology"];
-      new ExplorationView(explorationContents, self.state);
+      //var explorationContents = ["topology"];
+      //new ExplorationView(explorationContents, self.state);
       //new TopologyView(self.state);
     }
 
@@ -98,77 +196,12 @@ class Model {
     // TODO: Call Model's evaluation methods from within the views to determine how to manage them properly...
     // TODO: Basically try to organize all state evaluation within the Model class...
 
-
-
-    // TODO: Scrap below here (until the evaluation methods)
-    if (false) {
-      // If application's state has appropriate information then create
-      // interface for persistence.
-      if (this.determineMetabolicEntitiesSets()) {
-        // Initialize instance of interface.
-        // Pass this instance a reference to the model of the application's
-        // state.
-        new PersistenceView(self.state);
-      }
-      // If application's state has appropriate information then create
-      // interface for set.
-      if (
-        this.determineMetabolicEntitiesSets() &&
-        this.determineTotalEntitiesSets() &&
-        this.determineCurrentEntitiesSets() &&
-        this.determineSetsCardinalities()
-      ) {
-        // Initialize instance of interface.
-        // Pass this instance a reference to the model of the application's
-        // state.
-        new SetView(self.state);
-      }
-      // If application's state has appropriate information then create
-      // interface for control of network's assembly.
-      if (
-        this.determineCandidateContext() &&
-        this.determineCandidateEntities()
-      ) {
-        // Initialize instance of interface.
-        // Pass this instance a reference to the model of the application's
-        // state.
-        new AssemblyView(self.state);
-      }
-      // If application's state has appropriate information then create
-      // interface for place-holder in bottom of interface.
-      if (
-        this.determineCandidateContext() &&
-        this.determineCandidateEntities()
-      ) {
-        // Initialize instance of interface.
-        // Pass this instance a reference to the model of the application's
-        // state.
-        new BottomView(self.state);
-      }
-      // If application's state has appropriate information then create
-      // interface for visual representation of network's topology.
-      // TODO: Eventually, I think I'll need to split "determineNetworkElements"
-      // TODO: to consider network's elements and subnetwork's elements... ie, I'll
-      // TODO: need network's elements to allow topological traversal, but I won't
-      // TODO: necessarily draw the network until I have the current network's elements...
-      // TODO: those currently of interest for drawing...
-      if (
-        this.determineCandidateContext() &&
-        this.determineCandidateEntities()
-      ) {
-        // Initialize instance of interface.
-        // Pass this instance a reference to the model of the application's
-        // state.
-        new TopologyView(self.state);
-      }
-    }
   }
 
   // Methods to evaluate application's state.
-  // These methods for evaluation have external utility.
 
   /**
-  * Determines whether the application's state has information about a source.
+  * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
@@ -176,26 +209,39 @@ class Model {
     return !(state.source === null);
   }
   /**
-  * Determines whether the application's state has raw information about
-  * metabolic entities and sets from a model.
+  * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineRawModel(state) {
-    return !(state.rawModel === null);
+  static determineControlState(state) {
+    return state.controlState;
   }
   /**
-  * Determines whether the application's state has clean information about
-  * metabolic entities and sets from a model.
+  * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineCleanModel(state) {
-    return !(state.cleanModel === null);
+  static determineControlSet(state) {
+    return state.controlSet;
   }
   /**
-  * Determines whether the application's state has information about metabolic
-  * entities and sets.
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineControlCandidacy(state) {
+    return state.controlCandidacy;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineTopology(state) {
+    return state.topology;
+  }
+  /**
+  * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
@@ -209,8 +255,7 @@ class Model {
     );
   }
   /**
-  * Determines whether the application's state has information about attribution
-  * of total entities to sets.
+  * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
@@ -221,8 +266,7 @@ class Model {
     );
   }
   /**
-  * Determines whether the application's state has information about entities
-  * and sets that pass filters by sets.
+  * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
@@ -236,8 +280,7 @@ class Model {
     );
   }
   /**
-  * Determines whether the application's state has information about sets of
-  * entities by their values of attributes.
+  * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
@@ -246,12 +289,13 @@ class Model {
       !(state.setsEntities === null) &&
       !(state.setsFilter === null) &&
       !(state.setsCardinalities === null) &&
+      !(state.setsSearches === null) &&
+      !(state.setsSorts === null) &&
       !(state.setsSummaries === null)
     );
   }
   /**
-  * Determines whether the application's state has information about the
-  * contextual interest for candidate entities.
+  * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
@@ -263,8 +307,7 @@ class Model {
     );
   }
   /**
-  * Determines whether the application's state has information about candidate
-  * entities.
+  * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
@@ -274,6 +317,32 @@ class Model {
       !(state.metabolitesCandidates === null)
     );
   }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineCandidatesSummaries(state) {
+    return (
+      !(state.candidatesSearches === null) &&
+      !(state.candidatesSorts === null) &&
+      !(state.candidatesSummaries === null)
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineNetworkElements(state) {
+    return (
+      !(state.networkNodesReactions === null) &&
+      !(state.networkNodesMetabolites === null) &&
+      !(state.networkLinks === null)
+    );
+  }
+
+
 
   // TODO: Scrap below here... update as needed...
 

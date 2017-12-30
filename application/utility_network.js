@@ -244,6 +244,7 @@ class Network {
       identifier: candidateReaction.identifier,
       candidate: candidateReaction.identifier,
       reaction: reaction.identifier,
+      type: "reaction"
     };
   }
   /**
@@ -348,7 +349,8 @@ class Network {
       identifier: identifier,
       candidate: candidateMetabolite.identifier,
       metabolite: metabolite.identifier,
-      replication: replication
+      replication: replication,
+      type: "metabolite"
     };
   }
   /**

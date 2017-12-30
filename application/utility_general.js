@@ -1047,6 +1047,16 @@ class General {
     }
   }
   /**
+  * Converts first character of string to capital character.
+  * @param {string} string String to capitalize.
+  * @returns {string} String with capitalization.
+  */
+  static capitalizeString(string) {
+    var firstCharacter = string.slice(0, 1);
+    var lastCharacters = string.slice(1);
+    return (firstCharacter.toUpperCase() + lastCharacters);
+  }
+  /**
   * Collects a single value for an identical key from multiple objects.
   * @param {string} key Common key for all objects.
   * @param {Array<Object>} objects Array of objects.

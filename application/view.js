@@ -36,27 +36,47 @@ United States of America
 */
 class View {
   /**
+  * Inserts or appends an element to a new position in the document.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.element Reference to element for insertion.
+  * @param {Object} parameters.target Reference to element for relative
+  * position of insertion.
+  * @param {string} parameters.position Position of insertion relative to
+  * target, either "beforebegin", "afterbegin", "beforeend", or "afterend".
+  * @returns {Object} Reference to element.
+  */
+  static insertElement({element, target, position} = {}) {
+    // Method target.appendChild(element) behaves identically to
+    // target.insertAdjacentElement("beforeend", element).
+    return target.insertAdjacentElement(position, element);
+  }
+  /**
   * Creates or sets reference to a view's container.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of element.
-  * @param {string} parameters.parent Identifier of parent element.
+  * @param {Object} parameters.target Reference to element for relative
+  * position of insertion.
+  * @param {string} parameters.position Position of insertion relative to
+  * target, either "beforebegin", "afterbegin", "beforeend", or "afterend".
   * @param {Object} parameters.documentReference Reference to document object
   * model.
   * @returns {Object} Reference to element.
   */
-  static createReferenceContainer({identifier, parent, documentReference} = {}) {
-    // Select parent element of view's container element in document.
-    var parent = documentReference.getElementById(parent);
-    // Determine whether view's container exists in the document.
+  static createReferenceContainer({identifier, target, position, documentReference} = {}) {
+    // Determine whether container's element exists in the document.
     if (!documentReference.getElementById(identifier)) {
-      // View's container does not exist in the document.
-      // Create view's container.
+      // Element does not exist in the document.
+      // Create element.
       var container = documentReference.createElement("div");
-      parent.appendChild(container);
+      View.insertElement({
+        element: container,
+        target: target,
+        position: position
+      });
       container.setAttribute("id", identifier);
     } else {
-      // View's container exists in the document.
-      // Set reference to view's container.
+      // Element exists in the document.
+      // Set reference to element.
       var container = documentReference.getElementById(identifier);
     }
     return container;
@@ -278,6 +298,27 @@ class View {
     return search;
   }
   /**
+  * Creates a table, head, and head row.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.className Class for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createTableHeadRow({className, parent, documentReference} = {}) {
+    // Create elements.
+    var table = documentReference.createElement("table");
+    parent.appendChild(table);
+    table.classList.add(className);
+    var head = documentReference.createElement("thead");
+    table.appendChild(head);
+    var row = documentReference.createElement("tr");
+    head.appendChild(row);
+    // Return reference to element.
+    return row;
+  }
+  /**
   * Creates a table head cell with label.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.text Text for element.
@@ -301,6 +342,28 @@ class View {
     });
     // Return reference to element.
     return cell;
+  }
+  /**
+  * Creates a scroll container, table, and body.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.className Class for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createScrollTableBody({className, parent, documentReference} = {}) {
+    // Create elements.
+    var container = documentReference.createElement("div");
+    parent.appendChild(container);
+    container.classList.add("scroll");
+    var table = documentReference.createElement("table");
+    container.appendChild(table);
+    table.classList.add(className);
+    var body = documentReference.createElement("tbody");
+    table.appendChild(body);
+    // Return reference to element.
+    return body;
   }
   /**
   * Represents specifications for sorts.
@@ -353,6 +416,204 @@ class View {
       General.removeDocumentChildren(parent);
     }
   }
+  /**
+  * Creates and activates a scroll container, table, and body.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of summaries.
+  * @param {string} parameters.category Name of category.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Reference to element.
+  */
+  static createActivateSearch({type, category, parent, documentReference, state} = {}) {
+    // Create elements.
+    var search = View.createSearchLabel({
+      text: (category + ": "),
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Activate behavior.
+    search.addEventListener("input", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine the search's value.
+      var value = event.currentTarget.value;
+      // Call action.
+      Action.changeSearches({
+        type: type,
+        category: category,
+        string: value,
+        state: state
+      });
+    });
+    // Return reference to element.
+    return search;
+  }
+  /**
+  * Creates and activates a table column's head.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.attribute Name of attribute.
+  * @param {string} parameters.text Text for column head's label.
+  * @param {string} parameters.type Type of summaries.
+  * @param {string} parameters.category Name of category.
+  * @param {boolean} parameters.sort Whether column's attribute is a sort
+  * criterion.
+  * @param {boolean} parameters.scale Whether column's attribute needs a scale.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} References to elements.
+  */
+  static createActivateTableColumnHead({attribute, text, type, category, sort, scale, parent, documentReference, state} = {}) {
+    // Create cell.
+    var cell = View.createTableHeadCellLabel({
+      text: text,
+      className: attribute,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Determine whether column's attribute is a sort criterion.
+    if (sort) {
+      // Create elements.
+      var span = cell.getElementsByTagName("span").item(0);
+      var sortGraph = View.createGraph({
+        parent: span,
+        documentReference: documentReference
+      });
+      sortGraph.classList.add("sort");
+      // Activate behavior.
+      cell.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.changeSorts({
+          type: type,
+          category: category,
+          criterion: attribute,
+          state: state
+        });
+      });
+      // Compile references to elements.
+      var sortReferences = {
+        sortGraph: sortGraph
+      };
+    } else {
+      // Compile references to elements.
+      var sortReferences = {};
+    }
+    // Determine whether column's attribute needs a scale.
+    if (scale) {
+      // Create break.
+      cell.appendChild(documentReference.createElement("br"));
+      // Create graphical container for scale.
+      var scaleGraph = View.createGraph({
+        parent: cell,
+        documentReference: documentReference
+      });
+      scaleGraph.classList.add("scale");
+      // Determine graphs' dimensions.
+      var graphWidth = General.determineElementDimension(scaleGraph, "width");
+      var graphHeight = General.determineElementDimension(scaleGraph, "height");
+      // Compile references to elements.
+      var scaleReferences = {
+        scaleGraph: scaleGraph,
+        graphWidth: graphWidth,
+        graphHeight: graphHeight
+      };
+    } else {
+      // Compile references to elements.
+      var scaleReferences = {};
+    }
+    // Compile references to elements.
+    var references = Object.assign(sortReferences, scaleReferences);
+    // Return references to elements.
+    return references;
+  }
+  /**
+  * Represents a scale.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.scaleGraph Reference to scale's graph.
+  * @param {number} parameters.graphHeight Height of scale's graph.
+  * @param {Object} parameters.determineScaleValue Function to determine scale
+  * value.
+  */
+  static representScale({scaleGraph, graphHeight, determineScaleValue} = {}) {
+    // Remove contents of scale's container.
+    General.removeDocumentChildren(scaleGraph);
+    // Create scale's representation.
+    var scaleSelection = d3.select(scaleGraph);
+    var createAxis = d3.axisTop(determineScaleValue).ticks(2);
+    var axisGroup = scaleSelection.append("g").call(createAxis);
+    // Assign attributes.
+    axisGroup.attr("transform", "translate(0," + (graphHeight - 1) + ")");
+  }
+  /**
+  * Represents a summaries' counts.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.cells Selection of cells.
+  * @param {number} parameters.graphHeight Height of scale's graph.
+  * @param {Object} parameters.determineScaleValue Function to determine scale
+  * value.
+  * @returns {Object} Selection of elements.
+  */
+  static representCounts({cells, graphHeight, determineScaleValue} = {}) {
+    // Assign attributes to cells.
+    // Assign attributes to elements.
+    // Select cells for counts.
+    var counts = cells.filter(function (element, index, nodes) {
+      return element.type === "count";
+    });
+    counts.classed("count", true);
+    // Create graphs to represent summaries' counts.
+    // Graph structure.
+    // - graphs (scalable vector graphical container)
+    // -- barGroups (group)
+    // --- barMarks (rectangle)
+    // Create graphs.
+    // Define function to access data.
+    function access(element, index, nodes) {
+      return [element];
+    };
+    // Create children elements by association to data.
+    var graphs = View.createElementsData({
+      parent: counts,
+      type: "svg",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    graphs.classed("graph", true);
+    // Create groups.
+    // Create children elements by association to data.
+    var barGroups = View.createElementsData({
+      parent: graphs,
+      type: "g",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    barGroups
+    .classed("group", true)
+    .attr("transform", function (element, index, nodes) {
+      var x = determineScaleValue(0);
+      var y = 0;
+      return "translate(" + x + "," + y + ")";
+    });
+    // Create marks.
+    // Create children elements by association to data.
+    var barMarks = View.createElementsData({
+      parent: barGroups,
+      type: "rect",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    barMarks.classed("mark", true)
+    .attr("width", function (element, index, nodes) {
+      return determineScaleValue(element.count);
+    })
+    .attr("height", graphHeight);
+    // Return references to elements.
+    return barMarks;
+  }
 }
 
 // TODO: Enable the tip view to receive any type of content, including other containers like div or table
@@ -390,10 +651,11 @@ class TipView {
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-    // Create or set reference to view's container.
+    // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "tip",
-      parent: "view",
+      target: self.document.getElementById("view"),
+      position: "beforeend",
       documentReference: self.document
     });
   }
@@ -431,10 +693,13 @@ class TipView {
 class ControlView {
   /**
   * Initializes an instance of a class.
-  * @param {Array<string>} contents Identifiers of contents within view.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Array<string>>} parameters.contents Identifiers of contents
+  * within view.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor (contents, state) {
+  constructor ({contents, tip, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -442,6 +707,9 @@ class ControlView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
     // Set reference to contents.
     self.contents = contents;
     // Control view's composition and behavior.
@@ -456,10 +724,11 @@ class ControlView {
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-    // Create or set reference to view's container.
+    // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "control",
-      parent: "view",
+      target: self.view,
+      position: "beforeend",
       documentReference: self.document
     });
   }
@@ -470,11 +739,110 @@ class ControlView {
   */
   restoreView(self) {
     // Remove any extraneous content from view.
+    self.filterContents(self);
+    // Create and activate tabs.
+    self.createActivateTabs(self);
+  }
+  /**
+  * Filters view's contents to remove all but relevant content.
+  * @param {Object} self Instance of a class.
+  */
+  filterContents(self) {
+    // Tabs.
+    var tabsIdentifiers = ControlView.createTabsIdentifiers(self.contents.tabs);
     General.filterRemoveDocumentElements({
-      values: self.contents,
+      values: tabsIdentifiers,
       attribute: "id",
       elements: self.container.children
     });
+    // Panels.
+    General.filterRemoveDocumentElements({
+      values: self.contents.panels,
+      attribute: "id",
+      elements: self.container.children
+    });
+  }
+  /**
+  * Creates and activates tabs.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateTabs(self) {
+    self.contents.tabs.forEach(function (category) {
+      self.createActivateTab({
+        category: category,
+        self: self
+      });
+    });
+  }
+  /**
+  * Creates and activates a tab.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Category of tab.
+  * @param {Object} parameters.self Instance of a class.
+  */
+  createActivateTab({category, self} = {}) {
+    // Create or set reference to container.
+    var identifier = ControlView.createTabIdentifier(category);
+    var reference = (category + "Tab");
+    self[reference] = View.createReferenceContainer({
+      identifier: identifier,
+      target: self.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
+    // Determine whether the container is empty.
+    if (self[reference].children.length === 0) {
+      // Container is empty.
+      // Create element.
+      var label = View.createSpanText({
+        text: category,
+        parent: self[reference],
+        documentReference: self.document
+      });
+      // Assign attributes.
+      self[reference].setAttribute("name", category);
+      self[reference].classList.add("tab");
+      self[reference].classList.add("normal");
+      // Activate behavior.
+      self[reference].addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.changeControlPanel({
+          category: event.currentTarget.getAttribute("name"),
+          state: self.state
+        });
+      });
+      self[reference].addEventListener("mouseenter", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        event.currentTarget.classList.remove("normal");
+        event.currentTarget.classList.add("emphasis");
+      });
+      self[reference].addEventListener("mouseleave", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        event.currentTarget.classList.remove("emphasis");
+        event.currentTarget.classList.add("normal");
+      });
+    }
+  }
+  /**
+  * Creates identifiers for tabs.
+  * @param {Array<string>} categories Categories for tabs.
+  * @returns {Array<string>} Identifiers for tabs.
+  */
+  static createTabsIdentifiers(categories) {
+    return categories.map(function (category) {
+      return ControlView.createTabIdentifier(category);
+    });
+  }
+  /**
+  * Creates identifier for a tab.
+  * @param {string} category Category for a tab.
+  * @returns {string} Identifier for a tab.
+  */
+  static createTabIdentifier(category) {
+    return (category + "-tab");
   }
 }
 /**
@@ -483,9 +851,12 @@ class ControlView {
 class StateView {
   /**
   * Initializes an instance of a class.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.control Instance of ControlView's class.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor (state) {
+  constructor ({tip, control, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -493,6 +864,10 @@ class StateView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    self.control = control;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -505,15 +880,16 @@ class StateView {
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-    // Create or set reference to view's container.
+    // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "state",
-      parent: "control",
+      target: self.control.stateTab,
+      position: "afterend",
       documentReference: self.document
     });
-    // Determine whether the view's container is empty.
+    // Determine whether the container is empty.
     if (self.container.children.length === 0) {
-      // View's container is empty.
+      // Container is empty.
       // Create view's invariant elements.
       // Activate invariant behavior of view's elements.
       // Create text.
@@ -575,7 +951,7 @@ class StateView {
         Action.executeTemporaryProcedure(self.state);
       });
     } else {
-      // View's container is not empty.
+      // Container is not empty.
       // Set references to view's variant elements.
       self.sourceLabel = self.container.getElementsByTagName("span").item(0);
     }
@@ -608,9 +984,12 @@ class StateView {
 class SetView {
   /**
   * Initializes an instance of a class.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.control Instance of ControlView's class.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor (state) {
+  constructor ({tip, control, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -618,6 +997,10 @@ class SetView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    self.control = control;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -630,15 +1013,16 @@ class SetView {
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-    // Create or set reference to view's container.
+    // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "set",
-      parent: "control",
+      target: self.control.setTab,
+      position: "afterend",
       documentReference: self.document
     });
-    // Determine whether the view's container is empty.
+    // Determine whether the container is empty.
     if (self.container.children.length === 0) {
-      // View's container is empty.
+      // Container is empty.
       // Create view's invariant elements.
       // Activate invariant behavior of view's elements.
       // Create title.
@@ -653,17 +1037,25 @@ class SetView {
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create menu for sets by processes.
-      new SetMenuView("processes", self.state);
+      new SetMenuView({
+        category: "processes",
+        tip: self.tip,
+        set: self,
+        state: self.state
+      });
       // Create menu for sets by compartments.
-      new SetMenuView("compartments", self.state);
+      new SetMenuView({
+        category: "compartments",
+        tip: self.tip,
+        set: self,
+        state: self.state
+      });
     } else {
-      // View's container is not empty.
+      // Container is not empty.
       // Set references to view's variant elements.
       // Control for type of entities.
-      self.metabolites = self
-      .document.getElementById("set-metabolites");
-      self.reactions = self
-      .document.getElementById("set-reactions");
+      self.metabolites = self.document.getElementById("set-metabolites");
+      self.reactions = self.document.getElementById("set-reactions");
       // Control for filter.
       self.filter = self.document.getElementById("set-filter");
     }
@@ -758,9 +1150,19 @@ class SetView {
     .determineEntityMatch("reactions", self.state);
     self.filter.checked = SetView.determineFilter(self.state);
     // Create menu for sets by processes.
-    new SetMenuView("processes", self.state);
+    new SetMenuView({
+      category: "processes",
+      tip: self.tip,
+      set: self,
+      state: self.state
+    });
     // Create menu for sets by compartments.
-    new SetMenuView("compartments", self.state);
+    new SetMenuView({
+      category: "compartments",
+      tip: self.tip,
+      set: self,
+      state: self.state
+    });
   }
   /**
   * Determines whether a type of entities matches the value in the application's
@@ -793,10 +1195,13 @@ class SetView {
 class SetMenuView {
   /**
   * Initializes an instance of a class.
-  * @param {string} category Name of category.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Name of category.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.set Instance of SetView's class.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor (category, state) {
+  constructor ({category, tip, set, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -804,7 +1209,11 @@ class SetMenuView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set reference to type of sets.
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    self.set = set;
+    // Set reference to category.
     self.category = category;
     // Control view's composition and behavior.
     // Initialize view.
@@ -818,33 +1227,40 @@ class SetMenuView {
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-    // Create or set reference to view's container.
+    // Create or set reference to container.
     self.container = View.createReferenceContainer({
-      identifier: "set-" + self.category + "-menu",
-      parent: "set",
+      identifier: ("set-" + self.category + "-menu"),
+      target: self.set.container,
+      position: "beforeend",
       documentReference: self.document
     });
-    // Determine whether the view's container is empty.
+    // Determine whether the container is empty.
     if (self.container.children.length === 0) {
-      // View's container is empty.
+      // Container is empty.
       // Create view's invariant elements.
       // Activate invariant behavior of view's elements.
       self.container.classList.add("menu");
       // Create search.
-      self.createActivateSearch(self);
+      self.search = View.createActivateSearch({
+        type: "sets",
+        category: self.category,
+        parent: self.container,
+        documentReference: self.document,
+        state: self.state
+      });
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create table.
       self.createActivateTable(self);
     } else {
-      // View's container is not empty.
+      // Container is not empty.
       // Set references to view's variant elements.
       // Search.
       self.search = self.container.querySelector("input.search");
       // Sorts.
-      self.nameSort = self
+      self.sortGraphName = self
       .container.querySelector("table thead tr th.name svg.sort");
-      self.countSort = self
+      self.sortGraphCount = self
       .container.querySelector("table thead tr th.count svg.sort");
       // Count scale.
       self.scaleGraph = self
@@ -858,30 +1274,6 @@ class SetMenuView {
     }
   }
   /**
-  * Creates and activates a search.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateSearch(self) {
-    // Create tool for search.
-    self.search = View.createSearchLabel({
-      text: self.category + ": ",
-      parent: self.container,
-      documentReference: self.document
-    });
-    // Activate behavior.
-    self.search.addEventListener("input", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Determine the search's value.
-      var value = event.currentTarget.value;
-      // Call action.
-      Action.changeSetsSearches({
-        category: self.category,
-        string: value,
-        state: self.state
-      });
-    });
-  }
-  /**
   * Creates and activates a table.
   * @param {Object} self Instance of a class.
   */
@@ -889,84 +1281,46 @@ class SetMenuView {
     // Create separate tables for head and body to support stationary head and
     // scrollable body.
     // Create head table.
-    var headTable = self.document.createElement("table");
-    self.container.appendChild(headTable);
-    // Create head table's header.
-    var tableHead = self.document.createElement("thead");
-    headTable.appendChild(tableHead);
-    var tableHeadRow = self.document.createElement("tr");
-    tableHead.appendChild(tableHeadRow);
+    var tableHeadRow = View.createTableHeadRow({
+      className: self.category,
+      parent: self.container,
+      documentReference: self.document
+    });
     // Create titles, sorts, and scale in table's header.
-    // Create header for names.
-    var tableHeadRowCellName = self.document.createElement("th");
-    tableHeadRow.appendChild(tableHeadRowCellName);
-    tableHeadRowCellName.classList.add("name");
-    self.createActivateTableColumnHead({
-      title: "Name",
+    // Create head for names.
+    var referencesOne = View.createActivateTableColumnHead({
       attribute: "name",
-      parent: tableHeadRowCellName,
-      self: self
+      text: "Name",
+      type: "sets",
+      category: self.category,
+      sort: true,
+      scale: false,
+      parent: tableHeadRow,
+      documentReference: self.document,
+      state: self.state
     });
-    // Create header for counts.
-    self.tableHeadRowCellCount = self.document.createElement("th");
-    tableHeadRow.appendChild(self.tableHeadRowCellCount);
-    self.tableHeadRowCellCount.classList.add("count");
-    self.createActivateTableColumnHead({
-      title: "Count",
+    self.sortGraphName = referencesOne.sortGraph;
+    // Create head for counts.
+    var referencesTwo = View.createActivateTableColumnHead({
       attribute: "count",
-      parent: self.tableHeadRowCellCount,
-      self: self
+      text: "Count",
+      type: "sets",
+      category: self.category,
+      sort: true,
+      scale: true,
+      parent: tableHeadRow,
+      documentReference: self.document,
+      state: self.state
     });
-    // Create break.
-    self.tableHeadRowCellCount.appendChild(self.document.createElement("br"));
-    // Create graphical container for scale.
-    self.scaleGraph = self
-    .document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    self.tableHeadRowCellCount.appendChild(self.scaleGraph);
-    self.scaleGraph.classList.add("scale");
-    // Determine graphs' dimensions.
-    self.graphWidth = General
-    .determineElementDimension(self.scaleGraph, "width");
-    self.graphHeight = General
-    .determineElementDimension(self.scaleGraph, "height");
+    self.sortGraphCount = referencesTwo.sortGraph;
+    self.scaleGraph = referencesTwo.scaleGraph;
+    self.graphWidth = referencesTwo.graphWidth;
+    self.graphHeight = referencesTwo.graphHeight;
     // Create body table.
-    var bodyTableContainer = self.document.createElement("div");
-    self.container.appendChild(bodyTableContainer);
-    bodyTableContainer.classList.add("scroll");
-    var bodyTable = self.document.createElement("table");
-    bodyTableContainer.appendChild(bodyTable);
-    // Create body table's body.
-    self.body = self.document.createElement("tbody");
-    bodyTable.appendChild(self.body);
-  }
-  /**
-  * Creates and activates a title and sort.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.title Title for column head.
-  * @param {string} parameters.attribute Name of sets' attribute.
-  * @param {Object} parameters.parent Reference to parent element.
-  * @param {Object} parameters.self Instance of a class.
-  */
-  createActivateTableColumnHead({title, attribute, parent, self} = {}) {
-    // Create elements.
-    var container = self.document.createElement("span");
-    parent.appendChild(container);
-    container.textContent = title;
-    container.classList.add("title");
-    var reference = attribute + "Sort";
-    self[reference] = self
-    .document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    container.appendChild(self[reference]);
-    self[reference].classList.add("sort");
-    // Activate behavior.
-    container.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      Action.changeSetsSorts({
-        category: self.category,
-        criterion: attribute,
-        state: self.state
-      });
+    self.body = View.createScrollTableBody({
+      className: self.category,
+      parent: self.container,
+      documentReference: self.document
     });
   }
   /**
@@ -976,10 +1330,14 @@ class SetMenuView {
   */
   restoreView(self) {
     self.representSearch(self);
-    self.representSetsSorts(self);
+    self.representSorts(self);
     self.createScale(self);
-    self.representScale(self);
-    self.createActivateSetsSummaries(self);
+    View.representScale({
+      scaleGraph: self.scaleGraph,
+      graphHeight: self.graphHeight,
+      determineScaleValue: self.determineScaleValue
+    });
+    self.createActivateSummaries(self);
   }
   /**
   * Represents search's value.
@@ -990,76 +1348,24 @@ class SetMenuView {
     self.search.value = self.state.setsSearches[self.category];
   }
   /**
-  * Represents specifications to sort sets' summaries.
+  * Represents specifications to sort summaries.
   * @param {Object} self Instance of a class.
   */
-  representSetsSorts(self) {
-    self.representSetsSort({
-      graph: self.nameSort,
-      attribute: self.category,
-      criterion: "name",
-      self: self
+  representSorts(self) {
+    View.representSort({
+      category: self.category,
+      attribute: "name",
+      sorts: self.state.setsSorts,
+      parent: self.sortGraphName,
+      documentReference: self.document
     });
-    self.representSetsSort({
-      graph: self.countSort,
-      attribute: self.category,
-      criterion: "count",
-      self: self
+    View.representSort({
+      category: self.category,
+      attribute: "count",
+      sorts: self.state.setsSorts,
+      parent: self.sortGraphCount,
+      documentReference: self.document
     });
-  }
-  /**
-  * Represents specifications to sort sets' summaries.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.graph Reference to graphical container.
-  * @param {string} parameters.attribute Name of sets' attribute.
-  * @param {string} parameters.criterion Criterion for sort.
-  * @param {Object} parameters.self Instance of a class.
-  */
-  representSetsSort({graph, attribute, criterion, self} = {}) {
-    // Determine whether the criterion defines the sort for the attribute's
-    // sets.
-    if (self.state.setsSorts[attribute].criterion === criterion) {
-      // The criterion defines the sort.
-      // Determine the sort order.
-      if (self.state.setsSorts[attribute].order === "ascend") {
-        // Sort is in ascending order.
-        var orientation = "up";
-      } else if (self.state.setsSorts[attribute].order === "descend") {
-        // Sort is in descending order.
-        var orientation = "down";
-      }
-      // Determine whether the graphical container contains a polygon.
-      if (graph.getElementsByTagName("polygon").length === 0) {
-        // Graphical container does not contain a polygon.
-        // Create polygon.
-        var mark = self
-        .document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-        graph.appendChild(mark);
-      } else {
-        // Graphical container contains a polygon.
-        // Set reference to polygon.
-        var mark = graph.getElementsByTagName("polygon").item(0);
-      }
-      var base = 10;
-      var altitude = 10;
-      // Determine
-      var points = General.createIsoscelesTrianglePoints({
-        base: base,
-        altitude: altitude,
-        orientation: orientation
-      });
-      mark.setAttribute("points", points);
-      // Determine the dimensions of the graphical container.
-      var width = General.determineElementDimension(graph, "width");
-      var height = General.determineElementDimension(graph, "height");
-      var x = (width / 2) - (base / 2);
-      var y = (height / 2);
-      mark.setAttribute("transform", "translate(" + x + "," + y + ")");
-    } else {
-      // The criterion does not define the sort.
-      // Remove any marks for the criterion.
-      General.removeDocumentChildren(graph);
-    }
   }
   /**
   * Creates scale.
@@ -1076,27 +1382,13 @@ class SetMenuView {
     .nice(2);
   }
   /**
-  * Represents scale.
+  * Creates and activates summaries.
   * @param {Object} self Instance of a class.
   */
-  representScale(self) {
-    // Remove contents of scale's container.
-    General.removeDocumentChildren(self.scaleGraph);
-    // Create scale's representation.
-    var scaleSelection = d3.select(self.scaleGraph);
-    var createAxis = d3.axisTop(self.determineScaleValue).ticks(2);
-    var axisGroup = scaleSelection.append("g").call(createAxis);
-    // Assign attributes.
-    axisGroup.attr("transform", "translate(0," + (self.graphHeight - 1) + ")");
-  }
-  /**
-  * Creates and activates sets' summaries.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateSetsSummaries(self) {
-    // Create and activate rows for sets's summaries.
+  createActivateSummaries(self) {
+    // Create and activate rows for summaries.
     self.createActivateRows(self);
-    // Create cells for sets' names and counts.
+    // Create cells for attributes.
     self.createCells(self);
   }
   /**
@@ -1129,12 +1421,49 @@ class SetMenuView {
       });
     });
     self.rows.on("mouseenter", function (element, index, nodes) {
+      // Determine pointer coordinates.
+      var positionX = d3.mouse(self.view)[0];
+      var positionY = d3.mouse(self.view)[1];
       // Select element.
       var row = nodes[index];
       var rowSelection = d3.select(row);
+      // Create message for tip.
+      var name = SetMenuView.accessName({
+        attribute: element.attribute,
+        value: element.value,
+        state: self.state
+      });
+      var message = (name + " (" + element.count + ")");
       // Call action.
       rowSelection.classed("normal", false);
       rowSelection.classed("emphasis", true);
+      self.tip.restoreView({
+        visible: true,
+        positionX: positionX,
+        positionY: positionY,
+        text: message,
+        self: self.tip
+      });
+    });
+    self.rows.on("mousemove", function (element, index, nodes) {
+      // Determine pointer coordinates.
+      var positionX = d3.mouse(self.view)[0];
+      var positionY = d3.mouse(self.view)[1];
+      // Create message for tip.
+      var name = SetMenuView.accessName({
+        attribute: element.attribute,
+        value: element.value,
+        state: self.state
+      });
+      var message = (name + " (" + element.count + ")");
+      // Call action.
+      self.tip.restoreView({
+        visible: true,
+        positionX: positionX,
+        positionY: positionY,
+        text: message,
+        self: self.tip
+      });
     });
     self.rows.on("mouseleave", function (element, index, nodes) {
       // Select element.
@@ -1143,6 +1472,13 @@ class SetMenuView {
       // Call action.
       rowSelection.classed("emphasis", false);
       rowSelection.classed("normal", true);
+      self.tip.restoreView({
+        visible: false,
+        positionX: 0,
+        positionY: 0,
+        text: "",
+        self: self.tip
+      });
     });
   }
   /**
@@ -1150,7 +1486,7 @@ class SetMenuView {
   * @param {Object} self Instance of a class.
   */
   createCells(self) {
-    // Create cells for sets' names and counts.
+    // Create cells for names and counts.
     // Define function to access data.
     function access(element, index, nodes) {
       // Organize data.
@@ -1185,9 +1521,9 @@ class SetMenuView {
   * @param {Object} self Instance of a class.
   */
   representNames(self) {
-    // Assign attributes to cells for sets' names.
+    // Assign attributes to cells.
     // Assign attributes to elements.
-    // Select cells for sets' names.
+    // Select cells for names.
     self.names = self.cells
     .filter(function (element, index, nodes) {
       return element.type === "name";
@@ -1195,7 +1531,7 @@ class SetMenuView {
     self.names
     .classed("name", true)
     .text(function (element, index, nodes) {
-      return SetMenuView.accessAttributeValueName({
+      return SetMenuView.accessName({
         attribute: element.attribute,
         value: element.value,
         state: self.state
@@ -1203,87 +1539,17 @@ class SetMenuView {
     });
   }
   /**
-  * Represents sets' counts.
+  * Represents counts.
   * @param {Object} self Instance of a class.
   */
   representCounts(self) {
-    // Assign attributes to cells for sets' counts.
-    // Assign attributes to elements.
-    // Select cells for sets' counts.
-    self.counts = self.cells
-    .filter(function (element, index, nodes) {
-      return element.type === "count";
-    });
-    self.counts.classed("count", true);
-    // Create graphs to represent sets' cardinalities.
-    // It is possible to contain a graph's visual representations and textual
-    // annotations within separate groups in order to segregate these within
-    // separate layers.
-    // This strategy avoids occlusion of textual annotations by visual
-    // representations.
-    // In these graphs, this occlusion is impossible, so a simpler structure is
-    // preferrable.
-    // Graph structure.
-    // - graphs (scalable vector graphical container)
-    // -- barGroups (group)
-    // --- barTitles (title)
-    // --- barMarks (rectangle)
-    // --- barLabels (text) -- none in this case
-    // Create graphs.
-    // Define function to access data.
-    function access(element, index, nodes) {
-      return [element];
-    };
-    // Create children elements by association to data.
-    var graphs = View.createElementsData({
-      parent: self.counts,
-      type: "svg",
-      accessor: access
-    });
-    // Assign attributes to elements.
-    graphs.classed("graph", true);
-    // Create groups.
-    // Create children elements by association to data.
-    var barGroups = View.createElementsData({
-      parent: graphs,
-      type: "g",
-      accessor: access
-    });
-    // Assign attributes to elements.
-    barGroups
-    .classed("group", true)
-    .attr("transform", function (element, index, nodes) {
-      var x = self.determineScaleValue(0);
-      var y = 0;
-      return "translate(" + x + "," + y + ")";
-    });
-    // Create titles.
-    // Create children elements by association to data.
-    var barTitles = View.createElementsData({
-      parent: barGroups,
-      type: "title",
-      accessor: access
-    });
-    // Assign attributes to elements.
-    barTitles.text(function (element, index, nodes) {
-      var name = SetMenuView.accessAttributeValueName({
-        attribute: element.attribute,
-        value: element.value,
-        state: self.state
-      });
-      var message = (name + " (" + element.count + ")");
-      return message;
-    });
-    // Create marks.
-    // Create children elements by association to data.
-    var barMarks = View.createElementsData({
-      parent: barGroups,
-      type: "rect",
-      accessor: access
+    var barMarks = View.representCounts({
+      cells: self.cells,
+      graphHeight: self.graphHeight,
+      determineScaleValue: self.determineScaleValue
     });
     // Assign attributes to elements.
     barMarks
-    .classed("mark", true)
     .classed("normal", function (element, index, nodes) {
       return !SetMenuView.determineSetSelection({
         value: element.value,
@@ -1297,11 +1563,7 @@ class SetMenuView {
         attribute: element.attribute,
         state: self.state
       });
-    })
-    .attr("width", function (element, index) {
-      return self.determineScaleValue(element.count);
-    })
-    .attr("height", self.graphHeight);
+    });
   }
   /**
   * Accesses the name of a value of an attribute.
@@ -1311,7 +1573,7 @@ class SetMenuView {
   * @param {Object} parameters.state Application's state.
   * @returns {string} Name of the value of the attribute.
   */
-  static accessAttributeValueName({attribute, value, state} = {}) {
+  static accessName({attribute, value, state} = {}) {
     return state[attribute][value].name;
   }
   /**
@@ -1340,19 +1602,23 @@ class SetMenuView {
 class CandidacyView {
   /**
   * Initializes an instance of a class.
-  * @param {Object} tip Reference to tip view.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.control Instance of ControlView's class.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor (tip, state) {
+  constructor ({tip, control, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
-    // Set reference to tip view.
-    self.tip = tip;
     // Set reference to document object model (DOM).
     self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    self.control = control;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -1365,15 +1631,16 @@ class CandidacyView {
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-    // Create or set reference to view's container.
+    // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "candidacy",
-      parent: "control",
+      target: self.control.candidacyTab,
+      position: "afterend",
       documentReference: self.document
     });
-    // Determine whether the view's container is empty.
+    // Determine whether the container is empty.
     if (self.container.children.length === 0) {
-      // View's container is empty.
+      // Container is empty.
       // Create view's invariant elements.
       // Activate invariant behavior of view's elements.
       // Create title.
@@ -1385,11 +1652,21 @@ class CandidacyView {
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create menu for candidate metabolites.
-      new CandidacyMenuView("metabolites", self.tip, self.state);
+      new CandidacyMenuView({
+        category: "metabolites",
+        tip: self.tip,
+        candidacy: self,
+        state: self.state
+      });
       // Create menu for candidate reactions.
-      new CandidacyMenuView("reactions", self.tip, self.state);
+      new CandidacyMenuView({
+        category: "reactions",
+        tip: self.tip,
+        candidacy: self,
+        state: self.state
+      });
     } else {
-      // View's container is not empty.
+      // Container is not empty.
       // Set references to view's variant elements.
       // Control for filter.
       self.compartmentalization = self
@@ -1459,9 +1736,19 @@ class CandidacyView {
     self.compartmentalization.checked = CandidacyView
     .determineCompartmentalization(self.state);
     // Create menu for candidate metabolites.
-    new CandidacyMenuView("metabolites", self.tip, self.state);
+    new CandidacyMenuView({
+      category: "metabolites",
+      tip: self.tip,
+      candidacy: self,
+      state: self.state
+    });
     // Create menu for candidate reactions.
-    new CandidacyMenuView("reactions", self.tip, self.state);
+    new CandidacyMenuView({
+      category: "reactions",
+      tip: self.tip,
+      candidacy: self,
+      state: self.state
+    });
   }
   /**
   * Determines whether compartmentalization has a true value in the
@@ -1481,22 +1768,26 @@ class CandidacyView {
 class CandidacyMenuView {
   /**
   * Initializes an instance of a class.
-  * @param {string} category Name of category.
-  * @param {Object} tip Reference to tip view.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Name of category.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.candidacy Instance of CandidacyView's class.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor (category, tip, state) {
+  constructor ({category, tip, candidacy, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
-    // Set reference to type of sets.
-    self.category = category;
     // Set reference to application's state.
     self.state = state;
-    // Set reference to tip view.
-    self.tip = tip;
     // Set reference to document object model (DOM).
     self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    self.candidacy = candidacy;
+    // Set reference to category.
+    self.category = category;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -1509,35 +1800,40 @@ class CandidacyMenuView {
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-    // Set reference to view.
-    self.view = self.document.getElementById("view");
-    // Create or set reference to view's container.
+    // Create or set reference to container.
     self.container = View.createReferenceContainer({
-      identifier: "candidacy-" + self.category + "-menu",
-      parent: "candidacy",
+      identifier: ("candidacy-" + self.category + "-menu"),
+      target: self.candidacy.container,
+      position: "beforeend",
       documentReference: self.document
     });
-    // Determine whether the view's container is empty.
+    // Determine whether the container is empty.
     if (self.container.children.length === 0) {
-      // View's container is empty.
+      // Container is empty.
       // Create view's invariant elements.
       // Activate invariant behavior of view's elements.
       self.container.classList.add("menu");
       // Create search.
-      self.createActivateSearch(self);
+      self.search = View.createActivateSearch({
+        type: "candidates",
+        category: self.category,
+        parent: self.container,
+        documentReference: self.document,
+        state: self.state
+      });
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create table.
       self.createActivateTable(self);
     } else {
-      // View's container is not empty.
+      // Container is not empty.
       // Set references to view's variant elements.
       // Search.
       self.search = self.container.querySelector("input.search");
       // Sorts.
-      self.nameSort = self
+      self.sortGraphName = self
       .container.querySelector("table thead tr th.name svg.sort");
-      self.countSort = self
+      self.sortGraphCount = self
       .container.querySelector("table thead tr th.count svg.sort");
       // Scale.
       self.scaleGraph = self
@@ -1551,29 +1847,6 @@ class CandidacyMenuView {
     }
   }
   /**
-  * Creates and activates a search.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateSearch(self) {
-    self.search = View.createSearchLabel({
-      text: self.category + ": ",
-      parent: self.container,
-      documentReference: self.document
-    });
-    // Activate behavior.
-    self.search.addEventListener("input", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Determine the search's value.
-      var value = event.currentTarget.value;
-      // Call action.
-      Action.changeCandidatesSearches({
-        category: self.category,
-        string: value,
-        state: self.state
-      });
-    });
-  }
-  /**
   * Creates and activates a table.
   * @param {Object} self Instance of a class.
   */
@@ -1581,120 +1854,73 @@ class CandidacyMenuView {
     // Create separate tables for head and body to support stationary head and
     // scrollable body.
     // Create head table.
-    var headTable = self.document.createElement("table");
-    self.container.appendChild(headTable);
-    headTable.classList.add(self.category);
-    // Create head table's header.
-    var tableHead = self.document.createElement("thead");
-    headTable.appendChild(tableHead);
-    var tableHeadRow = self.document.createElement("tr");
-    tableHead.appendChild(tableHeadRow);
+    var tableHeadRow = View.createTableHeadRow({
+      className: self.category,
+      parent: self.container,
+      documentReference: self.document
+    });
     // Create titles, sorts, and scale in table's header.
     // Create head for names.
-    self.createActivateTableColumnHead({
-      text: "Name",
+    var referencesOne = View.createActivateTableColumnHead({
       attribute: "name",
-      parent: tableHeadRow,
+      text: "Name",
+      type: "candidates",
+      category: self.category,
       sort: true,
       scale: false,
-      self: self
-    });
-    // Create head for counts.
-    self.createActivateTableColumnHead({
-      text: "Count",
-      attribute: "count",
       parent: tableHeadRow,
+      documentReference: self.document,
+      state: self.state
+    });
+    self.sortGraphName = referencesOne.sortGraph;
+    // Create head for counts.
+    var referencesTwo = View.createActivateTableColumnHead({
+      attribute: "count",
+      text: "Count",
+      type: "candidates",
+      category: self.category,
       sort: true,
       scale: true,
-      self: self
-    });
-    // Create head for omission.
-    self.createActivateTableColumnHead({
-      text: "Omit",
-      attribute: "omission",
       parent: tableHeadRow,
+      documentReference: self.document,
+      state: self.state
+    });
+    self.sortGraphCount = referencesTwo.sortGraph;
+    self.scaleGraph = referencesTwo.scaleGraph;
+    self.graphWidth = referencesTwo.graphWidth;
+    self.graphHeight = referencesTwo.graphHeight;
+    // Create head for omission.
+    var referencesThree = View.createActivateTableColumnHead({
+      attribute: "omission",
+      text: "Omit",
+      type: "candidates",
+      category: self.category,
       sort: false,
       scale: false,
-      self: self
+      parent: tableHeadRow,
+      documentReference: self.document,
+      state: self.state
     });
     if (self.category === "metabolites") {
       // Create head for replication.
-      self.createActivateTableColumnHead({
-        text: "Rep",
+      var referencesFour = View.createActivateTableColumnHead({
         attribute: "replication",
-        parent: tableHeadRow,
+        text: "Rep",
+        type: "candidates",
+        category: self.category,
         sort: false,
         scale: false,
-        self: self
+        parent: tableHeadRow,
+        documentReference: self.document,
+        state: self.state
       });
     }
     // Create body table.
-    var bodyTableContainer = self.document.createElement("div");
-    self.container.appendChild(bodyTableContainer);
-    bodyTableContainer.classList.add("scroll");
-    var bodyTable = self.document.createElement("table");
-    bodyTableContainer.appendChild(bodyTable);
-    // Create body table's body.
-    self.body = self.document.createElement("tbody");
-    bodyTable.appendChild(self.body);
-    bodyTable.classList.add(self.category);
-  }
-  /**
-  * Creates and activates a title and sort.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.text Text for column head's label.
-  * @param {string} parameters.attribute Name of attribute.
-  * @param {Object} parameters.parent Reference to parent element.
-  * @param {boolean} parameters.sort Whether column's attribute is a sort
-  * criterion.
-  * @param {boolean} parameters.scale Whether column's attribute needs a scale.
-  * @param {Object} parameters.self Instance of a class.
-  */
-  createActivateTableColumnHead({text, attribute, parent, sort, scale, self} = {}) {
-    // Create cell.
-    var cell = View.createTableHeadCellLabel({
-      text: text,
-      className: attribute,
-      parent: parent,
+    self.body = View.createScrollTableBody({
+      className: self.category,
+      parent: self.container,
       documentReference: self.document
     });
-    // Determine whether column's attribute is a sort criterion.
-    if (sort) {
-      // Create elements.
-      var span = cell.getElementsByTagName("span").item(0);
-      var reference = attribute + "Sort";
-      self[reference] = View.createGraph({
-        parent: span,
-        documentReference: self.document
-      });
-      self[reference].classList.add("sort");
-      // Activate behavior.
-      cell.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        Action.changeCandidatesSorts({
-          category: self.category,
-          criterion: attribute,
-          state: self.state
-        });
-      });
-    }
-    // Determine whether column's attribute needs a scale.
-    if (scale) {
-      // Create break.
-      cell.appendChild(self.document.createElement("br"));
-      // Create graphical container for scale.
-      self.scaleGraph = View.createGraph({
-        parent: cell,
-        documentReference: self.document
-      });
-      self.scaleGraph.classList.add("scale");
-      // Determine graphs' dimensions.
-      self.graphWidth = General
-      .determineElementDimension(self.scaleGraph, "width");
-      self.graphHeight = General
-      .determineElementDimension(self.scaleGraph, "height");
-    }
   }
   /**
   * Restores aspects of the view's composition and behavior that vary with
@@ -1705,7 +1931,11 @@ class CandidacyMenuView {
     self.representSearch(self);
     self.representSorts(self);
     self.createScale(self);
-    self.representScale(self);
+    View.representScale({
+      scaleGraph: self.scaleGraph,
+      graphHeight: self.graphHeight,
+      determineScaleValue: self.determineScaleValue
+    });
     self.createActivateSummaries(self);
   }
   /**
@@ -1725,14 +1955,14 @@ class CandidacyMenuView {
       category: self.category,
       attribute: "name",
       sorts: self.state.candidatesSorts,
-      parent: self.nameSort,
+      parent: self.sortGraphName,
       documentReference: self.document
     });
     View.representSort({
       category: self.category,
       attribute: "count",
       sorts: self.state.candidatesSorts,
-      parent: self.countSort,
+      parent: self.sortGraphCount,
       documentReference: self.document
     });
   }
@@ -1749,20 +1979,6 @@ class CandidacyMenuView {
     .domain([0, maximalValue])
     .range([5, (self.graphWidth * 0.8)])
     .nice(2);
-  }
-  /**
-  * Represents scale.
-  * @param {Object} self Instance of a class.
-  */
-  representScale(self) {
-    // Remove contents of scale's container.
-    General.removeDocumentChildren(self.scaleGraph);
-    // Create scale's representation.
-    var scaleSelection = d3.select(self.scaleGraph);
-    var createAxis = d3.axisTop(self.determineScaleValue).ticks(2);
-    var axisGroup = scaleSelection.append("g").call(createAxis);
-    // Assign attributes.
-    axisGroup.attr("transform", "translate(0," + (self.graphHeight - 1) + ")");
   }
   /**
   * Creates and activates summaries.
@@ -1794,6 +2010,7 @@ class CandidacyMenuView {
     });
     // Assign attributes to elements.
     self.rows.classed("normal", true);
+    // Activate behavior.
     self.rows.on("mouseenter", function (element, index, nodes) {
       // Determine pointer coordinates.
       var positionX = d3.mouse(self.view)[0];
@@ -1860,7 +2077,7 @@ class CandidacyMenuView {
   * @param {Object} self Instance of a class.
   */
   createCells(self) {
-    // Create cells for sets' names and counts.
+    // Create cells for names, counts, omissions, and replications.
     // Define function to access data.
     function access(element, index, nodes) {
       // Organize data.
@@ -1928,72 +2145,15 @@ class CandidacyMenuView {
     });
   }
   /**
-  * Represents sets' counts.
+  * Represents counts.
   * @param {Object} self Instance of a class.
   */
   representCounts(self) {
-    // Assign attributes to cells for counts.
-    // Assign attributes to elements.
-    // Select cells for counts.
-    self.counts = self.cells.filter(function (element, index, nodes) {
-      return element.type === "count";
+    var barMarks = View.representCounts({
+      cells: self.cells,
+      graphHeight: self.graphHeight,
+      determineScaleValue: self.determineScaleValue
     });
-    self.counts.classed("count", true);
-    // Create graphs to represent sets' cardinalities.
-    // It is possible to contain a graph's visual representations and textual
-    // annotations within separate groups in order to segregate these within
-    // separate layers.
-    // This strategy avoids occlusion of textual annotations by visual
-    // representations.
-    // In these graphs, this occlusion is impossible, so a simpler structure is
-    // preferrable.
-    // Graph structure.
-    // - graphs (scalable vector graphical container)
-    // -- barGroups (group)
-    // --- barTitles (title)
-    // --- barMarks (rectangle)
-    // --- barLabels (text) -- none in this case
-    // Create graphs.
-    // Define function to access data.
-    function access(element, index, nodes) {
-      return [element];
-    };
-    // Create children elements by association to data.
-    var graphs = View.createElementsData({
-      parent: self.counts,
-      type: "svg",
-      accessor: access
-    });
-    // Assign attributes to elements.
-    graphs.classed("graph", true);
-    // Create groups.
-    // Create children elements by association to data.
-    var barGroups = View.createElementsData({
-      parent: graphs,
-      type: "g",
-      accessor: access
-    });
-    // Assign attributes to elements.
-    barGroups
-    .classed("group", true)
-    .attr("transform", function (element, index, nodes) {
-      var x = self.determineScaleValue(0);
-      var y = 0;
-      return "translate(" + x + "," + y + ")";
-    });
-    // Create marks.
-    // Create children elements by association to data.
-    var barMarks = View.createElementsData({
-      parent: barGroups,
-      type: "rect",
-      accessor: access
-    });
-    // Assign attributes to elements.
-    barMarks.classed("mark", true)
-    .attr("width", function (element, index, nodes) {
-      return self.determineScaleValue(element.count);
-    })
-    .attr("height", self.graphHeight);
   }
   /**
   * Represents and activates controls for simplifications.
@@ -2001,9 +2161,9 @@ class CandidacyMenuView {
   * @param {Object} self Instance of a class.
   */
   representActivateSimplifications(method, self) {
-    // Assign attributes to cells for omissions.
+    // Assign attributes to cells.
     // Assign attributes to elements.
-    // Select cells for omissions.
+    // Select cells.
     var reference = (method + "s");
     self[reference] = self.cells.filter(function (element, index, nodes) {
       return element.type === method;
@@ -2143,7 +2303,7 @@ class ExplorationView {
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-    // Create or set reference to view's container.
+    // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "exploration",
       parent: "view",
@@ -2193,7 +2353,7 @@ class SummaryView {
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-    // Create or set reference to view's container.
+    // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "summary",
       parent: "exploration",
