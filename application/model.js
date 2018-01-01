@@ -62,7 +62,6 @@ class Model {
   // TODO: Instead, only create the content for ControlView's sub-views that are active.
   // TODO: I think I can create a new state variable to control which sub-view is active? Maybe?
 
-
   /**
   * Evaluates the application's state and represents it accordingly in a visual
   * interface.
@@ -102,10 +101,6 @@ class Model {
         control: control,
         state: self.state
       });
-      // Exploration view.
-      //var explorationContents = ["summary"];
-      //new ExplorationView(explorationContents, self.state);
-      //new SummaryView(self.state);
     } else if (Model.determineMetabolicEntitiesSets(self.state)) {
       if (
         Model.determineTotalEntitiesSets(self.state) &&
@@ -181,14 +176,37 @@ class Model {
           });
         }
         // Exploration view.
-
+        if (!Model.determineTopology(self.state)) {
+          // Exploration view.
+          var explorationContents = ["summary"];
+          var exploration = new ExplorationView({
+            contents: explorationContents,
+            tip: tip,
+            state: self.state
+          });
+          // Summary view.
+          new SummaryView({
+            tip: tip,
+            exploration: exploration,
+            state: self.state
+          });
+        } else {
+          // Exploration view.
+          var explorationContents = ["topology"];
+          var exploration = new ExplorationView({
+            contents: explorationContents,
+            tip: tip,
+            state: self.state
+          });
+          console.log("draw topology view");
+          // Topology view.
+          //new TopologyView({
+          //  tip: tip,
+          //  exploration: exploration,
+          //  state: self.state
+          //});
+        }
       }
-
-
-      // Initialize or restore views within exploration view.
-      //var explorationContents = ["topology"];
-      //new ExplorationView(explorationContents, self.state);
-      //new TopologyView(self.state);
     }
 
     // TODO: The ControlView and ExplorationView should remove all of their sub-views except those with IDs that match their parameters.

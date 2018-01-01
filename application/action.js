@@ -100,6 +100,8 @@ class Action {
 
   // Direct actions.
 
+// TODO: I'll need to reset topology to false every time the network's elements change...
+
   /**
   * Initializes the application's state by submitting null values of all
   * attributes.
@@ -617,6 +619,24 @@ class Action {
       state: state
     });
   }
+  /**
+  * Changes the selection of toppology.
+  * @param {Object} state Application's state.
+  */
+  static changeTopology(state) {
+    // Determine topology.
+    var topology = true;
+    // Compile attributes' values.
+    var novelAttributesValues = {
+      topology: topology
+    };
+    var attributesValues = novelAttributesValues;
+    // Submit attributes' values to the application's state.
+    Action.submitAttributes({
+      attributesValues: attributesValues,
+      state: state
+    });
+  }
 
   // Indirect actions.
 
@@ -1036,46 +1056,7 @@ class Action {
   * @param {Object} model Model of the comprehensive state of the
   * application.
   */
-  static createNetwork(model) {
-    // Assemble network's nodes and links.
-    // There are 2652 metabolites and 7785 reactions.
-    // Assembly of network elements from all metabolic entities.
-    // General, Replication: 23315 nodes, 55058 links, 3.5 minutes
-    // Compartmental, Replication: 26997 nodes, 64710 links, 4 minutes
-    // TODO: Accommodate new organization of network elements.
-    var networkElements = Network.createNetworkElements({
-      compartmentalization: model.compartmentalization,
-      simplification: model.simplification,
-      metabolites: model.currentMetabolites,
-      reactions: model.currentReactions
-    });
-    // Evaluate network's assembly.
-    console.log("network elements");
-    console.log(networkElements);
-    //var replicateNodes = General
-    //    .checkReplicateElements(networkElements.nodes);
-    //var replicateLinks = General
-    //    .checkReplicateElements(networkElements.links);
-    //var emptyNodes = networkElements.nodes.filter(function (node) {
-    //    return !node.hasOwnProperty("identifier");
-    //});
-    // Copy network elements to current network elements.
-    var currentNetworkElements = Network.copyNetworkElements(networkElements);
-    console.log("current network elements");
-    console.log(currentNetworkElements);
-    // Compile novel values of attributes.
-    var attributesValues = Object.assign(
-      {},
-      networkElements,
-      currentNetworkElements
-    );
-    // Submit novel values of attributes to the model of the application's
-    // state.
-    Action.submitAttributes({
-      attributesValues: attributesValues,
-      model: model
-    });
-
+  static traverseTopology(model) {
     // TODO: I don't want to initialize a network in JSNetworkX until I have to.
     if (false) {
       // Initialize an operable network in JSNetworkX from the network's

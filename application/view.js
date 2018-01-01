@@ -685,6 +685,7 @@ class TipView {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
 // Control view and views within control view.
 
 /**
@@ -1892,7 +1893,7 @@ class CandidacyMenuView {
     // Create head for omission.
     var referencesThree = View.createActivateTableColumnHead({
       attribute: "omission",
-      text: "Omit",
+      text: "X",
       type: "candidates",
       category: self.category,
       sort: false,
@@ -1905,7 +1906,7 @@ class CandidacyMenuView {
       // Create head for replication.
       var referencesFour = View.createActivateTableColumnHead({
         attribute: "replication",
-        text: "Rep",
+        text: "...",
         type: "candidates",
         category: self.category,
         sort: false,
@@ -2266,12 +2267,7 @@ class CandidacyMenuView {
   }
 }
 
-
-
-
-
-
-
+////////////////////////////////////////////////////////////////////////////////
 // Exploration view and views within exploration view.
 
 /**
@@ -2280,10 +2276,13 @@ class CandidacyMenuView {
 class ExplorationView {
   /**
   * Initializes an instance of a class.
-  * @param {Array<string>} contents Identifiers of contents within view.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Array<string>>} parameters.contents Identifiers of contents
+  * within view.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor (contents, state) {
+  constructor ({contents, tip, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -2291,11 +2290,16 @@ class ExplorationView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    // Set reference to contents.
+    self.contents = contents;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
     // Restore view.
-    self.restoreView(contents, self);
+    self.restoreView(self);
   }
   /**
   * Initializes aspects of the view's composition and behavior that do not vary
@@ -2306,34 +2310,46 @@ class ExplorationView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "exploration",
-      parent: "view",
+      target: self.view,
+      position: "beforeend",
       documentReference: self.document
     });
   }
   /**
   * Restores aspects of the view's composition and behavior that vary with
   * changes to the application's state.
-  * @param {Array<string>} contents Identifiers of contents within view.
   * @param {Object} self Instance of a class.
   */
-  restoreView(contents, self) {
+  restoreView(self) {
     // Remove any extraneous content from view.
+    self.filterContents(self);
+  }
+  /**
+  * Filters view's contents to remove all but relevant content.
+  * @param {Object} self Instance of a class.
+  */
+  filterContents(self) {
     General.filterRemoveDocumentElements({
-      values: contents,
+      values: self.contents,
       attribute: "id",
       elements: self.container.children
     });
   }
 }
+
 /**
-* Interface for communication of summary information about selections.
+* Interface for communication of summary information about selections and
+* network's elements.
 */
 class SummaryView {
   /**
   * Initializes an instance of a class.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.exploration Instance of ExplorationView's class.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor (state) {
+  constructor ({tip, exploration, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -2341,6 +2357,10 @@ class SummaryView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    self.exploration = exploration;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -2356,9 +2376,36 @@ class SummaryView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "summary",
-      parent: "exploration",
+      target: self.exploration.container,
+      position: "beforeend",
       documentReference: self.document
     });
+    // Determine whether the container is empty.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create view's invariant elements.
+      // Activate invariant behavior of view's elements.
+      // Create text.
+      self.summary = self.document.createElement("span");
+      self.container.appendChild(self.summary);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create and activate buttons.
+      self.draw = View.createButton({
+        text: "draw",
+        parent: self.container,
+        documentReference: self.document
+      });
+      self.draw.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.changeTopology(self.state);
+      });
+    } else {
+      // Container is not empty.
+      // Set references to view's variant elements.
+      self.summary = self.container.getElementsByTagName("span").item(0);
+    }
   }
   /**
   * Restores aspects of the view's composition and behavior that vary with
@@ -2366,795 +2413,30 @@ class SummaryView {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
-    // TODO: This part should control the communication of summary info.
+    // Create view's variant elements.
+    // Activate variant behavior of view's elements.
+    // Summarize the network's elements.
+    var nodesMetabolites = Object
+    .keys(self.state.networkNodesMetabolites).length;
+    var nodesReactions = Object.keys(self.state.networkNodesReactions).length;
+    var links = Object.keys(self.state.networkLinks).length;
+    var message = (
+      "nodes for metabolites: " + nodesMetabolites +
+      "... nodes for reactions: " + nodesReactions + "... links: " + links
+    );
+    self.summary.textContent = message;
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
-
-
-// TODO: Consider re-naming "PersistenceView" as "StateView" or something...
-/**
-* Interface to save and restore a persistent state of the application.
-*/
-class PersistenceView {
-  /**
-  * Initializes an instance of the class.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
-  */
-  constructor (model) {
-    // Remove all contents of container.
-    General.removeDocumentChildren(self.container);
-    //
-    // Create and activate button to restore application to initial state.
-    self.restoration = self.document.createElement("button");
-    self.container.appendChild(self.restoration);
-    self.restoration.textContent = "Restore";
-    self.restoration.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Restore application to initial state.
-      Action.initializeApplication(self.model);
-    });
-    self.container.appendChild(self.document.createElement("br"));
-    // Create and activate button to save current state of application.
-    self.save = self.document.createElement("button");
-    self.container.appendChild(self.save);
-    self.save.textContent = "Save";
-    self.save.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Save current state of application.
-      Action.saveState(self.model);
-    });
-    self.container.appendChild(self.document.createElement("br"));
-    // Create and activate button to execute temporary procedure during
-    // development.
-    self.procedure = self.document.createElement("button");
-    self.container.appendChild(self.procedure);
-    self.procedure.textContent = "Execute";
-    self.procedure.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Execute temporary procedure for development.
-      Action.executeTemporaryProcedure(self.model);
-    });
-    self.container.appendChild(self.document.createElement("br"));
-  }
-}
-
-/**
-* Interface to represent summary of sets of metabolic entities and to select
-* filters for these entities.
-*/
-class SetViewOld {
-  initializeSummaryMenu(view) {
-    // Create elements that persist across interactive, dynamic changes to the
-    // application's state.
-    // Activate behavior that is consistent across interactive, dynamic changes
-    // to the application's state.
-    // Determine whether the summary's menu already exists within the view.
-    if (!self.container.getElementsByTagName("table").item(0)) {
-    } else {
-      // Interface's container includes a table element.
-      // Establish references to existing elements.
-      // References are only necessary for elements that vary with changes to
-      // the application's state.
-      self.table = self.container.getElementsByTagName("table").item(0);
-      self.tableHead = self.container.getElementsByTagName("thead").item(0);
-      self.tableHead = self.container.getElementsByTagName("thead").item(0);
-      var tableHeadRow = self.tableHead.getElementsByTagName("tr").item(0);
-      self.tableHeadRowCellValue = tableHeadRow
-      .getElementsByClassName("value").item(0);
-      self.compartmentalizationControl = self
-      .document.getElementById("compartmentalization");
-      self.tableBody = self.container.getElementsByTagName("tbody").item(0);
-    }
-  }
-
-
-  // TODO: I need to move the compartmentalization control...
-  /**
-  * Creates and activates control to select whether to represent
-  * compartmentalization in the network.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateCompartmentalizationControl(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and activate control for compartmentalization.
-    var identifier = "compartmentalization";
-    self.compartmentalizationControl = self.document.createElement("input");
-    self.tableHeadRowCellValue.appendChild(self.compartmentalizationControl);
-    self.compartmentalizationControl.setAttribute("id", identifier);
-    self.compartmentalizationControl.setAttribute("type", "checkbox");
-    self
-    .compartmentalizationControl.setAttribute("value", "compartmentalization");
-    self
-    .compartmentalizationControl.addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Change current selection of filter in application's state.
-      Action.changeCompartmentalization(self.model);
-    });
-    var compartmentalizationLabel = self.document.createElement("label");
-    self.tableHeadRowCellValue.appendChild(compartmentalizationLabel);
-    compartmentalizationLabel.setAttribute("for", identifier);
-    compartmentalizationLabel.textContent = "compartmentalization";
-  }
-
-
-  /**
-  * Creates and activates cells for data's attributes in body of summary table.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateSummaryBodyCellsAttributes(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Select cells for data's attributes.
-    self.tableBodyCellsAttributes = self
-    .tableBodyCells.filter(function (data, index) {
-      return data.type === "attribute";
-    });
-    // Assign attributes to cells for attributes.
-    self.tableBodyCellsAttributes.classed("attribute", true);
-    // Create labels.
-    var dataLabels = self
-    .tableBodyCellsAttributes.selectAll("div")
-    .filter(".label")
-    .data(function (element, index, nodes) {
-      return [element];
-    });
-    dataLabels.exit().remove();
-    var novelLabels = dataLabels.enter().append("div");
-    var labels = novelLabels.merge(dataLabels);
-    // Assign attributes.
-    labels
-    .classed("label", true)
-    .text(function (element, index, nodes) {
-      return element.attribute;
-    });
-
-    // Activate behavior.
-    self.activateSummaryBodyCellsAttributes(self);
-  }
-  /**
-  * Activates cells for data's attributes in body of summary
-  * table.
-  * @param {Object} view Instance of interface's current view.
-  */
-  activateSummaryBodyCellsAttributes(view) {
-    // Set reference to class' current instance to transfer across changes in
-    // scope.
-    var self = view;
-  }
-
-
-
-
-  /**
-  * Creates and activates cells for data's values in body of summary table.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateSummaryBodyCellsValues(view) {
-
-    // Assign attributes.
-    self.tableBodyCellsValuesGraphBarGroups
-    .classed("group", true)
-    .attr("transform", function (element, index) {
-      // Determine scale between value and graph's dimension.
-      var scale = d3
-      .scaleLinear()
-      .domain([0, element.total])
-      .range([0, self.graphWidth]);
-      var x = scale(element.base);
-      var y = 0;
-      return "translate(" + x + "," + y + ")";
-    });
-
-
-    // Activate cells for data's values.
-    self.activateSummaryBodyCellsValues(self);
-  }
-  /**
-  * Activates cells for data's values in body of summary table.
-  * @param {Object} view Instance of interface's current view.
-  */
-  activateSummaryBodyCellsValues(view) {
-    // Set reference to class' current instance to transfer across changes in
-    // scope.
-    var self = view;
-    // Remove any existing event listeners and handlers from bars.
-    self.tableBodyCellsValuesGraphBarGroups.on("click", null);
-    // Assign event listeners and handlers to bars.
-    self.tableBodyCellsValuesGraphBarGroups
-    .on("click", function (data, index, nodes) {
-      // Submit selection of attribute's value.
-      Action.selectSetsAttributeValue({
-        value: data.value,
-        attribute: data.attribute,
-        model: self.model
-      });
-    });
-  }
-  /**
-  * Determines the current selection in the application's state of whether to
-  * represent compartmentalization in the network.
-  * @param {Object} view Instance of interface's current view.
-  */
-  determineCompartmentalization(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    return self.model.compartmentalization;
-  }
-}
-
-// TODO: EntityView should give information about counts of metabolites and
-// TODO: reactions in current selection (pass filters from SetView).
-// TODO: EntityView should display controls to define network:
-// TODO: compartmentalization, replications, submit button (since it takes a while).
-// TODO: Don't worry about giving any sort of warning about size threshold...
-// TODO: just tell the user counts of metabolites and reactions and let user
-// TODO: initiate assembly.
-/**
-* Interface to control network's assembly, selection, and visual
-* representation.
-*/
-class AssemblyView {
-  /**
-  * Initializes an instance of the class.
-  * @param {Object} model Model of the application's comprehensive state.
-  */
-  constructor (model) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = this;
-    // Set reference to model of application's state.
-    self.model = model;
-    // Set reference to document object model (DOM).
-    self.document = document;
-    // Initialize container for interface.
-    //self.initializeContainer(self);
-    // Initialize interface for control of network's assembly.
-    //self.initializeAssemblyControls(self);
-    // Restore interface for control of network's assembly.
-    //self.restoreAssemblyControls(self);
-  }
-  /**
-  * Initializes the container for the interface.
-  * @param {Object} view Instance of interface's current view.
-  */
-  initializeContainer(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and set references to elements for interface.
-    // Select view in document object model.
-    self.view = self.document.getElementById("view");
-    // Remove any extraneous content within view.
-    // Initialization of the persistence view already removes extraneous
-    // content from view.
-    General.filterRemoveDocumentElements({
-      values: ["top", "bottom"],
-      attribute: "id",
-      elements: self.view.children
-    });
-    // Create container for interfaces within bottom of view.
-    if (!self.document.getElementById("bottom")) {
-      self.bottom = self.document.createElement("div");
-      self.view.appendChild(self.bottom);
-      self.bottom.setAttribute("id", "bottom");
-    } else {
-      self.bottom = self.document.getElementById("bottom");
-    }
-    // Remove any extraneous content within bottom.
-    General.filterRemoveDocumentElements({
-      values: ["control", "topology"],
-      attribute: "id",
-      elements: self.bottom.children
-    });
-    // Create container for interfaces that control network's assembly and
-    // visual representation.
-    if (!self.document.getElementById("control")) {
-      self.control = self.document.createElement("div");
-      self.bottom.appendChild(self.control);
-      self.control.setAttribute("id", "control");
-    } else {
-      self.control = self.document.getElementById("control");
-    }
-    // Remove any extraneous content within control view.
-    General.filterRemoveDocumentElements({
-      values: ["assembly", "traversal"],
-      attribute: "id",
-      elements: self.control.children
-    });
-    // Create container for interface within control view.
-    // Set reference to current interface's container.
-    if (!self.document.getElementById("assembly")) {
-      self.container = self.document.createElement("div");
-      self.control.appendChild(self.container);
-      self.container.setAttribute("id", "assembly");
-    } else {
-      self.container = self.document.getElementById("assembly");
-    }
-  }
-  /**
-  * Initializes the interface for control of network's assembly.
-  * Creates new elements that do not exist and do not vary with data.
-  * Sets references to elements that already exist.
-  * @param {Object} view Instance of interface's current view.
-  */
-  initializeAssemblyControls(view) {
-    // Preserve reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // As their actions do not change and they have access to the dynamic model,
-    // it is only necessary to define event handlers upon initialization of
-    // control elements.
-    // Create and set references to elements for interface.
-    // Initialize interface.
-    if (!self.container.hasChildNodes()) {
-      // Interface's container does not include child elements for control
-      // of network's assembly.
-      // Create interface.
-      // Create and activate reset button.
-      self.createActivateReset(self);
-      // Create and activate assemble button.
-      self.createActivateAssemble(self);
-      self.container.appendChild(self.document.createElement("br"));
-      // Create and activate compartmentalization selector.
-      self.createActivateCompartmentalizationSelector(self);
-      self.container.appendChild(self.document.createElement("br"));
-      // Create and activate simplification control.
-      // TODO: Create and activate simplification control.
-      // Create and activate menu for simplification candidates.
-      // TODO: Create summary candidates menu...
-      if (false) {
-        // Initialize interface to summarize and modify replications for
-        // network's assembly.
-        self.initializeReplicationInterface(self);
-      }
-    } else {
-      // Interface's container includes child elements for control of
-      // network's assembly.
-      // Set references to existing elements.
-      // References are only necessary for elements that depend on the
-      // application's state in order to restore these as the state
-      // changes.
-      self.compartmentalizationSelector = self
-      .document.getElementById("compartmentalization");
-      if (false) {
-        self.replication = self
-        .document.getElementById("assembly-replication");
-        self.currentReplications = self
-        .document.getElementById("assembly-replication-current");
-        self.replicationTableBody = self
-        .currentReplications.getElementsByTagName("tbody").item(0);
-        self.novelReplications = self
-        .document.getElementById("assembly-replication-novel");
-        self.replicationOptions = self
-        .novelReplications.getElementsByTagName("datalist").item(0);
-        self.replicationSearch = self
-        .novelReplications.getElementsByTagName("input").item(0);
-      }
-    }
-  }
-  /**
-  * Creates and activates button to restore controls for network's assembly
-  * to initial state.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateReset(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and activate button to restore controls for network's assembly
-    // to initial state.
-    self.reset = self.document.createElement("button");
-    self.container.appendChild(self.reset);
-    self.reset.textContent = "reset";
-    self.reset.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Restore controls for network's assembly to initial state.
-      Action.restoreNetworkAssembly(self.model);
-    });
-  }
-  /**
-  * Creates and activates button to assemble network's nodes and links for
-  * entity view.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateAssemble(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and activate button to assemble network's nodes and links.
-    self.assemble = self.document.createElement("button");
-    self.container.appendChild(self.assemble);
-    self.assemble.textContent = "assemble";
-    self.assemble.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Assemble network's nodes and links.
-      Action.createNetwork(self.model);
-    });
-  }
-  /**
-  * Creates and activates selector for compartmentalization in the network's
-  * assembly.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateCompartmentalizationSelector(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and activate compartmentalization selector.
-    var identifier = "compartmentalization";
-    self.compartmentalizationSelector = self.document.createElement("input");
-    self.container.appendChild(self.compartmentalizationSelector);
-    self.compartmentalizationSelector.setAttribute("id", identifier);
-    self.compartmentalizationSelector.setAttribute("type", "checkbox");
-    self
-    .compartmentalizationSelector
-    .setAttribute("value", "compartmentalization");
-    self
-    .compartmentalizationSelector
-    .addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Change current selection of compartmentalization in
-      // application's state.
-      Action.changeCompartmentalization(self.model);
-    });
-    var label = self.document.createElement("label");
-    self.container.appendChild(label);
-    label.setAttribute("for", identifier);
-    label.textContent = "compartmentalization";
-  }
-  /**
-  * Initializes interface to summarize and modify replications for the
-  * network's assembly.
-  * Creates new elements that do not exist and do not vary with data.
-  * @param {Object} view Instance of interface's current view.
-  */
-  initializeReplicationInterface(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create container for the replication interface.
-    self.replication = self.document.createElement("div");
-    self.container.appendChild(self.replication);
-    self.replication.setAttribute("id", "assembly-replication");
-    self.replication.textContent = "Replications";
-    // Initialize summary of current replications.
-    // Create container for the summary of current replications.
-    self.currentReplications = self.document.createElement("div");
-    self.replication.appendChild(self.currentReplications);
-    self
-    .currentReplications
-    .setAttribute("id", "assembly-replication-current");
-    // Create table for summary of current replications.
-    var table = self.document.createElement("table");
-    self.currentReplications.appendChild(table);
-    var tableHead = self.document.createElement("thead");
-    table.appendChild(tableHead);
-    var tableHeadRow = self.document.createElement("tr");
-    tableHead.appendChild(tableHeadRow);
-    var tableHeadRowCellName = self.document.createElement("th");
-    tableHeadRow.appendChild(tableHeadRowCellName);
-    tableHeadRowCellName.textContent = "Name";
-    var tableHeadRowCellRemove = self.document.createElement("th");
-    tableHeadRow.appendChild(tableHeadRowCellRemove);
-    tableHeadRowCellRemove.textContent = "Remove";
-    self.replicationTableBody = self.document.createElement("tbody");
-    table.appendChild(self.replicationTableBody);
-    // Initialize menu to include new replications.
-    // Create container for the menu for new replications.
-    self.novelReplications = self.document.createElement("div");
-    self.replication.appendChild(self.novelReplications);
-    self
-    .novelReplications
-    .setAttribute("id", "assembly-replication-novel");
-    // Create list for replication options.
-    var listIdentifier = "assembly-replication-options";
-    self.replicationOptions = self.document.createElement("datalist");
-    self.novelReplications.appendChild(self.replicationOptions);
-    self.replicationOptions.setAttribute("id", listIdentifier);
-    // Create search menu.
-    // Attribute "minlength" of input element does not make the drop-down
-    // list of options wait for at least the minimal length of characters.
-    self.replicationSearch = self.document.createElement("input");
-    self.novelReplications.appendChild(self.replicationSearch);
-    self.replicationSearch.setAttribute("type", "search");
-    self.replicationSearch.setAttribute("autocomplete", "off");
-    self.replicationSearch.setAttribute("list", listIdentifier);
-    self
-    .replicationSearch
-    .setAttribute("placeholder", "new replication...");
-    self.replicationSearch.setAttribute("size", "20");
-    // Activate search menu.
-    self.replicationSearch.addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Event originates on search menu, not on datalist's options.
-      // Search menu's value is the prospective name of a novel metabolite
-      // to include in replications.
-      // Include metabolite in replications.
-      Action.includeNovelReplication({
-        name: event.currentTarget.value,
-        model: self.model
-      });
-    });
-  }
-  /**
-  * Restores the interface for control of network's assembly.
-  * @param {Object} view Instance of interface's current view.
-  */
-  restoreAssemblyControls(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Restore compartmentalization selector according to application's
-    // state.
-    self.compartmentalizationSelector.checked = self
-    .determineCompartmentalization(self);
-    if (false) {
-      // Create and activate data-dependent summary of replications.
-      self.createActivateReplicationsSummary(self);
-      // Create and activate menu to include new replications.
-      self.createNovelReplicationsMenu(self);
-    }
-  }
-  /**
-  * Creates and activates body of table for summary of current replications.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateReplicationsSummary(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Select summary table's body.
-    var body = d3.select(self.replicationTableBody);
-    // Append rows to table with association to data.
-    var dataRows = body.selectAll("tr").data(self.model.replications);
-    dataRows.exit().remove();
-    var newRows = dataRows.enter().append("tr");
-    var rows = newRows.merge(dataRows);
-    // Append cells to table with association to data.
-    var dataCells = rows.selectAll("td").data(function (element, index) {
-      // Organize data for table cells in each row.
-      return [].concat(
-        {
-          type: "name",
-          value: element
-        },
-        {
-          type: "removal",
-          value: element
-        }
-      );
-    });
-    dataCells.exit().remove();
-    var newCells = dataCells.enter().append("td");
-    var cells = newCells.merge(dataCells);
-    self.replicationsTableBodyCells = cells;
-    // Cells for data's name.
-    self.createCurrentReplicationsNames(self);
-    // Cells for data's values.
-    self.createActivateCurrentReplicationsRemovals(self);
-  }
-  /**
-  * Creates cells for names of current replications.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createCurrentReplicationsNames(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Select cells for data's name.
-    self.replicationTableBodyCellsNames = self
-    .replicationsTableBodyCells.filter(function (data, index) {
-      return data.type === "name";
-    });
-    // Assign attributes to cells for attributes.
-    self.replicationTableBodyCellsNames.text(function (data) {
-      return self.model.metabolites[data.value].name;
-    });
-  }
-  /**
-  * Creates and activates cells for removal of current replications.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateCurrentReplicationsRemovals(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Select cells for data's values.
-    self.replicationTableBodyCellsRemovals = self
-    .replicationsTableBodyCells.filter(function (data, index) {
-      return data.type === "removal";
-    });
-    // Assign attributes to cells for removal.
-    // Append buttons.
-    var dataButtons = self.replicationTableBodyCellsRemovals
-    .selectAll("button")
-    .data(function (element, index) {
-      return [element];
-    });
-    dataButtons.exit().remove();
-    var newButtons = dataButtons.enter().append("button");
-    var buttons = newButtons.merge(dataButtons);
-    // Assign attributes to buttons.
-    buttons.text(function (data) {
-      return "x";
-    });
-    // Assign position and dimension to rectangles.
-    // Activate buttons.
-    // Assign event listeners and handlers to bars.
-    buttons.on("click", function (data, index, nodes) {
-      Action.removeCurrentReplication({
-        identifier: data.value,
-        model: self.model
-      });
-    });
-  }
-  /**
-  * Creates menu to include novel replications.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createNovelReplicationsMenu(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Restore search menu to empty value.
-    self.replicationSearch.value = "";
-    // Select list for replication options.
-    var list = d3.select(self.replicationOptions);
-    // Append options to list with association to data.
-    var dataOptions = list
-    .selectAll("option").data(self.model.currentMetabolites);
-    dataOptions.exit().remove();
-    var newOptions = dataOptions.enter().append("option");
-    var options = newOptions.merge(dataOptions);
-    // Set attributes of options.
-    // It is possible to assign both value and label attributes to each
-    // option.
-    // Both value and label attributes appear in the drop-down list of
-    // options for the search menu, but value attributes are most prominent.
-    // Only the value attribute remains in the search menu after selection,
-    // and only this attribute is accessible to the event handler of the
-    // search menu.
-    // A potential strategy is to assign metabolite's identifiers to values
-    // and metabolite's names to labels of options.
-    // This strategy conveniently makes metabolite's identifiers accessible
-    // to the event handler of the search menu.
-    // The disadvantage of this strategy is that the user must see and
-    // select between the sometimes meaningless identifiers of metabolites.
-    // Instead, another strategy is to assign metabolite's names to values
-    // of options and subsequently determine metabolite's identifiers from
-    // those names.
-    // This determination of metabolite's names from identifiers requires a
-    // filter operation, but this operation is reasonably quick.
-    // Metabolites have both unique identifiers and unique names.
-    options.attr("value", function (data, index) {
-      return self.model.metabolites[data].name;
-    });
-  }
-  /**
-  * Determines the current value of compartmentalization in the application's
-  * state.
-  * @param {Object} view Instance of interface's current view.
-  */
-  determineCompartmentalization(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    return self.model.compartmentalization;
-  }
-  /**
-  * Determines whether or not the application state has a subnetwork.
-  */
-  determineSubnetwork() {
-    return (
-      !(this.model.entityViewSubNetworkNodes === null) &&
-      !(this.model.entityViewSubNetworkLinks === null)
-    );
-  }
-}
-
-/**
-* Interface to represent a temporary place-holder in bottom of interface.
-*/
-class BottomView {
-  /**
-  * Initializes an instance of the class.
-  * @param {Object} model Model of the application's comprehensive state.
-  */
-  constructor (model) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = this;
-    // Set reference to model of application's state.
-    self.model = model;
-    // Set reference to document object model (DOM).
-    self.document = document;
-    // Initialize view.
-    self.initializeView(self);
-    // Restore view.
-    self.restoreView(self);
-  }
-  /**
-  * Initializes the interface's view.
-  * Controls aspects of view's composition and behavior that persist with
-  * changes to the application's state.
-  * @param {Object} view Instance of interface's current view.
-  */
-  initializeView(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Initialize view's container.
-    self.initializeContainer(self);
-  }
-  /**
-  * Initializes the container for the interface.
-  * @param {Object} view Instance of interface's current view.
-  */
-  initializeContainer(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and set references to elements for interface.
-    // Select view in document object model.
-    self.view = self.document.getElementById("view");
-    // Remove any extraneous content within view.
-    // Initialization of the persistence view already removes extraneous
-    // content from view.
-    General.filterRemoveDocumentElements({
-      values: ["top", "bottom"],
-      attribute: "id",
-      elements: self.view.children
-    });
-    // Create container for interfaces within bottom of view.
-    if (!self.document.getElementById("bottom")) {
-      self.bottom = self.document.createElement("div");
-      self.view.appendChild(self.bottom);
-      self.bottom.setAttribute("id", "bottom");
-    } else {
-      self.bottom = self.document.getElementById("bottom");
-    }
-    // Remove any extraneous content within bottom.
-    General.filterRemoveDocumentElements({
-      values: ["control", "panel"],
-      attribute: "id",
-      elements: self.bottom.children
-    });
-    // Create container for interface within bottom.
-    // Set reference to current interface's container.
-    if (!self.document.getElementById("panel")) {
-      self.container = self.document.createElement("div");
-      self.bottom.appendChild(self.container);
-      self.container.setAttribute("id", "panel");
-    } else {
-      self.container = self.document.getElementById("panel");
-    }
-  }
-  /**
-  * Restores the interface's view.
-  * Controls aspects of view's composition and behavior that vary with changes
-  * to the application's state.
-  * @param {Object} view Instance of interface's current view.
-  */
-  restoreView(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-  }
-}
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 /**
 * Interface to represent the topology of the network of relations between
 * metabolic entities.
 */
-class TopologyView {
+class TopologyViewOld {
   /**
   * Initializes an instance of the class.
   * @param {Object} model Model of the application's comprehensive state.
@@ -4142,9 +3424,7 @@ class TopologyView {
   * @returns {Object<Array<string>>} Identifiers of nodes for metabolites that
   * participate in a reaction either as reactants or products.
   */
-  static sortMetabolitesNodesReactionRoles({
-    nodesIdentifiers, participants, metabolitesNodes
-  } = {}) {
+  static sortMetabolitesNodesReactionRoles({nodesIdentifiers, participants, metabolitesNodes} = {}) {
     // Initialize a collection of metabolites' nodes by roles in a reaction.
     var initialCollection = {
       reactants: [],
@@ -4213,12 +3493,7 @@ class TopologyView {
   * @returns {Object<string>} Record with indicators of sides of reaction's node
   * for reactants and products.
   */
-  static determineReactionNodeOrientation({
-    reactionNode,
-    reactantsNodes,
-    productsNodes,
-    graphHeight
-  } = {}) {
+  static determineReactionNodeOrientation({reactionNode, reactantsNodes, productsNodes, graphHeight} = {}) {
     // Extract coordinates for position of reaction's node.
     var reactionCoordinates = General.extractNodeCoordinates(reactionNode);
     // Extract coordinates of positions of nodes for metabolites that

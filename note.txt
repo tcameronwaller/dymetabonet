@@ -4,6 +4,24 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+1 January 2018
+
+----------
+Plan
+
+Implement summary and topology views.
+Give brief summary about network's elements in summary view.
+Give button in summary view to draw network.
+Draw network's elements in topology view.
+
+Restore buttons in each control view need to restore only aspects of that view.
+
+Organize styles of control view.
+
+Support multiple active views within control view.
+Consider using an array for state's variable for active views.
+
+--------------------------------------------------
 29 December 2017
 
 ----------
@@ -14,6 +32,9 @@ Consider using an array for active views instead of individual variables.
 
 I need to implement the summary and topology views.
 I need to draw the network's elements.
+
+I need to organize the styles for the control view, the tabs, panels, and summary menus.
+Make the views look orderly and aesthetic.
 
 ----------
 Progress
