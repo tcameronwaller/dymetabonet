@@ -1749,11 +1749,11 @@ Since each reaction only has annotation for a single process, the concern is tha
 summary of reactions' replication...
 sets of reactions by common reactants and products...
 total sets:
-(6088) [{…}, …]
+(6088) [{Â…}, Â…]
 count total sets: 6088
 
 multiple reactions:
-(1359) [{…}, …]
+(1359) [{Â…}, Â…]
 count multiple reactions: 1359
 count multiple reactions, multiple compartments: 1195
 count multiple reactions, multiple processes: 388
@@ -2672,25 +2672,25 @@ T Cameron Waller
 Ah! That sounds neat! I need to learn more about that, then. Hopefully I can follow that principle without a new, heavy library. ... So, here's what I was thinking... I think it's sort of what you're talking about. I'll have OOP-style classes to model and control discrete parts of my interface (view 1, view 2, view 3). These classes will manage the state and behavior of the interface (user interaction with controls and input elements). The classes will call FP-style functions (maybe organized as static methods in classes of their own) for the heavy data-crunching back-end-ish work. Does that make sense?
 
 Alex Bigelow
-Yeah, that’s definitely a way to do it. I tend to make classes for the data-crunching part too (the model part of model-view-controller), but your approach would probably be simpler, and kind of cuts out the need for a controller (which is fine).
+Yeah, thatÂ’s definitely a way to do it. I tend to make classes for the data-crunching part too (the model part of model-view-controller), but your approach would probably be simpler, and kind of cuts out the need for a controller (which is fine).
 
-If it helps at all, I’ve started rolling what I do into a (shudder) mini framework of my own: https://github.com/alex-r-bigelow/my-mvc-library
-I’m not saying to use it. But skimming the Model and View code might be helpful (they’re pretty short files)? Unfortunately I don’t have a very good example of how to use it / wire them up together… And, as I said, your approach (functional model + controller) would probably be simpler (edited)
+If it helps at all, IÂ’ve started rolling what I do into a (shudder) mini framework of my own: https://github.com/alex-r-bigelow/my-mvc-library
+IÂ’m not saying to use it. But skimming the Model and View code might be helpful (theyÂ’re pretty short files)? Unfortunately I donÂ’t have a very good example of how to use it / wire them up togetherÂ… And, as I said, your approach (functional model + controller) would probably be simpler (edited)
 
 T Cameron Waller
 Thank you very much! This conversation has been very helpful, and I think you pointed me in a good direction. I started looking at your framework and will continue to try to figure out your strategy there. As always, I've got a lot to learn. :slightly_smiling_face:
 
 Alex Bigelow
-Don’t waste too much time on it… those are things I just found myself writing over and over again. The only things it does are:
+DonÂ’t waste too much time on itÂ… those are things I just found myself writing over and over again. The only things it does are:
 1) code to strap custom event listeners on my models / views (your functional approach would bypass the need for this)
-2) separating views’ rendering logic into `setup` and `draw` functions (even though D3 tries to be helpful with enter/exit/update, I still find myself needing to do some initial setup a lot that isn’t data-driven)… there are examples in the readme of what a view would look like. You wouldn’t necessarily need this, but I’ve found it to be helpful when I create View classes that use D3 to render things to the DOM
-3) debouncing the views’ render functions, so that I can just call `render()` whenever / wherever I want, and not worry about whether something else just called render (rendering is expensive!)… This is another thing you don’t necessarily need, but I’ve found that it helps me avoid a lot of complicated debugging
+2) separating viewsÂ’ rendering logic into `setup` and `draw` functions (even though D3 tries to be helpful with enter/exit/update, I still find myself needing to do some initial setup a lot that isnÂ’t data-driven)Â… there are examples in the readme of what a view would look like. You wouldnÂ’t necessarily need this, but IÂ’ve found it to be helpful when I create View classes that use D3 to render things to the DOM
+3) debouncing the viewsÂ’ render functions, so that I can just call `render()` whenever / wherever I want, and not worry about whether something else just called render (rendering is expensive!)Â… This is another thing you donÂ’t necessarily need, but IÂ’ve found that it helps me avoid a lot of complicated debugging
 
 T Cameron Waller
 I stumbled upon the State Action Model (SAM) Pattern (http://sam.js.org/). In case you're interested, I'm curious what you think.
 
 Alex Bigelow
-Probably overkill for what you’re trying to do—we’re kind of going in that direction, but this seems to take it to a really formal level. For a really big / complicated system, it might be worth it, but I think the approach you described (view classes + functional models) sounds like it would be sufficient for your project
+Probably overkill for what youÂ’re trying to doÂ—weÂ’re kind of going in that direction, but this seems to take it to a really formal level. For a really big / complicated system, it might be worth it, but I think the approach you described (view classes + functional models) sounds like it would be sufficient for your project
 
 T Cameron Waller
 Whew! I was having difficulty understanding SAM anyway. Thanks! :slightly_smiling_face:

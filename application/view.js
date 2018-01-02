@@ -621,7 +621,8 @@ class View {
 // TODO: Tip should just accept a child element to append.
 
 /**
-* Interface for tip with information about other elements in any views.
+* Interface to communicate interactively concise information about other
+* elements in any views.
 */
 class TipView {
   /**
@@ -847,7 +848,7 @@ class ControlView {
   }
 }
 /**
-* Interface for controls to load and save application's state.
+* Interface to control load and save of application's state.
 */
 class StateView {
   /**
@@ -980,7 +981,7 @@ class StateView {
 // TODO: Restore button should restore defaults ONLY for Set View.
 
 /**
-* Interface for sets of entities.
+* Interface to summarize sets of entities and control filters by these sets.
 */
 class SetView {
   /**
@@ -1191,7 +1192,7 @@ class SetView {
 // TODO: Introduce concise changes from candidacy menu...
 
 /**
-* Interface for menu of sets of entities.
+* Interface to organize menu of sets.
 */
 class SetMenuView {
   /**
@@ -1598,7 +1599,7 @@ class SetMenuView {
 // TODO: Restore button should restore defaults ONLY for Candidacy View.
 
 /**
-* Interface for candidate entities.
+* Interface to summarize candidate entities and control simplifications.
 */
 class CandidacyView {
   /**
@@ -1764,7 +1765,7 @@ class CandidacyView {
 }
 
 /**
-* Interface for menu of candidate entities.
+* Interface to organize menu of candidates.
 */
 class CandidacyMenuView {
   /**
@@ -2338,8 +2339,8 @@ class ExplorationView {
 }
 
 /**
-* Interface for communication of summary information about selections and
-* network's elements.
+* Interface to summarize filters and network's elements and control visual
+* representation of network's topology.
 */
 class SummaryView {
   /**
@@ -2428,88 +2429,50 @@ class SummaryView {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
 /**
-* Interface to represent the topology of the network of relations between
-* metabolic entities.
+* Interface to represent visually the network's topology.
 */
-class TopologyViewOld {
+class TopologyView {
   /**
-  * Initializes an instance of the class.
-  * @param {Object} model Model of the application's comprehensive state.
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.exploration Instance of ExplorationView's class.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor (model) {
+  constructor ({tip, exploration, state} = {}) {
+    // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
-    self.model = model;
+    self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    self.exploration = exploration;
+    // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
     // Restore view.
     self.restoreView(self);
   }
+
   /**
   * Initializes aspects of the view's composition and behavior that do not vary
   * with changes to the application's state.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  initializeView(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Initialize view's container.
-    self.initializeContainer(self);
+  initializeView(self) {
+
+
+
     // Initialize view's graphical container for network's node-link diagram.
     self.initializeGraph(self);
   }
-  /**
-  * Initializes the container for the interface.
-  * @param {Object} view Instance of interface's current view.
-  */
-  initializeContainer(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and set references to elements for interface.
-    // Select view in document object model.
-    self.view = self.document.getElementById("view");
-    // Remove any extraneous content within view.
-    // Initialization of the persistence view already removes extraneous
-    // content from view.
-    General.filterRemoveDocumentElements({
-      values: ["top", "bottom"],
-      attribute: "id",
-      elements: self.view.children
-    });
-    // Create container for interfaces within bottom of view.
-    if (!self.document.getElementById("bottom")) {
-      self.bottom = self.document.createElement("div");
-      self.view.appendChild(self.bottom);
-      self.bottom.setAttribute("id", "bottom");
-    } else {
-      self.bottom = self.document.getElementById("bottom");
-    }
-    // Remove any extraneous content within bottom.
-    General.filterRemoveDocumentElements({
-      values: ["control", "topology"],
-      attribute: "id",
-      elements: self.bottom.children
-    });
-    // Create container for interface within bottom.
-    // Set reference to current interface's container.
-    if (!self.document.getElementById("topology")) {
-      self.container = self.document.createElement("div");
-      self.bottom.appendChild(self.container);
-      self.container.setAttribute("id", "topology");
-    } else {
-      self.container = self.document.getElementById("topology");
-    }
-  }
+
+
   /**
   * Initializes the graphical container for the network's node-link diagram.
   * @param {Object} view Instance of interface's current view.
@@ -2550,6 +2513,8 @@ class TopologyViewOld {
     self.graphWidth = General.determineElementDimension(self.graph, "width");
     self.graphHeight = General.determineElementDimension(self.graph, "height");
   }
+
+
   /**
   * Defines link's directional marker.
   * @param {Object} view Instance of interface's current view.
@@ -3691,3 +3656,8 @@ class TopologyViewOld {
     nodesLabels.attr("font-size", self.scaleFont + "px");
   }
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
