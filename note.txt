@@ -4,6 +4,42 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+3 January 2018
+
+----------
+Meet with Casey Hughes
+
+For his research project, Casey needs to know information about all reactions in which cysteine participates, especially in the cytosol.
+He prefers to have this information in a list or table-like format.
+If this information is exportable, then he can explore and sort it himself in a program such as Microsoft Excel.
+
+----------
+Plan
+
+Load information for application's default state automatically upon initiation of the application.
+Preserve the ability to save and load custom states of the application.
+
+Introduce functionality to export information about all entities, reactions and metabolites, that pass filters from the set menu.
+Export this information in a common, convenient format for users, such as comma-separate-values (csv) or tab-separate-values (tsv).
+Format tsv might be preferrable since reactions participate in multiple compartments and processes.
+These lists of compartments and processes have commas within them.
+
+Windows line ending is "\r\n".
+Linux line ending is "\n".
+
+Implement topology view.
+Draw network's elements in topology view.
+Complete summaries for tips for nodes for metabolites and reactions.
+
+Restore buttons in each control view need to restore only aspects of that view.
+
+Organize styles of control view.
+
+Support multiple active views within control view.
+Consider using an array for state's variable for active views.
+
+
+--------------------------------------------------
 2 January 2018
 
 ----------

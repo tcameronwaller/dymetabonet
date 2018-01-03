@@ -36,6 +36,159 @@ United States of America
 */
 class Evaluation {
   /**
+  * Creates summary of information about metabolic entities.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of entity, reaction or metabolite, of
+  * interest.
+  * @param {Array<string>} parameters.identifiers Identifiers of entities.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
+  * @param {Object<Object>} parameters.reactionsSets Information about
+  * reactions' metabolites and sets.
+  * @param {Object<Object>} parameters.metabolitesSets Information about
+  * metabolites' reactions and sets.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
+  * @returns {Array<Object>} Information metabolic entities.
+  */
+  static createEntitiesSummary({type, identifiers, reactions, metabolites, reactionsSets, metabolitesSets, compartments, processes} = {}) {
+    // Create summary according to entity's type.
+    if (type === "reaction") {
+      // Iterate on identifiers.
+      return identifiers.map(function (identifier) {
+        return Evaluation.createReactionSummary({
+          identifier: identifier,
+          reactions: reactions,
+          metabolites: metabolites,
+          reactionsSets: reactionsSets,
+          compartments: compartments,
+          processes: processes
+        });
+      });
+    } else if (type === "metabolite") {
+      // Iterate on identifiers.
+      return identifiers.map(function (identifier) {
+        return Evaluation.createMetaboliteSummary({
+          identifier: identifier,
+          reactions: reactions,
+          metabolites: metabolites,
+          metabolitesSets: metabolitesSets,
+          compartments: compartments,
+          processes: processes
+        });
+      });
+    }
+  }
+  /**
+  * Creates summary of information about a reaction.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a reaction.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
+  * @param {Object<Object>} parameters.reactionsSets Information about
+  * reactions' metabolites and sets.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
+  * @returns {Object} Information a reaction.
+  */
+  static createReactionSummary({identifier, reactions, metabolites, reactionsSets, compartments, processes} = {}) {
+    // Access information.
+    var reaction = reactions[identifier];
+    var reactionSets = reactionsSets[identifier];
+    // Metabolites.
+    var reactantsIdentifiers = Extraction.collectMetabolitesFilterParticipants({
+      criteria: {roles: ["reactant"]},
+      participants: reaction.participants
+    });
+    var productsIdentifiers = Extraction.collectMetabolitesFilterParticipants({
+      criteria: {roles: ["product"]},
+      participants: reaction.participants
+    });
+    var reactantsNames = General.collectKeyValueFromEntries({
+      identifiers: reactantsIdentifiers,
+      key: "name",
+      object: metabolites
+    });
+    var productsNames = General.collectKeyValueFromEntries({
+      identifiers: productsIdentifiers,
+      key: "name",
+      object: metabolites
+    });
+    // Compartments.
+    var compartmentsNames = General.collectKeyValueFromEntries({
+      identifiers: reactionSets.compartments,
+      key: "name",
+      object: compartments
+    });
+    // Processes.
+    var processesNames = General.collectKeyValueFromEntries({
+      identifiers: reactionSets.processes,
+      key: "name",
+      object: processes
+    });
+    // Compile information.
+    return {
+      name: reaction.name,
+      reversibility: reaction.reversibility,
+      conversion: reaction.conversion,
+      transport: reaction.transport,
+      dispersal: reaction.dispersal,
+      genes: reaction.genes,
+      reactants: reactantsNames,
+      products: productsNames,
+      compartments: compartmentsNames,
+      processes: processesNames
+    };
+  }
+  /**
+  * Creates summary of information about a metabolite.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a metabolite.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
+  * @param {Object<Object>} parameters.metabolitesSets Information about
+  * metabolites' reactions and sets.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
+  * @returns {Object} Information a metabolite.
+  */
+  static createMetaboliteSummary({identifier, reactions, metabolites, metabolitesSets, compartments, processes} = {}) {
+    // Access information.
+    var metabolite = metabolites[identifier];
+    var metaboliteSets = metabolitesSets[identifier];
+    // Reactions.
+    var reactionsNames = General.collectKeyValueFromEntries({
+      identifiers: metaboliteSets.reactions,
+      key: "name",
+      object: reactions
+    });
+    // Compartments.
+    var compartmentsNames = General.collectKeyValueFromEntries({
+      identifiers: metaboliteSets.compartments,
+      key: "name",
+      object: compartments
+    });
+    // Processes.
+    var processesNames = General.collectKeyValueFromEntries({
+      identifiers: metaboliteSets.processes,
+      key: "name",
+      object: processes
+    });
+    // Compile information.
+    return {
+      name: metabolite.name,
+      formula: metabolite.formula,
+      charge: metabolite.charge,
+      reactions: reactionsNames,
+      compartments: compartmentsNames,
+      processes: processesNames
+    };
+  }
+
+  /**
   * Summarizes replication of reactions.
   * @param {Object} reactions Information about all reactions.
   */
@@ -148,9 +301,7 @@ class Evaluation {
   * reactions.
   * @returns {Array<Array<string>>} Combinations of values of the attribute.
   */
-  static extractReactionsUniqueCombinations({
-    attribute, reactionsIdentifiers, reactions
-  } = {}) {
+  static extractReactionsUniqueCombinations({attribute, reactionsIdentifiers, reactions} = {}) {
     // Collect all combinations of the attribute from reactions.
     var combinations = reactionsIdentifiers.map(function (reactionIdentifier) {
       // Set reference to record for current reaction.

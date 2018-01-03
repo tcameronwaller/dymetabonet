@@ -697,7 +697,7 @@ class TipView {
     // Restore tips properties.
     self.container.style.top = ((positionY - 15) + "px");
     self.container.style.left = ((positionX + 15) + "px");
-    self.container.appendChild(child);
+    self.container.appendChild(summary);
   }
   /**
   * Clears view.
@@ -1057,13 +1057,17 @@ class SetView {
       // Activate invariant behavior of view's elements.
       // Create title.
       self.createTitle(self);
+      // Create and activate restore.
+      self.createActivateRestore(self);
+      // Create and activate export.
+      self.createActivateExport(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
       // Create and activate controls for type of entities.
       self.createActivateEntitiesControl("metabolites", self);
       self.createActivateEntitiesControl("reactions", self);
       // Create and activate control for filter.
       self.createActivateFilterControl(self);
-      // Create and activate restore.
-      self.createActivateRestore(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create menu for sets by processes.
@@ -1100,6 +1104,43 @@ class SetView {
     self.container.appendChild(title);
     title.classList.add("title");
     title.textContent = "Set";
+  }
+  /**
+  * Creates and activates a button to restore the menu.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestore(self) {
+    // Create button for restoration.
+    var restore = View.createButton({
+      text: "restore",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    restore.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      // TODO: This should call a restore button that's specific to the sets' view...
+      Action.restoreApplicationInitialState(self.state);
+    });
+  }
+  /**
+  * Creates and activates a button to export information.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateExport(self) {
+    // Create button for export.
+    var exporter = View.createButton({
+      text: "export",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    exporter.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.exportFilterEntitiesSummary(self.state);
+    });
   }
   /**
   * Creates and activates a control for the type of entities.
@@ -1145,25 +1186,6 @@ class SetView {
       // Element on which the event originated is event.currentTarget.
       // Call action.
       Action.changeSetsFilter(self.state);
-    });
-  }
-  /**
-  * Creates and activates a button to restore the menu.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateRestore(self) {
-    // Create button for restoration.
-    var restore = View.createButton({
-      text: "restore",
-      parent: self.container,
-      documentReference: self.document
-    });
-    // Activate behavior.
-    restore.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      // TODO: This should call a restore button that's specific to the sets' view...
-      Action.restoreApplicationInitialState(self.state);
     });
   }
   /**

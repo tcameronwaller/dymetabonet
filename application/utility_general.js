@@ -91,6 +91,74 @@ class General {
     reference.click();
     document.body.removeChild(reference);
   }
+  /**
+  * Saves to file on client's system a string in plain text format.
+  * @param {string} name Name of file.
+  * @param {string} string String in memory to save.
+  */
+  static saveString(name, string) {
+    var blob = new Blob([string], {type: "text/plain"});
+    var url = URL.createObjectURL(blob);
+    var reference = document.createElement("a");
+    reference.setAttribute("href", url);
+    reference.setAttribute("download", name);
+    document.body.appendChild(reference);
+    reference.click();
+    document.body.removeChild(reference);
+  }
+  /**
+  * Converts information from records to a string table with tab separation.
+  * @param {Array<Object>} records Records of information.
+  * @returns String table with tab separation.
+  */
+  static convertRecordsStringTabSeparateTable(records) {
+    // Specify delimiter or separator and line ending.
+    var separator = "\t";
+    var end = "\r\n";
+    // Prepare head row.
+    // Assume that all records have same keys.
+    // Assume that these keys are strings.
+    var keys = Object.keys(records[0]);
+    var headRow = keys.reduce(function (string, key) {
+      // Combine to collection.
+      if (string.length === 0) {
+        return String(string + "\"" + key + "\"");
+      } else {
+        return String(string + separator + "\"" + key + "\"");
+      }
+    }, "");
+    // Prepare body rows.
+    var bodyRows = records.map(function (record) {
+      return keys.reduce(function (string, key) {
+        // Access key's value in record.
+        var value = record[key];
+        // Determine value's representation according to its type.
+        // Procedure supports types null, undefined, boolean, number, string,
+        // symbol, and array.
+        // Procedure does not support more complex types of object.
+        var type = General.determineValueType(value);
+        if (type === "null" || type === "undefined") {
+          var representation = String("\"" + "null" + "\"");
+        } else if (type === "boolean" || type === "number") {
+          var representation = String(value);
+        } else if (type === "string" || type === "symbol") {
+          var representation = String("\"" + value + "\"");
+        } else if (type === "array") {
+          var representation = value.join(",");
+        }
+        // Combine to collection.
+        if (string.length === 0) {
+          return String(string + representation);
+        } else {
+          return String(string + separator + representation);
+        }
+      }, "");
+    });
+    // Combine rows.
+    var rows = [].concat([headRow], bodyRows);
+    var string = rows.join(end);
+    return string;
+  };
 
   // Methods for document object model (DOM).
   // TODO: Consider placing all of these methods within a separate utility class...
@@ -1055,6 +1123,19 @@ class General {
     var firstCharacter = string.slice(0, 1);
     var lastCharacters = string.slice(1);
     return (firstCharacter.toUpperCase() + lastCharacters);
+  }
+  /**
+  * Collects a key's value from specific entries within an object.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.identifiers Identifiers of entries.
+  * @param {string} key Key for value within entries.
+  * @param {Object} object Object of entries.
+  * @returns {Array} Values of the key from entries.
+  */
+  static collectKeyValueFromEntries({identifiers, key, object} = {}) {
+    return identifiers.map(function (identifier) {
+      return object[identifier][key];
+    });
   }
   /**
   * Collects a single value for an identical key from multiple objects.

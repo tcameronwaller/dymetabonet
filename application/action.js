@@ -200,15 +200,13 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
-    var container = document.getElementById("control");
-    console.log(container.children);
-    General.filterRemoveDocumentElements({
-      values: ["state", "set", "candidate"],
-      attribute: "id",
-      elements: container.children
-    });
-    console.log(container.children);
+    // Prepare information.
 
+    var records = General.copyRecordsObjectArray(state.reactions);
+    var string = General.convertRecordsStringTabSeparateTable(records);
+    console.log(records);
+    console.log(string);
+    General.saveString("string.txt", string);
 
     // Terminate process timer.
     //console.timeEnd("timer");
@@ -505,6 +503,43 @@ class Action {
       attributesValues: attributesValues,
       state: state
     });
+  }
+  /**
+  * Prepares and exports information about entities, reactions and metabolites,
+  * that pass current filters by sets.
+  * @param {Object} state Application's state.
+  */
+  static exportFilterEntitiesSummary(state) {
+    // Prepare information.
+    // Save information.
+    // Reactions.
+    var reactionsSummary = Evaluation.createEntitiesSummary({
+      type: "reaction",
+      identifiers: Object.keys(state.filterReactionsSets),
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalReactionsSets,
+      metabolitesSets: state.totalMetabolitesSets,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    var reactionsSummaryString = General
+    .convertRecordsStringTabSeparateTable(reactionsSummary);
+    General.saveString("reactions_summary.txt", reactionsSummaryString);
+    // Metabolites.
+    var metabolitesSummary = Evaluation.createEntitiesSummary({
+      type: "metabolite",
+      identifiers: Object.keys(state.filterMetabolitesSets),
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalReactionsSets,
+      metabolitesSets: state.totalMetabolitesSets,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    var metabolitesSummaryString = General
+    .convertRecordsStringTabSeparateTable(metabolitesSummary);
+    General.saveString("metabolites_summary.txt", metabolitesSummaryString);
   }
   /**
   * Changes specification of compartmentalization's relevance
