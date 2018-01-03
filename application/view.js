@@ -256,7 +256,7 @@ class View {
     return novelElements.merge(dataElements);
   }
   /**
-  * Create span with text.
+  * Creates and appends span with text.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.text Text for element.
   * @param {Object} parameters.parent Reference to parent element.
@@ -264,10 +264,27 @@ class View {
   * model.
   * @returns {Object} Reference to element.
   */
-  static createSpanText({text, parent, documentReference}) {
+  static createAppendSpanText({text, parent, documentReference} = {}) {
+    // Create element.
+    var span = View.createSpanText({
+      text: text,
+      documentReference: documentReference
+    });
+    parent.appendChild(span);
+    // Return reference to element.
+    return span;
+  }
+  /**
+  * Creates span with text.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.text Text for element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createSpanText({text, documentReference} = {}) {
     // Create element.
     var span = documentReference.createElement("span");
-    parent.appendChild(span);
     span.textContent = text;
     // Return reference to element.
     return span;
@@ -283,7 +300,7 @@ class View {
   */
   static createSearchLabel({text, parent, documentReference} = {}) {
     // Create label.
-    var label = View.createSpanText({
+    var label = View.createAppendSpanText({
       text: text,
       parent: parent,
       documentReference: documentReference
@@ -335,7 +352,7 @@ class View {
     parent.appendChild(cell);
     cell.classList.add(className);
     // Create label.
-    var label = View.createSpanText({
+    var label = View.createAppendSpanText({
       text: text,
       parent: cell,
       documentReference: documentReference
@@ -638,13 +655,7 @@ class TipView {
     // Initialize view.
     self.initializeView(self);
     // Restore view.
-    self.restoreView({
-      visible: false,
-      positionX: 0,
-      positionY: 0,
-      text: "",
-      self: self
-    });
+    self.clearView(self);
   }
   /**
   * Initializes aspects of the view's composition and behavior that do not vary
@@ -667,10 +678,14 @@ class TipView {
   * @param {boolean} parameters.visible Whether tip view is visible.
   * @param {number} parameters.positionX Pointer's horizontal coordinate.
   * @param {number} parameters.positionY Pointer's vertical coordinate.
-  * @param {string} parameters.text Text for tip.
+  * @param {Object} parameters.summary Reference to summary element.
   * @param {Object} parameters.self Instance of a class.
   */
-  restoreView({visible, positionX, positionY, text, self} = {}) {
+  restoreView({visible, positionX, positionY, summary, self} = {}) {
+    // Remove any children.
+    if (!(self.container.children.length === 0)) {
+      General.removeDocumentChildren(self.container);
+    }
     // Determine whether tip is visible.
     if (visible) {
       self.container.classList.remove("invisible");
@@ -682,7 +697,20 @@ class TipView {
     // Restore tips properties.
     self.container.style.top = ((positionY - 15) + "px");
     self.container.style.left = ((positionX + 15) + "px");
-    self.container.textContent = text;
+    self.container.appendChild(child);
+  }
+  /**
+  * Clears view.
+  * @param {Object} self Instance of a class.
+  */
+  clearView(self) {
+    self.restoreView({
+      visible: false,
+      positionX: 0,
+      positionY: 0,
+      summary: View.createSpanText({text: "",documentReference: self.document}),
+      self: self
+    });
   }
 }
 
@@ -796,7 +824,7 @@ class ControlView {
     if (self[reference].children.length === 0) {
       // Container is empty.
       // Create element.
-      var label = View.createSpanText({
+      var label = View.createAppendSpanText({
         text: category,
         parent: self[reference],
         documentReference: self.document
@@ -1429,42 +1457,34 @@ class SetMenuView {
       // Select element.
       var row = nodes[index];
       var rowSelection = d3.select(row);
-      // Create message for tip.
-      var name = SetMenuView.accessName({
-        attribute: element.attribute,
-        value: element.value,
-        state: self.state
-      });
-      var message = (name + " (" + element.count + ")");
       // Call action.
       rowSelection.classed("normal", false);
       rowSelection.classed("emphasis", true);
-      self.tip.restoreView({
-        visible: true,
+      SetMenuView.createTip({
+        attribute: element.attribute,
+        value: element.value,
+        count: element.count,
         positionX: positionX,
         positionY: positionY,
-        text: message,
-        self: self.tip
+        tip: self.tip,
+        documentReference: self.document,
+        state: self.state
       });
     });
     self.rows.on("mousemove", function (element, index, nodes) {
       // Determine pointer coordinates.
       var positionX = d3.mouse(self.view)[0];
       var positionY = d3.mouse(self.view)[1];
-      // Create message for tip.
-      var name = SetMenuView.accessName({
+      // Call action.
+      SetMenuView.createTip({
         attribute: element.attribute,
         value: element.value,
-        state: self.state
-      });
-      var message = (name + " (" + element.count + ")");
-      // Call action.
-      self.tip.restoreView({
-        visible: true,
+        count: element.count,
         positionX: positionX,
         positionY: positionY,
-        text: message,
-        self: self.tip
+        tip: self.tip,
+        documentReference: self.document,
+        state: self.state
       });
     });
     self.rows.on("mouseleave", function (element, index, nodes) {
@@ -1474,13 +1494,7 @@ class SetMenuView {
       // Call action.
       rowSelection.classed("emphasis", false);
       rowSelection.classed("normal", true);
-      self.tip.restoreView({
-        visible: false,
-        positionX: 0,
-        positionY: 0,
-        text: "",
-        self: self.tip
-      });
+      self.tip.clearView(self.tip);
     });
   }
   /**
@@ -1565,6 +1579,40 @@ class SetMenuView {
         attribute: element.attribute,
         state: self.state
       });
+    });
+  }
+  /**
+  * Creates tip.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.attribute Name of an attribute.
+  * @param {string} parameters.value Identifier of a value.
+  * @param {number} parameters.count Count of entity's relations.
+  * @param {number} parameters.positionX Pointer's horizontal coordinate.
+  * @param {number} parameters.positionY Pointer's vertical coordinate.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  */
+  static createTip({attribute, value, count, positionX, positionY, tip, documentReference, state} = {}) {
+    // Create summary for tip.
+    var name = SetMenuView.accessName({
+      attribute: attribute,
+      value: value,
+      state: state
+    });
+    var message = (name + " (" + count + ")");
+    var summary = View.createSpanText({
+      text: message,
+      documentReference: documentReference
+    });
+    // Create tip.
+    tip.restoreView({
+      visible: true,
+      positionX: positionX,
+      positionY: positionY,
+      summary: summary,
+      self: tip
     });
   }
   /**
@@ -2020,42 +2068,34 @@ class CandidacyMenuView {
       // Select element.
       var row = nodes[index];
       var rowSelection = d3.select(row);
-      // Create message for tip.
-      var name = CandidacyMenuView.accessName({
-        identifier: element.candidate,
-        entity: element.entity,
-        state: self.state
-      });
-      var message = (name + " (" + element.count + ")");
       // Call action.
       rowSelection.classed("normal", false);
       rowSelection.classed("emphasis", true);
-      self.tip.restoreView({
-        visible: true,
+      CandidacyMenuView.createTip({
+        identifier: element.candidate,
+        entity: element.entity,
+        count: element.count,
         positionX: positionX,
         positionY: positionY,
-        text: message,
-        self: self.tip
+        tip: self.tip,
+        documentReference: self.document,
+        state: self.state
       });
     });
     self.rows.on("mousemove", function (element, index, nodes) {
       // Determine pointer coordinates.
       var positionX = d3.mouse(self.view)[0];
       var positionY = d3.mouse(self.view)[1];
-      // Create message for tip.
-      var name = CandidacyMenuView.accessName({
+      // Call action.
+      CandidacyMenuView.createTip({
         identifier: element.candidate,
         entity: element.entity,
-        state: self.state
-      });
-      var message = (name + " (" + element.count + ")");
-      // Call action.
-      self.tip.restoreView({
-        visible: true,
+        count: element.count,
         positionX: positionX,
         positionY: positionY,
-        text: message,
-        self: self.tip
+        tip: self.tip,
+        documentReference: self.document,
+        state: self.state
       });
     });
     self.rows.on("mouseleave", function (element, index, nodes) {
@@ -2065,13 +2105,7 @@ class CandidacyMenuView {
       // Call action.
       rowSelection.classed("emphasis", false);
       rowSelection.classed("normal", true);
-      self.tip.restoreView({
-        visible: false,
-        positionX: 0,
-        positionY: 0,
-        text: "",
-        self: self.tip
-      });
+      self.tip.clearView(self.tip);
     });
   }
   /**
@@ -2202,6 +2236,40 @@ class CandidacyMenuView {
         category: element.entity,
         state: self.state
       });
+    });
+  }
+  /**
+  * Creates tip.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {string} parameters.entity Type of entity, metabolites or reactions.
+  * @param {number} parameters.count Count of entity's relations.
+  * @param {number} parameters.positionX Pointer's horizontal coordinate.
+  * @param {number} parameters.positionY Pointer's vertical coordinate.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  */
+  static createTip({identifier, entity, count, positionX, positionY, tip, documentReference, state} = {}) {
+    // Create summary for tip.
+    var name = CandidacyMenuView.accessName({
+      identifier: identifier,
+      entity: entity,
+      state: state
+    });
+    var message = (name + " (" + count + ")");
+    var summary = View.createSpanText({
+      text: message,
+      documentReference: documentReference
+    });
+    // Create tip.
+    tip.restoreView({
+      visible: true,
+      positionX: positionX,
+      positionY: positionY,
+      summary: summary,
+      self: tip
     });
   }
   /**
@@ -2417,13 +2485,10 @@ class SummaryView {
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
     // Summarize the network's elements.
-    var nodesMetabolites = Object
-    .keys(self.state.networkNodesMetabolites).length;
-    var nodesReactions = Object.keys(self.state.networkNodesReactions).length;
-    var links = Object.keys(self.state.networkLinks).length;
+    var nodes = self.state.networkNodesRecords.length;
+    var links = self.state.networkLinksRecords.length;
     var message = (
-      "nodes for metabolites: " + nodesMetabolites +
-      "... nodes for reactions: " + nodesReactions + "... links: " + links
+      "nodes : " + nodes + "... links: " + links
     );
     self.summary.textContent = message;
   }
@@ -2458,131 +2523,134 @@ class TopologyView {
     // Restore view.
     self.restoreView(self);
   }
-
   /**
   * Initializes aspects of the view's composition and behavior that do not vary
   * with changes to the application's state.
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
-
-
-
-    // Initialize view's graphical container for network's node-link diagram.
-    self.initializeGraph(self);
-  }
-
-
-  /**
-  * Initializes the graphical container for the network's node-link diagram.
-  * @param {Object} view Instance of interface's current view.
-  */
-  initializeGraph(view) {
-    // Set reference to class' current instance to transfer across changes in
-    // scope.
-    var self = view;
-    // Determine whether the graph already exists within the view.
-    if (!self.container.getElementsByTagName("svg").item(0)) {
-      // Graph does not exist within view.
-      // Create graph for network visualization.
-      //self.graph = self.document.createElement("svg");
-      //self.container.appendChild(self.graph);
-      //self.graph.classList.add("graph");
-      //self.graphSelection = d3.select(self.graph);
-      // Create graph with D3 so that styles in CSS will control dimensions.
-      self.graphSelection = d3.select(self.container).append("svg");
-      self.graphSelection.classed("graph", true);
-      self.graph = self.graphSelection.node();
-      // Create basic elements within graph.
-      // Create base for graph's background.
-      var base = self
-      .document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      self.graph.appendChild(base);
-      base.classList.add("base");
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "topology",
+      target: self.exploration.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
+    // Determine whether the container is empty.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create view's invariant elements.
+      // Activate invariant behavior of view's elements.
+      // Create graphical container.
+      self.createGraph(self);
+      // Create graph's base.
+      self.createBase(self);
       // Define links' directional marker.
       self.defineLinkDirectionalMarker(self);
     } else {
-      // Graph exists within view.
-      // Set references to graph.
+      // Container is not empty.
+      // Set references to view's variant elements.
       self.graph = self.container.getElementsByTagName("svg").item(0);
-      self.graphSelection = d3.select(self.graph);
-      // Set references to basic elements within graph.
+      self.graphWidth = General.determineElementDimension(self.graph, "width");
+      self.graphHeight = General
+      .determineElementDimension(self.graph, "height");
     }
-    // Determine the dimensions of the graphical containers.
-    // Set references to dimensions of graphical container.
+  }
+  /**
+  * Creates a graphical container.
+  * @param {Object} self Instance of a class.
+  */
+  createGraph(self) {
+    // Create graphical container.
+    self.graph = View.createGraph({
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Determine graphs' dimensions.
     self.graphWidth = General.determineElementDimension(self.graph, "width");
     self.graphHeight = General.determineElementDimension(self.graph, "height");
   }
-
-
+  /**
+  * Creates a base within a graphical container.
+  * @param {Object} self Instance of a class.
+  */
+  createBase(self) {
+    // Create base for graph.
+    var base = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    self.graph.appendChild(base);
+    base.classList.add("base");
+  }
   /**
   * Defines link's directional marker.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  defineLinkDirectionalMarker(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  defineLinkDirectionalMarker(self) {
     // Define links' directional marker.
-    // Define by D3.
-    var marker = self.graphSelection
-    .append("defs")
-    .append("marker")
-    .attr("id", "link-marker")
-    .attr("viewBox", "0 0 10 10")
-    .attr("refX", -5)
-    .attr("refY", 5)
-    .attr("markerWidth", 5)
-    .attr("markerHeight", 5)
-    .attr("orient", "auto")
-    .append("path")
-    .attr("d", "M 0 0 L 10 5 L 0 10 z");
+    var definition = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    self.graph.appendChild(definition);
+    var marker = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "marker");
+    definition.appendChild(marker);
+    marker.setAttribute("id", "link-marker");
+    marker.setAttribute("viewBox", "0 0 10 10");
+    marker.setAttribute("refX", -5);
+    marker.setAttribute("refY", 5);
+    marker.setAttribute("markerWidth", 5);
+    marker.setAttribute("markerHeight", 5);
+    marker.setAttribute("orient", "auto");
+    var path = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "path");
+    marker.appendChild(path);
+    path.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+
     if (false) {
-      // Define directly.
-      var definition = self.document.createElement("defs");
-      self.graph.appendChild(definition);
-      var marker = self.document.createElement("marker");
-      definition.appendChild(marker);
-      marker.setAttribute("id", "link-marker");
-      marker.setAttribute("viewBox", "0 0 10 10");
-      marker.setAttribute("refX", -3);
-      marker.setAttribute("refY", 5);
-      marker.setAttribute("markerWidth", 5);
-      marker.setAttribute("markerHeight", 5);
-      marker.setAttribute("orient", "auto");
-      var path = self.document.createElement("path");
-      marker.appendChild(path);
-      path.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+      // Define by D3.
+      var marker = self.graphSelection
+      .append("defs")
+      .append("marker")
+      .attr("id", "link-marker")
+      .attr("viewBox", "0 0 10 10")
+      .attr("refX", -5)
+      .attr("refY", 5)
+      .attr("markerWidth", 5)
+      .attr("markerHeight", 5)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M 0 0 L 10 5 L 0 10 z");
     }
   }
   /**
   * Restores aspects of the view's composition and behavior that vary with
   * changes to the application's state.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  restoreView(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  restoreView(self) {
     // Create and activate network.
-    self.createActivateNetwork(self);
+    self.createActivateNetworkRepresentation(self);
   }
+
   /**
   * Creates and activates a visual representation of a network.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  createActivateNetwork(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  createActivateNetworkRepresentation(self) {
     // Prepare information about network's elements.
-    self.prepareNetworkElementsInformation(self);
-    // Create scales for representations of network's elements.
-    self.createRepresentationsScales(self);
-    // Create scales for simulations of forces between network's elements.
-    self.createSimulationsScales(self);
+    self.prepareNetworkElementsRecords(self);
+    // Create scales for the visual representation of network's elements.
+    // Determine these scales dynamically within the script.
+    // Otherwise an alternative is to determine dimensions within style and then
+    // access the dimension using element.getBoundingClientRect or
+    // window.getComputeStyle.
+    // Create scales for representation of network's elements.
+    self.createRepresentationScales(self);
+    // Create scales for simulation of forces between network's elements.
+    self.createSimulationScales(self);
     // Create scales for efficiency.
     self.createEfficiencyScales(self);
+
+
     // Create graph to represent metabolic network.
     // Graph structure.
     // - graph (scalable vector graphical container)
@@ -2590,7 +2658,6 @@ class TopologyView {
     // --- linksMarks (polylines)
     // -- nodesGroup (group)
     // --- nodesGroups (groups)
-    // ---- nodesTitles (titles)
     // ---- nodesMarks (ellipses, rectangles)
     // ---- nodesDirectionalMarks (rectangles, polygons)
     // ---- nodesLabels (text)
@@ -2598,48 +2665,31 @@ class TopologyView {
     // Create links before nodes so that nodes will appear over the links.
     self.createLinks(self);
     // Create nodes.
-    self.createNodes(self);
+    self.createActivateNodes(self);
+
+    // TODO: Maybe move this simulation control elsewhere... to restoreView
     // Initiate force simulation.
     self.initiateForceSimulation(self);
   }
   /**
-  * Prepares information about network's elements.
-  * @param {Object} view Instance of interface's current view.
+  * Prepares local records of information about network's elements.
+  * @param {Object} self Instance of a class.
   */
-  prepareNetworkElementsInformation(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  prepareNetworkElementsRecords(self) {
     // Copy information about network's elements, nodes and links, to preserve
     // original information against modifications, especially due to the force
     // simulation.
-    self.linksRecords = General.copyValueJSON(self.model.currentLinks);
-    // Combine records for nodes.
-    self.nodesRecords = [].concat(
-      General.copyValueJSON(self.model.currentMetabolitesNodes),
-      General.copyValueJSON(self.model.currentReactionsNodes)
-    );
-    //console.log("links: " + self.linksRecords.length);
-    //console.log("nodes: " + self.nodesRecords.length);
-    //console.log("metabolites: " + self.model.currentMetabolitesNodes.length);
-    //console.log("reactions: " + self.model.currentReactionsNodes.length);
+    self.nodesRecords = General.copyDeepArrayElements(self.state.networkNodesRecords, true);
+    self.linksRecords = General.copyDeepArrayElements(self.state.networkLinksRecords, true);
   }
   /**
-  * Creates scales for representations of network's elements.
-  * @param {Object} view Instance of interface's current view.
+  * Creates scales for visual representation of network's elements.
+  * @param {Object} self Instance of a class.
   */
-  createRepresentationsScales(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // The optimal scales for representations of network's elements depend on
-    // the dimensions of the graphical container or view and on the count of
+  createRepresentationScales(self) {
+    // The optimal dimensions for visual marks that represent network's elements
+    // depend on the dimensions of the graphical container and on the count of
     // elements.
-    // Determine these scales dynamically within script since they depend on
-    // context of use.
-    // Otherwise an alternative is to determine dimension within style and then
-    // access the dimension using element.getBoundingClientRect or
-    // window.getComputeStyle.
     //var node = self.graph.querySelector(".node.mark.metabolite .entity");
     // Define scales' domain on the basis of the ratio of the graphical
     // container's width to the count of nodes.
@@ -2703,9 +2753,6 @@ class TopologyView {
     .range([1, 2, 3, 4, 5, 7, 12, 15, 17, 20]);
     // Compute ratio for scales' domain.
     self.scaleRatio = self.graphWidth / self.nodesRecords.length;
-    //console.log("nodes: " + self.nodesRecords.length);
-    //console.log("links: " + self.linksRecords.length);
-    //console.log("scale ratio: " + self.scaleRatio);
     // Compute dimensions from scale.
     self.scaleNodeDimension = nodeDimensionScale(self.scaleRatio);
     self.scaleLinkDimension = linkDimensionScale(self.scaleRatio);
@@ -2714,19 +2761,14 @@ class TopologyView {
   }
   /**
   * Creates scales for simulations of forces between network's elements.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  createSimulationsScales(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  createSimulationScales(self) {
     // Simulations of forces between network's elements are computationally
     // expensive.
     // The computational cost varies with the counts of network's elements.
     // To maintain efficiency, vary the rigor of these simulations by the counts
     // of network's elements.
-    // Determine these scales dynamically within script since they depend on
-    // context of use.
     // Define scales' domain on the basis of the count of nodes.
     var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
     // Define scale for alpha decay rate in force simulation.
@@ -2750,7 +2792,7 @@ class TopologyView {
     var alphaDecayScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025]);
+    .range([0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.011]);
     // Define scale for velocity decay rate in force simulation.
     // Domain's unit is count of nodes.
     // Range's unit is arbitrary for decay rates.
@@ -2772,20 +2814,15 @@ class TopologyView {
   }
   /**
   * Creates scale for efficiency in the application.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  createEfficiencyScales(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  createEfficiencyScales(self) {
     // Graphical rendering of visual elements for network's elements is
     // computationally expensive
     // The maintenance of efficient interactivity in the application requires
     // restriction on behavior.
     // Greater scale of the network requires more stringent restriction for
     // computational efficiency.
-    // Determine a scale for this efficiency dynamically within script since it
-    // depends on context of use.
     // Define scale's domain on the basis of the count of nodes.
     var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
     // Define scale for intervals at which to restore positions of nodes and
@@ -2824,63 +2861,91 @@ class TopologyView {
     self.scaleLabel = labelScale(self.nodesRecords.length);
   }
   /**
-  * Creates links in a node-link diagram.
-  * @param {Object} view Instance of interface's current view.
+  * Creates links.
+  * @param {Object} self Instance of a class.
   */
-  createLinks(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  createLinks(self) {
     // Create links.
-    // Contain all links within a single group.
-    var dataLinksGroup = self
-    .graphSelection.selectAll("g").data([self.linksRecords]);
-    dataLinksGroup.exit().remove();
-    var novelLinksGroup = dataLinksGroup.enter().append("g");
-    var linksGroup = novelLinksGroup.merge(dataLinksGroup);
-    // Create elements to represent links.
-    var dataLinksMarks = linksGroup
-    .selectAll("polyline").data(function (element, index, nodes) {
+    // Create single group to contain all links.
+    // Select parent.
+    var graphSelection = d3.select(self.graph);
+    // Define function to access data.
+    function accessOne() {
+      return [self.linksRecords];
+    };
+    // Create children elements by association to data.
+    var linksGroup = View.createElementsData({
+      parent: graphSelection,
+      type: "g",
+      accessor: accessOne
+    });
+    // Create individual links.
+    // Define function to access data.
+    function accessTwo(element, index, nodes) {
       return element;
+    };
+    // Create children elements by association to data.
+    var linksMarks = View.createElementsData({
+      parent: linksGroup,
+      type: "polyline",
+      accessor: accessTwo
     });
-    dataLinksMarks.exit().remove();
-    var novelLinksMarks = dataLinksMarks.enter().append("polyline");
-    self.linksMarks = novelLinksMarks.merge(dataLinksMarks);
-    // Assign attributes.
+    // Assign attributes to elements.
     self.linksMarks.classed("link", true);
-    self.linksMarks.classed("reactant", function (data) {
-      return data.role === "reactant";
+    self.linksMarks.classed("reactant", function (element, index, nodes) {
+      var link = Topology.accessLink({
+        identifier: element.identifier,
+        state: self.state
+      });
+      return link.role === "reactant";
     });
-    self.linksMarks.classed("product", function (data) {
-      return data.role === "product";
+    self.linksMarks.classed("product", function (element, index, nodes) {
+      var link = Topology.accessLink({
+        identifier: element.identifier,
+        state: self.state
+      });
+      return link.role === "product";
     });
-    self.linksMarks.classed("simplification", function (data) {
-      return data.simplification;
+    self.linksMarks.classed("replication", function (element, index, nodes) {
+      var link = Topology.accessLink({
+        identifier: element.identifier,
+        state: self.state
+      });
+      return link.replication;
     });
     self.linksMarks.attr("marker-mid", "url(#link-marker)");
     // Determine dimensions for representations of network's elements.
     // Set dimensions of links.
-    self.linkStrokeWidth = self.scaleLinkDimension * 1;
-    self.linksMarks.attr("stroke-width", self.linkStrokeWidth);
+    self.linksMarks.attr("stroke-width", (self.scaleLinkDimension * 1));
   }
+
+
+
   /**
-  * Creates nodes in a node-link diagram.
-  * @param {Object} view Instance of interface's current view.
+  * Creates and activates nodes.
+  * @param {Object} self Instance of a class.
   */
-  createNodes(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  createActivateNodes(self) {
     // Create nodes.
-    // Contain all nodes within a single group.
-    var dataNodesGroup = self
-    .graphSelection.selectAll("g").data([self.nodesRecords]);
-    dataNodesGroup.exit().remove();
-    var novelNodesGroup = dataNodesGroup.enter().append("g");
-    self.nodesGroup = novelNodesGroup.merge(dataNodesGroup);
-    // Create groups to contain individual nodes' visual representations and
-    // textual annotations.
-    self.createNodesGroups(self);
+    // Create single group to contain all nodes.
+    // Select parent.
+    var graphSelection = d3.select(self.graph);
+    // Define function to access data.
+    function accessOne() {
+      return [self.nodesRecords];
+    };
+    // Create children elements by association to data.
+    self.nodesGroup = View.createElementsData({
+      parent: graphSelection,
+      type: "g",
+      accessor: accessOne
+    });
+    // Create individual nodes.
+    // Create groups to contain elements for individual nodes.
+    self.createActivateNodesGroups(self);
+
+
+
     // Create titles for individual nodes.
     self.createNodesTitles(self);
     // Create marks for individual nodes.
@@ -2890,68 +2955,52 @@ class TopologyView {
     self.removeNodesLabels(self);
   }
   /**
-  * Creates nodes's groups.
-  * @param {Object} view Instance of interface's current view.
+  * Creates and activates nodes's groups.
+  * @param {Object} self Instance of a class.
   */
-  createNodesGroups(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create groups to contain individual nodes' visual representations and
-    // textual annotations.
-    var dataNodesGroups = self.nodesGroup
-    .selectAll("g").data(function (element, index, nodes) {
+  createActivateNodesGroups(self) {
+    // Define function to access data.
+    function access(element, index, nodes) {
       return element;
+    };
+    // Create children elements by association to data.
+    self.nodesGroups = View.createElementsData({
+      parent: self.nodesGroup,
+      type: "g",
+      accessor: access
     });
-    dataNodesGroups.exit().remove();
-    var novelNodesGroups = dataNodesGroups.enter().append("g");
-    self.nodesGroups = novelNodesGroups.merge(dataNodesGroups);
-    // Assign attributes.
+    // Assign attributes to elements.
     self
     .nodesGroups
     .attr("id", function (element, index, nodes) {
       return "node-" + element.identifier;
     })
     .classed("node", true)
+    .classed("normal", true)
     .classed("metabolite", function (element, index, nodes) {
-      return element.entity === "metabolite";
+      return element.type === "metabolite";
     })
     .classed("reaction", function (element, index, nodes) {
-      return element.entity === "reaction";
+      return element.type === "reaction";
     })
-    .classed("simplification", function (element, index, nodes) {
-      return element.simplification;
+    .classed("replication", function (element, index, nodes) {
+      var node = Topology.accessNode({
+        identifier: element.identifier,
+        type: element.type,
+        state: self.state
+      });
+      return node.replication;
     });
+    // Activate behavior.
   }
-  /**
-  * Creates nodes's titles.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createNodesTitles(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create titles for individual nodes.
-    var dataNodesTitles = self.nodesGroups
-    .selectAll("title").data(function (element, index, nodes) {
-      return [element];
-    });
-    dataNodesTitles.exit().remove();
-    var novelNodesTitles = dataNodesTitles.enter().append("title");
-    var nodesTitles = novelNodesTitles.merge(dataNodesTitles);
-    // Assign attributes.
-    nodesTitles.text(function (element, index, nodes) {
-      return element.name;
-    });
-  }
+
+
+
   /**
   * Creates nodes's marks.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  createNodesMarks(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  createNodesMarks(self) {
     // Create marks for individual nodes.
     var dataNodesMarks = self
     .nodesGroups
@@ -3006,26 +3055,22 @@ class TopologyView {
       return "translate(" + x + "," + y + ")";
     });
   }
+
+
   /**
   * Removes nodes' labels from a node-link diagram.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  removeNodesLabels(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  removeNodesLabels(self) {
     // Remove labels for individual nodes.
     self.nodesGroups.selectAll("text").remove();
   }
   /**
   * Initiates a force simulation for placement of network's nodes and links in a
   * node-link diagram.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  initiateForceSimulation(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  initiateForceSimulation(self) {
     // Define parameters of the force simulation.
     self.alpha = 1;
     self.alphaMinimum = 0.001;
@@ -3108,12 +3153,9 @@ class TopologyView {
   }
   /**
   * Initiates a monitor of force simulation's progress.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  initiateForceSimulationProgress(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  initiateForceSimulationProgress(self) {
     // Compute an estimate of the simulation's iterations.
     self.estimateIterations = self.computeSimulationIterations(self);
     // Initiate counter for simulation's iterations.
@@ -3121,12 +3163,9 @@ class TopologyView {
   }
   /**
   * Computes an estimate of iterations for a simulation.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  computeSimulationIterations(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  computeSimulationIterations(self) {
     return (
       (Math.log10(self.alphaMinimum)) /
       (Math.log10(self.alpha - self.scaleAlphaDecay))
@@ -3134,12 +3173,9 @@ class TopologyView {
   }
   /**
   * Restores a monitor of force simulation's progress.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  restoreForceSimulationProgress(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  restoreForceSimulationProgress(self) {
     // Increment count of simulation's iterations.
     self.simulationCounter += 1;
     // Report simulation's progress.
@@ -3157,12 +3193,9 @@ class TopologyView {
   }
   /**
   * Completes tasks dependent on force simulation.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  completeForceSimulation(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  completeForceSimulation(self) {
     // Restore and refine network's representation.
     self.restoreNodesPositions(self);
     self.restoreLinksPositions(self);
@@ -3178,12 +3211,9 @@ class TopologyView {
   /**
   * Restores positions of nodes' visual representations according to results of
   * force simulation.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  restoreNodesPositions(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  restoreNodesPositions(self) {
     // Set radius.
     var radius = self.reactionNodeWidth;
     // Restore positions of nodes' marks according to results of simulation.
@@ -3201,12 +3231,9 @@ class TopologyView {
   }
   /**
   * Restores links' positions according to results of force simulation.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  restoreLinksPositions(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  restoreLinksPositions(self) {
     // Restore positions of links according to results of simulation.
     // D3's procedure for force simulation copies references to records for
     // source and target nodes within records for links.
@@ -3226,6 +3253,239 @@ class TopologyView {
       return points;
     });
   }
+
+
+  /**
+  * Refines the representations of nodes and links.
+  * @param {Object} self Instance of a class.
+  */
+  refineNodesLinksRepresentations(self) {
+    // Determine orientations of reaction's nodes.
+    self.determineReactionsNodesOrientations(self);
+    // Represent reactions' directionalities on their nodes.
+    self.createReactionsNodesDirectionalMarks(self);
+    // Create nodes' labels.
+    if (self.scaleLabel) {
+      self.createNodesLabels(self);
+    }
+    // Represent reactions' directionalities in links.
+    self.restoreLinksPositions(self);
+  }
+
+
+  /**
+  * Determines the orientations of reactions' nodes relative to sides for
+  * reactants and products.
+  * @param {Object} self Instance of a class.
+  */
+  determineReactionsNodesOrientations(self) {
+    // Separate records of nodes for metabolites and reactions with access to
+    // positions from force simulation.
+    var metabolitesNodes = self.nodesRecords.filter(function (record) {
+      return record.entity === "metabolite";
+    });
+    var reactionsNodes = self.nodesRecords.filter(function (record) {
+      return record.entity === "reaction";
+    });
+    // Iterate on records for reactions' nodes with access to positions from
+    // force simulation.
+    reactionsNodes.forEach(function (reactionNode) {
+      // Collect identifiers of metabolites' nodes that surround the reaction's
+      // node.
+      // Use original records without access to positions from force simulation.
+      var neighbors = Network.collectNeighborsNodes({
+        focus: reactionNode.identifier,
+        links: self.model.currentLinks
+      });
+      // Determine the roles in which metabolites participate in the reaction.
+      // Reaction's store information about metabolites' participation.
+      // Metabolites can participate in multiple reactions.
+      var neighborsRoles = TopologyView.sortMetabolitesNodesReactionRoles({
+        nodesIdentifiers: neighbors,
+        participants: reactionNode.participants,
+        metabolitesNodes: self.model.currentMetabolitesNodes
+      });
+      // Collect records for nodes of metabolites that participate in the
+      // reaction in each role.
+      var reactantsNodes = Network
+      .collectElementsRecords(neighborsRoles.reactants, metabolitesNodes);
+      var productsNodes = Network
+      .collectElementsRecords(neighborsRoles.products, metabolitesNodes);
+      // Determine orientation of reaction's node.
+      // Include designations of orientation in record for reaction's node.
+      var orientations = TopologyView.determineReactionNodeOrientation({
+        reactionNode: reactionNode,
+        reactantsNodes: reactantsNodes,
+        productsNodes: productsNodes,
+        graphHeight: self.graphHeight
+      });
+      // Include information about orientation in record for reaction's node.
+      // Modify current record to preserve references from existing elements.
+      reactionNode.left = orientations.left;
+      reactionNode.right = orientations.right;
+    });
+  }
+  /**
+  * Creates representations of reactions' directions on their nodes.
+  * @param {Object} self Instance of a class.
+  */
+  createReactionsNodesDirectionalMarks(self) {
+    // Select groups of reactions' nodes.
+    var nodesReactionsGroups = self
+    .nodesGroups.filter(function (element, index, nodes) {
+      return element.entity === "reaction";
+    });
+    var leftDirectionalMarks = nodesReactionsGroups
+    .append(function (element, index, nodes) {
+      // Append different types of elements for different properties.
+      var type = TopologyView.determineDirectionalMarkType("left", element);
+      return self.document.createElementNS("http://www.w3.org/2000/svg", type);
+    });
+    var rightDirectionalMarks = nodesReactionsGroups
+    .append(function (element, index, nodes) {
+      // Append different types of elements for different properties.
+      var type = TopologyView.determineDirectionalMarkType("right", element);
+      return self.document.createElementNS("http://www.w3.org/2000/svg", type);
+    });
+    // Set attributes of directional marks.
+    // Determine dimensions for directional marks.
+    var width = self.reactionNodeWidth / 7;
+    var height = self.reactionNodeHeight;
+    leftDirectionalMarks.classed("direction", true);
+    rightDirectionalMarks.classed("direction", true);
+    leftDirectionalMarks
+    .filter("polygon")
+    .attr("points", function (data) {
+      return General.createIsoscelesTrianglePoints({
+        base: height,
+        altitude: width,
+        orientation: "left"
+      });
+    });
+    rightDirectionalMarks
+    .filter("polygon")
+    .attr("points", function (data) {
+      return General.createIsoscelesTrianglePoints({
+        base: height,
+        altitude: width,
+        orientation: "right"
+      });
+    });
+    leftDirectionalMarks
+    .filter("rect")
+    .attr("height", height)
+    .attr("width", width);
+    rightDirectionalMarks
+    .filter("rect")
+    .attr("height", height)
+    .attr("width", width);
+    leftDirectionalMarks.attr("transform", function (data) {
+      var x = - (self.reactionNodeWidth / 2);
+      var y = - (height / 2);
+      return "translate(" + x + "," + y + ")";
+    });
+    rightDirectionalMarks.attr("transform", function (data) {
+      var x = ((self.reactionNodeWidth / 2) - width);
+      var y = - (height / 2);
+      return "translate(" + x + "," + y + ")";
+    });
+  }
+  /**
+  * Creates labels for nodes in a node-link diagram.
+  * @param {Object} self Instance of a class.
+  */
+  createNodesLabels(self) {
+    // Create labels for individual nodes.
+    var dataNodesLabels = self.nodesGroups
+    .selectAll("text").data(function (element, index, nodes) {
+      return [element];
+    });
+    dataNodesLabels.exit().remove();
+    var novelNodesLabels = dataNodesLabels.enter().append("text");
+    var nodesLabels = novelNodesLabels.merge(dataNodesLabels);
+    // Assign attributes.
+    nodesLabels.text(function (data) {
+      return data.name.slice(0, 5) + "...";
+    });
+    nodesLabels.classed("label", true);
+    // Determine size of font for annotations of network's elements.
+    nodesLabels.attr("font-size", self.scaleFont + "px");
+  }
+  /**
+  * Accesses a link.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {Object} parameters.state Application's state.
+  * @returns {string} Name of the value of the attribute.
+  */
+  static accessLink({identifier, state} = {}) {
+    return state.networkLinks[identifier];
+  }
+  /**
+  * Accesses a node.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of entity, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  * @returns {string} Name of the value of the attribute.
+  */
+  static accessNode({identifier, type, state} = {}) {
+    if (type === "metabolite") {
+      return state.networkNodesMetabolites[identifier];
+    } else if (type === "reaction") {
+      return state.networkNodesReactions[identifier];
+    }
+  }
+  /**
+  * Creates tip.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of entity, metabolite or reaction.
+  * @param {number} parameters.count Count of entity's relations.
+  * @param {number} parameters.positionX Pointer's horizontal coordinate.
+  * @param {number} parameters.positionY Pointer's vertical coordinate.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  */
+  static createTip({identifier, type, count, positionX, positionY, tip, documentReference, state} = {}) {
+
+    // TODO: This needs a lot of work...
+
+    // Create summary for tip.
+    // Determine the type of entity.
+    if (type === "metabolite") {
+      // Access information.
+      var node = state.networkNodesMetabolites[identifier];
+      var candidate = state.metabolitesCandidates[node.candidate];
+      var metabolite = state.metabolites[candidate.metabolite];
+      var name = metabolite.name;
+      var formula = metabolite.formula;
+      var charge = metabolite.charge;
+      var compartment = state.compartments[candidate.compartment];
+    } else if (type === "reaction") {
+      // Access information.
+      var node = state.networkNodesReactions[identifier];
+      var candidate = state.reactionsCandidates[node.candidate];
+      var reaction = state.reactions[candidate.reaction];
+      var name = reaction.name;
+      var processes = reaction.processes; // consider replicates, extract names
+      var compartments = reaction.compartments; // consider replicates, extract names
+    }
+    // Create tip.
+    tip.restoreView({
+      visible: true,
+      positionX: positionX,
+      positionY: positionY,
+      summary: summary,
+      self: tip
+    });
+  }
+
+
+
+
   /**
   * Determines the coordinates of termini for a link.
   * @param {Object} parameters Destructured object of parameters.
@@ -3302,80 +3562,6 @@ class TopologyView {
       //return terminus.x
       return 0;
     }
-  }
-  /**
-  * Refines the representations of nodes and links.
-  * @param {Object} view Instance of interface's current view.
-  */
-  refineNodesLinksRepresentations(view) {
-    // Set reference to class' current instance to transfer across changes in
-    // scope.
-    var self = view;
-    // Determine orientations of reaction's nodes.
-    self.determineReactionsNodesOrientations(self);
-    // Represent reactions' directionalities on their nodes.
-    self.createReactionsNodesDirectionalMarks(self);
-    // Create nodes' labels.
-    if (self.scaleLabel) {
-      self.createNodesLabels(self);
-    }
-    // Represent reactions' directionalities in links.
-    self.restoreLinksPositions(self);
-  }
-  /**
-  * Determines the orientations of reactions' nodes relative to sides for
-  * reactants and products.
-  * @param {Object} view Instance of interface's current view.
-  */
-  determineReactionsNodesOrientations(view) {
-    // Set reference to class' current instance to transfer across changes in
-    // scope.
-    var self = view;
-    // Separate records of nodes for metabolites and reactions with access to
-    // positions from force simulation.
-    var metabolitesNodes = self.nodesRecords.filter(function (record) {
-      return record.entity === "metabolite";
-    });
-    var reactionsNodes = self.nodesRecords.filter(function (record) {
-      return record.entity === "reaction";
-    });
-    // Iterate on records for reactions' nodes with access to positions from
-    // force simulation.
-    reactionsNodes.forEach(function (reactionNode) {
-      // Collect identifiers of metabolites' nodes that surround the reaction's
-      // node.
-      // Use original records without access to positions from force simulation.
-      var neighbors = Network.collectNeighborsNodes({
-        focus: reactionNode.identifier,
-        links: self.model.currentLinks
-      });
-      // Determine the roles in which metabolites participate in the reaction.
-      // Reaction's store information about metabolites' participation.
-      // Metabolites can participate in multiple reactions.
-      var neighborsRoles = TopologyView.sortMetabolitesNodesReactionRoles({
-        nodesIdentifiers: neighbors,
-        participants: reactionNode.participants,
-        metabolitesNodes: self.model.currentMetabolitesNodes
-      });
-      // Collect records for nodes of metabolites that participate in the
-      // reaction in each role.
-      var reactantsNodes = Network
-      .collectElementsRecords(neighborsRoles.reactants, metabolitesNodes);
-      var productsNodes = Network
-      .collectElementsRecords(neighborsRoles.products, metabolitesNodes);
-      // Determine orientation of reaction's node.
-      // Include designations of orientation in record for reaction's node.
-      var orientations = TopologyView.determineReactionNodeOrientation({
-        reactionNode: reactionNode,
-        reactantsNodes: reactantsNodes,
-        productsNodes: productsNodes,
-        graphHeight: self.graphHeight
-      });
-      // Include information about orientation in record for reaction's node.
-      // Modify current record to preserve references from existing elements.
-      reactionNode.left = orientations.left;
-      reactionNode.right = orientations.right;
-    });
   }
   /**
   * Sorts identifiers of nodes for metabolites by their roles in a reaction.
@@ -3509,74 +3695,6 @@ class TopologyView {
     return orientation;
   }
   /**
-  * Creates representations of reactions' directions on their nodes.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createReactionsNodesDirectionalMarks(view) {
-    // Set reference to class' current instance to transfer across changes in
-    // scope.
-    var self = view;
-    // Select groups of reactions' nodes.
-    var nodesReactionsGroups = self
-    .nodesGroups.filter(function (element, index, nodes) {
-      return element.entity === "reaction";
-    });
-    var leftDirectionalMarks = nodesReactionsGroups
-    .append(function (element, index, nodes) {
-      // Append different types of elements for different properties.
-      var type = TopologyView.determineDirectionalMarkType("left", element);
-      return self.document.createElementNS("http://www.w3.org/2000/svg", type);
-    });
-    var rightDirectionalMarks = nodesReactionsGroups
-    .append(function (element, index, nodes) {
-      // Append different types of elements for different properties.
-      var type = TopologyView.determineDirectionalMarkType("right", element);
-      return self.document.createElementNS("http://www.w3.org/2000/svg", type);
-    });
-    // Set attributes of directional marks.
-    // Determine dimensions for directional marks.
-    var width = self.reactionNodeWidth / 7;
-    var height = self.reactionNodeHeight;
-    leftDirectionalMarks.classed("direction", true);
-    rightDirectionalMarks.classed("direction", true);
-    leftDirectionalMarks
-    .filter("polygon")
-    .attr("points", function (data) {
-      return General.createIsoscelesTrianglePoints({
-        base: height,
-        altitude: width,
-        orientation: "left"
-      });
-    });
-    rightDirectionalMarks
-    .filter("polygon")
-    .attr("points", function (data) {
-      return General.createIsoscelesTrianglePoints({
-        base: height,
-        altitude: width,
-        orientation: "right"
-      });
-    });
-    leftDirectionalMarks
-    .filter("rect")
-    .attr("height", height)
-    .attr("width", width);
-    rightDirectionalMarks
-    .filter("rect")
-    .attr("height", height)
-    .attr("width", width);
-    leftDirectionalMarks.attr("transform", function (data) {
-      var x = - (self.reactionNodeWidth / 2);
-      var y = - (height / 2);
-      return "translate(" + x + "," + y + ")";
-    });
-    rightDirectionalMarks.attr("transform", function (data) {
-      var x = ((self.reactionNodeWidth / 2) - width);
-      var y = - (height / 2);
-      return "translate(" + x + "," + y + ")";
-    });
-  }
-  /**
   * Determines the type of graphical element to represent the direction of a
   * reaction's node.
   * @param {string} side Side of reaction's node, left or right.
@@ -3631,30 +3749,7 @@ class TopologyView {
       }
     }
   }
-  /**
-  * Creates labels for nodes in a node-link diagram.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createNodesLabels(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create labels for individual nodes.
-    var dataNodesLabels = self.nodesGroups
-    .selectAll("text").data(function (element, index, nodes) {
-      return [element];
-    });
-    dataNodesLabels.exit().remove();
-    var novelNodesLabels = dataNodesLabels.enter().append("text");
-    var nodesLabels = novelNodesLabels.merge(dataNodesLabels);
-    // Assign attributes.
-    nodesLabels.text(function (data) {
-      return data.name.slice(0, 5) + "...";
-    });
-    nodesLabels.classed("label", true);
-    // Determine size of font for annotations of network's elements.
-    nodesLabels.attr("font-size", self.scaleFont + "px");
-  }
+
 }
 
 

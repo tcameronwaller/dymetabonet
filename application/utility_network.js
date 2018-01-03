@@ -71,11 +71,20 @@ class Network {
       metabolites: metabolites,
       compartmentalization: compartmentalization
     });
+    // Create concise records for representation of network's elements.
+    var networkNodesRecords = Network.createReactionsMetabolitesNodesRecords({
+      networkNodesReactions: networkNodesLinks.networkNodesReactions,
+      networkNodesMetabolites: networkNodesLinks.networkNodesMetabolites
+    });
+    var networkLinksRecords = Network
+    .createLinksRecords(networkNodesLinks.networkLinks);
     // Compile information.
     var networkElements = {
       networkNodesReactions: networkNodesLinks.networkNodesReactions,
       networkNodesMetabolites: networkNodesLinks.networkNodesMetabolites,
-      networkLinks: networkNodesLinks.networkLinks
+      networkLinks: networkNodesLinks.networkLinks,
+      networkNodesRecords: networkNodesRecords,
+      networkLinksRecords: networkLinksRecords
     };
     // Return information.
     return networkElements;
@@ -480,6 +489,64 @@ class Network {
       target: target
     };
     return Object.assign({}, record, attributes);
+  }
+  /**
+  * Creates concise records for representation of network's nodes for reactions
+  * and metabolites.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.networkNodesMetabolites Information about
+  * network's nodes for metabolites.
+  * @param {Object} parameters.networkNodesReactions Information about network's
+  * nodes for reactions.
+  * @returns {Array<Object>} Information about network's nodes.
+  */
+  static createReactionsMetabolitesNodesRecords({networkNodesReactions, networkNodesMetabolites} = {}) {
+    var reactionsNodesRecords = Network
+    .createNodesRecords(networkNodesReactions);
+    var metabolitesNodesRecords = Network
+    .createNodesRecords(networkNodesMetabolites);
+    var nodesRecords = []
+    .concat(reactionsNodesRecords, metabolitesNodesRecords);
+    return nodesRecords;
+  }
+  /**
+  * Creates concise records for representation of network's nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.nodes Information about network's nodes.
+  * @returns {Array<Object>} Information about network's nodes.
+  */
+  static createNodesRecords(nodes) {
+    // Iterate on entries.
+    var identifiers = Object.keys(nodes);
+    return identifiers.map(function (identifier) {
+      // Access information.
+      var entry = nodes[identifier];
+      // Create record.
+      return {
+        identifier: entry.identifier,
+        type: entry.type
+      };
+    });
+  }
+  /**
+  * Creates concise records for representation of network's links.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.links Information about network's links.
+  * @returns {Array<Object>} Information about network's nodes.
+  */
+  static createLinksRecords(links) {
+    // Iterate on entries.
+    var identifiers = Object.keys(links);
+    return identifiers.map(function (identifier) {
+      // Access information.
+      var entry = links[identifier];
+      // Create record.
+      return {
+        identifier: entry.identifier,
+        source: entry.source,
+        target: entry.target
+      };
+    });
   }
 
 

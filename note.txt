@@ -4,6 +4,23 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+2 January 2018
+
+----------
+Plan
+
+Implement topology view.
+Draw network's elements in topology view.
+Complete summaries for tips for nodes for metabolites and reactions.
+
+Restore buttons in each control view need to restore only aspects of that view.
+
+Organize styles of control view.
+
+Support multiple active views within control view.
+Consider using an array for state's variable for active views.
+
+--------------------------------------------------
 1 January 2018
 
 ----------
