@@ -823,9 +823,7 @@ class Extraction {
   * @returns {Array<string>} Identifiers of process in which the reaction
   * participates through transport.
   */
-  static collectTransportProcesses({
-    reactionTransports, processesTransports
-  } = {}) {
+  static collectTransportProcesses({reactionTransports, processesTransports} = {}) {
     // Collect identifiers of processes in which the reaction participates
     // through transport.
     // Iterate on processes.

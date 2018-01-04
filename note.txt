@@ -7,6 +7,43 @@ Research With Alexander Lex
 3 January 2018
 
 ----------
+Progress
+
+I wrote function "Evaluation.summarizeMetaboliteReactionsParticipation" to summarize information about all reactions in which a single metabolite participates.
+
+I also wrote functions "General.convertRecordsStringTabSeparateTable" and "General.saveString" to export information to text files with tab separation.
+
+----------
+Message to Casey Hughes
+
+"
+Hi Casey,
+
+Thanks for our chat today! You gave me some great ideas for my application.
+
+After we talked I wrote a custom procedure to summarize L-cysteine's participation in reactions. It has 82 reactions in my model, a derivation of Recon 2.2. Here are details about the information for each reaction.
+
+name (name of reaction)
+reactants (names of metabolites that participate in reaction as reactants)
+products (names of metabolites that participate in reaction as products)
+reversibility (whether reaction is reversible)
+conversion (whether reaction catalyzes chemical conversion between reactants and products)
+transport (whether reaction transports any metabolites between compartments)
+dispersal (whether reaction involves participation from metabolites in multiple compartments)
+genes (identifiers of genes in HUGO Gene Nomenclature Committee, https://www.genenames.org/)
+processes (names of metabolic processes or pathways in which reaction has a role)
+compartments (names of cellular compartments in which L-cysteine participates in reaction)
+
+The attachment is an export of this information in a text file with tab separation, thanks to a new converter I wrote today. It should be simple to import the information into a spreadsheet program like Microsoft Excel. Hopefully the information will be more convenient for you in this format.
+
+I hope this information helps. Please let me know if you have any questions, problems, or suggestions. I plan to complete a prototype of the application soon that will hopefully enable you to access this sort of information conveniently.
+
+Ciao,
+
+Cameron
+"
+
+----------
 Meet with Casey Hughes
 
 For his research project, Casey needs to know information about all reactions in which cysteine participates, especially in the cytosol.

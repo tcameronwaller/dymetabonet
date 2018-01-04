@@ -3014,6 +3014,7 @@ class TopologyView {
       return node.replication;
     });
     // Activate behavior.
+    // TODO: Do this...
   }
 
 
@@ -3078,7 +3079,6 @@ class TopologyView {
     });
   }
 
-
   /**
   * Removes nodes' labels from a node-link diagram.
   * @param {Object} self Instance of a class.
@@ -3087,6 +3087,7 @@ class TopologyView {
     // Remove labels for individual nodes.
     self.nodesGroups.selectAll("text").remove();
   }
+
   /**
   * Initiates a force simulation for placement of network's nodes and links in a
   * node-link diagram.
@@ -3463,7 +3464,6 @@ class TopologyView {
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
   * @param {string} parameters.type Type of entity, metabolite or reaction.
-  * @param {number} parameters.count Count of entity's relations.
   * @param {number} parameters.positionX Pointer's horizontal coordinate.
   * @param {number} parameters.positionY Pointer's vertical coordinate.
   * @param {Object} parameters.tip Instance of TipView's class.
@@ -3471,29 +3471,13 @@ class TopologyView {
   * model.
   * @param {Object} parameters.state Application's state.
   */
-  static createTip({identifier, type, count, positionX, positionY, tip, documentReference, state} = {}) {
-
-    // TODO: This needs a lot of work...
-
+  static createTip({identifier, type, positionX, positionY, tip, documentReference, state} = {}) {
     // Create summary for tip.
     // Determine the type of entity.
     if (type === "metabolite") {
-      // Access information.
-      var node = state.networkNodesMetabolites[identifier];
-      var candidate = state.metabolitesCandidates[node.candidate];
-      var metabolite = state.metabolites[candidate.metabolite];
-      var name = metabolite.name;
-      var formula = metabolite.formula;
-      var charge = metabolite.charge;
-      var compartment = state.compartments[candidate.compartment];
+      var summary = TopologyView.createTipSummaryMetabolite();
     } else if (type === "reaction") {
-      // Access information.
-      var node = state.networkNodesReactions[identifier];
-      var candidate = state.reactionsCandidates[node.candidate];
-      var reaction = state.reactions[candidate.reaction];
-      var name = reaction.name;
-      var processes = reaction.processes; // consider replicates, extract names
-      var compartments = reaction.compartments; // consider replicates, extract names
+      var summary = TopologyView.createTipSummaryReaction();
     }
     // Create tip.
     tip.restoreView({
@@ -3503,6 +3487,50 @@ class TopologyView {
       summary: summary,
       self: tip
     });
+  }
+  /**
+  * Creates tip's summary for a metabolite.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  */
+  static createTipSummaryMetabolite({identifier, documentReference, state} = {}) {
+    // Access information.
+    var node = state.networkNodesMetabolites[identifier];
+    var candidate = state.metabolitesCandidates[node.candidate];
+    var metabolite = state.metabolites[candidate.metabolite];
+    var name = metabolite.name;
+    var formula = metabolite.formula;
+    var charge = metabolite.charge;
+    var compartment = state.compartments[candidate.compartment];
+  }
+  /**
+  * Creates tip's summary for a reaction.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  */
+  static createTipSummaryReaction({identifier, documentReference, state} = {}) {
+    // Access information.
+    var node = state.networkNodesReactions[identifier];
+    var candidate = state.reactionsCandidates[node.candidate];
+    var reaction = state.reactions[candidate.reaction];
+    var name = reaction.name;
+    var replicates = [].concat(reaction.identifier, candidate.replicates);
+    // Collect relevant compartments and processes for all replicates.
+    var processes = Evaluation.collectReactionProperties({
+      identifiers: replicates,
+      reactionsSets: filterReactionsSets,
+      property: "processes",
+      reference: state.processes
+    });
+
+    var processes = reaction.processes; // consider replicates, extract names
+    var compartments = reaction.compartments; // consider replicates, extract names
   }
 
 

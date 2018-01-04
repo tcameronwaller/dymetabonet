@@ -200,13 +200,22 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
-    // Prepare information.
 
-    var records = General.copyRecordsObjectArray(state.reactions);
-    var string = General.convertRecordsStringTabSeparateTable(records);
-    console.log(records);
-    console.log(string);
-    General.saveString("string.txt", string);
+    // "L-cysteine"
+
+    var summary = Evaluation.summarizeMetaboliteReactionsParticipation({
+      metaboliteIdentifier: "cys_L",
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalReactionsSets,
+      metabolitesSets: state.totalMetabolitesSets,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    console.log(summary);
+    var summaryString = General.convertRecordsStringTabSeparateTable(summary);
+    General.saveString("cysteine_reactions.txt", summaryString);
+
 
     // Terminate process timer.
     //console.timeEnd("timer");

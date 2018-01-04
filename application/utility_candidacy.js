@@ -635,16 +635,30 @@ class Candidacy {
           });
           if (relevance) {
             // Replicate reaction is relevant.
-            // Determine whether replicate reaction is redundant to comparison
-            // reaction in context of interest.
-            // Compare relevant participants of each reaction.
-            return Candidacy.determineReactionsRedundancy({
-              firstReaction: comparisonReaction,
-              secondReaction: replicateReaction,
-              firstSets: comparisonSets,
-              secondSets: replicateSets,
-              compartmentalization: compartmentalization
-            });
+            // Determine whether replicate reaction and comparison reaction have
+            // identical reversibilities.
+            if (
+              comparisonReaction.reversibility ===
+              replicateReaction.reversibility
+            ) {
+              // Replicate reaction and comparison reaction have identical
+              // reversibilities.
+              // Determine whether replicate reaction is redundant to comparison
+              // reaction in context of interest.
+              // Compare relevant participants of each reaction.
+              return Candidacy.determineReactionsRedundancy({
+                firstReaction: comparisonReaction,
+                secondReaction: replicateReaction,
+                firstSets: comparisonSets,
+                secondSets: replicateSets,
+                compartmentalization: compartmentalization
+              });
+            } else {
+              // Replicate reaction and comparison reaction do not have
+              // identical reversibilities.
+              // Replicate reaction is not redundant.
+              return false;
+            }
           } else {
             // Replicate reaction is irrelevant.
             // Replicate reaction is not redundant.

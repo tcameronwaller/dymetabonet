@@ -50,7 +50,7 @@ class Evaluation {
   * metabolites' reactions and sets.
   * @param {Object} parameters.compartments Information about compartments.
   * @param {Object} parameters.processes Information about processes.
-  * @returns {Array<Object>} Information metabolic entities.
+  * @returns {Array<Object>} Information about metabolic entities.
   */
   static createEntitiesSummary({type, identifiers, reactions, metabolites, reactionsSets, metabolitesSets, compartments, processes} = {}) {
     // Create summary according to entity's type.
@@ -187,6 +187,65 @@ class Evaluation {
       processes: processesNames
     };
   }
+  /**
+  * Summarizes a metabolite's participation in reactions.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.metaboliteIdentifier Identifier of a metabolite.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
+  * @param {Object<Object>} parameters.reactionsSets Information about
+  * reactions' metabolites and sets.
+  * @param {Object<Object>} parameters.metabolitesSets Information about
+  * metabolites' reactions and sets.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
+  * @returns {Array<Object>} Information about reactions in which metabolite
+  * participates.
+  */
+  static summarizeMetaboliteReactionsParticipation({metaboliteIdentifier, reactions, metabolites, reactionsSets, metabolitesSets, compartments, processes} = {}) {
+    // Access information.
+    var metaboliteSets = metabolitesSets[metaboliteIdentifier];
+    var reactionsIdentifiers = metaboliteSets.reactions;
+    // Collect general information about reactions in which metabolite
+    // participates.
+    return reactionsIdentifiers.map(function (reactionIdentifier) {
+      var generalSummary = Evaluation.createReactionSummary({
+        identifier: reactionIdentifier,
+        reactions: reactions,
+        metabolites: metabolites,
+        reactionsSets: reactionsSets,
+        compartments: compartments,
+        processes: processes
+      });
+      // Determine specific compartments in which metabolite participates in
+      // reaction.
+      // Access information.
+      var reaction = reactions[reactionIdentifier];
+      var participants = Extraction.filterReactionParticipants({
+        criteria: {metabolites: [metaboliteIdentifier]},
+        participants: reaction.participants
+      });
+      var compartmentsIdentifiers = General
+      .collectValueFromObjects("compartment", participants);
+      var compartmentsNames = General.collectKeyValueFromEntries({
+        identifiers: compartmentsIdentifiers,
+        key: "name",
+        object: compartments
+      });
+      // Compile information.
+      // Create entry.
+      var entry = {
+        compartments: compartmentsNames
+      };
+      // Replace information in general summary.
+      return Object.assign(generalSummary, entry);
+    });
+  }
+
+
+
+
 
   /**
   * Summarizes replication of reactions.
@@ -332,26 +391,8 @@ class Evaluation {
     });
   }
 
-  /**
-  * Extracts and saves information about reactions in which a single metabolite
-  * participates.
-  * @param {string} identifier Identifier for a single metabolite.
-  * @param {Object} metabolites Information about all metabolites.
-  * @param {Object} reactions Information about all reactions.
-  * @returns {Array<Object>} Information about reactions in which the metabolite
-  * participates.
-  */
-  static extractMetaboliteReactions({identifier, metabolites, reactions} = {}) {
-    var metabolite = metabolites[identifier];
-    var reactionIdentifiers = metabolite.reactions;
-    var metaboliteReactions = reactionIdentifiers.map(function (identifier) {
-      var reaction = reactions[identifier];
-      return General.copyValueJSON(reaction);
-    });
-    return metaboliteReactions;
-    //var fileName = identifier + "-reactions.json";
-    //General.saveObject(fileName, metaboliteReactions);
-  }
+
+
   /**
   * Creates summary of metabolites' participation in reactions.
   * @param {Object<Object>} metabolites Records with information about
