@@ -13,6 +13,8 @@ I wrote function "Evaluation.summarizeMetaboliteReactionsParticipation" to summa
 
 I also wrote functions "General.convertRecordsStringTabSeparateTable" and "General.saveString" to export information to text files with tab separation.
 
+I implemented a table summary for the tool tip for nodes for metabolites.
+
 ----------
 Message to Casey Hughes
 
