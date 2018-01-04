@@ -984,8 +984,8 @@ class StateView {
         // Element on which the event originated is event.currentTarget.
         // Call action.
         TopologyView.createTip({
-          identifier: "pyr",
-          type: "metabolite",
+          identifier: "DAGK_hs",
+          type: "reaction",
           positionX: 500,
           positionY: 500,
           tip: self.tip,
@@ -997,8 +997,8 @@ class StateView {
         // Element on which the event originated is event.currentTarget.
         // Call action.
         TopologyView.createTip({
-          identifier: "pyr",
-          type: "metabolite",
+          identifier: "DAGK_hs",
+          type: "reaction",
           positionX: 500,
           positionY: 500,
           tip: self.tip,
@@ -3045,15 +3045,49 @@ class TopologyView {
       return node.replication;
     });
     // Activate behavior.
-    // TODO: Do this...
-    TopologyView.createTip({
-      identifier: "pyr_c",
-      type: "metabolite",
-      positionX: 100,
-      positionY: 100,
-      tip: self.tip,
-      documentReference: self.document,
-      state: self.state
+    self.nodesGroups.on("mouseenter", function (element, index, nodes) {
+      // Determine pointer coordinates.
+      var positionX = d3.mouse(self.view)[0];
+      var positionY = d3.mouse(self.view)[1];
+      // Select element.
+      var node = nodes[index];
+      var nodeSelection = d3.select(node);
+      // Call action.
+      nodeSelection.classed("normal", false);
+      nodeSelection.classed("emphasis", true);
+      TopologyView.createTip({
+        identifier: element.identifier,
+        type: element.type,
+        positionX: positionX,
+        positionY: positionY,
+        tip: self.tip,
+        documentReference: self.document,
+        state: self.state
+      });
+    });
+    self.nodesGroups.on("mousemove", function (element, index, nodes) {
+      // Determine pointer coordinates.
+      var positionX = d3.mouse(self.view)[0];
+      var positionY = d3.mouse(self.view)[1];
+      // Call action.
+      TopologyView.createTip({
+        identifier: element.identifier,
+        type: element.type,
+        positionX: positionX,
+        positionY: positionY,
+        tip: self.tip,
+        documentReference: self.document,
+        state: self.state
+      });
+    });
+    self.nodesGroups.on("mouseleave", function (element, index, nodes) {
+      // Select element.
+      var node = nodes[index];
+      var nodeSelection = d3.select(node);
+      // Call action.
+      nodeSelection.classed("emphasis", false);
+      nodeSelection.classed("normal", true);
+      self.tip.clearView(self.tip);
     });
   }
 
@@ -3553,11 +3587,12 @@ class TopologyView {
     var formula = metabolite.formula;
     var charge = metabolite.charge;
     var compartment = state.compartments[candidate.compartment];
+    // Compile information.
     var information = [
       {title: "name:", value: name},
       {title: "formula:", value: formula},
       {title: "charge:", value: charge},
-      {title: "compartment:", value: compartment},
+      {title: "compartment:", value: compartment}
     ];
     // Create table.
     // Select parent.
@@ -3603,18 +3638,59 @@ class TopologyView {
     var node = state.networkNodesReactions[identifier];
     var candidate = state.reactionsCandidates[node.candidate];
     var reaction = state.reactions[candidate.reaction];
-    var name = reaction.name;
     var replicates = [].concat(reaction.identifier, candidate.replicates);
-    // Collect relevant compartments and processes for all replicates.
-    var processes = Evaluation.collectReactionProperties({
+    // Collect consensus properties of replicates.
+    var properties = Evaluation.collectReplicateReactionsConsensusProperties({
       identifiers: replicates,
-      reactionsSets: filterReactionsSets,
-      property: "processes",
-      reference: state.processes
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.filterReactionsSets,
+      compartments: state.compartments,
+      processes: state.processes
     });
-
-    var processes = reaction.processes; // consider replicates, extract names
-    var compartments = reaction.compartments; // consider replicates, extract names
+    // Compile information.
+    var information = [
+      {title: "name:", value: properties.name},
+      {title: "reactants:", value: properties.reactants.join(", ")},
+      {title: "products:", value: properties.products.join(", ")},
+      {title: "reversibility:", value: properties.reversibility},
+      {title: "conversion:", value: properties.conversion},
+      {title: "dispersal:", value: properties.dispersal},
+      {title: "transport:", value: properties.transport},
+      {title: "compartments:", value: properties.compartments.join(", ")},
+      {title: "processes:", value: properties.processes.join(", ")},
+      {title: "genes:", value: properties.genes.join(", ")},
+    ];
+    // Create table.
+    // Select parent.
+    var table = d3.select("body").append("table");
+    // Define function to access data.
+    function accessOne() {
+      return information;
+    };
+    // Create children elements by association to data.
+    var rows = View.createElementsData({
+      parent: table,
+      type: "tr",
+      accessor: accessOne
+    });
+    // Define function to access data.
+    function accessTwo(element, index, nodes) {
+      // Organize data.
+      return [].concat(element.title, element.value);
+    };
+    // Create children elements by association to data.
+    var cells = View.createElementsData({
+      parent: rows,
+      type: "td",
+      accessor: accessTwo
+    });
+    // Assign attributes to elements.
+    cells.text(function (element, index, nodes) {
+      return element;
+    });
+    // Return reference to element.
+    return table.node();
   }
 
 

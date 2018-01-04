@@ -91,7 +91,7 @@ class Evaluation {
   * reactions' metabolites and sets.
   * @param {Object} parameters.compartments Information about compartments.
   * @param {Object} parameters.processes Information about processes.
-  * @returns {Object} Information a reaction.
+  * @returns {Object} Information about a reaction.
   */
   static createReactionSummary({identifier, reactions, metabolites, reactionsSets, compartments, processes} = {}) {
     // Access information.
@@ -186,6 +186,100 @@ class Evaluation {
       compartments: compartmentsNames,
       processes: processesNames
     };
+  }
+  /**
+  * Collects information about consensus properties of redundant replicate
+  * candidate reactions.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.identifiers Identifiers of reactions.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
+  * @param {Object<Object>} parameters.reactionsSets Information about
+  * reactions' metabolites and sets.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
+  * @returns {Object} Information about a reaction.
+  */
+  static collectReplicateReactionsConsensusProperties({identifiers, reactions, metabolites, reactionsSets, compartments, processes} = {}) {
+    // Collect properties from individual reactions.
+    var reactionsProperties = identifiers.map(function (identifier) {
+      return Evaluation.createReactionSummary({
+        identifier: identifier,
+        reactions: reactions,
+        metabolites: metabolites,
+        reactionsSets: reactionsSets,
+        compartments: compartments,
+        processes: processes
+      });
+    });
+    // Collect consensus properties.
+    return reactionsProperties
+    .reduce(function (reactionsCollection, reactionProperties) {
+      // Iterate on reaction's properties.
+      var properties = Object.keys(reactionProperties);
+      return properties.reduce(function (propertiesCollection, property) {
+        // Determine whether collection includes the property.
+        var value = reactionProperties[property];
+        if (propertiesCollection.hasOwnProperty(property)) {
+          // Determine whether reaction's value of the property is priority.
+          if (property === "name") {
+            // Prioritize shortest value.
+            if (value.length < propertiesCollection.name.length) {
+              // Include the value of the property in the collection.
+              var entry = {
+                [property]: value
+              };
+              return Object.assign(propertiesCollection, entry);
+            } else {
+              // Preserve collection.
+              return propertiesCollection;
+            }
+          } else if (
+            property === "reactants" ||
+            property === "products" ||
+            property === "compartments" ||
+            property === "processes" ||
+            property === "genes"
+          ) {
+            // Prioritize unique values.
+            if (propertiesCollection[property].includes(value)) {
+              // Preserve collection.
+              return propertiesCollection
+            } else {
+              // Include the value of the property in the collection.
+              var entry = {
+                [property]: [].concat(propertiesCollection[property], value)
+              };
+              return Object.assign(propertiesCollection, entry);
+            }
+          } else if (
+            property === "reversibility" ||
+            property === "conversion" ||
+            property === "dispersal" ||
+            property === "transport"
+          ) {
+            // Prioritize true values.
+            if (!propertiesCollection[property] && value) {
+              // Include the value of the property in the collection.
+              var entry = {
+                [property]: value
+              };
+              return Object.assign(propertiesCollection, entry);
+            } else {
+              // Preserve collection.
+              return propertiesCollection
+            }
+          }
+        } else {
+          // Include the value of the property in the collection.
+          var entry = {
+            [property]: value
+          };
+          return Object.assign(propertiesCollection, entry);
+        }
+      }, reactionsCollection);
+    }, {});
   }
   /**
   * Summarizes a metabolite's participation in reactions.

@@ -4,6 +4,26 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+4 January 2018
+
+----------
+Plan
+
+Implement topology view.
+Draw network's elements in topology view.
+Complete summaries for tips for nodes for metabolites and reactions.
+
+Load information for application's default state automatically upon initiation of the application.
+Preserve the ability to save and load custom states of the application.
+
+Restore buttons in each control view need to restore only aspects of that view.
+
+Organize styles of control view.
+
+Support multiple active views within control view.
+Consider using an array for state's variable for active views.
+
+--------------------------------------------------
 3 January 2018
 
 ----------
@@ -12,6 +32,8 @@ Progress
 I wrote function "Evaluation.summarizeMetaboliteReactionsParticipation" to summarize information about all reactions in which a single metabolite participates.
 
 I also wrote functions "General.convertRecordsStringTabSeparateTable" and "General.saveString" to export information to text files with tab separation.
+I introduced an export button to export information about all entities, reactions and metabolites, that pass filters from the set menu.
+I export this information in a text file with tab-separate-values (tsv).
 
 I implemented a table summary for the tool tip for nodes for metabolites.
 
@@ -76,7 +98,6 @@ Organize styles of control view.
 
 Support multiple active views within control view.
 Consider using an array for state's variable for active views.
-
 
 --------------------------------------------------
 2 January 2018

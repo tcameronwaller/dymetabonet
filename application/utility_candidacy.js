@@ -602,11 +602,17 @@ class Candidacy {
   static collectRedundantReplicateReactions({reactionIdentifier, compartmentalization, reactionsSets, reactions} = {}) {
     // Replicate reactions have identical metabolites that participate as
     // reactants and products.
-    // Redundant replicate reactions are also relevant and have participants
-    // that are identical in the context of interest.
-    // A major factor in this context of interest is compartmentalization.
-    // Participants of many replicate reactions are only distinct due to
+    // A single candidate represents multiple redundant replicate reactions,
+    // including references to these reactions.
+    // Redundancy of replicate reactions depends on the context of filters and
     // compartmentalization.
+    // Redundant replicate reactions are relevant in context of filters and
+    // compartmentalization.
+    // Redundant replicate reactions have identical reversibilities.
+    // Redundant replicate reactions have participants with identical
+    // metabolites and roles.
+    // Redundant replicate reactions also have participants with identical
+    // compartments if compartmentalization is relevant.
     // Access information about comparison reaction.
     var comparisonIdentifier = reactionIdentifier;
     var comparisonReaction = reactions[comparisonIdentifier];
@@ -802,6 +808,10 @@ class Candidacy {
   * @returns {boolean} Whether reaction is the priority replicate.
   */
   static determineReactionReplicatePriority({reactionIdentifier, replicateIdentifiers} = {}) {
+    // Determine whether the single reaction is an appropriate candidate to
+    // represent all redundante replicates.
+    // For simplicity, select the reaction with the first identifier in
+    // alphabetical order.
     // Include the reaction's identifier in the list of replicates.
     var reactionsIdentifiers = []
     .concat(reactionIdentifier, replicateIdentifiers);
