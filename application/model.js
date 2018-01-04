@@ -198,13 +198,12 @@ class Model {
             tip: tip,
             state: self.state
           });
-          console.log("draw topology view");
           // Topology view.
-          //new TopologyView({
-          //  tip: tip,
-          //  exploration: exploration,
-          //  state: self.state
-          //});
+          new TopologyView({
+            tip: tip,
+            exploration: exploration,
+            state: self.state
+          });
         }
       }
     }

@@ -2702,8 +2702,6 @@ class TopologyView {
     self.createSimulationScales(self);
     // Create scales for efficiency.
     self.createEfficiencyScales(self);
-
-
     // Create graph to represent metabolic network.
     // Graph structure.
     // - graph (scalable vector graphical container)
@@ -2719,8 +2717,6 @@ class TopologyView {
     self.createLinks(self);
     // Create nodes.
     self.createActivateNodes(self);
-
-    // TODO: Maybe move this simulation control elsewhere... to restoreView
     // Initiate force simulation.
     self.initiateForceSimulation(self);
   }
@@ -2938,7 +2934,7 @@ class TopologyView {
       return element;
     };
     // Create children elements by association to data.
-    var linksMarks = View.createElementsData({
+    self.linksMarks = View.createElementsData({
       parent: linksGroup,
       type: "polyline",
       accessor: accessTwo
@@ -2946,21 +2942,21 @@ class TopologyView {
     // Assign attributes to elements.
     self.linksMarks.classed("link", true);
     self.linksMarks.classed("reactant", function (element, index, nodes) {
-      var link = Topology.accessLink({
+      var link = TopologyView.accessLink({
         identifier: element.identifier,
         state: self.state
       });
       return link.role === "reactant";
     });
     self.linksMarks.classed("product", function (element, index, nodes) {
-      var link = Topology.accessLink({
+      var link = TopologyView.accessLink({
         identifier: element.identifier,
         state: self.state
       });
       return link.role === "product";
     });
     self.linksMarks.classed("replication", function (element, index, nodes) {
-      var link = Topology.accessLink({
+      var link = TopologyView.accessLink({
         identifier: element.identifier,
         state: self.state
       });
@@ -2971,9 +2967,6 @@ class TopologyView {
     // Set dimensions of links.
     self.linksMarks.attr("stroke-width", (self.scaleLinkDimension * 1));
   }
-
-
-
   /**
   * Creates and activates nodes.
   * @param {Object} self Instance of a class.
@@ -2996,11 +2989,6 @@ class TopologyView {
     // Create individual nodes.
     // Create groups to contain elements for individual nodes.
     self.createActivateNodesGroups(self);
-
-
-
-    // Create titles for individual nodes.
-    self.createNodesTitles(self);
     // Create marks for individual nodes.
     self.createNodesMarks(self);
     // Remove nodes' labels.
@@ -3037,7 +3025,7 @@ class TopologyView {
       return element.type === "reaction";
     })
     .classed("replication", function (element, index, nodes) {
-      var node = Topology.accessNode({
+      var node = TopologyView.accessNode({
         identifier: element.identifier,
         type: element.type,
         state: self.state
@@ -3090,26 +3078,24 @@ class TopologyView {
       self.tip.clearView(self.tip);
     });
   }
-
-
-
   /**
   * Creates nodes's marks.
   * @param {Object} self Instance of a class.
   */
   createNodesMarks(self) {
-    // Create marks for individual nodes.
-    var dataNodesMarks = self
-    .nodesGroups
-    .selectAll("ellipse", "rect")
-    .filter(".mark")
-    .data(function (element, index, nodes) {
+    // Define function to access data.
+    function access(element, index, nodes) {
       return [element];
-    });
-    dataNodesMarks.exit().remove();
-    var novelNodesMarks = dataNodesMarks
-    .enter()
-    .append(function (element, index, nodes) {
+    };
+
+    // TODO: There's some bug in the creation of these elements...
+
+    // Create children elements by association to data.
+    var dataElements = self
+    .nodesGroups.selectAll("ellipse", "rect").filter(".mark").data(access);
+    dataElements.exit().remove();
+    var novelElements = dataElements
+    .enter().append(function (element, index, nodes) {
       // Append different types of elements for different types of entities.
       if (element.entity === "metabolite") {
         // Node represents a metabolite.
@@ -3123,16 +3109,16 @@ class TopologyView {
         .createElementNS("http://www.w3.org/2000/svg", "rect");
       }
     });
-    var nodesMarks = novelNodesMarks.merge(dataNodesMarks);
-    // Assign attributes.
-    nodesMarks.classed("mark", true)
+    var nodesMarks = novelElements.merge(dataElements);
+    // Assign attributes to elements.
+    nodesMarks.classed("mark", true);
     // Determine dimensions for representations of network's elements.
     // Set dimensions of metabolites' nodes.
     self.metaboliteNodeWidth = self.scaleNodeDimension * 1;
     self.metaboliteNodeHeight = self.scaleNodeDimension * 0.5;
     var nodesMarksMetabolites = nodesMarks
     .filter(function (element, index, nodes) {
-      return element.entity === "metabolite";
+      return element.type === "metabolite";
     });
     nodesMarksMetabolites.attr("rx", self.metaboliteNodeWidth);
     nodesMarksMetabolites.attr("ry", self.metaboliteNodeHeight);
@@ -3141,7 +3127,7 @@ class TopologyView {
     self.reactionNodeHeight = self.scaleNodeDimension * 0.75;
     var nodesMarksReactions = nodesMarks
     .filter(function (element, index, nodes) {
-      return element.entity === "reaction";
+      return element.type === "reaction";
     });
     nodesMarksReactions.attr("width", self.reactionNodeWidth);
     nodesMarksReactions.attr("height", self.reactionNodeHeight);
@@ -3152,7 +3138,6 @@ class TopologyView {
       return "translate(" + x + "," + y + ")";
     });
   }
-
   /**
   * Removes nodes' labels from a node-link diagram.
   * @param {Object} self Instance of a class.
@@ -3161,6 +3146,8 @@ class TopologyView {
     // Remove labels for individual nodes.
     self.nodesGroups.selectAll("text").remove();
   }
+
+  // TODO: I might need to update the link procedure to access links' information properly... not sure...
 
   /**
   * Initiates a force simulation for placement of network's nodes and links in a
@@ -3350,8 +3337,6 @@ class TopologyView {
       return points;
     });
   }
-
-
   /**
   * Refines the representations of nodes and links.
   * @param {Object} self Instance of a class.
@@ -3368,8 +3353,6 @@ class TopologyView {
     // Represent reactions' directionalities in links.
     self.restoreLinksPositions(self);
   }
-
-
   /**
   * Determines the orientations of reactions' nodes relative to sides for
   * reactants and products.
@@ -3487,24 +3470,38 @@ class TopologyView {
       return "translate(" + x + "," + y + ")";
     });
   }
+
   /**
   * Creates labels for nodes in a node-link diagram.
   * @param {Object} self Instance of a class.
   */
   createNodesLabels(self) {
-    // Create labels for individual nodes.
-    var dataNodesLabels = self.nodesGroups
-    .selectAll("text").data(function (element, index, nodes) {
+    // Define function to access data.
+    function access(element, index, nodes) {
       return [element];
+    };
+    // Create children elements by association to data.
+    var nodesLabels = View.createElementsData({
+      parent: self.nodesGroups,
+      type: "text",
+      accessor: access
     });
-    dataNodesLabels.exit().remove();
-    var novelNodesLabels = dataNodesLabels.enter().append("text");
-    var nodesLabels = novelNodesLabels.merge(dataNodesLabels);
-    // Assign attributes.
-    nodesLabels.text(function (data) {
-      return data.name.slice(0, 5) + "...";
-    });
+    // Assign attributes to elements.
     nodesLabels.classed("label", true);
+    nodesLabels.text(function (element, index, nodes) {
+      if (element.type === "metabolite") {
+        // Access information.
+        var node = state.networkNodesMetabolites[element.identifier];
+        var candidate = state.metabolitesCandidates[node.candidate];
+        var name = candidate.name;
+      } else if (element.type === "reaction") {
+        // Access information.
+        var node = state.networkNodesReactions[element.identifier];
+        var candidate = state.reactionsCandidates[node.candidate];
+        var name = candidate.name;
+      }
+      return (name.slice(0, 5) + "...");
+    });
     // Determine size of font for annotations of network's elements.
     nodesLabels.attr("font-size", self.scaleFont + "px");
   }
@@ -3692,9 +3689,6 @@ class TopologyView {
     // Return reference to element.
     return table.node();
   }
-
-
-
 
   /**
   * Determines the coordinates of termini for a link.
@@ -3959,7 +3953,6 @@ class TopologyView {
       }
     }
   }
-
 }
 
 

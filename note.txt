@@ -7,11 +7,18 @@ Research With Alexander Lex
 4 January 2018
 
 ----------
+Temporary Note...
+
+There's some bug in creation of nodes markes, createNodesMarks...
+
+----------
 Plan
 
 Implement topology view.
 Draw network's elements in topology view.
 Complete summaries for tips for nodes for metabolites and reactions.
+
+Determine priority candidate reaction in Candidacy procedure in the same way that I do in the consensus procedure.
 
 Load information for application's default state automatically upon initiation of the application.
 Preserve the ability to save and load custom states of the application.
