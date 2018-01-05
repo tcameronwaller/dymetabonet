@@ -115,13 +115,25 @@ flex-direction: column;
 }
 
 #control div.tab.normal {
-  background-color: rgba(0, 200, 200, 1);
+  background-color: rgba(50, 50, 50, 1);
 }
 
 #control div.tab.emphasis {
-  background-color: rgba(200, 0, 200, 1);
+  background-color: rgba(50, 0, 50, 1);
 }
 
+#control div.tab {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  text-align: center;
+  height: 1cm;
+  border-style: solid;
+  border-width: 1.5mm;
+  border-color: rgba(100, 100, 100, 1);
+  font-size: large;
+  color: rgba(255, 255, 255, 1);
+}
 
 /******************************************************************************/
 /* State View */
@@ -139,20 +151,12 @@ flex-direction: column;
 }
 
 #state button {
-  width: 1.7cm;
+  width: 2cm;
 }
 
 /******************************************************************************/
 /* Menu */
 /******************************************************************************/
-
-div.menu > span {
-  font-size: large;
-  color: rgba(0, 0, 0, 1);
-  font-family: sans-serif;
-  font-style: normal;
-  font-weight: bold;
-}
 
 div.menu input.search {
   width: 5cm;
@@ -318,10 +322,7 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 #topology svg {
   height: 100%;
   width: 100%;
-  /*dark*/
-  fill: rgba(255, 50, 0, 1);
-  /*light*/
-  /*fill: rgba(0, 0, 0, 1);*/
+  fill: rgba(200, 50, 0, 1);
 }
 
 #topology svg rect.base {
@@ -342,6 +343,7 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 }
 
 #topology svg .node.metabolite.replication .mark {
+  fill: rgba(0, 50, 150, 1);
 }
 
 #topology svg .node.reaction.replication .mark {

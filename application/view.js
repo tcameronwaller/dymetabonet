@@ -980,37 +980,6 @@ class StateView {
         // Call action.
         Action.executeTemporaryProcedure(self.state);
       });
-      self.execute.addEventListener("mouseenter", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        TopologyView.createTip({
-          identifier: "DAGK_hs",
-          type: "reaction",
-          positionX: 500,
-          positionY: 500,
-          tip: self.tip,
-          documentReference: self.document,
-          state: self.state
-        });
-      });
-      self.execute.addEventListener("mousemove", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        TopologyView.createTip({
-          identifier: "DAGK_hs",
-          type: "reaction",
-          positionX: 500,
-          positionY: 500,
-          tip: self.tip,
-          documentReference: self.document,
-          state: self.state
-        });
-      });
-      self.execute.addEventListener("mouseleave", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        self.tip.clearView(self.tip);
-      });
     } else {
       // Container is not empty.
       // Set references to view's variant elements.
@@ -1086,8 +1055,6 @@ class SetView {
       // Container is empty.
       // Create view's invariant elements.
       // Activate invariant behavior of view's elements.
-      // Create title.
-      self.createTitle(self);
       // Create and activate restore.
       self.createActivateRestore(self);
       // Create and activate export.
@@ -1124,17 +1091,6 @@ class SetView {
       // Control for filter.
       self.filter = self.document.getElementById("set-filter");
     }
-  }
-  /**
-  * Creates a title.
-  * @param {Object} self Instance of a class.
-  */
-  createTitle(self) {
-    // Create title.
-    var title = self.document.createElement("div");
-    self.container.appendChild(title);
-    title.classList.add("title");
-    title.textContent = "Set";
   }
   /**
   * Creates and activates a button to restore the menu.
@@ -1746,12 +1702,12 @@ class CandidacyView {
       // Container is empty.
       // Create view's invariant elements.
       // Activate invariant behavior of view's elements.
-      // Create title.
-      self.createTitle(self);
-      // Create and activate control for compartmentalization.
-      self.createActivateCompartmentalizationControl(self);
       // Create and activate restore.
       self.createActivateRestore(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create and activate control for compartmentalization.
+      self.createActivateCompartmentalizationControl(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create menu for candidate metabolites.
@@ -1775,17 +1731,6 @@ class CandidacyView {
       self.compartmentalization = self
       .document.getElementById("candidacy-compartmentalization");
     }
-  }
-  /**
-  * Creates a title.
-  * @param {Object} self Instance of a class.
-  */
-  createTitle(self) {
-    // Create title.
-    var title = self.document.createElement("div");
-    self.container.appendChild(title);
-    title.classList.add("title");
-    title.textContent = "Candidacy";
   }
   /**
   * Creates and activates a control for compartmentalization.
@@ -2792,7 +2737,7 @@ class TopologyView {
     var nodeDimensionScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([1, 3, 5, 7, 10, 15, 25, 30, 35, 50]);
+    .range([1, 3, 5, 7, 10, 15, 30, 40, 50, 60]);
     // Define scale for dimensions of links' representations.
     // Domain's unit is pixel for ratio of graphical container's width to count
     // of nodes.
@@ -2830,7 +2775,7 @@ class TopologyView {
     var fontScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([1, 2, 3, 4, 5, 7, 12, 15, 17, 20]);
+    .range([1, 2, 3, 4, 5, 7, 11, 13, 15, 17]);
     // Compute ratio for scales' domain.
     self.scaleRatio = self.graphWidth / self.nodesRecords.length;
     // Compute dimensions from scale.
@@ -2872,7 +2817,7 @@ class TopologyView {
     var alphaDecayScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([0.010, 0.011, 0.012, 0.013, 0.015, 0.017, 0.02]);
+    .range([0.013, 0.013, 0.014, 0.014, 0.015, 0.017, 0.02]);
     // Define scale for velocity decay rate in force simulation.
     // Domain's unit is count of nodes.
     // Range's unit is arbitrary for decay rates.
@@ -3211,7 +3156,7 @@ class TopologyView {
         // have designations for simplification.
         if (element.replication) {
           // Link is for a replicate node.
-          return self.metaboliteNodeWidth;
+          return (self.metaboliteNodeWidth * 0.5);
         } else {
           // Link is not for a replicate node.
           return (1.3 * (self.reactionNodeWidth + self.metaboliteNodeWidth));
@@ -3268,7 +3213,7 @@ class TopologyView {
     var percentage = Math
     .round((self.simulationCounter / self.estimateIterations) * 100);
     if (percentage % 10 === 0) {
-      console.log("simulation: " + percentage + "%");
+      //console.log("simulation: " + percentage + "%");
     }
     // Restore positions of nodes and links periodically throughout the
     // simulation.
@@ -3291,8 +3236,8 @@ class TopologyView {
       "network representation complete... " +
       self.simulationCounter + " iterations"
     );
-    console.log(message);
-    window.alert(message);
+    //console.log(message);
+    //window.alert(message);
   }
   /**
   * Restores positions of nodes' visual representations according to results of
