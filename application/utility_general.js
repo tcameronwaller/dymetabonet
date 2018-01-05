@@ -1463,4 +1463,16 @@ class General {
       return record.identifier === identifier;
     });
   }
+  /**
+  * Filters records within an array by the records' identifiers.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.identifiers Identifiers of records.
+  * @param {Array<Object>} parameters.records Array of records.
+  * @returns {Array<Object>} Records.
+  */
+  static filterArrayRecordsByIdentifier(identifiers, records) {
+    return records.filter(function (record) {
+      return identifiers.includes(record.identifier);
+    });
+  }
 }

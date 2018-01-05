@@ -4,12 +4,31 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
-4 January 2018
+5 January 2018
 
 ----------
-Temporary Note...
+Plan
 
-There's some bug in creation of nodes markes, createNodesMarks...
+Topology View
+Make tips position themselves according to their proximity to edges of view.
+Set styles of network's elements to be aesthetic.
+
+Control View
+Organize styles of control view to be aesthetic and consistent.
+Support multiple active views within control view.
+Consider using an array for state's variable for active views.
+
+Reset state variable of whether to draw network with each change to state that changes the network.
+
+Determine priority candidate reaction in Candidacy procedure in the same way that I do in the consensus procedure.
+
+Load information for application's default state automatically upon initiation of the application.
+Preserve the ability to save and load custom states of the application.
+
+Restore buttons in each control view need to restore only aspects of that view.
+
+--------------------------------------------------
+4 January 2018
 
 ----------
 Plan

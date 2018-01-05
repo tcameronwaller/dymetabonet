@@ -549,6 +549,45 @@ class Network {
     });
   }
 
+  /**
+  * Collects identifiers of nodes that are direct neighbors of a single focal
+  * node.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.focus Identifier of a single node in a network
+  * that is the focal node.
+  * @param {Array<Object>} parameters.links Records for network's links.
+  * @returns {Array<string>} Identifiers of nodes that are direct neighbors of
+  * focal node.
+  */
+  static collectNeighborsNodes({focus, links} = {}) {
+    // Iterate on links to collect neighbors.
+    var neighbors = links.reduce(function (collection, link) {
+      // Collect identifiers of nodes to which the link connects.
+      var linkNodes = [].concat(link.source, link.target);
+      // Determine whether link connects to focal node.
+      var match = linkNodes.some(function (identifier) {
+        return identifier === focus;
+      });
+      if (match) {
+        // Link connects to focal node.
+        // Include neighbor in collection.
+        // Assume that link connects to a real node and that this node's
+        // identifier is the same that the link references.
+        var neighbor = linkNodes.filter(function (identifier) {
+          return identifier !== focus;
+        });
+        return [].concat(collection, neighbor[0]);
+      } else {
+        // Link does not connect to focal node.
+        // Preserve collection.
+        return collection;
+      }
+    }, []);
+    // Return identifiers of unique neighbors.
+    return General.collectUniqueElements(neighbors);
+  }
+
+
 
 // Scrap...
 
@@ -654,43 +693,6 @@ class Network {
     }, []);
     // Return identifiers of unique links.
     return General.collectUniqueElements(neighborsLinks);
-  }
-  /**
-  * Collects identifiers of nodes that are direct neighbors of a single focal
-  * node.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.focus Identifier of a single node in a network
-  * that is the focal node.
-  * @param {Array<Object>} parameters.links Records for network's links.
-  * @returns {Array<string>} Identifiers of nodes that are direct neighbors of
-  * focal node.
-  */
-  static collectNeighborsNodes({focus, links} = {}) {
-    // Iterate on links to collect neighbors.
-    var neighbors = links.reduce(function (collection, link) {
-      // Collect identifiers of nodes to which the link connects.
-      var linkNodes = [].concat(link.source, link.target);
-      // Determine whether link connects to focal node.
-      var match = linkNodes.some(function (identifier) {
-        return identifier === focus;
-      });
-      if (match) {
-        // Link connects to focal node.
-        // Include neighbor in collection.
-        // Assume that link connects to a real node and that this node's
-        // identifier is the same that the link references.
-        var neighbor = linkNodes.filter(function (identifier) {
-          return identifier !== focus;
-        });
-        return [].concat(collection, neighbor[0]);
-      } else {
-        // Link does not connect to focal node.
-        // Preserve collection.
-        return collection;
-      }
-    }, []);
-    // Return identifiers of unique neighbors.
-    return General.collectUniqueElements(neighbors);
   }
   /**
   * Collects records for elements by their identifiers.
