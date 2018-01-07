@@ -65,6 +65,8 @@ class Model {
   /**
   * Evaluates the application's state and represents it accordingly in a visual
   * interface.
+  * All alterations to the application's state initiates restoration of the
+  * application's interface.
   * Evaluation only considers which views to initialize or restore in the
   * interface.
   * Individual views' content and behavior depends further on application's
@@ -230,6 +232,14 @@ class Model {
   */
   static determineTopology(state) {
     return state.topology;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineTopologyNovelty(state) {
+    return state.topologyNovelty;
   }
   /**
   * Determines whether the application's state has specific information.

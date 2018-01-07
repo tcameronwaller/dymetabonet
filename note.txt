@@ -4,6 +4,21 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+7 January 2018
+
+----------
+Progress
+
+Adjusted styles of views in control panel.
+
+Changed activation of control's views to allow multiple views to be active simultaneously.
+
+Established persistence of layout in visual representation of network's topology.
+Created a new state variable to determine whether the network's topology is novel and requires new creation of layout.
+Now the TopologyView only redraws the network from scratch when it needs to.
+
+
+--------------------------------------------------
 5 January 2018
 
 ----------
@@ -14,12 +29,12 @@ Reset state variable of whether to draw network with each change to state that c
 Topology View
 Make tips position themselves according to their proximity to edges of view.
 
-Determine priority candidate reaction in Candidacy procedure in the same way that I do in the consensus procedure.
-
 Load information for application's default state automatically upon initiation of the application.
 Preserve the ability to save and load custom states of the application.
 
 Restore buttons in each control view need to restore only aspects of that view.
+
+Determine priority candidate reaction in Candidacy procedure in the same way that I do in the consensus procedure.
 
 --------------------------------------------------
 4 January 2018

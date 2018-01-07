@@ -51,7 +51,11 @@ class State {
       "controlViews",
       // Attribute "topology" stores information about whether to draw a visual
       // representation of the network's topology.
-      "topology"
+      "topology",
+      // Attribute "topologyNovelty" stores information about whether to current
+      // network's topology is novel in comparison to any current visual
+      // representations.
+      "topologyNovelty"
     ];
     var entities = [
       // Metabolic entities and sets.

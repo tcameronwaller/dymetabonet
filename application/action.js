@@ -363,13 +363,15 @@ class Action {
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization
     });
-    // Initialize selection of whether to draw a visual representation of
-    // network's topology.
+    // Initialize whether to draw a visual representation of network's topology.
     var topology = false;
+    // Initialize novelty of network's topology.
+    var topologyNovelty = true;
     // Compile attributes' values.
     var novelAttributesValues = {
       setsFilters: setsFilters,
-      topology: topology
+      topology: topology,
+      topologyNovelty: topologyNovelty
     };
     var attributesValues = Object.assign(
       {},
@@ -595,13 +597,15 @@ class Action {
       metabolites: state.metabolites,
       compartmentalization: compartmentalization
     });
-    // Initialize selection of whether to draw a visual representation of
-    // network's topology.
+    // Initialize whether to draw a visual representation of network's topology.
     var topology = false;
+    // Initialize novelty of network's topology.
+    var topologyNovelty = true;
     // Compile attributes' values.
     var novelAttributesValues = {
       compartmentalization: compartmentalization,
-      topology: topology
+      topology: topology,
+      topologyNovelty: topologyNovelty
     };
     var attributesValues = Object.assign(
       candidatesSimplificationsSummaries,
@@ -648,12 +652,14 @@ class Action {
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization
     });
-    // Initialize selection of whether to draw a visual representation of
-    // network's topology.
+    // Initialize whether to draw a visual representation of network's topology.
     var topology = false;
+    // Initialize novelty of network's topology.
+    var topologyNovelty = true;
     // Compile attributes' values.
     var novelAttributesValues = {
-      topology: topology
+      topology: topology,
+      topologyNovelty: topologyNovelty
     };
     var attributesValues = Object.assign(
       novelAttributesValues,
@@ -667,15 +673,41 @@ class Action {
     });
   }
   /**
-  * Changes the selection of toppology.
+  * Changes the selection of topology.
   * @param {Object} state Application's state.
   */
   static changeTopology(state) {
-    // Determine topology.
-    var topology = true;
+    // Determine topology's novelty.
+    if (state.topology) {
+      var topology = false;
+    } else {
+      var topology = true;
+    }
     // Compile attributes' values.
     var novelAttributesValues = {
       topology: topology
+    };
+    var attributesValues = novelAttributesValues;
+    // Submit attributes' values to the application's state.
+    Action.submitAttributes({
+      attributesValues: attributesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of the novelty of the current network's topology.
+  * @param {Object} state Application's state.
+  */
+  static changeTopologyNovelty(state) {
+    // Determine topology's novelty.
+    if (state.topologyNovelty) {
+      var topologyNovelty = false;
+    } else {
+      var topologyNovelty = true;
+    }
+    // Compile attributes' values.
+    var novelAttributesValues = {
+      topologyNovelty: topologyNovelty
     };
     var attributesValues = novelAttributesValues;
     // Submit attributes' values to the application's state.
@@ -922,14 +954,16 @@ class Action {
       set: false,
       candidacy: false
     };
-    // Initialize selection of whether to draw a visual representation of
-    // network's topology.
+    // Initialize whether to draw a visual representation of network's topology.
     var topology = false;
+    // Initialize novelty of network's topology.
+    var topologyNovelty = true;
     // Compile information.
     var attributesValues = {
       source: source,
       controlViews: controlViews,
-      topology: topology
+      topology: topology,
+      topologyNovelty: topologyNovelty
     };
     // Return information.
     return attributesValues;

@@ -2659,16 +2659,39 @@ class TopologyView {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
-    // Create and activate network.
+    // Prepare information about network's elements.
+    self.prepareNetworkElementsRecords(self);
+    // Create, activate, and restore visual representations of network's
+    // elements.
     self.createActivateNetworkRepresentation(self);
+    // Many alterations to the application's state do not change the network's
+    // elements or topology.
+    // As calculation of layout by force simulations is computationally
+    // expensive, only initiate this procedure if necessary.
+    // Determine whether to determine layout for network's elements and
+    // topology.
+    if (Model.determineTopologyNovelty(self.state)) {
+      self.createNetworkLayout(self);
+    }
+  }
+  /**
+  * Prepares local records of information about network's elements.
+  * @param {Object} self Instance of a class.
+  */
+  prepareNetworkElementsRecords(self) {
+    // Copy information about network's elements, nodes and links, to preserve
+    // original information against modifications, especially due to the force
+    // simulation.
+    self.nodesRecords = General
+    .copyDeepArrayElements(self.state.networkNodesRecords, true);
+    self.linksRecords = General
+    .copyDeepArrayElements(self.state.networkLinksRecords, true);
   }
   /**
   * Creates and activates a visual representation of a network.
   * @param {Object} self Instance of a class.
   */
   createActivateNetworkRepresentation(self) {
-    // Prepare information about network's elements.
-    self.prepareNetworkElementsRecords(self);
     // Create scales for the visual representation of network's elements.
     // Determine these scales dynamically within the script.
     // Otherwise an alternative is to determine dimensions within style and then
@@ -2676,10 +2699,6 @@ class TopologyView {
     // window.getComputeStyle.
     // Create scales for representation of network's elements.
     self.createRepresentationScales(self);
-    // Create scales for simulation of forces between network's elements.
-    self.createSimulationScales(self);
-    // Create scales for efficiency.
-    self.createEfficiencyScales(self);
     // Create graph to represent metabolic network.
     // Graph structure.
     // - graph (scalable vector graphical container)
@@ -2695,19 +2714,6 @@ class TopologyView {
     self.createLinks(self);
     // Create nodes.
     self.createActivateNodes(self);
-    // Initiate force simulation.
-    self.initiateForceSimulation(self);
-  }
-  /**
-  * Prepares local records of information about network's elements.
-  * @param {Object} self Instance of a class.
-  */
-  prepareNetworkElementsRecords(self) {
-    // Copy information about network's elements, nodes and links, to preserve
-    // original information against modifications, especially due to the force
-    // simulation.
-    self.nodesRecords = General.copyDeepArrayElements(self.state.networkNodesRecords, true);
-    self.linksRecords = General.copyDeepArrayElements(self.state.networkLinksRecords, true);
   }
   /**
   * Creates scales for visual representation of network's elements.
@@ -2787,107 +2793,6 @@ class TopologyView {
     self.scaleFont = fontScale(self.scaleRatio);
   }
   /**
-  * Creates scales for simulations of forces between network's elements.
-  * @param {Object} self Instance of a class.
-  */
-  createSimulationScales(self) {
-    // Simulations of forces between network's elements are computationally
-    // expensive.
-    // The computational cost varies with the counts of network's elements.
-    // To maintain efficiency, vary the rigor of these simulations by the counts
-    // of network's elements.
-    // Define scales' domain on the basis of the count of nodes.
-    var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
-    // Define scale for alpha decay rate in force simulation.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.05, iterations = 134.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.03, iterations = 227.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.02, iterations = 300.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.015, iterations = 458.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.013, iterations = 528.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.01, iterations = 688.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.005, iterations = 1379.
-    // Domain's unit is count of nodes.
-    // Range's unit is arbitrary for decay rates.
-    //domain: range
-    //0-100: 0.005
-    //100-500: 0.006
-    //500-1000: 0.007
-    //1000-2500: 0.008
-    //2500-5000: 0.009
-    //5000-10000: 0.01
-    //10000-1000000: 0.011
-    var alphaDecayScale = d3
-    .scaleThreshold()
-    .domain(domainCounts)
-    .range([0.013, 0.013, 0.014, 0.014, 0.015, 0.017, 0.02]);
-    // Define scale for velocity decay rate in force simulation.
-    // Domain's unit is count of nodes.
-    // Range's unit is arbitrary for decay rates.
-    //domain: range
-    //0-100: 0.2
-    //100-500: 0.2
-    //500-1000: 0.25
-    //1000-2500: 0.25
-    //2500-5000: 0.25
-    //5000-10000: 0.3
-    //10000-1000000: 0.3
-    var velocityDecayScale = d3
-    .scaleThreshold()
-    .domain(domainCounts)
-    .range([0.2, 0.2, 0.25, 0.25, 0.25, 0.3, 0.3]);
-    // Compute simulation decay rates from scale.
-    self.scaleAlphaDecay = alphaDecayScale(self.nodesRecords.length);
-    self.scaleVelocityDecay = velocityDecayScale(self.nodesRecords.length);
-  }
-  /**
-  * Creates scale for efficiency in the application.
-  * @param {Object} self Instance of a class.
-  */
-  createEfficiencyScales(self) {
-    // Graphical rendering of visual elements for network's elements is
-    // computationally expensive
-    // The maintenance of efficient interactivity in the application requires
-    // restriction on behavior.
-    // Greater scale of the network requires more stringent restriction for
-    // computational efficiency.
-    // Define scale's domain on the basis of the count of nodes.
-    var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
-    // Define scale for intervals at which to restore positions of nodes and
-    // links during simulation's iterations.
-    // Domain's unit is count of nodes.
-    // Range's unit is arbitrary.
-    //domain: range
-    //0-100: 3
-    //100-500: 5
-    //500-1000: 10
-    //1000-2500: 15
-    //2500-5000: 25
-    //5000-10000: 50
-    //10000-1000000: 100
-    var intervalScale = d3
-    .scaleThreshold()
-    .domain(domainCounts)
-    .range([3, 5, 10, 15, 25, 50, 100]);
-    // Define scale for representation of labels for nodes.
-    // Domain's unit is count of nodes.
-    // Range's unit is arbitrary.
-    //domain: range
-    //0-100: true
-    //100-500: true
-    //500-1000: true
-    //1000-2500: true
-    //2500-5000: false
-    //5000-10000: false
-    //10000-1000000: false
-    var labelScale = d3
-    .scaleThreshold()
-    .domain(domainCounts)
-    .range([true, true, true, true, false, false, false]);
-    // Compute efficient behavior rules from scales.
-    self.scaleInterval = intervalScale(self.nodesRecords.length);
-    self.scaleLabel = labelScale(self.nodesRecords.length);
-  }
-  /**
   * Creates links.
   * @param {Object} self Instance of a class.
   */
@@ -2943,9 +2848,6 @@ class TopologyView {
     self.createActivateNodesGroups(self);
     // Create marks for individual nodes.
     self.createNodesMarks(self);
-    // Remove nodes' labels.
-    // For efficiency, only include node's labels after simulation completes.
-    self.removeNodesLabels(self);
   }
   /**
   * Creates and activates nodes's groups.
@@ -3044,7 +2946,7 @@ class TopologyView {
     };
     // Create children elements by association to data.
     var dataElements = self
-    .nodesGroups.selectAll("ellipse", "rect").filter(".mark").data(access);
+    .nodesGroups.selectAll("ellipse, rect").filter(".mark").data(access);
     dataElements.exit().remove();
     var novelElements = dataElements
     .enter().append(function (element, index, nodes) {
@@ -3089,6 +2991,122 @@ class TopologyView {
       var y = - (self.reactionNodeHeight / 2);
       return "translate(" + x + "," + y + ")";
     });
+  }
+  /**
+  * Creates layout for visual representations of network's elements.
+  * @param {Object} self Instance of a class.
+  */
+  createNetworkLayout(self) {
+    // Create scales for simulation of forces between network's elements.
+    self.createSimulationScales(self);
+    // Create scales for efficiency.
+    self.createEfficiencyScales(self);
+    // Remove nodes' labels.
+    // For efficiency, only include node's labels after simulation completes.
+    self.removeNodesLabels(self);
+    // Initiate force simulation.
+    self.initiateForceSimulation(self);
+  }
+  /**
+  * Creates scales for simulations of forces between network's elements.
+  * @param {Object} self Instance of a class.
+  */
+  createSimulationScales(self) {
+    // Simulations of forces between network's elements are computationally
+    // expensive.
+    // The computational cost varies with the counts of network's elements.
+    // To maintain efficiency, vary the rigor of these simulations by the counts
+    // of network's elements.
+    // Define scales' domain on the basis of the count of nodes.
+    var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
+    // Define scale for alpha decay rate in force simulation.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.05, iterations = 134.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.03, iterations = 227.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.02, iterations = 300.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.015, iterations = 458.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.013, iterations = 528.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.01, iterations = 688.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.005, iterations = 1379.
+    // Domain's unit is count of nodes.
+    // Range's unit is arbitrary for decay rates.
+    //domain: range
+    //0-100: 0.005
+    //100-500: 0.006
+    //500-1000: 0.007
+    //1000-2500: 0.008
+    //2500-5000: 0.009
+    //5000-10000: 0.01
+    //10000-1000000: 0.011
+    var alphaDecayScale = d3
+    .scaleThreshold()
+    .domain(domainCounts)
+    .range([0.013, 0.013, 0.014, 0.015, 0.017, 0.02, 0.03]);
+    // Define scale for velocity decay rate in force simulation.
+    // Domain's unit is count of nodes.
+    // Range's unit is arbitrary for decay rates.
+    //domain: range
+    //0-100: 0.2
+    //100-500: 0.2
+    //500-1000: 0.25
+    //1000-2500: 0.25
+    //2500-5000: 0.25
+    //5000-10000: 0.3
+    //10000-1000000: 0.3
+    var velocityDecayScale = d3
+    .scaleThreshold()
+    .domain(domainCounts)
+    .range([0.2, 0.2, 0.25, 0.25, 0.25, 0.3, 0.3]);
+    // Compute simulation decay rates from scale.
+    self.scaleAlphaDecay = alphaDecayScale(self.nodesRecords.length);
+    self.scaleVelocityDecay = velocityDecayScale(self.nodesRecords.length);
+  }
+  /**
+  * Creates scale for efficiency in the application.
+  * @param {Object} self Instance of a class.
+  */
+  createEfficiencyScales(self) {
+    // Graphical rendering of visual elements for network's elements is
+    // computationally expensive
+    // The maintenance of efficient interactivity in the application requires
+    // restriction on behavior.
+    // Greater scale of the network requires more stringent restriction for
+    // computational efficiency.
+    // Define scale's domain on the basis of the count of nodes.
+    var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
+    // Define scale for intervals at which to restore positions of nodes and
+    // links during simulation's iterations.
+    // Domain's unit is count of nodes.
+    // Range's unit is arbitrary.
+    //domain: range
+    //0-100: 3
+    //100-500: 5
+    //500-1000: 10
+    //1000-2500: 15
+    //2500-5000: 25
+    //5000-10000: 50
+    //10000-1000000: 100
+    var intervalScale = d3
+    .scaleThreshold()
+    .domain(domainCounts)
+    .range([3, 5, 10, 15, 25, 50, 100]);
+    // Define scale for representation of labels for nodes.
+    // Domain's unit is count of nodes.
+    // Range's unit is arbitrary.
+    //domain: range
+    //0-100: true
+    //100-500: true
+    //500-1000: true
+    //1000-2500: true
+    //2500-5000: false
+    //5000-10000: false
+    //10000-1000000: false
+    var labelScale = d3
+    .scaleThreshold()
+    .domain(domainCounts)
+    .range([true, true, true, true, false, false, false]);
+    // Compute efficient behavior rules from scales.
+    self.scaleInterval = intervalScale(self.nodesRecords.length);
+    self.scaleLabel = labelScale(self.nodesRecords.length);
   }
   /**
   * Removes nodes' labels from a node-link diagram.
@@ -3240,6 +3258,9 @@ class TopologyView {
     );
     //console.log(message);
     //window.alert(message);
+    // Change the novelty of the network's topology to indicate unnecessity of
+    // determination of layout until the network changes.
+    Action.changeTopologyNovelty(self.state);
   }
   /**
   * Restores positions of nodes' visual representations according to results of
