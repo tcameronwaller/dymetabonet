@@ -46,15 +46,9 @@ class State {
       // Attribute "source" stores a reference to a file on client's system that
       // is a source of information.
       "source",
-      // Attribute "controlState" stores information about whether the state
-      // view within the control view is active.
-      "controlState",
-      // Attribute "controlSet" stores information about whether the set view
+      // Attribute "controlViews" stores information about whether each view
       // within the control view is active.
-      "controlSet",
-      // Attribute "controlCandidacy" stores information about whether the
-      // candidacy view within the control view is active.
-      "controlCandidacy",
+      "controlViews",
       // Attribute "topology" stores information about whether to draw a visual
       // representation of the network's topology.
       "topology"

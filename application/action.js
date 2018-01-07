@@ -124,18 +124,21 @@ class Action {
   * @param {string} parameters.category Category of panel.
   * @param {Object} state Application's state.
   */
-  static changeControlPanel({category, state}) {
-    // Determine the state variable.
-    var variable = "control" + General.capitalizeString(category);
-    // Change the panel's selection.
-    if (state[variable]) {
+  static changeControlViews({category, state}) {
+    // Change the view's selection.
+    if (state.controlViews[category]) {
       var selection = false;
     } else {
       var selection = true;
     }
+    // Create entry.
+    var entry = {
+      [category]: selection
+    };
+    var controlViews = Object.assign(state.controlViews, entry);
     // Compile attributes' values.
     var novelAttributesValues = {
-      [variable]: selection
+      controlViews: controlViews
     };
     var attributesValues = novelAttributesValues;
     // Submit attributes' values to the application's state.
@@ -914,18 +917,18 @@ class Action {
     // Remove any information about source.
     var source = null;
     // Initialize control panels.
-    var controlState = false;
-    var controlSet = false;
-    var controlCandidacy = false;
+    var controlViews = {
+      state: true,
+      set: false,
+      candidacy: false
+    };
     // Initialize selection of whether to draw a visual representation of
     // network's topology.
     var topology = false;
     // Compile information.
     var attributesValues = {
       source: source,
-      controlState: controlState,
-      controlSet: controlSet,
-      controlCandidacy: controlCandidacy,
+      controlViews: controlViews,
       topology: topology
     };
     // Return information.

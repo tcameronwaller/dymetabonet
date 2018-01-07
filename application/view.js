@@ -623,7 +623,8 @@ class View {
       accessor: access
     });
     // Assign attributes to elements.
-    barMarks.classed("mark", true)
+    barMarks
+    .classed("mark", true)
     .attr("width", function (element, index, nodes) {
       return determineScaleValue(element.count);
     })
@@ -837,7 +838,7 @@ class ControlView {
       self[reference].addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        Action.changeControlPanel({
+        Action.changeControlViews({
           category: event.currentTarget.getAttribute("name"),
           state: self.state
         });
@@ -1417,7 +1418,7 @@ class SetMenuView {
     self.determineScaleValue = d3
     .scaleLinear()
     .domain([0, maximalValue])
-    .range([5, (self.graphWidth * 0.8)])
+    .range([5, (self.graphWidth * 0.9)])
     .nice(2);
   }
   /**
@@ -2025,7 +2026,7 @@ class CandidacyMenuView {
     self.determineScaleValue = d3
     .scaleLinear()
     .domain([0, maximalValue])
-    .range([5, (self.graphWidth * 0.8)])
+    .range([5, (self.graphWidth * 0.9)])
     .nice(2);
   }
   /**
@@ -2188,6 +2189,7 @@ class CandidacyMenuView {
       graphHeight: self.graphHeight,
       determineScaleValue: self.determineScaleValue
     });
+    barMarks.classed("normal", true);
   }
   /**
   * Represents and activates controls for simplifications.

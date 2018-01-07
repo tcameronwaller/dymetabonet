@@ -112,66 +112,40 @@ class Model {
         Model.determineNetworkElements(self.state)
       ) {
         // Control view.
+        var tabs = Object.keys(self.state.controlViews);
+        var panels = tabs.filter(function (tab) {
+          return self.state.controlViews[tab];
+        });
+        var controlContents = {
+          tabs: tabs,
+          panels: panels
+        };
+        var control = new ControlView({
+          tip: tip,
+          contents: controlContents,
+          state: self.state
+        });
         if (Model.determineControlState(self.state)) {
-          // Control view.
-          var controlContents = {
-            tabs: ["state", "set", "candidacy"],
-            panels: ["state"]
-          };
-          var control = new ControlView({
-            tip: tip,
-            contents: controlContents,
-            state: self.state
-          });
           // State view.
           new StateView({
             tip: tip,
             control: control,
             state: self.state
           });
-        } else if (Model.determineControlSet(self.state)) {
-          // Control view.
-          var controlContents = {
-            tabs: ["state", "set", "candidacy"],
-            panels: ["set"]
-          };
-          var control = new ControlView({
-            tip: tip,
-            contents: controlContents,
-            state: self.state
-          });
+        }
+        if (Model.determineControlSet(self.state)) {
           // Set view.
           new SetView({
             tip: tip,
             control: control,
             state: self.state
           });
-        } else if (Model.determineControlCandidacy(self.state)) {
-          // Control view.
-          var controlContents = {
-            tabs: ["state", "set", "candidacy"],
-            panels: ["candidacy"]
-          };
-          var control = new ControlView({
-            tip: tip,
-            contents: controlContents,
-            state: self.state
-          });
+        }
+        if (Model.determineControlCandidacy(self.state)) {
           // Candidacy view.
           new CandidacyView({
             tip: tip,
             control: control,
-            state: self.state
-          });
-        } else {
-          // Control view.
-          var controlContents = {
-            tabs: ["state", "set", "candidacy"],
-            panels: []
-          };
-          var control = new ControlView({
-            tip: tip,
-            contents: controlContents,
             state: self.state
           });
         }
@@ -231,7 +205,7 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineControlState(state) {
-    return state.controlState;
+    return state.controlViews.state;
   }
   /**
   * Determines whether the application's state has specific information.
@@ -239,7 +213,7 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineControlSet(state) {
-    return state.controlSet;
+    return state.controlViews.set;
   }
   /**
   * Determines whether the application's state has specific information.
@@ -247,7 +221,7 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineControlCandidacy(state) {
-    return state.controlCandidacy;
+    return state.controlViews.candidacy;
   }
   /**
   * Determines whether the application's state has specific information.

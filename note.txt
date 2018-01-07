@@ -9,15 +9,10 @@ Research With Alexander Lex
 ----------
 Plan
 
+Reset state variable of whether to draw network with each change to state that changes the network.
+
 Topology View
 Make tips position themselves according to their proximity to edges of view.
-
-Control View
-Organize styles of control view to be aesthetic and consistent.
-Support multiple active views within control view.
-Consider using an array for state's variable for active views.
-
-Reset state variable of whether to draw network with each change to state that changes the network.
 
 Determine priority candidate reaction in Candidacy procedure in the same way that I do in the consensus procedure.
 
