@@ -6,6 +6,9 @@ Research With Alexander Lex
 --------------------------------------------------
 7 January 2018
 
+Access file from JavaScript in same directory...
+https://codepen.io/KryptoniteDove/post/load-json-file-locally-using-pure-javascript
+
 ----------
 Progress
 
@@ -17,6 +20,7 @@ Established persistence of layout in visual representation of network's topology
 Created a new state variable to determine whether the network's topology is novel and requires new creation of layout.
 Now the TopologyView only redraws the network from scratch when it needs to.
 
+Changed model and actions extensively to load information about metabolic entities and sets and initialize application automatically on start up.
 
 --------------------------------------------------
 5 January 2018
@@ -101,6 +105,23 @@ Ciao,
 
 Cameron
 "
+
+----------
+
+    // "L-cysteine"
+
+    var summary = Evaluation.summarizeMetaboliteReactionsParticipation({
+      metaboliteIdentifier: "cys_L",
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalReactionsSets,
+      metabolitesSets: state.totalMetabolitesSets,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    console.log(summary);
+    var summaryString = General.convertRecordsStringTabSeparateTable(summary);
+    General.saveString("cysteine_reactions.txt", summaryString);
 
 ----------
 Meet with Casey Hughes

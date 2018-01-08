@@ -275,7 +275,7 @@ class State {
       "proximityFocus", "proximityDirection", "proximityDepth",
       "pathOrigin", "pathDestination", "pathDirection", "pathCount",
     ];
-    self.attributeNames = [].concat(
+    self.variablesNames = [].concat(
       control,
       entities,
       sets,
@@ -290,23 +290,22 @@ class State {
     );
   }
   /**
-  * Restores the values of attributes in application's state and initializes
-  * representation.
-  * @param {Array<Object>} novelAttributes Novel values of attributes to replace
-  * former values of attributes in application's state.
+  * Restores the values of variables in application's state and restores its
+  * representation in the interface.
+  * @param {Array<Object>} parameters.variablesValues Names and values of variables.
   * @param {Object} state Application's state.
   */
-  restore(novelAttributes, state) {
-    // Accept novel values of attributes and assign them to the state.
-    novelAttributes.forEach(function (novelAttribute) {
-      // Confirm that the entry for the attribute's value is valid.
+  restore(variablesValues, state) {
+    // Accept novel values of variables and assign them to the state.
+    variablesValues.forEach(function (variableValue) {
+      // Confirm that the submission is valid.
       if (
-        novelAttribute.hasOwnProperty("attribute") &&
-        novelAttribute.hasOwnProperty("value")
+        variableValue.hasOwnProperty("variable") &&
+        variableValue.hasOwnProperty("value")
       ) {
-        // Confirm that the attribute is valid in the state.
-        if (state.attributeNames.includes(novelAttribute.attribute)) {
-          state[novelAttribute.attribute] = novelAttribute.value;
+        // Confirm that the variable is valid.
+        if (state.variablesNames.includes(variableValue.variable)) {
+          state[variableValue.variable] = variableValue.value;
         }
       }
     });

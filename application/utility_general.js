@@ -38,12 +38,37 @@ class General {
   // Methods for file system.
 
   /**
-  * Accesses a file at a specific path on client's system.
-  * @param {string} path Directory path and file name.
-  * @returns {Object} File at path on client's system.
+  * Accesses a file at a specific path within application's directory.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.path Directory path and file name.
+  * @param {Object} parameters.call Function to call upon completion of file
+  * read.
+  * @param {Object} parameters.parameters Parameters for the function to call
+  * upon completion of file read.
   */
-  static accessFileByPath(path) {
-    return File.createFromFileName(path);
+  static loadPassObjectByFilePath({path, call, parameters} = {}) {
+    d3.json("state_default.json", function (data) {
+      // Include the data in the parameters to pass to the call function.
+      var dataParameter = {data: data};
+      var newParameters = Object.assign({}, parameters, dataParameter);
+      // Call function with new parameters.
+      call(newParameters);
+    });
+    if (false) {
+      var request = new XMLHttpRequest();
+      request.overrideMimeType("application/json");
+      request.open("GET", path, true);
+      request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.state === "200") {
+          // Include the data in the parameters to pass to the call function.
+          var dataParameter = {data: request.responseText};
+          var newParameters = Object.assign({}, parameters, dataParameter);
+          // Call function with new parameters.
+          call(newParameters);
+        }
+      };
+      request.send(null);
+    }
   }
   /**
   * Loads from file a version of an object in JavaScript Object Notation

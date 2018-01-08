@@ -1007,8 +1007,6 @@ class StateView {
   }
 }
 
-// TODO: Restore button should restore defaults ONLY for Set View.
-
 /**
 * Interface to summarize sets of entities and control filters by these sets.
 */
@@ -1108,8 +1106,7 @@ class SetView {
     restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      // TODO: This should call a restore button that's specific to the sets' view...
-      Action.restoreApplicationInitialState(self.state);
+      Action.restoreSetViewControls(self.state);
     });
   }
   /**
@@ -1226,8 +1223,6 @@ class SetView {
     return state.setsFilter;
   }
 }
-
-// TODO: Introduce concise changes from candidacy menu...
 
 /**
 * Interface to organize menu of sets.
@@ -1654,8 +1649,6 @@ class SetMenuView {
   }
 }
 
-// TODO: Restore button should restore defaults ONLY for Candidacy View.
-
 /**
 * Interface to summarize candidate entities and control simplifications.
 */
@@ -1770,8 +1763,7 @@ class CandidacyView {
     restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      // TODO: This should call a restore button that's specific to the sets' view...
-      Action.restoreApplicationInitialState(self.state);
+      Action.restoreCandidacyViewControls(self.state);
     });
   }
   /**
