@@ -1,1722 +1,2696 @@
-// TODO: Organize common procedures for constructor's and initializeContainer's within another function.
-// TODO: Simply calling these procedures from respective class instances and passing "self" will work.
-// TODO: Maybe group this general functionality within some sort of utility class...
+/*
+Profondeur supports visual exploration and analysis of metabolic networks.
+Copyright (C) 2017 Thomas Cameron Waller
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program.
+If not, see <http://www.gnu.org/licenses/>.
+
+This file is part of project Profondeur.
+Project repository's address: https://github.com/tcameronwaller/profondeur/
+Author's electronic address: tcameronwaller@gmail.com
+Author's physical address:
+T Cameron Waller
+Scientific Computing and Imaging Institute
+University of Utah
+72 South Central Campus Drive Room 3750
+Salt Lake City, Utah 84112
+United States of America
+*/
 
 /**
-* Interface to select file, check and extract information about metabolic
-* entities and sets, and restore application's state.
+* Functionality of utility for managing elements in the document object model
+* (DOM).
+* This class stores methods for external utility.
+* This class does not store any attributes and does not require instantiation.
 */
-class SourceView {
+class View {
   /**
-  * Initializes an instance of the class.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
+  * Inserts or appends an element to a new position in the document.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.element Reference to element for insertion.
+  * @param {Object} parameters.target Reference to element for relative
+  * position of insertion.
+  * @param {string} parameters.position Position of insertion relative to
+  * target, either "beforebegin", "afterbegin", "beforeend", or "afterend".
+  * @returns {Object} Reference to element.
   */
-  constructor(model) {
-    // Reference current instance of class to transfer across changes in
-    // scope.
-    var self = this;
-    // Reference model of application's state.
-    self.model = model;
-    // Reference document object model.
-    self.document = document;
-    // Select view in document object model.
-    self.view = self.document.getElementById("view");
-    // Remove any extraneous content within view.
-    General.filterRemoveDocumentElements({
-      values: ["source"],
-      attribute: "id",
-      elements: self.view.children
-    });
-    // Create container for interface within view.
-    if (!self.document.getElementById("source")) {
-      self.container = self.document.createElement("div");
-      self.container.setAttribute("id", "source");
-      self.view.appendChild(self.container);
+  static insertElement({element, target, position} = {}) {
+    // Method target.appendChild(element) behaves identically to
+    // target.insertAdjacentElement("beforeend", element).
+    return target.insertAdjacentElement(position, element);
+  }
+  /**
+  * Creates or sets reference to a view's container.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of element.
+  * @param {Object} parameters.target Reference to element for relative
+  * position of insertion.
+  * @param {string} parameters.position Position of insertion relative to
+  * target, either "beforebegin", "afterbegin", "beforeend", or "afterend".
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createReferenceContainer({identifier, target, position, documentReference} = {}) {
+    // Determine whether container's element exists in the document.
+    if (!documentReference.getElementById(identifier)) {
+      // Element does not exist in the document.
+      // Create element.
+      var container = documentReference.createElement("div");
+      View.insertElement({
+        element: container,
+        target: target,
+        position: position
+      });
+      container.setAttribute("id", identifier);
     } else {
-      self.container = self.document.getElementById("source");
+      // Element exists in the document.
+      // Set reference to element.
+      var container = documentReference.getElementById(identifier);
     }
-    // Remove all contents of container.
-    General.removeDocumentChildren(self.container);
-    //
-    // Display current selection of file.
-    if (!self.determineFile()) {
-      // Application does not have a current selection of file.
-      self.fileName = "Please select a file.";
+    return container;
+  }
+  /**
+  * Creates a button with a label.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.text Text for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createButton({text, parent, documentReference} = {}) {
+    var button = documentReference.createElement("button");
+    parent.appendChild(button);
+    button.textContent = text;
+    return button;
+  }
+  /**
+  * Creates a radio button with a label.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier for element.
+  * @param {string} parameters.value Value for element.
+  * @param {string} parameters.name Name for element's group.
+  * @param {string} parameters.className Class for element.
+  * @param {string} parameters.text Text for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createRadioButtonLabel({identifier, value, name, className, text, parent, documentReference} = {}) {
+    // Create button.
+    var button = View.createRadioButton({
+      identifier: identifier,
+      value: value,
+      name: name,
+      className: className,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Create label.
+    var label = View.createLabel({
+      identifier: identifier,
+      text: text,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Return reference to element.
+    return button;
+  }
+  /**
+  * Creates a radio button.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier for element.
+  * @param {string} parameters.value Value for element.
+  * @param {string} parameters.name Name for element's group.
+  * @param {string} parameters.className Class for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createRadioButton({identifier, value, name, className, parent, documentReference} = {}) {
+    // Create element.
+    var button = documentReference.createElement("input");
+    parent.appendChild(button);
+    button.setAttribute("id", identifier);
+    button.setAttribute("type", "radio");
+    button.setAttribute("value", value);
+    button.setAttribute("name", name);
+    button.classList.add(className);
+    // Return reference to element.
+    return button;
+  }
+  /**
+  * Creates a check box with a label.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier for element.
+  * @param {string} parameters.value Value for element.
+  * @param {string} parameters.className Class for element.
+  * @param {string} parameters.text Text for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createCheckLabel({identifier, value, className, text, parent, documentReference} = {}) {
+    // Create check.
+    var check = View.createCheck({
+      identifier: identifier,
+      value: value,
+      className: className,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Create label.
+    var label = View.createLabel({
+      identifier: identifier,
+      text: text,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Return reference to element.
+    return check;
+  }
+  /**
+  * Creates a check box.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier for element.
+  * @param {string} parameters.value Value for element.
+  * @param {string} parameters.className Class for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createCheck({identifier, value, className, parent, documentReference} = {}) {
+    // Create element.
+    var check = documentReference.createElement("input");
+    parent.appendChild(check);
+    check.setAttribute("id", identifier);
+    check.setAttribute("type", "checkbox");
+    check.setAttribute("value", value);
+    check.classList.add(className);
+    // Return reference to element.
+    return check;
+  }
+  /**
+  * Creates a label for another element.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier for element.
+  * @param {string} parameters.text Text for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createLabel({identifier, text, parent, documentReference} = {}) {
+    // Create element.
+    var label = documentReference.createElement("label");
+    parent.appendChild(label);
+    label.setAttribute("for", identifier);
+    label.textContent = text;
+    // Return reference to element.
+    return label;
+  }
+  /**
+  * Creates a scalable vector graphical container.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createGraph({parent, documentReference} = {}) {
+    // Create graph.
+    var graph = documentReference
+    .createElementNS("http://www.w3.org/2000/svg", "svg");
+    parent.appendChild(graph);
+    return graph;
+  }
+  /**
+  * Creates elements by association to data in data driven documents (D3).
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.parent Selection of parent element.
+  * @param {string} parameters.type Type of element to create.
+  * @param {Object} parameters.accessor Function to access data.
+  * @returns {Object} Selection of elements.
+  */
+  static createElementsData({parent, type, accessor} = {}) {
+    // Create children elements by association to data.
+    var dataElements = parent.selectAll(type).data(accessor);
+    dataElements.exit().remove();
+    var novelElements = dataElements.enter().append(type);
+    return novelElements.merge(dataElements);
+  }
+  /**
+  * Creates and appends span with text.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.text Text for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createAppendSpanText({text, parent, documentReference} = {}) {
+    // Create element.
+    var span = View.createSpanText({
+      text: text,
+      documentReference: documentReference
+    });
+    parent.appendChild(span);
+    // Return reference to element.
+    return span;
+  }
+  /**
+  * Creates span with text.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.text Text for element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createSpanText({text, documentReference} = {}) {
+    // Create element.
+    var span = documentReference.createElement("span");
+    span.textContent = text;
+    // Return reference to element.
+    return span;
+  }
+  /**
+  * Creates a search tool with label.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.text Text for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createSearchLabel({text, parent, documentReference} = {}) {
+    // Create label.
+    var label = View.createAppendSpanText({
+      text: text,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Create tool for search.
+    var search = documentReference.createElement("input");
+    parent.appendChild(search);
+    search.setAttribute("type", "text");
+    search.classList.add("search");
+    search.setAttribute("placeholder", "search...");
+    // Return reference to element.
+    return search;
+  }
+  /**
+  * Creates a table, head, and head row.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.className Class for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createTableHeadRow({className, parent, documentReference} = {}) {
+    // Create elements.
+    var table = documentReference.createElement("table");
+    parent.appendChild(table);
+    table.classList.add(className);
+    var head = documentReference.createElement("thead");
+    table.appendChild(head);
+    var row = documentReference.createElement("tr");
+    head.appendChild(row);
+    // Return reference to element.
+    return row;
+  }
+  /**
+  * Creates a table head cell with label.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.text Text for element.
+  * @param {string} parameters.className Class for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createTableHeadCellLabel({text, className, parent, documentReference} = {}) {
+    // Create elements.
+    // Create cell.
+    var cell = documentReference.createElement("th");
+    parent.appendChild(cell);
+    cell.classList.add(className);
+    // Create label.
+    var label = View.createAppendSpanText({
+      text: text,
+      parent: cell,
+      documentReference: documentReference
+    });
+    // Return reference to element.
+    return cell;
+  }
+  /**
+  * Creates a scroll container, table, and body.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.className Class for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createScrollTableBody({className, parent, documentReference} = {}) {
+    // Create elements.
+    var container = documentReference.createElement("div");
+    parent.appendChild(container);
+    container.classList.add("scroll");
+    var table = documentReference.createElement("table");
+    container.appendChild(table);
+    table.classList.add(className);
+    var body = documentReference.createElement("tbody");
+    table.appendChild(body);
+    // Return reference to element.
+    return body;
+  }
+  /**
+  * Represents specifications for sorts.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Name of category.
+  * @param {string} parameters.attribute Name of attribute.
+  * @param {Object<Object<string>>} parameters.sorts Specifications to sort
+  * records in multiple categories.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  */
+  static representSort({category, attribute, sorts, parent, documentReference} = {}) {
+    // Determine whether the attribute is the sort's criterion.
+    if (sorts[category].criterion === attribute) {
+      // Determine the sort's order.
+      if (sorts[category].order === "ascend") {
+        // Sort is in ascending order.
+        var orientation = "up";
+      } else if (sorts[category].order === "descend") {
+        // Sort is in descending order.
+        var orientation = "down";
+      }
+      // Determine whether the graphical container contains a polygon.
+      if (parent.getElementsByTagName("polygon").length === 0) {
+        // Create polygon.
+        var mark = documentReference
+        .createElementNS("http://www.w3.org/2000/svg", "polygon");
+        parent.appendChild(mark);
+      } else {
+        // Set reference to polygon.
+        var mark = parent.getElementsByTagName("polygon").item(0);
+      }
+      // Create points for polygon.
+      var base = 10;
+      var altitude = 10;
+      var points = General.createIsoscelesTrianglePoints({
+        base: base,
+        altitude: altitude,
+        orientation: orientation
+      });
+      mark.setAttribute("points", points);
+      // Determine the dimensions of the graphical container.
+      var width = General.determineElementDimension(parent, "width");
+      var height = General.determineElementDimension(parent, "height");
+      var x = (width / 2) - (base / 2);
+      var y = (height / 2);
+      mark.setAttribute("transform", "translate(" + x + "," + y + ")");
     } else {
-      // Application has a current file selection.
-      self.fileName = self.model.file.name;
-    }
-    self.fileLabel = self.document.createElement("span");
-    self.fileLabel.textContent = self.fileName;
-    self.container.appendChild(self.fileLabel);
-    self.container.appendChild(self.document.createElement("br"));
-    // Create and activate file selector.
-    // File selector needs to be accessible always to change selection of
-    // file.
-    //if (!self.container.querySelector("input")) {}
-    self.selector = self.document.createElement("input");
-    self.selector.setAttribute("type", "file");
-    self.selector.addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      Action.submitFile(event.currentTarget.files[0], self.model);
-    });
-    self.container.appendChild(self.selector);
-    // Display a facade, any element, to control the file selector.
-    // Alternatively use a label that references the file selector.
-    self.facade = self.document.createElement("button");
-    self.facade.textContent = "Select";
-    self.facade.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      self.selector.click();
-    });
-    self.container.appendChild(self.facade);
-    self.container.appendChild(self.document.createElement("br"));
-    // Create and activate interface controls according to file selection.
-    if (self.determineFile()) {
-      // Application state has a current file selection.
-      // Create and activate button to check and clean a raw model of
-      // metabolism.
-      self.clean = self.document.createElement("button");
-      self.clean.textContent = "Clean";
-      self.clean.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Check and clean a raw model of metabolism.
-        Action.loadCheckMetabolicEntitiesSets(self.model);
-      });
-      self.container.appendChild(self.clean);
-      //self.container.appendChild(self.document.createElement("br"));
-      // Create and activate button to extract information about metabolic
-      // entities and sets from a raw model of metabolism.
-      self.extractor = self.document.createElement("button");
-      self.extractor.textContent = "Extract";
-      self.extractor.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Extract information about metabolic entities and sets from a
-        // clean model of metabolism and use this information to
-        // initialize the application.
-        Action.loadExtractInitializeMetabolicEntitiesSets(self.model);
-      });
-      self.container.appendChild(self.extractor);
-      //self.container.appendChild(self.document.createElement("br"));
-      // Create and activate button to restore application to a state from
-      // a persistent representation.
-      self.restoration = self.document.createElement("button");
-      self.restoration.textContent = "Restore";
-      self.restoration.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Restore state from persistent representation.
-        Action.loadRestoreState(self.model);
-      });
-      self.container.appendChild(self.restoration);
-      //self.container.appendChild(self.document.createElement("br"));
+      // Remove any marks for the criterion.
+      General.removeDocumentChildren(parent);
     }
   }
   /**
-  * Determines whether or not the application's state has information about a
-  * file.
+  * Creates and activates a scroll container, table, and body.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of summaries.
+  * @param {string} parameters.category Name of category.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Reference to element.
   */
-  determineFile() {
-    return this.model.file;
+  static createActivateSearch({type, category, parent, documentReference, state} = {}) {
+    // Create elements.
+    var search = View.createSearchLabel({
+      text: (category + ": "),
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Activate behavior.
+    search.addEventListener("input", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine the search's value.
+      var value = event.currentTarget.value;
+      // Call action.
+      Action.changeSearches({
+        type: type,
+        category: category,
+        string: value,
+        state: state
+      });
+    });
+    // Return reference to element.
+    return search;
+  }
+  /**
+  * Creates and activates a table column's head.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.attribute Name of attribute.
+  * @param {string} parameters.text Text for column head's label.
+  * @param {string} parameters.type Type of summaries.
+  * @param {string} parameters.category Name of category.
+  * @param {boolean} parameters.sort Whether column's attribute is a sort
+  * criterion.
+  * @param {boolean} parameters.scale Whether column's attribute needs a scale.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} References to elements.
+  */
+  static createActivateTableColumnHead({attribute, text, type, category, sort, scale, parent, documentReference, state} = {}) {
+    // Create cell.
+    var cell = View.createTableHeadCellLabel({
+      text: text,
+      className: attribute,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Determine whether column's attribute is a sort criterion.
+    if (sort) {
+      // Create elements.
+      var span = cell.getElementsByTagName("span").item(0);
+      var sortGraph = View.createGraph({
+        parent: span,
+        documentReference: documentReference
+      });
+      sortGraph.classList.add("sort");
+      // Activate behavior.
+      cell.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.changeSorts({
+          type: type,
+          category: category,
+          criterion: attribute,
+          state: state
+        });
+      });
+      // Compile references to elements.
+      var sortReferences = {
+        sortGraph: sortGraph
+      };
+    } else {
+      // Compile references to elements.
+      var sortReferences = {};
+    }
+    // Determine whether column's attribute needs a scale.
+    if (scale) {
+      // Create break.
+      cell.appendChild(documentReference.createElement("br"));
+      // Create graphical container for scale.
+      var scaleGraph = View.createGraph({
+        parent: cell,
+        documentReference: documentReference
+      });
+      scaleGraph.classList.add("scale");
+      // Determine graphs' dimensions.
+      var graphWidth = General.determineElementDimension(scaleGraph, "width");
+      var graphHeight = General.determineElementDimension(scaleGraph, "height");
+      // Compile references to elements.
+      var scaleReferences = {
+        scaleGraph: scaleGraph,
+        graphWidth: graphWidth,
+        graphHeight: graphHeight
+      };
+    } else {
+      // Compile references to elements.
+      var scaleReferences = {};
+    }
+    // Compile references to elements.
+    var references = Object.assign(sortReferences, scaleReferences);
+    // Return references to elements.
+    return references;
+  }
+  /**
+  * Represents a scale.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.scaleGraph Reference to scale's graph.
+  * @param {number} parameters.graphHeight Height of scale's graph.
+  * @param {Object} parameters.determineScaleValue Function to determine scale
+  * value.
+  */
+  static representScale({scaleGraph, graphHeight, determineScaleValue} = {}) {
+    // Remove contents of scale's container.
+    General.removeDocumentChildren(scaleGraph);
+    // Create scale's representation.
+    var scaleSelection = d3.select(scaleGraph);
+    var createAxis = d3.axisTop(determineScaleValue).ticks(2);
+    var axisGroup = scaleSelection.append("g").call(createAxis);
+    // Assign attributes.
+    axisGroup.attr("transform", "translate(0," + (graphHeight - 1) + ")");
+  }
+  /**
+  * Represents a summaries' counts.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.cells Selection of cells.
+  * @param {number} parameters.graphHeight Height of scale's graph.
+  * @param {Object} parameters.determineScaleValue Function to determine scale
+  * value.
+  * @returns {Object} Selection of elements.
+  */
+  static representCounts({cells, graphHeight, determineScaleValue} = {}) {
+    // Assign attributes to cells.
+    // Assign attributes to elements.
+    // Select cells for counts.
+    var counts = cells.filter(function (element, index, nodes) {
+      return element.type === "count";
+    });
+    counts.classed("count", true);
+    // Create graphs to represent summaries' counts.
+    // Graph structure.
+    // - graphs (scalable vector graphical container)
+    // -- barGroups (group)
+    // --- barMarks (rectangle)
+    // Create graphs.
+    // Define function to access data.
+    function access(element, index, nodes) {
+      return [element];
+    };
+    // Create children elements by association to data.
+    var graphs = View.createElementsData({
+      parent: counts,
+      type: "svg",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    graphs.classed("graph", true);
+    // Create groups.
+    // Create children elements by association to data.
+    var barGroups = View.createElementsData({
+      parent: graphs,
+      type: "g",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    barGroups
+    .classed("group", true)
+    .attr("transform", function (element, index, nodes) {
+      var x = determineScaleValue(0);
+      var y = 0;
+      return "translate(" + x + "," + y + ")";
+    });
+    // Create marks.
+    // Create children elements by association to data.
+    var barMarks = View.createElementsData({
+      parent: barGroups,
+      type: "rect",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    barMarks
+    .classed("mark", true)
+    .attr("width", function (element, index, nodes) {
+      return determineScaleValue(element.count);
+    })
+    .attr("height", graphHeight);
+    // Return references to elements.
+    return barMarks;
   }
 }
 
-// TODO: Consider re-naming "PersistenceView" as "StateView" or something...
-/**
-* Interface to save and restore a persistent state of the application.
-*/
-class PersistenceView {
-  /**
-  * Initializes an instance of the class.
-  * @param {Object} model Model of the comprehensive state of the
-  * application.
-  */
-  constructor (model) {
-    // Reference current instance of class to transfer across changes in
-    // scope.
-    var self = this;
-    // Reference model of application's state.
-    self.model = model;
-    // Reference document object model.
-    self.document = document;
-    // Select view in document object model.
-    self.view = self.document.getElementById("view");
-    // Remove any extraneous content within view.
-    General.filterRemoveDocumentElements({
-      values: ["top", "bottom"],
-      attribute: "id",
-      elements: self.view.children
-    });
-    // Create container for interfaces within top of view.
-    if (!self.document.getElementById("top")) {
-      self.top = self.document.createElement("div");
-      self.top.setAttribute("id", "top");
-      self.view.appendChild(self.top);
-    } else {
-      self.top = self.document.getElementById("top");
-    }
-    // Remove any extraneous content within top.
-    General.filterRemoveDocumentElements({
-      values: ["persistence", "set"],
-      attribute: "id",
-      elements: self.top.children
-    });
-    // Create container for interface within top.
-    if (!self.document.getElementById("persistence")) {
-      self.container = self.document.createElement("div");
-      self.container.setAttribute("id", "persistence");
-      self.top.appendChild(self.container);
-    } else {
-      self.container = self.document.getElementById("persistence");
-    }
-    // Remove all contents of container.
-    General.removeDocumentChildren(self.container);
-    //
-    // Create and activate button to restore application to initial state.
-    self.restoration = self.document.createElement("button");
-    self.container.appendChild(self.restoration);
-    self.restoration.textContent = "Restore";
-    self.restoration.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Restore application to initial state.
-      Action.initializeApplication(self.model);
-    });
-    self.container.appendChild(self.document.createElement("br"));
-    // Create and activate button to save current state of application.
-    self.save = self.document.createElement("button");
-    self.container.appendChild(self.save);
-    self.save.textContent = "Save";
-    self.save.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Save current state of application.
-      Action.saveState(self.model);
-    });
-    self.container.appendChild(self.document.createElement("br"));
-    // Create and activate button to execute temporary procedure during
-    // development.
-    self.procedure = self.document.createElement("button");
-    self.container.appendChild(self.procedure);
-    self.procedure.textContent = "Execute";
-    self.procedure.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Execute temporary procedure for development.
-      Action.executeTemporaryProcedure(self.model);
-    });
-    self.container.appendChild(self.document.createElement("br"));
+// TODO: Enable the tip view to receive any type of content, including other containers like div or table
+// TODO: Remove children and re-append with each update to tip.
+// TODO: Tip should just accept a child element to append.
 
+/**
+* Interface to communicate interactively concise information about other
+* elements in any views.
+*/
+class TipView {
+  /**
+  * Initializes an instance of a class.
+  */
+  constructor () {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.clearView(self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "tip",
+      target: self.document.getElementById("view"),
+      position: "beforeend",
+      documentReference: self.document
+    });
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.visible Whether tip view is visible.
+  * @param {number} parameters.positionX Pointer's horizontal coordinate.
+  * @param {number} parameters.positionY Pointer's vertical coordinate.
+  * @param {Object} parameters.summary Reference to summary element.
+  * @param {Object} parameters.self Instance of a class.
+  */
+  restoreView({visible, positionX, positionY, summary, self} = {}) {
+    // Remove any children.
+    if (!(self.container.children.length === 0)) {
+      General.removeDocumentChildren(self.container);
+    }
+    // Determine whether tip is visible.
+    if (visible) {
+      self.container.classList.remove("invisible");
+      self.container.classList.add("visible");
+    } else {
+      self.container.classList.remove("visible");
+      self.container.classList.add("invisible");
+    }
+    // Restore tips properties.
+    self.container.style.top = ((positionY - 15) + "px");
+    self.container.style.left = ((positionX + 15) + "px");
+    self.container.appendChild(summary);
+  }
+  /**
+  * Clears view.
+  * @param {Object} self Instance of a class.
+  */
+  clearView(self) {
+    self.restoreView({
+      visible: false,
+      positionX: 0,
+      positionY: 0,
+      summary: View.createSpanText({text: "",documentReference: self.document}),
+      self: self
+    });
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Control view and views within control view.
+
+/**
+* Interface to contain other interfaces for controls.
+*/
+class ControlView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Array<string>>} parameters.contents Identifiers of contents
+  * within view.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.state Application's state.
+  */
+  constructor ({contents, tip, state} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    // Set reference to contents.
+    self.contents = contents;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "control",
+      target: self.view,
+      position: "beforeend",
+      documentReference: self.document
+    });
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // Remove any extraneous content from view.
+    self.filterContents(self);
+    // Create and activate tabs.
+    self.createActivateTabs(self);
+  }
+  /**
+  * Filters view's contents to remove all but relevant content.
+  * @param {Object} self Instance of a class.
+  */
+  filterContents(self) {
+    // Tabs.
+    var tabsIdentifiers = ControlView.createTabsIdentifiers(self.contents.tabs);
+    General.filterRemoveDocumentElements({
+      values: tabsIdentifiers,
+      attribute: "id",
+      elements: self.container.children
+    });
+    // Panels.
+    General.filterRemoveDocumentElements({
+      values: self.contents.panels,
+      attribute: "id",
+      elements: self.container.children
+    });
+  }
+  /**
+  * Creates and activates tabs.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateTabs(self) {
+    self.contents.tabs.forEach(function (category) {
+      self.createActivateTab({
+        category: category,
+        self: self
+      });
+    });
+  }
+  /**
+  * Creates and activates a tab.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Category of tab.
+  * @param {Object} parameters.self Instance of a class.
+  */
+  createActivateTab({category, self} = {}) {
+    // Create or set reference to container.
+    var identifier = ControlView.createTabIdentifier(category);
+    var reference = (category + "Tab");
+    self[reference] = View.createReferenceContainer({
+      identifier: identifier,
+      target: self.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
+    // Determine whether the container is empty.
+    if (self[reference].children.length === 0) {
+      // Container is empty.
+      // Create element.
+      var label = View.createAppendSpanText({
+        text: category,
+        parent: self[reference],
+        documentReference: self.document
+      });
+      // Assign attributes.
+      self[reference].setAttribute("name", category);
+      self[reference].classList.add("tab");
+      self[reference].classList.add("normal");
+      // Activate behavior.
+      self[reference].addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.changeControlViews({
+          category: event.currentTarget.getAttribute("name"),
+          state: self.state
+        });
+      });
+      self[reference].addEventListener("mouseenter", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        event.currentTarget.classList.remove("normal");
+        event.currentTarget.classList.add("emphasis");
+      });
+      self[reference].addEventListener("mouseleave", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        event.currentTarget.classList.remove("emphasis");
+        event.currentTarget.classList.add("normal");
+      });
+    }
+  }
+  /**
+  * Creates identifiers for tabs.
+  * @param {Array<string>} categories Categories for tabs.
+  * @returns {Array<string>} Identifiers for tabs.
+  */
+  static createTabsIdentifiers(categories) {
+    return categories.map(function (category) {
+      return ControlView.createTabIdentifier(category);
+    });
+  }
+  /**
+  * Creates identifier for a tab.
+  * @param {string} category Category for a tab.
+  * @returns {string} Identifier for a tab.
+  */
+  static createTabIdentifier(category) {
+    return (category + "-tab");
+  }
+}
+/**
+* Interface to control load and save of application's state.
+*/
+class StateView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.control Instance of ControlView's class.
+  * @param {Object} parameters.state Application's state.
+  */
+  constructor ({tip, control, state} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    self.control = control;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "state",
+      target: self.control.stateTab,
+      position: "afterend",
+      documentReference: self.document
+    });
+    // Determine whether the container is empty.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create view's invariant elements.
+      // Activate invariant behavior of view's elements.
+      // Create text.
+      self.sourceLabel = self.document.createElement("span");
+      self.container.appendChild(self.sourceLabel);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create and activate file selector.
+      //if (!self.container.querySelector("input")) {}
+      self.fileSelector = self.document.createElement("input");
+      self.container.appendChild(self.fileSelector);
+      self.fileSelector.setAttribute("type", "file");
+      self.fileSelector.setAttribute("accept", ".json");
+      self.fileSelector.addEventListener("change", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.submitSource(event.currentTarget.files[0], self.state);
+      });
+      // Create and activate buttons.
+      self.save = View.createButton({
+        text: "save",
+        parent: self.container,
+        documentReference: self.document
+      });
+      self.save.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.saveState(self.state);
+      });
+      // Load button is a facade for the file selector.
+      self.load = View.createButton({
+        text: "load",
+        parent: self.container,
+        documentReference: self.document
+      });
+      self.load.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        self.fileSelector.click();
+      });
+      self.restore = View.createButton({
+        text: "restore",
+        parent: self.container,
+        documentReference: self.document
+      });
+      self.restore.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.evaluateLoadSource(self.state);
+      });
+      self.execute = View.createButton({
+        text: "execute",
+        parent: self.container,
+        documentReference: self.document
+      });
+      self.execute.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.executeTemporaryProcedure(self.state);
+      });
+    } else {
+      // Container is not empty.
+      // Set references to view's variant elements.
+      self.sourceLabel = self.container.getElementsByTagName("span").item(0);
+    }
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // Create view's variant elements.
+    // Activate variant behavior of view's elements.
+    // Determine whether the application's state includes a source file.
+    if (Model.determineSource(self.state)) {
+      // Application's state includes a source file.
+      self.fileName = self.state.source.name;
+    } else {
+      // Application's state does not include a source file.
+      self.fileName = "select source file...";
+    }
+    self.sourceLabel.textContent = self.fileName;
   }
 }
 
 /**
-* Interface to represent summary of sets of metabolic entities and to select
-* filters for these entities.
+* Interface to summarize sets of entities and control filters by these sets.
 */
 class SetView {
   /**
-  * Initializes an instance of the class.
-  * @param {Object} model Model of the application's comprehensive state.
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.control Instance of ControlView's class.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor (model) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
+  constructor ({tip, control, state} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
     var self = this;
-    // Set reference to model of application's state.
-    self.model = model;
+    // Set reference to application's state.
+    self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Initialize container for interface.
-    self.initializeContainer(self);
-    // Initialize menu for summary of sets' cardinalities.
-    self.initializeSummaryMenu(self);
-    // Restore menu for summary of sets' cardinalitites.
-    self.restoreSummaryMenu(self);
-  }
-  /**
-  * Initializes the container for the interface.
-  * @param {Object} view Instance of interface's current view.
-  */
-  initializeContainer(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and set references to elements for interface.
-    // Select view in document object model.
+    // Set reference to other views.
     self.view = self.document.getElementById("view");
-    // Remove any extraneous content within view.
-    // Initialization of the persistence view already removes extraneous
-    // content from view.
-    General.filterRemoveDocumentElements({
-      values: ["top", "bottom"],
-      attribute: "id",
-      elements: self.view.children
-    });
-    // Create container for interfaces within top of view.
-    // Initialization of the persistence view already creates the top
-    // container.
-    if (!self.document.getElementById("top")) {
-      self.top = self.document.createElement("div");
-      self.top.setAttribute("id", "top");
-      self.view.appendChild(self.top);
-    } else {
-      self.top = self.document.getElementById("top");
-    }
-    // Remove any extraneous content within top.
-    General.filterRemoveDocumentElements({
-      values: ["persistence", "set"],
-      attribute: "id",
-      elements: self.top.children
-    });
-    // Create container for interface within top.
-    // Set reference to current interface's container.
-    if (!self.document.getElementById("set")) {
-      self.container = self.document.createElement("div");
-      self.container.setAttribute("id", "set");
-      self.top.appendChild(self.container);
-    } else {
-      self.container = self.document.getElementById("set");
-    }
+    self.tip = tip;
+    self.control = control;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
   }
   /**
-  * Initializes the menu to summarize sets' cardinalities.
-  * Creates elements that do not yet exist.
-  * Sets references to elements that already exist.
-  * @param {Object} view Instance of interface's current view.
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
   */
-  initializeSummaryMenu(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create elements that persist across interactive, dynamic changes to the
-    // application's state.
-    // Activate behavior that is consistent across interactive, dynamic changes
-    // to the application's state.
-    // Determine whether the summary's menu already exists within the view.
-    if (!self.container.getElementsByTagName("table").item(0)) {
-      // Interface's container does not include a table element.
-      // Create table.
-      self.table = self.document.createElement("table");
-      self.container.appendChild(self.table);
-      // Create table's header.
-      self.tableHead = self.document.createElement("thead");
-      self.table.appendChild(self.tableHead);
-      var tableHeadRow = self.document.createElement("tr");
-      self.tableHead.appendChild(tableHeadRow);
-      var tableHeadRowCellAttribute = self.document.createElement("th");
-      tableHeadRow.appendChild(tableHeadRowCellAttribute);
-      tableHeadRowCellAttribute.textContent = "Attribute";
-      tableHeadRowCellAttribute.classList.add("attribute");
-      self.tableHeadRowCellValue = self.document.createElement("th");
-      tableHeadRow.appendChild(self.tableHeadRowCellValue);
-      self.tableHeadRowCellValue.classList.add("value");
-      // Create and activate controls for entities.
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "set",
+      target: self.control.setTab,
+      position: "afterend",
+      documentReference: self.document
+    });
+    // Determine whether the container is empty.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create view's invariant elements.
+      // Activate invariant behavior of view's elements.
+      // Create and activate restore.
+      self.createActivateRestore(self);
+      // Create and activate export.
+      self.createActivateExport(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create and activate controls for type of entities.
       self.createActivateEntitiesControl("metabolites", self);
       self.createActivateEntitiesControl("reactions", self);
       // Create and activate control for filter.
       self.createActivateFilterControl(self);
-      // Create and activate reset button.
-      self.createActivateRestore(self);
-
-      // TODO: This control is temporary for the sake of demonstration on 10 October 2017.
-      // Create and control for compartmentalization.
-      self.createActivateCompartmentalizationControl(self);
-
-
-
-
-      // Create table's body.
-      self.tableBody = self.document.createElement("tbody");
-      self.table.appendChild(self.tableBody);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create menu for sets by processes.
+      new SetMenuView({
+        category: "processes",
+        tip: self.tip,
+        set: self,
+        state: self.state
+      });
+      // Create menu for sets by compartments.
+      new SetMenuView({
+        category: "compartments",
+        tip: self.tip,
+        set: self,
+        state: self.state
+      });
     } else {
-      // Interface's container includes a table element.
-      // Establish references to existing elements.
-      // References are only necessary for elements that vary with changes to
-      // the application's state.
-      self.table = self.container.getElementsByTagName("table").item(0);
-      self.tableHead = self.container.getElementsByTagName("thead").item(0);
-      self.tableHead = self.container.getElementsByTagName("thead").item(0);
-      var tableHeadRow = self.tableHead.getElementsByTagName("tr").item(0);
-      self.tableHeadRowCellValue = tableHeadRow
-      .getElementsByClassName("value").item(0);
-      self.metabolitesControl = self
-      .document.getElementById("sets-entities-metabolites");
-      self.reactionsControl = self
-      .document.getElementById("sets-entities-reactions");
-      self.filterControl = self.document.getElementById("sets-filter");
-
-
-      self.compartmentalizationControl = self
-      .document.getElementById("compartmentalization");
-
-
-
-      self.tableBody = self.container.getElementsByTagName("tbody").item(0);
+      // Container is not empty.
+      // Set references to view's variant elements.
+      // Control for type of entities.
+      self.metabolites = self.document.getElementById("set-metabolites");
+      self.reactions = self.document.getElementById("set-reactions");
+      // Control for filter.
+      self.filter = self.document.getElementById("set-filter");
     }
   }
   /**
-  * Creates and activates controls to select the type of entity in the menu to
-  * summarize sets' cardinalities.
-  * @param {string} entities Type of entities, metabolites or reactions, for
-  * which to create and activate selector.
-  * @param {Object} view Instance of interface's current view.
+  * Creates and activates a button to restore the menu.
+  * @param {Object} self Instance of a class.
   */
-  createActivateEntitiesControl(entities, view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create entity selector.
-    var entitiesControl = entities + "Control";
-    var identifier = "sets-entities-" + entities;
-    self[entitiesControl] = self.document.createElement("input");
-    self.tableHeadRowCellValue.appendChild(self[entitiesControl]);
-    self[entitiesControl].setAttribute("id", identifier);
-    self[entitiesControl].setAttribute("type", "radio");
-    self[entitiesControl].setAttribute("value", entities);
-    self[entitiesControl].setAttribute("name", "entities");
-    self[entitiesControl].classList.add("entities");
-    self[entitiesControl].addEventListener("change", function (event) {
+  createActivateRestore(self) {
+    // Create button for restoration.
+    var restore = View.createButton({
+      text: "restore",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
-      // Change current selection of entity in application's state.
-      //var radios = self
-      //    .tableHeadRowCellValue.getElementsByClassName("entity");
-      //var value = General.determineRadioGroupValue(radios);
-      //Action.submitSetViewEntity(value, self.model);
-      Action.changeSetsEntities(self.model);
+      // Call action.
+      Action.restoreSetViewControls(self.state);
     });
-    var entityLabel = self.document.createElement("label");
-    self.tableHeadRowCellValue.appendChild(entityLabel);
-    entityLabel.setAttribute("for", identifier);
-    entityLabel.textContent = entities;
   }
   /**
-  * Creates and activates control to select whether to filter the menu to
-  * summarize sets' cardinalities.
-  * @param {Object} view Instance of interface's current view.
+  * Creates and activates a button to export information.
+  * @param {Object} self Instance of a class.
   */
-  createActivateFilterControl(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and activate filter selector.
-    var identifier = "sets-filter";
-    self.filterControl = self.document.createElement("input");
-    self.tableHeadRowCellValue.appendChild(self.filterControl);
-    self.filterControl.setAttribute("id", identifier);
-    self.filterControl.setAttribute("type", "checkbox");
-    self.filterControl.setAttribute("value", "filter");
-    self.filterControl.classList.add("filter");
-    self.filterControl.addEventListener("change", function (event) {
+  createActivateExport(self) {
+    // Create button for export.
+    var exporter = View.createButton({
+      text: "export",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    exporter.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
-      // Change current selection of filter in application's state.
-      Action.changeSetsFilter(self.model);
+      // Call action.
+      Action.exportFilterEntitiesSummary(self.state);
     });
-    var filterLabel = self.document.createElement("label");
-    self.tableHeadRowCellValue.appendChild(filterLabel);
-    filterLabel.setAttribute("for", identifier);
-    filterLabel.textContent = "filter";
   }
   /**
-  * Creates and activates control to restore the menu to summarize sets'
-  * cardinalities to its original state.
-  * @param {Object} view Instance of interface's current view.
+  * Creates and activates a control for the type of entities.
+  * @param {string} entities Type of entities, metabolites or reactions.
+  * @param {Object} self Instance of a class.
   */
-  createActivateRestore(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and activate button to restore application to initial state.
-    self.restore = self.document.createElement("button");
-    self.tableHeadRowCellValue.appendChild(self.restore);
-    self.restore.textContent = "restore";
-    self.restore.addEventListener("click", function (event) {
+  createActivateEntitiesControl(entities, self) {
+    // Create control for type of entities.
+    var identifier = "set-" + entities;
+    self[entities] = View.createRadioButtonLabel({
+      identifier: identifier,
+      value: entities,
+      name: "entities",
+      className: "entities",
+      text: entities,
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    self[entities].addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
-      // Restore sets' summary to initial state.
-      Action.restoreSetsSummary(self.model);
+      // Call action.
+      Action.changeSetsEntities(self.state);
     });
   }
-
   /**
-  * Creates and activates control to select whether to represent
-  * compartmentalization in the network.
-  * @param {Object} view Instance of interface's current view.
+  * Creates and activates a control for the filter.
+  * @param {Object} self Instance of a class.
   */
-  createActivateCompartmentalizationControl(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and activate control for compartmentalization.
-    var identifier = "compartmentalization";
-    self.compartmentalizationControl = self.document.createElement("input");
-    self.tableHeadRowCellValue.appendChild(self.compartmentalizationControl);
-    self.compartmentalizationControl.setAttribute("id", identifier);
-    self.compartmentalizationControl.setAttribute("type", "checkbox");
-    self
-    .compartmentalizationControl.setAttribute("value", "compartmentalization");
-    self
-    .compartmentalizationControl.addEventListener("change", function (event) {
+  createActivateFilterControl(self) {
+    // Create control for filter.
+    var identifier = "set-filter";
+    self.filter = View.createCheckLabel({
+      identifier: identifier,
+      value: "filter",
+      className: "filter",
+      text: "filter",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    self.filter.addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
-      // Change current selection of filter in application's state.
-      Action.changeCompartmentalization(self.model);
+      // Call action.
+      Action.changeSetsFilter(self.state);
     });
-    var compartmentalizationLabel = self.document.createElement("label");
-    self.tableHeadRowCellValue.appendChild(compartmentalizationLabel);
-    compartmentalizationLabel.setAttribute("for", identifier);
-    compartmentalizationLabel.textContent = "compartmentalization";
   }
-
   /**
-  * Restores the menu to summarize sets' cardinalities.
-  * @param {Object} view Instance of interface's current view.
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} self Instance of a class.
   */
-  restoreSummaryMenu(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and restore elements that vary across interactive, dynamic changes
-    // to the application's state.
-    // Activate behavior that varies across interactive, dynamic changes to the
-    // application's state.
-    // Restore the summary menu to match the application's dynamic state.
-    // Restore state's of controls.
-    self.metabolitesControl.checked = self
-    .determineEntityMatch("metabolites", self);
-    self.reactionsControl.checked = self
-    .determineEntityMatch("reactions", self);
-    self.filterControl.checked = self.determineFilter(self);
-    self.compartmentalizationControl.checked = self
-    .determineCompartmentalization(self);
-    // Create and activate data-dependent summary's menu.
-    self.createActivateSummaryBody(self);
-  }
-  /**
-  * Creates and activates body of summary table.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateSummaryBody(view) {
-
-    // TODO: Attribute Search Menu... make them always present...
-    // TODO: Handle text overflow of options in search menu.
-    // TODO: Handle scrolling through options in search menu.
-    // TODO: Include some indicator of selection status in options in search menu.
-
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Select summary table's body.
-    var body = d3.select(self.tableBody);
-    // Append rows to table with association to data.
-    var dataRows = body.selectAll("tr").data(self.model.setsSummary);
-    dataRows.exit().remove();
-    var newRows = dataRows.enter().append("tr");
-    var rows = newRows.merge(dataRows);
-    // Append cells to table with association to data.
-    var dataCells = rows.selectAll("td").data(function (element, index) {
-      // Organize data for table cells in each row.
-      return [].concat(
-        {
-          type: "attribute",
-          attribute: element.attribute,
-          values: element.values
-        },
-        {
-          type: "value",
-          attribute: element.attribute,
-          values: element.values
-        }
-      );
+  restoreView(self) {
+    // Create view's variant elements.
+    // Activate variant behavior of view's elements.
+    self.metabolites.checked = SetView
+    .determineEntityMatch("metabolites", self.state);
+    self.reactions.checked = SetView
+    .determineEntityMatch("reactions", self.state);
+    self.filter.checked = SetView.determineFilter(self.state);
+    // Create menu for sets by processes.
+    new SetMenuView({
+      category: "processes",
+      tip: self.tip,
+      set: self,
+      state: self.state
     });
-    dataCells.exit().remove();
-    var newCells = dataCells.enter().append("td");
-    self.tableBodyCells = newCells.merge(dataCells);
-    // Create and activate summary table's cells.
-    self.createActivateSummaryBodyCellsAttributes(self);
-    self.createActivateSummaryBodyCellsValues(self);
-  }
-  /**
-  * Creates and activates cells for data's attributes in body of summary table.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateSummaryBodyCellsAttributes(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-
-    // Cells for data's attributes.
-    // Select cells for data's attributes.
-    self.tableBodyCellsAttributes = self
-    .tableBodyCells.filter(function (data, index) {
-      return data.type === "attribute";
-    });
-
-    // Assign attributes to cells for attributes.
-    self.tableBodyCellsAttributes
-    .attr("id", function (data, index) {
-      return "set-view-attribute-" + data.attribute;
-    })
-    .classed("attribute", true);
-
-    // TODO: I should not do this...
-    // TODO: Instead, I want to create search menus for anything (one at a time) with a selection flag in the model of app's state.
-    // Remove search menus from any previous user interaction.
-    //self.tableBodyCellsAttributes.selectAll(".search").remove();
-
-    // Append label containers to cells for attributes.
-    // These label containers need access to the same data as their parent
-    // cells without any transformation.
-    // Append label containers to the enter selection to avoid replication
-    // of these containers upon restorations to the table.
-    var dataLabels = self.tableBodyCellsAttributes
-    .selectAll("div").data(function (element, index) {
-      return [element];
-    });
-    dataLabels.exit().remove();
-    var newLabels = dataLabels.enter().append("div");
-    self.tableBodyCellsAttributesLabels = newLabels.merge(dataLabels);
-    // Append text content to labels.
-    self.tableBodyCellsAttributesLabels.text(function (data) {
-      return data.attribute;
-    });
-    // Activate cells.
-    //self.activateSummaryBodyCellsAttributes(self);
-  }
-  /**
-  * Activates cells for data's attributes in body of summary
-  * table.
-  * @param {Object} view Instance of interface's current view.
-  */
-  activateSummaryBodyCellsAttributes(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-
-    // TODO: If the search fields change the width of the attribute menu cells, it will be necessary to redraw the menu altogether...
-    // TODO: Maybe fix the width of the cells?
-    // TODO: How to handle text overflow in the options for the search field?
-    // Remove any existing event listeners and handlers from cells.
-    self.tableBodyCellsAttributesLabels
-    .on("click", null);
-    // Assign event listeners and handlers to cells.
-    self.tableBodyCellsAttributesLabels
-    .on("click", function (data, index, nodes) {
-      // Restoration of attribute menu removes search menus for attribute
-      // values from any previous user interaction.
-      // Also, after creation of the search menu, subsequent selection of
-      // the attribute head removes it.
-      // There is not a risk of replication of the search menu.
-      // It is unnecessary to use D3's selectAll or data methods or enter
-      // and exit selections to append and remove elements of the search
-      // menu.
-      // D3 append method propagates data.
-      // Access data bound to selection by selection.data().
-      // Select the attribute cell.
-      var attributeCell = d3.select(nodes[index].parentElement);
-      var attributeSearch = attributeCell.select(".search");
-      // Determine whether or not the attribute head already has a search
-      // menu.
-      if (attributeSearch.empty()) {
-        // Attribute head does not have a search menu.
-        // Create and activate a search field.
-        // Append a search menu to the attribute cell.
-        var attributeSearch = attributeCell.append("div");
-        attributeSearch.classed("search", true);
-        // Append a data list to the search menu.
-        var attributeValueList = attributeSearch.append("datalist");
-        attributeValueList
-        .attr("id", function (data, index) {
-          return "attribute-" + data.attribute + "-values";
-        });
-        // Append options to the data list.
-        var attributeValues = attributeValueList
-        .selectAll("option")
-        .data(function (element, index) {
-          return element.values;
-        });
-        attributeValues.exit().remove();
-        var newAttributeValues = attributeValues
-        .enter()
-        .append("option");
-        attributeValues = newAttributeValues
-        .merge(attributeValues);
-        attributeValues.attr("value", function (data, index) {
-          return data.name;
-        });
-        // Append search text field to the search menu.
-        var attributeSearchField = attributeSearch.append("input");
-        attributeSearchField
-        .attr("autocomplete", "off")
-        .attr("id", function (data, index) {
-          return "attribute-" + data.attribute + "-search";
-        })
-        .attr("list", function (data, index) {
-          return "attribute-" + data.attribute + "-values";
-        })
-        .attr("type", "search");
-        // Assign event listeners and handlers to search menu.
-        // Option elements from datalist element do not report events.
-        // Respond to event on input search text field and then find
-        // relevant information from the options in the datalist.
-        attributeSearchField
-        .on("change", function (data, index, nodes) {
-          // TODO: Use the value of the input field and compare against the list options.
-          // TODO: Only perform selection event if the value of the field matches an option from the datalist.
-          // TODO: http://stackoverflow.com/questions/30022728/perform-action-when-clicking-html5-datalist-option
-          // Assume that each attribute value has a unique name.
-          var selection = nodes[index].value;
-          var attributeValues = d3
-          .select(nodes[index].list)
-          .selectAll("option");
-          var attributeValue = attributeValues
-          .filter(function (data, index) {
-            return data.name === selection;
-          });
-          if (!attributeValue.empty()) {
-            controlAttributeMenuSelection({
-              value: attributeValue.data()[0].identifier,
-              attribute: attributeValue.data()[0].attribute,
-              entity: entity,
-              filter: filter,
-              originalAttributeSummary:
-              originalAttributeSummary,
-              originalAttributeIndex: originalAttributeIndex,
-              model: model
-            });
-          }
-        });
-      } else {
-        // Attribute head has a search menu.
-        // Remove the search menu.
-        attributeSearch.remove();
-      }
+    // Create menu for sets by compartments.
+    new SetMenuView({
+      category: "compartments",
+      tip: self.tip,
+      set: self,
+      state: self.state
     });
   }
   /**
-  * Creates and activates cells for data's values in body of summary table.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateSummaryBodyCellsValues(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Select cells for data's values.
-    self.tableBodyCellsValues = self
-    .tableBodyCells.filter(function (data, index) {
-      return data.type === "value";
-    });
-    // Assign attributes to cells in value column.
-    self.tableBodyCellsValues.classed("value", true);
-    // Create graphs to represent sets' cardinalities.
-    // It is possible to contain a graph's visual representations and textual
-    // annotations within separate groups in order to segregate these within
-    // separate layers.
-    // This strategy avoids occlusion of textual annotations by visual
-    // representations.
-    // In these graphs, this occlusion is impossible, so a simpler structure is
-    // preferrable.
-    // Graph structure.
-    // - graph (scalable vector graphical container)
-    // -- barsGroup (group)
-    // --- barGroups (groups)
-    // ---- barTitles (titles)
-    // ---- barMarks (rectangles)
-    // ---- barLabels (text)
-    // Graphs need access to the same data as their parent cells without any
-    // transformation.
-    // Append graphs to the enter selections to avoid replication upon
-    // restorations.
-    var dataGraphs = self
-    .tableBodyCellsValues.selectAll("svg").data(function (element, index) {
-      return [element];
-    });
-    dataGraphs.exit().remove();
-    var novelGraphs = dataGraphs.enter().append("svg");
-    var graphs = novelGraphs.merge(dataGraphs);
-    graphs.classed("graph", true);
-    // Determine graphs' dimensions of graphs.
-    // Set references graphs' dimensions.
-    var graph = self.tableBody.getElementsByClassName("graph").item(0);
-    self.graphWidth = General.determineElementDimension(graph, "width");
-    self.graphHeight = General.determineElementDimension(graph, "height");
-    // Create bars within graphs to represent sets' cardinalities.
-    // Create groups to contain all bars' visual representations and textual
-    // annotations.
-    var dataBarsGroup = graphs.selectAll("g").data(function (element, index) {
-      return [element];
-    });
-    dataBarsGroup.exit().remove();
-    var novelBarsGroup = dataBarsGroup.enter().append("g");
-    var barsGroup = novelBarsGroup.merge(dataBarsGroup);
-    // Create groups to contain individual bars' visual representations and
-    // textual annotations.
-    var dataBarGroups = barsGroup
-    .selectAll("g").data(function (element, index) {
-      return element.values;
-    });
-    dataBarGroups.exit().remove();
-    var novelBarGroups = dataBarGroups.enter().append("g");
-    self.tableBodyCellsValuesGraphBarGroups = novelBarGroups
-    .merge(dataBarGroups);
-    // Assign attributes.
-    self.tableBodyCellsValuesGraphBarGroups
-    .classed("group", true)
-    .attr("transform", function (element, index) {
-      // Determine scale between value and graph's dimension.
-      var scale = d3
-      .scaleLinear()
-      .domain([0, element.total])
-      .range([0, self.graphWidth]);
-      var x = scale(element.base);
-      var y = 0;
-      return "translate(" + x + "," + y + ")";
-    });
-    // Create titles for individual bars.
-    var dataBarTitles = self.tableBodyCellsValuesGraphBarGroups
-    .selectAll("title").data(function (element, index) {
-      return [element];
-    });
-    dataBarTitles.exit().remove();
-    var novelBarTitles = dataBarTitles.enter().append("title");
-    var barTitles = novelBarTitles.merge(dataBarTitles);
-    // Assign attributes.
-    barTitles.text(function (element, index, nodes) {
-      var name = SetView.determineAttributeValueName({
-        attribute: element.attribute,
-        valueIdentifier: element.value,
-        model: self.model
-      });
-      var message = (name + " (" + element.count + ")");
-      return message;
-    });
-    // Create marks for individual bars.
-    var dataBarMarks = self.tableBodyCellsValuesGraphBarGroups
-    .selectAll("rect").data(function (element, index) {
-      return [element];
-    });
-    dataBarMarks.exit().remove();
-    var novelBarMarks = dataBarMarks.enter().append("rect");
-    var barMarks = novelBarMarks.merge(dataBarMarks);
-    // Assign attributes.
-    barMarks
-    .classed("mark", true)
-    .classed("normal", function (data, index) {
-      var match = self.determineValueAttributeMatchSelections({
-        value: data.value,
-        attribute: data.attribute,
-        view: self
-      });
-      return !match;
-    })
-    .classed("emphasis", function (data, index) {
-      var match = self.determineValueAttributeMatchSelections({
-        value: data.value,
-        attribute: data.attribute,
-        view: self
-      });
-      return match;
-    })
-    .attr("width", function (element, index) {
-      // Determine scale between value and graph's dimension.
-      var scale = d3
-      .scaleLinear()
-      .domain([0, element.total])
-      .range([0, self.graphWidth]);
-      return scale(element.count);
-    })
-    .attr("height", self.graphHeight);
-    // Create labels for individual bars.
-    var dataBarLabels = self.tableBodyCellsValuesGraphBarGroups
-    .selectAll("text").data(function (element, index) {
-      return [element];
-    });
-    dataBarLabels.exit().remove();
-    var novelBarLabels = dataBarLabels.enter().append("text");
-    var barLabels = novelBarLabels.merge(dataBarLabels);
-    // Assign attributes.
-    barLabels
-    .classed("label", true)
-    .text(function (element, index, nodes) {
-      // Determine width of bar's rectangle.
-      var scale = d3
-      .scaleLinear().domain([0, element.total]).range([0, self.graphWidth]);
-      var width = scale(element.count);
-      // Determine dimension of label's characters.
-      var documentElement = nodes[index];
-      var character = General
-      .determineElementDimension(documentElement, "fontSize");
-      // Determine count of characters that will fit on bar's rectangle.
-      var count = (width / character) * 1.5;
-      // Prepare name.
-      var name = SetView.determineAttributeValueName({
-        attribute: element.attribute,
-        valueIdentifier: element.value,
-        model: self.model
-      });
-      return name.slice(0, count);
-    })
-    .attr("transform", function (element, index) {
-      var x = 3;
-      var y = self.graphHeight / 2;
-      return "translate(" + x + "," + y + ")";
-    });
-    // Activate cells for data's values.
-    self.activateSummaryBodyCellsValues(self);
-  }
-  /**
-  * Activates cells for data's values in body of summary table.
-  * @param {Object} view Instance of interface's current view.
-  */
-  activateSummaryBodyCellsValues(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Remove any existing event listeners and handlers from bars.
-    self.tableBodyCellsValuesGraphBarGroups
-    .on("click", null);
-    // Assign event listeners and handlers to bars.
-    self.tableBodyCellsValuesGraphBarGroups
-    .on("click", function (data, index, nodes) {
-      Action.selectSetsValue({
-        value: data.value,
-        attribute: data.attribute,
-        model: self.model
-      });
-    });
-  }
-  /**
-  * Determines whether or not a specific type of entities matches the selection
-  * in the application's state.
-  * @param {string} match Type of entities, metabolites or reactions, to compare
-  * to the selection in application's state.
-  * @param {Object} view Instance of interface's current view.
-  */
-  determineEntityMatch(match, view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    var selection = self.model.setsEntities;
-    return selection === match;
-  }
-  /**
-  * Determines the current selection in the application's state of whether to
-  * filter the menu to summarize sets' cardinalities.
-  * @param {Object} view Instance of interface's current view.
-  */
-  determineFilter(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    return self.model.setsFilter;
-  }
-  /**
-  * Determines the current selection in the application's state of whether to
-  * represent compartmentalization in the network.
-  * @param {Object} view Instance of interface's current view.
-  */
-  determineCompartmentalization(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    return self.model.compartmentalization;
-  }
-  // TODO: Make "determineValueAttributeMatchSelections" a static method... give it a reference to the model...
-  /**
-  * Determines whether or not a value and attribute match a current
-  * selection.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.value Value of attribute of interest.
-  * @param {string} parameters.attribute Attribute of interest.
-  * @param {Object} parameters.view Instance of interface's current view.
-  * @returns {boolean} Whether or not the value and attribute match a current
-  * selection.
-  */
-  determineValueAttributeMatchSelections({value, attribute, view}) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Determine whether or not current selections include a selection for
-    // the attribute and value.
-    var match = self
-    .model
-    .valuesSelections
-    .find(function (selection) {
-      return (
-        selection.attribute === attribute &&
-        selection.value === value
-      );
-    });
-    if (match) {
-      // Current selections include the attribute and value.
-      return true;
-    } else {
-      // Current selections do not include the attribute and value.
-      return false;
-    }
-  }
-  /**
-  * Determines the name of an attribute's value from references in the model of
-  * the application's state.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.attribute Name of an attribute.
-  * @param {string} parameters.valueIdentifier Identifier of a value of the
-  * attribute.
-  * @param {Object} parameters.model Model of the application's comprehensive
+  * Determines whether a type of entities matches the value in the application's
   * state.
-  * @returns {string} Name of the value of the attribute.
+  * @param {string} type Type of entities, metabolites or reactions.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether type of entities matches the value in the
+  * application's state.
   */
-  static determineAttributeValueName({
-    attribute, valueIdentifier, model
-  } = {}) {
-    return model[attribute][valueIdentifier].name;
+  static determineEntityMatch(type, state) {
+    var value = state.setsEntities;
+    return value === type;
+  }
+  /**
+  * Determines whether the filter has a true value in the application's state.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether filter has a true value in the application's
+  * state.
+  */
+  static determineFilter(state) {
+    return state.setsFilter;
   }
 }
 
-// TODO: EntityView should give information about counts of metabolites and
-// TODO: reactions in current selection (pass filters from SetView).
-// TODO: EntityView should display controls to define network:
-// TODO: compartmentalization, replications, submit button (since it takes a while).
-// TODO: Don't worry about giving any sort of warning about size threshold...
-// TODO: just tell the user counts of metabolites and reactions and let user
-// TODO: initiate assembly.
 /**
-* Interface to control network's assembly, selection, and visual
-* representation.
+* Interface to organize menu of sets.
 */
-class AssemblyView {
+class SetMenuView {
   /**
-  * Initializes an instance of the class.
-  * @param {Object} model Model of the application's comprehensive state.
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Name of category.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.set Instance of SetView's class.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor (model) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
+  constructor ({category, tip, set, state} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
     var self = this;
-    // Set reference to model of application's state.
-    self.model = model;
+    // Set reference to application's state.
+    self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Initialize container for interface.
-    //self.initializeContainer(self);
-    // Initialize interface for control of network's assembly.
-    //self.initializeAssemblyControls(self);
-    // Restore interface for control of network's assembly.
-    //self.restoreAssemblyControls(self);
-  }
-  /**
-  * Initializes the container for the interface.
-  * @param {Object} view Instance of interface's current view.
-  */
-  initializeContainer(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and set references to elements for interface.
-    // Select view in document object model.
+    // Set reference to other views.
     self.view = self.document.getElementById("view");
-    // Remove any extraneous content within view.
-    // Initialization of the persistence view already removes extraneous
-    // content from view.
-    General.filterRemoveDocumentElements({
-      values: ["top", "bottom"],
-      attribute: "id",
-      elements: self.view.children
-    });
-    // Create container for interfaces within bottom of view.
-    if (!self.document.getElementById("bottom")) {
-      self.bottom = self.document.createElement("div");
-      self.view.appendChild(self.bottom);
-      self.bottom.setAttribute("id", "bottom");
-    } else {
-      self.bottom = self.document.getElementById("bottom");
-    }
-    // Remove any extraneous content within bottom.
-    General.filterRemoveDocumentElements({
-      values: ["control", "topology"],
-      attribute: "id",
-      elements: self.bottom.children
-    });
-    // Create container for interfaces that control network's assembly and
-    // visual representation.
-    if (!self.document.getElementById("control")) {
-      self.control = self.document.createElement("div");
-      self.bottom.appendChild(self.control);
-      self.control.setAttribute("id", "control");
-    } else {
-      self.control = self.document.getElementById("control");
-    }
-    // Remove any extraneous content within control view.
-    General.filterRemoveDocumentElements({
-      values: ["assembly", "traversal"],
-      attribute: "id",
-      elements: self.control.children
-    });
-    // Create container for interface within control view.
-    // Set reference to current interface's container.
-    if (!self.document.getElementById("assembly")) {
-      self.container = self.document.createElement("div");
-      self.control.appendChild(self.container);
-      self.container.setAttribute("id", "assembly");
-    } else {
-      self.container = self.document.getElementById("assembly");
-    }
+    self.tip = tip;
+    self.set = set;
+    // Set reference to category.
+    self.category = category;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
   }
   /**
-  * Initializes the interface for control of network's assembly.
-  * Creates new elements that do not exist and do not vary with data.
-  * Sets references to elements that already exist.
-  * @param {Object} view Instance of interface's current view.
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
   */
-  initializeAssemblyControls(view) {
-    // Preserve reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // As their actions do not change and they have access to the dynamic model,
-    // it is only necessary to define event handlers upon initialization of
-    // control elements.
-    // Create and set references to elements for interface.
-    // Initialize interface.
-    if (!self.container.hasChildNodes()) {
-      // Interface's container does not include child elements for control
-      // of network's assembly.
-      // Create interface.
-      // Create and activate reset button.
-      self.createActivateReset(self);
-      // Create and activate assemble button.
-      self.createActivateAssemble(self);
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: ("set-" + self.category + "-menu"),
+      target: self.set.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
+    // Determine whether the container is empty.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create view's invariant elements.
+      // Activate invariant behavior of view's elements.
+      self.container.classList.add("menu");
+      // Create search.
+      self.search = View.createActivateSearch({
+        type: "sets",
+        category: self.category,
+        parent: self.container,
+        documentReference: self.document,
+        state: self.state
+      });
+      // Create break.
       self.container.appendChild(self.document.createElement("br"));
-      // Create and activate compartmentalization selector.
-      self.createActivateCompartmentalizationSelector(self);
-      self.container.appendChild(self.document.createElement("br"));
-      // Create and activate simplification control.
-      // TODO: Create and activate simplification control.
-      // Create and activate menu for simplification candidates.
-      // TODO: Create summary candidates menu...
-      if (false) {
-        // Initialize interface to summarize and modify replications for
-        // network's assembly.
-        self.initializeReplicationInterface(self);
-      }
+      // Create table.
+      self.createActivateTable(self);
     } else {
-      // Interface's container includes child elements for control of
-      // network's assembly.
-      // Set references to existing elements.
-      // References are only necessary for elements that depend on the
-      // application's state in order to restore these as the state
-      // changes.
-      self.compartmentalizationSelector = self
-      .document.getElementById("compartmentalization");
-      if (false) {
-        self.replication = self
-        .document.getElementById("assembly-replication");
-        self.currentReplications = self
-        .document.getElementById("assembly-replication-current");
-        self.replicationTableBody = self
-        .currentReplications.getElementsByTagName("tbody").item(0);
-        self.novelReplications = self
-        .document.getElementById("assembly-replication-novel");
-        self.replicationOptions = self
-        .novelReplications.getElementsByTagName("datalist").item(0);
-        self.replicationSearch = self
-        .novelReplications.getElementsByTagName("input").item(0);
-      }
+      // Container is not empty.
+      // Set references to view's variant elements.
+      // Search.
+      self.search = self.container.querySelector("input.search");
+      // Sorts.
+      self.sortGraphName = self
+      .container.querySelector("table thead tr th.name svg.sort");
+      self.sortGraphCount = self
+      .container.querySelector("table thead tr th.count svg.sort");
+      // Count scale.
+      self.scaleGraph = self
+      .container.querySelector("table thead tr th.count svg.scale");
+      self.graphWidth = General
+      .determineElementDimension(self.scaleGraph, "width");
+      self.graphHeight = General
+      .determineElementDimension(self.scaleGraph, "height");
+      // Table body.
+      self.body = self.container.getElementsByTagName("tbody").item(0);
     }
   }
   /**
-  * Creates and activates button to restore controls for network's assembly
-  * to initial state.
-  * @param {Object} view Instance of interface's current view.
+  * Creates and activates a table.
+  * @param {Object} self Instance of a class.
   */
-  createActivateReset(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and activate button to restore controls for network's assembly
-    // to initial state.
-    self.reset = self.document.createElement("button");
-    self.container.appendChild(self.reset);
-    self.reset.textContent = "reset";
-    self.reset.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Restore controls for network's assembly to initial state.
-      Action.restoreNetworkAssembly(self.model);
+  createActivateTable(self) {
+    // Create separate tables for head and body to support stationary head and
+    // scrollable body.
+    // Create head table.
+    var tableHeadRow = View.createTableHeadRow({
+      className: self.category,
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Create titles, sorts, and scale in table's header.
+    // Create head for names.
+    var referencesOne = View.createActivateTableColumnHead({
+      attribute: "name",
+      text: "Name",
+      type: "sets",
+      category: self.category,
+      sort: true,
+      scale: false,
+      parent: tableHeadRow,
+      documentReference: self.document,
+      state: self.state
+    });
+    self.sortGraphName = referencesOne.sortGraph;
+    // Create head for counts.
+    var referencesTwo = View.createActivateTableColumnHead({
+      attribute: "count",
+      text: "Count",
+      type: "sets",
+      category: self.category,
+      sort: true,
+      scale: true,
+      parent: tableHeadRow,
+      documentReference: self.document,
+      state: self.state
+    });
+    self.sortGraphCount = referencesTwo.sortGraph;
+    self.scaleGraph = referencesTwo.scaleGraph;
+    self.graphWidth = referencesTwo.graphWidth;
+    self.graphHeight = referencesTwo.graphHeight;
+    // Create body table.
+    self.body = View.createScrollTableBody({
+      className: self.category,
+      parent: self.container,
+      documentReference: self.document
     });
   }
   /**
-  * Creates and activates button to assemble network's nodes and links for
-  * entity view.
-  * @param {Object} view Instance of interface's current view.
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} self Instance of a class.
   */
-  createActivateAssemble(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and activate button to assemble network's nodes and links.
-    self.assemble = self.document.createElement("button");
-    self.container.appendChild(self.assemble);
-    self.assemble.textContent = "assemble";
-    self.assemble.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Assemble network's nodes and links.
-      Action.createNetwork(self.model);
+  restoreView(self) {
+    self.representSearch(self);
+    self.representSorts(self);
+    self.createScale(self);
+    View.representScale({
+      scaleGraph: self.scaleGraph,
+      graphHeight: self.graphHeight,
+      determineScaleValue: self.determineScaleValue
+    });
+    self.createActivateSummaries(self);
+  }
+  /**
+  * Represents search's value.
+  * @param {Object} self Instance of a class.
+  */
+  representSearch(self) {
+    // Assign value of tool for search.
+    self.search.value = self.state.setsSearches[self.category];
+  }
+  /**
+  * Represents specifications to sort summaries.
+  * @param {Object} self Instance of a class.
+  */
+  representSorts(self) {
+    View.representSort({
+      category: self.category,
+      attribute: "name",
+      sorts: self.state.setsSorts,
+      parent: self.sortGraphName,
+      documentReference: self.document
+    });
+    View.representSort({
+      category: self.category,
+      attribute: "count",
+      sorts: self.state.setsSorts,
+      parent: self.sortGraphCount,
+      documentReference: self.document
     });
   }
   /**
-  * Creates and activates selector for compartmentalization in the network's
-  * assembly.
-  * @param {Object} view Instance of interface's current view.
+  * Creates scale.
+  * @param {Object} self Instance of a class.
   */
-  createActivateCompartmentalizationSelector(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and activate compartmentalization selector.
-    var identifier = "compartmentalization";
-    self.compartmentalizationSelector = self.document.createElement("input");
-    self.container.appendChild(self.compartmentalizationSelector);
-    self.compartmentalizationSelector.setAttribute("id", identifier);
-    self.compartmentalizationSelector.setAttribute("type", "checkbox");
-    self
-    .compartmentalizationSelector
-    .setAttribute("value", "compartmentalization");
-    self
-    .compartmentalizationSelector
-    .addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Change current selection of compartmentalization in
-      // application's state.
-      Action.changeCompartmentalization(self.model);
-    });
-    var label = self.document.createElement("label");
-    self.container.appendChild(label);
-    label.setAttribute("for", identifier);
-    label.textContent = "compartmentalization";
+  createScale(self) {
+    // Determine maximumal value.
+    var maximalValue = self.state.setsSummaries[self.category][0].maximum;
+    // Create scale.
+    self.determineScaleValue = d3
+    .scaleLinear()
+    .domain([0, maximalValue])
+    .range([5, (self.graphWidth * 0.9)])
+    .nice(2);
   }
   /**
-  * Initializes interface to summarize and modify replications for the
-  * network's assembly.
-  * Creates new elements that do not exist and do not vary with data.
-  * @param {Object} view Instance of interface's current view.
+  * Creates and activates summaries.
+  * @param {Object} self Instance of a class.
   */
-  initializeReplicationInterface(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create container for the replication interface.
-    self.replication = self.document.createElement("div");
-    self.container.appendChild(self.replication);
-    self.replication.setAttribute("id", "assembly-replication");
-    self.replication.textContent = "Replications";
-    // Initialize summary of current replications.
-    // Create container for the summary of current replications.
-    self.currentReplications = self.document.createElement("div");
-    self.replication.appendChild(self.currentReplications);
-    self
-    .currentReplications
-    .setAttribute("id", "assembly-replication-current");
-    // Create table for summary of current replications.
-    var table = self.document.createElement("table");
-    self.currentReplications.appendChild(table);
-    var tableHead = self.document.createElement("thead");
-    table.appendChild(tableHead);
-    var tableHeadRow = self.document.createElement("tr");
-    tableHead.appendChild(tableHeadRow);
-    var tableHeadRowCellName = self.document.createElement("th");
-    tableHeadRow.appendChild(tableHeadRowCellName);
-    tableHeadRowCellName.textContent = "Name";
-    var tableHeadRowCellRemove = self.document.createElement("th");
-    tableHeadRow.appendChild(tableHeadRowCellRemove);
-    tableHeadRowCellRemove.textContent = "Remove";
-    self.replicationTableBody = self.document.createElement("tbody");
-    table.appendChild(self.replicationTableBody);
-    // Initialize menu to include new replications.
-    // Create container for the menu for new replications.
-    self.novelReplications = self.document.createElement("div");
-    self.replication.appendChild(self.novelReplications);
-    self
-    .novelReplications
-    .setAttribute("id", "assembly-replication-novel");
-    // Create list for replication options.
-    var listIdentifier = "assembly-replication-options";
-    self.replicationOptions = self.document.createElement("datalist");
-    self.novelReplications.appendChild(self.replicationOptions);
-    self.replicationOptions.setAttribute("id", listIdentifier);
-    // Create search menu.
-    // Attribute "minlength" of input element does not make the drop-down
-    // list of options wait for at least the minimal length of characters.
-    self.replicationSearch = self.document.createElement("input");
-    self.novelReplications.appendChild(self.replicationSearch);
-    self.replicationSearch.setAttribute("type", "search");
-    self.replicationSearch.setAttribute("autocomplete", "off");
-    self.replicationSearch.setAttribute("list", listIdentifier);
-    self
-    .replicationSearch
-    .setAttribute("placeholder", "new replication...");
-    self.replicationSearch.setAttribute("size", "20");
-    // Activate search menu.
-    self.replicationSearch.addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Event originates on search menu, not on datalist's options.
-      // Search menu's value is the prospective name of a novel metabolite
-      // to include in replications.
-      // Include metabolite in replications.
-      Action.includeNovelReplication({
-        name: event.currentTarget.value,
-        model: self.model
+  createActivateSummaries(self) {
+    // Create and activate rows for summaries.
+    self.createActivateRows(self);
+    // Create cells for attributes.
+    self.createCells(self);
+  }
+  /**
+  * Creates and activates rows.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRows(self) {
+    // Create and activate rows.
+    // Select parent.
+    var body = d3.select(self.body);
+    // Define function to access data.
+    function access() {
+      return self.state.setsSummaries[self.category];
+    };
+    // Create children elements by association to data.
+    self.rows = View.createElementsData({
+      parent: body,
+      type: "tr",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    self.rows.classed("normal", true);
+    // Activate behavior.
+    self.rows.on("click", function (element, index, nodes) {
+      // Call action.
+      Action.changeSetsFilters({
+        value: element.value,
+        attribute: element.attribute,
+        state: self.state
       });
     });
+    self.rows.on("mouseenter", function (element, index, nodes) {
+      // Determine pointer coordinates.
+      var positionX = d3.mouse(self.view)[0];
+      var positionY = d3.mouse(self.view)[1];
+      // Select element.
+      var row = nodes[index];
+      var rowSelection = d3.select(row);
+      // Call action.
+      rowSelection.classed("normal", false);
+      rowSelection.classed("emphasis", true);
+      SetMenuView.createTip({
+        attribute: element.attribute,
+        value: element.value,
+        count: element.count,
+        positionX: positionX,
+        positionY: positionY,
+        tip: self.tip,
+        documentReference: self.document,
+        state: self.state
+      });
+    });
+    self.rows.on("mousemove", function (element, index, nodes) {
+      // Determine pointer coordinates.
+      var positionX = d3.mouse(self.view)[0];
+      var positionY = d3.mouse(self.view)[1];
+      // Call action.
+      SetMenuView.createTip({
+        attribute: element.attribute,
+        value: element.value,
+        count: element.count,
+        positionX: positionX,
+        positionY: positionY,
+        tip: self.tip,
+        documentReference: self.document,
+        state: self.state
+      });
+    });
+    self.rows.on("mouseleave", function (element, index, nodes) {
+      // Select element.
+      var row = nodes[index];
+      var rowSelection = d3.select(row);
+      // Call action.
+      rowSelection.classed("emphasis", false);
+      rowSelection.classed("normal", true);
+      self.tip.clearView(self.tip);
+    });
   }
   /**
-  * Restores the interface for control of network's assembly.
-  * @param {Object} view Instance of interface's current view.
+  * Creates cells.
+  * @param {Object} self Instance of a class.
   */
-  restoreAssemblyControls(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Restore compartmentalization selector according to application's
-    // state.
-    self.compartmentalizationSelector.checked = self
-    .determineCompartmentalization(self);
-    if (false) {
-      // Create and activate data-dependent summary of replications.
-      self.createActivateReplicationsSummary(self);
-      // Create and activate menu to include new replications.
-      self.createNovelReplicationsMenu(self);
-    }
-  }
-  /**
-  * Creates and activates body of table for summary of current replications.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateReplicationsSummary(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Select summary table's body.
-    var body = d3.select(self.replicationTableBody);
-    // Append rows to table with association to data.
-    var dataRows = body.selectAll("tr").data(self.model.replications);
-    dataRows.exit().remove();
-    var newRows = dataRows.enter().append("tr");
-    var rows = newRows.merge(dataRows);
-    // Append cells to table with association to data.
-    var dataCells = rows.selectAll("td").data(function (element, index) {
-      // Organize data for table cells in each row.
+  createCells(self) {
+    // Create cells for names and counts.
+    // Define function to access data.
+    function access(element, index, nodes) {
+      // Organize data.
       return [].concat(
         {
           type: "name",
-          value: element
+          attribute: element.attribute,
+          value: element.value
         },
         {
-          type: "removal",
-          value: element
+          type: "count",
+          attribute: element.attribute,
+          count: element.count,
+          maximum: element.maximum,
+          value: element.value
         }
       );
+    };
+    // Create children elements by association to data.
+    self.cells = View.createElementsData({
+      parent: self.rows,
+      type: "td",
+      accessor: access
     });
-    dataCells.exit().remove();
-    var newCells = dataCells.enter().append("td");
-    var cells = newCells.merge(dataCells);
-    self.replicationsTableBodyCells = cells;
-    // Cells for data's name.
-    self.createCurrentReplicationsNames(self);
-    // Cells for data's values.
-    self.createActivateCurrentReplicationsRemovals(self);
+    // Assign attributes to cells for sets' names.
+    self.representNames(self);
+    // Assign attributes to cells for sets' counts.
+    self.representCounts(self);
   }
   /**
-  * Creates cells for names of current replications.
-  * @param {Object} view Instance of interface's current view.
+  * Represents sets' names.
+  * @param {Object} self Instance of a class.
   */
-  createCurrentReplicationsNames(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Select cells for data's name.
-    self.replicationTableBodyCellsNames = self
-    .replicationsTableBodyCells.filter(function (data, index) {
-      return data.type === "name";
+  representNames(self) {
+    // Assign attributes to cells.
+    // Assign attributes to elements.
+    // Select cells for names.
+    self.names = self.cells
+    .filter(function (element, index, nodes) {
+      return element.type === "name";
     });
-    // Assign attributes to cells for attributes.
-    self.replicationTableBodyCellsNames.text(function (data) {
-      return self.model.metabolites[data.value].name;
-    });
-  }
-  /**
-  * Creates and activates cells for removal of current replications.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createActivateCurrentReplicationsRemovals(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Select cells for data's values.
-    self.replicationTableBodyCellsRemovals = self
-    .replicationsTableBodyCells.filter(function (data, index) {
-      return data.type === "removal";
-    });
-    // Assign attributes to cells for removal.
-    // Append buttons.
-    var dataButtons = self.replicationTableBodyCellsRemovals
-    .selectAll("button")
-    .data(function (element, index) {
-      return [element];
-    });
-    dataButtons.exit().remove();
-    var newButtons = dataButtons.enter().append("button");
-    var buttons = newButtons.merge(dataButtons);
-    // Assign attributes to buttons.
-    buttons.text(function (data) {
-      return "x";
-    });
-    // Assign position and dimension to rectangles.
-    // Activate buttons.
-    // Assign event listeners and handlers to bars.
-    buttons.on("click", function (data, index, nodes) {
-      Action.removeCurrentReplication({
-        identifier: data.value,
-        model: self.model
+    self.names
+    .classed("name", true)
+    .text(function (element, index, nodes) {
+      return SetMenuView.accessName({
+        attribute: element.attribute,
+        value: element.value,
+        state: self.state
       });
     });
   }
   /**
-  * Creates menu to include novel replications.
-  * @param {Object} view Instance of interface's current view.
+  * Represents counts.
+  * @param {Object} self Instance of a class.
   */
-  createNovelReplicationsMenu(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Restore search menu to empty value.
-    self.replicationSearch.value = "";
-    // Select list for replication options.
-    var list = d3.select(self.replicationOptions);
-    // Append options to list with association to data.
-    var dataOptions = list
-    .selectAll("option").data(self.model.currentMetabolites);
-    dataOptions.exit().remove();
-    var newOptions = dataOptions.enter().append("option");
-    var options = newOptions.merge(dataOptions);
-    // Set attributes of options.
-    // It is possible to assign both value and label attributes to each
-    // option.
-    // Both value and label attributes appear in the drop-down list of
-    // options for the search menu, but value attributes are most prominent.
-    // Only the value attribute remains in the search menu after selection,
-    // and only this attribute is accessible to the event handler of the
-    // search menu.
-    // A potential strategy is to assign metabolite's identifiers to values
-    // and metabolite's names to labels of options.
-    // This strategy conveniently makes metabolite's identifiers accessible
-    // to the event handler of the search menu.
-    // The disadvantage of this strategy is that the user must see and
-    // select between the sometimes meaningless identifiers of metabolites.
-    // Instead, another strategy is to assign metabolite's names to values
-    // of options and subsequently determine metabolite's identifiers from
-    // those names.
-    // This determination of metabolite's names from identifiers requires a
-    // filter operation, but this operation is reasonably quick.
-    // Metabolites have both unique identifiers and unique names.
-    options.attr("value", function (data, index) {
-      return self.model.metabolites[data].name;
+  representCounts(self) {
+    var barMarks = View.representCounts({
+      cells: self.cells,
+      graphHeight: self.graphHeight,
+      determineScaleValue: self.determineScaleValue
+    });
+    // Assign attributes to elements.
+    barMarks
+    .classed("normal", function (element, index, nodes) {
+      return !SetMenuView.determineSetSelection({
+        value: element.value,
+        attribute: element.attribute,
+        state: self.state
+      });
+    })
+    .classed("emphasis", function (element, index, nodes) {
+      return SetMenuView.determineSetSelection({
+        value: element.value,
+        attribute: element.attribute,
+        state: self.state
+      });
     });
   }
   /**
-  * Determines the current value of compartmentalization in the application's
-  * state.
-  * @param {Object} view Instance of interface's current view.
+  * Creates tip.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.attribute Name of an attribute.
+  * @param {string} parameters.value Identifier of a value.
+  * @param {number} parameters.count Count of entity's relations.
+  * @param {number} parameters.positionX Pointer's horizontal coordinate.
+  * @param {number} parameters.positionY Pointer's vertical coordinate.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
   */
-  determineCompartmentalization(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    return self.model.compartmentalization;
+  static createTip({attribute, value, count, positionX, positionY, tip, documentReference, state} = {}) {
+    // Create summary for tip.
+    var name = SetMenuView.accessName({
+      attribute: attribute,
+      value: value,
+      state: state
+    });
+    var message = (name + " (" + count + ")");
+    var summary = View.createSpanText({
+      text: message,
+      documentReference: documentReference
+    });
+    // Create tip.
+    tip.restoreView({
+      visible: true,
+      positionX: positionX,
+      positionY: positionY,
+      summary: summary,
+      self: tip
+    });
   }
   /**
-  * Determines whether or not the application state has a subnetwork.
+  * Accesses the name of a value of an attribute.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.attribute Name of an attribute.
+  * @param {string} parameters.value Identifier of a value.
+  * @param {Object} parameters.state Application's state.
+  * @returns {string} Name of the value of the attribute.
   */
-  determineSubnetwork() {
-    return (
-      !(this.model.entityViewSubNetworkNodes === null) &&
-      !(this.model.entityViewSubNetworkLinks === null)
-    );
+  static accessName({attribute, value, state} = {}) {
+    return state[attribute][value].name;
+  }
+  /**
+  * Determines whether an attribute's value has a selection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.value Identifier of a value.
+  * @param {string} parameters.attribute Name of an attribute.
+  * @param {Object} parameters.state Application's state.
+  * @returns {boolean} Whether a selection exists for the value of the
+  * attribute.
+  */
+  static determineSetSelection({value, attribute, state} = {}) {
+    return Attribution.determineSetsFilter({
+      value: value,
+      attribute: attribute,
+      setsFilters: state.setsFilters
+    });
   }
 }
 
 /**
-* Interface to represent a temporary place-holder in bottom of interface.
+* Interface to summarize candidate entities and control simplifications.
 */
-class BottomView {
+class CandidacyView {
   /**
-  * Initializes an instance of the class.
-  * @param {Object} model Model of the application's comprehensive state.
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.control Instance of ControlView's class.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor (model) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
+  constructor ({tip, control, state} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
     var self = this;
-    // Set reference to model of application's state.
-    self.model = model;
+    // Set reference to application's state.
+    self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    self.control = control;
+    // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
     // Restore view.
     self.restoreView(self);
   }
   /**
-  * Initializes the interface's view.
-  * Controls aspects of view's composition and behavior that persist with
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "candidacy",
+      target: self.control.candidacyTab,
+      position: "afterend",
+      documentReference: self.document
+    });
+    // Determine whether the container is empty.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create view's invariant elements.
+      // Activate invariant behavior of view's elements.
+      // Create and activate restore.
+      self.createActivateRestore(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create and activate control for compartmentalization.
+      self.createActivateCompartmentalizationControl(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create menu for candidate metabolites.
+      new CandidacyMenuView({
+        category: "metabolites",
+        tip: self.tip,
+        candidacy: self,
+        state: self.state
+      });
+      // Create menu for candidate reactions.
+      new CandidacyMenuView({
+        category: "reactions",
+        tip: self.tip,
+        candidacy: self,
+        state: self.state
+      });
+    } else {
+      // Container is not empty.
+      // Set references to view's variant elements.
+      // Control for filter.
+      self.compartmentalization = self
+      .document.getElementById("candidacy-compartmentalization");
+    }
+  }
+  /**
+  * Creates and activates a control for compartmentalization.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateCompartmentalizationControl(self) {
+    // Create control for compartmentalization.
+    var identifier = "candidacy-compartmentalization";
+    self.compartmentalization = View.createCheckLabel({
+      identifier: identifier,
+      value: "compartmentalization",
+      className: "compartmentalization",
+      text: "compartmentalization",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    self.compartmentalization.addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.changeCompartmentalization(self.state);
+    });
+  }
+  /**
+  * Creates and activates a button to restore the menu.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestore(self) {
+    // Create button for restoration.
+    var restore = View.createButton({
+      text: "restore",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    restore.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.restoreCandidacyViewControls(self.state);
+    });
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
   * changes to the application's state.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  initializeView(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Initialize view's container.
-    self.initializeContainer(self);
+  restoreView(self) {
+    // Create view's variant elements.
+    // Activate variant behavior of view's elements.
+    self.compartmentalization.checked = CandidacyView
+    .determineCompartmentalization(self.state);
+    // Create menu for candidate metabolites.
+    new CandidacyMenuView({
+      category: "metabolites",
+      tip: self.tip,
+      candidacy: self,
+      state: self.state
+    });
+    // Create menu for candidate reactions.
+    new CandidacyMenuView({
+      category: "reactions",
+      tip: self.tip,
+      candidacy: self,
+      state: self.state
+    });
   }
   /**
-  * Initializes the container for the interface.
-  * @param {Object} view Instance of interface's current view.
+  * Determines whether compartmentalization has a true value in the
+  * application's state.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether compartmentalization has a true value in the
+  * application's state.
   */
-  initializeContainer(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and set references to elements for interface.
-    // Select view in document object model.
-    self.view = self.document.getElementById("view");
-    // Remove any extraneous content within view.
-    // Initialization of the persistence view already removes extraneous
-    // content from view.
-    General.filterRemoveDocumentElements({
-      values: ["top", "bottom"],
-      attribute: "id",
-      elements: self.view.children
-    });
-    // Create container for interfaces within bottom of view.
-    if (!self.document.getElementById("bottom")) {
-      self.bottom = self.document.createElement("div");
-      self.view.appendChild(self.bottom);
-      self.bottom.setAttribute("id", "bottom");
-    } else {
-      self.bottom = self.document.getElementById("bottom");
-    }
-    // Remove any extraneous content within bottom.
-    General.filterRemoveDocumentElements({
-      values: ["control", "panel"],
-      attribute: "id",
-      elements: self.bottom.children
-    });
-    // Create container for interface within bottom.
-    // Set reference to current interface's container.
-    if (!self.document.getElementById("panel")) {
-      self.container = self.document.createElement("div");
-      self.bottom.appendChild(self.container);
-      self.container.setAttribute("id", "panel");
-    } else {
-      self.container = self.document.getElementById("panel");
-    }
-  }
-  /**
-  * Restores the interface's view.
-  * Controls aspects of view's composition and behavior that vary with changes
-  * to the application's state.
-  * @param {Object} view Instance of interface's current view.
-  */
-  restoreView(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  static determineCompartmentalization(state) {
+    return state.compartmentalization;
   }
 }
 
 /**
-* Interface to represent the topology of the network of relations between
-* metabolic entities.
+* Interface to organize menu of candidates.
+*/
+class CandidacyMenuView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Name of category.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.candidacy Instance of CandidacyView's class.
+  * @param {Object} parameters.state Application's state.
+  */
+  constructor ({category, tip, candidacy, state} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    self.candidacy = candidacy;
+    // Set reference to category.
+    self.category = category;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: ("candidacy-" + self.category + "-menu"),
+      target: self.candidacy.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
+    // Determine whether the container is empty.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create view's invariant elements.
+      // Activate invariant behavior of view's elements.
+      self.container.classList.add("menu");
+      // Create search.
+      self.search = View.createActivateSearch({
+        type: "candidates",
+        category: self.category,
+        parent: self.container,
+        documentReference: self.document,
+        state: self.state
+      });
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create table.
+      self.createActivateTable(self);
+    } else {
+      // Container is not empty.
+      // Set references to view's variant elements.
+      // Search.
+      self.search = self.container.querySelector("input.search");
+      // Sorts.
+      self.sortGraphName = self
+      .container.querySelector("table thead tr th.name svg.sort");
+      self.sortGraphCount = self
+      .container.querySelector("table thead tr th.count svg.sort");
+      // Scale.
+      self.scaleGraph = self
+      .container.querySelector("table thead tr th.count svg.scale");
+      self.graphWidth = General
+      .determineElementDimension(self.scaleGraph, "width");
+      self.graphHeight = General
+      .determineElementDimension(self.scaleGraph, "height");
+      // Table body.
+      self.body = self.container.getElementsByTagName("tbody").item(0);
+    }
+  }
+  /**
+  * Creates and activates a table.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateTable(self) {
+    // Create separate tables for head and body to support stationary head and
+    // scrollable body.
+    // Create head table.
+    var tableHeadRow = View.createTableHeadRow({
+      className: self.category,
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Create titles, sorts, and scale in table's header.
+    // Create head for names.
+    var referencesOne = View.createActivateTableColumnHead({
+      attribute: "name",
+      text: "Name",
+      type: "candidates",
+      category: self.category,
+      sort: true,
+      scale: false,
+      parent: tableHeadRow,
+      documentReference: self.document,
+      state: self.state
+    });
+    self.sortGraphName = referencesOne.sortGraph;
+    // Create head for counts.
+    var referencesTwo = View.createActivateTableColumnHead({
+      attribute: "count",
+      text: "Count",
+      type: "candidates",
+      category: self.category,
+      sort: true,
+      scale: true,
+      parent: tableHeadRow,
+      documentReference: self.document,
+      state: self.state
+    });
+    self.sortGraphCount = referencesTwo.sortGraph;
+    self.scaleGraph = referencesTwo.scaleGraph;
+    self.graphWidth = referencesTwo.graphWidth;
+    self.graphHeight = referencesTwo.graphHeight;
+    // Create head for omission.
+    var referencesThree = View.createActivateTableColumnHead({
+      attribute: "omission",
+      text: "X",
+      type: "candidates",
+      category: self.category,
+      sort: false,
+      scale: false,
+      parent: tableHeadRow,
+      documentReference: self.document,
+      state: self.state
+    });
+    if (self.category === "metabolites") {
+      // Create head for replication.
+      var referencesFour = View.createActivateTableColumnHead({
+        attribute: "replication",
+        text: "...",
+        type: "candidates",
+        category: self.category,
+        sort: false,
+        scale: false,
+        parent: tableHeadRow,
+        documentReference: self.document,
+        state: self.state
+      });
+    }
+    // Create body table.
+    self.body = View.createScrollTableBody({
+      className: self.category,
+      parent: self.container,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    self.representSearch(self);
+    self.representSorts(self);
+    self.createScale(self);
+    View.representScale({
+      scaleGraph: self.scaleGraph,
+      graphHeight: self.graphHeight,
+      determineScaleValue: self.determineScaleValue
+    });
+    self.createActivateSummaries(self);
+  }
+  /**
+  * Represents search's value.
+  * @param {Object} self Instance of a class.
+  */
+  representSearch(self) {
+    // Assign value of tool for search.
+    self.search.value = self.state.candidatesSearches[self.category];
+  }
+  /**
+  * Represents specifications to sort summaries.
+  * @param {Object} self Instance of a class.
+  */
+  representSorts(self) {
+    View.representSort({
+      category: self.category,
+      attribute: "name",
+      sorts: self.state.candidatesSorts,
+      parent: self.sortGraphName,
+      documentReference: self.document
+    });
+    View.representSort({
+      category: self.category,
+      attribute: "count",
+      sorts: self.state.candidatesSorts,
+      parent: self.sortGraphCount,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Creates scale.
+  * @param {Object} self Instance of a class.
+  */
+  createScale(self) {
+    // Determine maximal value.
+    var maximalValue = self.state.candidatesSummaries[self.category][0].maximum;
+    // Create scale.
+    self.determineScaleValue = d3
+    .scaleLinear()
+    .domain([0, maximalValue])
+    .range([5, (self.graphWidth * 0.9)])
+    .nice(2);
+  }
+  /**
+  * Creates and activates summaries.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateSummaries(self) {
+    // Create and activate rows for summaries.
+    self.createActivateRows(self);
+    // Create cells for attributes.
+    self.createCells(self);
+  }
+  /**
+  * Creates and activates rows.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRows(self) {
+    // Create and activate rows.
+    // Select parent.
+    var body = d3.select(self.body);
+    // Define function to access data.
+    function accessOne() {
+      return self.state.candidatesSummaries[self.category];
+    };
+    // Create children elements by association to data.
+    self.rows = View.createElementsData({
+      parent: body,
+      type: "tr",
+      accessor: accessOne
+    });
+    // Assign attributes to elements.
+    self.rows.classed("normal", true);
+    // Activate behavior.
+    self.rows.on("mouseenter", function (element, index, nodes) {
+      // Determine pointer coordinates.
+      var positionX = d3.mouse(self.view)[0];
+      var positionY = d3.mouse(self.view)[1];
+      // Select element.
+      var row = nodes[index];
+      var rowSelection = d3.select(row);
+      // Call action.
+      rowSelection.classed("normal", false);
+      rowSelection.classed("emphasis", true);
+      CandidacyMenuView.createTip({
+        identifier: element.candidate,
+        entity: element.entity,
+        count: element.count,
+        positionX: positionX,
+        positionY: positionY,
+        tip: self.tip,
+        documentReference: self.document,
+        state: self.state
+      });
+    });
+    self.rows.on("mousemove", function (element, index, nodes) {
+      // Determine pointer coordinates.
+      var positionX = d3.mouse(self.view)[0];
+      var positionY = d3.mouse(self.view)[1];
+      // Call action.
+      CandidacyMenuView.createTip({
+        identifier: element.candidate,
+        entity: element.entity,
+        count: element.count,
+        positionX: positionX,
+        positionY: positionY,
+        tip: self.tip,
+        documentReference: self.document,
+        state: self.state
+      });
+    });
+    self.rows.on("mouseleave", function (element, index, nodes) {
+      // Select element.
+      var row = nodes[index];
+      var rowSelection = d3.select(row);
+      // Call action.
+      rowSelection.classed("emphasis", false);
+      rowSelection.classed("normal", true);
+      self.tip.clearView(self.tip);
+    });
+  }
+  /**
+  * Creates cells.
+  * @param {Object} self Instance of a class.
+  */
+  createCells(self) {
+    // Create cells for names, counts, omissions, and replications.
+    // Define function to access data.
+    function access(element, index, nodes) {
+      // Organize data.
+      var name = {
+        type: "name",
+        entity: element.entity,
+        identifier: element.candidate
+      };
+      var count = {
+        type: "count",
+        count: element.count
+      };
+      var omission = {
+        type: "omission",
+        entity: element.entity,
+        identifier: element.candidate
+      };
+      if (self.category === "metabolites") {
+        var replication = {
+          type: "replication",
+          entity: element.entity,
+          identifier: element.candidate
+        };
+        return [].concat(name, count, omission, replication);
+      } else if (self.category === "reactions") {
+        return [].concat(name, count, omission);
+      }
+    };
+    // Create children elements by association to data.
+    self.cells = View.createElementsData({
+      parent: self.rows,
+      type: "td",
+      accessor: access
+    });
+    // Assign attributes to cells for names.
+    self.representNames(self);
+    // Assign attributes to cells for counts.
+    self.representCounts(self);
+    // Assign attributes to cells for omission.
+    self.representActivateSimplifications("omission", self);
+    if (self.category === "metabolites") {
+      // Assign attributes to cells for replication.
+      self.representActivateSimplifications("replication", self);
+    }
+  }
+  /**
+  * Represents names.
+  * @param {Object} self Instance of a class.
+  */
+  representNames(self) {
+    // Assign attributes to cells.
+    // Assign attributes to elements.
+    // Select cells for names.
+    self.names = self.cells.filter(function (element, index, nodes) {
+      return element.type === "name";
+    });
+    self.names
+    .classed("name", true)
+    .text(function (element, index, nodes) {
+      return CandidacyMenuView.accessName({
+        identifier: element.identifier,
+        entity: element.entity,
+        state: self.state
+      });
+    });
+  }
+  /**
+  * Represents counts.
+  * @param {Object} self Instance of a class.
+  */
+  representCounts(self) {
+    var barMarks = View.representCounts({
+      cells: self.cells,
+      graphHeight: self.graphHeight,
+      determineScaleValue: self.determineScaleValue
+    });
+    barMarks.classed("normal", true);
+  }
+  /**
+  * Represents and activates controls for simplifications.
+  * @param {string} method Method for simplification, omission or replication.
+  * @param {Object} self Instance of a class.
+  */
+  representActivateSimplifications(method, self) {
+    // Assign attributes to cells.
+    // Assign attributes to elements.
+    // Select cells.
+    var reference = (method + "s");
+    self[reference] = self.cells.filter(function (element, index, nodes) {
+      return element.type === method;
+    });
+    self[reference].classed(method, true);
+    // Create check boxes.
+    // Define function to access data.
+    function access(element, index, nodes) {
+      return [element];
+    };
+    // Create children elements by association to data.
+    var checks = View.createElementsData({
+      parent: self[reference],
+      type: "input",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    checks
+    .attr("type", "checkbox")
+    .property("checked", function (element, index, nodes) {
+      return CandidacyMenuView.determineSimplification({
+        identifier: element.identifier,
+        category: element.entity,
+        method: element.type,
+        state: self.state
+      });
+    });
+    // Activate behavior.
+    checks.on("change", function (element, index, nodes) {
+      // Call action.
+      Action.changeSimplification({
+        identifier: element.identifier,
+        method: element.type,
+        category: element.entity,
+        state: self.state
+      });
+    });
+  }
+  /**
+  * Creates tip.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {string} parameters.entity Type of entity, metabolites or reactions.
+  * @param {number} parameters.count Count of entity's relations.
+  * @param {number} parameters.positionX Pointer's horizontal coordinate.
+  * @param {number} parameters.positionY Pointer's vertical coordinate.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  */
+  static createTip({identifier, entity, count, positionX, positionY, tip, documentReference, state} = {}) {
+    // Create summary for tip.
+    var name = CandidacyMenuView.accessName({
+      identifier: identifier,
+      entity: entity,
+      state: state
+    });
+    var message = (name + " (" + count + ")");
+    var summary = View.createSpanText({
+      text: message,
+      documentReference: documentReference
+    });
+    // Create tip.
+    tip.restoreView({
+      visible: true,
+      positionX: positionX,
+      positionY: positionY,
+      summary: summary,
+      self: tip
+    });
+  }
+  /**
+  * Accesses the name of a record.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {string} parameters.entity Type of entity, metabolites or reactions.
+  * @param {Object} parameters.state Application's state.
+  * @returns {string} Name of the value of the attribute.
+  */
+  static accessName({identifier, entity, state} = {}) {
+    // Determine reference.
+    if (entity === "metabolites") {
+      var reference = state.metabolitesCandidates;
+    } else if (entity === "reactions") {
+      var reference = state.reactionsCandidates;
+    }
+    return reference[identifier].name;
+  }
+  /**
+  * Determines whether an attribute's value has a selection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.value Identifier of a value.
+  * @param {string} parameters.attribute Name of an attribute.
+  * @param {Object} parameters.state Application's state.
+  * @returns {boolean} Whether a selection exists for the value of the
+  * attribute.
+  */
+  static determineSetSelection({value, attribute, state} = {}) {
+    return Attribution.determineSetsFilter({
+      value: value,
+      attribute: attribute,
+      setsFilters: state.setsFilters
+    });
+  }
+  /**
+  * Determines whether a specific candidate entity has a designation for
+  * simplification by a specific method.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {string} parameters.category Name of category for simplifications,
+  * metabolites or reactions.
+  * @param {string} parameters.method Method for simplification, omission or
+  * replication.
+  * @param {Object} parameters.state Application's state.
+  * @returns {boolean} Whether the candidate entity has a designation for
+  * simplification by the method.
+  */
+  static determineSimplification({identifier, category, method, state} = {}) {
+    // Determine reference.
+    if (category === "metabolites") {
+      var simplifications = state.metabolitesSimplifications;
+    } else if (category === "reactions") {
+      var simplifications = state.reactionsSimplifications;
+    }
+    // Determine whether a simplification exists for the entity.
+    if (simplifications.hasOwnProperty(identifier)) {
+      // Determine whether the simplification matches the method.
+      var match = (simplifications[identifier].method === method);
+    } else {
+      var match = false;
+    }
+    return match;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Exploration view and views within exploration view.
+
+/**
+* Interface to contain other interfaces for exploration.
+*/
+class ExplorationView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Array<string>>} parameters.contents Identifiers of contents
+  * within view.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.state Application's state.
+  */
+  constructor ({contents, tip, state} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    // Set reference to contents.
+    self.contents = contents;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "exploration",
+      target: self.view,
+      position: "beforeend",
+      documentReference: self.document
+    });
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // Remove any extraneous content from view.
+    self.filterContents(self);
+  }
+  /**
+  * Filters view's contents to remove all but relevant content.
+  * @param {Object} self Instance of a class.
+  */
+  filterContents(self) {
+    General.filterRemoveDocumentElements({
+      values: self.contents,
+      attribute: "id",
+      elements: self.container.children
+    });
+  }
+}
+
+/**
+* Interface to summarize filters and network's elements and control visual
+* representation of network's topology.
+*/
+class SummaryView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.exploration Instance of ExplorationView's class.
+  * @param {Object} parameters.state Application's state.
+  */
+  constructor ({tip, exploration, state} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    self.exploration = exploration;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "summary",
+      target: self.exploration.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
+    // Determine whether the container is empty.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create view's invariant elements.
+      // Activate invariant behavior of view's elements.
+      // Create text.
+      self.summary = self.document.createElement("span");
+      self.container.appendChild(self.summary);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create and activate buttons.
+      self.draw = View.createButton({
+        text: "draw",
+        parent: self.container,
+        documentReference: self.document
+      });
+      self.draw.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.changeTopology(self.state);
+      });
+    } else {
+      // Container is not empty.
+      // Set references to view's variant elements.
+      self.summary = self.container.getElementsByTagName("span").item(0);
+    }
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // Create view's variant elements.
+    // Activate variant behavior of view's elements.
+    // Summarize the network's elements.
+    var nodes = self.state.networkNodesRecords.length;
+    var links = self.state.networkLinksRecords.length;
+    var message = (
+      "nodes : " + nodes + "... links: " + links
+    );
+    self.summary.textContent = message;
+  }
+}
+
+/**
+* Interface to represent visually the network's topology.
 */
 class TopologyView {
   /**
-  * Initializes an instance of the class.
-  * @param {Object} model Model of the application's comprehensive state.
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.exploration Instance of ExplorationView's class.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor (model) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
+  constructor ({tip, exploration, state} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
     var self = this;
-    // Set reference to model of application's state.
-    self.model = model;
+    // Set reference to application's state.
+    self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
+    // Set reference to other views.
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    self.exploration = exploration;
+    // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
     // Restore view.
     self.restoreView(self);
   }
   /**
-  * Initializes the interface's view.
-  * Controls aspects of view's composition and behavior that persist with
-  * changes to the application's state.
-  * @param {Object} view Instance of interface's current view.
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
   */
-  initializeView(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Initialize view's container.
-    self.initializeContainer(self);
-    // Initialize view's graphical container for network's node-link diagram.
-    self.initializeGraph(self);
-  }
-  /**
-  * Initializes the container for the interface.
-  * @param {Object} view Instance of interface's current view.
-  */
-  initializeContainer(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and set references to elements for interface.
-    // Select view in document object model.
-    self.view = self.document.getElementById("view");
-    // Remove any extraneous content within view.
-    // Initialization of the persistence view already removes extraneous
-    // content from view.
-    General.filterRemoveDocumentElements({
-      values: ["top", "bottom"],
-      attribute: "id",
-      elements: self.view.children
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "topology",
+      target: self.exploration.container,
+      position: "beforeend",
+      documentReference: self.document
     });
-    // Create container for interfaces within bottom of view.
-    if (!self.document.getElementById("bottom")) {
-      self.bottom = self.document.createElement("div");
-      self.view.appendChild(self.bottom);
-      self.bottom.setAttribute("id", "bottom");
-    } else {
-      self.bottom = self.document.getElementById("bottom");
-    }
-    // Remove any extraneous content within bottom.
-    General.filterRemoveDocumentElements({
-      values: ["control", "topology"],
-      attribute: "id",
-      elements: self.bottom.children
-    });
-    // Create container for interface within bottom.
-    // Set reference to current interface's container.
-    if (!self.document.getElementById("topology")) {
-      self.container = self.document.createElement("div");
-      self.bottom.appendChild(self.container);
-      self.container.setAttribute("id", "topology");
-    } else {
-      self.container = self.document.getElementById("topology");
-    }
-  }
-  /**
-  * Initializes the graphical container for the network's node-link diagram.
-  * @param {Object} view Instance of interface's current view.
-  */
-  initializeGraph(view) {
-    // Set reference to class' current instance to transfer across changes in
-    // scope.
-    var self = view;
-    // Determine whether the graph already exists within the view.
-    if (!self.container.getElementsByTagName("svg").item(0)) {
-      // Graph does not exist within view.
-      // Create graph for network visualization.
-      //self.graph = self.document.createElement("svg");
-      //self.container.appendChild(self.graph);
-      //self.graph.classList.add("graph");
-      //self.graphSelection = d3.select(self.graph);
-      // Create graph with D3 so that styles in CSS will control dimensions.
-      self.graphSelection = d3.select(self.container).append("svg");
-      self.graphSelection.classed("graph", true);
-      self.graph = self.graphSelection.node();
-      // Create basic elements within graph.
-      // Create base for graph's background.
-      var base = self
-      .document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      self.graph.appendChild(base);
-      base.classList.add("base");
+    // Determine whether the container is empty.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create view's invariant elements.
+      // Activate invariant behavior of view's elements.
+      // Create graphical container.
+      self.createGraph(self);
       // Define links' directional marker.
       self.defineLinkDirectionalMarker(self);
+      // Create graph's base.
+      self.createBase(self);
+      // Create group for links.
+      self.createLinksGroup(self);
+      // Create group for nodes.
+      self.createNodesGroup(self);
     } else {
-      // Graph exists within view.
-      // Set references to graph.
+      // Container is not empty.
+      // Set references to view's variant elements.
       self.graph = self.container.getElementsByTagName("svg").item(0);
-      self.graphSelection = d3.select(self.graph);
-      // Set references to basic elements within graph.
+      self.graphWidth = General.determineElementDimension(self.graph, "width");
+      self.graphHeight = General
+      .determineElementDimension(self.graph, "height");
+      self.linksGroup = self.container.querySelector("svg g.links");
+      self.nodesGroup = self.container.querySelector("svg g.nodes");
     }
-    // Determine the dimensions of the graphical containers.
-    // Set references to dimensions of graphical container.
+  }
+  /**
+  * Creates a graphical container.
+  * @param {Object} self Instance of a class.
+  */
+  createGraph(self) {
+    // Create graphical container.
+    self.graph = View.createGraph({
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Determine graphs' dimensions.
     self.graphWidth = General.determineElementDimension(self.graph, "width");
     self.graphHeight = General.determineElementDimension(self.graph, "height");
   }
   /**
   * Defines link's directional marker.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  defineLinkDirectionalMarker(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  defineLinkDirectionalMarker(self) {
     // Define links' directional marker.
-    // Define by D3.
-    var marker = self.graphSelection
-    .append("defs")
-    .append("marker")
-    .attr("id", "link-marker")
-    .attr("viewBox", "0 0 10 10")
-    .attr("refX", -5)
-    .attr("refY", 5)
-    .attr("markerWidth", 5)
-    .attr("markerHeight", 5)
-    .attr("orient", "auto")
-    .append("path")
-    .attr("d", "M 0 0 L 10 5 L 0 10 z");
+    var definition = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    self.graph.appendChild(definition);
+    var marker = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "marker");
+    definition.appendChild(marker);
+    marker.setAttribute("id", "link-marker");
+    marker.setAttribute("viewBox", "0 0 10 10");
+    marker.setAttribute("refX", -5);
+    marker.setAttribute("refY", 5);
+    marker.setAttribute("markerWidth", 5);
+    marker.setAttribute("markerHeight", 5);
+    marker.setAttribute("orient", "auto");
+    var path = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "path");
+    marker.appendChild(path);
+    path.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+
     if (false) {
-      // Define directly.
-      var definition = self.document.createElement("defs");
-      self.graph.appendChild(definition);
-      var marker = self.document.createElement("marker");
-      definition.appendChild(marker);
-      marker.setAttribute("id", "link-marker");
-      marker.setAttribute("viewBox", "0 0 10 10");
-      marker.setAttribute("refX", -3);
-      marker.setAttribute("refY", 5);
-      marker.setAttribute("markerWidth", 5);
-      marker.setAttribute("markerHeight", 5);
-      marker.setAttribute("orient", "auto");
-      var path = self.document.createElement("path");
-      marker.appendChild(path);
-      path.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+      // Define by D3.
+      var marker = self.graphSelection
+      .append("defs")
+      .append("marker")
+      .attr("id", "link-marker")
+      .attr("viewBox", "0 0 10 10")
+      .attr("refX", -5)
+      .attr("refY", 5)
+      .attr("markerWidth", 5)
+      .attr("markerHeight", 5)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M 0 0 L 10 5 L 0 10 z");
     }
   }
   /**
-  * Restores the interface's view.
-  * Controls aspects of view's composition and behavior that vary with changes
-  * to the application's state.
-  * @param {Object} view Instance of interface's current view.
+  * Creates a base within a graphical container.
+  * @param {Object} self Instance of a class.
   */
-  restoreView(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create and activate network.
-    self.createActivateNetwork(self);
+  createBase(self) {
+    // Create base.
+    var base = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    self.graph.appendChild(base);
+    base.classList.add("base");
+    base.setAttribute("x", "0px");
+    base.setAttribute("y", "0px");
+    base.setAttribute("width", self.graphWidth);
+    base.setAttribute("height", self.graphHeight);
+  }
+  /**
+  * Creates a single group to contain all links.
+  * @param {Object} self Instance of a class.
+  */
+  createLinksGroup(self) {
+    // Create group.
+    self.linksGroup = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "g");
+    self.graph.appendChild(self.linksGroup);
+    self.linksGroup.classList.add("links");
+  }
+  /**
+  * Creates a single group to contain all nodes.
+  * @param {Object} self Instance of a class.
+  */
+  createNodesGroup(self) {
+    // Create group.
+    self.nodesGroup = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "g");
+    self.graph.appendChild(self.nodesGroup);
+    self.nodesGroup.classList.add("nodes");
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // Prepare information about network's elements.
+    self.prepareNetworkElementsRecords(self);
+    // Create, activate, and restore visual representations of network's
+    // elements.
+    self.createActivateNetworkRepresentation(self);
+    // Many alterations to the application's state do not change the network's
+    // elements or topology.
+    // As calculation of layout by force simulations is computationally
+    // expensive, only initiate this procedure if necessary.
+    // Determine whether to determine layout for network's elements and
+    // topology.
+    if (Model.determineTopologyNovelty(self.state)) {
+      self.createNetworkLayout(self);
+    }
+  }
+  /**
+  * Prepares local records of information about network's elements.
+  * @param {Object} self Instance of a class.
+  */
+  prepareNetworkElementsRecords(self) {
+    // Copy information about network's elements, nodes and links, to preserve
+    // original information against modifications, especially due to the force
+    // simulation.
+    self.nodesRecords = General
+    .copyDeepArrayElements(self.state.networkNodesRecords, true);
+    self.linksRecords = General
+    .copyDeepArrayElements(self.state.networkLinksRecords, true);
   }
   /**
   * Creates and activates a visual representation of a network.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  createActivateNetwork(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Prepare information about network's elements.
-    self.prepareNetworkElementsInformation(self);
-    // Create scales for representations of network's elements.
-    self.createRepresentationsScales(self);
-    // Create scales for simulations of forces between network's elements.
-    self.createSimulationsScales(self);
-    // Create scales for efficiency.
-    self.createEfficiencyScales(self);
+  createActivateNetworkRepresentation(self) {
+    // Create scales for the visual representation of network's elements.
+    // Determine these scales dynamically within the script.
+    // Otherwise an alternative is to determine dimensions within style and then
+    // access the dimension using element.getBoundingClientRect or
+    // window.getComputeStyle.
+    // Create scales for representation of network's elements.
+    self.createRepresentationScales(self);
     // Create graph to represent metabolic network.
     // Graph structure.
     // - graph (scalable vector graphical container)
@@ -1724,7 +2698,6 @@ class TopologyView {
     // --- linksMarks (polylines)
     // -- nodesGroup (group)
     // --- nodesGroups (groups)
-    // ---- nodesTitles (titles)
     // ---- nodesMarks (ellipses, rectangles)
     // ---- nodesDirectionalMarks (rectangles, polygons)
     // ---- nodesLabels (text)
@@ -1732,48 +2705,16 @@ class TopologyView {
     // Create links before nodes so that nodes will appear over the links.
     self.createLinks(self);
     // Create nodes.
-    self.createNodes(self);
-    // Initiate force simulation.
-    self.initiateForceSimulation(self);
+    self.createActivateNodes(self);
   }
   /**
-  * Prepares information about network's elements.
-  * @param {Object} view Instance of interface's current view.
+  * Creates scales for visual representation of network's elements.
+  * @param {Object} self Instance of a class.
   */
-  prepareNetworkElementsInformation(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Copy information about network's elements, nodes and links, to preserve
-    // original information against modifications, especially due to the force
-    // simulation.
-    self.linksRecords = General.copyValueJSON(self.model.currentLinks);
-    // Combine records for nodes.
-    self.nodesRecords = [].concat(
-      General.copyValueJSON(self.model.currentMetabolitesNodes),
-      General.copyValueJSON(self.model.currentReactionsNodes)
-    );
-    //console.log("links: " + self.linksRecords.length);
-    //console.log("nodes: " + self.nodesRecords.length);
-    //console.log("metabolites: " + self.model.currentMetabolitesNodes.length);
-    //console.log("reactions: " + self.model.currentReactionsNodes.length);
-  }
-  /**
-  * Creates scales for representations of network's elements.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createRepresentationsScales(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // The optimal scales for representations of network's elements depend on
-    // the dimensions of the graphical container or view and on the count of
+  createRepresentationScales(self) {
+    // The optimal dimensions for visual marks that represent network's elements
+    // depend on the dimensions of the graphical container and on the count of
     // elements.
-    // Determine these scales dynamically within script since they depend on
-    // context of use.
-    // Otherwise an alternative is to determine dimension within style and then
-    // access the dimension using element.getBoundingClientRect or
-    // window.getComputeStyle.
     //var node = self.graph.querySelector(".node.mark.metabolite .entity");
     // Define scales' domain on the basis of the ratio of the graphical
     // container's width to the count of nodes.
@@ -1796,7 +2737,7 @@ class TopologyView {
     var nodeDimensionScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([1, 3, 5, 7, 10, 15, 25, 30, 35, 50]);
+    .range([1, 3, 5, 7, 10, 15, 30, 40, 50, 60]);
     // Define scale for dimensions of links' representations.
     // Domain's unit is pixel for ratio of graphical container's width to count
     // of nodes.
@@ -1834,12 +2775,9 @@ class TopologyView {
     var fontScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([1, 2, 3, 4, 5, 7, 12, 15, 17, 20]);
+    .range([1, 2, 3, 4, 5, 7, 11, 13, 15, 17]);
     // Compute ratio for scales' domain.
     self.scaleRatio = self.graphWidth / self.nodesRecords.length;
-    //console.log("nodes: " + self.nodesRecords.length);
-    //console.log("links: " + self.linksRecords.length);
-    //console.log("scale ratio: " + self.scaleRatio);
     // Compute dimensions from scale.
     self.scaleNodeDimension = nodeDimensionScale(self.scaleRatio);
     self.scaleLinkDimension = linkDimensionScale(self.scaleRatio);
@@ -1847,20 +2785,230 @@ class TopologyView {
     self.scaleFont = fontScale(self.scaleRatio);
   }
   /**
-  * Creates scales for simulations of forces between network's elements.
-  * @param {Object} view Instance of interface's current view.
+  * Creates links.
+  * @param {Object} self Instance of a class.
   */
-  createSimulationsScales(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  createLinks(self) {
+    // Create links.
+    // Select parent.
+    var selection = d3.select(self.linksGroup);
+    // Define function to access data.
+    function access(element, index, nodes) {
+      return self.linksRecords;
+    };
+    // Create children elements by association to data.
+    self.linksMarks = View.createElementsData({
+      parent: selection,
+      type: "polyline",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    self.linksMarks.classed("link", true);
+    self.linksMarks.classed("reactant", function (element, index, nodes) {
+      var link = TopologyView.accessLink({
+        identifier: element.identifier,
+        state: self.state
+      });
+      return link.role === "reactant";
+    });
+    self.linksMarks.classed("product", function (element, index, nodes) {
+      var link = TopologyView.accessLink({
+        identifier: element.identifier,
+        state: self.state
+      });
+      return link.role === "product";
+    });
+    self.linksMarks.classed("replication", function (element, index, nodes) {
+      var link = TopologyView.accessLink({
+        identifier: element.identifier,
+        state: self.state
+      });
+      return link.replication;
+    });
+    self.linksMarks.attr("marker-mid", "url(#link-marker)");
+    // Determine dimensions for representations of network's elements.
+    // Set dimensions of links.
+    self.linksMarks.attr("stroke-width", (self.scaleLinkDimension * 1));
+  }
+  /**
+  * Creates and activates nodes.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateNodes(self) {
+    // Create nodes.
+    // Create groups to contain elements for individual nodes.
+    self.createActivateNodesGroups(self);
+    // Create marks for individual nodes.
+    self.createNodesMarks(self);
+  }
+  /**
+  * Creates and activates nodes's groups.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateNodesGroups(self) {
+    // Create nodes.
+    // Select parent.
+    var selection = d3.select(self.nodesGroup);
+    // Define function to access data.
+    function access(element, index, nodes) {
+      return self.nodesRecords;
+    };
+    // Create children elements by association to data.
+    self.nodesGroups = View.createElementsData({
+      parent: selection,
+      type: "g",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    self
+    .nodesGroups
+    .attr("id", function (element, index, nodes) {
+      return "node-" + element.identifier;
+    })
+    .classed("node", true)
+    .classed("normal", true)
+    .classed("metabolite", function (element, index, nodes) {
+      return element.type === "metabolite";
+    })
+    .classed("reaction", function (element, index, nodes) {
+      return element.type === "reaction";
+    })
+    .classed("replication", function (element, index, nodes) {
+      var node = TopologyView.accessNode({
+        identifier: element.identifier,
+        type: element.type,
+        state: self.state
+      });
+      return node.replication;
+    });
+    // Activate behavior.
+    self.nodesGroups.on("mouseenter", function (element, index, nodes) {
+      // Determine pointer coordinates.
+      var positionX = d3.mouse(self.view)[0];
+      var positionY = d3.mouse(self.view)[1];
+      // Select element.
+      var node = nodes[index];
+      var nodeSelection = d3.select(node);
+      // Call action.
+      nodeSelection.classed("normal", false);
+      nodeSelection.classed("emphasis", true);
+      TopologyView.createTip({
+        identifier: element.identifier,
+        type: element.type,
+        positionX: positionX,
+        positionY: positionY,
+        tip: self.tip,
+        documentReference: self.document,
+        state: self.state
+      });
+    });
+    self.nodesGroups.on("mousemove", function (element, index, nodes) {
+      // Determine pointer coordinates.
+      var positionX = d3.mouse(self.view)[0];
+      var positionY = d3.mouse(self.view)[1];
+      // Call action.
+      TopologyView.createTip({
+        identifier: element.identifier,
+        type: element.type,
+        positionX: positionX,
+        positionY: positionY,
+        tip: self.tip,
+        documentReference: self.document,
+        state: self.state
+      });
+    });
+    self.nodesGroups.on("mouseleave", function (element, index, nodes) {
+      // Select element.
+      var node = nodes[index];
+      var nodeSelection = d3.select(node);
+      // Call action.
+      nodeSelection.classed("emphasis", false);
+      nodeSelection.classed("normal", true);
+      self.tip.clearView(self.tip);
+    });
+  }
+  /**
+  * Creates nodes's marks.
+  * @param {Object} self Instance of a class.
+  */
+  createNodesMarks(self) {
+    // Define function to access data.
+    function access(element, index, nodes) {
+      return [element];
+    };
+    // Create children elements by association to data.
+    var dataElements = self
+    .nodesGroups.selectAll("ellipse, rect").filter(".mark").data(access);
+    dataElements.exit().remove();
+    var novelElements = dataElements
+    .enter().append(function (element, index, nodes) {
+      // Append different types of elements for different types of entities.
+      if (element.type === "metabolite") {
+        // Node represents a metabolite.
+        return self
+        .document
+        .createElementNS("http://www.w3.org/2000/svg", "ellipse");
+      } else if (element.type === "reaction") {
+        // Node represents a reaction.
+        return self
+        .document
+        .createElementNS("http://www.w3.org/2000/svg", "rect");
+      }
+    });
+    var nodesMarks = novelElements.merge(dataElements);
+    // Assign attributes to elements.
+    nodesMarks.classed("mark", true);
+    // Determine dimensions for representations of network's elements.
+    // Set dimensions of metabolites' nodes.
+    self.metaboliteNodeWidth = self.scaleNodeDimension * 1;
+    self.metaboliteNodeHeight = self.scaleNodeDimension * 0.5;
+    var nodesMarksMetabolites = nodesMarks
+    .filter(function (element, index, nodes) {
+      return element.type === "metabolite";
+    });
+    nodesMarksMetabolites.attr("rx", self.metaboliteNodeWidth);
+    nodesMarksMetabolites.attr("ry", self.metaboliteNodeHeight);
+    // Set dimensions of reactions' nodes.
+    self.reactionNodeWidth = self.scaleNodeDimension * 2.5;
+    self.reactionNodeHeight = self.scaleNodeDimension * 0.75;
+    var nodesMarksReactions = nodesMarks
+    .filter(function (element, index, nodes) {
+      return element.type === "reaction";
+    });
+    nodesMarksReactions.attr("width", self.reactionNodeWidth);
+    nodesMarksReactions.attr("height", self.reactionNodeHeight);
+    // Shift reactions' nodes according to their dimensions.
+    nodesMarksReactions.attr("transform", function (element, index, nodes) {
+      var x = - (self.reactionNodeWidth / 2);
+      var y = - (self.reactionNodeHeight / 2);
+      return "translate(" + x + "," + y + ")";
+    });
+  }
+  /**
+  * Creates layout for visual representations of network's elements.
+  * @param {Object} self Instance of a class.
+  */
+  createNetworkLayout(self) {
+    // Create scales for simulation of forces between network's elements.
+    self.createSimulationScales(self);
+    // Create scales for efficiency.
+    self.createEfficiencyScales(self);
+    // Remove nodes' labels.
+    // For efficiency, only include node's labels after simulation completes.
+    self.removeNodesLabels(self);
+    // Initiate force simulation.
+    self.initiateForceSimulation(self);
+  }
+  /**
+  * Creates scales for simulations of forces between network's elements.
+  * @param {Object} self Instance of a class.
+  */
+  createSimulationScales(self) {
     // Simulations of forces between network's elements are computationally
     // expensive.
     // The computational cost varies with the counts of network's elements.
     // To maintain efficiency, vary the rigor of these simulations by the counts
     // of network's elements.
-    // Determine these scales dynamically within script since they depend on
-    // context of use.
     // Define scales' domain on the basis of the count of nodes.
     var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
     // Define scale for alpha decay rate in force simulation.
@@ -1884,7 +3032,7 @@ class TopologyView {
     var alphaDecayScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025]);
+    .range([0.013, 0.013, 0.014, 0.015, 0.017, 0.02, 0.03]);
     // Define scale for velocity decay rate in force simulation.
     // Domain's unit is count of nodes.
     // Range's unit is arbitrary for decay rates.
@@ -1906,20 +3054,15 @@ class TopologyView {
   }
   /**
   * Creates scale for efficiency in the application.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  createEfficiencyScales(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  createEfficiencyScales(self) {
     // Graphical rendering of visual elements for network's elements is
     // computationally expensive
     // The maintenance of efficient interactivity in the application requires
     // restriction on behavior.
     // Greater scale of the network requires more stringent restriction for
     // computational efficiency.
-    // Determine a scale for this efficiency dynamically within script since it
-    // depends on context of use.
     // Define scale's domain on the basis of the count of nodes.
     var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
     // Define scale for intervals at which to restore positions of nodes and
@@ -1958,208 +3101,19 @@ class TopologyView {
     self.scaleLabel = labelScale(self.nodesRecords.length);
   }
   /**
-  * Creates links in a node-link diagram.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createLinks(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create links.
-    // Contain all links within a single group.
-    var dataLinksGroup = self
-    .graphSelection.selectAll("g").data([self.linksRecords]);
-    dataLinksGroup.exit().remove();
-    var novelLinksGroup = dataLinksGroup.enter().append("g");
-    var linksGroup = novelLinksGroup.merge(dataLinksGroup);
-    // Create elements to represent links.
-    var dataLinksMarks = linksGroup
-    .selectAll("polyline").data(function (element, index, nodes) {
-      return element;
-    });
-    dataLinksMarks.exit().remove();
-    var novelLinksMarks = dataLinksMarks.enter().append("polyline");
-    self.linksMarks = novelLinksMarks.merge(dataLinksMarks);
-    // Assign attributes.
-    self.linksMarks.classed("link", true);
-    self.linksMarks.classed("reactant", function (data) {
-      return data.role === "reactant";
-    });
-    self.linksMarks.classed("product", function (data) {
-      return data.role === "product";
-    });
-    self.linksMarks.classed("simplification", function (data) {
-      return data.simplification;
-    });
-    self.linksMarks.attr("marker-mid", "url(#link-marker)");
-    // Determine dimensions for representations of network's elements.
-    // Set dimensions of links.
-    self.linkStrokeWidth = self.scaleLinkDimension * 1;
-    self.linksMarks.attr("stroke-width", self.linkStrokeWidth);
-  }
-  /**
-  * Creates nodes in a node-link diagram.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createNodes(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create nodes.
-    // Contain all nodes within a single group.
-    var dataNodesGroup = self
-    .graphSelection.selectAll("g").data([self.nodesRecords]);
-    dataNodesGroup.exit().remove();
-    var novelNodesGroup = dataNodesGroup.enter().append("g");
-    self.nodesGroup = novelNodesGroup.merge(dataNodesGroup);
-    // Create groups to contain individual nodes' visual representations and
-    // textual annotations.
-    self.createNodesGroups(self);
-    // Create titles for individual nodes.
-    self.createNodesTitles(self);
-    // Create marks for individual nodes.
-    self.createNodesMarks(self);
-    // Remove nodes' labels.
-    // For efficiency, only include node's labels after simulation completes.
-    self.removeNodesLabels(self);
-  }
-  /**
-  * Creates nodes's groups.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createNodesGroups(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create groups to contain individual nodes' visual representations and
-    // textual annotations.
-    var dataNodesGroups = self.nodesGroup
-    .selectAll("g").data(function (element, index, nodes) {
-      return element;
-    });
-    dataNodesGroups.exit().remove();
-    var novelNodesGroups = dataNodesGroups.enter().append("g");
-    self.nodesGroups = novelNodesGroups.merge(dataNodesGroups);
-    // Assign attributes.
-    self
-    .nodesGroups
-    .attr("id", function (element, index, nodes) {
-      return "node-" + element.identifier;
-    })
-    .classed("node", true)
-    .classed("metabolite", function (element, index, nodes) {
-      return element.entity === "metabolite";
-    })
-    .classed("reaction", function (element, index, nodes) {
-      return element.entity === "reaction";
-    })
-    .classed("simplification", function (element, index, nodes) {
-      return element.simplification;
-    });
-  }
-  /**
-  * Creates nodes's titles.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createNodesTitles(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create titles for individual nodes.
-    var dataNodesTitles = self.nodesGroups
-    .selectAll("title").data(function (element, index, nodes) {
-      return [element];
-    });
-    dataNodesTitles.exit().remove();
-    var novelNodesTitles = dataNodesTitles.enter().append("title");
-    var nodesTitles = novelNodesTitles.merge(dataNodesTitles);
-    // Assign attributes.
-    nodesTitles.text(function (element, index, nodes) {
-      return element.name;
-    });
-  }
-  /**
-  * Creates nodes's marks.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createNodesMarks(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create marks for individual nodes.
-    var dataNodesMarks = self
-    .nodesGroups
-    .selectAll("ellipse", "rect")
-    .filter(".mark")
-    .data(function (element, index, nodes) {
-      return [element];
-    });
-    dataNodesMarks.exit().remove();
-    var novelNodesMarks = dataNodesMarks
-    .enter()
-    .append(function (element, index, nodes) {
-      // Append different types of elements for different types of entities.
-      if (element.entity === "metabolite") {
-        // Node represents a metabolite.
-        return self
-        .document
-        .createElementNS("http://www.w3.org/2000/svg", "ellipse");
-      } else if (element.entity === "reaction") {
-        // Node represents a reaction.
-        return self
-        .document
-        .createElementNS("http://www.w3.org/2000/svg", "rect");
-      }
-    });
-    var nodesMarks = novelNodesMarks.merge(dataNodesMarks);
-    // Assign attributes.
-    nodesMarks.classed("mark", true)
-    // Determine dimensions for representations of network's elements.
-    // Set dimensions of metabolites' nodes.
-    self.metaboliteNodeWidth = self.scaleNodeDimension * 1;
-    self.metaboliteNodeHeight = self.scaleNodeDimension * 0.5;
-    var nodesMarksMetabolites = nodesMarks
-    .filter(function (element, index, nodes) {
-      return element.entity === "metabolite";
-    });
-    nodesMarksMetabolites.attr("rx", self.metaboliteNodeWidth);
-    nodesMarksMetabolites.attr("ry", self.metaboliteNodeHeight);
-    // Set dimensions of reactions' nodes.
-    self.reactionNodeWidth = self.scaleNodeDimension * 2.5;
-    self.reactionNodeHeight = self.scaleNodeDimension * 0.75;
-    var nodesMarksReactions = nodesMarks
-    .filter(function (element, index, nodes) {
-      return element.entity === "reaction";
-    });
-    nodesMarksReactions.attr("width", self.reactionNodeWidth);
-    nodesMarksReactions.attr("height", self.reactionNodeHeight);
-    // Shift reactions' nodes according to their dimensions.
-    nodesMarksReactions.attr("transform", function (element, index, nodes) {
-      var x = - (self.reactionNodeWidth / 2);
-      var y = - (self.reactionNodeHeight / 2);
-      return "translate(" + x + "," + y + ")";
-    });
-  }
-  /**
   * Removes nodes' labels from a node-link diagram.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  removeNodesLabels(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  removeNodesLabels(self) {
     // Remove labels for individual nodes.
     self.nodesGroups.selectAll("text").remove();
   }
   /**
   * Initiates a force simulation for placement of network's nodes and links in a
   * node-link diagram.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  initiateForceSimulation(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  initiateForceSimulation(self) {
     // Define parameters of the force simulation.
     self.alpha = 1;
     self.alphaMinimum = 0.001;
@@ -2188,10 +3142,10 @@ class TopologyView {
       .y(self.graphHeight / 2)
     )
     .force("collision", d3.forceCollide()
-      .radius(function (data) {
-        if (data.entity === "metabolite") {
+      .radius(function (element, index, nodes) {
+        if (element.type === "metabolite") {
           return self.metaboliteNodeWidth;
-        } else if (data.entity === "reaction") {
+        } else if (element.type === "reaction") {
           return self.reactionNodeWidth;
         }
       })
@@ -2206,17 +3160,17 @@ class TopologyView {
     )
     .force("link", d3.forceLink()
       .links(self.linksRecords)
-      .id(function (data) {
-        return data.identifier;
+      .id(function (element, index, nodes) {
+        return element.identifier;
       })
-      .distance(function (data) {
+      .distance(function (element, index, nodes) {
         // Determine whether the link represents relation between nodes that
         // have designations for simplification.
-        if (data.simplification) {
-          // Link has designation for simplification.
-          return self.metaboliteNodeWidth;
+        if (element.replication) {
+          // Link is for a replicate node.
+          return (self.metaboliteNodeWidth * 0.5);
         } else {
-          // Link does not have designation for simplification.
+          // Link is not for a replicate node.
           return (1.3 * (self.reactionNodeWidth + self.metaboliteNodeWidth));
         }
       })
@@ -2242,12 +3196,9 @@ class TopologyView {
   }
   /**
   * Initiates a monitor of force simulation's progress.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  initiateForceSimulationProgress(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  initiateForceSimulationProgress(self) {
     // Compute an estimate of the simulation's iterations.
     self.estimateIterations = self.computeSimulationIterations(self);
     // Initiate counter for simulation's iterations.
@@ -2255,12 +3206,9 @@ class TopologyView {
   }
   /**
   * Computes an estimate of iterations for a simulation.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  computeSimulationIterations(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  computeSimulationIterations(self) {
     return (
       (Math.log10(self.alphaMinimum)) /
       (Math.log10(self.alpha - self.scaleAlphaDecay))
@@ -2268,19 +3216,16 @@ class TopologyView {
   }
   /**
   * Restores a monitor of force simulation's progress.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  restoreForceSimulationProgress(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  restoreForceSimulationProgress(self) {
     // Increment count of simulation's iterations.
     self.simulationCounter += 1;
     // Report simulation's progress.
     var percentage = Math
     .round((self.simulationCounter / self.estimateIterations) * 100);
     if (percentage % 10 === 0) {
-      console.log("simulation: " + percentage + "%");
+      //console.log("simulation: " + percentage + "%");
     }
     // Restore positions of nodes and links periodically throughout the
     // simulation.
@@ -2291,12 +3236,9 @@ class TopologyView {
   }
   /**
   * Completes tasks dependent on force simulation.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  completeForceSimulation(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  completeForceSimulation(self) {
     // Restore and refine network's representation.
     self.restoreNodesPositions(self);
     self.restoreLinksPositions(self);
@@ -2306,18 +3248,18 @@ class TopologyView {
       "network representation complete... " +
       self.simulationCounter + " iterations"
     );
-    console.log(message);
-    window.alert(message);
+    //console.log(message);
+    //window.alert(message);
+    // Change the novelty of the network's topology to indicate unnecessity of
+    // determination of layout until the network changes.
+    Action.changeTopologyNovelty(self.state);
   }
   /**
   * Restores positions of nodes' visual representations according to results of
   * force simulation.
-  * @param {Object} view Instance of interface's current view.
+  * @param {Object} self Instance of a class.
   */
-  restoreNodesPositions(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  restoreNodesPositions(self) {
     // Set radius.
     var radius = self.reactionNodeWidth;
     // Restore positions of nodes' marks according to results of simulation.
@@ -2334,22 +3276,175 @@ class TopologyView {
     });
   }
   /**
-  * Restores links' positions according to results of force simulation.
-  * @param {Object} view Instance of interface's current view.
+  * Refines the representations of nodes and links.
+  * @param {Object} self Instance of a class.
   */
-  restoreLinksPositions(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
+  refineNodesLinksRepresentations(self) {
+    // Determine orientations of reaction's nodes.
+    self.determineReactionsNodesOrientations(self);
+    // Represent reactions' directionalities on their nodes.
+    self.createReactionsNodesDirectionalMarks(self);
+    // Create nodes' labels.
+    if (self.scaleLabel) {
+      self.createNodesLabels(self);
+    }
+    // Represent reactions' directionalities in links.
+    self.restoreLinksPositions(self);
+  }
+  /**
+  * Determines the orientations of reactions' nodes relative to sides for
+  * reactants and products.
+  * @param {Object} self Instance of a class.
+  */
+  determineReactionsNodesOrientations(self) {
+    // Separate records of nodes for metabolites and reactions with access to
+    // positions from force simulation.
+    var metabolitesNodes = self.nodesRecords.filter(function (record) {
+      return record.type === "metabolite";
+    });
+    var reactionsNodes = self.nodesRecords.filter(function (record) {
+      return record.type === "reaction";
+    });
+    // Iterate on records for reactions' nodes with access to positions from
+    // force simulation.
+    reactionsNodes.forEach(function (reactionNode) {
+      // Access information.
+      var node = self.state.networkNodesReactions[reactionNode.identifier];
+      var candidate = self.state.reactionsCandidates[node.candidate];
+      var reaction = self.state.reactions[candidate.reaction];
+      // Collect identifiers of metabolites' nodes that surround the reaction's
+      // node.
+      var neighbors = Network.collectNeighborsNodes({
+        focus: reactionNode.identifier,
+        links: self.linksRecords
+      });
+      // Determine the roles in which metabolites participate in the reaction.
+      // Reaction's store information about metabolites' participation.
+      // Metabolites can participate in multiple reactions.
+      var neighborsRoles = TopologyView.sortMetabolitesNodesReactionRoles({
+        identifiers: neighbors,
+        participants: reaction.participants,
+        networkNodesmetabolites: self.state.networkNodesMetabolites,
+        metabolitesCandidates: self.state.metabolitesCandidates
+      });
+      // Collect records for nodes of metabolites that participate in the
+      // reaction in each role.
+      var reactantsNodes = General.filterArrayRecordsByIdentifier(
+        neighborsRoles.reactants, metabolitesNodes
+      );
+      var productsNodes = General.filterArrayRecordsByIdentifier(
+        neighborsRoles.products, metabolitesNodes
+      );
+      // Determine orientation of reaction's node.
+      // Include designations of orientation in record for reaction's node.
+      var orientations = TopologyView.determineReactionNodeOrientation({
+        reactionNode: reactionNode,
+        reactantsNodes: reactantsNodes,
+        productsNodes: productsNodes,
+        graphHeight: self.graphHeight
+      });
+      // Include information about orientation in record for reaction's node.
+      // Modify current record to preserve references from existing elements.
+      reactionNode.left = orientations.left;
+      reactionNode.right = orientations.right;
+    });
+  }
+  /**
+  * Creates representations of reactions' directions on their nodes.
+  * @param {Object} self Instance of a class.
+  */
+  createReactionsNodesDirectionalMarks(self) {
+    // Select groups of reactions' nodes.
+    var nodesGroupsReactions = self
+    .nodesGroups.filter(function (element, index, nodes) {
+      return element.type === "reaction";
+    });
+    // Create directional marks.
+    var leftDirectionalMarks = nodesGroupsReactions
+    .append(function (element, index, nodes) {
+      // Append different types of elements for different properties.
+      var type = TopologyView.determineDirectionalMarkType({
+        side: "left",
+        reactionNode: element,
+        networkNodesReactions: self.state.networkNodesReactions,
+        reactionsCandidates: self.state.reactionsCandidates,
+        reactions: self.state.reactions
+      });
+      return self.document.createElementNS("http://www.w3.org/2000/svg", type);
+    });
+    var rightDirectionalMarks = nodesGroupsReactions
+    .append(function (element, index, nodes) {
+      // Append different types of elements for different properties.
+      var type = TopologyView.determineDirectionalMarkType({
+        side: "right",
+        reactionNode: element,
+        networkNodesReactions: self.state.networkNodesReactions,
+        reactionsCandidates: self.state.reactionsCandidates,
+        reactions: self.state.reactions
+      });
+      return self.document.createElementNS("http://www.w3.org/2000/svg", type);
+    });
+    // Set attributes of directional marks.
+    // Determine dimensions for directional marks.
+    var width = self.reactionNodeWidth / 7;
+    var height = self.reactionNodeHeight;
+    leftDirectionalMarks.classed("direction", true);
+    rightDirectionalMarks.classed("direction", true);
+    leftDirectionalMarks
+    .filter("polygon")
+    .attr("points", function (element, index, nodes) {
+      return General.createIsoscelesTrianglePoints({
+        base: height,
+        altitude: width,
+        orientation: "left"
+      });
+    });
+    rightDirectionalMarks
+    .filter("polygon")
+    .attr("points", function (element, index, nodes) {
+      return General.createIsoscelesTrianglePoints({
+        base: height,
+        altitude: width,
+        orientation: "right"
+      });
+    });
+    leftDirectionalMarks
+    .filter("rect")
+    .attr("height", height)
+    .attr("width", width);
+    rightDirectionalMarks
+    .filter("rect")
+    .attr("height", height)
+    .attr("width", width);
+    leftDirectionalMarks.attr("transform", function (data) {
+      var x = - (self.reactionNodeWidth / 2);
+      var y = - (height / 2);
+      return "translate(" + x + "," + y + ")";
+    });
+    rightDirectionalMarks.attr("transform", function (data) {
+      var x = ((self.reactionNodeWidth / 2) - width);
+      var y = - (height / 2);
+      return "translate(" + x + "," + y + ")";
+    });
+  }
+  /**
+  * Restores links' positions according to results of force simulation.
+  * @param {Object} self Instance of a class.
+  */
+  restoreLinksPositions(self) {
     // Restore positions of links according to results of simulation.
     // D3's procedure for force simulation copies references to records for
     // source and target nodes within records for links.
-    self.linksMarks.attr("points", function (data) {
+    self.linksMarks.attr("points", function (element, index, nodes) {
       // Determine positions of link's termini.
+      var link = TopologyView.accessLink({
+        identifier: element.identifier,
+        state: self.state
+      });
       var termini = TopologyView.determineLinkTermini({
-        role: data.role,
-        source: data.source,
-        target: data.target,
+        role: link.role,
+        source: element.source,
+        target: element.target,
         width: self.reactionNodeWidth
       });
       // Create points for vertices at source, center, and target of polyline.
@@ -2359,6 +3454,418 @@ class TopologyView {
       });
       return points;
     });
+  }
+  /**
+  * Creates labels for nodes in a node-link diagram.
+  * @param {Object} self Instance of a class.
+  */
+  createNodesLabels(self) {
+    // Define function to access data.
+    function access(element, index, nodes) {
+      return [element];
+    };
+    // Create children elements by association to data.
+    var nodesLabels = View.createElementsData({
+      parent: self.nodesGroups,
+      type: "text",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    nodesLabels.classed("label", true);
+    nodesLabels.text(function (element, index, nodes) {
+      if (element.type === "metabolite") {
+        // Access information.
+        var node = self.state.networkNodesMetabolites[element.identifier];
+        var candidate = self.state.metabolitesCandidates[node.candidate];
+        var name = candidate.name;
+      } else if (element.type === "reaction") {
+        // Access information.
+        var node = self.state.networkNodesReactions[element.identifier];
+        var candidate = self.state.reactionsCandidates[node.candidate];
+        var name = candidate.name;
+      }
+      return (name.slice(0, 5) + "...");
+    });
+    // Determine size of font for annotations of network's elements.
+    nodesLabels.attr("font-size", self.scaleFont + "px");
+  }
+  /**
+  * Accesses a link.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {Object} parameters.state Application's state.
+  * @returns {string} Name of the value of the attribute.
+  */
+  static accessLink({identifier, state} = {}) {
+    return state.networkLinks[identifier];
+  }
+  /**
+  * Accesses a node.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of entity, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  * @returns {string} Name of the value of the attribute.
+  */
+  static accessNode({identifier, type, state} = {}) {
+    if (type === "metabolite") {
+      return state.networkNodesMetabolites[identifier];
+    } else if (type === "reaction") {
+      return state.networkNodesReactions[identifier];
+    }
+  }
+  /**
+  * Creates tip.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of entity, metabolite or reaction.
+  * @param {number} parameters.positionX Pointer's horizontal coordinate.
+  * @param {number} parameters.positionY Pointer's vertical coordinate.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  */
+  static createTip({identifier, type, positionX, positionY, tip, documentReference, state} = {}) {
+    // Create summary for tip.
+    // Determine the type of entity.
+    if (type === "metabolite") {
+      var summary = TopologyView.createTipSummaryMetabolite({
+        identifier: identifier,
+        documentReference: documentReference,
+        state: state
+      });
+    } else if (type === "reaction") {
+      var summary = TopologyView.createTipSummaryReaction({
+        identifier: identifier,
+        documentReference: documentReference,
+        state: state
+      });
+    }
+    // Create tip.
+    tip.restoreView({
+      visible: true,
+      positionX: positionX,
+      positionY: positionY,
+      summary: summary,
+      self: tip
+    });
+  }
+  /**
+  * Creates tip's summary for a metabolite.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  */
+  static createTipSummaryMetabolite({identifier, documentReference, state} = {}) {
+    // Access information.
+    var node = state.networkNodesMetabolites[identifier];
+    var candidate = state.metabolitesCandidates[node.candidate];
+    var metabolite = state.metabolites[candidate.metabolite];
+    var name = metabolite.name;
+    var formula = metabolite.formula;
+    var charge = metabolite.charge;
+    var compartment = state.compartments[candidate.compartment];
+    // Compile information.
+    var information = [
+      {title: "name:", value: name},
+      {title: "formula:", value: formula},
+      {title: "charge:", value: charge},
+      {title: "compartment:", value: compartment}
+    ];
+    // Create table.
+    // Select parent.
+    var table = d3.select("body").append("table");
+    // Define function to access data.
+    function accessOne() {
+      return information;
+    };
+    // Create children elements by association to data.
+    var rows = View.createElementsData({
+      parent: table,
+      type: "tr",
+      accessor: accessOne
+    });
+    // Define function to access data.
+    function accessTwo(element, index, nodes) {
+      // Organize data.
+      return [].concat(element.title, element.value);
+    };
+    // Create children elements by association to data.
+    var cells = View.createElementsData({
+      parent: rows,
+      type: "td",
+      accessor: accessTwo
+    });
+    // Assign attributes to elements.
+    cells.text(function (element, index, nodes) {
+      return element;
+    });
+    // Return reference to element.
+    return table.node();
+  }
+  /**
+  * Creates tip's summary for a reaction.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  */
+  static createTipSummaryReaction({identifier, documentReference, state} = {}) {
+    // Access information.
+    var node = state.networkNodesReactions[identifier];
+    var candidate = state.reactionsCandidates[node.candidate];
+    var reaction = state.reactions[candidate.reaction];
+    var replicates = [].concat(reaction.identifier, candidate.replicates);
+    // Collect consensus properties of replicates.
+    var properties = Evaluation.collectReplicateReactionsConsensusProperties({
+      identifiers: replicates,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.filterReactionsSets,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    // Compile information.
+    var information = [
+      {title: "name:", value: properties.name},
+      {title: "reactants:", value: properties.reactants.join(", ")},
+      {title: "products:", value: properties.products.join(", ")},
+      {title: "reversibility:", value: properties.reversibility},
+      {title: "conversion:", value: properties.conversion},
+      {title: "dispersal:", value: properties.dispersal},
+      {title: "transport:", value: properties.transport},
+      {title: "compartments:", value: properties.compartments.join(", ")},
+      {title: "processes:", value: properties.processes.join(", ")},
+      {title: "genes:", value: properties.genes.join(", ")},
+    ];
+    // Create table.
+    // Select parent.
+    var table = d3.select("body").append("table");
+    // Define function to access data.
+    function accessOne() {
+      return information;
+    };
+    // Create children elements by association to data.
+    var rows = View.createElementsData({
+      parent: table,
+      type: "tr",
+      accessor: accessOne
+    });
+    // Define function to access data.
+    function accessTwo(element, index, nodes) {
+      // Organize data.
+      return [].concat(element.title, element.value);
+    };
+    // Create children elements by association to data.
+    var cells = View.createElementsData({
+      parent: rows,
+      type: "td",
+      accessor: accessTwo
+    });
+    // Assign attributes to elements.
+    cells.text(function (element, index, nodes) {
+      return element;
+    });
+    // Return reference to element.
+    return table.node();
+  }
+  /**
+  * Sorts identifiers of nodes for metabolites by their roles in a reaction.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.identifiers Identifiers of nodes for
+  * metabolites.
+  * @param {Array<Object<string>>} parameters.participants Information about
+  * metabolites' and compartments' participation in a reaction.
+  * @param {Object} parameters.networkNodesMetabolites Information about
+  * network's nodes for metabolites.
+  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * candidate metabolites.
+  * @returns {Object<Array<string>>} Identifiers of nodes for metabolites that
+  * participate in a reaction either as reactants or products.
+  */
+  static sortMetabolitesNodesReactionRoles({identifiers, participants, networkNodesMetabolites, metabolitesCandidates} = {}) {
+    // Initialize a collection of metabolites' nodes by roles in a reaction.
+    var initialCollection = {
+      reactants: [],
+      products: []
+    };
+    // Iterate on identifiers for metabolites' nodes.
+    return identifiers.reduce(function (collection, identifier) {
+      // Access information.
+      var node = networkNodesMetabolites[identifier];
+      var candidate = metabolitesCandidates[node.candidate];
+      // Determine details of node's relation to the reaction.
+      if (candidate.compartment) {
+        // Node represents compartmentalization.
+        var matches = Extraction.filterReactionParticipants({
+          criteria: {
+            metabolites: [candidate.metabolite],
+            compartments: [candidate.compartment]
+          },
+          participants: participants
+        });
+      } else {
+        // Node does not represent compartmentalization.
+        var matches = Extraction.filterReactionParticipants({
+          criteria: {metabolites: [candidate.metabolite]},
+          participants: participants
+        });
+      }
+      var roles = General.collectValueFromObjects("role", matches);
+      // Include identifier of metabolite's node in the collection according to
+      // its role in the reaction.
+      if (
+        roles.includes("reactant") && !collection.reactants.includes(identifier)
+      ) {
+        var reactants = [].concat(collection.reactants, identifier);
+      } else {
+        var reactants = collection.reactants;
+      }
+      if (
+        roles.includes("product") && !collection.products.includes(identifier)
+      ) {
+        var products = [].concat(collection.products, identifier);
+      } else {
+        var products = collection.products;
+      }
+      var currentCollection = {
+        reactants: reactants,
+        products: products
+      };
+      return currentCollection;
+    }, initialCollection);
+  }
+  /**
+  * Determines the orientation of a reaction's node relative to sides for
+  * reactants and products.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.reactionNode Record for node for a reaction.
+  * @param {Array<Object>} parameters.reactantsNodes Records of nodes
+  * for metabolites that participate as reactants in a reaction.
+  * @param {Array<Object>} parameters.productsNodes Records of nodes
+  * for metabolites that participate as products in a reaction.
+  * @param {number} parameters.graphHeight Vertical dimension of graphical
+  * container.
+  * @returns {Object<string>} Record with indicators of sides of reaction's node
+  * for reactants and products.
+  */
+  static determineReactionNodeOrientation({reactionNode, reactantsNodes, productsNodes, graphHeight} = {}) {
+    // Extract coordinates for position of reaction's node.
+    var reactionCoordinates = General.extractNodeCoordinates(reactionNode);
+    // Extract coordinates of positions of nodes for metabolites that
+    // participate in reaction as reactants and products.
+    var reactantsCoordinates = General.extractNodesCoordinates(reactantsNodes);
+    var productsCoordinates = General.extractNodesCoordinates(productsNodes);
+    // Convert coordinates of nodes for metabolites that participate in reaction
+    // as reactants and products.
+    var reactantsRadialCoordinates = General.convertNormalizeRadialCoordinates({
+      pointsCoordinates: reactantsCoordinates,
+      originCoordinates: reactionCoordinates,
+      graphHeight: graphHeight
+    });
+    var productsRadialCoordinates = General.convertNormalizeRadialCoordinates({
+      pointsCoordinates: productsCoordinates,
+      originCoordinates: reactionCoordinates,
+      graphHeight: graphHeight
+    });
+    // Determine mean of horizontal coordinates for reactants and products.
+    var reactantsXCoordinates = General
+    .collectValueFromObjects("x", reactantsRadialCoordinates);
+    var reactantsMeanX = General.computeElementsMean(reactantsXCoordinates);
+    var productsXCoordinates = General
+    .collectValueFromObjects("x", productsRadialCoordinates);
+    var productsMeanX = General.computeElementsMean(productsXCoordinates);
+    // Determine orientation of reaction's node.
+    if (reactantsMeanX < productsMeanX) {
+      // Reactants dominate left side of reaction's node.
+      var orientation = {
+        left: "reactant",
+        right: "product"
+      };
+    } else if (productsMeanX < reactantsMeanX) {
+      // Products dominate left side of reaction's node.
+      var orientation = {
+        left: "product",
+        right: "reactant"
+      };
+    } else {
+      // Neither reactants nor products dominate.
+      // Prioritize orientation with reactants on left and products on right.
+      var orientation = {
+        left: "reactant",
+        right: "product"
+      };
+    }
+    // Return orientation of reaction's node.
+    return orientation;
+  }
+  /**
+  * Determines the type of graphical element to represent the direction of a
+  * reaction's node.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.side Side of reaction's node, left or right.
+  * @param {Object} parameters.reactionNode Record of a reaction's node.
+  * @param {Object} parameters.networkNodesReactions Information about network's
+  * nodes for reactions.
+  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @returns {string} Type of graphical element to represet direction of a
+  * reaction's node.
+  */
+  static determineDirectionalMarkType({side, reactionNode, networkNodesReactions, reactionsCandidates, reactions} = {}) {
+    // Access information.
+    var node = networkNodesReactions[reactionNode.identifier];
+    var candidate = reactionsCandidates[node.candidate];
+    var reaction = reactions[candidate.reaction];
+    var direction = TopologyView.determineReactionDirection({
+      left: reactionNode.left,
+      right: reactionNode.right,
+      reversibility: reaction.reversibility
+    });
+    if (direction === "both") {
+      // Side of reaction's node needs directional marker.
+      var type = "polygon";
+    } else if (side === direction) {
+      // Side of reaction's node needs directional marker.
+      var type = "polygon";
+    } else if (side !== direction) {
+      // Side of reaction's node does not need directional marker.
+      var type = "rect";
+    }
+    return type;
+  }
+  /**
+  * Determines the direction of a reaction's node.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.left Role in reaction to represent on left side
+  * of reaction's node.
+  * @param {string} parameters.right Role in reaction to represent on right side
+  * of reaction's node.
+  * @param {boolean} parameters.reversibility Whether reaction is reversible.
+  * @returns {string} Indicator of direction of a reaction's node, left, right,
+  * or both.
+  */
+  static determineReactionDirection({left, right, reversibility} = {}) {
+    // Determine whether reaction is reversible.
+    if (reversibility) {
+      // Reaction is reversible.
+      return "both";
+    } else {
+      // Reaction is irreversible.
+      // Determine reaction's direction.
+      if (left === "reactant" && right === "product") {
+        // Reaction's direction is to the right.
+        return "right";
+      } else if (left === "product" && right === "reactant") {
+        // Reaction's direction is to the left.
+        return "left";
+      }
+    }
   }
   /**
   * Determines the coordinates of termini for a link.
@@ -2411,7 +3918,7 @@ class TopologyView {
   */
   static determineLinkTerminusHorizontalShift({role, terminus, shift} = {}) {
     // Determine whether link's terminus connects to a reaction's node.
-    if (terminus.entity === "reaction") {
+    if (terminus.type === "reaction") {
       // Link's terminus connects to a reaction's node.
       // Determine whether reaction's node has an orientation.
       if (terminus.left && terminus.right) {
@@ -2437,363 +3944,9 @@ class TopologyView {
       return 0;
     }
   }
-  /**
-  * Refines the representations of nodes and links.
-  * @param {Object} view Instance of interface's current view.
-  */
-  refineNodesLinksRepresentations(view) {
-    // Set reference to class' current instance to transfer across changes in
-    // scope.
-    var self = view;
-    // Determine orientations of reaction's nodes.
-    self.determineReactionsNodesOrientations(self);
-    // Represent reactions' directionalities on their nodes.
-    self.createReactionsNodesDirectionalMarks(self);
-    // Create nodes' labels.
-    if (self.scaleLabel) {
-      self.createNodesLabels(self);
-    }
-    // Represent reactions' directionalities in links.
-    self.restoreLinksPositions(self);
-  }
-  /**
-  * Determines the orientations of reactions' nodes relative to sides for
-  * reactants and products.
-  * @param {Object} view Instance of interface's current view.
-  */
-  determineReactionsNodesOrientations(view) {
-    // Set reference to class' current instance to transfer across changes in
-    // scope.
-    var self = view;
-    // Separate records of nodes for metabolites and reactions with access to
-    // positions from force simulation.
-    var metabolitesNodes = self.nodesRecords.filter(function (record) {
-      return record.entity === "metabolite";
-    });
-    var reactionsNodes = self.nodesRecords.filter(function (record) {
-      return record.entity === "reaction";
-    });
-    // Iterate on records for reactions' nodes with access to positions from
-    // force simulation.
-    reactionsNodes.forEach(function (reactionNode) {
-      // Collect identifiers of metabolites' nodes that surround the reaction's
-      // node.
-      // Use original records without access to positions from force simulation.
-      var neighbors = Network.collectNeighborsNodes({
-        focus: reactionNode.identifier,
-        links: self.model.currentLinks
-      });
-      // Determine the roles in which metabolites participate in the reaction.
-      // Reaction's store information about metabolites' participation.
-      // Metabolites can participate in multiple reactions.
-      var neighborsRoles = TopologyView.sortMetabolitesNodesReactionRoles({
-        nodesIdentifiers: neighbors,
-        participants: reactionNode.participants,
-        metabolitesNodes: self.model.currentMetabolitesNodes
-      });
-      // Collect records for nodes of metabolites that participate in the
-      // reaction in each role.
-      var reactantsNodes = Network
-      .collectElementsRecords(neighborsRoles.reactants, metabolitesNodes);
-      var productsNodes = Network
-      .collectElementsRecords(neighborsRoles.products, metabolitesNodes);
-      // Determine orientation of reaction's node.
-      // Include designations of orientation in record for reaction's node.
-      var orientations = TopologyView.determineReactionNodeOrientation({
-        reactionNode: reactionNode,
-        reactantsNodes: reactantsNodes,
-        productsNodes: productsNodes,
-        graphHeight: self.graphHeight
-      });
-      // Include information about orientation in record for reaction's node.
-      // Modify current record to preserve references from existing elements.
-      reactionNode.left = orientations.left;
-      reactionNode.right = orientations.right;
-    });
-  }
-  /**
-  * Sorts identifiers of nodes for metabolites by their roles in a reaction.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.nodesIdentifiers Identifiers of nodes for
-  * metabolites that participate in a reaction.
-  * @param {Array<Object<string>>} parameters.participants Information about
-  * metabolites' participation in a reaction.
-  * @param {Array<Object>} parameters.metabolitesNodes Records for network's
-  * nodes for metabolites.
-  * @returns {Object<Array<string>>} Identifiers of nodes for metabolites that
-  * participate in a reaction either as reactants or products.
-  */
-  static sortMetabolitesNodesReactionRoles({
-    nodesIdentifiers, participants, metabolitesNodes
-  } = {}) {
-    // Initialize a collection of metabolites' nodes by roles in a reaction.
-    var initialCollection = {
-      reactants: [],
-      products: []
-    };
-    // Iterate on identifiers for metabolites' nodes.
-    var nodesRoles = nodesIdentifiers
-    .reduce(function (collection, nodeIdentifier) {
-      // Access record of node for metabolite.
-      var nodeRecord = Network
-      .accessElementRecord(nodeIdentifier, metabolitesNodes);
-      // Determine details of node's relation to the reaction.
-      // TODO: Some problem here with general network.
-      if (nodeRecord.compartment) {
-        // Node represents compartmentalization.
-        var matches = Extraction.filterReactionParticipants({
-          criteria: {
-            metabolites: [nodeRecord.metabolite],
-            compartments: [nodeRecord.compartment]
-          },
-          participants: participants
-        });
-      } else {
-        // Node does not represent compartmentalization.
-        var matches = Extraction.filterReactionParticipants({
-          criteria: {metabolites: [nodeRecord.metabolite]},
-          participants: participants
-        });
-      }
-      var roles = General.collectValueFromObjects("role", matches);
-      // Include identifier of metabolite's node in the collection according to
-      // its role in the reaction.
-      if (roles.includes("reactant")) {
-        var reactants = [].concat(collection.reactants, nodeRecord.identifier);
-      } else {
-        var reactants = collection.reactants.slice();
-      }
-      if (roles.includes("product")) {
-        var products = [].concat(collection.products, nodeRecord.identifier);
-      } else {
-        var products = collection.products.slice();
-      }
-      var currentCollection = {
-        reactants: reactants,
-        products: products
-      };
-      return currentCollection;
-    }, initialCollection);
-    // Return identifiers of unique nodes by roles.
-    return {
-      reactants: General.collectUniqueElements(nodesRoles.reactants),
-      products: General.collectUniqueElements(nodesRoles.products)
-    };
-  }
-  /**
-  * Determines the orientation of a reaction's node relative to sides for
-  * reactants and products.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.reactionNode Record for node for a reaction.
-  * @param {Array<Object>} parameters.reactantsNodes Records of nodes
-  * for metabolites that participate as reactants in a reaction.
-  * @param {Array<Object>} parameters.productsNodes Records of nodes
-  * for metabolites that participate as products in a reaction.
-  * @param {number} parameters.graphHeight Vertical dimension of graphical
-  * container.
-  * @returns {Object<string>} Record with indicators of sides of reaction's node
-  * for reactants and products.
-  */
-  static determineReactionNodeOrientation({
-    reactionNode,
-    reactantsNodes,
-    productsNodes,
-    graphHeight
-  } = {}) {
-    // Extract coordinates for position of reaction's node.
-    var reactionCoordinates = General.extractNodeCoordinates(reactionNode);
-    // Extract coordinates of positions of nodes for metabolites that
-    // participate in reaction as reactants and products.
-    var reactantsCoordinates = General.extractNodesCoordinates(reactantsNodes);
-    var productsCoordinates = General.extractNodesCoordinates(productsNodes);
-    // Convert coordinates of nodes for metabolites that participate in reaction
-    // as reactants and products.
-    var reactantsRadialCoordinates = General.convertNormalizeRadialCoordinates({
-      pointsCoordinates: reactantsCoordinates,
-      originCoordinates: reactionCoordinates,
-      graphHeight: graphHeight
-    });
-    var productsRadialCoordinates = General.convertNormalizeRadialCoordinates({
-      pointsCoordinates: productsCoordinates,
-      originCoordinates: reactionCoordinates,
-      graphHeight: graphHeight
-    });
-    // Determine mean of horizontal coordinates for reactants and products.
-    var reactantsXCoordinates = General
-    .collectValueFromObjects("x", reactantsRadialCoordinates);
-    var reactantsMeanX = General.computeElementsMean(reactantsXCoordinates);
-    var productsXCoordinates = General
-    .collectValueFromObjects("x", productsRadialCoordinates);
-    var productsMeanX = General.computeElementsMean(productsXCoordinates);
-    // Determine orientation of reaction's node.
-    if (reactantsMeanX < productsMeanX) {
-      // Reactants dominate left side of reaction's node.
-      var orientation = {
-        left: "reactant",
-        right: "product"
-      };
-    } else if (productsMeanX < reactantsMeanX) {
-      // Products dominate left side of reaction's node.
-      var orientation = {
-        left: "product",
-        right: "reactant"
-      };
-    } else {
-      // Neither reactants nor products dominate.
-      // Prioritize orientation with reactants on left and products on right.
-      var orientation = {
-        left: "reactant",
-        right: "product"
-      };
-    }
-    // Return orientation of reaction's node.
-    return orientation;
-  }
-  /**
-  * Creates representations of reactions' directions on their nodes.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createReactionsNodesDirectionalMarks(view) {
-    // Set reference to class' current instance to transfer across changes in
-    // scope.
-    var self = view;
-    // Select groups of reactions' nodes.
-    var nodesReactionsGroups = self
-    .nodesGroups.filter(function (element, index, nodes) {
-      return element.entity === "reaction";
-    });
-    var leftDirectionalMarks = nodesReactionsGroups
-    .append(function (element, index, nodes) {
-      // Append different types of elements for different properties.
-      var type = TopologyView.determineDirectionalMarkType("left", element);
-      return self.document.createElementNS("http://www.w3.org/2000/svg", type);
-    });
-    var rightDirectionalMarks = nodesReactionsGroups
-    .append(function (element, index, nodes) {
-      // Append different types of elements for different properties.
-      var type = TopologyView.determineDirectionalMarkType("right", element);
-      return self.document.createElementNS("http://www.w3.org/2000/svg", type);
-    });
-    // Set attributes of directional marks.
-    // Determine dimensions for directional marks.
-    var width = self.reactionNodeWidth / 7;
-    var height = self.reactionNodeHeight;
-    leftDirectionalMarks.classed("direction", true);
-    rightDirectionalMarks.classed("direction", true);
-    leftDirectionalMarks
-    .filter("polygon")
-    .attr("points", function (data) {
-      return General.createHorizontalIsoscelesTrianglePoints({
-        base: height,
-        altitude: width,
-        direction: "left"
-      });
-    });
-    rightDirectionalMarks
-    .filter("polygon")
-    .attr("points", function (data) {
-      return General.createHorizontalIsoscelesTrianglePoints({
-        base: height,
-        altitude: width,
-        direction: "right"
-      });
-    });
-    leftDirectionalMarks
-    .filter("rect")
-    .attr("height", height)
-    .attr("width", width);
-    rightDirectionalMarks
-    .filter("rect")
-    .attr("height", height)
-    .attr("width", width);
-    leftDirectionalMarks.attr("transform", function (data) {
-      var x = - (self.reactionNodeWidth / 2);
-      var y = - (height / 2);
-      return "translate(" + x + "," + y + ")";
-    });
-    rightDirectionalMarks.attr("transform", function (data) {
-      var x = ((self.reactionNodeWidth / 2) - width);
-      var y = - (height / 2);
-      return "translate(" + x + "," + y + ")";
-    });
-  }
-  /**
-  * Determines the type of graphical element to represent the direction of a
-  * reaction's node.
-  * @param {string} side Side of reaction's node, left or right.
-  * @param {Object} reaction Record for a reaction with information about its
-  * node's orientation.
-  * @returns {string} Type of graphical element to represet direction of a
-  * reaction's node.
-  */
-  static determineDirectionalMarkType(side, reaction) {
-    var direction = TopologyView.determineReactionDirection({
-      left: reaction.left,
-      right: reaction.right,
-      reversibility: reaction.reversibility
-    });
-    if (direction === "both") {
-      // Side of reaction's node needs directional marker.
-      var type = "polygon";
-    } else if (side === direction) {
-      // Side of reaction's node needs directional marker.
-      var type = "polygon";
-    } else if (side !== direction) {
-      // Side of reaction's node does not need directional marker.
-      var type = "rect";
-    }
-    return type;
-  }
-  /**
-  * Determines the direction of a reaction's node.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.left Role in reaction to represent on left side
-  * of reaction's node.
-  * @param {string} parameters.right Role in reaction to represent on right side
-  * of reaction's node.
-  * @param {boolean} parameters.reversibility Whether reaction is reversible.
-  * @returns {string} Indicator of direction of a reaction's node, left, right,
-  * or both.
-  */
-  static determineReactionDirection({left, right, reversibility} = {}) {
-    // Determine whether reaction is reversible.
-    if (reversibility) {
-      // Reaction is reversible.
-      return "both";
-    } else {
-      // Reaction is irreversible.
-      // Determine reaction's direction.
-      if (left === "reactant" && right === "product") {
-        // Reaction's direction is to the right.
-        return "right";
-      } else if (left === "product" && right === "reactant") {
-        // Reaction's direction is to the left.
-        return "left";
-      }
-    }
-  }
-  /**
-  * Creates labels for nodes in a node-link diagram.
-  * @param {Object} view Instance of interface's current view.
-  */
-  createNodesLabels(view) {
-    // Set reference to class' current instance to transfer across changes
-    // in scope.
-    var self = view;
-    // Create labels for individual nodes.
-    var dataNodesLabels = self.nodesGroups
-    .selectAll("text").data(function (element, index, nodes) {
-      return [element];
-    });
-    dataNodesLabels.exit().remove();
-    var novelNodesLabels = dataNodesLabels.enter().append("text");
-    var nodesLabels = novelNodesLabels.merge(dataNodesLabels);
-    // Assign attributes.
-    nodesLabels.text(function (data) {
-      return data.name.slice(0, 5) + "...";
-    });
-    nodesLabels.classed("label", true);
-    // Determine size of font for annotations of network's elements.
-    nodesLabels.attr("font-size", self.scaleFont + "px");
-  }
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////

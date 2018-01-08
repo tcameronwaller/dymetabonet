@@ -1,19 +1,74 @@
+/*
+Profondeur supports visual exploration and analysis of metabolic networks.
+Copyright (C) 2017 Thomas Cameron Waller
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program.
+If not, see <http://www.gnu.org/licenses/>.
+
+This file is part of project Profondeur.
+Project repository's address: https://github.com/tcameronwaller/profondeur/
+Author's electronic address: tcameronwaller@gmail.com
+Author's physical address:
+T Cameron Waller
+Scientific Computing and Imaging Institute
+University of Utah
+72 South Central Campus Drive Room 3750
+Salt Lake City, Utah 84112
+United States of America
+*/
+
 /**
 * Functionality of general utility.
-* This class does not store any attributes and does not require instantiation.
 * This class stores methods for external utility.
+* This class does not store any attributes and does not require instantiation.
 */
 class General {
 
   // Methods for file system.
 
   /**
-  * Accesses a file at a specific path on client's system.
-  * @param {string} path Directory path and file name.
-  * @returns {Object} File at path on client's system.
+  * Accesses a file at a specific path within application's directory.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.path Directory path and file name.
+  * @param {Object} parameters.call Function to call upon completion of file
+  * read.
+  * @param {Object} parameters.parameters Parameters for the function to call
+  * upon completion of file read.
   */
-  static accessFileByPath(path) {
-    return File.createFromFileName(path);
+  static loadPassObjectByFilePath({path, call, parameters} = {}) {
+    d3.json("state_default.json", function (data) {
+      // Include the data in the parameters to pass to the call function.
+      var dataParameter = {data: data};
+      var newParameters = Object.assign({}, parameters, dataParameter);
+      // Call function with new parameters.
+      call(newParameters);
+    });
+    if (false) {
+      var request = new XMLHttpRequest();
+      request.overrideMimeType("application/json");
+      request.open("GET", path, true);
+      request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.state === "200") {
+          // Include the data in the parameters to pass to the call function.
+          var dataParameter = {data: request.responseText};
+          var newParameters = Object.assign({}, parameters, dataParameter);
+          // Call function with new parameters.
+          call(newParameters);
+        }
+      };
+      request.send(null);
+    }
   }
   /**
   * Loads from file a version of an object in JavaScript Object Notation
@@ -61,6 +116,74 @@ class General {
     reference.click();
     document.body.removeChild(reference);
   }
+  /**
+  * Saves to file on client's system a string in plain text format.
+  * @param {string} name Name of file.
+  * @param {string} string String in memory to save.
+  */
+  static saveString(name, string) {
+    var blob = new Blob([string], {type: "text/plain"});
+    var url = URL.createObjectURL(blob);
+    var reference = document.createElement("a");
+    reference.setAttribute("href", url);
+    reference.setAttribute("download", name);
+    document.body.appendChild(reference);
+    reference.click();
+    document.body.removeChild(reference);
+  }
+  /**
+  * Converts information from records to a string table with tab separation.
+  * @param {Array<Object>} records Records of information.
+  * @returns String table with tab separation.
+  */
+  static convertRecordsStringTabSeparateTable(records) {
+    // Specify delimiter or separator and line ending.
+    var separator = "\t";
+    var end = "\r\n";
+    // Prepare head row.
+    // Assume that all records have same keys.
+    // Assume that these keys are strings.
+    var keys = Object.keys(records[0]);
+    var headRow = keys.reduce(function (string, key) {
+      // Combine to collection.
+      if (string.length === 0) {
+        return String(string + "\"" + key + "\"");
+      } else {
+        return String(string + separator + "\"" + key + "\"");
+      }
+    }, "");
+    // Prepare body rows.
+    var bodyRows = records.map(function (record) {
+      return keys.reduce(function (string, key) {
+        // Access key's value in record.
+        var value = record[key];
+        // Determine value's representation according to its type.
+        // Procedure supports types null, undefined, boolean, number, string,
+        // symbol, and array.
+        // Procedure does not support more complex types of object.
+        var type = General.determineValueType(value);
+        if (type === "null" || type === "undefined") {
+          var representation = String("\"" + "null" + "\"");
+        } else if (type === "boolean" || type === "number") {
+          var representation = String(value);
+        } else if (type === "string" || type === "symbol") {
+          var representation = String("\"" + value + "\"");
+        } else if (type === "array") {
+          var representation = value.join(",");
+        }
+        // Combine to collection.
+        if (string.length === 0) {
+          return String(string + representation);
+        } else {
+          return String(string + separator + representation);
+        }
+      }, "");
+    });
+    // Combine rows.
+    var rows = [].concat([headRow], bodyRows);
+    var string = rows.join(end);
+    return string;
+  };
 
   // Methods for document object model (DOM).
   // TODO: Consider placing all of these methods within a separate utility class...
@@ -95,6 +218,18 @@ class General {
     });
   }
   /**
+  * Extracts the values from elements in the Document Object Model (DOM).
+  * @param {Object} elements Elements in the Document Object Model (DOM).
+  * @returns {Array<string>} Values from elements.
+  */
+  static extractValuesDocumentElements(elements) {
+    var values = [];
+    Array.from(elements).forEach(function (element) {
+      values.push(element.value);
+    });
+    return values;
+  }
+  /**
   * Determines the value of the only active radio button in a group.
   * @param {Object} radios Live collection of radio button elements in the
   * Document Object Model (DOM).
@@ -121,8 +256,6 @@ class General {
       window.getComputedStyle(element)[attribute].replace("px", "")
     );
   }
-
-
 
   // Methods for graphs.
 
@@ -163,9 +296,7 @@ class General {
   * @returns {Array<Object>} Records of coordinates for points around a central
   * origin.
   */
-  static convertNormalizeRadialCoordinates({
-    pointsCoordinates, originCoordinates, graphHeight
-  } = {}) {
+  static convertNormalizeRadialCoordinates({pointsCoordinates, originCoordinates, graphHeight} = {}) {
     // Convert and normalize points' coordinates.
     return pointsCoordinates.map(function (pointCoordinates) {
       // Convert coordinates relative to origin on standard coordinate plane.
@@ -204,9 +335,7 @@ class General {
   * @param {number} parameters.height Height in pixels of scalable vector graph.
   * @returns {Object<number>} Coordinates of point.
   */
-  static convertGraphCoordinates({
-    pointX, pointY, originX, originY, height
-  } = {}) {
+  static convertGraphCoordinates({pointX, pointY, originX, originY, height} = {}) {
     // The coordinates of scalable vector graphs originate at the top left
     // corner.
     // Coordinates of the x-axis or abscissa increase towards the right.
@@ -307,20 +436,33 @@ class General {
   * @param {Object} parameters Destructured object of parameters.
   * @param {number} parameters.base Dimension of triangle's base.
   * @param {number} parameters.altitude Dimension of triangle's altitude.
-  * @param {string} parameters.direction Direction, right or left, in which the
-  * horizontal triangle's apex faces.
+  * @param {string} parameters.orientation Orientation, up, right, down, or left
+  * in which the triangle's apex faces.
   * @returns {string} Definitions of points for an horizontal, isosceles
   * triangle.
   */
-  static createHorizontalIsoscelesTrianglePoints({
-    base, altitude, direction
-  } = {}) {
+  static createIsoscelesTrianglePoints({base, altitude, orientation} = {}) {
     // The coordinates of scalable vector graphs originate at the top left
     // corner.
     // Coordinates of the x-axis or abscissa increase towards the right.
     // Coordinates of the y-axis or ordinate increase towards the bottom.
     // Determine direction in which triangle's apex faces.
-    if (direction === "right") {
+    if (orientation === "up") {
+      // Triangle's apex faces up.
+      // Determine coordinates of triangle's vertices.
+      var vertex1 = {
+        x: (base / 2),
+        y: 0
+      };
+      var vertex2 = {
+        x: base,
+        y: altitude
+      };
+      var vertex3 = {
+        x: 0,
+        y: altitude
+      };
+    } else if (orientation === "right") {
       // Triangle's apex faces right.
       // Determine coordinates of triangle's vertices.
       var vertex1 = {
@@ -335,7 +477,22 @@ class General {
         x: 0,
         y: base
       };
-    } else if (direction === "left") {
+    } else if (orientation === "down") {
+      // Triangle's apex faces down.
+      // Determine coordinates of triangle's vertices.
+      var vertex1 = {
+        x: 0,
+        y: 0
+      };
+      var vertex2 = {
+        x: base,
+        y: 0
+      };
+      var vertex3 = {
+        x: (base / 2),
+        y: altitude
+      };
+    } else if (orientation === "left") {
       // Triangle's apex faces left.
       // Determine coordinates of triangle's vertices.
       var vertex1 = {
@@ -586,6 +743,191 @@ class General {
   // Methods for management of values.
 
   /**
+  * Includes novel entries in a collection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.values Records of information.
+  * @param {Object} parameters.entries Collection of entries.
+  * @returns {Object} Collection of entries.
+  */
+  static includeNovelEntries({values, entries} = {}) {
+    return values.reduce(function (collection, value) {
+      return General.includeNovelEntry({
+        value: value,
+        entries: collection
+      });
+    }, entries);
+  }
+  /**
+  * Includes novel entry in a collection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.value Record of information.
+  * @param {Object} parameters.entries Collection of entries.
+  * @returns {Object} Collection of entries.
+  */
+  static includeNovelEntry({value, entries} = {}) {
+    // For efficiency, this procedure does not copy values thoroughly.
+    // Determine whether entries include an entry for the value.
+    if (entries.hasOwnProperty(value.identifier)) {
+      // Entries include an entry for the value.
+      // Preserve entries.
+      return entries;
+    } else {
+      // Entries do not include an entry for the value.
+      // Include entry for the value.
+      // Create entry.
+      var entry = {
+        [value.identifier]: value
+      };
+      // Include entry.
+      return Object.assign(entries, entry);
+    }
+  }
+  /**
+  * Includes novel records in a collection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.records Records of information.
+  * @param {Array<Object>} parameters.collection Collection of records.
+  * @returns {Array<Object>} Collection of records.
+  */
+  static includeNovelRecords({records, collection} = {}) {
+    return records.reduce(function (novelCollection, record) {
+      return General.includeNovelRecord({
+        record: record,
+        collection: novelCollection
+      });
+    }, collection);
+  }
+  /**
+  * Includes a novel record in a collection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.record Record of information.
+  * @param {Array<Object>} parameters.collection Collection of records.
+  * @returns {Array<Object>} Collection of records.
+  */
+  static includeNovelRecord({record, collection} = {}) {
+    // Determine whether the record is novel in the collection.
+    var match = collection.some(function (collectionRecord) {
+      return collectionRecord.identifier === record.identifier;
+    });
+    if (match) {
+      return collection;
+    } else {
+      return [].concat(collection, record);
+    }
+  }
+  /**
+  * Copies an object's entries and includes or excludes a single entry.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.value Entry's value with identifier.
+  * @param {Object<Object>} parameters.entries Entries.
+  * @returns {Object<Object>} Copy of entries with or without the single entry.
+  */
+  static includeExcludeObjectEntry({value, entries} = {}) {
+    // Determine whether entries include an entry for the value.
+    if (entries.hasOwnProperty(value.identifier)) {
+      // Entries include an entry for the value.
+      // Copy other entries and exclude the value's entry.
+      return General.excludeObjectEntry({
+        key: value.identifier,
+        entries: entries
+      });
+    } else {
+      // Entries do not include an entry for the value.
+      // Copy other entries and include an entry for the value.
+      return General.includeObjectEntry({
+        value: value,
+        entries: entries
+      });
+    }
+  }
+  /**
+  * Copies an object's entries and excludes a single entry.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.key Entry's key.
+  * @param {Object<Object>} parameters.entries Entries.
+  * @returns {Object<Object>} Copy of entries without the single entry.
+  */
+  static excludeObjectEntry({key, entries} = {}) {
+    // Copy and include all entries except the entry with the key.
+    var entriesKeys = Object.keys(entries);
+    return entriesKeys.reduce(function (collection, entryKey) {
+      // Determine whether to include key's entry.
+      if (entryKey === key) {
+        // Exclude entry.
+        return collection;
+      } else {
+        // Copy and include entry.
+        var valueCopy = General.copyValue(entries[entryKey]);
+        // Create entry.
+        var entry = {
+          [entryKey]: valueCopy
+        };
+        // Include entry.
+        return Object.assign(collection, entry);
+      }
+    }, {});
+  }
+  /**
+  * Filters an object's entries by whether their values pass a filter.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.filter Function to determine whether to keep each
+  * entry.
+  * @param {Object<Object>} parameters.entries Entries.
+  * @returns {Object<Object>} Copy of entries that pass the filter.
+  */
+  static filterObjectEntries({filter, entries} = {}) {
+    // Copy and include all entries whose values pass filter.
+    // Exclude entries whose values do not pass filter.
+    var keys = Object.keys(entries);
+    return keys.reduce(function (collection, key) {
+      // Determine whether entry's value passes filter.
+      if (filter(entries[key])) {
+        // Copy and include entry.
+        var valueCopy = General.copyValue(entries[key]);
+        // Create entry.
+        var entry = {
+          [key]: valueCopy
+        };
+        // Include entry.
+        return Object.assign(collection, entry);
+      } else {
+        // Exclude entry.
+        return collection;
+      }
+    }, {});
+  }
+  /**
+  * Copies an object's entries and includes a single entry.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.value Entry's value with identifier.
+  * @param {Object<Object>} parameters.entries Entries.
+  * @returns {Object<Object>} Copy of entries with the single entry.
+  */
+  static includeObjectEntry({value, entries} = {}) {
+    // Copy entries.
+    var entriesCopy = General.copyDeepObjectEntries(entries, true);
+    // Copy value.
+    var valueCopy = General.copyValue(value);
+    // Create entry.
+    var entry = {
+      [valueCopy.identifier]: valueCopy
+    };
+    // Include entry.
+    return Object.assign(entriesCopy, entry);
+  }
+  /**
+  * Copies information in records from an object to an array.
+  * @param {Object<Object>} records Records in an object.
+  * @returns {Array<Object>} Copy of records in an array.
+  */
+  static copyRecordsObjectArray(records) {
+    var keys = Object.keys(records);
+    return keys.map(function (key) {
+      var record = records[key];
+      return General.copyValueJSON(record);
+    });
+  }
+  /**
   * Copies a deep value by conversion to JavaScript Object Notation (JSON).
   * @param value Value to copy with an explicity representation in JSON.
   * @returns Copy of value from representation in JSON.
@@ -612,7 +954,7 @@ class General {
       var novelEntry = {
         [key]: valueCopy
       };
-      return Object.assign({}, collection, novelEntry);
+      return Object.assign(collection, novelEntry);
     }, {});
   }
   /**
@@ -693,7 +1035,7 @@ class General {
             var novelRecord = {
               [key]: objectValueCopy
             };
-            return Object.assign({}, collection, novelRecord);
+            return Object.assign(collection, novelRecord);
           }, {});
         }
       }
@@ -796,6 +1138,29 @@ class General {
     } else {
       return currentString;
     }
+  }
+  /**
+  * Converts first character of string to capital character.
+  * @param {string} string String to capitalize.
+  * @returns {string} String with capitalization.
+  */
+  static capitalizeString(string) {
+    var firstCharacter = string.slice(0, 1);
+    var lastCharacters = string.slice(1);
+    return (firstCharacter.toUpperCase() + lastCharacters);
+  }
+  /**
+  * Collects a key's value from specific entries within an object.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.identifiers Identifiers of entries.
+  * @param {string} key Key for value within entries.
+  * @param {Object} object Object of entries.
+  * @returns {Array} Values of the key from entries.
+  */
+  static collectKeyValueFromEntries({identifiers, key, object} = {}) {
+    return identifiers.map(function (identifier) {
+      return object[identifier][key];
+    });
   }
   /**
   * Collects a single value for an identical key from multiple objects.
@@ -917,43 +1282,222 @@ class General {
       }
     });
   }
-
-  // TODO: I don't think I use this function "extractAssemblyEntitiesSets".
-
   /**
-  * Extracts information about entities and sets from a custom assembly for a
-  * model of metabolism and organizes these as new attributes to submit to
-  * the application model.
-  * @param {Object} assembly Information about entities and sets for a model
-  * of metabolism.
-  * @returns {Array<Object>} New attributes representing entities and sets
-  * for a model of metabolism.
+  * Sorts records in arrray.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.array Array of records.
+  * @param {string} parameters.key Key of value in records by which to sort.
+  * @param {string} parameters.order Direction, ascend or descend, in which to
+  * sort records.
+  * @param {Object} parameters.reference Information about values' names.
+  * @returns {Array<string>} Shallow copy of array with records in sort order.
   */
-  static extractAssemblyEntitiesSets(assembly) {
-    // Extract attributes from assembly.
-    var metabolites = {
-      attribute: "metabolites",
-      value: assembly.entities.metabolites
-    };
-    var reactions = {
-      attribute: "reactions",
-      value: assembly.entities.reactions
-    };
-    var compartments = {
-      attribute: "compartments",
-      value: assembly.sets.compartments
-    };
-    var genes = {
-      attribute: "genes",
-      value: assembly.sets.genes
-    };
-    var processes = {
-      attribute: "processes",
-      value: assembly.sets.processes
-    };
-    return [].concat(
-      metabolites, reactions, compartments, genes, processes
-    );
+  static sortArrayRecords({array, key, order, reference} = {}) {
+    // Determine type of value by which to sort records.
+    // Assume that all records have values of the same type.
+    var type = General.determineValueType(array[0][key]);
+    // Sort records.
+    return array.slice().sort(function (firstRecord, secondRecord) {
+      if (type === "string") {
+        if (reference) {
+          // Convert values to lower case for comparison.
+          var firstValue = reference[firstRecord[key]].name.toLowerCase();
+          var secondValue = reference[secondRecord[key]].name.toLowerCase();
+        } else {
+          // Convert values to lower case for comparison.
+          var firstValue = firstRecord[key].toLowerCase();
+          var secondValue = secondRecord[key].toLowerCase();
+        }
+      } else if (type === "number") {
+        // Access values.
+        var firstValue = firstRecord[key];
+        var secondValue = secondRecord[key];
+      }
+      // Compare values.
+      if (firstValue < secondValue) {
+        if (order === "ascend") {
+          // Place first element before second element.
+          return -1;
+        } else if (order === "descend") {
+          // Place first element after second element.
+          return 1;
+        }
+      } else if (firstValue > secondValue) {
+        if (order === "ascend") {
+          // Place first element after second element.
+          return 1;
+        } else if (order === "descend") {
+          // Place first element before second element.
+          return -1;
+        }
+      } else {
+        // Preserve current relative placements of elements.
+        return 0;
+      }
+    });
   }
-
+  /**
+  * Collects values of a target attribute that occur together in records with
+  * each value of another category attribute.
+  * Each record has a single value of the target attribute.
+  * Each record can have either a single or multiple values of the category
+  * attribute.
+  * These collections do not necessarily include only unique values of the
+  * target attribute.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.target Name of attribute in records to collect
+  * for each category.
+  * @param {string} parameters.category Name of attribute in records to create
+  * categories.
+  * @param {Object<Object>} parameters.records Records with target and category
+  * attributes.
+  * @returns {Object<Array<string>>} Values of the target attribute that occur
+  * together in records with each value of the category attribute.
+  */
+  static collectRecordsTargetsByCategories({target, category, records} = {}) {
+    // Collect values of the target attribute that occur together in records
+    // with each value of the category attribute.
+    // Iterate on records.
+    var recordsIdentifiers = Object.keys(records);
+    return recordsIdentifiers
+    .reduce(function (recordsCollection, recordIdentifier) {
+      // Access information about record.
+      var record = records[recordIdentifier];
+      // Determine record's values of the category attribute.
+      var values = record[category];
+      // Include record's value of the target attribute in collections for each
+      // of record's values of the category attribute.
+      // Collect attributes according to the count of category attributes in the
+      // record.
+      if (Array.isArray(values)) {
+        var categoriesValues = values;
+        return General.collectRecordTargetByCategories({
+          target: record[target],
+          categories: categoriesValues,
+          recordsCollection: recordsCollection
+        });
+      } else {
+        var categoryValue = [values];
+        return General.collectRecordTargetByCategory({
+          target: record[target],
+          category: categoryValue,
+          collection: recordsCollection
+        });
+      }
+    }, {});
+  }
+  /**
+  * Collects the value of a target attribute within collections for each value
+  * of a category attribute.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.target Value of a target attribute for a single
+  * record.
+  * @param {Array<string>} parameters.categories Values of a category attribute
+  * for a single record.
+  * @param {Object<Array<string>>} parameters.recordsCollection Values of the
+  * target attribute that occur together in records with each value of the
+  * category attribute.
+  * @returns {Object<Array<string>>} Values of the target attribute that occur
+  * together in records with each value of the category attribute.
+  */
+  static collectRecordTargetByCategories({target, categories, recordsCollection} = {}) {
+    // Iterate on values of the category attribute.
+    return categories.reduce(function (categoriesCollection, category) {
+      return General.collectRecordTargetByCategory({
+        target: target,
+        category: category,
+        collection: categoriesCollection
+      });
+    }, recordsCollection);
+  }
+  /**
+  * Collects the value of a target attribute within the collection for a value
+  * of a category attribute.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.target Value of a target attribute for a single
+  * record.
+  * @param {string} parameters.category Value of a category attribute for a
+  * single record.
+  * @param {Object<Array<string>>} parameters.collection Values of the target
+  * attribute that occur together in records with each value of the category
+  * attribute.
+  * @returns {Object<Array<string>>} Values of the target attribute that occur
+  * together in records with each value of the category attribute.
+  */
+  static collectRecordTargetByCategory({target, category, collection} = {}) {
+    // Determine whether the collection includes a record for the value of the
+    // category attribute.
+    if (collection.hasOwnProperty(category)) {
+      // The collection includes a record for the value of the category
+      // attribute.
+      // Include the value of the target attribute in the record.
+      var previousTargets = collection[category];
+      var currentTargets = [].concat(previousTargets, target);
+      // Create entry.
+      var entry = {
+        [category]: currentTargets
+      };
+      return Object.assign(collection, entry);
+    } else {
+      // The collection does not include a record for the value of the
+      // category attribute.
+      // Create a novel record for the value of the category attribute.
+      // Include the value of the target attribute in this record.
+      // Create entry.
+      var entry = {
+        [category]: [target]
+      };
+      // Include entry.
+      return Object.assign(collection, entry);
+    }
+  }
+  /**
+  * Accesses a record within an object by the record's identifier, creating a
+  * reference to the record.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a record.
+  * @param {Object<Object>} parameters.records Object of records.
+  * @returns {Object} Record.
+  */
+  static accessObjectRecordByIdentifier(identifier, records) {
+    return records[identifier];
+  }
+  /**
+  * Determines whether a record exists within an array by the record's
+  * identifier.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a record.
+  * @param {Array<Object>} parameters.records Array of records.
+  * @returns {boolean} Whether the record exists within the array.
+  */
+  static determineArrayRecordByIdentifier(identifier, records) {
+    return records.some(function (record) {
+      return record.identifier === identifier;
+    });
+  }
+  /**
+  * Accesses a record within an array by the record's identifier, creating a
+  * reference to the record.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a record.
+  * @param {Array<Object>} parameters.records Array of records.
+  * @returns {Object} Record.
+  */
+  static accessArrayRecordByIdentifier(identifier, records) {
+    return records.find(function (record) {
+      return record.identifier === identifier;
+    });
+  }
+  /**
+  * Filters records within an array by the records' identifiers.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.identifiers Identifiers of records.
+  * @param {Array<Object>} parameters.records Array of records.
+  * @returns {Array<Object>} Records.
+  */
+  static filterArrayRecordsByIdentifier(identifiers, records) {
+    return records.filter(function (record) {
+      return identifiers.includes(record.identifier);
+    });
+  }
 }

@@ -1,24 +1,32 @@
 /*
- Profondeur supports visual exploration and analysis of metabolic networks.
- Copyright (C) 2016  Thomas Cameron Waller
+Profondeur supports visual exploration and analysis of metabolic networks.
+Copyright (C) 2017 Thomas Cameron Waller
 
- Author email: tcameronwaller@gmail.com
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
 
- This file is part of Profondeur.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
 
- Profondeur is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+You should have received a copy of the GNU General Public License along with
+this program.
+If not, see <http://www.gnu.org/licenses/>.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+This file is part of project Profondeur.
+Project repository's address: https://github.com/tcameronwaller/profondeur/
+Author's electronic address: tcameronwaller@gmail.com
+Author's physical address:
+T Cameron Waller
+Scientific Computing and Imaging Institute
+University of Utah
+72 South Central Campus Drive Room 3750
+Salt Lake City, Utah 84112
+United States of America
+*/
 
 /* Set dimensions of elements proportional to dimensions of the viewport or window. */
 
@@ -26,62 +34,250 @@
 /* Media Queries */
 /*
 @media (max-width: 15cm) {
-    #interface {
-        flex-direction: column;
-    }
+#interface {
+flex-direction: column;
+}
 }
 */
 
 /******************************************************************************/
-/* Interface */
+/* Interface's Structure */
+/* -view */
+/* --control */
+/* ---state */
+/* ---set */
+/* ---context */
+/* ---traversal */
+/* --exploration */
+/* ---summary */
+/* ---topology */
 /******************************************************************************/
 
-#view {
-    background-color: rgba(255, 255, 255, 1);
-    display: block;
-    font-size: small;
-    height: 98vh;
-    margin: 0;
-    width: 98vw;
-}
+/******************************************************************************/
+/* General */
+/******************************************************************************/
 
 .show-inline {
-    display: inline;
+  display: inline;
 }
 
 .hide {
-    display: none;
+  display: none;
+}
+
+
+/******************************************************************************/
+/* Interface View */
+/******************************************************************************/
+
+#view {
+  background-color: rgba(255, 255, 255, 1);
+  display: flex;
+  font-size: small;
+  height: 98vh;
+  margin: 0;
+  width: 98vw;
 }
 
 /******************************************************************************/
-/* Source View */
+/* Tip View */
 /******************************************************************************/
 
-#source input {
-    display: none;
+#tip {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: rgba(255, 255, 255, 1);
+  position: absolute;
+  z-index: 10;
+  height: auto;
+  width: auto;
+}
+
+#tip .invisible {
+  /*visibility: hidden;*/
+  display: none;
+}
+
+#tip .visible {
+  /*visibility: visible;*/
+  display: inline;
 }
 
 /******************************************************************************/
-/* Top View */
+/* Control View */
 /******************************************************************************/
+/* needs work still... obviously... I need to figure out the display property for children...*/
 
-#top {
-    background-color: rgba(50, 50, 50, 1);
-    display: flex;
-    width: 100%;
+#control {
+  background-color: rgba(200, 200, 200, 1);
+  flex-basis: 9cm;
+  height: 100%;
+  overflow: auto;
+}
+
+#control div.tab.normal {
+  background-color: rgba(50, 50, 50, 1);
+}
+
+#control div.tab.emphasis {
+  background-color: rgba(50, 0, 50, 1);
+}
+
+#control div.tab {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  text-align: center;
+  height: 1cm;
+  border-style: solid;
+  border-width: 1.5mm;
+  border-color: rgba(100, 100, 100, 1);
+  font-size: large;
+  color: rgba(255, 255, 255, 1);
 }
 
 /******************************************************************************/
-/* Persistence View */
+/* State View */
 /******************************************************************************/
 
-#persistence button {
-    width: 1.5cm;
+#state {
+  background-color: rgba(150, 150, 150, 1);
+  display: block;
+  height: 1.25cm;
+  width: 100%;
 }
 
-#persistence {
-    flex-basis: content;
-    height: 100%;
+#state input {
+  display: none;
+}
+
+#state button {
+  width: 2cm;
+}
+
+/******************************************************************************/
+/* Menu */
+/******************************************************************************/
+
+div.menu {
+  width: 100%;
+}
+
+div.menu input.search {
+  width: 5cm;
+}
+
+div.menu div.scroll {
+  display: block;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 5cm;
+}
+
+div.menu table {
+  table-layout: fixed;
+  text-align: left;
+  border-collapse: collapse;
+  border-style: solid;
+  width: 100%;
+}
+
+div.menu table thead {
+  background-color: rgba(75, 75, 75, 1);
+  color: rgba(255, 255, 255, 1);
+  font-size: medium;
+  font-weight: bold;
+}
+
+div.menu table tr {
+  vertical-align: middle;
+}
+
+div.menu table thead th {
+  vertical-align: middle;
+  border-color: rgba(200, 200, 200, 1);
+  border-style: solid;
+}
+
+div.menu table thead th span {
+  background-color: rgba(50, 50, 50, 1);
+  font-size: medium;
+  color: rgba(255, 255, 255, 1);
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+}
+
+div.menu table thead th svg.sort {
+  height: 0.5cm;
+  width: 0.5cm;
+}
+
+div.menu table thead th svg.sort polygon {
+  fill: rgba(255, 255, 255, 1);
+}
+
+div.menu table thead th svg.scale {
+  height: 0.5cm;
+  width: 100%;
+}
+
+div.menu table thead th svg.scale g text {
+  fill: rgba(255, 255, 255, 1);
+}
+
+div.menu table thead th svg.scale g path,line {
+  stroke: rgba(255, 255, 255, 1);
+}
+
+div.menu table th,td {
+  padding: 1mm;
+}
+
+div.menu table th.name, td.name {
+  width: 2cm;
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+
+div.menu table th.omission, td.omission, th.replication, td.replication {
+  width: 0.7cm;
+}
+
+div.menu table th.count, td.count {
+  width: auto;
+}
+
+div.menu table tbody tr.normal:nth-child(odd) {
+  background-color: rgba(200, 200, 200, 1);
+}
+
+div.menu table tbody tr.normal:nth-child(even) {
+  background-color: rgba(175, 175, 175, 1);
+}
+
+div.menu table tbody tr.emphasis {
+  background-color: rgba(150, 150, 200, 1);
+}
+
+div.menu table tbody td.name {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+div.menu table tbody td.count svg.graph {
+  height: 0.5cm;
+  width: 100%;
+}
+
+div.menu table tbody td.count svg.graph rect.mark.normal {
+  fill: rgba(0, 100, 255, 1);
+}
+
+div.menu table tbody td.count svg.graph rect.mark.emphasis {
+  fill: rgba(255, 100, 0, 1);
 }
 
 /******************************************************************************/
@@ -89,201 +285,78 @@
 /******************************************************************************/
 
 #set {
-    /*display: inline;*/
-    /*float: left;*/
-    background-color: rgba(50, 50, 50, 1);
-    flex: 1;
-    font-family: sans-serif;
+  background-color: rgba(200, 200, 200, 1);
+  display: block;
+  width: 100%;
 }
 
-#set table {
-    border-collapse: collapse;
-    border-style: solid;
-    width: 100%;
-    table-layout: auto;
-    text-align: left;
-}
-
-#set table thead {
-    background-color: rgba(50, 50, 50, 1);
-    color: rgba(255, 255, 255, 1);
-    font-size: medium;
-    font-weight: bold;
-}
-
-#set table thead tr {
-    height: 0.75cm;
-    vertical-align: middle;
-}
-
-#set table thead th {
-    border-color: rgba(200, 200, 200, 1);
-    border-style: solid;
-    border-width: 1mm;
-    padding: 1mm;
-}
-
-#set table tbody tr {
-    height: 0.75cm;
-    vertical-align: middle;
-}
-
-#set table tbody td {
-    border-color: rgba(200, 200, 200, 1);
-    border-style: solid;
-    border-width: 1mm;
-    height: 0.75cm;
-    overflow: hidden;
-    padding: 1mm;
-    white-space: nowrap;
-}
-
-#set table tbody td.attribute {
-    background-color: rgba(50, 50, 50, 1);
-    color: rgba(255, 255, 255, 1);
-    font-size: medium;
-    font-weight: bold;
-    width: 3cm;
-}
-
-#set table tbody td.value {
-    background-color: rgba(255, 255, 255, 1);
-}
-
-#set table tbody td.value svg.graph {
-    height: 0.75cm;
-    width: 100%;
-}
-
-#set table tbody td.value .mark {
-    /*fill: rgba(200, 20, 20, 1);*/
-}
-
-#set table tbody td.value svg.graph g.group:nth-child(odd) .mark.normal {
-    fill: rgba(0, 255, 100, 1);
-}
-
-#set table tbody td.value svg.graph g.group:nth-child(even) .mark.normal {
-    fill: rgba(0, 100, 255, 1);
-}
-
-#set table tbody td.value svg.graph g.group:nth-child(odd) .mark.emphasis {
-    fill: rgba(255, 100, 0, 1);
-}
-
-#set table tbody td.value svg.graph g.group:nth-child(even) .mark.emphasis {
-    fill: rgba(255, 0, 0, 1);
-}
-
-#set table tbody td.value svg.graph text.label {
+#set > div.title {
+  background-color: rgba(100, 100, 100, 1);
+  font-size: large;
+  color: rgba(255, 255, 255, 1);
   font-family: sans-serif;
   font-style: normal;
   font-weight: bold;
-  font-size: 13px;
-  fill: rgba(0, 0, 0, 1);
+  width: 100%;
 }
 
+
 /******************************************************************************/
-/* Bottom View */
+/* Candidacy View */
 /******************************************************************************/
 
-#bottom {
-    background-color: rgba(255, 255, 255, 1);
-    display: flex;
-    height: 90%;
-    width: 100%;
+
+/******************************************************************************/
+/* Exploration View */
+/******************************************************************************/
+
+#exploration {
+  flex: 1;
+  height: 100%;
 }
-
-/******************************************************************************/
-/* Control View */
-/******************************************************************************/
-
-#control {
-    background-color: rgba(200, 200, 200, 1);
-    flex-basis: 5cm;
-    height: 100%;
-    overflow: auto;
-}
-
-/******************************************************************************/
-/* Assembly View */
-/******************************************************************************/
-
-#assembly-replication {
-    width: 90%;
-}
-
-#assembly-replication-current {
-    width: 100%;
-    height: 5cm;
-    overflow-y: auto;
-}
-
-#assembly-replication-novel input {}
-
-/******************************************************************************/
-/* Panel View */
-/******************************************************************************/
-
-#panel {
-    /*display:inline;*/
-    /*float: left;*/
-    flex: 1;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 1);
-}
-
 
 /******************************************************************************/
 /* Topology View */
 /******************************************************************************/
 
 #topology {
-    /*display:inline;*/
-    /*float: left;*/
-    flex: 1;
-    height: 100%;
+  /*display:inline;*/
+  /*float: left;*/
+  flex: 1;
+  height: 100%;
 }
 
-#topology svg.graph {
-    height: 100%;
-    width: 100%;
-    /*dark*/
-    fill: rgba(255, 50, 0, 1);
-    /*light*/
-    /*fill: rgba(0, 0, 0, 1);*/
+#topology svg {
+  height: 100%;
+  width: 100%;
+  fill: rgba(200, 50, 0, 1);
 }
 
-#topology .base {
-    height: 100%;
-    width: 100%;
-    /*dark*/
-    fill: rgba(0, 0, 0, 1);
-    /*light*/
-    /*fill: rgba(255, 255, 255, 1);*/
+#topology svg rect.base {
+  fill: rgba(255, 255, 255, 1);
 }
 
-#topology svg.graph .node.metabolite .mark {
-  /*dark*/
-  fill: rgba(0, 200, 255, 1);
+#topology svg .node.metabolite .mark {
+  fill: rgba(0, 100, 255, 1);
 }
 
-#topology svg.graph .node.reaction .mark {
-    fill: rgba(255, 0, 200, 1);
+#topology svg .node.reaction .mark {
+  fill: rgba(255, 0, 100, 1);
 }
 
-#topology svg.graph .node.reaction .direction {
+#topology svg .node.reaction .direction {
   /*dark*/
   fill: rgba(50, 0, 200, 1);
 }
 
-#topology svg.graph .node.metabolite.simplification .mark {
+#topology svg .node.metabolite.replication .mark {
+  fill: rgba(0, 50, 150, 1);
 }
 
-#topology svg.graph .node.reaction.simplification .mark {
+#topology svg .node.reaction.replication .mark {
 }
 
-#topology svg.graph .node text.label {
+#topology svg .node text.label {
   font-family: sans-serif;
   font-style: normal;
   font-weight: bold;
@@ -291,27 +364,126 @@
   text-anchor: middle;
 }
 
-#topology svg.graph .node.metabolite text.label {
-  /*dark*/
+#topology svg .node.metabolite text.label {
   fill: rgba(0, 0, 0, 1);
 }
 
-#topology svg.graph .node.reaction text.label {
+#topology svg .node.reaction text.label {
   fill: rgba(0, 0, 0, 1);
 }
 
-#topology svg.graph .link {
-  /*dark*/
-  stroke: rgba(255, 255, 0, 1);
+#topology svg .link {
+  stroke: rgba(0, 0, 0, 1);
 }
 
-#topology svg.graph .link.reactant {
-    stroke-dasharray: 5,7;
+#topology svg .link.reactant {
+  stroke-dasharray: 5,7;
 }
 
-#topology svg.graph .link.product {
-    stroke-dasharray: 5, 0;
+#topology svg .link.product {
+  stroke-dasharray: 5, 0;
 }
 
-#topology svg.graph .link.simplification {
+#topology svg .link.replication {
 }
+
+
+/******************************************************************************/
+/* Old stuff for scrap (re-use much of it) */
+/******************************************************************************/
+
+
+/******************************************************************************/
+/* Set View */
+/******************************************************************************/
+
+#setold table tbody td {
+  border-color: rgba(200, 200, 200, 1);
+  border-style: solid;
+  border-width: 1mm;
+  height: 0.75cm;
+  overflow: hidden;
+  padding: 1mm;
+  white-space: nowrap;
+}
+
+#setold table tbody td.attribute {
+  background-color: rgba(50, 50, 50, 1);
+  color: rgba(255, 255, 255, 1);
+  font-size: medium;
+  font-weight: bold;
+  width: 3cm;
+}
+
+#setold table tbody td.attribute div.search input {
+  /*size: 10cm;*/
+}
+
+#setold table tbody td.value {
+  background-color: rgba(255, 255, 255, 1);
+}
+
+#setold table tbody td.value svg.graph {
+  height: 0.75cm;
+  width: 100%;
+}
+
+#setold table tbody td.value .mark {
+  /*fill: rgba(200, 20, 20, 1);*/
+}
+
+#setold table tbody td.value svg.graph g.group:nth-child(odd) .mark.normal {
+  fill: rgba(0, 255, 100, 1);
+}
+
+#setold table tbody td.value svg.graph g.group:nth-child(even) .mark.normal {
+  fill: rgba(0, 100, 255, 1);
+}
+
+#setold table tbody td.value svg.graph g.group:nth-child(odd) .mark.emphasis {
+  fill: rgba(255, 100, 0, 1);
+}
+
+#setold table tbody td.value svg.graph g.group:nth-child(even) .mark.emphasis {
+  fill: rgba(255, 0, 0, 1);
+}
+
+#setold table tbody td.value svg.graph text.label {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 13px;
+  fill: rgba(0, 0, 0, 1);
+}
+
+
+
+
+
+/******************************************************************************/
+/* Assembly View */
+/******************************************************************************/
+
+#assembly-replication {
+  width: 90%;
+}
+
+#assembly-replication-current {
+  width: 100%;
+  height: 5cm;
+  overflow-y: auto;
+}
+
+#assembly-replication-novel input {}
+
+  /******************************************************************************/
+  /* Panel View */
+  /******************************************************************************/
+
+  #panel {
+    /*display:inline;*/
+    /*float: left;*/
+    flex: 1;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 1);
+  }
