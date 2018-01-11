@@ -4,6 +4,230 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+11 January 2018
+
+----------
+Progress
+
+-decreased count of simulation's iterations for node-link layout
+
+
+----------
+Plan
+
+-tip position
+--determine horizontal and vertical center points of view
+--if cursor is on right side of view, then draw tip to left of cursor
+--if cursor is on left side of view, then draw tip to right of cursor
+--similar for top and bottom
+
+-draw labels initially on nodes in network's diagram
+
+-simplification of metabolites
+--the only reason to include replicate nodes on the network's diagram is to represent data values visually on these nodes
+--otherwise replicate nodes are not of interest
+--it is unlikely that a user would want to represent data visually on a replicate node
+--hence replicate nodes are useless clutter on the network's diagram
+--do not replicate nodes for metabolites
+--simplify the simplification to only support omission even for metabolites
+--replication is not useful anyway
+--continue to organize simplifications in entries within an object
+--each simplification's entry still needs information about identifier and dependency
+
+-representation of reactions' metabolites
+--include visual mark on reactions' nodes to designate that not all metabolites have explicit nodes
+--handle the situation identically for filter and simplification of metabolites
+--when preparing candidate reactions, determine whether all of the reaction's metabolites are also candidates
+--if not all of reactions' metabolites are candidates, indicate in reaction's node
+--create a little half circle at bottom center of reaction's node to indicate incomplete metabolites
+
+-include functionality to add single node with links to all other current nodes in the subnetwork
+--only include access to nodes and links within the total network
+
+-persist network's diagram
+--store information about layout positions of nodes and links within mutable subnetwork's records for nodes and links
+--with each restore of topology view, consider whether to initiate the force simulation, starting from the nodes' and links' current positions
+--interactions with application should not initiate redraw unless necessary
+
+----------
+Goals for next meet with Jared P. Rutter and Alexander Lex on 29 January 2018
+
+1. network's visual representation
+-controls for manual optimization of layout
+--drag and anchor individual nodes
+--select individual nodes to expand by ego or proximity to depth of 1 link
+--select individual nodes to omit or replicate
+-interactivity
+--reduce count of simulation's iterations
+--preserve layout across interaction without requirement for repeat draw
+--draw labels initially
+--do not repeat draw upon interaction with control view's tabs
+-node label font color contrast
+-represent replicate nodes with smaller nodes and shorter links or as bumps on reactions
+
+2. integration of custom data
+--input or import custom data with association to metabolic entities
+--represent quantitative values on matching network's elements
+
+3. selections by topological traversal
+-we decided this goal is not a priority, but just to keep it in mind
+-ego or proximity graph at various depths
+-pairwise simple shortest paths, a potential challenge
+
+----------
+Hierarchy of information
+
+Filters, compartmentalization, and simplifications determine which entities and relations are available in the total network.
+
+Selections of individual nodes and traversals determine which nodes and links from the total network are in the sub network.
+The nodes and links of the sub network are what actually get displayed in the topology view.
+
+----------
+Observation
+
+The model includes metabolites with names NAD(1-) and NADH(2-).
+Are those charges correct?
+
+--------------------------------------------------
+8 January 2018
+
+tip
+-determine horizontal and vertical center points of view
+-if cursor is on right side of view, then draw tip to left of cursor
+-if cursor is on left side of view, then draw tip to right of cursor
+-similar for top and bottom
+
+----------
+Goals for next meet with Jared P. Rutter and Alexander Lex on 29 January 2018
+
+1. network's visual representation
+-controls for manual optimization of layout
+--drag and anchor individual nodes
+--select individual nodes to expand by ego or proximity to depth of 1 link
+--select individual nodes to omit or replicate
+-interactivity
+--reduce count of simulation's iterations
+--preserve layout across interaction without requirement for repeat draw
+--draw labels initially
+-node label font color contrast
+-represent replicate nodes with smaller nodes and shorter links or as bumps on reactions
+
+2. integration of custom data
+--input or import custom data with association to metabolic entities
+--represent quantitative values on matching network's elements
+
+3. selections by topological traversal
+-we decided this goal is not a priority, but just to keep it in mind
+-ego or proximity graph at various depths
+-pairwise simple shortest paths, a potential challenge
+
+----------
+Meet with Jared P. Rutter and Alexander Lex
+
+-review of goals from meeting on 4 December 2017
+
+-demonstration of application's current state
+--automatic load of information about metabolic entities and sets
+--control view with collapsible sub-views
+--set view's controls, search menus, summaries, and filters
+--set view's export of information about entities that pass filters
+--candidacy view's controls, search menus, summaries, and simplifications
+--summary view's brief summary and control to draw network
+--topology view's visual representation of network
+--tip view's summary information about sets, candidates, and network's elements
+
+-plans and goals for next efforts on application
+--integrate custom data about entities
+--select portions of network by topological traversal
+---proximity or ego graph
+---connect shortest paths between multiple targets
+--export information about the selection from the network
+--gather feedback from users
+
+-plans and goals for career development
+--application to Computational Biology at University of Washington, 15 January 2018
+--application to visit at National Cancer Institute, 31 January 2018
+--applications to individual labs
+--learning about data science, observing Jeff Phillips' Data Mining course
+
+----------
+Progress
+
+-core functionality
+--loads information about metabolic entities and sets
+--filters entities by properties
+--determines relevance of candidate entities by compartmentalization and simplification
+--defines network's elements from candidates
+
+-interface
+--controls within various views on side panel
+--control views are collapsible to save screen space
+--state view
+---save or load persistent representations of application's state
+--set view
+---summarize entities properties in sets
+---searchable, scrollable menus
+---visual representations of cardinalities
+---custom tips with more information about sets
+---select filters against entities
+--candidacy view
+---searchable, scrollable menus
+---visual representations of degrees for each individual candidate entity
+---custom tips with more information about candidates
+---select simplifications of entities
+--summary view
+---brief summary of network's elements
+---control to draw visual representation of network's elements
+--topology view
+---visual representation of network's elements
+---custom tips with more information about nodes
+
+----------
+Search for data sets
+
+"Metabolomics and transcriptomics identify pathway differences between visceral and subcutaneous adipose tissue in colorectal cancer patients: the ColoCare study"
+American Journal of Clinical Nutrition
+2015
+https://www.ncbi.nlm.nih.gov/pubmed/26156741
+ColoCare Study Cohort
+59 people
+visceral and subcutaneous adipose tissue
+abundance of 333 identifiable metabolites
+abundance of transcripts
+
+Proteomics
+"A Golden Age for Working with Public Proteomics Data"
+Trends in Biochemical Sciences
+2017
+http://www.cell.com/trends/biochemical-sciences/fulltext/S0968-0004(17)30001-4
+
+Metabolomics and Transcriptomics
+
+"Multi-omic profiles of human non-alcoholic fatty liver disease tissue highlight heterogenic phenotypes"
+Scientific Data
+2015
+
+"The Human Blood Metabolome-Transcriptome Interface"
+PLOS Genetics
+2015
+https://www.ncbi.nlm.nih.gov/pubmed/26086077
+Data from German KORA F4 cohort
+-712 people
+-abundance of 16,780 unique transcripts
+-abundance of 440 - 186 unique, identifiable metabolites
+
+"MYC-driven accumulation of 2-hydroxyglutarate is associated with breast cancer prognosis"
+Journal of Clinical Investigations
+2014
+https://www.ncbi.nlm.nih.gov/pubmed/24316975
+
+Transcriptomics
+"Transcriptomics resources of human tissues and organs"
+http://onlinelibrary.wiley.com/doi/10.15252/msb.20155865/full
+GTEx, Human Protein Atlas
+
+
+--------------------------------------------------
 7 January 2018
 
 Access file from JavaScript in same directory...

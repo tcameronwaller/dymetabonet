@@ -2966,8 +2966,30 @@ class TopologyView {
     .filter(function (element, index, nodes) {
       return element.type === "metabolite";
     });
-    nodesMarksMetabolites.attr("rx", self.metaboliteNodeWidth);
-    nodesMarksMetabolites.attr("ry", self.metaboliteNodeHeight);
+    nodesMarksMetabolites.attr("rx", function (element, index, nodes) {
+      var node = TopologyView.accessNode({
+        identifier: element.identifier,
+        type: element.type,
+        state: self.state
+      });
+      if (node.replication) {
+        return (self.metaboliteNodeWidth / 3);
+      } else {
+        return self.metaboliteNodeWidth;
+      }
+    });
+    nodesMarksMetabolites.attr("ry", function (element, index, nodes) {
+      var node = TopologyView.accessNode({
+        identifier: element.identifier,
+        type: element.type,
+        state: self.state
+      });
+      if (node.replication) {
+        return (self.metaboliteNodeHeight / 3);
+      } else {
+        return self.metaboliteNodeHeight;
+      }
+    });
     // Set dimensions of reactions' nodes.
     self.reactionNodeWidth = self.scaleNodeDimension * 2.5;
     self.reactionNodeHeight = self.scaleNodeDimension * 0.75;
@@ -3032,22 +3054,22 @@ class TopologyView {
     var alphaDecayScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([0.013, 0.013, 0.014, 0.015, 0.017, 0.02, 0.03]);
+    .range([0.02, 0.02, 0.02, 0.02, 0.025, 0.025, 0.03]);
     // Define scale for velocity decay rate in force simulation.
     // Domain's unit is count of nodes.
     // Range's unit is arbitrary for decay rates.
     //domain: range
     //0-100: 0.2
     //100-500: 0.2
-    //500-1000: 0.25
-    //1000-2500: 0.25
+    //500-1000: 0.2
+    //1000-2500: 0.2
     //2500-5000: 0.25
     //5000-10000: 0.3
     //10000-1000000: 0.3
     var velocityDecayScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([0.2, 0.2, 0.25, 0.25, 0.25, 0.3, 0.3]);
+    .range([0.2, 0.2, 0.2, 0.2, 0.25, 0.3, 0.3]);
     // Compute simulation decay rates from scale.
     self.scaleAlphaDecay = alphaDecayScale(self.nodesRecords.length);
     self.scaleVelocityDecay = velocityDecayScale(self.nodesRecords.length);
@@ -3144,7 +3166,16 @@ class TopologyView {
     .force("collision", d3.forceCollide()
       .radius(function (element, index, nodes) {
         if (element.type === "metabolite") {
-          return self.metaboliteNodeWidth;
+          var node = TopologyView.accessNode({
+            identifier: element.identifier,
+            type: element.type,
+            state: self.state
+          });
+          if (node.replication) {
+            return (self.metaboliteNodeWidth / 3);
+          } else {
+            return self.metaboliteNodeWidth;
+          }
         } else if (element.type === "reaction") {
           return self.reactionNodeWidth;
         }
@@ -3154,7 +3185,22 @@ class TopologyView {
     )
     .force("charge", d3.forceManyBody()
       .theta(0.3)
-      .strength(-500)
+      .strength(function (element, index, nodes) {
+        if (element.type === "metabolite") {
+          var node = TopologyView.accessNode({
+            identifier: element.identifier,
+            type: element.type,
+            state: self.state
+          });
+          if (node.replication) {
+            return -1;
+          } else {
+            return -500;
+          }
+        } else if (element.type === "reaction") {
+          return -500;
+        }
+      })
       .distanceMin(1)
       .distanceMax(self.scaleNodeDimension * 25)
     )
@@ -3166,9 +3212,13 @@ class TopologyView {
       .distance(function (element, index, nodes) {
         // Determine whether the link represents relation between nodes that
         // have designations for simplification.
-        if (element.replication) {
+        var link = TopologyView.accessLink({
+          identifier: element.identifier,
+          state: self.state
+        });
+        if (link.replication) {
           // Link is for a replicate node.
-          return (self.metaboliteNodeWidth * 0.5);
+          return (self.metaboliteNodeWidth * 0.1);
         } else {
           // Link is not for a replicate node.
           return (1.3 * (self.reactionNodeWidth + self.metaboliteNodeWidth));

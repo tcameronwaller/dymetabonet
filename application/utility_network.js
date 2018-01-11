@@ -37,10 +37,6 @@ United States of America
 class Network {
   // Master control of procedure to assemble network elements.
 
-// TODO: If a candidate reaction is a representative selection from multiple redundant replicate reactions,
-// TODO: then maybe it would be appropriate to combine the attributes of the original reactions, such as
-// TODO: compartments and processes.
-
   /**
   * Creates network's elements, nodes and links, to represent metabolic
   * entities, metabolites and reactions, and relations between them.
@@ -168,6 +164,13 @@ class Network {
     if (candidacy) {
       // Reaction is a valid candidate.
       // Create node for reaction.
+
+
+
+      // TODO: Nodes for reactions need to "know" whether they have replicate metabolite nodes...
+
+
+
       var networkNodeReaction = Network.createNodeReaction({
         candidateReaction: candidateReaction,
         reaction: reaction
@@ -277,6 +280,13 @@ class Network {
   static collectReactionMetaboliteNetworkNodesLinks({networkNodeReaction, candidateMetabolite, metabolitesSimplifications, reaction, metabolite, compartmentalization, collectionMetabolites} = {}) {
     // Evaluate metabolite's candidacy.
     // Consider both explicit and implicit designations for simplification.
+
+
+    // TODO: Do not actually create any nodes for replicate metabolites
+
+
+
+
     var omission = Network.determineCandidateSimplificationMethod({
       identifier: candidateMetabolite.identifier,
       method: "omission",
