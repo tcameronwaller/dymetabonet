@@ -4,13 +4,156 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+18 January 2018
+
+----------
+Topological Traversal
+
+networkx.algorithms.simple_paths.shortest_simple_paths
+https://networkx.github.io/documentation/stable/reference/algorithms/generated/networkx.algorithms.simple_paths.shortest_simple_paths.html#networkx.algorithms.simple_paths.shortest_simple_paths
+
+Multiple simple, shortest paths in an unweighted, directed graph
+Yen 1971; Lawler 1972
+
+----------
+Notes from meet with team of Jared P. Rutter
+
+Sara Nowinski recommended including default layouts for pathways of common interest, such as glycolysis and the citrate cycle.
+I could include some sort of default, static coordinates for these pathways.
+Currently available tools, such as KEGG, already take this approach.
+
+A new, temporary member of the team recommended that I provide information about the sets (processes, and compartments) to which individual metabolites belong.
+That way the user can select filters with some basic information.
+Currently available tools, such as KEGG and MetaboAnalyst already make this information accessible.
+
+With Kevin G. Hicks, I discussed the priority functionality of the application.
+Currently-available tools such as KEGG and MetaboAnalyst support evaluation of cannonical pathways and properties of individual metabolites or reactions.
+The strength of my data source and application is the information about the network's topology.
+The priority for my application is topological traversal.
+Shortest simple paths between 2 or more metabolites will be the most important functionality for users such as Kevin.
+The user may want to know the 5 shortest simple paths between 2 metabolites and then export information about the metabolites and reactions in each of these paths.
+The user may also want a subnetwork consisting of the union of shortest paths between 2 or more metabolites or reactions.
+
+Topological traversal is the priority functionality for the application.
+This functionality is a greater priority than representation of experimental measurements on the network.
+I recognized the importance of this functionality in my own work in metabolomics and included it in the original proposal for the project.
+Kevin G. Hicks has emphasized his interest in this functionality multiple times.
+To my knowledge there are not any tools that provide ready access to this sort of traversal of the metabolic network.
+Also, I introduced extensive logic in my evaluation of candidacy and definition of the network.
+
+----------
+Presentation to team of Jared P. Rutter
+
+-demonstration of application's current state
+--automatic load of information about metabolic entities and sets
+--control view with collapsible sub-views
+--set view's controls, search menus, summaries, and filters
+--set view's export of information about entities that pass filters
+--candidacy view's controls, search menus, summaries, and simplifications
+--summary view's brief summary and control to draw network
+--topology view's visual representation of network
+--tip view's summary information about sets, candidates, and network's elements
+
+-plans and goals for next efforts on application
+--optimize network's diagram by direct interaction
+--access descriptive information in detail view and export
+--construct or narrow subnetwork by topological traversal
+--integrate custom data about entities
+
+--------------------------------------------------
+17 January 2018
+
+----------
+Meet with Alexander Lex
+
+Make local tool tips concise.
+Include only names of metabolites and reactions in tool tips for network's nodes.
+
+Detail views.
+Include comprehensive details about metabolites and reactions in a detail view upon selection of the node.
+Maybe persist information about multiple nodes in the detail view for reference.
+Also include a button to clear the detail view.
+Initially, only include details about the currently-selected node.
+
+Hover on a node should display both a tip and a prompt.
+The user will click the prompt to display options for direct interaction.
+
+For now, keep both options to omit or replicate nodes for metabolites.
+Represent replicate nodes for metabolites explicitly by individual blobs on periphery of reaction's node.
+The reaction's node needs information about these replicate metabolites.
+I do not actually want nodes for the replicate metabolites.
+
+...
+
+----------
+Goals for application
+
+-simplification of metabolites
+--the only reason to include replicate nodes on the network's diagram is to represent data values visually on these nodes
+--otherwise replicate nodes are not of interest
+--it is unlikely that a user would want to represent data visually on a replicate node
+--hence replicate nodes are useless clutter on the network's diagram
+--do not replicate nodes for metabolites
+--simplify the simplification to only support omission even for metabolites
+--replication is not useful anyway
+--continue to organize simplifications in entries within an object
+--each simplification's entry still needs information about identifier and dependency
+
+-representation of reactions' metabolites
+--include visual mark on reactions' nodes to designate that not all metabolites have explicit nodes in the subnetwork
+--handle the situation identically for filter and simplification of metabolites
+--when preparing reactions' nodes, determine whether all of the reaction's participants have explict representations in nodes and links
+--if not all of reactions' participants have representations, include indicator on reaction's node
+--create a little half circle at bottom center of reaction's node to indicate incomplete representation
+
+-include control (within network control view) to add a single node along with any links to all other current nodes in the subnetwork
+--only draw links from the network (consider filters and candidacy)
+--only include access to nodes and links within the total network
+
+-direct interaction with individual nodes
+--menu with options
+---unlock node's position or drag to lock in new position (default upon click and drag)
+---remove node from subnetwork
+---expand subnetwork by proximity from node to depth of 1
+
+-persist network's diagram
+--store information about layout positions of nodes and links within mutable subnetwork's records for nodes and links
+--with each restore of topology view, consider whether to initiate the force simulation, starting from the nodes' and links' current positions
+--or maybe initialize the simulations with every restoration of the topology view
+--interactions with application should not initiate redraw unless necessary
+
+-tip position
+--determine horizontal and vertical center points of view
+--if cursor is on right side of view, then draw tip to left of cursor
+--if cursor is on left side of view, then draw tip to right of cursor
+--similar for top and bottom
+
+-decrease count of simulation's iterations for node-link layout
+
+-draw labels initially on nodes in network's diagram
+
+--------------------------------------------------
+12 January 2018
+
+----------
+Direct interaction with nodes in network's diagram
+
+Options for pop-up menu upon clicking node
+1. lock/unlock node's position
+2. remove node from subnetwork
+3. expand subnetwork by proximity from node to depth of 1
+
+Also drag node to new position to which it locks by default
+
+All of those actions should re-initialize simulations to determine layout
+
+--------------------------------------------------
 11 January 2018
 
 ----------
 Progress
 
 -decreased count of simulation's iterations for node-link layout
-
 
 ----------
 Plan

@@ -652,6 +652,8 @@ class TipView {
     var self = this;
     // Set reference to document object model (DOM).
     self.document = document;
+    // Set references to other views
+    self.view = self.document.getElementById("view");
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -695,6 +697,8 @@ class TipView {
       self.container.classList.remove("visible");
       self.container.classList.add("invisible");
     }
+    // Determine tip's placement relative to cursor's position.
+    // TODO: Do this.
     // Restore tips properties.
     self.container.style.top = ((positionY - 15) + "px");
     self.container.style.left = ((positionX + 15) + "px");
@@ -738,7 +742,7 @@ class ControlView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set reference to other views.
+    // Set references to other views
     self.view = self.document.getElementById("view");
     self.tip = tip;
     // Set reference to contents.
@@ -895,7 +899,7 @@ class StateView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set reference to other views.
+    // Set references to other views
     self.view = self.document.getElementById("view");
     self.tip = tip;
     self.control = control;
@@ -1026,7 +1030,7 @@ class SetView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set reference to other views.
+    // Set references to other views
     self.view = self.document.getElementById("view");
     self.tip = tip;
     self.control = control;
@@ -1244,7 +1248,7 @@ class SetMenuView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set reference to other views.
+    // Set references to other views
     self.view = self.document.getElementById("view");
     self.tip = tip;
     self.set = set;
@@ -1668,7 +1672,7 @@ class CandidacyView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set reference to other views.
+    // Set references to other views
     self.view = self.document.getElementById("view");
     self.tip = tip;
     self.control = control;
@@ -1823,7 +1827,7 @@ class CandidacyMenuView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set reference to other views.
+    // Set references to other views
     self.view = self.document.getElementById("view");
     self.tip = tip;
     self.candidacy = candidacy;
@@ -2351,7 +2355,7 @@ class ExplorationView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set reference to other views.
+    // Set references to other views
     self.view = self.document.getElementById("view");
     self.tip = tip;
     // Set reference to contents.
@@ -2418,7 +2422,7 @@ class SummaryView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set reference to other views.
+    // Set references to other views
     self.view = self.document.getElementById("view");
     self.tip = tip;
     self.exploration = exploration;
@@ -2505,7 +2509,7 @@ class TopologyView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set reference to other views.
+    // Set references to other views
     self.view = self.document.getElementById("view");
     self.tip = tip;
     self.exploration = exploration;
@@ -2996,6 +3000,13 @@ class TopologyView {
     var nodesMarksReactions = nodesMarks
     .filter(function (element, index, nodes) {
       return element.type === "reaction";
+    });
+    nodesMarksReactions
+    .classed("supplement", function (element, index, nodes) {
+      // Access information.
+      var node = self.state.networkNodesReactions[element.identifier];
+      var candidate = self.state.reactionsCandidates[node.candidate];
+      return candidate.supplement;
     });
     nodesMarksReactions.attr("width", self.reactionNodeWidth);
     nodesMarksReactions.attr("height", self.reactionNodeHeight);

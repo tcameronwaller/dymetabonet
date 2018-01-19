@@ -163,14 +163,22 @@ class Network {
     // Determine whether reaction is a valid candidate.
     if (candidacy) {
       // Reaction is a valid candidate.
+      // Filters and simplifications may cause incomplete representation of
+      // reaction's participants in the network.
+      // Eventually, consider designating reactions as to the completeness of
+      // representation of their participants.
+      // To do so, evaluate candidacy and simplification of reaction's
+      // participants and include some designation in the reaction's node.
+      // Collect information about reaction's metabolite participants with
+      // designation for simplification by replication.
+      var replicates = Network.filterCandidatesSimplification({
+        identifiers: candidateReaction.metabolites,
+        method: "replication",
+        keep: false,
+        simplifications: metabolitesSimplifications
+      });
+
       // Create node for reaction.
-
-
-
-      // TODO: Nodes for reactions need to "know" whether they have replicate metabolite nodes...
-
-
-
       var networkNodeReaction = Network.createNodeReaction({
         candidateReaction: candidateReaction,
         reaction: reaction
@@ -180,6 +188,8 @@ class Network {
         value: networkNodeReaction,
         entries: collectionReactions.networkNodesReactions
       });
+
+
       // Create nodes and links for reaction's metabolites.
       // Include nodes and links for reaction's metabolites.
       // Initialize collection.
@@ -205,6 +215,11 @@ class Network {
           collectionMetabolites: collectionMetabolites
         });
       }, initialCollection);
+
+
+
+
+
       // Compile information.
       var information = {
         networkNodesReactions: networkNodesReactions,
@@ -240,6 +255,29 @@ class Network {
     } else {
       return false;
     }
+  }
+  /**
+  * Filters candidate entities by their designations for simplification.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.identifiers Identifiers of candidate
+  * entities.
+  * @param {string} parameters.method Method of simplification, omission or
+  * replication.
+  * @param {boolean} parameters.keep Whether to keep or discard candidate
+  * entities with the designation for simplification.
+  * @param {Object<Object>} parameters.simplifications Information about
+  * simplification of candidate entities.
+  * @returns {Array<string>} Identifiers of candidate entities.
+  */
+  static filterCandidatesSimplification({identifiers, method, keep, simplifications} = {}) {
+    return identifiers.filter(function (identifier) {
+      var match = Network.determineCandidateSimplificationMethod({
+        identifier: identifier,
+        method: method,
+        simplifications: simplifications
+      });
+      return (match === keep);
+    });
   }
   /**
   * Creates a record of a node for a reaction.
@@ -542,7 +580,7 @@ class Network {
   * Creates concise records for representation of network's links.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.links Information about network's links.
-  * @returns {Array<Object>} Information about network's nodes.
+  * @returns {Array<Object>} Information about network's links.
   */
   static createLinksRecords(links) {
     // Iterate on entries.
@@ -597,6 +635,66 @@ class Network {
     return General.collectUniqueElements(neighbors);
   }
 
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+  * Collects identifiers of nodes that are neighbors of a single focal node.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.focus Identifier of a single node in a network.
+  * @param {string} parameters.direction Direction in which to traverse links,
+  * "predecessors" for target to source, "successors" for source to target,
+  * "neighbors" for either.
+  * @param {Array<Object>} parameters.links Information about network's links.
+  * @returns {Array<string>} Identifiers of nodes that are neighbors of focal
+  * node.
+  */
+  static collectNodeNeighbors({focus, direction, links} = {}) {
+    // Iterate on links.
+    return links.reduce(function (collection, link) {
+      // Collect identifiers of nodes to which the link connects.
+      var linkNodes = [].concat(link.source, link.target);
+      // Determine whether link connects to focal node.
+      if (linkNodes.includes(focus)) {
+        // Link connects to focal node.
+        // Determine neighbor.
+        if (direction === "predecessors") {
+          var neighbor = link.source;
+        } else if (direction === "successors") {
+          var neighbor = link.target;
+        } else if (direction === "neighbors") {
+          var neighbor = linkNodes.find(function (identifier) {
+            return !(identifier === focus);
+          });
+        }
+        // Include neighbor in collection.
+        if !(collection.includes(neighbor)) {
+          return [].concat(collection, neighbor);
+        } else {
+          return collection;
+        }
+      } else {
+        // Link does not connect to focal node.
+        // Preserve collection.
+        return collection;
+      }
+    }, []);
+  }
+  /**
+  * Collects identifiers of nodes that are neighbors of a single focal node.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.focus Identifier of a single node in a network.
+  * @param {string} parameters.direction Direction in which to traverse links,
+  * "predecessors" for target to source, "successors" for source to target,
+  * "neighbors" for either.
+  * @param {Array<Object>} parameters.links Information about network's links.
+  * @returns {Array<string>} Identifiers of nodes that are neighbors of focal
+  * node.
+  */
+  static collectNodesTraverseBreadthFirst({} = {}) {}
+
+
+
+  //////////////////////////////////////////////////////////////////////////////
 
 
 // Scrap...

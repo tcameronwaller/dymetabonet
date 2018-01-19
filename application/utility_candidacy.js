@@ -322,7 +322,7 @@ class Candidacy {
       var reaction = reactions[reactionIdentifier];
       var reactionSets = reactionsSets[reactionIdentifier];
       // Include information about candidate reaction in collection.
-      // Collect information about reaction's metabolites.
+      // Collect information about reaction's relevant metabolites.
       var reactionMetabolites = Candidacy.collectReactionMetabolites({
         reaction: reaction,
         reactionSets: reactionSets,
@@ -840,14 +840,14 @@ class Candidacy {
   */
   static collectReactionMetabolites({reaction, reactionSets, compartmentalization, metabolites, compartments} = {}) {
     // Filter for reaction's relevant participants.
-    var relevantParticipants = Extraction.filterReactionParticipants({
+    var participants = Extraction.filterReactionParticipants({
       criteria: {
         metabolites: reactionSets.metabolites,
         compartments: reactionSets.compartments
       },
       participants: reaction.participants
     });
-    return relevantParticipants.reduce(function (collection, participant) {
+    return participants.reduce(function (collection, participant) {
       // Create identifier for candidate metabolite.
       var identifier = Candidacy.createCandidateMetaboliteIdentifier({
         metabolite: participant.metabolite,
@@ -897,7 +897,7 @@ class Candidacy {
   /**
   * Creates the identifier for a candidate metabolite.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.metabolite Identifier of a general metabolite.
+  * @param {string} parameters.metabolite Identifier of a metabolite.
   * @param {string} parameters.compartment Identifier of a compartment.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
@@ -913,7 +913,7 @@ class Candidacy {
   /**
   * Creates the name for a candidate metabolite.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.metabolite Name of a general metabolite.
+  * @param {string} parameters.metabolite Name of a metabolite.
   * @param {string} parameters.compartment Name of a compartment.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
