@@ -848,6 +848,7 @@ class General {
   * @returns {Object<Object>} Copy of entries without the single entry.
   */
   static excludeObjectEntry({key, entries} = {}) {
+    // This function is an immutable alternative to delete entries[key].
     // Copy and include all entries except the entry with the key.
     var entriesKeys = Object.keys(entries);
     return entriesKeys.reduce(function (collection, entryKey) {

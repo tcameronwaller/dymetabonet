@@ -7,13 +7,49 @@ Research With Alexander Lex
 18 January 2018
 
 ----------
+Bidirectional breadth first search
+
+I will need to keep track of paths.
+
+----------
 Topological Traversal
+Breadth First Search
+
+Iterative Deepening Depth First Search
+https://en.wikipedia.org/wiki/Iterative_deepening_depth-first_search
+
+For generation of ego graphs, I do not need to evaluate nodes or preserve information about paths.
+I only need to collect nodes in a breadth first traversal to a specific depth.
+Follow a similar algorith as that from NetworkX's single source shortest path length.
+networkx.algorithms.shortest_paths.unweighted._single_shortest_path_length
+https://networkx.github.io/documentation/stable/_modules/networkx/algorithms/shortest_paths/unweighted.html#single_source_shortest_path_length
+
+--------------------------------------------------
+18 January 2018
+
+----------
+Topological Traversal
+
+1. neighbors, predecessors, or successors
+
+2. breadth-first search
+
+networkx.algorithms.traversal.breadth_first_search.bfs_edges
+
+3. bidirectional shortest path
+
+4. shortest simple paths
 
 networkx.algorithms.simple_paths.shortest_simple_paths
 https://networkx.github.io/documentation/stable/reference/algorithms/generated/networkx.algorithms.simple_paths.shortest_simple_paths.html#networkx.algorithms.simple_paths.shortest_simple_paths
 
 Multiple simple, shortest paths in an unweighted, directed graph
 Yen 1971; Lawler 1972
+
+1. Implement bidirectional shortest path
+-weightless graph
+-accommodate directional or undirectional
+-bidirectional breadth-first search
 
 ----------
 Notes from meet with team of Jared P. Rutter

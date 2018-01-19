@@ -431,6 +431,15 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
+    var nodes = Network.collectNodesTraverseBreadth({
+      focus: "pyr",
+      direction: "successors",
+      limit: 2,
+      nodes: state.networkNodesRecords,
+      links: state.networkLinksRecords
+    });
+    console.log(nodes);
+
     // Terminate process timer.
     //console.timeEnd("timer");
     var endTime = window.performance.now();

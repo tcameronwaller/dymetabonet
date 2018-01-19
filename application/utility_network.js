@@ -637,8 +637,11 @@ class Network {
 
   //////////////////////////////////////////////////////////////////////////////
 
+  // TODO: I'll also need a function to collect all links between all nodes in some collection.
+
   /**
-  * Collects identifiers of nodes that are neighbors of a single focal node.
+  * Collects identifiers of nodes that are neighbors of a single, central, focal
+  * node.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.focus Identifier of a single node in a network.
   * @param {string} parameters.direction Direction in which to traverse links,
@@ -667,7 +670,7 @@ class Network {
           });
         }
         // Include neighbor in collection.
-        if !(collection.includes(neighbor)) {
+        if (!collection.includes(neighbor)) {
           return [].concat(collection, neighbor);
         } else {
           return collection;
@@ -680,17 +683,150 @@ class Network {
     }, []);
   }
   /**
-  * Collects identifiers of nodes that are neighbors of a single focal node.
+  * Collects identifiers of nodes that are proximal to a single, central, focal
+  * node within a specific depth.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.focus Identifier of a single node in a network.
   * @param {string} parameters.direction Direction in which to traverse links,
   * "predecessors" for target to source, "successors" for source to target,
   * "neighbors" for either.
+  * @param {number} parameters.limit Depth in links to which to traverse.
   * @param {Array<Object>} parameters.links Information about network's links.
-  * @returns {Array<string>} Identifiers of nodes that are neighbors of focal
+  * @returns {Array<string>} Identifiers of nodes that are proximal to focal
   * node.
   */
-  static collectNodesTraverseBreadthFirst({} = {}) {}
+  static collectNodesTraverseBreadth({focus, direction, limit, links} = {}) {
+    // Collect nodes in a breadth-first traversal from a central focal node.
+    // This algorithm does not store paths from the traversal.
+    // Create a map of nodes at each depth from focus.
+    var map = Network.collectNodesTraverseBreadthIterateDepths({
+      depth: 0,
+      currentQueue: {[focus]: 0},
+      direction: direction,
+      limit: limit,
+      map: {},
+      links: links
+    });
+    // Return identifiers of nodes.
+    return Object.keys(map);
+  }
+  /**
+  * Iterates on depths to collect identifiers of nodes that are proximal to a
+  * single, central, focal node within a specific depth.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.depth Depth in links from focal node.
+  * @param {Object<number>} parameters.currentQueue Information about nodes in
+  * queue.
+  * @param {string} parameters.direction Direction in which to traverse links,
+  * "predecessors" for target to source, "successors" for source to target,
+  * "neighbors" for either.
+  * @param {number} parameters.limit Depth in links to which to traverse.
+  * @param {Object<number>} parameters.map Identifiers of nodes and their depths
+  * from focal node.
+  * @param {Array<Object>} parameters.links Information about network's links.
+  * @returns {Object<number>} Identifiers of nodes and their depths from focal
+  * node.
+  */
+  static collectNodesTraverseBreadthIterateDepths({depth, currentQueue, direction, limit, map, links} = {}) {
+    var collection = Network.collectNodesTraverseBreadthIterateNodes({
+      depth: depth,
+      currentQueue: currentQueue,
+      nextQueue: {},
+      direction: direction,
+      limit: limit,
+      map: map,
+      links: links
+    });
+    // Determine whether to traverse to next depth.
+    if (depth < limit) {
+      // Traverse to next depth.
+      return Network.collectNodesTraverseBreadthIterateDepths({
+        depth: depth + 1,
+        currentQueue: collection.nextQueue,
+        direction: direction,
+        limit: limit,
+        map: collection.map,
+        links: links
+      });
+    } else {
+      // Return depth map.
+      return collection.map;
+    }
+  }
+  /**
+  * Iterates on nodes to collect identifiers of nodes that are proximal to a
+  * single, central, focal node within a specific depth.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.depth Depth in links from focal node.
+  * @param {Object<number>} parameters.currentQueue Information about nodes in
+  * queue.
+  * @param {Object<number>} parameters.nextQueue Information about nodes in
+  * queue.
+  * @param {string} parameters.direction Direction in which to traverse links,
+  * "predecessors" for target to source, "successors" for source to target,
+  * "neighbors" for either.
+  * @param {number} parameters.limit Depth in links to which to traverse.
+  * @param {Object<number>} parameters.map Identifiers of nodes and their depths
+  * from focal node.
+  * @param {Array<Object>} parameters.links Information about network's links.
+  * @returns {Object} Information about nodes in collection and queue.
+  */
+  static collectNodesTraverseBreadthIterateNodes({depth, currentQueue, nextQueue, direction, limit, map, links} = {}) {
+    // Access and remove next node from current queue.
+    var nodes = Object.keys(currentQueue);
+    var node = nodes[0];
+    var novelCurrentQueue = General.excludeObjectEntry({
+      key: node,
+      entries: currentQueue
+    });
+    // Include novel node in depth map.
+    if (!map.hasOwnProperty(node)) {
+      // Include entry in collection.
+      // Create and include entry.
+      var entry = {[node]: depth};
+      var novelMap = Object.assign(map, entry);
+    } else {
+      // Preserve collection.
+      var novelMap = map;
+    }
+    // Collect node's neighbors.
+    var neighbors = Network.collectNodeNeighbors({
+      focus: node,
+      direction: direction,
+      links: links
+    });
+    // Include node's novel neighbors in next queue.
+    var novelNextQueue = neighbors.reduce(function (collection, neighbor) {
+      if (!collection.hasOwnProperty(neighbor)) {
+        // Include entry in collection.
+        // Create and include entry.
+        var entry = {[neighbor]: (depth + 1)};
+        return Object.assign(collection, entry);
+      } else {
+        // Preserve collection.
+        return collection;
+      }
+    }, nextQueue);
+    // Determine whether to continue to next node in queue.
+    if (Object.keys(novelCurrentQueue).length > 0) {
+      // Evaluate next node in queue.
+      return Network.collectNodesTraverseBreadthIterateNodes({
+        depth: depth,
+        currentQueue: novelCurrentQueue,
+        nextQueue: novelNextQueue,
+        direction: direction,
+        limit: limit,
+        map: novelMap,
+        links: links
+      });
+    } else {
+      // Compile and return information.
+      return {
+        nextQueue: novelNextQueue,
+        map: novelMap
+      };
+    }
+  }
 
 
 
