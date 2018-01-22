@@ -93,9 +93,13 @@ class Model {
       Model.determineMetabolismBaseInformation(self.state) &&
       Model.determineMetabolismDerivationInformation(self.state)
     ) {
+
+      // TODO: Maybe also introduce a prompt view for pop-up controls on nodes and such.
+
       // Tip view.
       var tip = new TipView();
       // Control view.
+      // TODO: Maybe it would be more orderly to pass ControlView the controlViews variable directly...
       var tabs = Object.keys(self.state.controlViews);
       var panels = tabs.filter(function (tab) {
         return self.state.controlViews[tab];
@@ -132,6 +136,14 @@ class Model {
           control: control,
           state: self.state
         });
+      }
+      if (Model.determineControlTraversal(self.state)) {
+        // Traversal view.
+        //new TraversalView({
+        //  tip: tip,
+        //  control: control,
+        //  state: self.state
+        //});
       }
       // Exploration view.
       if (!Model.determineTopology(self.state)) {
@@ -227,7 +239,9 @@ class Model {
       !(state.networkNodesMetabolites === null) &&
       !(state.networkLinks === null) &&
       !(state.networkNodesRecords === null) &&
-      !(state.networkLinksRecords === null)
+      !(state.networkLinksRecords === null) &&
+      !(state.subnetworkNodesRecords === null) &&
+      !(state.subnetworkLinksRecords === null)
     );
   }
   /**
@@ -261,6 +275,14 @@ class Model {
   */
   static determineControlCandidacy(state) {
     return state.controlViews.candidacy;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineControlTraversal(state) {
+    return state.controlViews.traversal;
   }
   /**
   * Determines whether the application's state has specific information.

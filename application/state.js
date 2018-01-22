@@ -260,15 +260,25 @@ class State {
       // "networkNodesReactions", and "networkNodesMetabolites".
       "networkLinks",
       // Attribute "networkNodesRecords" stores concise information about
-      // network's nodes for reactions.
+      // network's nodes.
       // Information includes references to attributes "networkNodesReactions",
       // and "networkNodesMetabolites".
       "networkNodesRecords",
-      // Attribute "networkNodesRecords" stores concise information about
-      // network's nodes for reactions.
+      // Attribute "networkLinksRecords" stores concise information about
+      // network's links.
       // Information includes references to attributes "networkNodesReactions",
       // and "networkNodesMetabolites".
       "networkLinksRecords",
+      // Attribute "subnetworkNodesRecords" stores concise information about
+      // network's nodes of interest.
+      // Information includes references to attributes "networkNodesReactions",
+      // and "networkNodesMetabolites".
+      "subnetworkNodesRecords",
+      // Attribute "networkLinksRecords" stores concise information about
+      // network's links of interest.
+      // Information includes references to attributes "networkNodesReactions",
+      // and "networkNodesMetabolites".
+      "subnetworkLinksRecords",
     ];
     var inProgress = [
       // Subnetwork.

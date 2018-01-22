@@ -2679,9 +2679,9 @@ class TopologyView {
     // original information against modifications, especially due to the force
     // simulation.
     self.nodesRecords = General
-    .copyDeepArrayElements(self.state.networkNodesRecords, true);
+    .copyDeepArrayElements(self.state.subnetworkNodesRecords, true);
     self.linksRecords = General
-    .copyDeepArrayElements(self.state.networkLinksRecords, true);
+    .copyDeepArrayElements(self.state.subnetworkLinksRecords, true);
   }
   /**
   * Creates and activates a visual representation of a network.
@@ -3375,8 +3375,9 @@ class TopologyView {
       var reaction = self.state.reactions[candidate.reaction];
       // Collect identifiers of metabolites' nodes that surround the reaction's
       // node.
-      var neighbors = Network.collectNeighborsNodes({
+      var neighbors = Network.collectNodeNeighbors({
         focus: reactionNode.identifier,
+        direction: "neighbors",
         links: self.linksRecords
       });
       // Determine the roles in which metabolites participate in the reaction.
@@ -4006,7 +4007,6 @@ class TopologyView {
     }
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

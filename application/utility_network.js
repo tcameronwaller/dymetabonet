@@ -597,48 +597,28 @@ class Network {
     });
   }
 
-  /**
-  * Collects identifiers of nodes that are direct neighbors of a single focal
-  * node.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.focus Identifier of a single node in a network
-  * that is the focal node.
-  * @param {Array<Object>} parameters.links Records for network's links.
-  * @returns {Array<string>} Identifiers of nodes that are direct neighbors of
-  * focal node.
-  */
-  static collectNeighborsNodes({focus, links} = {}) {
-    // Iterate on links to collect neighbors.
-    var neighbors = links.reduce(function (collection, link) {
-      // Collect identifiers of nodes to which the link connects.
-      var linkNodes = [].concat(link.source, link.target);
-      // Determine whether link connects to focal node.
-      var match = linkNodes.some(function (identifier) {
-        return identifier === focus;
-      });
-      if (match) {
-        // Link connects to focal node.
-        // Include neighbor in collection.
-        // Assume that link connects to a real node and that this node's
-        // identifier is the same that the link references.
-        var neighbor = linkNodes.filter(function (identifier) {
-          return identifier !== focus;
-        });
-        return [].concat(collection, neighbor[0]);
-      } else {
-        // Link does not connect to focal node.
-        // Preserve collection.
-        return collection;
-      }
-    }, []);
-    // Return identifiers of unique neighbors.
-    return General.collectUniqueElements(neighbors);
-  }
-
   //////////////////////////////////////////////////////////////////////////////
 
-  // TODO: I'll also need a function to collect all links between all nodes in some collection.
-
+  /**
+  * Copies records of network's nodes and links.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.networkNodesRecords Information about
+  * network's nodes.
+  * @param {Array<Object>} parameters.networkLinksRecords Information about
+  * network's links.
+  * @returns {Object<Array<Object>>} Information about subnetwork's elements.
+  */
+  static copySubnetworkElements({networkNodesRecords, networkLinksRecords} = {}) {
+    var subnetworkNodesRecords = General
+    .copyDeepArrayElements(networkNodesRecords, true);
+    var subnetworkLinksRecords = General
+    .copyDeepArrayElements(networkLinksRecords, true);
+    // Compile and return information.
+    return {
+      subnetworkNodesRecords: subnetworkNodesRecords,
+      subnetworkLinksRecords: subnetworkLinksRecords
+    };
+  }
   /**
   * Collects identifiers of nodes that are neighbors of a single, central, focal
   * node.
@@ -826,6 +806,47 @@ class Network {
         map: novelMap
       };
     }
+  }
+  /**
+  * Collects identifiers of links between nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.nodes Identifiers of nodes.
+  * @param {Array<Object>} parameters.links Information about network's links.
+  * @returns {Array<string>} Identifiers of links between nodes.
+  */
+  static collectLinksBetweenNodes({nodes, links} = {}) {
+    // Iterate on links.
+    return links.reduce(function (collection, link) {
+      // Collect identifiers of nodes to which the link connects.
+      var linkNodes = [].concat(link.source, link.target);
+      // Determine whether link connects to relevant nodes.
+      if (nodes.includes(linkNodes[0]) && nodes.includes(linkNodes[1])) {
+        // Link connects to relevant nodes.
+        // Include link in collection.
+        if (!collection.includes(link.identifier)) {
+          return [].concat(collection, link.identifier);
+        } else {
+          return collection;
+        }
+      } else {
+        // Link does not connect to focal node.
+        // Preserve collection.
+        return collection;
+      }
+    }, []);
+  }
+  /**
+  * Filters records of nodes and links by identifiers.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.identifiers Identifiers of nodes or links.
+  * @param {Array<Object>} parameters.records Information about network's nodes
+  * or links.
+  * @returns {Array<string>} Information about network's nodes or links.
+  */
+  static filterNodesLinksRecordsByIdentifiers({identifiers, records} = {}) {
+    return records.filter(function (record) {
+      return identifiers.includes(record.identifier);
+    });
   }
 
 

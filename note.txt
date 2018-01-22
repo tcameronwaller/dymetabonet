@@ -4,6 +4,33 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+21 January 2018
+
+----------
+Plan
+
+Create new control view, network or traversal view.
+This view needs a restore button to remove any traversals and set subnetwork to copy of network.
+This view also needs an export button to export information about all nodes' entities, similar to the export from the set view.
+This view also needs a search menu with automatic completion and other controls for proximity traversal.
+
+Create new action to manage the proximity traversal.
+The code is mostly within the executeTemporaryProcedure action.
+
+----------
+Network traversal
+
+Create novel state variables for subnetwork's elements.
+Topology view will only represent subnetwork's elements.
+Without traversal, subnetwork will be copy of network.
+With traversal, subnetwork will be result of traversal.
+
+----------
+Simplification
+
+Consider introducing a default and customizable list of metabolites to simplify.
+
+--------------------------------------------------
 18 January 2018
 
 ----------

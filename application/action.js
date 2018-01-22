@@ -126,7 +126,8 @@ class Action {
     var controlViews = {
       state: true,
       set: false,
-      candidacy: false
+      candidacy: false,
+      traversal: false
     };
     var topology = false;
     var topologyNovelty = true;
@@ -204,6 +205,11 @@ class Action {
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization
     });
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copySubnetworkElements({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
     // Compile variables' values.
     var variablesValues = Object.assign(
       setViewControls,
@@ -211,6 +217,7 @@ class Action {
       setsCardinalitiesSummaries,
       candidatesSimplificationsSummaries,
       networkElements,
+      subnetworkElements
     );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
@@ -251,11 +258,17 @@ class Action {
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization
     });
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copySubnetworkElements({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
     // Compile variables' values.
     var variablesValues = Object.assign(
       candidacyViewControls,
       candidatesSimplificationsSummaries,
       networkElements,
+      subnetworkElements
     );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
@@ -263,6 +276,10 @@ class Action {
       state: state
     });
   }
+
+  // TODO: Implement this for the traversal view...
+  static restoreTraversalViewControls(state) {}
+
   /**
   * Loads from file basic information about metabolic entities and sets.
   * @param {Object} state Application's state.
@@ -332,6 +349,11 @@ class Action {
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization
     });
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copySubnetworkElements({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
     // Compile variables' values.
     var variablesValues = Object.assign(
       totalEntitiesSets,
@@ -339,6 +361,7 @@ class Action {
       setsCardinalitiesSummaries,
       candidatesSimplificationsSummaries,
       networkElements,
+      subnetworkElements
     );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
@@ -431,6 +454,7 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
+    // Create subnetwork's elements.
     var nodes = Network.collectNodesTraverseBreadth({
       focus: "pyr",
       direction: "successors",
@@ -438,7 +462,33 @@ class Action {
       nodes: state.networkNodesRecords,
       links: state.networkLinksRecords
     });
-    console.log(nodes);
+    var links = Network.collectLinksBetweenNodes({
+      nodes: nodes,
+      links: state.networkLinksRecords
+    });
+    var nodesRecords = Network.filterNodesLinksRecordsByIdentifiers({
+      identifiers: nodes,
+      records: state.networkNodesRecords
+    });
+    var linksRecords = Network.filterNodesLinksRecordsByIdentifiers({
+      identifiers: links,
+      records: state.networkLinksRecords
+    });
+    console.log(nodesRecords);
+    console.log(linksRecords);
+    // Compile variables' values.
+    var novelVariablesValues = {
+      subnetworkNodesRecords: nodesRecords,
+      subnetworkLinksRecords: linksRecords
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
 
     // Terminate process timer.
     //console.timeEnd("timer");
@@ -598,6 +648,11 @@ class Action {
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization
     });
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copySubnetworkElements({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
     // Initialize whether to draw a visual representation of network's topology.
     var topology = false;
     // Initialize novelty of network's topology.
@@ -613,7 +668,8 @@ class Action {
       currentEntitiesSets,
       setsCardinalitiesSummaries,
       candidatesSimplificationsSummaries,
-      networkElements
+      networkElements,
+      subnetworkElements
     );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
@@ -792,6 +848,11 @@ class Action {
       metabolites: state.metabolites,
       compartmentalization: compartmentalization
     });
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copySubnetworkElements({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
     // Initialize whether to draw a visual representation of network's topology.
     var topology = false;
     // Initialize novelty of network's topology.
@@ -805,7 +866,8 @@ class Action {
     var variablesValues = Object.assign(
       novelVariablesValues,
       candidatesSimplificationsSummaries,
-      networkElements
+      networkElements,
+      subnetworkElements
     );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
@@ -847,6 +909,11 @@ class Action {
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization
     });
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copySubnetworkElements({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
     // Initialize whether to draw a visual representation of network's topology.
     var topology = false;
     // Initialize novelty of network's topology.
@@ -859,7 +926,8 @@ class Action {
     var variablesValues = Object.assign(
       novelVariablesValues,
       simplifications,
-      networkElements
+      networkElements,
+      subnetworkElements
     );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
