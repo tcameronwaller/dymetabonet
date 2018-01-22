@@ -4,6 +4,20 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+22 January 2018
+
+----------
+Plan
+
+Topological traversals can modify the subnetwork in multiple ways.
+Traversals can select new subnetwork to replace any previous subnetwork.
+Traversals can add to (union) or subtract from (difference) any previous subnetwork.
+
+Start from subnetwork copy of network or start from empty subnetwork.
+
+Create a radio button control in Traversal view for whether to combine traversal selections by union or difference.
+
+--------------------------------------------------
 21 January 2018
 
 ----------

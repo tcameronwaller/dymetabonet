@@ -2332,6 +2332,196 @@ class CandidacyMenuView {
   }
 }
 
+/**
+* Interface to control selections by traversal of network.
+*/
+class TraversalView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.control Instance of ControlView's class.
+  * @param {Object} parameters.state Application's state.
+  */
+  constructor ({tip, control, state} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Set references to other views
+    self.view = self.document.getElementById("view");
+    self.tip = tip;
+    self.control = control;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "traversal",
+      target: self.control.traversalTab,
+      position: "afterend",
+      documentReference: self.document
+    });
+    // Determine whether the container is empty.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create view's invariant elements.
+      // Activate invariant behavior of view's elements.
+      // Create and activate restore.
+      self.createActivateRestore(self);
+      // Create and activate clear.
+      self.createActivateClear(self);
+      // Create and activate export.
+      self.createActivateExport(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+
+      // Create and activate controls for combination.
+      // TODO: additive (union) or subtractive (difference)...
+
+
+      // Create and activate controls for type of traversal.
+      self.createActivateTraversalTypeControl("rogue", self);
+      self.createActivateTraversalTypeControl("proximity", self);
+      self.createActivateTraversalTypeControl("path", self);
+
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create and activate controls for traversal.
+
+    } else {
+      // Container is not empty.
+      // Set references to view's variant elements.
+      // Control for type of traversal.
+      self.rogue = self.document.getElementById("traversal-rogue");
+      self.proximity = self.document.getElementById("traversal-proximity");
+      self.path = self.document.getElementById("traversal-path");
+
+    }
+  }
+  /**
+  * Creates and activates a button to copy subnetwork from network and restore
+  * the view's controls.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestore(self) {
+    // Create button for restoration.
+    var restore = View.createButton({
+      text: "restore",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    restore.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.copySubnetworkRestoreTraversalViewControls(self.state);
+    });
+  }
+  /**
+  * Creates and activates a button to clear the subnetwork and restore the
+  * view's controls.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateClear(self) {
+    // Create button for clear.
+    var clear = View.createButton({
+      text: "clear",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    clear.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.clearSubnetworkRestoreTraversalViewControls(self.state);
+    });
+  }
+  /**
+  * Creates and activates a button to export information.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateExport(self) {
+    // Create button for export.
+    var exporter = View.createButton({
+      text: "export",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    exporter.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.exportNetworkEntitiesSummary(self.state);
+    });
+  }
+  /**
+  * Creates and activates a control for the type of traversal.
+  * @param {string} type Type of traversal, rogue, proximity, or path.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateTraversalTypeControl(type, self) {
+    // Create control for type of traversal.
+    var identifier = "traversal-" + type;
+    self[type] = View.createRadioButtonLabel({
+      identifier: identifier,
+      value: type,
+      name: "type",
+      className: "type",
+      text: type,
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    self[type].addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine type.
+      var type = event.currentTarget.value;
+      // Call action.
+      Action.changeTraversalType(type, self.state);
+    });
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // Create view's variant elements.
+    // Activate variant behavior of view's elements.
+    self.rogue.checked = TraversalView.determineTypeMatch("rogue", self.state);
+    self.proximity.checked = TraversalView
+    .determineTypeMatch("proximity", self.state);
+    self.path.checked = TraversalView.determineTypeMatch("path", self.state);
+  }
+  /**
+  * Determines whether a type of traversal matches the value in the
+  * application's state.
+  * @param {string} type Type of traversal, rogue, proximity, or path.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether type of traversal matches the value in the
+  * application's state.
+  */
+  static determineTypeMatch(type, state) {
+    var value = state.traversalType;
+    return value === type;
+  }
+}
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Exploration view and views within exploration view.
 
@@ -2450,9 +2640,17 @@ class SummaryView {
       // Container is empty.
       // Create view's invariant elements.
       // Activate invariant behavior of view's elements.
-      // Create text.
-      self.summary = self.document.createElement("span");
-      self.container.appendChild(self.summary);
+      // Create instructions.
+      var instruction = self.document.createElement("div");
+      self.container.appendChild(instruction);
+      var message = (
+        "Filters from Set View and simplifications from Candidacy View define "
+        + "network's elements. Network is then accessible to traversals from "
+        + "Traversal View. Subnetwork is actually represented or exported."
+      );
+      instruction.textContent = message;
+      // Create summary.
+      self.createSummary(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create and activate buttons.
@@ -2469,8 +2667,26 @@ class SummaryView {
     } else {
       // Container is not empty.
       // Set references to view's variant elements.
-      self.summary = self.container.getElementsByTagName("span").item(0);
+      self.summaryNetwork = self.container.querySelector("div span.network");
+      self.summarySubnetwork = self
+      .container.querySelector("div span.subnetwork");
     }
+  }
+  /**
+  * Creates a summary of the network and subnetwork.
+  * @param {Object} self Instance of a class.
+  */
+  createSummary(self) {
+    var summary = self.document.createElement("div");
+    self.container.appendChild(summary);
+    self.summaryNetwork = self.document.createElement("span");
+    summary.appendChild(self.summaryNetwork);
+    self.summaryNetwork.classList.add("network");
+    // Create break.
+    summary.appendChild(self.document.createElement("br"));
+    self.summarySubnetwork = self.document.createElement("span");
+    summary.appendChild(self.summarySubnetwork);
+    self.summarySubnetwork.classList.add("subnetwork");
   }
   /**
   * Restores aspects of the view's composition and behavior that vary with
@@ -2481,12 +2697,19 @@ class SummaryView {
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
     // Summarize the network's elements.
-    var nodes = self.state.networkNodesRecords.length;
-    var links = self.state.networkLinksRecords.length;
-    var message = (
-      "nodes : " + nodes + "... links: " + links
+    var networkNodes = self.state.networkNodesRecords.length;
+    var networkLinks = self.state.networkLinksRecords.length;
+    var networkMessage = (
+      "Network's nodes : " + networkNodes + "... links: " + networkLinks
     );
-    self.summary.textContent = message;
+    self.summaryNetwork.textContent = networkMessage;
+    // Summarize the subnetwork's elements.
+    var subnetworkNodes = self.state.subnetworkNodesRecords.length;
+    var subnetworkLinks = self.state.subnetworkLinksRecords.length;
+    var subnetworkMessage = (
+      "Subnetwork's nodes : " + subnetworkNodes + "... links: " + subnetworkLinks
+    );
+    self.summarySubnetwork.textContent = subnetworkMessage;
   }
 }
 

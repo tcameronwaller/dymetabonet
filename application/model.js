@@ -139,11 +139,11 @@ class Model {
       }
       if (Model.determineControlTraversal(self.state)) {
         // Traversal view.
-        //new TraversalView({
-        //  tip: tip,
-        //  control: control,
-        //  state: self.state
-        //});
+        new TraversalView({
+          tip: tip,
+          control: control,
+          state: self.state
+        });
       }
       // Exploration view.
       if (!Model.determineTopology(self.state)) {

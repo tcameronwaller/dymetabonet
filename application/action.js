@@ -131,8 +131,12 @@ class Action {
     };
     var topology = false;
     var topologyNovelty = true;
+    // Initialize controls for set view.
     var setViewControls = Action.initializeSetViewControls();
+    // Initialize controls for candidacy view.
     var candidacyViewControls = Action.initializeCandidacyViewControls();
+    // Initialize controls for traversal view.
+    var traversalViewControls = Action.initializeTraversalViewControls();
     // Compile variables' values.
     var novelVariablesValues = {
       source: source,
@@ -143,7 +147,8 @@ class Action {
     var variablesValues = Object.assign(
       novelVariablesValues,
       setViewControls,
-      candidacyViewControls
+      candidacyViewControls,
+      traversalViewControls
     );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
@@ -156,6 +161,7 @@ class Action {
   * @param {Object} state Application's state.
   */
   static restoreSetViewControls(state) {
+    // Initialize controls for set view.
     var setViewControls = Action.initializeSetViewControls();
     // Determine current entities' attribution to sets.
     var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
@@ -230,6 +236,7 @@ class Action {
   * @param {Object} state Application's state.
   */
   static restoreCandidacyViewControls(state) {
+    // Initialize controls for candidacy view.
     var candidacyViewControls = Action.initializeCandidacyViewControls();
     // Determine candidate entities, their simplifications, and summaries.
     var candidatesSimplificationsSummaries = Candidacy
@@ -276,10 +283,54 @@ class Action {
       state: state
     });
   }
-
-  // TODO: Implement this for the traversal view...
-  static restoreTraversalViewControls(state) {}
-
+  /**
+  * Copies the subnetwork from the network and restores values of variables of
+  * application's controls for traversal view.
+  * @param {Object} state Application's state.
+  */
+  static copySubnetworkRestoreTraversalViewControls(state) {
+    // Initialize controls for traversal view.
+    var traversalViewControls = Action.initializeTraversalViewControls();
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copySubnetworkElements({
+      networkNodesRecords: state.networkNodesRecords,
+      networkLinksRecords: state.networkLinksRecords
+    });
+    // Compile variables' values.
+    var variablesValues = Object.assign(
+      traversalViewControls,
+      subnetworkElements
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Clears the subnetwork and restores values of variables of application's
+  * controls for traversal view.
+  * @param {Object} state Application's state.
+  */
+  static clearSubnetworkRestoreTraversalViewControls(state) {
+    // Initialize controls for traversal view.
+    var traversalViewControls = Action.initializeTraversalViewControls();
+    // Create subnetwork's elements.
+    var subnetworkElements = {
+      subnetworkNodesRecords: [],
+      subnetworkLinksRecords: []
+    };
+    // Compile variables' values.
+    var variablesValues = Object.assign(
+      traversalViewControls,
+      subnetworkElements
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
   /**
   * Loads from file basic information about metabolic entities and sets.
   * @param {Object} state Application's state.
@@ -474,8 +525,6 @@ class Action {
       identifiers: links,
       records: state.networkLinksRecords
     });
-    console.log(nodesRecords);
-    console.log(linksRecords);
     // Compile variables' values.
     var novelVariablesValues = {
       subnetworkNodesRecords: nodesRecords,
@@ -522,6 +571,54 @@ class Action {
     var metabolitesSummary = Evaluation.createEntitiesSummary({
       type: "metabolite",
       identifiers: Object.keys(state.filterMetabolitesSets),
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalReactionsSets,
+      metabolitesSets: state.totalMetabolitesSets,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    var metabolitesSummaryString = General
+    .convertRecordsStringTabSeparateTable(metabolitesSummary);
+    General.saveString("metabolites_summary.txt", metabolitesSummaryString);
+  }
+  /**
+  * Prepares and exports information about entities, reactions and metabolites,
+  * that merit representation in the subnetwork.
+  * @param {Object} state Application's state.
+  */
+  static exportNetworkEntitiesSummary(state) {
+    // Prepare information.
+    // Save information.
+    // Reactions.
+    var nodesReactions = state.subnetworkNodesRecords.filter(function (record) {
+      return record.type === "reaction";
+    });
+    var nodesReactionsIdentifiers = General
+    .collectValueFromObjects("identifier", nodesReactions);
+    var reactionsSummary = Evaluation.createEntitiesSummary({
+      type: "reaction",
+      identifiers: nodesReactionsIdentifiers,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalReactionsSets,
+      metabolitesSets: state.totalMetabolitesSets,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    var reactionsSummaryString = General
+    .convertRecordsStringTabSeparateTable(reactionsSummary);
+    General.saveString("reactions_summary.txt", reactionsSummaryString);
+    // Metabolites.
+    var nodesMetabolites = state
+    .subnetworkNodesRecords.filter(function (record) {
+      return record.type === "metabolite";
+    });
+    var nodesMetabolitesIdentifiers = General
+    .collectValueFromObjects("identifier", nodesMetabolites);
+    var metabolitesSummary = Evaluation.createEntitiesSummary({
+      type: "metabolite",
+      identifiers: nodesMetabolitesIdentifiers,
       reactions: state.reactions,
       metabolites: state.metabolites,
       reactionsSets: state.totalReactionsSets,
@@ -936,6 +1033,28 @@ class Action {
     });
   }
   /**
+  * Changes the selection of type of controls in traversal view.
+  * @param {string} type Type of traversal, rogue, proximity, or path.
+  * @param {Object} state Application's state.
+  */
+  static changeTraversalType(type, state) {
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalType: type
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+
+
+
+
+
+  /**
   * Changes the selection of topology.
   * @param {Object} state Application's state.
   */
@@ -987,6 +1106,7 @@ class Action {
   * @param {Object} state Application's state.
   */
   static initializeSetViewControls() {
+    // Initialize controls.
     var setsFilters = Attribution.createInitialSetsFilters();
     var setsEntities = "metabolites";
     var setsFilter = false;
@@ -1009,6 +1129,7 @@ class Action {
   * @param {Object} state Application's state.
   */
   static initializeCandidacyViewControls() {
+    // Initialize controls.
     var compartmentalization = false;
     var simplifications = Candidacy.createInitialSimplifications();
     var candidatesSearches = Candidacy.createInitialCandidatesSearches();
@@ -1024,6 +1145,23 @@ class Action {
     // Return information.
     return variablesValues;
   }
+  /**
+  * Initializes values of variables of application's controls for traversal
+  * view.
+  * @param {Object} state Application's state.
+  */
+  static initializeTraversalViewControls() {
+    // Initialize controls.
+    var traversalType = "rogue";
+    // Compile information.
+    var variablesValues = {
+      traversalType: traversalType
+    };
+    // Return information.
+    return variablesValues;
+  }
+
+
   /**
   * Restores basic information about metabolic entities and sets.
   * @param {Object} parameters Destructured object of parameters.

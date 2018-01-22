@@ -269,6 +269,10 @@ class State {
       // Information includes references to attributes "networkNodesReactions",
       // and "networkNodesMetabolites".
       "networkLinksRecords",
+      // Attribute "traversalType" stores information about the type of
+      // traversal, rogue, proximity, or path, for which to create controls in
+      // traversal view.
+      "traversalType",
       // Attribute "subnetworkNodesRecords" stores concise information about
       // network's nodes of interest.
       // Information includes references to attributes "networkNodesReactions",
