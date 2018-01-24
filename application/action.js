@@ -1121,15 +1121,71 @@ class Action {
       });
     }
   }
-
-  static changeTraversalProximityFocus({identifier, type, state} = {}) {}
-
-  static changeTraversalProximityDirection() {}
-
-  static changeTraversalProximityDepth() {}
-
-
-
+  /**
+  * Changes the selection of focus for proximity traversal.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeTraversalProximityFocus({identifier, type, state} = {}) {
+    // Create record.
+    var record = {
+      identifier: identifier,
+      type: type
+    };
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalProximityFocus: record
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of direction for proximity traversal.
+  * @param {Object} state Application's state.
+  */
+  static changeTraversalProximityDirection(state) {
+    // Determine direction.
+    if (state.traversalProximityDirection === "successors") {
+      var direction = "neighbors";
+    } else if (state.traversalProximityDirection === "neighbors") {
+      var direction = "predecessors";
+    } else if (state.traversalProximityDirection === "predecessors") {
+      var direction = "successors";
+    }
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalProximityDirection: direction
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of depth for proximity traversal.
+  * @param {number} depth Depth in links to which to traverse.
+  * @param {Object} state Application's state.
+  */
+  static changeTraversalProximityDepth(depth, state) {
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalProximityDepth: depth
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
   /**
   * Executes proximity traversal and combination on the network.
   * @param {Object} state Application's state.
@@ -1269,7 +1325,7 @@ class Action {
     var traversalType = "rogue";
     var traversalRogueFocus = null;
     var traversalProximityFocus = null;
-    var traversalProximityDirection = "neighbors";
+    var traversalProximityDirection = "successors";
     var traversalProximityDepth = 1;
     // Compile information.
     var variablesValues = {

@@ -4,6 +4,19 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+24 January 2018
+
+----------
+Plan
+
+Complete implementation of process and interface controls for proximity traversal.
+
+Implement path traversal algorithm.
+Implement process and controls for path traversal.
+
+Implement other refinements to interface, as planned since meet with Jared P. Rutter and Alexander Lex on 8 January 2018.
+
+--------------------------------------------------
 23 January 2018
 
 ----------

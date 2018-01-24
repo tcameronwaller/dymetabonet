@@ -2675,7 +2675,7 @@ class TraversalView {
     if (self.state.traversalType === "rogue") {
       self.createActivateRestoreRogueTraversalControl(self);
     } else if (self.state.traversalType === "proximity") {
-      //self.createActivateProximityTraversalControl(self);
+      self.createActivateRestoreProximityTraversalControl(self);
     } else if (self.state.traversalType === "path") {
       //self.createActivatePathTraversalControl(self);
     }
@@ -2704,8 +2704,8 @@ class TraversalView {
     } else {
       // Elements exist for traversal's controls.
       // Set references to elements.
-      self.traversalRogueSearch = self
-      .document.getElementById("traversal-rogue-search");
+      self.traversalRogueFocusSearch = self
+      .document.getElementById("traversal-rogue-focus-search");
     }
   }
   /**
@@ -2720,8 +2720,8 @@ class TraversalView {
     General.removeDocumentChildren(self.controlContainer);
     // Create and activate elements.
     // Create search menu.
-    self.traversalRogueSearch = View.createSearchOptionsList({
-      identifier: "traversal-rogue-search",
+    self.traversalRogueFocusSearch = View.createSearchOptionsList({
+      identifier: "traversal-rogue-focus-search",
       prompt: "select node...",
       parent: self.controlContainer,
       documentReference: self.document
@@ -2742,7 +2742,7 @@ class TraversalView {
   */
   activateRogueTraversalControl(self) {
     // Activate search menu.
-    self.traversalRogueSearch.addEventListener("change", function (event) {
+    self.traversalRogueFocusSearch.addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Determine identifier of any option that matches the search's value.
       var identifier = View.determineSearchOptionName(event.currentTarget);
@@ -2797,7 +2797,7 @@ class TraversalView {
     });
     // Create search menu's options.
     View.createSearchOptions({
-      list: self.traversalRogueSearch.list,
+      list: self.traversalRogueFocusSearch.list,
       records: nodesOptions
     });
     // Represent search's current value.
@@ -2816,11 +2816,163 @@ class TraversalView {
         var candidate = self.state.reactionsCandidates[node.candidate];
         var name = candidate.name;
       }
-      self.traversalRogueSearch.value = name;
+      self.traversalRogueFocusSearch.value = name;
     } else {
-      self.traversalRogueSearch.value = "";
+      self.traversalRogueFocusSearch.value = "";
     }
   }
+  /**
+  * Creates, activates, and restores controls for proximity traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestoreProximityTraversalControl(self) {
+    self.createActivateProximityTraversalControl(self);
+    self.restoreProximityTraversalControl(self);
+  }
+  /**
+  * Creates and activates controls for proximity traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateProximityTraversalControl(self) {
+    // Use class of controls' container to store type of controls.
+    // Determine whether controls exist for the type of traversal.
+    if (!self.controlContainer.classList.contains("proximity")) {
+      // Elements do not exist for traversal's controls.
+      // Create elements.
+      self.createProximityTraversalControl(self);
+      // Activate behavior.
+      self.activateProximityTraversalControl(self);
+    } else {
+      // Elements exist for traversal's controls.
+      // Set references to elements.
+      self.traversalProximityFocusSearch = self
+      .document.getElementById("traversal-proximity-focus-search");
+    }
+  }
+  /**
+  * Creates controls for proximity traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createProximityTraversalControl(self) {
+    // Change class of the container.
+    self.controlContainer.classList.remove("rogue", "proximity", "path");
+    self.controlContainer.classList.add("proximity");
+    // Remove contents of container.
+    General.removeDocumentChildren(self.controlContainer);
+    // Create and activate elements.
+    // Create search menu.
+    self.traversalProximityFocusSearch = View.createSearchOptionsList({
+      identifier: "traversal-proximity-focus-search",
+      prompt: "select node...",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create break.
+    self.controlContainer.appendChild(self.document.createElement("br"));
+    // Create direction.
+    // Create button for direction.
+    self.direction = View.createButton({
+      text: "",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create break.
+    self.controlContainer.appendChild(self.document.createElement("br"));
+    // Create execute.
+    // Create button for execution.
+    self.execute = View.createButton({
+      text: "execute",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Activates controls for proximity traversal.
+  * @param {Object} self Instance of a class.
+  */
+  activateProximityTraversalControl(self) {
+    // Activate search menu.
+    self.traversalRogueFocusSearch.addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine identifier of any option that matches the search's value.
+      var identifier = View.determineSearchOptionName(event.currentTarget);
+      // Determine whether search's value matches a valid option.
+      if (identifier) {
+        // Access information.
+        var node = self.state.networkNodesRecords.find(function (record) {
+          return identifier === record.identifier;
+        });
+        // Call action.
+        Action.changeTraversalRogueFocus({
+          identifier: identifier,
+          type: node.type,
+          state: self.state
+        });
+      } else {
+        event.currentTarget.value = "";
+      }
+    });
+    // Activate execute.
+    self.execute.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.executeRogueTraversalCombination(self.state);
+    });
+  }
+  /**
+  * Restores controls for rogue traversal.
+  * @param {Object} self Instance of a class.
+  */
+  restoreProximityTraversalControl(self) {
+    // Restore controls' settings.
+    // Prepare information for search menu's options.
+    var nodesOptions = self.state.networkNodesRecords.map(function (record) {
+      if (record.type === "metabolite") {
+        // Access information.
+        var node = self.state.networkNodesMetabolites[record.identifier];
+        var candidate = self.state.metabolitesCandidates[node.candidate];
+        var name = candidate.name;
+      } else if (record.type === "reaction") {
+        // Access information.
+        var node = self.state.networkNodesReactions[record.identifier];
+        var candidate = self.state.reactionsCandidates[node.candidate];
+        var name = candidate.name;
+      }
+      // Create record.
+      return {
+        identifier: record.identifier,
+        name: name,
+        type: record.type
+      };
+    });
+    // Create search menu's options.
+    View.createSearchOptions({
+      list: self.traversalRogueFocusSearch.list,
+      records: nodesOptions
+    });
+    // Represent search's current value.
+    if (self.state.traversalRogueFocus) {
+      if (self.state.traversalRogueFocus.type === "metabolite") {
+        // Access information.
+        var node = self
+        .state
+        .networkNodesMetabolites[self.state.traversalRogueFocus.identifier];
+        var candidate = self.state.metabolitesCandidates[node.candidate];
+        var name = candidate.name;
+      } else if (self.state.traversalRogueFocus.type === "reaction") {
+        // Access information.
+        var node = self
+        .state.networkNodesReactions[self.state.traversalRogueFocus.identifier];
+        var candidate = self.state.reactionsCandidates[node.candidate];
+        var name = candidate.name;
+      }
+      self.traversalRogueFocusSearch.value = name;
+    } else {
+      self.traversalRogueFocusSearch.value = "";
+    }
+  }
+
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
