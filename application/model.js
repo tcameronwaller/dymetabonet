@@ -299,6 +299,18 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
+  static determineProximityTraversal(state) {
+    return (
+      !(state.traversalProximityFocus === null) &&
+      !(state.traversalProximityDirection === null) &&
+      !(state.traversalProximityDepth === null)
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
   static determineTopology(state) {
     return state.topology;
   }

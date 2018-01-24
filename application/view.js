@@ -2726,6 +2726,8 @@ class TraversalView {
       parent: self.controlContainer,
       documentReference: self.document
     });
+    // Create break.
+    self.controlContainer.appendChild(self.document.createElement("br"));
     // Create execute.
     // Create button for execution.
     self.execute = View.createButton({
@@ -2751,7 +2753,7 @@ class TraversalView {
           return identifier === record.identifier;
         });
         // Call action.
-        Action.changeRogueFocus({
+        Action.changeTraversalRogueFocus({
           identifier: identifier,
           type: node.type,
           state: self.state
@@ -2764,7 +2766,7 @@ class TraversalView {
     self.execute.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.executeRogueTraversal(self.state);
+      Action.executeRogueTraversalCombination(self.state);
     });
   }
   /**
@@ -2799,17 +2801,18 @@ class TraversalView {
       records: nodesOptions
     });
     // Represent search's current value.
-    if (self.state.rogueFocus) {
-      if (self.state.rogueFocus.type === "metabolite") {
+    if (self.state.traversalRogueFocus) {
+      if (self.state.traversalRogueFocus.type === "metabolite") {
         // Access information.
         var node = self
-        .state.networkNodesMetabolites[self.state.rogueFocus.identifier];
+        .state
+        .networkNodesMetabolites[self.state.traversalRogueFocus.identifier];
         var candidate = self.state.metabolitesCandidates[node.candidate];
         var name = candidate.name;
-      } else if (self.state.rogueFocus.type === "reaction") {
+      } else if (self.state.traversalRogueFocus.type === "reaction") {
         // Access information.
         var node = self
-        .state.networkNodesReactions[self.state.rogueFocus.identifier];
+        .state.networkNodesReactions[self.state.traversalRogueFocus.identifier];
         var candidate = self.state.reactionsCandidates[node.candidate];
         var name = candidate.name;
       }

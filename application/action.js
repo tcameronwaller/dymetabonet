@@ -509,7 +509,7 @@ class Action {
     var nodes = Network.collectNodesTraverseBreadth({
       focus: "pyr",
       direction: "successors",
-      limit: 2,
+      depth: 2,
       nodes: state.networkNodesRecords,
       links: state.networkLinksRecords
     });
@@ -1069,7 +1069,7 @@ class Action {
   * @param {string} parameters.type Type of a node, metabolite or reaction.
   * @param {Object} parameters.state Application's state.
   */
-  static changeRogueFocus({identifier, type, state} = {}) {
+  static changeTraversalRogueFocus({identifier, type, state} = {}) {
     // Create record.
     var record = {
       identifier: identifier,
@@ -1077,7 +1077,7 @@ class Action {
     };
     // Compile variables' values.
     var novelVariablesValues = {
-      rogueFocus: record
+      traversalRogueFocus: record
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
@@ -1087,15 +1087,61 @@ class Action {
     });
   }
   /**
-  * Executes rogue traversal of the network.
+  * Executes rogue traversal and combination on the network.
   * @param {Object} state Application's state.
   */
-  static executeRogueTraversal(state) {
+  static executeRogueTraversalCombination(state) {
     // Determine whether application's state includes valid variables for
     // procedure.
     if (Model.determineRogueTraversal(state)) {
       var subnetworkElements = Network.combineRogueNodeNetwork({
-        focus: state.rogueFocus.identifier,
+        focus: state.traversalRogueFocus.identifier,
+        combination: state.traversalCombination,
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize whether to draw a visual representation of network's topology.
+      var topology = false;
+      // Initialize novelty of network's topology.
+      var topologyNovelty = true;
+      // Compile variables' values.
+      var novelVariablesValues = {
+        topology: topology,
+        topologyNovelty: topologyNovelty
+      };
+      var variablesValues = Object.assign(
+        novelVariablesValues,
+        subnetworkElements
+      );
+      // Submit variables' values to the application's state.
+      Action.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+
+  static changeTraversalProximityFocus({identifier, type, state} = {}) {}
+
+  static changeTraversalProximityDirection() {}
+
+  static changeTraversalProximityDepth() {}
+
+
+
+  /**
+  * Executes proximity traversal and combination on the network.
+  * @param {Object} state Application's state.
+  */
+  static executeProximityTraversalCombination(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineProximityTraversal(state)) {
+      var subnetworkElements = Network.combineProximityNetwork({
+        focus: state.traversalProximityFocus.identifier,
+        direction: state.traversalProximityDirection,
+        depth: state.traversalProximityDepth,
         combination: state.traversalCombination,
         subnetworkNodesRecords: state.subnetworkNodesRecords,
         networkNodesRecords: state.networkNodesRecords,
@@ -1221,12 +1267,18 @@ class Action {
     // Initialize controls.
     var traversalCombination = "difference";
     var traversalType = "rogue";
-    var rogueFocus = null;
+    var traversalRogueFocus = null;
+    var traversalProximityFocus = null;
+    var traversalProximityDirection = "neighbors";
+    var traversalProximityDepth = 1;
     // Compile information.
     var variablesValues = {
       traversalCombination: traversalCombination,
       traversalType: traversalType,
-      rogueFocus: rogueFocus
+      traversalRogueFocus: traversalRogueFocus,
+      traversalProximityFocus: traversalProximityFocus,
+      traversalProximityDirection: traversalProximityDirection,
+      traversalProximityDepth: traversalProximityDepth
     };
     // Return information.
     return variablesValues;

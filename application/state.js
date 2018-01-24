@@ -279,12 +279,25 @@ class State {
       // traversal, rogue, proximity, or path, for which to create controls in
       // traversal view.
       "traversalType",
-      // Attribute "rogueFocus" stores information about a single network's node
-      // to include or exclude from the subnetwork.
+      // Attribute "traversalRogueFocus" stores information about a network's
+      // single node to include or exclude from the subnetwork.
       // Information includes references to attributes
       // "networkNodesMetabolites", "networkNodesReactions", and
       // "networkNodesRecords".
-      "rogueFocus",
+      "traversalRogueFocus",
+      // Attribute "traversalProximityFocus" stores information about a
+      // network's single focal node for proximity traversal.
+      // Information includes references to attributes
+      // "networkNodesMetabolites", "networkNodesReactions", and
+      // "networkNodesRecords".
+      "traversalProximityFocus",
+      // Attribute "traversalProximityDirection" stores information about the
+      // direction of proximity traversal, either following predecessors,
+      // neighbors, or successors from the focal node.
+      "traversalProximityDirection",
+      // Attribute "traversalProximityDepth" stores information about the depth
+      // of the proximity traversal in links from the focal node.
+      "traversalProximityDepth",
       // Attribute "subnetworkNodesRecords" stores concise information about
       // network's nodes of interest.
       // Information includes references to attributes "networkNodesReactions",

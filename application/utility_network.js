@@ -598,6 +598,7 @@ class Network {
   }
 
   //////////////////////////////////////////////////////////////////////////////
+  // Consider moving this to a "Traversal" utility class.
 
   /**
   * Copies records of network's nodes and links.
@@ -670,12 +671,12 @@ class Network {
   * @param {string} parameters.direction Direction in which to traverse links,
   * "predecessors" for target to source, "successors" for source to target,
   * "neighbors" for either.
-  * @param {number} parameters.limit Depth in links to which to traverse.
+  * @param {number} parameters.depth Depth in links to which to traverse.
   * @param {Array<Object>} parameters.links Information about network's links.
   * @returns {Array<string>} Identifiers of nodes that are proximal to focal
   * node.
   */
-  static collectNodesTraverseBreadth({focus, direction, limit, links} = {}) {
+  static collectNodesTraverseBreadth({focus, direction, depth, links} = {}) {
     // Collect nodes in a breadth-first traversal from a central focal node.
     // This algorithm does not store paths from the traversal.
     // Create a map of nodes at each depth from focus.
@@ -683,7 +684,7 @@ class Network {
       depth: 0,
       currentQueue: {[focus]: 0},
       direction: direction,
-      limit: limit,
+      limit: depth,
       map: {},
       links: links
     });
@@ -895,6 +896,68 @@ class Network {
       var novelNodesIdentifiers = nodesIdentifiers
       .filter(function (identifier) {
         return !(identifier === focus);
+      });
+    }
+    // Collect links between nodes.
+    var novelLinksIdentifiers = Network.collectLinksBetweenNodes({
+      nodes: novelNodesIdentifiers,
+      links: networkLinksRecords
+    });
+    // Collect records for nodes and links.
+    return Network.collectNodesLinksRecordsByIdentifiers({
+      nodesIdentifiers: novelNodesIdentifiers,
+      linksIdentifiers: novelLinksIdentifiers,
+      networkNodesRecords: networkNodesRecords,
+      networkLinksRecords: networkLinksRecords
+    });
+  }
+  /**
+  * Combines a proximity traversal to a collection of nodes and collects links
+  * between nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.focus Identifier of a single node in a network.
+  * @param {string} parameters.direction Direction in which to traverse links,
+  * "predecessors" for target to source, "successors" for source to target,
+  * "neighbors" for either.
+  * @param {number} parameters.depth Depth in links to which to traverse.
+  * @param {string} parameters.combination Method of combination, union or
+  * difference.
+  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
+  * subnetwork's nodes.
+  * @param {Array<Object>} parameters.networkNodesRecords Information about
+  * network's nodes.
+  * @param {Array<Object>} parameters.networkLinksRecords Information about
+  * network's links.
+  * @returns {Object<Array<Object>>} Information about network's elements.
+  */
+  static combineProximityNetwork({focus, direction, depth, combination, subnetworkNodesRecords, networkNodesRecords, networkLinksRecords} = {}) {
+    // Determine identifiers of nodes in proximity traversal.
+    var proximityNodesIdentifiers = Network.collectNodesTraverseBreadth({
+      focus: focus,
+      direction: direction,
+      depth: depth,
+      nodes: networkNodesRecords,
+      links: networkLinksRecords
+    });
+    // Access identifiers of nodes in subnetwork.
+    var nodesIdentifiers = General
+    .collectValueFromObjects("identifier", subnetworkNodesRecords);
+    // Combine single rogue focal node to nodes in subnetwork.
+    if (combination === "union") {
+      // Combine previous and current nodes by addition.
+      var novelNodesIdentifiers = proximityNodesIdentifiers
+      .reduce(function (collection, identifier) {
+        if (!collection.includes(identifier)) {
+          return [].concat(collection, identifier);
+        } else {
+          return collection;
+        }
+      }, nodesIdentifiers);
+    } else if (combination === "difference") {
+      // Combine previous and current nodes by subtraction.
+      var novelNodesIdentifiers = nodesIdentifiers
+      .filter(function (identifier) {
+        return !(proximityNodesIdentifiers.includes(identifier));
       });
     }
     // Collect links between nodes.
