@@ -268,11 +268,23 @@ class State {
       // network's links.
       // Information includes references to attributes "networkNodesReactions",
       // and "networkNodesMetabolites".
-      "networkLinksRecords",
+      "networkLinksRecords"
+    ];
+    var subnetwork = [
+      // Attribute "traversalCombination" stores information about the strategy,
+      // union or difference, for combination of sets of nodes from traversals
+      // in traversal view.
+      "traversalCombination",
       // Attribute "traversalType" stores information about the type of
       // traversal, rogue, proximity, or path, for which to create controls in
       // traversal view.
       "traversalType",
+      // Attribute "rogueFocus" stores information about a single network's node
+      // to include or exclude from the subnetwork.
+      // Information includes references to attributes
+      // "networkNodesMetabolites", "networkNodesReactions", and
+      // "networkNodesRecords".
+      "rogueFocus",
       // Attribute "subnetworkNodesRecords" stores concise information about
       // network's nodes of interest.
       // Information includes references to attributes "networkNodesReactions",
@@ -300,7 +312,8 @@ class State {
       context,
       candidateEntities,
       candidatesSummaries,
-      network
+      network,
+      subnetwork
     );
   }
   /**

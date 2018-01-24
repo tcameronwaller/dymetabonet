@@ -4,6 +4,15 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+23 January 2018
+
+----------
+
+Restore the traversal view's controls to default with every change to the network or subnetwork.
+
+Complete controls for rogue, proximity, and path.
+
+--------------------------------------------------
 22 January 2018
 
 ----------

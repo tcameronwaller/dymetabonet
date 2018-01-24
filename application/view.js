@@ -632,6 +632,100 @@ class View {
     // Return references to elements.
     return barMarks;
   }
+  /**
+  * Creates a search menu with a list for options for automatic completion.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier for element.
+  * @param {string} parameters.prompt Prompt to display within element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createSearchOptionsList({identifier, prompt, parent, documentReference} = {}) {
+    // Create container.
+    var container = documentReference.createElement("span");
+    parent.appendChild(container);
+    // Create list of options.
+    var listIdentifier = identifier + "-options-list";
+    var list = documentReference.createElement("datalist");
+    container.appendChild(list);
+    list.setAttribute("id", listIdentifier);
+    // Create search tool.
+    var search = documentReference.createElement("input");
+    container.appendChild(search);
+    search.setAttribute("type", "search");
+    search.setAttribute("list", listIdentifier);
+    search.setAttribute("placeholder", prompt);
+    search.setAttribute("autocomplete", "off");
+    // Return reference to element.
+    return search;
+  }
+  /**
+  * Creates options for a search menu.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.list Reference to list of options.
+  * @param {Array<Object>} parameters.records Information about options.
+  * @returns {Object} Reference to element.
+  */
+  static createSearchOptions({list, records} = {}) {
+    // Create options for search.
+    // Select parent.
+    var parent = d3.select(list);
+    // Define function to access data.
+    function access() {
+      return records;
+    };
+    // Create children elements by association to data.
+    var options = View.createElementsData({
+      parent: parent,
+      type: "option",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    options
+    .attr("value", function (element, index, nodes) {
+      return element.name;
+    })
+    .attr("label", function (element, index, nodes) {
+      return element.name;
+    })
+    .attr("name", function (element, index, nodes) {
+      return element.identifier;
+    });
+  }
+  /**
+  * Determines the name of an option that matches a search's value.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.element Reference to element.
+  * @returns {string} Name of matching option.
+  */
+  static determineSearchOptionName(search) {
+    // Options from datalist elements do not report events.
+    // Rather, search input elements report events.
+    // Respond to event on input search element and access relevant information
+    // that associates with the element.
+    // Determine the search's value.
+    var name = search.value;
+    // Determine the search's list.
+    var list = search.list;
+    // Determine the search's options.
+    var options = list.getElementsByTagName("option");
+    var names = General.extractValuesDocumentElements(options);
+    // Determine whether the search value matches a valid option.
+    if (names.includes(name)) {
+      // The search's value matches a valid option.
+      // Select matching option.
+      var option = Array.from(options).find(function (element) {
+        return element.value === name;
+      });
+      // Determine option's value.
+      var value = option.getAttribute("name");
+    } else {
+      var value = null;
+    }
+    return value;
+  }
 }
 
 // TODO: Enable the tip view to receive any type of content, including other containers like div or table
@@ -2379,6 +2473,8 @@ class TraversalView {
       // Container is empty.
       // Create view's invariant elements.
       // Activate invariant behavior of view's elements.
+
+      // TODO: Add informative tips on hover over each button...
       // Create and activate restore.
       self.createActivateRestore(self);
       // Create and activate clear.
@@ -2389,26 +2485,33 @@ class TraversalView {
       self.container.appendChild(self.document.createElement("br"));
 
       // Create and activate controls for combination.
-      // TODO: additive (union) or subtractive (difference)...
-
-
+      self.createActivateCombinationControl("union", self);
+      self.createActivateCombinationControl("difference", self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
       // Create and activate controls for type of traversal.
       self.createActivateTraversalTypeControl("rogue", self);
       self.createActivateTraversalTypeControl("proximity", self);
       self.createActivateTraversalTypeControl("path", self);
-
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
-      // Create and activate controls for traversal.
-
+      // Create container for traversal's controls.
+      self.controlContainer = self.document.createElement("div");
+      self.container.appendChild(self.controlContainer);
+      self.controlContainer.setAttribute("id", "traversal-control-container");
     } else {
       // Container is not empty.
       // Set references to view's variant elements.
+      // Control for combination.
+      self.union = self.document.getElementById("combination-union");
+      self.difference = self.document.getElementById("combination-difference");
       // Control for type of traversal.
       self.rogue = self.document.getElementById("traversal-rogue");
       self.proximity = self.document.getElementById("traversal-proximity");
       self.path = self.document.getElementById("traversal-path");
-
+      // Container for traversal's controls.
+      self.controlContainer = self
+      .document.getElementById("traversal-control-container");
     }
   }
   /**
@@ -2468,6 +2571,32 @@ class TraversalView {
     });
   }
   /**
+  * Creates and activates a control for the combination of sets of nodes.
+  * @param {string} type Type of combination, union or difference.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateCombinationControl(type, self) {
+    // Create control for combination.
+    var identifier = "combination-" + type;
+    self[type] = View.createRadioButtonLabel({
+      identifier: identifier,
+      value: type,
+      name: "combination",
+      className: "combination",
+      text: type,
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    self[type].addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine type.
+      var type = event.currentTarget.value;
+      // Call action.
+      Action.changeCombination(type, self.state);
+    });
+  }
+  /**
   * Creates and activates a control for the type of traversal.
   * @param {string} type Type of traversal, rogue, proximity, or path.
   * @param {Object} self Instance of a class.
@@ -2478,8 +2607,8 @@ class TraversalView {
     self[type] = View.createRadioButtonLabel({
       identifier: identifier,
       value: type,
-      name: "type",
-      className: "type",
+      name: "traversal",
+      className: "traversal",
       text: type,
       parent: self.container,
       documentReference: self.document
@@ -2501,10 +2630,29 @@ class TraversalView {
   restoreView(self) {
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
-    self.rogue.checked = TraversalView.determineTypeMatch("rogue", self.state);
+    self.union.checked = TraversalView
+    .determineTraversalCombinationMatch("union", self.state);
+    self.difference.checked = TraversalView
+    .determineTraversalCombinationMatch("difference", self.state);
+    self.rogue.checked = TraversalView
+    .determineTraversalTypeMatch("rogue", self.state);
     self.proximity.checked = TraversalView
-    .determineTypeMatch("proximity", self.state);
-    self.path.checked = TraversalView.determineTypeMatch("path", self.state);
+    .determineTraversalTypeMatch("proximity", self.state);
+    self.path.checked = TraversalView
+    .determineTraversalTypeMatch("path", self.state);
+    // Create, activate, and restore controls for traversal.
+    self.createActivateRestoreTraversalControl(self);
+  }
+  /**
+  * Determines whether a combination strategy matches the value in the
+  * application's state.
+  * @param {string} type Type of combination, union or difference.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether combination strategy matches the value in the
+  * application's state.
+  */
+  static determineTraversalCombinationMatch(type, state) {
+    return type === state.traversalCombination;
   }
   /**
   * Determines whether a type of traversal matches the value in the
@@ -2514,13 +2662,120 @@ class TraversalView {
   * @returns {boolean} Whether type of traversal matches the value in the
   * application's state.
   */
-  static determineTypeMatch(type, state) {
+  static determineTraversalTypeMatch(type, state) {
     var value = state.traversalType;
     return value === type;
   }
+  /**
+  * Creates, activates, and restores controls for traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestoreTraversalControl(self) {
+    // Determine which type of traversal for which to create controls.
+    if (self.state.traversalType === "rogue") {
+      self.createActivateRestoreRogueTraversalControl(self);
+    } else if (self.state.traversalType === "proximity") {
+      //self.createActivateProximityTraversalControl(self);
+    } else if (self.state.traversalType === "path") {
+      //self.createActivatePathTraversalControl(self);
+    }
+  }
+  /**
+  * Creates, activates, and restores controls for rogue traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestoreRogueTraversalControl(self) {
+    // Use class of controls' container to store type of controls.
+    // Determine whether controls exist for the type of traversal.
+    if (!self.controlContainer.classList.contains("rogue")) {
+      // Elements do not exist for controls for type of traversal.
+      // Change class of the container.
+      self.controlContainer.classList.remove("rogue", "proximity", "path");
+      self.controlContainer.classList.add("rogue");
+      // Remove contents of container.
+      General.removeDocumentChildren(self.controlContainer);
+      // Create and activate elements.
+      // Create search menu.
+      self.traversalRogueSearch = View.createSearchOptionsList({
+        identifier: "traversal-rogue-search",
+        prompt: "select node",
+        parent: self.controlContainer,
+        documentReference: self.document
+      });
+      // Activate behavior.
+      self.traversalRogueSearch.addEventListener("change", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Determine identifier of any option that matches the search's value.
+        var identifier = View.determineSearchOptionName(event.currentTarget);
+        // Determine whether search's value matches a valid option.
+        if (identifier) {
+          // Access information.
+          var node = self.state.networkNodesRecords.find(function (record) {
+            return identifier === record.identifier;
+          });
+          // Call action.
+          Action.changeRogueFocus({
+            identifier: identifier,
+            type: node.type,
+            state: self.state
+          });
+        } else {
+          event.currentTarget.value = "";
+        }
+      });
+    } else {
+      // Elements exist for controls for type of traversal.
+      // Set references to elements.
+      self.traversalRogueSearch = self
+      .document.getElementById("traversal-rogue-search");
+    }
+    // Restore controls' settings.
+    // Prepare information for search menu's options.
+    var nodesOptions = self.state.networkNodesRecords.map(function (record) {
+      if (record.type === "metabolite") {
+        // Access information.
+        var node = self.state.networkNodesMetabolites[record.identifier];
+        var candidate = self.state.metabolitesCandidates[node.candidate];
+        var name = candidate.name;
+      } else if (record.type === "reaction") {
+        // Access information.
+        var node = self.state.networkNodesReactions[record.identifier];
+        var candidate = self.state.reactionsCandidates[node.candidate];
+        var name = candidate.name;
+      }
+      // Create record.
+      return {
+        identifier: record.identifier,
+        name: name,
+        type: record.type
+      };
+    });
+    // Create search menu's options.
+    View.createSearchOptions({
+      list: self.traversalRogueSearch.list,
+      records: nodesOptions
+    });
+    // Represent search's current value.
+    if (self.state.rogueFocus) {
+      if (self.state.rogueFocus.type === "metabolite") {
+        // Access information.
+        var node = self
+        .state.networkNodesMetabolites[self.state.rogueFocus.identifier];
+        var candidate = self.state.metabolitesCandidates[node.candidate];
+        var name = candidate.name;
+      } else if (self.state.rogueFocus.type === "reaction") {
+        // Access information.
+        var node = self
+        .state.networkNodesReactions[self.state.rogueFocus.identifier];
+        var candidate = self.state.reactionsCandidates[node.candidate];
+        var name = candidate.name;
+      }
+      self.traversalRogueSearch.value = name;
+    } else {
+      self.traversalRogueSearch.value = "";
+    }
+  }
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Exploration view and views within exploration view.

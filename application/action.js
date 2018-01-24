@@ -1033,6 +1033,23 @@ class Action {
     });
   }
   /**
+  * Changes the selection of combination in traversal view.
+  * @param {string} type Type of combination, union or difference.
+  * @param {Object} state Application's state.
+  */
+  static changeCombination(type, state) {
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalCombination: type
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
   * Changes the selection of type of controls in traversal view.
   * @param {string} type Type of traversal, rogue, proximity, or path.
   * @param {Object} state Application's state.
@@ -1049,11 +1066,30 @@ class Action {
       state: state
     });
   }
-
-
-
-
-
+  /**
+  * Changes the selection of focus for rogue traversal.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeRogueFocus({identifier, type, state} = {}) {
+    // Create record.
+    var record = {
+      identifier: identifier,
+      type: type
+    };
+    // Compile variables' values.
+    var novelVariablesValues = {
+      rogueFocus: record
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
   /**
   * Changes the selection of topology.
   * @param {Object} state Application's state.
@@ -1152,10 +1188,14 @@ class Action {
   */
   static initializeTraversalViewControls() {
     // Initialize controls.
+    var traversalCombination = "difference";
     var traversalType = "rogue";
+    var rogueFocus = null;
     // Compile information.
     var variablesValues = {
-      traversalType: traversalType
+      traversalCombination: traversalCombination,
+      traversalType: traversalType,
+      rogueFocus: rogueFocus
     };
     // Return information.
     return variablesValues;
