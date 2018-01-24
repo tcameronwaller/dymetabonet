@@ -2590,10 +2590,10 @@ class TraversalView {
     // Activate behavior.
     self[type].addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
-      // Determine type.
-      var type = event.currentTarget.value;
+      // Determine method of combination.
+      var combination = event.currentTarget.value;
       // Call action.
-      Action.changeCombination(type, self.state);
+      Action.changeCombination(combination, self.state);
     });
   }
   /**
@@ -2685,50 +2685,93 @@ class TraversalView {
   * @param {Object} self Instance of a class.
   */
   createActivateRestoreRogueTraversalControl(self) {
+    self.createActivateRogueTraversalControl(self);
+    self.restoreRogueTraversalControl(self);
+  }
+  /**
+  * Creates and activates controls for rogue traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRogueTraversalControl(self) {
     // Use class of controls' container to store type of controls.
     // Determine whether controls exist for the type of traversal.
     if (!self.controlContainer.classList.contains("rogue")) {
-      // Elements do not exist for controls for type of traversal.
-      // Change class of the container.
-      self.controlContainer.classList.remove("rogue", "proximity", "path");
-      self.controlContainer.classList.add("rogue");
-      // Remove contents of container.
-      General.removeDocumentChildren(self.controlContainer);
-      // Create and activate elements.
-      // Create search menu.
-      self.traversalRogueSearch = View.createSearchOptionsList({
-        identifier: "traversal-rogue-search",
-        prompt: "select node",
-        parent: self.controlContainer,
-        documentReference: self.document
-      });
+      // Elements do not exist for traversal's controls.
+      // Create elements.
+      self.createRogueTraversalControl(self);
       // Activate behavior.
-      self.traversalRogueSearch.addEventListener("change", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Determine identifier of any option that matches the search's value.
-        var identifier = View.determineSearchOptionName(event.currentTarget);
-        // Determine whether search's value matches a valid option.
-        if (identifier) {
-          // Access information.
-          var node = self.state.networkNodesRecords.find(function (record) {
-            return identifier === record.identifier;
-          });
-          // Call action.
-          Action.changeRogueFocus({
-            identifier: identifier,
-            type: node.type,
-            state: self.state
-          });
-        } else {
-          event.currentTarget.value = "";
-        }
-      });
+      self.activateRogueTraversalControl(self);
     } else {
-      // Elements exist for controls for type of traversal.
+      // Elements exist for traversal's controls.
       // Set references to elements.
       self.traversalRogueSearch = self
       .document.getElementById("traversal-rogue-search");
     }
+  }
+  /**
+  * Creates controls for rogue traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createRogueTraversalControl(self) {
+    // Change class of the container.
+    self.controlContainer.classList.remove("rogue", "proximity", "path");
+    self.controlContainer.classList.add("rogue");
+    // Remove contents of container.
+    General.removeDocumentChildren(self.controlContainer);
+    // Create and activate elements.
+    // Create search menu.
+    self.traversalRogueSearch = View.createSearchOptionsList({
+      identifier: "traversal-rogue-search",
+      prompt: "select node...",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create execute.
+    // Create button for execution.
+    self.execute = View.createButton({
+      text: "execute",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Activates controls for rogue traversal.
+  * @param {Object} self Instance of a class.
+  */
+  activateRogueTraversalControl(self) {
+    // Activate search menu.
+    self.traversalRogueSearch.addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine identifier of any option that matches the search's value.
+      var identifier = View.determineSearchOptionName(event.currentTarget);
+      // Determine whether search's value matches a valid option.
+      if (identifier) {
+        // Access information.
+        var node = self.state.networkNodesRecords.find(function (record) {
+          return identifier === record.identifier;
+        });
+        // Call action.
+        Action.changeRogueFocus({
+          identifier: identifier,
+          type: node.type,
+          state: self.state
+        });
+      } else {
+        event.currentTarget.value = "";
+      }
+    });
+    // Activate execute.
+    self.execute.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.executeRogueTraversal(self.state);
+    });
+  }
+  /**
+  * Restores controls for rogue traversal.
+  * @param {Object} self Instance of a class.
+  */
+  restoreRogueTraversalControl(self) {
     // Restore controls' settings.
     // Prepare information for search menu's options.
     var nodesOptions = self.state.networkNodesRecords.map(function (record) {
@@ -3869,10 +3912,10 @@ class TopologyView {
       });
       // Collect records for nodes of metabolites that participate in the
       // reaction in each role.
-      var reactantsNodes = General.filterArrayRecordsByIdentifier(
+      var reactantsNodes = General.filterArrayRecordsByIdentifiers(
         neighborsRoles.reactants, metabolitesNodes
       );
-      var productsNodes = General.filterArrayRecordsByIdentifier(
+      var productsNodes = General.filterArrayRecordsByIdentifiers(
         neighborsRoles.products, metabolitesNodes
       );
       // Determine orientation of reaction's node.

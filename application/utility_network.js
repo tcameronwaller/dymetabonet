@@ -606,17 +606,17 @@ class Network {
   * network's nodes.
   * @param {Array<Object>} parameters.networkLinksRecords Information about
   * network's links.
-  * @returns {Object<Array<Object>>} Information about subnetwork's elements.
+  * @returns {Object<Array<Object>>} Information about network's elements.
   */
-  static copySubnetworkElements({networkNodesRecords, networkLinksRecords} = {}) {
-    var subnetworkNodesRecords = General
+  static copyNetworkElementsRecords({networkNodesRecords, networkLinksRecords} = {}) {
+    var copyNetworkNodesRecords = General
     .copyDeepArrayElements(networkNodesRecords, true);
-    var subnetworkLinksRecords = General
+    var copyNetworkLinksRecords = General
     .copyDeepArrayElements(networkLinksRecords, true);
     // Compile and return information.
     return {
-      subnetworkNodesRecords: subnetworkNodesRecords,
-      subnetworkLinksRecords: subnetworkLinksRecords
+      subnetworkNodesRecords: copyNetworkNodesRecords,
+      subnetworkLinksRecords: copyNetworkLinksRecords
     };
   }
   /**
@@ -836,18 +836,81 @@ class Network {
     }, []);
   }
   /**
-  * Filters records of nodes and links by identifiers.
+  * Collects records for nodes and links by their identifiers.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<string>} parameters.identifiers Identifiers of nodes or links.
-  * @param {Array<Object>} parameters.records Information about network's nodes
-  * or links.
-  * @returns {Array<string>} Information about network's nodes or links.
+  * @param {Array<string>} parameters.nodesIdentifiers Identifiers of nodes.
+  * @param {Array<string>} parameters.linksIdentifiers Identifiers of links.
+  * @param {Array<Object>} parameters.networkNodesRecords Information about
+  * network's nodes.
+  * @param {Array<Object>} parameters.networkLinksRecords Information about
+  * network's links.
+  * @returns {Object<Array<Object>>} Information about network's elements.
   */
-  static filterNodesLinksRecordsByIdentifiers({identifiers, records} = {}) {
-    return records.filter(function (record) {
-      return identifiers.includes(record.identifier);
+  static collectNodesLinksRecordsByIdentifiers({nodesIdentifiers, linksIdentifiers, networkNodesRecords, networkLinksRecords} = {}) {
+    // Traversals collect identifiers of nodes and links.
+    // Collect records from these identifiers.
+    // Filter records for network's elements.
+    var nodesRecords = General
+    .filterArrayRecordsByIdentifiers(nodesIdentifiers, networkNodesRecords);
+    var linksRecords = General
+    .filterArrayRecordsByIdentifiers(linksIdentifiers, networkLinksRecords);
+    // Copy records for network's elements.
+    var copyNodesRecords = General.copyDeepArrayElements(nodesRecords, true);
+    var copyLinksRecords = General.copyDeepArrayElements(linksRecords, true);
+    // Compile and return information.
+    return {
+      subnetworkNodesRecords: copyNodesRecords,
+      subnetworkLinksRecords: copyLinksRecords
+    };
+  }
+  /**
+  * Combines a single rogue focal node to a collection of nodes and collects
+  * links between nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.focus Identifier of a single node in a network.
+  * @param {string} parameters.combination Method of combination, union or
+  * difference.
+  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
+  * subnetwork's nodes.
+  * @param {Array<Object>} parameters.networkNodesRecords Information about
+  * network's nodes.
+  * @param {Array<Object>} parameters.networkLinksRecords Information about
+  * network's links.
+  * @returns {Object<Array<Object>>} Information about network's elements.
+  */
+  static combineRogueNodeNetwork({focus, combination, subnetworkNodesRecords, networkNodesRecords, networkLinksRecords} = {}) {
+    // Access identifiers of nodes in subnetwork.
+    var nodesIdentifiers = General
+    .collectValueFromObjects("identifier", subnetworkNodesRecords);
+    // Combine single rogue focal node to nodes in subnetwork.
+    if (combination === "union") {
+      // Combine previous and current nodes by addition.
+      if (!nodesIdentifiers.includes(focus)) {
+        var novelNodesIdentifiers = [].concat(nodesIdentifiers, focus);
+      } else {
+        var novelNodesIdentifiers = nodesIdentifiers;
+      }
+    } else if (combination === "difference") {
+      // Combine previous and current nodes by subtraction.
+      var novelNodesIdentifiers = nodesIdentifiers
+      .filter(function (identifier) {
+        return !(identifier === focus);
+      });
+    }
+    // Collect links between nodes.
+    var novelLinksIdentifiers = Network.collectLinksBetweenNodes({
+      nodes: novelNodesIdentifiers,
+      links: networkLinksRecords
+    });
+    // Collect records for nodes and links.
+    return Network.collectNodesLinksRecordsByIdentifiers({
+      nodesIdentifiers: novelNodesIdentifiers,
+      linksIdentifiers: novelLinksIdentifiers,
+      networkNodesRecords: networkNodesRecords,
+      networkLinksRecords: networkLinksRecords
     });
   }
+
 
 
 

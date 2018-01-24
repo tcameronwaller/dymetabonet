@@ -1496,7 +1496,7 @@ class General {
   * @param {Array<Object>} parameters.records Array of records.
   * @returns {Array<Object>} Records.
   */
-  static filterArrayRecordsByIdentifier(identifiers, records) {
+  static filterArrayRecordsByIdentifiers(identifiers, records) {
     return records.filter(function (record) {
       return identifiers.includes(record.identifier);
     });

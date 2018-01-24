@@ -200,7 +200,9 @@ class Model {
       !(state.reactionsSimplifications === null) &&
       !(state.metabolitesSimplifications === null) &&
       !(state.candidatesSearches === null) &&
-      !(state.candidatesSorts === null)
+      !(state.candidatesSorts === null) &&
+      !(state.traversalCombination === null) &&
+      !(state.traversalType === null)
     );
   }
   /**
@@ -283,6 +285,14 @@ class Model {
   */
   static determineControlTraversal(state) {
     return state.controlViews.traversal;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineRogueTraversal(state) {
+    return state.rogueFocus;
   }
   /**
   * Determines whether the application's state has specific information.

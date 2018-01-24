@@ -212,7 +212,7 @@ class Action {
       compartmentalization: state.compartmentalization
     });
     // Create subnetwork's elements.
-    var subnetworkElements = Network.copySubnetworkElements({
+    var subnetworkElements = Network.copyNetworkElementsRecords({
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
@@ -266,7 +266,7 @@ class Action {
       compartmentalization: state.compartmentalization
     });
     // Create subnetwork's elements.
-    var subnetworkElements = Network.copySubnetworkElements({
+    var subnetworkElements = Network.copyNetworkElementsRecords({
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
@@ -292,7 +292,7 @@ class Action {
     // Initialize controls for traversal view.
     var traversalViewControls = Action.initializeTraversalViewControls();
     // Create subnetwork's elements.
-    var subnetworkElements = Network.copySubnetworkElements({
+    var subnetworkElements = Network.copyNetworkElementsRecords({
       networkNodesRecords: state.networkNodesRecords,
       networkLinksRecords: state.networkLinksRecords
     });
@@ -401,7 +401,7 @@ class Action {
       compartmentalization: state.compartmentalization
     });
     // Create subnetwork's elements.
-    var subnetworkElements = Network.copySubnetworkElements({
+    var subnetworkElements = Network.copyNetworkElementsRecords({
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
@@ -517,14 +517,10 @@ class Action {
       nodes: nodes,
       links: state.networkLinksRecords
     });
-    var nodesRecords = Network.filterNodesLinksRecordsByIdentifiers({
-      identifiers: nodes,
-      records: state.networkNodesRecords
-    });
-    var linksRecords = Network.filterNodesLinksRecordsByIdentifiers({
-      identifiers: links,
-      records: state.networkLinksRecords
-    });
+    var nodesRecords = General
+    .filterArrayRecordsByIdentifiers(nodes, state.networkNodesRecords);
+    var linksRecords = General
+    .filterArrayRecordsByIdentifiers(links, state.networkLinksRecords);
     // Compile variables' values.
     var novelVariablesValues = {
       subnetworkNodesRecords: nodesRecords,
@@ -746,7 +742,7 @@ class Action {
       compartmentalization: state.compartmentalization
     });
     // Create subnetwork's elements.
-    var subnetworkElements = Network.copySubnetworkElements({
+    var subnetworkElements = Network.copyNetworkElementsRecords({
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
@@ -946,7 +942,7 @@ class Action {
       compartmentalization: compartmentalization
     });
     // Create subnetwork's elements.
-    var subnetworkElements = Network.copySubnetworkElements({
+    var subnetworkElements = Network.copyNetworkElementsRecords({
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
@@ -1007,7 +1003,7 @@ class Action {
       compartmentalization: state.compartmentalization
     });
     // Create subnetwork's elements.
-    var subnetworkElements = Network.copySubnetworkElements({
+    var subnetworkElements = Network.copyNetworkElementsRecords({
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
@@ -1034,13 +1030,13 @@ class Action {
   }
   /**
   * Changes the selection of combination in traversal view.
-  * @param {string} type Type of combination, union or difference.
+  * @param {string} combination Method of combination, union or difference.
   * @param {Object} state Application's state.
   */
-  static changeCombination(type, state) {
+  static changeCombination(combination, state) {
     // Compile variables' values.
     var novelVariablesValues = {
-      traversalCombination: type
+      traversalCombination: combination
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
@@ -1089,6 +1085,41 @@ class Action {
       variablesValues: variablesValues,
       state: state
     });
+  }
+  /**
+  * Executes rogue traversal of the network.
+  * @param {Object} state Application's state.
+  */
+  static executeRogueTraversal(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineRogueTraversal(state)) {
+      var subnetworkElements = Network.combineRogueNodeNetwork({
+        focus: state.rogueFocus.identifier,
+        combination: state.traversalCombination,
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize whether to draw a visual representation of network's topology.
+      var topology = false;
+      // Initialize novelty of network's topology.
+      var topologyNovelty = true;
+      // Compile variables' values.
+      var novelVariablesValues = {
+        topology: topology,
+        topologyNovelty: topologyNovelty
+      };
+      var variablesValues = Object.assign(
+        novelVariablesValues,
+        subnetworkElements
+      );
+      // Submit variables' values to the application's state.
+      Action.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
   }
   /**
   * Changes the selection of topology.
