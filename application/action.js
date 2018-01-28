@@ -1101,6 +1101,8 @@ class Action {
         networkNodesRecords: state.networkNodesRecords,
         networkLinksRecords: state.networkLinksRecords
       });
+      // Initialize controls for traversal view.
+      var traversalViewControls = Action.initializeTraversalViewControls();
       // Initialize whether to draw a visual representation of network's topology.
       var topology = false;
       // Initialize novelty of network's topology.
@@ -1112,7 +1114,8 @@ class Action {
       };
       var variablesValues = Object.assign(
         novelVariablesValues,
-        subnetworkElements
+        subnetworkElements,
+        traversalViewControls
       );
       // Submit variables' values to the application's state.
       Action.submitStateVariablesValues({
@@ -1203,6 +1206,8 @@ class Action {
         networkNodesRecords: state.networkNodesRecords,
         networkLinksRecords: state.networkLinksRecords
       });
+      // Initialize controls for traversal view.
+      var traversalViewControls = Action.initializeTraversalViewControls();
       // Initialize whether to draw a visual representation of network's topology.
       var topology = false;
       // Initialize novelty of network's topology.
@@ -1214,7 +1219,8 @@ class Action {
       };
       var variablesValues = Object.assign(
         novelVariablesValues,
-        subnetworkElements
+        subnetworkElements,
+        traversalViewControls
       );
       // Submit variables' values to the application's state.
       Action.submitStateVariablesValues({
@@ -1223,6 +1229,142 @@ class Action {
       });
     }
   }
+
+  /**
+  * Changes the selection of source for path traversal.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeTraversalPathSource({identifier, type, state} = {}) {
+    // Create record.
+    var record = {
+      identifier: identifier,
+      type: type
+    };
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalPathSource: record
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of target for path traversal.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeTraversalPathTarget({identifier, type, state} = {}) {
+    // Create record.
+    var record = {
+      identifier: identifier,
+      type: type
+    };
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalPathTarget: record
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of direction for path traversal.
+  * @param {Object} state Application's state.
+  */
+  static changeTraversalPathDirection(state) {
+    // Determine direction.
+    if (state.traversalPathDirection === "forward") {
+      var direction = "both";
+    } else if (state.traversalPathDirection === "both") {
+      var direction = "reverse";
+    } else if (state.traversalPathDirection === "reverse") {
+      var direction = "forward";
+    }
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalPathDirection: direction
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of count for path traversal.
+  * @param {number} depth Depth in links to which to traverse.
+  * @param {Object} state Application's state.
+  */
+  static changeTraversalPathCount(count, state) {
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalPathCount: count
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Executes path traversal and combination on the network.
+  * @param {Object} state Application's state.
+  */
+  static executePathTraversalCombination(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determinePathTraversal(state)) {
+
+      // TODO: Update call to path traversal driver function...
+
+      var subnetworkElements = Network.combineProximityNetwork({
+        focus: state.traversalProximityFocus.identifier,
+        direction: state.traversalProximityDirection,
+        depth: state.traversalProximityDepth,
+        combination: state.traversalCombination,
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for traversal view.
+      var traversalViewControls = Action.initializeTraversalViewControls();
+      // Initialize whether to draw a visual representation of network's topology.
+      var topology = false;
+      // Initialize novelty of network's topology.
+      var topologyNovelty = true;
+      // Compile variables' values.
+      var novelVariablesValues = {
+        topology: topology,
+        topologyNovelty: topologyNovelty
+      };
+      var variablesValues = Object.assign(
+        novelVariablesValues,
+        subnetworkElements,
+        traversalViewControls
+      );
+      // Submit variables' values to the application's state.
+      Action.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+
+
+
   /**
   * Changes the selection of topology.
   * @param {Object} state Application's state.
@@ -1327,6 +1469,10 @@ class Action {
     var traversalProximityFocus = null;
     var traversalProximityDirection = "successors";
     var traversalProximityDepth = 1;
+    var traversalPathSource = null;
+    var traversalPathTarget = null;
+    var traversalPathDirection = "forward";
+    var traversalPathCount = 1;
     // Compile information.
     var variablesValues = {
       traversalCombination: traversalCombination,
@@ -1334,7 +1480,11 @@ class Action {
       traversalRogueFocus: traversalRogueFocus,
       traversalProximityFocus: traversalProximityFocus,
       traversalProximityDirection: traversalProximityDirection,
-      traversalProximityDepth: traversalProximityDepth
+      traversalProximityDepth: traversalProximityDepth,
+      traversalPathSource: traversalPathSource,
+      traversalPathTarget: traversalPathTarget,
+      traversalPathDirection: traversalPathDirection,
+      traversalPathCount: traversalPathCount
     };
     // Return information.
     return variablesValues;

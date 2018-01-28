@@ -292,7 +292,7 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineRogueTraversal(state) {
-    return state.rogueFocus;
+    return state.traversalRogueFocus;
   }
   /**
   * Determines whether the application's state has specific information.
@@ -304,6 +304,19 @@ class Model {
       !(state.traversalProximityFocus === null) &&
       !(state.traversalProximityDirection === null) &&
       !(state.traversalProximityDepth === null)
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determinePathTraversal(state) {
+    return (
+      !(state.traversalPathSource === null) &&
+      !(state.traversalPathTarget === null) &&
+      !(state.traversalPathDirection === null) &&
+      !(state.traversalPathCount === null)
     );
   }
   /**

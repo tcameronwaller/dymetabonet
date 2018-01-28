@@ -292,12 +292,30 @@ class State {
       // "networkNodesRecords".
       "traversalProximityFocus",
       // Attribute "traversalProximityDirection" stores information about the
-      // direction of proximity traversal, either following predecessors,
-      // neighbors, or successors from the focal node.
+      // direction of proximity traversal, either following successors,
+      // neighbors, or predecessors from the focal node.
       "traversalProximityDirection",
       // Attribute "traversalProximityDepth" stores information about the depth
-      // of the proximity traversal in links from the focal node.
+      // of the proximity traversal in count of links from the focal node.
       "traversalProximityDepth",
+      // Attribute "traversalPathSource" stores information about a network's
+      // single node for the source of path traversal.
+      // Information includes references to attributes
+      // "networkNodesMetabolites", "networkNodesReactions", and
+      //"networkNodesRecords".
+      "traversalPathSource",
+      // Attribute "traversalPathTarget" stores information about a network's
+      // single node for the target of path traversal.
+      // Information includes references to attributes
+      // "networkNodesMetabolites", "networkNodesReactions", and
+      //"networkNodesRecords".
+      "traversalPathTarget",
+      // Attribute "traversalPathDirection" stores information about the
+      // direction of path traversal, either forward, reverse, or both.
+      "traversalPathDirection",
+      // Attribute "traversalPathCount" stores information about the count of
+      // simple shortest paths to collect by path traversal.
+      "traversalPathCount",
       // Attribute "subnetworkNodesRecords" stores concise information about
       // network's nodes of interest.
       // Information includes references to attributes "networkNodesReactions",
@@ -308,11 +326,6 @@ class State {
       // Information includes references to attributes "networkNodesReactions",
       // and "networkNodesMetabolites".
       "subnetworkLinksRecords",
-    ];
-    var inProgress = [
-      // Subnetwork.
-      "proximityFocus", "proximityDirection", "proximityDepth",
-      "pathOrigin", "pathDestination", "pathDirection", "pathCount",
     ];
     self.variablesNames = [].concat(
       control,
