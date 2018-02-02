@@ -4,6 +4,69 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+30 January 2018
+
+----------
+Literature
+
+"Metabolic network segmentation: A probabilistic graphical modeling approach to identify the sites and sequential order of metabolic regulation from non-targeted metabolomics data"
+https://www.ncbi.nlm.nih.gov/pubmed/28598965
+
+The article acknowledges the limitation of arbitrarily-defined metabolic pathways.
+Topology is the most important factor.
+
+--------------------------------------------------
+28 January 2018
+
+----------
+Topological Traversal
+
+Yen's Algorithm
+https://en.wikipedia.org/wiki/Yen%27s_algorithm
+Yen's algorithm uses any appropriate algorithm to find the shortest path between source and target.
+
+Shortest Path Algorithm
+As the metabolic network of interest is weightless, a bidirectional breadth-first search is the preferrable algorithm.
+The metabolic network of interest is also directional.
+
+https://networkx.github.io/documentation/stable/reference/algorithms/traversal.html
+https://networkx.github.io/documentation/stable/reference/algorithms/simple_paths.html
+
+networkx.algorithms.simple_paths.shortest_simple_paths
+
+
+
+--------------------------------------------------
+27 January 2018
+
+----------
+Topological Traversal
+
+1. breadth-first search
+
+networkx.algorithms.traversal.breadth_first_search.bfs_edges
+I will need to keep track of paths.
+
+2. bidirectional shortest path by breadth first search
+
+-weightless graph
+-accommodate directional or undirectional
+-bidirectional breadth-first search
+
+3. shortest simple paths
+
+networkx.algorithms.simple_paths.shortest_simple_paths
+https://networkx.github.io/documentation/stable/reference/algorithms/generated/networkx.algorithms.simple_paths.shortest_simple_paths.html#networkx.algorithms.simple_paths.shortest_simple_paths
+
+Multiple simple, shortest paths in an unweighted, directed graph
+Yen 1971; Lawler 1972
+
+----------
+Plan
+
+Maybe include graphical (bar chart) representations of nodes and links within network and subnetwork within the traversal view.
+
+--------------------------------------------------
 24 January 2018
 
 ----------

@@ -628,36 +628,51 @@ class Network {
   * @param {string} parameters.direction Direction in which to traverse links,
   * "predecessors" for target to source, "successors" for source to target,
   * "neighbors" for either.
+  * @param {Array<string>} parameters.omissionNodes Identifiers of nodes in a
+  * network to avoid in traversal.
+  * @param {Array<string>} parameters.omissionLinks Identifiers of links in a
+  * network to avoid in traversal.
   * @param {Array<Object>} parameters.links Information about network's links.
   * @returns {Array<string>} Identifiers of nodes that are neighbors of focal
   * node.
   */
-  static collectNodeNeighbors({focus, direction, links} = {}) {
+  static collectNodeNeighbors({focus, direction, omissionNodes, omissionLinks, links} = {}) {
     // Iterate on links.
     return links.reduce(function (collection, link) {
-      // Collect identifiers of nodes to which the link connects.
-      var linkNodes = [].concat(link.source, link.target);
-      // Determine whether link connects to focal node.
-      if (linkNodes.includes(focus)) {
-        // Link connects to focal node.
-        // Determine neighbor.
-        if (direction === "predecessors") {
-          var neighbor = link.source;
-        } else if (direction === "successors") {
-          var neighbor = link.target;
-        } else if (direction === "neighbors") {
-          var neighbor = linkNodes.find(function (identifier) {
-            return !(identifier === focus);
-          });
-        }
-        // Include neighbor in collection.
-        if (!collection.includes(neighbor)) {
-          return [].concat(collection, neighbor);
+      // Determine whether to omit the link from traversal.
+      if (!omissionLinks.includes(link.identifier)) {
+        // Collect identifiers of nodes to which the link connects.
+        var linkNodes = [].concat(link.source, link.target);
+        // Determine whether link connects to focal node.
+        if (linkNodes.includes(focus)) {
+          // Link connects to focal node.
+          // Determine neighbor.
+          if (direction === "predecessors") {
+            var neighbor = link.source;
+          } else if (direction === "successors") {
+            var neighbor = link.target;
+          } else if (direction === "neighbors") {
+            var neighbor = linkNodes.find(function (identifier) {
+              return !(identifier === focus);
+            });
+          }
+          // Determine whether to omit the node from traversal.
+          if (!omissionNodes.includes(neighbor)) {
+            // Include neighbor in collection.
+            if (!collection.includes(neighbor)) {
+              return [].concat(collection, neighbor);
+            } else {
+              return collection;
+            }
+          } else {
+            return collection;
+          }
         } else {
+          // Link does not connect to focal node.
+          // Preserve collection.
           return collection;
         }
       } else {
-        // Link does not connect to focal node.
         // Preserve collection.
         return collection;
       }
@@ -669,7 +684,7 @@ class Network {
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.focus Identifier of a single node in a network.
   * @param {string} parameters.direction Direction in which to traverse links,
-  * "predecessors" for target to source, "successors" for source to target,
+  * "successors" for source to target, "predecessors" for target to source, or
   * "neighbors" for either.
   * @param {number} parameters.depth Depth in links to which to traverse.
   * @param {Array<Object>} parameters.links Information about network's links.
@@ -699,7 +714,7 @@ class Network {
   * @param {Object<number>} parameters.currentQueue Information about nodes in
   * queue.
   * @param {string} parameters.direction Direction in which to traverse links,
-  * "predecessors" for target to source, "successors" for source to target,
+  * "successors" for source to target, "predecessors" for target to source, or
   * "neighbors" for either.
   * @param {number} parameters.limit Depth in links to which to traverse.
   * @param {Object<number>} parameters.map Identifiers of nodes and their depths
@@ -744,7 +759,7 @@ class Network {
   * @param {Object<number>} parameters.nextQueue Information about nodes in
   * queue.
   * @param {string} parameters.direction Direction in which to traverse links,
-  * "predecessors" for target to source, "successors" for source to target,
+  * "successors" for source to target, "predecessors" for target to source, or
   * "neighbors" for either.
   * @param {number} parameters.limit Depth in links to which to traverse.
   * @param {Object<number>} parameters.map Identifiers of nodes and their depths
@@ -774,6 +789,8 @@ class Network {
     var neighbors = Network.collectNodeNeighbors({
       focus: node,
       direction: direction,
+      omissionNodes: [],
+      omissionLinks: [],
       links: links
     });
     // Include node's novel neighbors in next queue.
@@ -917,7 +934,7 @@ class Network {
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.focus Identifier of a single node in a network.
   * @param {string} parameters.direction Direction in which to traverse links,
-  * "predecessors" for target to source, "successors" for source to target,
+  * "successors" for source to target, "predecessors" for target to source, or
   * "neighbors" for either.
   * @param {number} parameters.depth Depth in links to which to traverse.
   * @param {string} parameters.combination Method of combination, union or
@@ -973,6 +990,115 @@ class Network {
       networkLinksRecords: networkLinksRecords
     });
   }
+  /**
+  * Combines a path traversal to a collection of nodes and collects links
+  * between nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.source Identifier of a single node in a network.
+  * @param {string} parameters.target Identifier of a single node in a network.
+  * @param {string} parameters.direction Direction in which to traverse links,
+  * "forward" for source to target, "reverse" for target to source, or "both"
+  * for either.
+  * @param {number} parameters.count Count of paths to collect.
+  * @param {string} parameters.combination Method of combination, union or
+  * difference.
+  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
+  * subnetwork's nodes.
+  * @param {Array<Object>} parameters.networkNodesRecords Information about
+  * network's nodes.
+  * @param {Array<Object>} parameters.networkLinksRecords Information about
+  * network's links.
+  * @returns {Object<Array<Object>>} Information about network's elements.
+  */
+  static combinePathNetwork({source, target, direction, count, combination, subnetworkNodesRecords, networkNodesRecords, networkLinksRecords} = {}) {
+    // Determine identifiers of nodes in path traversal.
+    // TODO: ... call appropriate traversal algorithm.
+
+    var pathNodesIdentifiers = Network.collectNodesTraverseBreadth({
+      focus: focus,
+      direction: direction,
+      depth: depth,
+      nodes: networkNodesRecords,
+      links: networkLinksRecords
+    });
+
+    // TODO: Update this combination procedure.
+
+
+    // Access identifiers of nodes in subnetwork.
+    var nodesIdentifiers = General
+    .collectValueFromObjects("identifier", subnetworkNodesRecords);
+    // Combine single rogue focal node to nodes in subnetwork.
+    if (combination === "union") {
+      // Combine previous and current nodes by addition.
+      var novelNodesIdentifiers = proximityNodesIdentifiers
+      .reduce(function (collection, identifier) {
+        if (!collection.includes(identifier)) {
+          return [].concat(collection, identifier);
+        } else {
+          return collection;
+        }
+      }, nodesIdentifiers);
+    } else if (combination === "difference") {
+      // Combine previous and current nodes by subtraction.
+      var novelNodesIdentifiers = nodesIdentifiers
+      .filter(function (identifier) {
+        return !(proximityNodesIdentifiers.includes(identifier));
+      });
+    }
+    // Collect links between nodes.
+    var novelLinksIdentifiers = Network.collectLinksBetweenNodes({
+      nodes: novelNodesIdentifiers,
+      links: networkLinksRecords
+    });
+    // Collect records for nodes and links.
+    return Network.collectNodesLinksRecordsByIdentifiers({
+      nodesIdentifiers: novelNodesIdentifiers,
+      linksIdentifiers: novelLinksIdentifiers,
+      networkNodesRecords: networkNodesRecords,
+      networkLinksRecords: networkLinksRecords
+    });
+  }
+
+  static collectShortestPathBidirectionalBreadth({} = {}) {}
+
+  static collectPredecessorsSuccessorsShortestPath({} = {}) {
+    // Initialize collections of predecessors and successors.
+    // These collections include respectively information about the predecessor
+    // or successor of each node that the traversal encounters.
+    var predecessors = {[source]: null};
+    var successors = {[target]: null};
+    // Initialize forward and reverse fringes.
+    var forwardFringe = [source];
+    var reverseFringe = [target];
+    // Iterate on nodes in network, traversing in forward and reverse
+    // directions.
+
+    // TODO: Implement as a series of recursive functions?
+
+    while ((forwardFringe.length > 0) && (reverseFringe.length > 0)) {
+      // Determine whether to advance in forward or reverse direction.
+      if (forwardFringe.length <= reverseFringe.length) {
+        var currentNodes = forwardFringe;
+        forwardFringe = [];
+        // Iterate on current nodes.
+        for (node of currentNodes) {}
+
+
+
+      } else {
+        var currentNodes = reverseFringe;
+        reverseFringe = [];
+        // Iterate on current nodes.
+        for (node of currentNodes) {}
+
+      }
+    }
+
+    // No paths were found...
+    // TODO: call error or something?
+  }
+
 
 
 
