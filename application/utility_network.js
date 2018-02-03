@@ -659,7 +659,7 @@ class Network {
           // Determine whether to omit the node from traversal.
           if (!omissionNodes.includes(neighbor)) {
             // Include neighbor in collection.
-            if (!collection.includes(neighbor)) {
+            if (!(focus === neighbor) && (!collection.includes(neighbor))) {
               return [].concat(collection, neighbor);
             } else {
               return collection;
@@ -678,6 +678,9 @@ class Network {
       }
     }, []);
   }
+
+  // TODO: Does this function really need nodes?
+
   /**
   * Collects identifiers of nodes that are proximal to a single, central, focal
   * node within a specific depth.
@@ -948,6 +951,11 @@ class Network {
   * @returns {Object<Array<Object>>} Information about network's elements.
   */
   static combineProximityNetwork({focus, direction, depth, combination, subnetworkNodesRecords, networkNodesRecords, networkLinksRecords} = {}) {
+
+    // TODO: Does this traversal really need nodes?
+
+    // TODO: I might need to add back in the identifier of the focal node.
+
     // Determine identifiers of nodes in proximity traversal.
     var proximityNodesIdentifiers = Network.collectNodesTraverseBreadth({
       focus: focus,
@@ -1011,6 +1019,10 @@ class Network {
   * @returns {Object<Array<Object>>} Information about network's elements.
   */
   static combinePathNetwork({source, target, direction, count, combination, subnetworkNodesRecords, networkNodesRecords, networkLinksRecords} = {}) {
+
+    // TODO: Assume that the traversal direction is from source to target IF direction is true.
+    // TODO: The action that calls this function should handle swapping source and target if the traversal goes in reverse.
+
     // Determine identifiers of nodes in path traversal.
     // TODO: ... call appropriate traversal algorithm.
 
@@ -1060,43 +1072,204 @@ class Network {
     });
   }
 
-  static collectShortestPathBidirectionalBreadth({} = {}) {}
+  static collectShortestPathBidirectionalBreadth({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
+    // TODO: This function exists to derive the actual path from the information returned by collectPredecessorsSuccessorsShortestPath
 
-  static collectPredecessorsSuccessorsShortestPath({} = {}) {
+  }
+
+
+
+  static collectPredecessorsSuccessorsShortestPath({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
     // Initialize collections of predecessors and successors.
     // These collections include respectively information about the predecessor
     // or successor of each node that the traversal encounters.
-    var predecessors = {[source]: null};
     var successors = {[target]: null};
+    var predecessors = {[source]: null};
     // Initialize forward and reverse fringes.
     var forwardFringe = [source];
     var reverseFringe = [target];
-    // Iterate on nodes in network, traversing in forward and reverse
-    // directions.
+    // Iterate on network's nodes, collecting nodes in traversal by breadth from
+    // both source and target.
+    // TODO: Maybe give collection some true/false flag so that it's simple to know when a path has been found...
+    var collection = Network.collectPredecessorsSuccessorsIterateFringesNodes({
+      direction: direction,
+      successors: successors,
+      predecessors: predecessors,
+      forwardFringe: forwardFringe,
+      reverseFringe: reverseFringe,
+      omissionNodes: omissionNodes,
+      omissionLinks: omissionLinks,
+      links: links
+    });
 
-    // TODO: Implement as a series of recursive functions?
-
-    while ((forwardFringe.length > 0) && (reverseFringe.length > 0)) {
-      // Determine whether to advance in forward or reverse direction.
-      if (forwardFringe.length <= reverseFringe.length) {
-        var currentNodes = forwardFringe;
-        forwardFringe = [];
-        // Iterate on current nodes.
-        for (node of currentNodes) {}
+    console.log(collection);
 
 
 
-      } else {
-        var currentNodes = reverseFringe;
-        reverseFringe = [];
-        // Iterate on current nodes.
-        for (node of currentNodes) {}
+    // TODO: At this point, if the path flag is false then there is no path between source and target...
 
-      }
-    }
 
     // No paths were found...
     // TODO: call error or something?
+  }
+  static collectPredecessorsSuccessorsIterateFringesNodes({direction, successors, predecessors, forwardFringe, reverseFringe, omissionNodes, omissionLinks, links} = {}) {
+    // Determine whether to advance traversal in forward or reverse direction.
+    if (forwardFringe.length <= reverseFringe.length) {
+      console.log("forward fringe");
+      // Iterate on nodes in forward fringe.
+      // Determine traversal's direction.
+      if (direction) {
+        var neighborDirection = "successors";
+      } else {
+        var neighborDirection = "neighbors";
+      }
+      var collection = Network.collectPredecessorsSuccessorsIterateQueueNodes({
+        queue: forwardFringe,
+        fringe: [],
+        direction: neighborDirection,
+        proximalCollection: predecessors,
+        distalCollection: successors,
+        omissionNodes: omissionNodes,
+        omissionLinks: omissionLinks,
+        links: links
+      });
+      var novelPredecessors = collection.proximalCollection;
+      var novelSuccessors = successors;
+      var novelForwardFringe = collection.fringe;
+      var novelReverseFringe = reverseFringe;
+    } else {
+      console.log("reverse fringe");
+      // Iterate on nodes in reverse fringe.
+      // Determine traversal's direction.
+      if (direction) {
+        var neighborDirection = "predecessors";
+      } else {
+        var neighborDirection = "neighbors";
+      }
+      var collection = Network.collectPredecessorsSuccessorsIterateQueueNodes({
+        queue: reverseFringe,
+        fringe: [],
+        direction: neighborDirection,
+        proximalCollection: successors,
+        distalCollection: predecessors,
+        omissionNodes: omissionNodes,
+        omissionLinks: omissionLinks,
+        links: links
+      });
+      var novelPredecessors = predecessors;
+      var novelSuccessors = collection.proximalCollection;
+      var novelForwardFringe = forwardFringe;
+      var novelReverseFringe = collection.fringe;
+    }
+    // Determine whether to continue iteration.
+    var fringe = ((forwardFringe.length > 0) && (reverseFringe.length > 0));
+    if (fringe && !collection.path) {
+      return Network.collectPredecessorsSuccessorsIterateFringesNodes({
+        direction: direction,
+        predecessors: novelPredecessors,
+        successors: novelSuccessors,
+        forwardFringe: novelForwardFringe,
+        reverseFringe: novelReverseFringe,
+        omissionNodes: omissionNodes,
+        omissionLinks: omissionLinks,
+        links: links
+      });
+    } else {
+      // Compile and return information.
+      return {
+        bridge: collection.bridge,
+        successors: novelSuccessors,
+        predecessors: novelPredecessors,
+        path: collection.path
+      };
+    }
+  }
+  static collectPredecessorsSuccessorsIterateQueueNodes({queue, fringe, direction, proximalCollection, distalCollection, omissionNodes, omissionLinks, links} = {}) {
+    // Access and remove next node from queue.
+    var node = queue[0];
+    console.log(node);
+    var novelQueue = queue.slice(1);
+    // Collect node's neighbors.
+    var neighbors = Network.collectNodeNeighbors({
+      focus: node,
+      direction: direction,
+      omissionNodes: omissionNodes,
+      omissionLinks: omissionLinks,
+      links: links
+    });
+    console.log("neighbors");
+    console.log(neighbors);
+    // Iterate on neighbor nodes.
+    var collection = Network.collectPredecessorsSuccessorsIterateNeighborNodes({
+      focus: node,
+      neighbors: neighbors,
+      fringe: fringe,
+      proximalCollection: proximalCollection,
+      distalCollection: distalCollection
+    });
+    // Determine whether to continue iteration.
+    if ((novelQueue.length > 0) && !collection.path) {
+      return Network.collectPredecessorsSuccessorsIterateQueueNodes({
+        queue: novelQueue,
+        fringe: collection.fringe,
+        direction: direction,
+        proximalCollection: collection.proximalCollection,
+        distalCollection: distalCollection,
+        omissionNodes: omissionNodes,
+        omissionLinks: omissionLinks,
+        links: links
+      });
+    } else {
+      // Compile and return information.
+      return {
+        bridge: collection.bridge,
+        proximalCollection: collection.proximalCollection,
+        fringe: collection.fringe,
+        path: collection.path
+      };
+    }
+  }
+  static collectPredecessorsSuccessorsIterateNeighborNodes({focus, neighbors, fringe, proximalCollection, distalCollection} = {}) {
+    console.log(focus);
+    // Access and remove next node from queue.
+    var node = neighbors[0];
+    var novelNeighbors = neighbors.slice(1);
+    // Determine whether proximal collection includes the node.
+    if (!proximalCollection.hasOwnProperty(node)) {
+      // Include node in collection.
+      // Create and include entry.
+      var entry = {[node]: focus};
+      var novelProximalCollection = Object.assign(proximalCollection, entry);
+      // Include node in fringe.
+      var novelFringe = [].concat(fringe, node);
+    } else {
+      // Preserve collection.
+      var novelProximalCollection = proximalCollection;
+      // Preserve fringe.
+      var novelFringe = fringe;
+    }
+    // Determine whether node completes a path.
+    // Node completes a path if it belongs to both proximal and distal
+    // collections.
+    var path = distalCollection.hasOwnProperty(node);
+    // Determine whether to continue iteration.
+    if ((novelNeighbors.length > 0) && !path) {
+      return Network.collectPredecessorsSuccessorsIterateNeighborNodes({
+        focus: focus,
+        neighbors: novelNeighbors,
+        fringe: novelFringe,
+        proximalCollection: novelProximalCollection,
+        distalCollection: distalCollection
+      });
+    } else {
+      // Compile and return information.
+      return {
+        bridge: node,
+        proximalCollection: novelProximalCollection,
+        fringe: novelFringe,
+        path: path
+      };
+    }
   }
 
 

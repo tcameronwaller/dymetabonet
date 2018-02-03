@@ -505,35 +505,18 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
-    // Create subnetwork's elements.
-    var nodes = Network.collectNodesTraverseBreadth({
-      focus: "pyr",
-      direction: "successors",
-      depth: 2,
-      nodes: state.networkNodesRecords,
+    Network.collectPredecessorsSuccessorsShortestPath({
+      source: "pyr",
+      target: "cit",
+      direction: true,
+      omissionNodes: [],
+      omissionLinks: [],
       links: state.networkLinksRecords
     });
-    var links = Network.collectLinksBetweenNodes({
-      nodes: nodes,
-      links: state.networkLinksRecords
-    });
-    var nodesRecords = General
-    .filterArrayRecordsByIdentifiers(nodes, state.networkNodesRecords);
-    var linksRecords = General
-    .filterArrayRecordsByIdentifiers(links, state.networkLinksRecords);
-    // Compile variables' values.
-    var novelVariablesValues = {
-      subnetworkNodesRecords: nodesRecords,
-      subnetworkLinksRecords: linksRecords
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues
-    );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
+
+    // TODO: Implement path traversal algorithm using while/for loops and using recursion.
+    // TODO: Compare efficiency and results of both algorithms.
+
 
     // Terminate process timer.
     //console.timeEnd("timer");
