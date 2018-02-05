@@ -629,9 +629,9 @@ class Network {
   * "predecessors" for target to source, "successors" for source to target,
   * "neighbors" for either.
   * @param {Array<string>} parameters.omissionNodes Identifiers of nodes in a
-  * network to avoid in traversal.
+  * network to ignore in traversal.
   * @param {Array<string>} parameters.omissionLinks Identifiers of links in a
-  * network to avoid in traversal.
+  * network to ignore in traversal.
   * @param {Array<Object>} parameters.links Information about network's links.
   * @returns {Array<string>} Identifiers of nodes that are neighbors of focal
   * node.
@@ -678,9 +678,6 @@ class Network {
       }
     }, []);
   }
-
-  // TODO: Does this function really need nodes?
-
   /**
   * Collects identifiers of nodes that are proximal to a single, central, focal
   * node within a specific depth.
@@ -900,33 +897,13 @@ class Network {
   * @returns {Object<Array<Object>>} Information about network's elements.
   */
   static combineRogueNodeNetwork({focus, combination, subnetworkNodesRecords, networkNodesRecords, networkLinksRecords} = {}) {
-    // Access identifiers of nodes in subnetwork.
-    var nodesIdentifiers = General
-    .collectValueFromObjects("identifier", subnetworkNodesRecords);
-    // Combine single rogue focal node to nodes in subnetwork.
-    if (combination === "union") {
-      // Combine previous and current nodes by addition.
-      if (!nodesIdentifiers.includes(focus)) {
-        var novelNodesIdentifiers = [].concat(nodesIdentifiers, focus);
-      } else {
-        var novelNodesIdentifiers = nodesIdentifiers;
-      }
-    } else if (combination === "difference") {
-      // Combine previous and current nodes by subtraction.
-      var novelNodesIdentifiers = nodesIdentifiers
-      .filter(function (identifier) {
-        return !(identifier === focus);
-      });
-    }
-    // Collect links between nodes.
-    var novelLinksIdentifiers = Network.collectLinksBetweenNodes({
-      nodes: novelNodesIdentifiers,
-      links: networkLinksRecords
-    });
-    // Collect records for nodes and links.
-    return Network.collectNodesLinksRecordsByIdentifiers({
-      nodesIdentifiers: novelNodesIdentifiers,
-      linksIdentifiers: novelLinksIdentifiers,
+    // Collect candidate nodes.
+    var rogueNodeIdentifier = [focus];
+    // Combine candidate nodes to subnetwork.
+    return Network.combineNodesSubnetwork({
+      candidateNodes: rogueNodeIdentifier,
+      combination: combination,
+      subnetworkNodesRecords: subnetworkNodesRecords,
       networkNodesRecords: networkNodesRecords,
       networkLinksRecords: networkLinksRecords
     });
@@ -951,49 +928,18 @@ class Network {
   * @returns {Object<Array<Object>>} Information about network's elements.
   */
   static combineProximityNetwork({focus, direction, depth, combination, subnetworkNodesRecords, networkNodesRecords, networkLinksRecords} = {}) {
-
-    // TODO: Does this traversal really need nodes?
-
-    // TODO: I might need to add back in the identifier of the focal node.
-
-    // Determine identifiers of nodes in proximity traversal.
+    // Collect candidate nodes.
     var proximityNodesIdentifiers = Network.collectNodesTraverseBreadth({
       focus: focus,
       direction: direction,
       depth: depth,
-      nodes: networkNodesRecords,
       links: networkLinksRecords
     });
-    // Access identifiers of nodes in subnetwork.
-    var nodesIdentifiers = General
-    .collectValueFromObjects("identifier", subnetworkNodesRecords);
-    // Combine single rogue focal node to nodes in subnetwork.
-    if (combination === "union") {
-      // Combine previous and current nodes by addition.
-      var novelNodesIdentifiers = proximityNodesIdentifiers
-      .reduce(function (collection, identifier) {
-        if (!collection.includes(identifier)) {
-          return [].concat(collection, identifier);
-        } else {
-          return collection;
-        }
-      }, nodesIdentifiers);
-    } else if (combination === "difference") {
-      // Combine previous and current nodes by subtraction.
-      var novelNodesIdentifiers = nodesIdentifiers
-      .filter(function (identifier) {
-        return !(proximityNodesIdentifiers.includes(identifier));
-      });
-    }
-    // Collect links between nodes.
-    var novelLinksIdentifiers = Network.collectLinksBetweenNodes({
-      nodes: novelNodesIdentifiers,
-      links: networkLinksRecords
-    });
-    // Collect records for nodes and links.
-    return Network.collectNodesLinksRecordsByIdentifiers({
-      nodesIdentifiers: novelNodesIdentifiers,
-      linksIdentifiers: novelLinksIdentifiers,
+    // Combine candidate nodes to subnetwork.
+    return Network.combineNodesSubnetwork({
+      candidateNodes: proximityNodesIdentifiers,
+      combination: combination,
+      subnetworkNodesRecords: subnetworkNodesRecords,
       networkNodesRecords: networkNodesRecords,
       networkLinksRecords: networkLinksRecords
     });
@@ -1019,43 +965,73 @@ class Network {
   * @returns {Object<Array<Object>>} Information about network's elements.
   */
   static combinePathNetwork({source, target, direction, count, combination, subnetworkNodesRecords, networkNodesRecords, networkLinksRecords} = {}) {
-
-    // TODO: Assume that the traversal direction is from source to target IF direction is true.
-    // TODO: The action that calls this function should handle swapping source and target if the traversal goes in reverse.
-
-    // Determine identifiers of nodes in path traversal.
-    // TODO: ... call appropriate traversal algorithm.
-
-    var pathNodesIdentifiers = Network.collectNodesTraverseBreadth({
-      focus: focus,
-      direction: direction,
-      depth: depth,
-      nodes: networkNodesRecords,
+    // Collect candidate nodes.
+    // Determine appropriate source, target, and direction for traversal.
+    if (direction === "forward") {
+      var traversalDirection = true;
+      var traversalSource = source;
+      var traversalTarget = target;
+    } else if (direction === "both") {
+      var traversalDirection = false;
+      var traversalSource = source;
+      var traversalTarget = target;
+    } else if (direction === "reverse") {
+      var traversalDirection = true;
+      var traversalSource = target;
+      var traversalTarget = source;
+    }
+    var pathNodesIdentifiers = Network.collectShortestPathBidirectionalBreadth({
+      source: traversalSource,
+      target: traversalTarget,
+      direction: traversalDirection,
+      algorithm: "recursive",
+      omissionNodes: [],
+      omissionLinks: [],
       links: networkLinksRecords
     });
-
-    // TODO: Update this combination procedure.
-
-
-    // Access identifiers of nodes in subnetwork.
-    var nodesIdentifiers = General
+    // Combine candidate nodes to subnetwork.
+    return Network.combineNodesSubnetwork({
+      candidateNodes: pathNodesIdentifiers,
+      combination: combination,
+      subnetworkNodesRecords: subnetworkNodesRecords,
+      networkNodesRecords: networkNodesRecords,
+      networkLinksRecords: networkLinksRecords
+    });
+  }
+  /**
+  * Combines candidate nodes and links to a subnetwork.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.candidateNodes Identifiers of nodes in a
+  * network.
+  * @param {string} parameters.combination Method of combination, union or
+  * difference.
+  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
+  * subnetwork's nodes.
+  * @param {Array<Object>} parameters.networkNodesRecords Information about
+  * network's nodes.
+  * @param {Array<Object>} parameters.networkLinksRecords Information about
+  * network's links.
+  * @returns {Object<Array<Object>>} Information about network's elements.
+  */
+  static combineNodesSubnetwork({candidateNodes, combination, subnetworkNodesRecords, networkNodesRecords, networkLinksRecords} = {}) {
+    // Collect identifiers of nodes in subnetwork.
+    var nodes = General
     .collectValueFromObjects("identifier", subnetworkNodesRecords);
-    // Combine single rogue focal node to nodes in subnetwork.
+    // Combine candidate nodes to those in subnetwork.
     if (combination === "union") {
       // Combine previous and current nodes by addition.
-      var novelNodesIdentifiers = proximityNodesIdentifiers
+      var novelNodesIdentifiers = candidateNodes
       .reduce(function (collection, identifier) {
         if (!collection.includes(identifier)) {
           return [].concat(collection, identifier);
         } else {
           return collection;
         }
-      }, nodesIdentifiers);
+      }, nodes);
     } else if (combination === "difference") {
       // Combine previous and current nodes by subtraction.
-      var novelNodesIdentifiers = nodesIdentifiers
-      .filter(function (identifier) {
-        return !(proximityNodesIdentifiers.includes(identifier));
+      var novelNodesIdentifiers = nodes.filter(function (identifier) {
+        return !(candidateNodes.includes(identifier));
       });
     }
     // Collect links between nodes.
@@ -1071,9 +1047,23 @@ class Network {
       networkLinksRecords: networkLinksRecords
     });
   }
-
-  // TODO: I need to implement proper response for path not found...
-
+  /**
+  * Collects identifiers of nodes within a single, shortest, weightless,
+  * directional path between a source and target node.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.source Identifier of a single node in a network.
+  * @param {string} parameters.target Identifier of a single node in a network.
+  * @param {boolean} parameters.direction Whether to traverse links in specific
+  * direction from source to target.
+  * @param {string} parameters.algorithm Algorithm to use for traversal, either
+  * "iterative" or "recursive".
+  * @param {Array<string>} parameters.omissionNodes Identifiers of nodes in a
+  * network to ignore in traversal.
+  * @param {Array<string>} parameters.omissionLinks Identifiers of links in a
+  * network to ignore in traversal.
+  * @param {Array<Object>} parameters.links Information about network's links.
+  * @returns {Array<string>} Identifiers of nodes in path.
+  */
   static collectShortestPathBidirectionalBreadth({source, target, direction, algorithm, omissionNodes, omissionLinks, links} = {}) {
     // Determine which algorithm to use.
     if (algorithm === "recursive") {
@@ -1121,16 +1111,16 @@ class Network {
       var path = [].concat(reversePath, forwardPath);
       return path;
     } else {
-      // TODO: I might not want to return an error message, since I'll call this
-      // TODO: with a driver function...
-      console.log("path not found");
+      // Traversal found not path.
+      window.alert("path not found...");
+      return [];
     }
   }
   /**
   * Extracts nodes in path from information about visits to nodes in traversal.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<string>} parameters.path Identifiers of nodes in path.
-  * @param {string} parameters.node Identifier of a single node.
+  * @param {string} parameters.node Identifier of a single node in a network.
   * @param {Object} parameters.visits Information about visits to nodes in
   * traversal.
   * @param {string} parameters.direction Direction in which to combine nodes in
@@ -1159,7 +1149,21 @@ class Network {
       return path;
     }
   }
-
+  /**
+  * Collects identifiers of nodes that a traversal visits as predecessors or
+  * successors in an iterative algorithm.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.source Identifier of a single node in a network.
+  * @param {string} parameters.target Identifier of a single node in a network.
+  * @param {boolean} parameters.direction Whether to traverse links in specific
+  * direction from source to target.
+  * @param {Array<string>} parameters.omissionNodes Identifiers of nodes in a
+  * network to ignore in traversal.
+  * @param {Array<string>} parameters.omissionLinks Identifiers of links in a
+  * network to ignore in traversal.
+  * @param {Array<Object>} parameters.links Information about network's links.
+  * @returns {Object} Information about visits to nodes in traversal.
+  */
   static collectShortestPathPredecessorsSuccessorsIteratively({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
     // Initialize collections of predecessors and successors.
     // These collections include respectively information about the predecessor
@@ -1261,8 +1265,30 @@ class Network {
         }
       }
     }
+    // No path found.
+    // Compile and return information.
+    return {
+      bridge: null,
+      predecessors: predecessors,
+      successors: successors,
+      path: false
+    };
   }
-
+  /**
+  * Collects identifiers of nodes that a traversal visits as predecessors or
+  * successors in a recursive algorithm.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.source Identifier of a single node in a network.
+  * @param {string} parameters.target Identifier of a single node in a network.
+  * @param {boolean} parameters.direction Whether to traverse links in specific
+  * direction from source to target.
+  * @param {Array<string>} parameters.omissionNodes Identifiers of nodes in a
+  * network to ignore in traversal.
+  * @param {Array<string>} parameters.omissionLinks Identifiers of links in a
+  * network to ignore in traversal.
+  * @param {Array<Object>} parameters.links Information about network's links.
+  * @returns {Object} Information about visits to nodes in traversal.
+  */
   static collectShortestPathPredecessorsSuccessorsRecursively({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
     // Initialize collections of predecessors and successors.
     // These collections include respectively information about the predecessor
@@ -1276,8 +1302,8 @@ class Network {
     // both source and target.
     var collection = Network.collectPredecessorsSuccessorsIterateFringesNodes({
       direction: direction,
-      successors: successors,
       predecessors: predecessors,
+      successors: successors,
       forwardFringe: forwardFringe,
       reverseFringe: reverseFringe,
       omissionNodes: omissionNodes,
@@ -1287,7 +1313,28 @@ class Network {
     // Return information about path's bridge, predecessors, and successors.
     return collection;
   }
-  static collectPredecessorsSuccessorsIterateFringesNodes({direction, successors, predecessors, forwardFringe, reverseFringe, omissionNodes, omissionLinks, links} = {}) {
+  /**
+  * Collects identifiers of nodes that a traversal visits as predecessors or
+  * successors in a recursive algorithm.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.direction Whether to traverse links in specific
+  * direction from source to target.
+  * @param {Object<string>} parameters.predecessors Information about
+  * predecessors of nodes that the traversal visits.
+  * @param {Object<string>} parameters.successors Information about successors
+  * of nodes that the traversal visits.
+  * @param {Array<string>} parameters.forwardFringe Identifiers of nodes in a
+  * network at forward fringe of traversal.
+  * @param {Array<string>} parameters.reverseFringe Identifiers of nodes in a
+  * network at reverse fringe of traversal.
+  * @param {Array<string>} parameters.omissionNodes Identifiers of nodes in a
+  * network to ignore in traversal.
+  * @param {Array<string>} parameters.omissionLinks Identifiers of links in a
+  * network to ignore in traversal.
+  * @param {Array<Object>} parameters.links Information about network's links.
+  * @returns {Object} Information about visits to nodes in traversal.
+  */
+  static collectPredecessorsSuccessorsIterateFringesNodes({direction, predecessors, successors, forwardFringe, reverseFringe, omissionNodes, omissionLinks, links} = {}) {
     // Determine whether to advance traversal in forward or reverse direction.
     if (forwardFringe.length <= reverseFringe.length) {
       // Iterate on nodes in forward fringe.
@@ -1301,13 +1348,13 @@ class Network {
         queue: forwardFringe,
         fringe: [],
         direction: neighborDirection,
-        proximalCollection: predecessors,
-        distalCollection: successors,
+        proximalVisits: predecessors,
+        distalVisits: successors,
         omissionNodes: omissionNodes,
         omissionLinks: omissionLinks,
         links: links
       });
-      var novelPredecessors = collection.proximalCollection;
+      var novelPredecessors = collection.proximalVisits;
       var novelSuccessors = successors;
       var novelForwardFringe = collection.fringe;
       var novelReverseFringe = reverseFringe;
@@ -1323,14 +1370,14 @@ class Network {
         queue: reverseFringe,
         fringe: [],
         direction: neighborDirection,
-        proximalCollection: successors,
-        distalCollection: predecessors,
+        proximalVisits: successors,
+        distalVisits: predecessors,
         omissionNodes: omissionNodes,
         omissionLinks: omissionLinks,
         links: links
       });
       var novelPredecessors = predecessors;
-      var novelSuccessors = collection.proximalCollection;
+      var novelSuccessors = collection.proximalVisits;
       var novelForwardFringe = forwardFringe;
       var novelReverseFringe = collection.fringe;
     }
@@ -1357,7 +1404,29 @@ class Network {
       };
     }
   }
-  static collectPredecessorsSuccessorsIterateQueueNodes({queue, fringe, direction, proximalCollection, distalCollection, omissionNodes, omissionLinks, links} = {}) {
+  /**
+  * Collects identifiers of nodes that a traversal visits as predecessors or
+  * successors in a recursive algorithm.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.queue Identifiers of nodes in a network in
+  * queue.
+  * @param {Array<string>} parameters.fringe Identifiers of nodes in a network
+  * at the fringe of traversal.
+  * @param {string} parameters.direction Direction in which to traverse links,
+  * "predecessors" for target to source, "successors" for source to target,
+  * "neighbors" for either.
+  * @param {Object<string>} parameters.proximalVisits Information about nodes
+  * that the proximal traversal visits.
+  * @param {Object<string>} parameters.distalVisits Information about nodes that
+  * the distal traversal visits.
+  * @param {Array<string>} parameters.omissionNodes Identifiers of nodes in a
+  * network to ignore in traversal.
+  * @param {Array<string>} parameters.omissionLinks Identifiers of links in a
+  * network to ignore in traversal.
+  * @param {Array<Object>} parameters.links Information about network's links.
+  * @returns {Object} Information about visits to nodes in traversal.
+  */
+  static collectPredecessorsSuccessorsIterateQueueNodes({queue, fringe, direction, proximalVisits, distalVisits, omissionNodes, omissionLinks, links} = {}) {
     // Access and remove next node from queue.
     var node = queue[0];
     var novelQueue = queue.slice(1);
@@ -1374,8 +1443,8 @@ class Network {
       focus: node,
       neighbors: neighbors,
       fringe: fringe,
-      proximalCollection: proximalCollection,
-      distalCollection: distalCollection
+      proximalVisits: proximalVisits,
+      distalVisits: distalVisits
     });
     // Determine whether to continue iteration.
     if ((novelQueue.length > 0) && !collection.path) {
@@ -1383,8 +1452,8 @@ class Network {
         queue: novelQueue,
         fringe: collection.fringe,
         direction: direction,
-        proximalCollection: collection.proximalCollection,
-        distalCollection: distalCollection,
+        proximalVisits: collection.proximalVisits,
+        distalVisits: distalVisits,
         omissionNodes: omissionNodes,
         omissionLinks: omissionLinks,
         links: links
@@ -1393,60 +1462,70 @@ class Network {
       // Compile and return information.
       return {
         bridge: collection.bridge,
-        proximalCollection: collection.proximalCollection,
+        proximalVisits: collection.proximalVisits,
         fringe: collection.fringe,
         path: collection.path
       };
     }
   }
-  static collectPredecessorsSuccessorsIterateNeighborNodes({focus, neighbors, fringe, proximalCollection, distalCollection} = {}) {
+  /**
+  * Collects identifiers of nodes that a traversal visits as predecessors or
+  * successors in a recursive algorithm.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.focus Identifier of a single node in a network.
+  * @param {Array<string>} parameters.neighbors Identifiers of nodes in a
+  * network.
+  * @param {Array<string>} parameters.fringe Identifiers of nodes in a network
+  * at the fringe of traversal.
+  * @param {Object<string>} parameters.proximalVisits Information about nodes
+  * that the proximal traversal visits.
+  * @param {Object<string>} parameters.distalVisits Information about nodes that
+  * the distal traversal visits.
+  * @returns {Object} Information about visits to nodes in traversal.
+  */
+  static collectPredecessorsSuccessorsIterateNeighborNodes({focus, neighbors, fringe, proximalVisits, distalVisits} = {}) {
     // Access and remove next node from queue.
     var node = neighbors[0];
     var novelNeighbors = neighbors.slice(1);
     // Determine whether proximal collection includes the node.
-    if (!proximalCollection.hasOwnProperty(node)) {
+    if (!proximalVisits.hasOwnProperty(node)) {
       // Include node in collection.
       // Create and include entry.
       var entry = {[node]: focus};
-      var novelProximalCollection = Object.assign(proximalCollection, entry);
+      var novelProximalVisits = Object.assign(proximalVisits, entry);
       // Include node in fringe.
       var novelFringe = [].concat(fringe, node);
     } else {
       // Preserve collection.
-      var novelProximalCollection = proximalCollection;
+      var novelProximalVisits = proximalVisits;
       // Preserve fringe.
       var novelFringe = fringe;
     }
     // Determine whether node completes a path.
     // Node completes a path if it belongs to both proximal and distal
     // collections.
-    var path = distalCollection.hasOwnProperty(node);
+    var path = distalVisits.hasOwnProperty(node);
     // Determine whether to continue iteration.
     if ((novelNeighbors.length > 0) && !path) {
       return Network.collectPredecessorsSuccessorsIterateNeighborNodes({
         focus: focus,
         neighbors: novelNeighbors,
         fringe: novelFringe,
-        proximalCollection: novelProximalCollection,
-        distalCollection: distalCollection
+        proximalVisits: novelProximalVisits,
+        distalVisits: distalVisits
       });
     } else {
       // Compile and return information.
       return {
         bridge: node,
-        proximalCollection: novelProximalCollection,
+        proximalVisits: novelProximalVisits,
         fringe: novelFringe,
         path: path
       };
     }
   }
 
-
-
-
-
   //////////////////////////////////////////////////////////////////////////////
-
 
 // Scrap...
 

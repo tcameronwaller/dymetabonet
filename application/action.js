@@ -1401,13 +1401,11 @@ class Action {
     // Determine whether application's state includes valid variables for
     // procedure.
     if (Model.determinePathTraversal(state)) {
-
-      // TODO: Update call to path traversal driver function...
-
-      var subnetworkElements = Network.combineProximityNetwork({
-        focus: state.traversalProximityFocus.identifier,
-        direction: state.traversalProximityDirection,
-        depth: state.traversalProximityDepth,
+      var subnetworkElements = Network.combinePathNetwork({
+        source: state.traversalPathSource.identifier,
+        target: state.traversalPathTarget.identifier,
+        direction: state.traversalPathDirection,
+        count: state.traversalPathCount,
         combination: state.traversalCombination,
         subnetworkNodesRecords: state.subnetworkNodesRecords,
         networkNodesRecords: state.networkNodesRecords,
@@ -1436,7 +1434,6 @@ class Action {
       });
     }
   }
-
   /**
   * Changes the selection of topology.
   * @param {Object} state Application's state.

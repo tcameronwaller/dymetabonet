@@ -4404,6 +4404,8 @@ class TopologyView {
       var neighbors = Network.collectNodeNeighbors({
         focus: reactionNode.identifier,
         direction: "neighbors",
+        omissionNodes: [],
+        omissionLinks: [],
         links: self.linksRecords
       });
       // Determine the roles in which metabolites participate in the reaction.
