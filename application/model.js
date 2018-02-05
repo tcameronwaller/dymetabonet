@@ -197,8 +197,7 @@ class Model {
       !(state.setsSearches === null) &&
       !(state.setsSorts === null) &&
       !(state.compartmentalization === null) &&
-      !(state.reactionsSimplifications === null) &&
-      !(state.metabolitesSimplifications === null) &&
+      !(state.defaultSimplifications === null) &&
       !(state.candidatesSearches === null) &&
       !(state.candidatesSorts === null) &&
       !(state.traversalCombination === null) &&
@@ -234,6 +233,8 @@ class Model {
       !(state.filterMetabolitesSets === null) &&
       !(state.setsCardinalities === null) &&
       !(state.setsSummaries === null) &&
+      !(state.reactionsSimplifications === null) &&
+      !(state.metabolitesSimplifications === null) &&
       !(state.reactionsCandidates === null) &&
       !(state.metabolitesCandidates === null) &&
       !(state.candidatesSummaries === null) &&

@@ -4,6 +4,22 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+4 February 2018
+
+----------
+Candidates and Simplifications
+
+The application needs a simple way to replicate common metabolites that otherwise dominate traversals.
+Examples include water, proton, oxygen, and carbon dioxide.
+
+I implemented default simplifications for candidate entities.
+
+----------
+Traversal
+
+
+
+--------------------------------------------------
 30 January 2018
 
 ----------

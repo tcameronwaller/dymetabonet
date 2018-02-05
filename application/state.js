@@ -190,6 +190,9 @@ class State {
       // Attribute "compartmentalization" stores information about whether to
       // represent compartmentalization of metabolites.
       "compartmentalization",
+      // Attribute "defaultSimplifications" stores information about whether to
+      // simplify default entities.
+      "defaultSimplifications",
       // Attribute "reactionsSimplifications" stores information about
       // selections of reactions for simplification by omission.
       // Information includes references to attribute "reactionsCandidates".

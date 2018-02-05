@@ -1075,22 +1075,67 @@ class Network {
   static collectShortestPathBidirectionalBreadth({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
     // TODO: This function exists to derive the actual path from the information returned by collectPredecessorsSuccessorsShortestPath
 
+
+    // Recursive, declarative algorithm.
+    var visitsCollection = Network
+    .collectShortestPathPredecessorsSuccessorsRecursively({
+      source: source,
+      target: target,
+      direction: direction,
+      omissionNodes: omissionNodes,
+      omissionLinks: omissionLinks,
+      links: links
+    });
+    // Iterative, imperative algorithm.
+
+    console.log(visitsCollection);
+
+    // TODO: Only extract the path if a path exists... duh... check here before initiatinge iteration
+    // Determine whether path exists.
+    if (visitsCollection.path) {
+      // Extract path from path's bridge, predecessors, and successors.
+      // If a path exists, then both visits must include bridge.
+      // Forward path, source to bridge.
+      var forwardPath = Network.extractPathNodes({
+        path: [],
+        node: visitsCollection.bridge,
+        visits: visitsCollection.successors,
+        direction: "forward"
+      });
+      console.log("forwardPath");
+      console.log(forwardPath);
+      // Reverse path, bridge to target.
+      var reversePath = Network.extractPathNodes({
+        path: [],
+        node: visitsCollection.predecessors[visitsCollection.bridge],
+        visits: visitsCollection.predecessors,
+        direction: "reverse"
+      });
+      console.log("reversePath");
+      console.log(reversePath);
+      // Combine paths.
+      var path = [].concat(reversePath, forwardPath);
+      return path;
+    } else {
+      console.log("path not found");
+    }
   }
 
+  static collectShortestPathPredecessorsSuccessorsIteratively({} = {}) {}
 
+  // TODO: Maybe call predecessors and successors visits instead of collections?
 
-  static collectPredecessorsSuccessorsShortestPath({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
+  static collectShortestPathPredecessorsSuccessorsRecursively({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
     // Initialize collections of predecessors and successors.
     // These collections include respectively information about the predecessor
     // or successor of each node that the traversal encounters.
-    var successors = {[target]: null};
     var predecessors = {[source]: null};
+    var successors = {[target]: null};
     // Initialize forward and reverse fringes.
     var forwardFringe = [source];
     var reverseFringe = [target];
     // Iterate on network's nodes, collecting nodes in traversal by breadth from
     // both source and target.
-    // TODO: Maybe give collection some true/false flag so that it's simple to know when a path has been found...
     var collection = Network.collectPredecessorsSuccessorsIterateFringesNodes({
       direction: direction,
       successors: successors,
@@ -1101,21 +1146,12 @@ class Network {
       omissionLinks: omissionLinks,
       links: links
     });
-
-    console.log(collection);
-
-
-
-    // TODO: At this point, if the path flag is false then there is no path between source and target...
-
-
-    // No paths were found...
-    // TODO: call error or something?
+    // Return information about path's bridge, predecessors, and successors.
+    return collection;
   }
   static collectPredecessorsSuccessorsIterateFringesNodes({direction, successors, predecessors, forwardFringe, reverseFringe, omissionNodes, omissionLinks, links} = {}) {
     // Determine whether to advance traversal in forward or reverse direction.
     if (forwardFringe.length <= reverseFringe.length) {
-      console.log("forward fringe");
       // Iterate on nodes in forward fringe.
       // Determine traversal's direction.
       if (direction) {
@@ -1138,7 +1174,6 @@ class Network {
       var novelForwardFringe = collection.fringe;
       var novelReverseFringe = reverseFringe;
     } else {
-      console.log("reverse fringe");
       // Iterate on nodes in reverse fringe.
       // Determine traversal's direction.
       if (direction) {
@@ -1187,7 +1222,6 @@ class Network {
   static collectPredecessorsSuccessorsIterateQueueNodes({queue, fringe, direction, proximalCollection, distalCollection, omissionNodes, omissionLinks, links} = {}) {
     // Access and remove next node from queue.
     var node = queue[0];
-    console.log(node);
     var novelQueue = queue.slice(1);
     // Collect node's neighbors.
     var neighbors = Network.collectNodeNeighbors({
@@ -1197,8 +1231,6 @@ class Network {
       omissionLinks: omissionLinks,
       links: links
     });
-    console.log("neighbors");
-    console.log(neighbors);
     // Iterate on neighbor nodes.
     var collection = Network.collectPredecessorsSuccessorsIterateNeighborNodes({
       focus: node,
@@ -1230,7 +1262,6 @@ class Network {
     }
   }
   static collectPredecessorsSuccessorsIterateNeighborNodes({focus, neighbors, fringe, proximalCollection, distalCollection} = {}) {
-    console.log(focus);
     // Access and remove next node from queue.
     var node = neighbors[0];
     var novelNeighbors = neighbors.slice(1);
@@ -1269,6 +1300,29 @@ class Network {
         fringe: novelFringe,
         path: path
       };
+    }
+  }
+
+  static extractPathNodes({path, node, visits, direction} = {}) {
+    // Include node in path.
+    if (direction === "forward") {
+      var novelPath = [].concat(path, node);
+    } else if (direction === "reverse") {
+      var novelPath = [].concat(node, path);
+    }
+    // Determine whether to continue iteration.
+    if (visits.hasOwnProperty(node) && (visits[node] !== null)) {
+      // Determine novel node.
+      var novelNode = visits[node];
+      return Network.extractPathNodes({
+        path: novelPath,
+        node: novelNode,
+        visits: visits,
+        direction: direction
+      });
+    } else {
+      // Compile and return information.
+      return path;
     }
   }
 

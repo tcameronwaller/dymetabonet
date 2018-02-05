@@ -1875,6 +1875,10 @@ class CandidacyView {
       self.createActivateCompartmentalizationControl(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
+      // Create and activate control for default simplifications.
+      self.createActivateDefaultSimplificationsControl(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
       // Create menu for candidate metabolites.
       new CandidacyMenuView({
         category: "metabolites",
@@ -1892,9 +1896,10 @@ class CandidacyView {
     } else {
       // Container is not empty.
       // Set references to view's variant elements.
-      // Control for filter.
       self.compartmentalization = self
       .document.getElementById("candidacy-compartmentalization");
+      self.simplifications = self
+      .document.getElementById("candidacy-simplifications");
     }
   }
   /**
@@ -1917,6 +1922,28 @@ class CandidacyView {
       // Element on which the event originated is event.currentTarget.
       // Call action.
       Action.changeCompartmentalization(self.state);
+    });
+  }
+  /**
+  * Creates and activates a control for default simplifications.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateDefaultSimplificationsControl(self) {
+    // Create control for default simplifications.
+    var identifier = "candidacy-simplifications";
+    self.simplifications = View.createCheckLabel({
+      identifier: identifier,
+      value: "simplifications",
+      className: "simplifications",
+      text: "default simplifications",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    self.simplifications.addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.changeDefaultSimplifications(self.state);
     });
   }
   /**
@@ -1947,6 +1974,8 @@ class CandidacyView {
     // Activate variant behavior of view's elements.
     self.compartmentalization.checked = CandidacyView
     .determineCompartmentalization(self.state);
+    self.simplifications.checked = CandidacyView
+    .determineSimplifications(self.state);
     // Create menu for candidate metabolites.
     new CandidacyMenuView({
       category: "metabolites",
@@ -1971,6 +2000,16 @@ class CandidacyView {
   */
   static determineCompartmentalization(state) {
     return state.compartmentalization;
+  }
+  /**
+  * Determines whether default simplifications has a true value in the
+  * application's state.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether default simplifications has a true value in the
+  * application's state.
+  */
+  static determineSimplifications(state) {
+    return state.defaultSimplifications;
   }
 }
 
@@ -2223,6 +2262,15 @@ class CandidacyMenuView {
     // Assign attributes to elements.
     self.rows.classed("normal", true);
     // Activate behavior.
+
+    self.rows.on("click", function (element, index, nodes) {
+      // Call action.
+      console.log(element.candidate);
+    });
+
+
+
+
     self.rows.on("mouseenter", function (element, index, nodes) {
       // Determine pointer coordinates.
       var positionX = d3.mouse(self.view)[0];
