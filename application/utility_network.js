@@ -1072,27 +1072,35 @@ class Network {
     });
   }
 
-  static collectShortestPathBidirectionalBreadth({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
-    // TODO: This function exists to derive the actual path from the information returned by collectPredecessorsSuccessorsShortestPath
+  // TODO: I need to implement proper response for path not found...
 
-
-    // Recursive, declarative algorithm.
-    var visitsCollection = Network
-    .collectShortestPathPredecessorsSuccessorsRecursively({
-      source: source,
-      target: target,
-      direction: direction,
-      omissionNodes: omissionNodes,
-      omissionLinks: omissionLinks,
-      links: links
-    });
-    // Iterative, imperative algorithm.
-
-    console.log(visitsCollection);
-
-    // TODO: Only extract the path if a path exists... duh... check here before initiatinge iteration
+  static collectShortestPathBidirectionalBreadth({source, target, direction, algorithm, omissionNodes, omissionLinks, links} = {}) {
+    // Determine which algorithm to use.
+    if (algorithm === "recursive") {
+      // Recursive, declarative algorithm.
+      var visitsCollection = Network
+      .collectShortestPathPredecessorsSuccessorsRecursively({
+        source: source,
+        target: target,
+        direction: direction,
+        omissionNodes: omissionNodes,
+        omissionLinks: omissionLinks,
+        links: links
+      });
+    } else if (algorithm === "iterative") {
+      // Iterative, imperative algorithm.
+      var visitsCollection = Network
+      .collectShortestPathPredecessorsSuccessorsIteratively({
+        source: source,
+        target: target,
+        direction: direction,
+        omissionNodes: omissionNodes,
+        omissionLinks: omissionLinks,
+        links: links
+      });
+    }
     // Determine whether path exists.
-    if (visitsCollection.path) {
+    if (visitsCollection.path && visitsCollection.hasOwnProperty("bridge")) {
       // Extract path from path's bridge, predecessors, and successors.
       // If a path exists, then both visits must include bridge.
       // Forward path, source to bridge.
@@ -1102,8 +1110,6 @@ class Network {
         visits: visitsCollection.successors,
         direction: "forward"
       });
-      console.log("forwardPath");
-      console.log(forwardPath);
       // Reverse path, bridge to target.
       var reversePath = Network.extractPathNodes({
         path: [],
@@ -1111,19 +1117,151 @@ class Network {
         visits: visitsCollection.predecessors,
         direction: "reverse"
       });
-      console.log("reversePath");
-      console.log(reversePath);
       // Combine paths.
       var path = [].concat(reversePath, forwardPath);
       return path;
     } else {
+      // TODO: I might not want to return an error message, since I'll call this
+      // TODO: with a driver function...
       console.log("path not found");
     }
   }
+  /**
+  * Extracts nodes in path from information about visits to nodes in traversal.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.path Identifiers of nodes in path.
+  * @param {string} parameters.node Identifier of a single node.
+  * @param {Object} parameters.visits Information about visits to nodes in
+  * traversal.
+  * @param {string} parameters.direction Direction in which to combine nodes in
+  * path, "forward" or "reverse".
+  * @returns {Array<string>} Identifiers of nodes in path.
+  */
+  static extractPathNodes({path, node, visits, direction} = {}) {
+    // Include node in path.
+    if (direction === "forward") {
+      var novelPath = [].concat(path, node);
+    } else if (direction === "reverse") {
+      var novelPath = [].concat(node, path);
+    }
+    // Determine whether to continue iteration.
+    if (visits.hasOwnProperty(node)) {
+      // Determine novel node.
+      var novelNode = visits[node];
+      return Network.extractPathNodes({
+        path: novelPath,
+        node: novelNode,
+        visits: visits,
+        direction: direction
+      });
+    } else {
+      // Compile and return information.
+      return path;
+    }
+  }
 
-  static collectShortestPathPredecessorsSuccessorsIteratively({} = {}) {}
-
-  // TODO: Maybe call predecessors and successors visits instead of collections?
+  static collectShortestPathPredecessorsSuccessorsIteratively({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
+    // Initialize collections of predecessors and successors.
+    // These collections include respectively information about the predecessor
+    // or successor of each node that the traversal encounters.
+    var predecessors = {[source]: null};
+    var successors = {[target]: null};
+    // Initialize forward and reverse fringes.
+    var forwardFringe = [source];
+    var reverseFringe = [target];
+    // Iterate on network's nodes, collecting nodes in traversal by breadth from
+    // both source and target.
+    while ((forwardFringe.length > 0) && (reverseFringe.length > 0)) {
+      // Determine whether to advance traversal in forward or reverse direction.
+      if (forwardFringe.length <= reverseFringe.length) {
+        // Iterate on nodes in forward fringe.
+        // Determine traversal's direction.
+        if (direction) {
+          var neighborDirection = "successors";
+        } else {
+          var neighborDirection = "neighbors";
+        }
+        var queue = forwardFringe.slice();
+        forwardFringe = [];
+        for (var queueNode of queue) {
+          // Collect node's neighbors.
+          var neighbors = Network.collectNodeNeighbors({
+            focus: queueNode,
+            direction: neighborDirection,
+            omissionNodes: omissionNodes,
+            omissionLinks: omissionLinks,
+            links: links
+          });
+          for (var neighborNode of neighbors) {
+            // Determine whether proximal collection includes the node.
+            if (!predecessors.hasOwnProperty(neighborNode)) {
+              // Include node in collection.
+              // Create and include entry.
+              var entry = {[neighborNode]: queueNode};
+              var predecessors = Object.assign(predecessors, entry);
+              // Include node in fringe.
+              var forwardFringe = [].concat(forwardFringe, neighborNode);
+            }
+            // Determine whether node completes a path.
+            // Node completes a path if it belongs to both predecessors and
+            // successors.
+            if (successors.hasOwnProperty(neighborNode)) {
+              // Compile and return information.
+              return {
+                bridge: neighborNode,
+                predecessors: predecessors,
+                successors: successors,
+                path: true
+              };
+            }
+          }
+        }
+      } else {
+        // Iterate on nodes in reverse fringe.
+        // Determine traversal's direction.
+        if (direction) {
+          var neighborDirection = "predecessors";
+        } else {
+          var neighborDirection = "neighbors";
+        }
+        var queue = reverseFringe.slice();
+        reverseFringe = [];
+        for (var queueNode of queue) {
+          // Collect node's neighbors.
+          var neighbors = Network.collectNodeNeighbors({
+            focus: queueNode,
+            direction: neighborDirection,
+            omissionNodes: omissionNodes,
+            omissionLinks: omissionLinks,
+            links: links
+          });
+          for (var neighborNode of neighbors) {
+            // Determine whether proximal collection includes the node.
+            if (!successors.hasOwnProperty(neighborNode)) {
+              // Include node in collection.
+              // Create and include entry.
+              var entry = {[neighborNode]: queueNode};
+              var successors = Object.assign(successors, entry);
+              // Include node in fringe.
+              var reverseFringe = [].concat(reverseFringe, neighborNode);
+            }
+            // Determine whether node completes a path.
+            // Node completes a path if it belongs to both predecessors and
+            // successors.
+            if (predecessors.hasOwnProperty(neighborNode)) {
+              // Compile and return information.
+              return {
+                bridge: neighborNode,
+                predecessors: predecessors,
+                successors: successors,
+                path: true
+              };
+            }
+          }
+        }
+      }
+    }
+  }
 
   static collectShortestPathPredecessorsSuccessorsRecursively({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
     // Initialize collections of predecessors and successors.
@@ -1300,29 +1438,6 @@ class Network {
         fringe: novelFringe,
         path: path
       };
-    }
-  }
-
-  static extractPathNodes({path, node, visits, direction} = {}) {
-    // Include node in path.
-    if (direction === "forward") {
-      var novelPath = [].concat(path, node);
-    } else if (direction === "reverse") {
-      var novelPath = [].concat(node, path);
-    }
-    // Determine whether to continue iteration.
-    if (visits.hasOwnProperty(node) && (visits[node] !== null)) {
-      // Determine novel node.
-      var novelNode = visits[node];
-      return Network.extractPathNodes({
-        path: novelPath,
-        node: novelNode,
-        visits: visits,
-        direction: direction
-      });
-    } else {
-      // Compile and return information.
-      return path;
     }
   }
 

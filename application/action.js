@@ -523,12 +523,11 @@ class Action {
     // Name: "citrate", Identifier: "cit"
     // Name: "L-cysteine", Identifier: "cys_L"
 
-
-
     var path = Network.collectShortestPathBidirectionalBreadth({
-      source: "glc_D",
-      target: "cit",
+      source: "glc_D_c",
+      target: "trp_L_c",
       direction: true,
+      algorithm: "recursive",
       omissionNodes: [],
       omissionLinks: [],
       links: state.networkLinksRecords

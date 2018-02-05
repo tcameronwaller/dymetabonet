@@ -7,17 +7,23 @@ Research With Alexander Lex
 4 February 2018
 
 ----------
+Traversal
+
+I implemented an algorithm to find the shortest, directional, weightless path between two nodes.
+I implemented this algorithm both iteratively and recursively.
+Iterative and recursive implmentations have comparable efficiency.
+
+I need implement appropriate response if there is no path between nodes.
+
+I also need to include this algorithm in a larger algorithm for simple shortest paths.
+
+----------
 Candidates and Simplifications
 
 The application needs a simple way to replicate common metabolites that otherwise dominate traversals.
 Examples include water, proton, oxygen, and carbon dioxide.
 
 I implemented default simplifications for candidate entities.
-
-----------
-Traversal
-
-
 
 --------------------------------------------------
 30 January 2018
