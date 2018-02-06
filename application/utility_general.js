@@ -1216,13 +1216,26 @@ class General {
   * Compares two arrays by values of elements at specific indices.
   * @param {Array} firstArray Array of elements.
   * @param {Array} secondArray Array of elements.
-  * @returns {boolean} Whether or not the arrays have identical values at
-  * every index.
+  * @returns {boolean} Whether or not the second array has identical values at
+  * each index of the first array.
   */
   static compareArraysByValuesIndices(firstArray, secondArray) {
     return firstArray.every(function (element, index) {
       return element === secondArray[index];
     });
+  }
+  /**
+  * Compares two arrays by mutual values of elements at specific indices.
+  * @param {Array} firstArray Array of elements.
+  * @param {Array} secondArray Array of elements.
+  * @returns {boolean} Whether or not the arrays have identical values at every
+  * index.
+  */
+  static compareArraysByMutualValuesIndices(firstArray, secondArray) {
+    return (
+      (firstArray.length === secondArray.length) &&
+      General.compareArraysByValuesIndices(firstArray, secondArray)
+    );
   }
   /**
   * Checks objects elements for replicates by identifier.

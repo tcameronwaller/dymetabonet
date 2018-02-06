@@ -4,6 +4,32 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+5 February 2018
+
+----------
+Multiple shortest simple paths
+
+Yen's Algorithm
+https://en.wikipedia.org/wiki/Yen%27s_algorithm
+Yen's algorithm uses any appropriate algorithm to find the shortest path between source and target.
+
+Shortest Path Algorithm
+As the metabolic network of interest is weightless, a bidirectional breadth-first search is the preferrable algorithm.
+The metabolic network of interest is also directional.
+
+https://networkx.github.io/documentation/stable/reference/algorithms/traversal.html
+https://networkx.github.io/documentation/stable/reference/algorithms/simple_paths.html
+
+networkx.algorithms.simple_paths.shortest_simple_paths
+
+----------
+Traversal
+
+I activated interface's controls for rogue, proximity, and path traversals.
+
+I need to implement procedure for multiple simple shortest paths, using the procedure for single shortest path.
+
+--------------------------------------------------
 4 February 2018
 
 ----------
@@ -55,8 +81,6 @@ https://networkx.github.io/documentation/stable/reference/algorithms/traversal.h
 https://networkx.github.io/documentation/stable/reference/algorithms/simple_paths.html
 
 networkx.algorithms.simple_paths.shortest_simple_paths
-
-
 
 --------------------------------------------------
 27 January 2018
