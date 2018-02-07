@@ -643,10 +643,10 @@ class Network {
   * @param {string} parameters.direction Direction in which to traverse links,
   * "predecessors" for target to source, "successors" for source to target,
   * "neighbors" for either.
-  * @param {Object<string>} parameters.omissionNodes Information about nodes in
-  * a network to omit in traversal.
-  * @param {Object<string>} parameters.omissionLinks Information about links in
-  * a network to omit in traversal.
+  * @param {Array<string>} parameters.omissionNodes Identifiers of nodes in a
+  * network to omit in traversal.
+  * @param {Array<string>} parameters.omissionLinks Identifiers of links in a
+  * network to omit in traversal.
   * @param {Array<Object>} parameters.links Information about network's links.
   * @returns {Array<string>} Identifiers of nodes that are neighbors of focal
   * node.
@@ -655,7 +655,7 @@ class Network {
     // Iterate on links.
     return links.reduce(function (collection, link) {
       // Determine whether to omit the link from traversal.
-      if (!omissionLinks.hasOwnProperty(link.identifier)) {
+      if (!omissionLinks.includes(link.identifier)) {
         // Collect identifiers of nodes to which the link connects.
         var linkNodes = [].concat(link.source, link.target);
         // Determine whether link connects to focal node.
@@ -672,7 +672,7 @@ class Network {
             });
           }
           // Determine whether to omit the node from traversal.
-          if (!omissionNodes.hasOwnProperty(neighbor)) {
+          if (!omissionNodes.includes(neighbor)) {
             // Include neighbor in collection.
             if (!(focus === neighbor) && (!collection.includes(neighbor))) {
               return [].concat(collection, neighbor);
@@ -804,8 +804,8 @@ class Network {
     var neighbors = Network.collectNodeNeighbors({
       focus: node,
       direction: direction,
-      omissionNodes: {},
-      omissionLinks: {},
+      omissionNodes: [],
+      omissionLinks: [],
       links: links
     });
     // Include node's novel neighbors in next queue.
@@ -1000,8 +1000,8 @@ class Network {
       target: traversalTarget,
       direction: traversalDirection,
       algorithm: "recursive",
-      omissionNodes: {},
-      omissionLinks: {},
+      omissionNodes: [],
+      omissionLinks: [],
       links: networkLinksRecords
     });
     // Combine candidate nodes to subnetwork.
@@ -1062,10 +1062,10 @@ class Network {
       networkLinksRecords: networkLinksRecords
     });
   }
-
   /**
   * Collects identifiers of nodes within multiple shortest, simple, weightless,
-  * directional paths between a source and target node.
+  * directional paths between a source and target node using a mutable iterative
+  * algorithm.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.source Identifier of a single node in a network.
   * @param {string} parameters.target Identifier of a single node in a network.
@@ -1075,21 +1075,156 @@ class Network {
   * @param {Array<Object>} parameters.links Information about network's links.
   * @returns {Array<string>} Identifiers of nodes in path.
   */
-  static collectShortestSimplePaths({source, target, direction, count, links} = {}) {
+  static collectShortestSimplePathsMutableIteration({source, target, direction, count, links} = {}) {
     // This procedure is an implementation of Jin Y. Yen's algorithm for
     // shortest, simple paths from 1971.
     // More information about the algorithm is available from Wikepedia
     // (https://en.wikipedia.org/wiki/Yen's_algorithm).
     // In some ways, the implementation in NetworkX was useful
-    // (networkx.algorithms.simple_paths.shortest_simple_paths)
+    // (networkx.algorithms.simple_paths.shortest_simple_paths).
+    // Determine initial definite path.
+    var initialDefinitePath = Network.collectShortestPathBidirectionalBreadth({
+      source: source,
+      target: target,
+      direction: direction,
+      algorithm: "mutable",
+      omissionNodes: [],
+      omissionLinks: [],
+      links: links
+    });
+    // Initialize collections of paths.
+    var definitePaths = [initialDefinitePath];
+    var tentativePaths = [];
+    // Iterate on definite paths.
+    for (var pathIndex = 0; pathIndex < (count - 1); pathIndex++) {
+      // Access previous definite path.
+      var previousPath = definitePaths[pathIndex].slice();
+      // Initialize collections of nodes and links to omit in traversal.
+      var omissionNodes = [];
+      var omissionLinks = [];
+      // Iterate on spurs.
+      for (
+        var spurIndex = 0;
+        spurIndex < (previousPath.length - 1);
+        spurIndex++
+      ) {
+        // Access spur node.
+        // Spur node ranges from initial source node to node before terminal
+        // target node from previous definite path.
+        // Every definite path's initial node is source node and terminal node is
+        // target node.
+        var spurNode = previousPath[spurIndex];
+        // Access root path.
+        // Root path is sequence of nodes from source node to spur node from
+        // previous definite path.
+        var rootPath = previousPath.slice(0, (spurIndex + 1));
+        // Collect links to omit from novel traversals.
+        // Iterate on roots.
+        for (
+          var rootIndex = 0;
+          rootIndex < definitePaths.length;
+          rootIndex++
+        ) {
+          // Access definite path.
+          var definitePath = definitePaths[rootIndex].slice();
+          // Determine whether definite path matches root path.
+          // Since spur node derives from previous definite path, some other
+          // definite paths might be shorter.
+          if (definitePath.length > (spurIndex + 1)) {
+            // Access root of definite path for comparison to root path.
+            var definitePathRoot = definitePath.slice(0, (spurIndex + 1));
+            // Determine whether definite path's root is identical to root path.
+            var match = General
+            .compareArraysByMutualValuesIndices(definitePathRoot, rootPath);
+            if (match) {
+              // The definite path's root matches the root path.
+              // Novel traversals omit all links that emanate from roots of
+              // definite paths that match root path.
+              // Omit from novel traversals the link between the terminal node
+              // of definite path's root and the next node in definite path.
+              // With iteration, procedure collects all relevant links.
+              var linkSource = definitePath[spurIndex];
+              var linkTarget = definitePath[(spurIndex + 1)];
+              var linkIdentifier = Network.createLinkIdentifier({
+                source: linkSource,
+                target: linkTarget
+              });
+              if (!omissionLinks.includes(linkIdentifier)) {
+                omissionLinks.push(linkIdentifier);
+              }
+            }
+          }
+        }
+        // Collect nodes to omit from novel traversals.
+        // Novel traversals omit all nodes except spur node from root path.
+        // Omit from novel traversals the next to terminal node in root path.
+        // With iteration, procedure collects all nodes from root path except
+        // spur node.
+        if (spurIndex > 0) {
+          var nodeIdentifier = rootPath[spurIndex - 1];
+          if (!omissionNodes.includes(nodeIdentifier)) {
+            omissionNodes.push(nodeIdentifier);
+          }
+        }
+        // Collect nodes in spur path.
+        var spurPath = Network.collectShortestPathBidirectionalBreadth({
+          source: spurNode,
+          target: target,
+          direction: direction,
+          algorithm: "mutable",
+          omissionNodes: omissionNodes,
+          omissionLinks: omissionLinks,
+          links: links
+        });
+        // Determine whether traversal found a spur path.
+        if (spurPath.length > 0) {
+          // Create novel path.
+          var novelPath = [].concat(rootPath.slice(0, -1), spurPath);
+          // Include novel path in tentative paths.
+          tentativePaths.push(novelPath);
+        }
+      }
+      // Determine whether there are any novel tentative paths.
+      if (tentativePaths.length > 0) {
+        // Sort tentative paths by length.
+        tentativePaths = General.sortArrayArrays(tentativePaths, "ascend");
+        // Include shortest tentative path in definite paths and remove this
+        // path from tentative paths.
+        definitePaths.push(tentativePaths.shift());
+      } else {
+        return definitePaths;
+      }
+    }
+    return definitePaths;
+  }
+  /**
+  * Collects identifiers of nodes within multiple shortest, simple, weightless,
+  * directional paths between a source and target node using an immutable
+  * recursive algorithm.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.source Identifier of a single node in a network.
+  * @param {string} parameters.target Identifier of a single node in a network.
+  * @param {boolean} parameters.direction Whether to traverse links in specific
+  * direction from source to target.
+  * @param {number} parameters.count Count of paths to collect.
+  * @param {Array<Object>} parameters.links Information about network's links.
+  * @returns {Array<string>} Identifiers of nodes in path.
+  */
+  static collectShortestSimplePathsImmutableRecursion({source, target, direction, count, links} = {}) {
+    // This procedure is an implementation of Jin Y. Yen's algorithm for
+    // shortest, simple paths from 1971.
+    // More information about the algorithm is available from Wikepedia
+    // (https://en.wikipedia.org/wiki/Yen's_algorithm).
+    // In some ways, the implementation in NetworkX was useful
+    // (networkx.algorithms.simple_paths.shortest_simple_paths).
     // Determine initial definite path.
     var path = Network.collectShortestPathBidirectionalBreadth({
       source: source,
       target: target,
       direction: direction,
-      algorithm: "recursive",
-      omissionNodes: {},
-      omissionLinks: {},
+      algorithm: "immutable",
+      omissionNodes: [],
+      omissionLinks: [],
       links: links
     });
     // Initialize collections of paths.
@@ -1198,12 +1333,8 @@ class Network {
     // node.
     if (spurIndex > 0) {
       var nodeIdentifier = rootPath[spurIndex - 1];
-      if (!omissionNodes.hasOwnProperty(nodeIdentifier)) {
-        // Create and include entry.
-        var entry = {[nodeIdentifier]: nodeIdentifier};
-        //var novelOmissionNodes = Object.assign(omissionNodes, entry);
-        omissionNodes[nodeIdentifier] = nodeIdentifier;
-        var novelOmissionNodes = omissionNodes;
+      if (!omissionNodes.includes(nodeIdentifier)) {
+        var novelOmissionNodes = [].concat(omissionNodes, nodeIdentifier);
       } else {
         var novelOmissionNodes = omissionNodes;
       }
@@ -1215,15 +1346,20 @@ class Network {
       source: spurNode,
       target: target,
       direction: direction,
-      algorithm: "recursive",
+      algorithm: "immutable",
       omissionNodes: novelOmissionNodes,
       omissionLinks: novelOmissionLinks,
       links: links
     });
-    // Create novel path.
-    var novelPath = [].concat(rootPath.slice(0, -1), spurPath);
-    // Include novel path in tentative paths.
-    var novelTentativePaths = [].concat(tentativePaths, [novelPath]);
+    // Determine whether traversal found a spur path.
+    if (spurPath.length > 0) {
+      // Create novel path.
+      var novelPath = [].concat(rootPath.slice(0, -1), spurPath);
+      // Include novel path in tentative paths.
+      var novelTentativePaths = [].concat(tentativePaths, [novelPath]);
+    } else {
+      var novelTentativePaths = tentativePaths;
+    }
     // Determine whether to continue iteration.
     // Spur index ranges from 0 to 2 less than the count of nodes in previous
     // definite path.
@@ -1275,12 +1411,8 @@ class Network {
           source: source,
           target: target
         });
-        if (!omissionLinks.hasOwnProperty(linkIdentifier)) {
-          // Create and include entry.
-          var entry = {[linkIdentifier]: linkIdentifier};
-          //var novelOmissionLinks = Object.assign(omissionLinks, entry);
-          omissionLinks[linkIdentifier] = linkIdentifier;
-          var novelOmissionLinks = omissionLinks;
+        if (!omissionLinks.includes(linkIdentifier)) {
+          var novelOmissionLinks = [].concat(omissionLinks, linkIdentifier);
         } else {
           var novelOmissionLinks = omissionLinks;
         }
@@ -1308,7 +1440,6 @@ class Network {
     }
   }
 
-
   /**
   * Collects identifiers of nodes within a single, shortest, weightless,
   * directional path between a source and target node.
@@ -1318,20 +1449,20 @@ class Network {
   * @param {boolean} parameters.direction Whether to traverse links in specific
   * direction from source to target.
   * @param {string} parameters.algorithm Algorithm to use for traversal, either
-  * "iterative" or "recursive".
-  * @param {Object<string>} parameters.omissionNodes Information about nodes in
-  * a network to omit in traversal.
-  * @param {Object<string>} parameters.omissionLinks Information about links in
-  * a network to omit in traversal.
+  * "mutable" or "immutable".
+  * @param {Array<string>} parameters.omissionNodes Identifiers of nodes in a
+  * network to omit in traversal.
+  * @param {Array<string>} parameters.omissionLinks Identifiers of links in a
+  * network to omit in traversal.
   * @param {Array<Object>} parameters.links Information about network's links.
   * @returns {Array<string>} Identifiers of nodes in path.
   */
   static collectShortestPathBidirectionalBreadth({source, target, direction, algorithm, omissionNodes, omissionLinks, links} = {}) {
     // Determine which algorithm to use.
-    if (algorithm === "recursive") {
-      // Recursive, declarative algorithm.
+    if (algorithm === "immutable") {
+      // Immutable, recursive algorithm.
       var visitsCollection = Network
-      .collectShortestPathPredecessorsSuccessorsRecursively({
+      .collectShortestPathPredecessorsSuccessorsImmutableRecursion({
         source: source,
         target: target,
         direction: direction,
@@ -1339,10 +1470,10 @@ class Network {
         omissionLinks: omissionLinks,
         links: links
       });
-    } else if (algorithm === "iterative") {
-      // Iterative, imperative algorithm.
+    } else if (algorithm === "mutable") {
+      // Mutable, iterative algorithm.
       var visitsCollection = Network
-      .collectShortestPathPredecessorsSuccessorsIteratively({
+      .collectShortestPathPredecessorsSuccessorsMutableIteration({
         source: source,
         target: target,
         direction: direction,
@@ -1413,20 +1544,20 @@ class Network {
   }
   /**
   * Collects identifiers of nodes that a traversal visits as predecessors or
-  * successors in an iterative algorithm.
+  * successors in a mutable iterative algorithm.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.source Identifier of a single node in a network.
   * @param {string} parameters.target Identifier of a single node in a network.
   * @param {boolean} parameters.direction Whether to traverse links in specific
   * direction from source to target.
-  * @param {Object<string>} parameters.omissionNodes Information about nodes in
-  * a network to omit in traversal.
-  * @param {Object<string>} parameters.omissionLinks Information about links in
-  * a network to omit in traversal.
+  * @param {Array<string>} parameters.omissionNodes Identifiers of nodes in a
+  * network to omit in traversal.
+  * @param {Array<string>} parameters.omissionLinks Identifiers of links in a
+  * network to omit in traversal.
   * @param {Array<Object>} parameters.links Information about network's links.
   * @returns {Object} Information about visits to nodes in traversal.
   */
-  static collectShortestPathPredecessorsSuccessorsIteratively({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
+  static collectShortestPathPredecessorsSuccessorsMutableIteration({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
     // This algorithm resembles that in NetworkX.
     // networkx.algorithms.simple_paths._bidirectional_shortest_path
     // Initialize collections of predecessors and successors.
@@ -1540,20 +1671,20 @@ class Network {
   }
   /**
   * Collects identifiers of nodes that a traversal visits as predecessors or
-  * successors in a recursive algorithm.
+  * successors in an immutable recursive algorithm.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.source Identifier of a single node in a network.
   * @param {string} parameters.target Identifier of a single node in a network.
   * @param {boolean} parameters.direction Whether to traverse links in specific
   * direction from source to target.
-  * @param {Object<string>} parameters.omissionNodes Information about nodes in
-  * a network to omit in traversal.
-  * @param {Object<string>} parameters.omissionLinks Information about links in
-  * a network to omit in traversal.
+  * @param {Array<string>} parameters.omissionNodes Identifiers of nodes in a
+  * network to omit in traversal.
+  * @param {Array<string>} parameters.omissionLinks Identifiers of links in a
+  * network to omit in traversal.
   * @param {Array<Object>} parameters.links Information about network's links.
   * @returns {Object} Information about visits to nodes in traversal.
   */
-  static collectShortestPathPredecessorsSuccessorsRecursively({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
+  static collectShortestPathPredecessorsSuccessorsImmutableRecursion({source, target, direction, omissionNodes, omissionLinks, links} = {}) {
     // This algorithm resembles that in NetworkX.
     // networkx.algorithms.simple_paths._bidirectional_shortest_path
     // Initialize collections of predecessors and successors.
@@ -1593,10 +1724,10 @@ class Network {
   * network at forward fringe of traversal.
   * @param {Array<string>} parameters.reverseFringe Identifiers of nodes in a
   * network at reverse fringe of traversal.
-  * @param {Object<string>} parameters.omissionNodes Information about nodes in
-  * a network to omit in traversal.
-  * @param {Object<string>} parameters.omissionLinks Information about links in
-  * a network to omit in traversal.
+  * @param {Array<string>} parameters.omissionNodes Identifiers of nodes in a
+  * network to omit in traversal.
+  * @param {Array<string>} parameters.omissionLinks Identifiers of links in a
+  * network to omit in traversal.
   * @param {Array<Object>} parameters.links Information about network's links.
   * @returns {Object} Information about visits to nodes in traversal.
   */
@@ -1685,10 +1816,10 @@ class Network {
   * that the proximal traversal visits.
   * @param {Object<string>} parameters.distalVisits Information about nodes that
   * the distal traversal visits.
-  * @param {Object<string>} parameters.omissionNodes Information about nodes in
-  * a network to omit in traversal.
-  * @param {Object<string>} parameters.omissionLinks Information about links in
-  * a network to omit in traversal.
+  * @param {Array<string>} parameters.omissionNodes Identifiers of nodes in a
+  * network to omit in traversal.
+  * @param {Array<string>} parameters.omissionLinks Identifiers of links in a
+  * network to omit in traversal.
   * @param {Array<Object>} parameters.links Information about network's links.
   * @returns {Object} Information about visits to nodes in traversal.
   */

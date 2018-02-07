@@ -4,6 +4,117 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+7 February 2018
+
+----------
+Performance of Traversal Procedures
+
+Test algorithms' performance
+shortest simple paths and bidirectional shortest path
+compartmentalization: true
+defaultSimplifications: true
+source: "glc_D_c"
+target: "trp_L_c"
+count: 5
+
+Algorithm 1: Immutable Recursion...
+nodes and links for omission in arrays
+immutable recursive algorithm for shortest simple paths
+immutable recursive algorithm for bidirectional shortest path
+process durations (milliseconds):
+21376, 21685, 21421
+
+Algorithm 2: Mutable Iteration
+nodes and links for omission in arrays
+mutable iterative algorithm for shortest simple paths
+mutable iterative algorithm for bidirectional shortest path
+process durations (milliseconds):
+22544, 22921, 22743
+
+Test performed both algorithms directly after each other.
+Test confirmed that both algorithms produced identical counts of identical paths.
+
+Interpretation...
+
+Plan...
+Revert to nodes and links for omission in arrays.
+Implement a simple shortest paths algorithm for mutable iteration and compare efficiencies of algorithms for mutable iteration to immutable recursion.
+
+----------
+Script for Performance Test of Traversal Procedures
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    console.log("Algorithm 1... Immutable Recursion...");
+    // Initiate process timer.
+    //console.time("timer");
+    var startTime = window.performance.now();
+    // Execute process.
+
+    var pathsOne = Network.collectShortestSimplePathsImmutableRecursion({
+      source: "glc_D_c",
+      target: "trp_L_c",
+      direction: true,
+      count: 5,
+      links: state.networkLinksRecords
+    });
+
+    // Terminate process timer.
+    //console.timeEnd("timer");
+    var endTime = window.performance.now();
+    var duration = Math.round(endTime - startTime);
+    console.log("process duration: " + duration + " milliseconds");
+    //console.log(pathsOne);
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    console.log("Algorithm 2... Mutable Iteration...");
+    // Initiate process timer.
+    //console.time("timer");
+    var startTime = window.performance.now();
+    // Execute process.
+
+    var pathsTwo = Network.collectShortestSimplePathsMutableIteration({
+      source: "glc_D_c",
+      target: "trp_L_c",
+      direction: true,
+      count: 5,
+      links: state.networkLinksRecords
+    });
+
+    // Terminate process timer.
+    //console.timeEnd("timer");
+    var endTime = window.performance.now();
+    var duration = Math.round(endTime - startTime);
+    console.log("process duration: " + duration + " milliseconds");
+    //console.log(pathsTwo);
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    // Compare results of both algorithms.
+    var paths = pathsOne.length === pathsTwo.length;
+    console.log("both algorithms give same counts paths: " + paths);
+    // Iterate on paths.
+    var matches = [];
+    for (
+      var index = 0;
+      index < pathsOne.length;
+      index++
+    ) {
+      var pathOne = pathsOne[index].slice();
+      var pathTwo = pathsTwo[index].slice();
+      var match = General.compareArraysByMutualValuesIndices(pathOne, pathTwo);
+      matches.push(match);
+    }
+    var allMatch = matches.every(function (match) {
+      return match;
+    });
+    console.log("all paths match from both algorithms: " + allMatch);
+
+    ////////////////////////////////////////////////////////////////////////////
+
+
+--------------------------------------------------
 6 February 2018
 
 ----------
@@ -28,10 +139,12 @@ Process durations (milliseconds):
 Interpretation...
 Objects are more efficient than arrays for frequent, specific look-ups.
 In the case of omission nodes and links within the procedure for shortest simple paths, it seems that the cost of frequent creation of objects, including copying changes to new objects, overcomes any benefit.
+Also worth mention, finding neighbors for basic traversal is more or less satisfactory with records for nodes and links in arrays.
+It is necessary to consider both links' sources and targets anyway, and it is necessary to visit records for all links.
 
 Plan...
 Revert to nodes and links for omission in arrays.
-Implement an simple shortest paths algorithm for mutable iteration and compare efficiencies of algorithms for mutable iteration to immutable recursion.
+Implement a simple shortest paths algorithm for mutable iteration and compare efficiencies of algorithms for mutable iteration to immutable recursion.
 
 --------------------------------------------------
 5 February 2018

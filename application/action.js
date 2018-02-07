@@ -515,25 +515,13 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
-    // Name: "D-glucopyranose", Identifier: "glc_D"
-    // Name: "L-glutamine", Identifier: "gln_L"
-    // Name: "L-tryptophan", Identifier: "trp_L"
-    // Name: "adenosine", Identifier: "adn"
-    // Name: "pyruvate", Identifier: "pyr"
-    // Name: "citrate", Identifier: "cit"
-    // Name: "L-cysteine", Identifier: "cys_L"
-
-    var paths = Network.collectShortestSimplePaths({
+    var pathsOne = Network.collectShortestSimplePathsImmutableRecursion({
       source: "glc_D_c",
       target: "trp_L_c",
       direction: true,
       count: 5,
       links: state.networkLinksRecords
     });
-    console.log(paths);
-
-    // TODO: Implement path traversal algorithm using while/for loops and using recursion.
-    // TODO: Compare efficiency and results of both algorithms.
 
     // Terminate process timer.
     //console.timeEnd("timer");
