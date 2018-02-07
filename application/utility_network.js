@@ -995,13 +995,11 @@ class Network {
       var traversalSource = target;
       var traversalTarget = source;
     }
-    var pathNodesIdentifiers = Network.collectShortestPathBidirectionalBreadth({
+    var pathNodesIdentifiers = Network.collectShortestSimplePathsImmutableRecursion({
       source: traversalSource,
       target: traversalTarget,
       direction: traversalDirection,
-      algorithm: "recursive",
-      omissionNodes: [],
-      omissionLinks: [],
+      count: count,
       links: networkLinksRecords
     });
     // Combine candidate nodes to subnetwork.
@@ -1062,6 +1060,8 @@ class Network {
       networkLinksRecords: networkLinksRecords
     });
   }
+
+  static collectShortestSimplePaths({} = {}) {}
   /**
   * Collects identifiers of nodes within multiple shortest, simple, weightless,
   * directional paths between a source and target node using a mutable iterative
