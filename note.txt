@@ -4,6 +4,36 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+6 February 2018
+
+----------
+Performance of Traversal Procedures
+
+Bench mark algorithm's efficiency.
+Recursive algorithms for shoretest simple paths and bidirectional shortest path.
+compartmentalization: true
+defaultSimplifications: true
+source: "glc_D_c"
+target: "trp_L_c"
+count: 5
+
+Version 1: nodes and links for omission in arrays
+Process durations (milliseconds):
+21893, 22945, 22282, 22180, 22177
+
+Version 2: nodes and links for omission in objects
+Process durations (milliseconds):
+35897, 36205, 34226
+
+Interpretation...
+Objects are more efficient than arrays for frequent, specific look-ups.
+In the case of omission nodes and links within the procedure for shortest simple paths, it seems that the cost of frequent creation of objects, including copying changes to new objects, overcomes any benefit.
+
+Plan...
+Revert to nodes and links for omission in arrays.
+Implement an simple shortest paths algorithm for mutable iteration and compare efficiencies of algorithms for mutable iteration to immutable recursion.
+
+--------------------------------------------------
 5 February 2018
 
 ----------

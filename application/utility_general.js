@@ -1351,6 +1351,41 @@ class General {
     });
   }
   /**
+  * Sorts arrays by lengths within an arrray.
+  * @param {Array<Array>} array Array of arrays.
+  * @param {string} order Direction, ascend or descend, in which to sort arrays.
+  * @returns {Array<Array>} Copy of array with arrays in sort order by lengths.
+  */
+  static sortArrayArrays(arrays, order) {
+    // Copy array.
+    var arraysCopy = General.copyDeepArrayElements(arrays, true);
+    return arraysCopy.sort(function (firstArray, secondArray) {
+      // Compare arrays by their lengths.
+      var firstValue = firstArray.length;
+      var secondValue = secondArray.length;
+      if (firstValue < secondValue) {
+        if (order === "ascend") {
+          // Place first element before second element.
+          return -1;
+        } else if (order === "descend") {
+          // Place first element after second element.
+          return 1;
+        }
+      } else if (firstValue > secondValue) {
+        if (order === "ascend") {
+          // Place first element after second element.
+          return 1;
+        } else if (order === "descend") {
+          // Place first element before second element.
+          return -1;
+        }
+      } else {
+        // Preserve current relative placements of elements.
+        return 0;
+      }
+    });
+  }
+  /**
   * Collects values of a target attribute that occur together in records with
   * each value of another category attribute.
   * Each record has a single value of the target attribute.

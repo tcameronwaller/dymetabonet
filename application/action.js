@@ -523,21 +523,17 @@ class Action {
     // Name: "citrate", Identifier: "cit"
     // Name: "L-cysteine", Identifier: "cys_L"
 
-    var path = Network.collectShortestPathBidirectionalBreadth({
+    var paths = Network.collectShortestSimplePaths({
       source: "glc_D_c",
       target: "trp_L_c",
       direction: true,
-      algorithm: "recursive",
-      omissionNodes: [],
-      omissionLinks: [],
+      count: 5,
       links: state.networkLinksRecords
     });
-
-    console.log(path);
+    console.log(paths);
 
     // TODO: Implement path traversal algorithm using while/for loops and using recursion.
     // TODO: Compare efficiency and results of both algorithms.
-
 
     // Terminate process timer.
     //console.timeEnd("timer");
