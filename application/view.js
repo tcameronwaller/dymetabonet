@@ -2262,15 +2262,6 @@ class CandidacyMenuView {
     // Assign attributes to elements.
     self.rows.classed("normal", true);
     // Activate behavior.
-
-    self.rows.on("click", function (element, index, nodes) {
-      // Call action.
-      console.log(element.candidate);
-    });
-
-
-
-
     self.rows.on("mouseenter", function (element, index, nodes) {
       // Determine pointer coordinates.
       var positionX = d3.mouse(self.view)[0];
@@ -2900,6 +2891,7 @@ class TraversalView {
     TraversalView.restoreNodeSearch({
       search: self.traversalRogueFocusSearch,
       variableName: "traversalRogueFocus",
+      nodeSource: "network",
       state: self.state
     });
   }
@@ -2908,11 +2900,19 @@ class TraversalView {
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.search Reference to search menu.
   * @param {string} parameters.variableName Name of state variable.
+  * @param {string} parameters.nodeSource Source of records for nodes, either
+  * "subnetwork" or "network".
   * @param {Object} parameters.state Application's state.
   */
-  static restoreNodeSearch({search, variableName, state} = {}) {
-    // Prepare information for search menu's options.
-    var nodesOptions = state.networkNodesRecords.map(function (record) {
+  static restoreNodeSearch({search, variableName, nodeSource, state} = {}) {
+    // Determine source of nodes' records.
+    if (nodeSource === "subnetwork") {
+      var nodesRecords = state.subnetworkNodesRecords;
+    } else if (nodeSource === "network") {
+      var nodesRecords = state.networkNodesRecords;
+    }
+    // Prepare records for search menu's options.
+    var optionsRecords = nodesRecords.map(function (record) {
       if (record.type === "metabolite") {
         // Access information.
         var node = state.networkNodesMetabolites[record.identifier];
@@ -2931,10 +2931,15 @@ class TraversalView {
         type: record.type
       };
     });
+    // Sort recirds for search menu's options.
+    // Sort records in ascending order first by their names' lengths and then by
+    // their names' characters.
+    var sortOptionsRecords = General
+    .sortArrayRecordsByNameLengthCharacter(optionsRecords);
     // Create search menu's options.
     View.createSearchOptions({
       list: search.list,
-      records: nodesOptions
+      records: sortOptionsRecords
     });
     // Represent search's current value.
     if (state[variableName]) {
@@ -3092,6 +3097,7 @@ class TraversalView {
     TraversalView.restoreNodeSearch({
       search: self.traversalProximityFocusSearch,
       variableName: "traversalProximityFocus",
+      nodeSource: "subnetwork",
       state: self.state
     });
     // Restore direction.
@@ -3289,6 +3295,7 @@ class TraversalView {
     TraversalView.restoreNodeSearch({
       search: self.traversalPathSourceSearch,
       variableName: "traversalPathSource",
+      nodeSource: "subnetwork",
       state: self.state
     });
     // Restore direction.
@@ -3320,6 +3327,7 @@ class TraversalView {
     TraversalView.restoreNodeSearch({
       search: self.traversalPathTargetSearch,
       variableName: "traversalPathTarget",
+      nodeSource: "subnetwork",
       state: self.state
     });
   }
@@ -4401,7 +4409,7 @@ class TopologyView {
       var reaction = self.state.reactions[candidate.reaction];
       // Collect identifiers of metabolites' nodes that surround the reaction's
       // node.
-      var neighbors = Network.collectNodeNeighbors({
+      var neighbors = Traversal.collectNodeNeighbors({
         focus: reactionNode.identifier,
         direction: "neighbors",
         omissionNodes: [],

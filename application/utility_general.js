@@ -1297,6 +1297,41 @@ class General {
     });
   }
   /**
+  * Sorts records in arrray in ascending order first by their names' lengths and
+  * then by their names' characters.
+  * @param {Array<Object<string>>} array Array of elements to sort.
+  * @returns {Array<Object<string>>} Shallow copy of array's records in sort
+  * order.
+  */
+  static sortArrayRecordsByNameLengthCharacter(records) {
+    return records.slice().sort(function (firstRecord, secondRecord) {
+      // Convert record's names to lower case for comparison.
+      var firstName = firstRecord.name.toLowerCase();
+      var secondName = secondRecord.name.toLowerCase();
+      // Compare names by lengths.
+      if (firstName.length < secondName.length) {
+        // Place first record before second record.
+        return -1;
+      } else if (firstName.length > secondName.length) {
+        // Place first record after second record.
+        return 1;
+      } else {
+        // Names have identical lengths.
+        // Compare names by characters.
+        if (firstName < secondName) {
+          // Place first record before second record.
+          return -1;
+        } else if (firstName > secondName) {
+          // Place first record after second record.
+          return 1;
+        } else {
+          // Preserve current relative placements of elements.
+          return 0;
+        }
+      }
+    });
+  }
+  /**
   * Sorts records in arrray.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<Object>} parameters.array Array of records.

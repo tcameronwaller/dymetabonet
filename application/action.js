@@ -515,13 +515,13 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
-    var pathsOne = Network.collectShortestSimplePathsImmutableRecursion({
-      source: "glc_D_c",
-      target: "trp_L_c",
-      direction: true,
-      count: 5,
-      links: state.networkLinksRecords
+    // TODO: Determine whether any links connect to undefined nodes...
+
+    var badLinks = state.networkLinksRecords.filter(function (record) {
+      return ((record.source === "undefined") || (record.target === "undefined"));
     });
+    console.log(badLinks);
+
 
     // Terminate process timer.
     //console.timeEnd("timer");
@@ -1153,10 +1153,11 @@ class Action {
     // Determine whether application's state includes valid variables for
     // procedure.
     if (Model.determineRogueTraversal(state)) {
-      var subnetworkElements = Network.combineRogueNodeNetwork({
+      var subnetworkElements = Traversal.combineRogueNodeNetwork({
         focus: state.traversalRogueFocus.identifier,
         combination: state.traversalCombination,
         subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
         networkNodesRecords: state.networkNodesRecords,
         networkLinksRecords: state.networkLinksRecords
       });
@@ -1256,12 +1257,13 @@ class Action {
     // Determine whether application's state includes valid variables for
     // procedure.
     if (Model.determineProximityTraversal(state)) {
-      var subnetworkElements = Network.combineProximityNetwork({
+      var subnetworkElements = Traversal.combineProximityNetwork({
         focus: state.traversalProximityFocus.identifier,
         direction: state.traversalProximityDirection,
         depth: state.traversalProximityDepth,
         combination: state.traversalCombination,
         subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
         networkNodesRecords: state.networkNodesRecords,
         networkLinksRecords: state.networkLinksRecords
       });
@@ -1385,13 +1387,14 @@ class Action {
     // Determine whether application's state includes valid variables for
     // procedure.
     if (Model.determinePathTraversal(state)) {
-      var subnetworkElements = Network.combinePathNetwork({
+      var subnetworkElements = Traversal.combinePathNetwork({
         source: state.traversalPathSource.identifier,
         target: state.traversalPathTarget.identifier,
         direction: state.traversalPathDirection,
         count: state.traversalPathCount,
         combination: state.traversalCombination,
         subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
         networkNodesRecords: state.networkNodesRecords,
         networkLinksRecords: state.networkLinksRecords
       });
