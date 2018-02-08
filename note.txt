@@ -7,6 +7,12 @@ Research With Alexander Lex
 7 February 2018
 
 ----------
+Progress
+
+Implement Traversal.collectNetworkSubnetworkElements()
+I need to preserve or persist information from previous records of subnetwork's elements.
+
+----------
 Plan
 
 Compilation of plans, especially from notes on 8-17 January 2018

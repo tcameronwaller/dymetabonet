@@ -281,18 +281,41 @@ class Traversal {
   static collectNodesLinksRecordsByIdentifiers({nodesIdentifiers, linksIdentifiers, networkNodesRecords, networkLinksRecords} = {}) {
     // Traversals collect identifiers of nodes and links.
     // Collect records from these identifiers.
-    // Filter records for network's elements.
-    var nodesRecords = General
-    .filterArrayRecordsByIdentifiers(nodesIdentifiers, networkNodesRecords);
-    var linksRecords = General
-    .filterArrayRecordsByIdentifiers(linksIdentifiers, networkLinksRecords);
-    // Copy records for network's elements.
-    var copyNodesRecords = General.copyDeepArrayElements(nodesRecords, true);
-    var copyLinksRecords = General.copyDeepArrayElements(linksRecords, true);
+    // Records for subnetwork's elements contain mutable information.
+    // It is desirable to preserve this information across changes to
+    // subnetwork's elements.
+    // Records for network's elements contain immutable information.
+    // If elements already exist in the subnetwork, then copy their records from
+    // the subnetwork.
+    // If elements do not already exist in the subnetwork, then copy their
+    // records from the network.
+    // TODO: implement Traversal.collectNetworkSubnetworkElements();
+    var nodesRecords = Traversal.collectNetworkSubnetworkElements({
+      identifiers: nodesIdentifiers,
+      subnetworkRecords: subnetworkNodesRecords,
+      networkRecords: networkNodesRecords
+    });
+    var linksRecords = Traversal.collectNetworkSubnetworkElements({
+      identifiers: linksIdentifiers,
+      subnetworkRecords: subnetworkLinksRecords,
+      networkRecords: networkLinksRecords
+    });
+
+    if (false) {
+      // Filter records for network's elements.
+      var nodesRecords = General
+      .filterArrayRecordsByIdentifiers(nodesIdentifiers, networkNodesRecords);
+      var linksRecords = General
+      .filterArrayRecordsByIdentifiers(linksIdentifiers, networkLinksRecords);
+      // Copy records for network's elements.
+      var copyNodesRecords = General.copyDeepArrayElements(nodesRecords, true);
+      var copyLinksRecords = General.copyDeepArrayElements(linksRecords, true);
+    }
+
     // Compile and return information.
     return {
-      subnetworkNodesRecords: copyNodesRecords,
-      subnetworkLinksRecords: copyLinksRecords
+      subnetworkNodesRecords: nodesRecords,
+      subnetworkLinksRecords: linksRecords
     };
   }
   /**
@@ -427,7 +450,7 @@ class Traversal {
   * @returns {Object<Array<Object>>} Information about network's elements.
   */
   static combineNodesSubnetwork({candidateNodes, combination, subnetworkNodesRecords, networkNodesRecords, networkLinksRecords} = {}) {
-    // Collect identifiers of nodes in subnetwork.
+    // Collect identifiers of nodes currently in subnetwork.
     var nodes = General
     .collectValueFromObjects("identifier", subnetworkNodesRecords);
     // Combine candidate nodes to those in subnetwork.
