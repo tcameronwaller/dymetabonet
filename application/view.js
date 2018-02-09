@@ -3646,6 +3646,11 @@ class TopologyView {
       .attr("d", "M 0 0 L 10 5 L 0 10 z");
     }
   }
+
+  // TODO: Activate the graph's base.
+  // TODO: Clicking on the base itself should allow adding a rogue node or clearing subnetwork
+  // TODO: Handle all of that through the prompt view.
+
   /**
   * Creates a base within a graphical container.
   * @param {Object} self Instance of a class.
@@ -3683,6 +3688,10 @@ class TopologyView {
     self.graph.appendChild(self.nodesGroup);
     self.nodesGroup.classList.add("nodes");
   }
+
+  // TODO: no more need for flag for topology novelty.
+  // TODO: I guess just restore the network's diagram with each update to state and view
+
   /**
   * Restores aspects of the view's composition and behavior that vary with
   * changes to the application's state.
@@ -3700,6 +3709,7 @@ class TopologyView {
     // expensive, only initiate this procedure if necessary.
     // Determine whether to determine layout for network's elements and
     // topology.
+    // TODO: I don't think that the flag for topology novelty will be necessary anymore...
     if (Model.determineTopologyNovelty(self.state)) {
       self.createNetworkLayout(self);
     }
@@ -3709,13 +3719,10 @@ class TopologyView {
   * @param {Object} self Instance of a class.
   */
   prepareNetworkElementsRecords(self) {
-    // Copy information about network's elements, nodes and links, to preserve
-    // original information against modifications, especially due to the force
-    // simulation.
-    self.nodesRecords = General
-    .copyDeepArrayElements(self.state.subnetworkNodesRecords, true);
-    self.linksRecords = General
-    .copyDeepArrayElements(self.state.subnetworkLinksRecords, true);
+    // Records for subnetwork's elements contain mutable information, especially
+    // about positions of elements within network's diagram.
+    self.nodesRecords = self.state.subnetworkNodesRecords;
+    self.linksRecords = self.state.subnetworkLinksRecords;
   }
   /**
   * Creates and activates a visual representation of a network.
@@ -3868,6 +3875,44 @@ class TopologyView {
     // Set dimensions of links.
     self.linksMarks.attr("stroke-width", (self.scaleLinkDimension * 1));
   }
+
+  // TODO: Implement tip view
+  // TODO: Implement prompt view with controls for individual nodes
+  // TODO: Selection of node highlights node (emphasis class), activates detail view, and displays details in detail view
+  // TODO: Maybe only create and display prompt view for current node selection.
+  // TODO: Click and drag moves node and locks in new position...
+  // TODO: I want new classes for selected (emphasis) and anchored nodes.
+  //nodes.call(
+  //  d3.drag()
+  //  .on("start", startDrag)
+  //  .on("drag", drag)
+  //  .on("end", endDrag)
+  //)
+  //.on("dblclick", relsease);
+
+//  function dragStart(d) {
+//    if (!d3.event.active) self.simulation.alphaTarget(0.3).restart();
+//    d.fx = d.x;
+//    d.fy = d.y;
+//    d3.select(this)
+//        .classed("fixed", true);
+//};
+//function dragged(d) {
+//    d.fx = d3.event.x;
+//    d.fy = d3.event.y;
+//};
+//function dragEnd(d) {
+//    if (!d3.event.active) self.simulation.alphaTarget(0);
+//    //d.fx = null;
+//    //d.fy = null;
+//};
+//function release(d) {
+//    d.fx = null;
+//    d.fy = null;
+//    d3.select(this)
+//        .classed("fixed", false);
+//};
+
   /**
   * Creates and activates nodes.
   * @param {Object} self Instance of a class.
@@ -4051,6 +4096,14 @@ class TopologyView {
       return "translate(" + x + "," + y + ")";
     });
   }
+
+  // TODO: Probably call this "restoreNetworkDiagramPositions" or something.
+  // TODO: I want to be able to call this method conveniently to re-initiate
+  // TODO: simulations when I drag a node and that sort of thing.
+  // TODO: I should only need to re-initiate the force simulation for drags...
+  // TODO: I can probably just call self.simulation.restart();
+  // TODO: No need to re-define the simulation after I've already defined it.
+
   /**
   * Creates layout for visual representations of network's elements.
   * @param {Object} self Instance of a class.
@@ -4349,6 +4402,9 @@ class TopologyView {
     // determination of layout until the network changes.
     Action.changeTopologyNovelty(self.state);
   }
+
+
+
   /**
   * Restores positions of nodes' visual representations according to results of
   * force simulation.

@@ -9,6 +9,29 @@ Research With Alexander Lex
 ----------
 Progress
 
+I corrected multiple discrepancies in traversal algorithms.
+I implemented collection of records for elements from subnetwork or network with preference to preserve mutable information from subnetwork.
+Mutable information within records for subnetwork's elements includes positions of nodes in network's diagram.
+
+----------
+Persistence of positions in network's diagram
+
+Restoration to entire application's state also restores all of interface's views.
+Restorations to interface's views are expensive.
+Views with greater complexity, such as the candiday view, are more expensive.
+These restorations delay response of interface to actions.
+
+Only restore the entire application's state and all interface's views for actions that create major changes.
+
+Actions that restore entire application's immutable state and all interface's views...
+-add or remove nodes from subnetwork's elements
+-select nodes from network's diagram for display in detail view
+
+Actions that modify mutable records of subnetwork's elements...
+-change positions of subnetwork's elements in network's diagram
+-lock or unlock positions of subnetwork's elements in network's diagram
+-appearance and disappearance of tip and prompt views
+
 --------------------------------------------------
 7 February 2018
 

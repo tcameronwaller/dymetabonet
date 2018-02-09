@@ -590,7 +590,13 @@ class Network {
       // Create record.
       return {
         identifier: entry.identifier,
-        type: entry.type
+        type: entry.type,
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        fx: null,
+        fy: null
       };
     });
   }
