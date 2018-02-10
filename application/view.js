@@ -799,15 +799,38 @@ class View {
       return element.selection;
     });
   }
+  /**
+  * Determines the horizontal and vertical position for the proximal corner of
+  * a tip or prompt view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.options Information about options.
+  * @param {Object} parameters.selector Reference to selector menu.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  */
+  static determineTipPromptPositions({} = {}) {
+    // TODO: I need to determine position coordinates relative to the entire view, not the SVG...
+
+    //View.determineTipPrompPositions({
+    //  horizontalPosition: horizontalPosition,
+    //  verticalPosition: verticalPosition,
+    //  horizontalShift: horizontalShift,
+    //  verticalShift: verticalShift,
+    //  viewWidth: viewWidth,
+    //  viewHeight: viewHeight
+    //});
+
+    // TODO: This function should just determine coordinates of the proximal CORNER of the tip or prompt.
+    // TODO: It will then be necessary to determine position of top left corner
+    // TODO: dependent on dimensions of the tip's or prompt's container (dependent on contents).
+
+  }
 }
 
-// TODO: Enable the tip view to receive any type of content, including other containers like div or table
-// TODO: Remove children and re-append with each update to tip.
-// TODO: Tip should just accept a child element to append.
-
 /**
-* Interface to communicate interactively concise information about other
-* elements in any views.
+* Interface to communicate transient, concise, supplemental information about
+* other elements in interface's views.
+* This interface is independent of application's persistent state.
 */
 class TipView {
   /**
@@ -864,12 +887,42 @@ class TipView {
       self.container.classList.remove("visible");
       self.container.classList.add("invisible");
     }
-    // Determine tip's placement relative to cursor's position.
-    // TODO: Do this.
-    // Restore tips properties.
-    self.container.style.top = ((positionY - 15) + "px");
-    self.container.style.left = ((positionX + 15) + "px");
+    // Determine dimensions of view for entire interface.
+    self.viewWidth = General.determineElementDimension(self.view, "width");
+    self.viewHeight = General.determineElementDimension(self.view, "height");
+    // Create tip's contents.
     self.container.appendChild(summary);
+    // Determine dimensions of tip's view.
+    self.containerWidth = General
+    .determineElementDimension(self.container, "width");
+    self.containerHeight = General
+    .determineElementDimension(self.container, "height");
+    // Determine tip's placement relative to cursor's position within view.
+    // Define tip's placement in terms of the top left corner of its container.
+    if (positionX < (self.viewWidth / 2)) {
+      // Cursor is on left side of view.
+      // Place tip to right of cursor.
+      //console.log("left side");
+      self.container.style.left = ((positionX + 20) + "px");
+    } else {
+      // Cursor is on right side of view.
+      // Place tip to left of cursor.
+      //console.log("right side");
+      self.container.style.left = (
+        (positionX - self.containerWidth) + "px"
+      );
+    }
+    if (positionY < (self.viewHeight / 2)) {
+      // Cursor is on top side of view.
+      // Place tip below cursor.
+      self.container.style.top = ((positionY + 15) + "px");
+    } else {
+      // Cursor is on bottom side of view.
+      // Place tip above cursor.
+      self.container.style.top = (
+        (positionY - self.containerHeight) + "px"
+      );
+    }
   }
   /**
   * Clears view.
@@ -883,6 +936,41 @@ class TipView {
       summary: View.createSpanText({text: "",documentReference: self.document}),
       self: self
     });
+  }
+}
+
+// TODO: Whereas TipView follows the cursor, prompt view has a set position relative
+// TODO: to some specific, usually selected, element...
+// TODO: As with TipView, clear the PromptView with each update to the state...
+
+// TODO: PromptView needs a reference to some element by which to determin at *absolute* position.
+
+// TODO: New state variable for prompt... keeps information about prompt's type...
+// "node", "diagram"
+
+/**
+* Interface to provide transient, specific controls.
+*/
+class PromptView {
+  /**
+  * Initializes an instance of a class.
+  */
+  constructor () {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Set references to other views
+    self.view = self.document.getElementById("view");
+    // Control view's composition and behavior.
+
+    // TODO: Maybe decide here whether or not to create?
+    // TODO:
+    // Initialize view.
+    //self.initializeView(self);
+    // Restore view.
+    //self.clearView(self);
   }
 }
 
@@ -1627,7 +1715,7 @@ class SetMenuView {
       });
     });
     self.rows.on("mouseenter", function (element, index, nodes) {
-      // Determine pointer coordinates.
+      // Determine cursor's coordinates.
       var positionX = d3.mouse(self.view)[0];
       var positionY = d3.mouse(self.view)[1];
       // Select element.
@@ -1648,7 +1736,7 @@ class SetMenuView {
       });
     });
     self.rows.on("mousemove", function (element, index, nodes) {
-      // Determine pointer coordinates.
+      // Determine cursor's coordinates.
       var positionX = d3.mouse(self.view)[0];
       var positionY = d3.mouse(self.view)[1];
       // Call action.
@@ -2263,7 +2351,7 @@ class CandidacyMenuView {
     self.rows.classed("normal", true);
     // Activate behavior.
     self.rows.on("mouseenter", function (element, index, nodes) {
-      // Determine pointer coordinates.
+      // Determine cursor's coordinates.
       var positionX = d3.mouse(self.view)[0];
       var positionY = d3.mouse(self.view)[1];
       // Select element.
@@ -2284,7 +2372,7 @@ class CandidacyMenuView {
       });
     });
     self.rows.on("mousemove", function (element, index, nodes) {
-      // Determine pointer coordinates.
+      // Determine cursor's coordinates.
       var positionX = d3.mouse(self.view)[0];
       var positionY = d3.mouse(self.view)[1];
       // Call action.
@@ -3524,6 +3612,8 @@ class SummaryView {
   }
 }
 
+// TODO: I need to pass TopologyView a reference to PromptView...
+
 /**
 * Interface to represent visually the network's topology.
 */
@@ -3543,7 +3633,9 @@ class TopologyView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set references to other views
+    // Set reference to view of browser's window.
+    self.window = window;
+    // Set references to other views.
     self.view = self.document.getElementById("view");
     self.tip = tip;
     self.exploration = exploration;
@@ -3651,6 +3743,9 @@ class TopologyView {
   // TODO: Clicking on the base itself should allow adding a rogue node or clearing subnetwork
   // TODO: Handle all of that through the prompt view.
 
+  // TODO: Make the prompt view toggle-able...
+  // TODO: first click turns it on... next click turns it off...
+
   /**
   * Creates a base within a graphical container.
   * @param {Object} self Instance of a class.
@@ -3665,6 +3760,37 @@ class TopologyView {
     base.setAttribute("y", "0px");
     base.setAttribute("width", self.graphWidth);
     base.setAttribute("height", self.graphHeight);
+
+    // Activate behavior.
+    base.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+
+      // TODO: Select the prompt view by identifier.
+      // TODO: Determine whether prompt view is specific for diagram
+      // TODO: Prompt View keeps track of current status by class name, such as "diagram"
+
+
+
+    });
+
+    if (false) {
+      // Determine cursor's coordinates.
+      var positionX = d3.mouse(self.view)[0];
+      var positionY = d3.mouse(self.view)[1];
+      // Call action.
+      TopologyView.createTip({
+        identifier: element.identifier,
+        type: element.type,
+        positionX: positionX,
+        positionY: positionY,
+        tip: self.tip,
+        documentReference: self.document,
+        state: self.state
+      });
+
+      self.prompt.clearView(self.prompt);
+    }
   }
   /**
   * Creates a single group to contain all links.
@@ -3920,15 +4046,16 @@ class TopologyView {
   createActivateNodes(self) {
     // Create nodes.
     // Create groups to contain elements for individual nodes.
-    self.createActivateNodesGroups(self);
+    self.createNodesGroups(self);
+    self.activateNodesGroups(self);
     // Create marks for individual nodes.
     self.createNodesMarks(self);
   }
   /**
-  * Creates and activates nodes's groups.
+  * Creates nodes's groups.
   * @param {Object} self Instance of a class.
   */
-  createActivateNodesGroups(self) {
+  createNodesGroups(self) {
     // Create nodes.
     // Select parent.
     var selection = d3.select(self.nodesGroup);
@@ -3949,13 +4076,27 @@ class TopologyView {
       return "node-" + element.identifier;
     })
     .classed("node", true)
-    .classed("normal", true)
     .classed("metabolite", function (element, index, nodes) {
       return element.type === "metabolite";
     })
     .classed("reaction", function (element, index, nodes) {
       return element.type === "reaction";
     })
+    .classed("normal", function (element, index, nodes) {
+      return !TopologyView.determineNodeEntitySelection({
+        identifier: element.identifier,
+        type: element.type,
+        state: self.state
+      });
+    })
+    .classed("emphasis", function (element, index, nodes) {
+      return TopologyView.determineNodeEntitySelection({
+        identifier: element.identifier,
+        type: element.type,
+        state: self.state
+      });
+    })
+    // TODO: I don't think I'm going to have explicit replication nodes anymore...
     .classed("replication", function (element, index, nodes) {
       var node = TopologyView.accessNode({
         identifier: element.identifier,
@@ -3964,29 +4105,98 @@ class TopologyView {
       });
       return node.replication;
     });
+  }
+  /**
+  * Activates nodes's groups.
+  * @param {Object} self Instance of a class.
+  */
+  activateNodesGroups(self) {
     // Activate behavior.
-    self.nodesGroups.on("mouseenter", function (element, index, nodes) {
-      // Determine pointer coordinates.
-      var positionX = d3.mouse(self.view)[0];
-      var positionY = d3.mouse(self.view)[1];
-      // Select element.
-      var node = nodes[index];
-      var nodeSelection = d3.select(node);
+    self.nodesGroups.on("click", function (element, index, nodes) {
       // Call action.
-      nodeSelection.classed("normal", false);
-      nodeSelection.classed("emphasis", true);
-      TopologyView.createTip({
+      Action.changeEntitySelection({
         identifier: element.identifier,
         type: element.type,
-        positionX: positionX,
-        positionY: positionY,
-        tip: self.tip,
-        documentReference: self.document,
         state: self.state
       });
     });
+    self.nodesGroups.on("mouseenter", function (element, index, nodes) {
+      // Select element.
+      var node = nodes[index];
+      var nodeSelection = d3.select(node);
+      // Determine whether node's entity has a selection.
+      var selection = TopologyView.determineNodeEntitySelection({
+        identifier: element.identifier,
+        type: element.type,
+        state: self.state
+      });
+
+      // TODO: Change the way I deal with tip position...
+      // TODO: I need the tip to appear right where I tell it too.
+      // Write new function in View container to translate coordinates for tip and prompt...
+      // containerWidth (use to determine left/right side)
+      // containerHeight (use to determine top/bottom side)
+      // horizontalPosition (use to determine left/right side)
+      // verticalPosition (use to determine top/bottom side)
+      // horizontalShift (either 15 for cursor or node's width)
+      // verticalShift (similar)
+
+      if (selection) {
+        // Determine dimensions and positions.
+        var dimensionsPositions = TopologyView
+        .determineNodeDimensionsPositions({
+          node: node,
+          windowReference: self.window
+        });
+
+
+        // Create stationary tip.
+        // Create tip.
+
+        // TODO: Maybe split up "createTipSummary" and "createTip"
+
+
+        TopologyView.createTip({
+          identifier: element.identifier,
+          type: element.type,
+          containerWidth:
+          horizontalPosition: horizontalPosition,
+          verticalPosition: verticalPosition,
+          horizontalShift: horizontalShift,
+          verticalShift: verticalShift,
+          positionX: positionX,
+          positionY: positionY,
+          tip: self.tip,
+          documentReference: self.document,
+          state: self.state
+        });
+        // Create prompt's abbreviation.
+
+      } else {
+        // Create mobile tip.
+        // Determine cursor's coordinates.
+        //.clientX
+        //.clientY
+        var positionX = d3.mouse(self.view)[0];
+        var positionY = d3.mouse(self.view)[1];
+        // Create tip.
+        TopologyView.createTip({
+          identifier: element.identifier,
+          type: element.type,
+          positionX: positionX,
+          positionY: positionY,
+          tip: self.tip,
+          documentReference: self.document,
+          state: self.state
+        });
+      }
+
+      // TODO: Behavior should differ dependent on whether node has class emphasis (meaning its selected)
+      // TODO: Activate on click behavior to change entity selection state variable.
+
+    });
     self.nodesGroups.on("mousemove", function (element, index, nodes) {
-      // Determine pointer coordinates.
+      // Determine cursor's coordinates.
       var positionX = d3.mouse(self.view)[0];
       var positionY = d3.mouse(self.view)[1];
       // Call action.
@@ -4005,8 +4215,6 @@ class TopologyView {
       var node = nodes[index];
       var nodeSelection = d3.select(node);
       // Call action.
-      nodeSelection.classed("emphasis", false);
-      nodeSelection.classed("normal", true);
       self.tip.clearView(self.tip);
     });
   }
@@ -4416,14 +4624,16 @@ class TopologyView {
     // Restore positions of nodes' marks according to results of simulation.
     // Impose constraints on node positions according to dimensions of graphical
     // container.
-    self.nodesGroups.attr("transform", function (data) {
+    self.nodesGroups.attr("transform", function (element, index, nodes) {
       // Constrain nodes' positions according to dimensions of graphical
       // container.
-      data.x = Math.max(radius, Math.min(self.graphWidth - radius, data.x));
-      data.y = Math.max(radius, Math.min(self.graphHeight - radius, data.y));
+      element.x = Math
+      .max(radius, Math.min(self.graphWidth - radius, element.x));
+      element.y = Math
+      .max(radius, Math.min(self.graphHeight - radius, element.y));
       // Determine coordinates for nodes' marks from results of simulation in
       // nodes' records.
-      return "translate(" + data.x + "," + data.y + ")";
+      return "translate(" + element.x + "," + element.y + ")";
     });
   }
   /**
@@ -4667,6 +4877,20 @@ class TopologyView {
     } else if (type === "reaction") {
       return state.networkNodesReactions[identifier];
     }
+  }
+  /**
+  * Determines whether a node's entity has a selection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of entity, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  * @returns {boolean} Whether the node's entity has a selection.
+  */
+  static determineNodeEntitySelection({identifier, type, state} = {}) {
+    return (
+      (type === state.entitySelection.type) &&
+      (identifier === state.entitySelection.node)
+    );
   }
   /**
   * Creates tip.
@@ -5097,6 +5321,35 @@ class TopologyView {
       //return terminus.x
       return 0;
     }
+  }
+  /**
+  * Determines dimensions and positions for a node.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.node Reference to node's element.
+  * @param {Object} parameters.windowReference Referece to view of browser's
+  * window.
+  * @returns {Object<number>} Dimensions and positions.
+  */
+  static determineNodeDimensionsPositions({node, windowReference} = {}) {
+    var viewWidth = windowReference.innerWidth;
+    var viewHeight = windowReference.innerHeight;
+    var nodeDimensions = node.getBoundingClientRect();
+    var horizontalPosition = (
+      nodeDimensions.left + (nodeDimensions.width / 2)
+    );
+    var verticalPosition = (
+      nodeDimensions.top + (nodeDimensions.height / 2)
+    );
+    var horizontalShift = (nodeDimensions.width / 2);
+    var verticalShift = (nodeDimensions.height / 2);
+    return View.determineTipPrompPositions({
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: horizontalShift,
+      verticalShift: verticalShift,
+      viewWidth: viewWidth,
+      viewHeight: viewHeight
+    });
   }
 }
 

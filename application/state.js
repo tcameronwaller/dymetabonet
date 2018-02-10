@@ -30,8 +30,8 @@ United States of America
 
 /**
 * The application's state.
-* This class stores values of attributes that define the application's state.
-* The class accepts and stores appropriate values of attributes that define the
+* This class stores values of variables that define the application's state.
+* The class accepts and stores appropriate values of variables that define the
 * application's state.
 */
 class State {
@@ -41,294 +41,300 @@ class State {
   constructor() {
     // Set reference to class' current instance to persist across scopes.
     var self = this;
-    // Specify state's attributes.
+    // Specify state's variables.
     var control = [
-      // Attribute "source" stores a reference to a file on client's system that
+      // Variable "source" stores a reference to a file on client's system that
       // is a source of information.
       "source",
-      // Attribute "controlViews" stores information about whether each view
+      // Variable "controlViews" stores information about whether each view
       // within the control view is active.
       "controlViews",
-      // Attribute "topology" stores information about whether to draw a visual
+      // Variable "topology" stores information about whether to draw a visual
       // representation of the network's topology.
       "topology",
-      // Attribute "topologyNovelty" stores information about whether to current
+      // Variable "topologyNovelty" stores information about whether to current
       // network's topology is novel in comparison to any current visual
       // representations.
       "topologyNovelty"
     ];
     var entities = [
       // Metabolic entities and sets.
-      // Attribute "metabolites" stores information about chemically-unique
+      // Variable "metabolites" stores information about chemically-unique
       // metabolites.
       "metabolites",
-      // Attribute "reactions" stores information about reactions that
+      // Variable "reactions" stores information about reactions that
       // facilitate chemical conversion or physical transport of metabolites.
-      // Information includes references to attributes "metabolites",
+      // Information includes references to variables "metabolites",
       // "compartments", and "processes".
       "reactions"
     ];
     var sets = [
-      // Attribute "genes" stores information about genes.
+      // Variable "genes" stores information about genes.
       "genes",
-      // Attribute "compartments" stores information about compartments within a
+      // Variable "compartments" stores information about compartments within a
       // cell.
       "compartments",
-      // Attribute "processes" stores information about processes or pathways.
+      // Variable "processes" stores information about processes or pathways.
       "processes"
     ];
     var totalEntitiesSets = [
-      // Attribute "totalReactionsSets" stores information for all reactions
+      // Variable "totalReactionsSets" stores information for all reactions
       // about all the metabolites that participate in each reaction and the
-      // sets to which each reaction belongs by all its values of attributes.
-      // The purpose of attribute "totalReactionsSets" is to provide complete
+      // sets to which each reaction belongs by all its values of variables.
+      // The purpose of variable "totalReactionsSets" is to provide complete
       // information against which to apply filters.
-      // Information includes references to attributes "reactions",
+      // Information includes references to variables "reactions",
       // "metabolites", "compartments", and "processes".
-      // Information derives from attribute "reactions".
+      // Information derives from variable "reactions".
       "totalReactionsSets",
-      // Attribute "totalMetabolitesSets" stores information for all metabolites
+      // Variable "totalMetabolitesSets" stores information for all metabolites
       // about all the reactions in which each metabolite participates and the
-      // sets to which each metabolite belongs by all its values of attributes.
-      // The purpose of attribute "totalMetabolitesSets" is to provide complete
+      // sets to which each metabolite belongs by all its values of variables.
+      // The purpose of variable "totalMetabolitesSets" is to provide complete
       // information against which to apply filters.
-      // Information includes references to attributes "metabolites",
+      // Information includes references to variables "metabolites",
       // "reactions", "compartments", and "processes".
-      // Information derives from attributes "totalReactionsSets" and
+      // Information derives from variables "totalReactionsSets" and
       // "reactions".
       "totalMetabolitesSets"
     ];
     var entitiesSetsFilters = [
-      // Attribute "setsFilters" stores information about selections of sets
-      // by values of entities' attributes to apply as filters.
-      // The purpose of attribute "setsFilters" is to define filters for
-      // filtration of entities by their values of attributes.
-      // Information includes references to attributes "compartments" and
+      // Variable "setsFilters" stores information about selections of sets
+      // by values of entities' variables to apply as filters.
+      // The purpose of variable "setsFilters" is to define filters for
+      // filtration of entities by their values of variables.
+      // Information includes references to variables "compartments" and
       // "processes".
       "setsFilters"
     ];
     var currentEntitiesSets = [
-      // Attribute "accessReactionsSets" stores information for reactions that
+      // Variable "accessReactionsSets" stores information for reactions that
       // pass filters about all the metabolites that participate in each
       // reaction and the sets to which each reaction belongs by all its values
-      // of attributes.
-      // The purpose of attribute "accessReactionsSets" is to constrain the
+      // of variables.
+      // The purpose of variable "accessReactionsSets" is to constrain the
       // accessibility of sets for selection in the sets' menu.
-      // Information includes references to attributes "reactions",
+      // Information includes references to variables "reactions",
       // "metabolites", "compartments", and "processes".
-      // Information derives from attributes "setsFilters",
+      // Information derives from variables "setsFilters",
       // "totalReactionsSets", and "reactions".
       "accessReactionsSets",
-      // Attribute "accessMetabolitesSets" stores information for metabolites
+      // Variable "accessMetabolitesSets" stores information for metabolites
       // that pass filters about all the reactions in which each metabolite
       // participates and the sets to which each metabolite belongs by all its
-      // values of attributes.
-      // The purpose of attribute "accessMetabolitesSets" is to constrain the
+      // values of variables.
+      // The purpose of variable "accessMetabolitesSets" is to constrain the
       // accessibility of sets for selection in the sets' menu.
-      // Information includes references to attributes "metabolites",
+      // Information includes references to variables "metabolites",
       // "reactions", "compartments", and "processes".
-      // Information derives from attributes "totalMetabolitesSets",
+      // Information derives from variables "totalMetabolitesSets",
       // "accessReactionsSets" and "reactions".
       "accessMetabolitesSets",
-      // Attribute "filterReactionsSets" stores information for reactions that
+      // Variable "filterReactionsSets" stores information for reactions that
       // pass filters about the metabolites that participate in each reaction in
       // contexts that pass filters and the sets to which each reaction belongs
-      // by its values of attributes that pass filters.
-      // The purpose of attribute "filterReactionsSets" is to define reactions,
-      // metabolites, and their attributes that pass filters.
-      // Information includes references to attributes "reactions",
+      // by its values of variables that pass filters.
+      // The purpose of variable "filterReactionsSets" is to define reactions,
+      // metabolites, and their variables that pass filters.
+      // Information includes references to variables "reactions",
       // "metabolites", "compartments", and "processes".
-      // Information derives from attributes "setsFilters",
+      // Information derives from variables "setsFilters",
       // "totalReactionsSets", and "reactions".
       "filterReactionsSets",
-      // Attribute "filterMetabolitesSets" stores information for metabolites
+      // Variable "filterMetabolitesSets" stores information for metabolites
       // that pass filters about the reactions in which each metabolite
       // participates in contexts that pass filters and the sets to which each
-      // metabolite belongs by its values of attributes that pass filters.
-      // The purpose of attribute "filterMetabolitesSets" is to define
-      // metabolites and their attributes that pass filters.
-      // Information includes references to attributes "metabolites",
+      // metabolite belongs by its values of variables that pass filters.
+      // The purpose of variable "filterMetabolitesSets" is to define
+      // metabolites and their variables that pass filters.
+      // Information includes references to variables "metabolites",
       // "reactions", "compartments", and "processes".
-      // Information derives from attributes "totalMetabolitesSets",
+      // Information derives from variables "totalMetabolitesSets",
       // "filterReactionsSets" and "reactions".
       "filterMetabolitesSets"
     ];
     var setsCardinalitiesSummaries = [
-      // Attribute "setsEntities" stores information about the type of entities,
+      // Variable "setsEntities" stores information about the type of entities,
       // metabolites or reactions, to represent in the sets' summary.
       "setsEntities",
-      // Attribute "setsFilter" stores information about whether to represent
-      // entities and their values of attributes after filtration in the sets'
+      // Variable "setsFilter" stores information about whether to represent
+      // entities and their values of variables after filtration in the sets'
       // summary.
       "setsFilter",
-      // Attribute "setsCardinalitites" stores information about the counts of
-      // entities that belong to each set by their values of attributes.
-      // Information includes references to attributes "compartments" and
+      // Variable "setsCardinalitites" stores information about the counts of
+      // entities that belong to each set by their values of variables.
+      // Information includes references to variables "compartments" and
       // "processes".
-      // Information derives from attributes "setsEntities", "setsFilter",
+      // Information derives from variables "setsEntities", "setsFilter",
       // "currentReactionsSets", "currentMetabolitesSets", "totalReactionsSets",
       // "totalMetabolitesSets".
       "setsCardinalities",
-      // Attribute "setsSearches" stores information about searches' strings by
+      // Variable "setsSearches" stores information about searches' strings by
       // which to filter the summaries of sets' cardinalities.
       "setsSearches",
-      // Attribute "setsSorts" stores information about the sort criteria and
+      // Variable "setsSorts" stores information about the sort criteria and
       // orders for the summaries of sets' cardinalities.
-      // Information includes references to attributes "compartments" and
+      // Information includes references to variables "compartments" and
       // "processes".
       "setsSorts",
-      // Attribute "setsSummaries" stores information about the counts of
-      // entities that belong to each set by their values of attributes.
+      // Variable "setsSummaries" stores information about the counts of
+      // entities that belong to each set by their values of variables.
       // Information includes additional details for representation in menus.
-      // Information includes references to attributes "compartments" and
+      // Information includes references to variables "compartments" and
       // "processes".
-      // Information derives from attributes "setsCardinalities", "setsSearch",
+      // Information derives from variables "setsCardinalities", "setsSearch",
       // and "setsSorts".
       "setsSummaries"
     ];
     var context = [
-      // Attribute "compartmentalization" stores information about whether to
+      // Variable "compartmentalization" stores information about whether to
       // represent compartmentalization of metabolites.
       "compartmentalization",
-      // Attribute "defaultSimplifications" stores information about whether to
+      // Variable "defaultSimplifications" stores information about whether to
       // simplify default entities.
       "defaultSimplifications",
-      // Attribute "reactionsSimplifications" stores information about
+      // Variable "reactionsSimplifications" stores information about
       // selections of reactions for simplification by omission.
-      // Information includes references to attribute "reactionsCandidates".
+      // Information includes references to variable "reactionsCandidates".
       "reactionsSimplifications",
-      // Attribute "metabolitesSimplifications" stores information about
+      // Variable "metabolitesSimplifications" stores information about
       // selections of metabolites for simplification either by replication or
       // omission.
-      // Information includes references to attribute "metabolitesCandidates".
+      // Information includes references to variable "metabolitesCandidates".
       "metabolitesSimplifications"
     ];
     var candidateEntities = [
-      // Attribute "reactionsCandidates" stores information about reactions and
+      // Variable "reactionsCandidates" stores information about reactions and
       // their metabolites that are relevant in the context of interest and are
       // candidates for representation in the network.
       // Information includes compartmentalization of metabolites.
-      // Information includes references to attributes "reactions",
+      // Information includes references to variables "reactions",
       // "metabolites", and "compartments".
-      // Information derives from attributes "compartmentalization",
+      // Information derives from variables "compartmentalization",
       // "filterReactionsSets", and "reactions".
       "reactionsCandidates",
-      // Attribute "metabolitesCandidates" stores information about metabolites
+      // Variable "metabolitesCandidates" stores information about metabolites
       // and their reactions that are relevant in the context of interest and
       // are candidates for representation in the network.
       // Information includes compartmentalization of metabolites.
-      // Information includes references to attributes "metabolites",
+      // Information includes references to variables "metabolites",
       // "reactions", and "compartments".
-      // Information derives from attribute "reactionsCandidates".
+      // Information derives from variable "reactionsCandidates".
       "metabolitesCandidates"
     ];
     var candidatesSummaries = [
-      // Attribute "candidatesSearches" stores information about searches'
+      // Variable "candidatesSearches" stores information about searches'
       // strings by which to filter the summaries of candidates' degrees.
       "candidatesSearches",
-      // Attribute "candidatesSorts" stores information about the sort criteria
+      // Variable "candidatesSorts" stores information about the sort criteria
       // and orders for the summaries of candidates' degrees.
-      // Information includes references to attributes "reactionsCandidates" and
+      // Information includes references to variables "reactionsCandidates" and
       // "metabolitesCandidates".
       "candidatesSorts",
-      // Attribute "candidatesSummaries" stores information about the counts of
+      // Variable "candidatesSummaries" stores information about the counts of
       // other candidate entities to which each candidate entity relates.
       // Information includes additional details for representation in menus.
-      // Information includes references to attributes "reactionsCandidates" and
+      // Information includes references to variables "reactionsCandidates" and
       // "metabolitesCandidates".
-      // Information derives from attributes "reactionsCandidates",
+      // Information derives from variables "reactionsCandidates",
       // "metabolitesCandidates", and "candidatesSorts".
       "candidatesSummaries"
     ];
     var network = [
-      // Attribute "networkNodesReactions" stores information about
+      // Variable "networkNodesReactions" stores information about
       // representations of reactions in the network.
-      // Information includes references to attributes "reactions" and
+      // Information includes references to variables "reactions" and
       // "reactionsCandidates".
-      // Information derives from attributes "reactions", "reactionsCandidates",
+      // Information derives from variables "reactions", "reactionsCandidates",
       // and "reactionsSimplifications".
       "networkNodesReactions",
-      // Attribute "networkNodesMetabolites" stores information about
+      // Variable "networkNodesMetabolites" stores information about
       // representations of metabolites in the network.
-      // Information includes references to attributes "metabolites" and
+      // Information includes references to variables "metabolites" and
       // "metabolitesCandidates".
-      // Information derives from attributes "metabolites",
+      // Information derives from variables "metabolites",
       // "metabolitesCandidates", and "metabolitesSimplifications".
       "networkNodesMetabolites",
-      // Attribute "networkLinks" stores information about representations of
+      // Variable "networkLinks" stores information about representations of
       // relations between reactions and metabolites in the network.
-      // Information includes references to attributes "networkNodesReactions"
+      // Information includes references to variables "networkNodesReactions"
       // and "networkNodesMetabolites".
-      // Information derives from attributes "reactions",
+      // Information derives from variables "reactions",
       // "networkNodesReactions", and "networkNodesMetabolites".
       "networkLinks",
-      // Attribute "networkNodesRecords" stores concise information about
+      // Variable "networkNodesRecords" stores concise information about
       // network's nodes.
-      // Information includes references to attributes "networkNodesReactions",
+      // Information includes references to variables "networkNodesReactions",
       // and "networkNodesMetabolites".
       "networkNodesRecords",
-      // Attribute "networkLinksRecords" stores concise information about
+      // Variable "networkLinksRecords" stores concise information about
       // network's links.
-      // Information includes references to attributes "networkNodesReactions",
+      // Information includes references to variables "networkNodesReactions",
       // and "networkNodesMetabolites".
       "networkLinksRecords"
     ];
     var subnetwork = [
-      // Attribute "traversalCombination" stores information about the strategy,
+      // Variable "traversalCombination" stores information about the strategy,
       // union or difference, for combination of sets of nodes from traversals
       // in traversal view.
       "traversalCombination",
-      // Attribute "traversalType" stores information about the type of
+      // Variable "traversalType" stores information about the type of
       // traversal, rogue, proximity, or path, for which to create controls in
       // traversal view.
       "traversalType",
-      // Attribute "traversalRogueFocus" stores information about a network's
+      // Variable "traversalRogueFocus" stores information about a network's
       // single node to include or exclude from the subnetwork.
-      // Information includes references to attributes
+      // Information includes references to variables
       // "networkNodesMetabolites", "networkNodesReactions", and
       // "networkNodesRecords".
       "traversalRogueFocus",
-      // Attribute "traversalProximityFocus" stores information about a
+      // Variable "traversalProximityFocus" stores information about a
       // network's single focal node for proximity traversal.
-      // Information includes references to attributes
+      // Information includes references to variables
       // "networkNodesMetabolites", "networkNodesReactions", and
       // "networkNodesRecords".
       "traversalProximityFocus",
-      // Attribute "traversalProximityDirection" stores information about the
+      // Variable "traversalProximityDirection" stores information about the
       // direction of proximity traversal, either following successors,
       // neighbors, or predecessors from the focal node.
       "traversalProximityDirection",
-      // Attribute "traversalProximityDepth" stores information about the depth
+      // Variable "traversalProximityDepth" stores information about the depth
       // of the proximity traversal in count of links from the focal node.
       "traversalProximityDepth",
-      // Attribute "traversalPathSource" stores information about a network's
+      // Variable "traversalPathSource" stores information about a network's
       // single node for the source of path traversal.
-      // Information includes references to attributes
+      // Information includes references to variables
       // "networkNodesMetabolites", "networkNodesReactions", and
       //"networkNodesRecords".
       "traversalPathSource",
-      // Attribute "traversalPathTarget" stores information about a network's
+      // Variable "traversalPathTarget" stores information about a network's
       // single node for the target of path traversal.
-      // Information includes references to attributes
+      // Information includes references to variables
       // "networkNodesMetabolites", "networkNodesReactions", and
       //"networkNodesRecords".
       "traversalPathTarget",
-      // Attribute "traversalPathDirection" stores information about the
+      // Variable "traversalPathDirection" stores information about the
       // direction of path traversal, either forward, reverse, or both.
       "traversalPathDirection",
-      // Attribute "traversalPathCount" stores information about the count of
+      // Variable "traversalPathCount" stores information about the count of
       // simple shortest paths to collect by path traversal.
       "traversalPathCount",
-      // Attribute "subnetworkNodesRecords" stores concise information about
+      // Variable "subnetworkNodesRecords" stores concise information about
       // network's nodes of interest.
-      // Information includes references to attributes "networkNodesReactions",
+      // Information includes references to variables "networkNodesReactions",
       // and "networkNodesMetabolites".
       "subnetworkNodesRecords",
-      // Attribute "networkLinksRecords" stores concise information about
+      // Variable "networkLinksRecords" stores concise information about
       // network's links of interest.
-      // Information includes references to attributes "networkNodesReactions",
+      // Information includes references to variables "networkNodesReactions",
       // and "networkNodesMetabolites".
       "subnetworkLinksRecords",
+      // Variable "entitySelection" stores information about selection of an
+      // entity of interest.
+      // Information includes references to variables "metabolites",
+      // "reactions", "metabolitesCandidates", "reactionsCandidates",
+      // "networkNodesMetabolites", and "networkNodesReactions".
+      "entitySelection"
     ];
     self.variablesNames = [].concat(
       control,

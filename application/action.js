@@ -124,13 +124,19 @@ class Action {
   static initializeApplicationControls(state) {
     var source = null;
     var controlViews = {
-      state: true,
+      state: false,
       set: false,
       candidacy: false,
       traversal: false
     };
     var topology = false;
     var topologyNovelty = true;
+    var entitySelection = {
+      type: null,
+      node: null,
+      candidate: null,
+      entity: null
+    };
     // Initialize controls for set view.
     var setViewControls = Action.initializeSetViewControls();
     // Initialize controls for candidacy view.
@@ -142,7 +148,8 @@ class Action {
       source: source,
       controlViews: controlViews,
       topology: topology,
-      topologyNovelty: topologyNovelty
+      topologyNovelty: topologyNovelty,
+      entitySelection: entitySelection
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -1465,6 +1472,58 @@ class Action {
       state: state
     });
   }
+  /**
+  * Changes the selection of a node's entity.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeEntitySelection({identifier, type, state} = {}) {
+    // Access information.
+    if (type === "metabolite") {
+      var node = state.networkNodesMetabolites[identifier];
+      var candidate = state.metabolitesCandidates[node.candidate];
+      var entity = state.metabolites[candidate.metabolite];
+    } else if (type === "reaction") {
+      var node = state.networkNodesReactions[identifier];
+      var candidate = state.reactionsCandidates[node.candidate];
+      var entity = state.reactions[candidate.reaction];
+    }
+    // Determine entity selection.
+    if (candidate.identifier === state.entitySelection) {
+      var record = {
+        type: null,
+        node: null,
+        candidate: null,
+        entity: null
+      };
+    } else {
+      var record = {
+        type: type,
+        node: node.identifier,
+        candidate: candidate.identifier,
+        entity: entity.identifier
+      };
+    }
+    // Determine whether to activate detail view.
+    if (record.candidate) {
+      // TODO: Activate DetailView within ControlView.
+      // TODO: DetailView's contents should depend on whether or not there's an entitySelection...
+      // TODO: If there isn't an entitySelection, consider giving information about the network or something...
+    }
+    // Compile variables' values.
+    var novelVariablesValues = {
+      entitySelection: record
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+
 
   // Indirect actions.
 

@@ -103,6 +103,29 @@ flex-direction: column;
 }
 
 /******************************************************************************/
+/* Prompt View */
+/******************************************************************************/
+
+#prompt {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: rgba(255, 255, 255, 1);
+  position: absolute;
+  z-index: 10;
+  height: auto;
+  width: auto;
+}
+
+#prompt .invisible {
+  /*visibility: hidden;*/
+  display: none;
+}
+
+#prompt .visible {
+  /*visibility: visible;*/
+  display: inline;
+}
+
+/******************************************************************************/
 /* Control View */
 /******************************************************************************/
 /* needs work still... obviously... I need to figure out the display property for children...*/

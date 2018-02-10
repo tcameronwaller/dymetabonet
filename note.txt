@@ -4,6 +4,51 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+9 February 2018
+
+----------
+Progress
+
+I began implementing behavior for tip and prompt views on nodes.
+I began implementing a function in View utility class to determine positions of proximal corners of tip and prompt.
+That function will need to adjust for whether it's a tip or a prompt, since I need to display both simultaneously.
+
+The tip and prompt views themselves will need to determine the positions of their top left corners according to the contents and dimensions of their containers.
+
+After completing tip and prompt views for nodes, I want to implement the drag and lock features for direct interaction with nodes.
+
+----------
+Progress Report
+
+Hi Jared and Alex,
+
+Here's a progress report.
+
+Our last meeting happened on 8 January.
+
+On 18 January I presented the project to Jared's team. Members of the team shared some helpful critique and advice, which I'm applying in my plans for the project.
+
+Even in my initial proposal of the project in 2016, topological traversal of the metabolic network was an essential priority. Relations within the network constitute the basic information that analysts need. Even with various filters and simplifications, the metabolic network remains sufficiently large and complex that manual traversals are laborious. In multiple conversations, both Casey Hughes and Adam Hughes have emphasized their need for information about relations in proximity (breadth traversal) around a single metabolite of interest. Their output is a simple list of reactions that relate. Similarly, in multiple conversations, Kevin Hicks has emphasized his need for information about sometimes long-range relations (shortest simple paths traversal) between multiple metabolites of interest. His output is basic information about the metabolites and reactions, perhaps including relevant categories of processes and compartments, in these paths. Indeed, whereas previous tools (KEGG, various other databases) offer information about metabolites and reactions and static depictions of conventional pathways (Glycolysis, Pentose Phosphate, Citrate Cycle), the main advantage of our project is the customizable definition of a metabolic network that is suitable for automatic traversal.
+
+I implemented and optimized functionality for traversals by breadth about a single node, and multiple shortest simple paths between two nodes. I did so such that the application does not depend on external libraries, partly because neither JSNetworkX nor CytoScapeJS provided the necessary functionality anyway. The performance is satisfactory, and I plan for these traversals to be useful for building custom subnetworks.
+
+My current focus is on development of the interactive interface, and I have a clear plan. We discussed multiple aspects of this interface in our last meeting. Among other things, I plan for interaction with nodes in the network's diagram to build subnetworks and manually optimize the layout. I'm confident that my progress on the interface will be rapid since the foundational data structure and functionality is in order, and I know what to do.
+
+I also have a plan for a basic interface to input custom data for representation on nodes in the network's diagram. I think that'll be pretty simple as well.
+
+Overall, I have a clear goal and plan for the tool for its initial submission for publication. I'm eager to reach that stage of prototype in the next month or so and then begin writing a manuscript.
+
+I recommend we meet near the end of February, perhaps our normal time of 5:00 on 26 February. Does that work?
+
+Please find as attachments to this message screen shots that depict some aspects of the current interface that are relevant to traversals.
+
+Please also find as an attachment to this message a draft of an abstract that I plan to submit for a poster to RECOMB 2018 (https://recomb2018.fr/). The abstract is due on 15 February.
+
+Cheers,
+
+Cameron
+
+--------------------------------------------------
 8 February 2018
 
 ----------

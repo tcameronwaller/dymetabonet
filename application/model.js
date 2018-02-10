@@ -97,7 +97,11 @@ class Model {
       // TODO: Maybe also introduce a prompt view for pop-up controls on nodes and such.
 
       // Tip view.
+      // Tip view always exists but is only visible when active.
       var tip = new TipView();
+      // Prompt view.
+      // Prompt view always exists but is only visible when active.
+      new PromptView({state: self.state});
       // Control view.
       // TODO: Maybe it would be more orderly to pass ControlView the controlViews variable directly...
       var tabs = Object.keys(self.state.controlViews);
@@ -113,32 +117,32 @@ class Model {
         contents: controlContents,
         state: self.state
       });
+      // State view.
       if (Model.determineControlState(self.state)) {
-        // State view.
         new StateView({
           tip: tip,
           control: control,
           state: self.state
         });
       }
+      // Set view.
       if (Model.determineControlSet(self.state)) {
-        // Set view.
         new SetView({
           tip: tip,
           control: control,
           state: self.state
         });
       }
+      // Candidacy view.
       if (Model.determineControlCandidacy(self.state)) {
-        // Candidacy view.
         new CandidacyView({
           tip: tip,
           control: control,
           state: self.state
         });
       }
+      // Traversal view.
       if (Model.determineControlTraversal(self.state)) {
-        // Traversal view.
         new TraversalView({
           tip: tip,
           control: control,
@@ -201,7 +205,8 @@ class Model {
       !(state.candidatesSearches === null) &&
       !(state.candidatesSorts === null) &&
       !(state.traversalCombination === null) &&
-      !(state.traversalType === null)
+      !(state.traversalType === null) &&
+      !(state.entitySelection === null)
     );
   }
   /**
@@ -254,6 +259,14 @@ class Model {
   */
   static determineSource(state) {
     return !(state.source === null);
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determinePrompt(state) {
+    return !(state.prompt === null);
   }
   /**
   * Determines whether the application's state has specific information.
