@@ -800,30 +800,69 @@ class View {
     });
   }
   /**
-  * Determines the horizontal and vertical position for the proximal corner of
-  * a tip or prompt view.
+  * Determines the horizontal and vertical positions for the proximal corner of
+  * a transient view with absolute position.
+  * Positions for transient views are relative to the browser's view window.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object>} parameters.options Information about options.
-  * @param {Object} parameters.selector Reference to selector menu.
-  * @param {Object} parameters.documentReference Reference to document object
-  * model.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.horizontalShift Horizontal shift in pixels
+  * relative to reference point.
+  * @param {number} parameters.verticalShift Horizontal shift in pixels relative
+  * to reference point.
+  * @param {number} parameters.viewWidth Width in pixels of browser's view
+  * window.
+  * @param {number} parameters.viewHeight Width in pixels of browser's view
+  * window.
+  * @returns {Object<number>} Horizontal and vertical positions in pixels
+  * relative to the browser's view window of proximal corner of transient view.
   */
-  static determineTipPromptPositions({} = {}) {
-    // TODO: I need to determine position coordinates relative to the entire view, not the SVG...
-
-    //View.determineTipPrompPositions({
-    //  horizontalPosition: horizontalPosition,
-    //  verticalPosition: verticalPosition,
-    //  horizontalShift: horizontalShift,
-    //  verticalShift: verticalShift,
-    //  viewWidth: viewWidth,
-    //  viewHeight: viewHeight
-    //});
-
-    // TODO: This function should just determine coordinates of the proximal CORNER of the tip or prompt.
-    // TODO: It will then be necessary to determine position of top left corner
-    // TODO: dependent on dimensions of the tip's or prompt's container (dependent on contents).
-
+  static determineTransientViewPositions({horizontalPosition, verticalPosition, horizontalShift, verticalShift, viewWidth, viewHeight} = {}) {
+    // Browser's window is also the viewport.
+    // Positions of reference point are relative to origin in the top left
+    // corner of the browser's window.
+    // Use Element.getBoundingClientRect to determine positions of an element
+    // within browser's window.
+    // Use MouseEvent.clientX and MouseEvent.clientY to determine positions of
+    // a cursor event within browser's window.
+    // Use window.innerWidth and window.innerHeight to determine dimensions of
+    // browser's window.
+    // Elements with absolute position have positions relative to top, bottom,
+    // left, and right sides of their parental element.
+    // Elements with fixed position have positions relative to top, bottom,
+    // left, and right sides of the browser's window.
+    // Determine positions of proximal corner of transient view.
+    if (verticalPosition < (viewHeight / 2)) {
+      // Reference point is on top side of view.
+      // Place transient view on bottom of reference point.
+      var top = ((verticalPosition + verticalShift) + "px");
+      var bottom = "auto";
+    } else {
+      // Reference point is on bottom side of view.
+      // Place transient view on top of reference point.
+      var top = "auto";
+      var bottom = ((viewHeight - (verticalPosition - verticalShift)) + "px");
+    }
+    if (horizontalPosition < (viewWidth / 2)) {
+      // Reference point is on left side of view.
+      // Place transient view on right of reference point.
+      var left = ((horizontalPosition + horizontalShift) + "px");
+      var right = "auto";
+    } else {
+      // Reference point is on right side of view.
+      // Place transient view on left of reference point.
+      var left = "auto";
+      var right = ((viewWidth - (horizontalPosition - horizontalShift)) + "px");
+    }
+    // Compile and return information.
+    return {
+      top: top,
+      bottom: bottom,
+      left: left,
+      right: right
+    };
   }
 }
 
@@ -842,6 +881,8 @@ class TipView {
     var self = this;
     // Set reference to document object model (DOM).
     self.document = document;
+    // Set reference to browser's window.
+    self.window = window;
     // Set references to other views
     self.view = self.document.getElementById("view");
     // Control view's composition and behavior.
@@ -869,16 +910,24 @@ class TipView {
   * changes to the application's state.
   * @param {Object} parameters Destructured object of parameters.
   * @param {boolean} parameters.visible Whether tip view is visible.
-  * @param {number} parameters.positionX Pointer's horizontal coordinate.
-  * @param {number} parameters.positionY Pointer's vertical coordinate.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.horizontalShift Horizontal shift in pixels
+  * relative to reference point.
+  * @param {number} parameters.verticalShift Horizontal shift in pixels relative
+  * to reference point.
   * @param {Object} parameters.summary Reference to summary element.
   * @param {Object} parameters.self Instance of a class.
   */
-  restoreView({visible, positionX, positionY, summary, self} = {}) {
+  restoreView({visible, horizontalPosition, verticalPosition, horizontalShift, verticalShift, summary, self} = {}) {
     // Remove any children.
     if (!(self.container.children.length === 0)) {
       General.removeDocumentChildren(self.container);
     }
+    // Create tip's contents.
+    self.container.appendChild(summary);
     // Determine whether tip is visible.
     if (visible) {
       self.container.classList.remove("invisible");
@@ -887,42 +936,30 @@ class TipView {
       self.container.classList.remove("visible");
       self.container.classList.add("invisible");
     }
-    // Determine dimensions of view for entire interface.
-    self.viewWidth = General.determineElementDimension(self.view, "width");
-    self.viewHeight = General.determineElementDimension(self.view, "height");
-    // Create tip's contents.
-    self.container.appendChild(summary);
-    // Determine dimensions of tip's view.
-    self.containerWidth = General
-    .determineElementDimension(self.container, "width");
-    self.containerHeight = General
-    .determineElementDimension(self.container, "height");
-    // Determine tip's placement relative to cursor's position within view.
-    // Define tip's placement in terms of the top left corner of its container.
-    if (positionX < (self.viewWidth / 2)) {
-      // Cursor is on left side of view.
-      // Place tip to right of cursor.
-      //console.log("left side");
-      self.container.style.left = ((positionX + 20) + "px");
-    } else {
-      // Cursor is on right side of view.
-      // Place tip to left of cursor.
-      //console.log("right side");
-      self.container.style.left = (
-        (positionX - self.containerWidth) + "px"
-      );
-    }
-    if (positionY < (self.viewHeight / 2)) {
-      // Cursor is on top side of view.
-      // Place tip below cursor.
-      self.container.style.top = ((positionY + 15) + "px");
-    } else {
-      // Cursor is on bottom side of view.
-      // Place tip above cursor.
-      self.container.style.top = (
-        (positionY - self.containerHeight) + "px"
-      );
-    }
+    // Determine positions of view.
+    //self.container.style.top = verticalPosition + "px";
+    //self.container.style.left = horizontalPosition + "px";
+    var positions = View.determineTransientViewPositions({
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: horizontalShift,
+      verticalShift: verticalShift,
+      viewWidth: self.window.innerWidth,
+      viewHeight: self.window.innerHeight
+    });
+    self.container.style.top = positions.top;
+    self.container.style.bottom = positions.bottom;
+    self.container.style.left = positions.left;
+    self.container.style.right = positions.right;
+
+    //self.container.style.top = positions.top;
+    //self.container.style.bottom = "auto";
+    //self.container.style.left = positions.left;
+    //self.container.style.right = "auto";
+    //self.container.style.setProperty("top", positions.top);
+    //self.container.style.setProperty("left", positions.left);
+    //self.container.setAttribute("top", positions.top);
+    //self.container.setAttribute("left", positions.left);
   }
   /**
   * Clears view.
@@ -931,8 +968,10 @@ class TipView {
   clearView(self) {
     self.restoreView({
       visible: false,
-      positionX: 0,
-      positionY: 0,
+      horizontalPosition: 0,
+      verticalPosition: 0,
+      horizontalShift: 0,
+      verticalShift: 0,
       summary: View.createSpanText({text: "",documentReference: self.document}),
       self: self
     });
@@ -1715,12 +1754,12 @@ class SetMenuView {
       });
     });
     self.rows.on("mouseenter", function (element, index, nodes) {
-      // Determine cursor's coordinates.
-      var positionX = d3.mouse(self.view)[0];
-      var positionY = d3.mouse(self.view)[1];
       // Select element.
       var row = nodes[index];
       var rowSelection = d3.select(row);
+      // Determine cursor's positions.
+      var horizontalPosition = d3.event.clientX;
+      var verticalPosition = d3.event.clientY;
       // Call action.
       rowSelection.classed("normal", false);
       rowSelection.classed("emphasis", true);
@@ -1728,24 +1767,24 @@ class SetMenuView {
         attribute: element.attribute,
         value: element.value,
         count: element.count,
-        positionX: positionX,
-        positionY: positionY,
+        horizontalPosition: horizontalPosition,
+        verticalPosition: verticalPosition,
         tip: self.tip,
         documentReference: self.document,
         state: self.state
       });
     });
     self.rows.on("mousemove", function (element, index, nodes) {
-      // Determine cursor's coordinates.
-      var positionX = d3.mouse(self.view)[0];
-      var positionY = d3.mouse(self.view)[1];
+      // Determine cursor's positions.
+      var horizontalPosition = d3.event.clientX;
+      var verticalPosition = d3.event.clientY;
       // Call action.
       SetMenuView.createTip({
         attribute: element.attribute,
         value: element.value,
         count: element.count,
-        positionX: positionX,
-        positionY: positionY,
+        horizontalPosition: horizontalPosition,
+        verticalPosition: verticalPosition,
         tip: self.tip,
         documentReference: self.document,
         state: self.state
@@ -1851,14 +1890,16 @@ class SetMenuView {
   * @param {string} parameters.attribute Name of an attribute.
   * @param {string} parameters.value Identifier of a value.
   * @param {number} parameters.count Count of entity's relations.
-  * @param {number} parameters.positionX Pointer's horizontal coordinate.
-  * @param {number} parameters.positionY Pointer's vertical coordinate.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
   * @param {Object} parameters.tip Instance of TipView's class.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
   * @param {Object} parameters.state Application's state.
   */
-  static createTip({attribute, value, count, positionX, positionY, tip, documentReference, state} = {}) {
+  static createTip({attribute, value, count, horizontalPosition, verticalPosition, tip, documentReference, state} = {}) {
     // Create summary for tip.
     var name = SetMenuView.accessName({
       attribute: attribute,
@@ -1873,8 +1914,10 @@ class SetMenuView {
     // Create tip.
     tip.restoreView({
       visible: true,
-      positionX: positionX,
-      positionY: positionY,
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: 15,
+      verticalShift: 0,
       summary: summary,
       self: tip
     });
@@ -2351,12 +2394,12 @@ class CandidacyMenuView {
     self.rows.classed("normal", true);
     // Activate behavior.
     self.rows.on("mouseenter", function (element, index, nodes) {
-      // Determine cursor's coordinates.
-      var positionX = d3.mouse(self.view)[0];
-      var positionY = d3.mouse(self.view)[1];
       // Select element.
       var row = nodes[index];
       var rowSelection = d3.select(row);
+      // Determine cursor's positions.
+      var horizontalPosition = d3.event.clientX;
+      var verticalPosition = d3.event.clientY;
       // Call action.
       rowSelection.classed("normal", false);
       rowSelection.classed("emphasis", true);
@@ -2364,24 +2407,24 @@ class CandidacyMenuView {
         identifier: element.candidate,
         entity: element.entity,
         count: element.count,
-        positionX: positionX,
-        positionY: positionY,
+        horizontalPosition: horizontalPosition,
+        verticalPosition: verticalPosition,
         tip: self.tip,
         documentReference: self.document,
         state: self.state
       });
     });
     self.rows.on("mousemove", function (element, index, nodes) {
-      // Determine cursor's coordinates.
-      var positionX = d3.mouse(self.view)[0];
-      var positionY = d3.mouse(self.view)[1];
+      // Determine cursor's positions.
+      var horizontalPosition = d3.event.clientX;
+      var verticalPosition = d3.event.clientY;
       // Call action.
       CandidacyMenuView.createTip({
         identifier: element.candidate,
         entity: element.entity,
         count: element.count,
-        positionX: positionX,
-        positionY: positionY,
+        horizontalPosition: horizontalPosition,
+        verticalPosition: verticalPosition,
         tip: self.tip,
         documentReference: self.document,
         state: self.state
@@ -2534,14 +2577,16 @@ class CandidacyMenuView {
   * @param {string} parameters.identifier Identifier of a candidate entity.
   * @param {string} parameters.entity Type of entity, metabolites or reactions.
   * @param {number} parameters.count Count of entity's relations.
-  * @param {number} parameters.positionX Pointer's horizontal coordinate.
-  * @param {number} parameters.positionY Pointer's vertical coordinate.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
   * @param {Object} parameters.tip Instance of TipView's class.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
   * @param {Object} parameters.state Application's state.
   */
-  static createTip({identifier, entity, count, positionX, positionY, tip, documentReference, state} = {}) {
+  static createTip({identifier, entity, count, horizontalPosition, verticalPosition, tip, documentReference, state} = {}) {
     // Create summary for tip.
     var name = CandidacyMenuView.accessName({
       identifier: identifier,
@@ -2556,8 +2601,10 @@ class CandidacyMenuView {
     // Create tip.
     tip.restoreView({
       visible: true,
-      positionX: positionX,
-      positionY: positionY,
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: 15,
+      verticalShift: 0,
       summary: summary,
       self: tip
     });
@@ -3633,8 +3680,6 @@ class TopologyView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set reference to view of browser's window.
-    self.window = window;
     // Set references to other views.
     self.view = self.document.getElementById("view");
     self.tip = tip;
@@ -3775,7 +3820,7 @@ class TopologyView {
     });
 
     if (false) {
-      // Determine cursor's coordinates.
+      // Determine cursor's positions.
       var positionX = d3.mouse(self.view)[0];
       var positionY = d3.mouse(self.view)[1];
       // Call action.
@@ -4008,6 +4053,7 @@ class TopologyView {
   // TODO: Maybe only create and display prompt view for current node selection.
   // TODO: Click and drag moves node and locks in new position...
   // TODO: I want new classes for selected (emphasis) and anchored nodes.
+
   //nodes.call(
   //  d3.drag()
   //  .on("start", startDrag)
@@ -4096,14 +4142,8 @@ class TopologyView {
         state: self.state
       });
     })
-    // TODO: I don't think I'm going to have explicit replication nodes anymore...
-    .classed("replication", function (element, index, nodes) {
-      var node = TopologyView.accessNode({
-        identifier: element.identifier,
-        type: element.type,
-        state: self.state
-      });
-      return node.replication;
+    .classed("anchor", function (element, index, nodes) {
+      return ((element.fx !== null) && (element.fy !== null));
     });
   }
   /**
@@ -4131,8 +4171,6 @@ class TopologyView {
         state: self.state
       });
 
-      // TODO: Change the way I deal with tip position...
-      // TODO: I need the tip to appear right where I tell it too.
       // Write new function in View container to translate coordinates for tip and prompt...
       // containerWidth (use to determine left/right side)
       // containerHeight (use to determine top/bottom side)
@@ -4159,7 +4197,7 @@ class TopologyView {
         TopologyView.createTip({
           identifier: element.identifier,
           type: element.type,
-          containerWidth:
+          containerWidth: 20,
           horizontalPosition: horizontalPosition,
           verticalPosition: verticalPosition,
           horizontalShift: horizontalShift,
@@ -4174,7 +4212,7 @@ class TopologyView {
 
       } else {
         // Create mobile tip.
-        // Determine cursor's coordinates.
+        // Determine cursor's positions.
         //.clientX
         //.clientY
         var positionX = d3.mouse(self.view)[0];
@@ -4196,7 +4234,7 @@ class TopologyView {
 
     });
     self.nodesGroups.on("mousemove", function (element, index, nodes) {
-      // Determine cursor's coordinates.
+      // Determine cursor's positions.
       var positionX = d3.mouse(self.view)[0];
       var positionY = d3.mouse(self.view)[1];
       // Call action.
@@ -5331,8 +5369,6 @@ class TopologyView {
   * @returns {Object<number>} Dimensions and positions.
   */
   static determineNodeDimensionsPositions({node, windowReference} = {}) {
-    var viewWidth = windowReference.innerWidth;
-    var viewHeight = windowReference.innerHeight;
     var nodeDimensions = node.getBoundingClientRect();
     var horizontalPosition = (
       nodeDimensions.left + (nodeDimensions.width / 2)
