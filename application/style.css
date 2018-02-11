@@ -80,10 +80,10 @@ flex-direction: column;
 }
 
 /******************************************************************************/
-/* Tip View */
+/* Tip View, Prompt View */
 /******************************************************************************/
 
-#tip {
+#tip, #prompt {
   background-color: rgba(0, 0, 0, 0.7);
   color: rgba(255, 255, 255, 1);
   position: fixed;
@@ -92,35 +92,12 @@ flex-direction: column;
   width: auto;
 }
 
-#tip .invisible {
+#tip, #prompt .invisible {
   /*visibility: hidden;*/
   display: none;
 }
 
-#tip .visible {
-  /*visibility: visible;*/
-  display: inline;
-}
-
-/******************************************************************************/
-/* Prompt View */
-/******************************************************************************/
-
-#prompt {
-  background-color: rgba(0, 0, 0, 0.7);
-  color: rgba(255, 255, 255, 1);
-  position: absolute;
-  z-index: 10;
-  height: auto;
-  width: auto;
-}
-
-#prompt .invisible {
-  /*visibility: hidden;*/
-  display: none;
-}
-
-#prompt .visible {
+#tip, #prompt .visible {
   /*visibility: visible;*/
   display: inline;
 }

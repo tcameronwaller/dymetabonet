@@ -909,7 +909,7 @@ class TipView {
   * Restores aspects of the view's composition and behavior that vary with
   * changes to the application's state.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} parameters.visible Whether tip view is visible.
+  * @param {boolean} parameters.visibility Whether tip view is visible.
   * @param {number} parameters.horizontalPosition Horizontal position in pixels
   * relative to the browser's view window of reference point.
   * @param {number} parameters.verticalPosition Horizontal position in pixels
@@ -918,18 +918,18 @@ class TipView {
   * relative to reference point.
   * @param {number} parameters.verticalShift Horizontal shift in pixels relative
   * to reference point.
-  * @param {Object} parameters.summary Reference to summary element.
+  * @param {Object} parameters.content Reference to element for content.
   * @param {Object} parameters.self Instance of a class.
   */
-  restoreView({visible, horizontalPosition, verticalPosition, horizontalShift, verticalShift, summary, self} = {}) {
+  restoreView({visibility, horizontalPosition, verticalPosition, horizontalShift, verticalShift, content, self} = {}) {
     // Remove any children.
     if (!(self.container.children.length === 0)) {
       General.removeDocumentChildren(self.container);
     }
     // Create tip's contents.
-    self.container.appendChild(summary);
+    self.container.appendChild(content);
     // Determine whether tip is visible.
-    if (visible) {
+    if (visibility) {
       self.container.classList.remove("invisible");
       self.container.classList.add("visible");
     } else {
@@ -937,8 +937,6 @@ class TipView {
       self.container.classList.add("invisible");
     }
     // Determine positions of view.
-    //self.container.style.top = verticalPosition + "px";
-    //self.container.style.left = horizontalPosition + "px";
     var positions = View.determineTransientViewPositions({
       horizontalPosition: horizontalPosition,
       verticalPosition: verticalPosition,
@@ -951,15 +949,6 @@ class TipView {
     self.container.style.bottom = positions.bottom;
     self.container.style.left = positions.left;
     self.container.style.right = positions.right;
-
-    //self.container.style.top = positions.top;
-    //self.container.style.bottom = "auto";
-    //self.container.style.left = positions.left;
-    //self.container.style.right = "auto";
-    //self.container.style.setProperty("top", positions.top);
-    //self.container.style.setProperty("left", positions.left);
-    //self.container.setAttribute("top", positions.top);
-    //self.container.setAttribute("left", positions.left);
   }
   /**
   * Clears view.
@@ -967,28 +956,20 @@ class TipView {
   */
   clearView(self) {
     self.restoreView({
-      visible: false,
+      visibility: false,
       horizontalPosition: 0,
       verticalPosition: 0,
       horizontalShift: 0,
       verticalShift: 0,
-      summary: View.createSpanText({text: "",documentReference: self.document}),
+      content: View.createSpanText({text: "",documentReference: self.document}),
       self: self
     });
   }
 }
 
-// TODO: Whereas TipView follows the cursor, prompt view has a set position relative
-// TODO: to some specific, usually selected, element...
-// TODO: As with TipView, clear the PromptView with each update to the state...
-
-// TODO: PromptView needs a reference to some element by which to determin at *absolute* position.
-
-// TODO: New state variable for prompt... keeps information about prompt's type...
-// "node", "diagram"
-
 /**
 * Interface to provide transient, specific controls.
+* This interface is independent of application's persistent state.
 */
 class PromptView {
   /**
@@ -1000,16 +981,98 @@ class PromptView {
     var self = this;
     // Set reference to document object model (DOM).
     self.document = document;
+    // Set reference to browser's window.
+    self.window = window;
     // Set references to other views
     self.view = self.document.getElementById("view");
     // Control view's composition and behavior.
-
-    // TODO: Maybe decide here whether or not to create?
-    // TODO:
     // Initialize view.
-    //self.initializeView(self);
+    self.initializeView(self);
     // Restore view.
-    //self.clearView(self);
+    self.clearView(self);
+  }
+  /**
+  * Initializes aspects of the view's composition and behavior that do not vary
+  * with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "prompt",
+      target: self.document.getElementById("view"),
+      position: "beforeend",
+      documentReference: self.document
+    });
+  }
+  /**
+  * Restores aspects of the view's composition and behavior that vary with
+  * changes to the application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.visibility Whether tip view is visible.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.horizontalShift Horizontal shift in pixels
+  * relative to reference point.
+  * @param {number} parameters.verticalShift Horizontal shift in pixels relative
+  * to reference point.
+  * @param {string} parameters.type Type of prompt view for reference.
+  * @param {Object} parameters.content Reference to element for content.
+  * @param {Object} parameters.self Instance of a class.
+  */
+  restoreView({visibility, horizontalPosition, verticalPosition, horizontalShift, verticalShift, type, content, self} = {}) {
+    // Remove any children.
+    if (!(self.container.children.length === 0)) {
+      General.removeDocumentChildren(self.container);
+    }
+    // Remove any classes.
+    self.container.classList = "";
+    // Determine whether view is visible.
+    if (visibility) {
+      self.container.classList.remove("invisible");
+      self.container.classList.add("visible");
+    } else {
+      self.container.classList.remove("visible");
+      self.container.classList.add("invisible");
+    }
+    // Create view's contents.
+    self.container.appendChild(content);
+    // Specify view's type.
+    // It is useful to preserve the view's type for future reference.
+    if (type.length > 0) {
+      self.container.classList.add(type);
+    }
+    // Determine positions of view.
+    var positions = View.determineTransientViewPositions({
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: horizontalShift,
+      verticalShift: verticalShift,
+      viewWidth: self.window.innerWidth,
+      viewHeight: self.window.innerHeight
+    });
+    self.container.style.top = positions.top;
+    self.container.style.bottom = positions.bottom;
+    self.container.style.left = positions.left;
+    self.container.style.right = positions.right;
+  }
+  /**
+  * Clears view.
+  * @param {Object} self Instance of a class.
+  */
+  clearView(self) {
+    self.restoreView({
+      visibility: false,
+      horizontalPosition: 0,
+      verticalPosition: 0,
+      horizontalShift: 0,
+      verticalShift: 0,
+      type: "",
+      content: View.createSpanText({text: "",documentReference: self.document}),
+      self: self
+    });
   }
 }
 
@@ -1913,12 +1976,12 @@ class SetMenuView {
     });
     // Create tip.
     tip.restoreView({
-      visible: true,
+      visibility: true,
       horizontalPosition: horizontalPosition,
       verticalPosition: verticalPosition,
       horizontalShift: 15,
       verticalShift: 0,
-      summary: summary,
+      content: summary,
       self: tip
     });
   }
@@ -2600,12 +2663,12 @@ class CandidacyMenuView {
     });
     // Create tip.
     tip.restoreView({
-      visible: true,
+      visibility: true,
       horizontalPosition: horizontalPosition,
       verticalPosition: verticalPosition,
       horizontalShift: 15,
       verticalShift: 0,
-      summary: summary,
+      content: summary,
       self: tip
     });
   }
@@ -3538,6 +3601,8 @@ class ExplorationView {
   }
 }
 
+// TODO: Move the information in the SummaryView to the DetailView?
+
 /**
 * Interface to summarize filters and network's elements and control visual
 * representation of network's topology.
@@ -3659,8 +3724,6 @@ class SummaryView {
   }
 }
 
-// TODO: I need to pass TopologyView a reference to PromptView...
-
 /**
 * Interface to represent visually the network's topology.
 */
@@ -3669,10 +3732,11 @@ class TopologyView {
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.prompt Instance of PromptView's class.
   * @param {Object} parameters.exploration Instance of ExplorationView's class.
   * @param {Object} parameters.state Application's state.
   */
-  constructor ({tip, exploration, state} = {}) {
+  constructor ({tip, prompt, exploration, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -3683,6 +3747,7 @@ class TopologyView {
     // Set references to other views.
     self.view = self.document.getElementById("view");
     self.tip = tip;
+    self.prompt = prompt;
     self.exploration = exploration;
     // Control view's composition and behavior.
     // Initialize view.
@@ -3806,17 +3871,35 @@ class TopologyView {
     base.setAttribute("width", self.graphWidth);
     base.setAttribute("height", self.graphHeight);
 
+    // TODO: Clicking on the diagram's base should remove selections of nodes
+    // TODO: and activate an abbreviation of the prompt view...
+    // TODO: hover on this abbreviation should then display the entire prompt view with controls and the like...
+
     // Activate behavior.
     base.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-
-      // TODO: Select the prompt view by identifier.
-      // TODO: Determine whether prompt view is specific for diagram
-      // TODO: Prompt View keeps track of current status by class name, such as "diagram"
-
-
-
+      // Determine whether to create or remove a prompt view for network's
+      // diagram.
+      if (self.prompt.container.classList.contains("network-diagram")) {
+        // A prompt is active for network's diagram.
+        // Remove the prompt for network's diagram.
+        self.prompt.clearView(self.prompt);
+      } else {
+        // A prompt is not active for network's diagram.
+        // Create a prompt for network's diagram.
+        // Determine cursor's positions.
+        var horizontalPosition = event.clientX;
+        var verticalPosition = event.clientY;
+        TopologyView.createNetworkDiagramPrompt({
+          horizontalPosition: horizontalPosition,
+          verticalPosition: verticalPosition,
+          prompt: self.prompt,
+          documentReference: self.document,
+          state: self.state
+        });
+      }
+      // TODO: Remove any selections of entities...
     });
 
     if (false) {
@@ -4960,10 +5043,10 @@ class TopologyView {
     }
     // Create tip.
     tip.restoreView({
-      visible: true,
+      visibility: true,
       positionX: positionX,
       positionY: positionY,
-      summary: summary,
+      content: summary,
       self: tip
     });
   }
@@ -5088,6 +5171,76 @@ class TopologyView {
     });
     // Return reference to element.
     return table.node();
+  }
+  /**
+  * Creates prompt for network's diagram.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {Object} parameters.prompt Instance of PromptView's class.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  */
+  static createNetworkDiagramPrompt({horizontalPosition, verticalPosition, prompt, documentReference, state} = {}) {
+    // Create content for prompt.
+    // Create element.
+    var content = documentReference.createElement("div");
+    // Create button for restoration.
+    var remove = View.createButton({
+      text: "remove all",
+      parent: content,
+      documentReference: documentReference
+    });
+    // Create break.
+    content.appendChild(self.document.createElement("br"));
+    // Create button for restoration.
+    var lock = View.createButton({
+      text: "lock all",
+      parent: content,
+      documentReference: documentReference
+    });
+    // Create break.
+    content.appendChild(self.document.createElement("br"));
+    // Create button for restoration.
+    var unlock = View.createButton({
+      text: "unlock all",
+      parent: content,
+      documentReference: documentReference
+    });
+    // Create break.
+    content.appendChild(self.document.createElement("br"));
+
+    // TODO: Also include a simple control to add a node by "rogue traversal".
+
+
+
+    // Activate behavior.
+    remove.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+    });
+    lock.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+    });
+    unlock.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+    });
+    // Create prompt.
+    prompt.restoreView({
+      visibility: true,
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: 15,
+      verticalShift: 0,
+      type: "network-diagram",
+      content: content,
+      self: prompt
+    });
   }
   /**
   * Sorts identifiers of nodes for metabolites by their roles in a reaction.

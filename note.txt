@@ -4,6 +4,16 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+10 February 2018
+
+----------
+Progress
+
+I created a preliminary prompt view for the network's diagram.
+Activate buttons within this prompt view.
+Also create a simple interface to select and add a single node.
+
+--------------------------------------------------
 9 February 2018
 
 ----------

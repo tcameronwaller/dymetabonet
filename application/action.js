@@ -1524,6 +1524,7 @@ class Action {
     });
   }
 
+// TODO: I need an action to remove entity Selection... ie restore it to empty...
 
   // Indirect actions.
 
@@ -1603,6 +1604,8 @@ class Action {
     // Return information.
     return variablesValues;
   }
+
+  // TODO: Probably make an indirect action to make an empty entitySelection...
 
 
   /**

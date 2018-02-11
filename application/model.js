@@ -101,7 +101,7 @@ class Model {
       var tip = new TipView();
       // Prompt view.
       // Prompt view always exists but is only visible when active.
-      new PromptView({state: self.state});
+      var prompt = new PromptView();
       // Control view.
       // TODO: Maybe it would be more orderly to pass ControlView the controlViews variable directly...
       var tabs = Object.keys(self.state.controlViews);
@@ -175,6 +175,7 @@ class Model {
         // Topology view.
         new TopologyView({
           tip: tip,
+          prompt: prompt,
           exploration: exploration,
           state: self.state
         });
