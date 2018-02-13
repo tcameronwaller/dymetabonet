@@ -50,6 +50,11 @@ class View {
     // target.insertAdjacentElement("beforeend", element).
     return target.insertAdjacentElement(position, element);
   }
+
+  // TODO: The problem is NOT in createReferenceContainer.
+  // TODO: The problem is in the ControlView...
+  // TODO: Use the console.log entries here to evaluate if ControlView behaves properly
+
   /**
   * Creates or sets reference to a view's container.
   * @param {Object} parameters Destructured object of parameters.
@@ -64,7 +69,10 @@ class View {
   */
   static createReferenceContainer({identifier, target, position, documentReference} = {}) {
     // Determine whether container's element exists in the document.
+    console.log("what does it find for: " + identifier);
+    console.log(Boolean(documentReference.getElementById(identifier)));
     if (!documentReference.getElementById(identifier)) {
+      console.log("creating new: " + identifier);
       // Element does not exist in the document.
       // Create element.
       var container = documentReference.createElement("div");
@@ -674,6 +682,7 @@ class View {
     // Create search tool.
     var search = documentReference.createElement("input");
     container.appendChild(search);
+    search.setAttribute("id", identifier);
     search.setAttribute("type", "search");
     search.setAttribute("list", listIdentifier);
     search.setAttribute("placeholder", prompt);
@@ -715,8 +724,7 @@ class View {
   }
   /**
   * Determines the name of an option that matches a search's value.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.element Reference to element.
+  * @param {Object} search Reference to search menu element.
   * @returns {string} Name of matching option.
   */
   static determineSearchOptionName(search) {
@@ -741,7 +749,7 @@ class View {
       // Determine option's value.
       var value = option.getAttribute("name");
     } else {
-      var value = null;
+      var value = "";
     }
     return value;
   }
@@ -864,6 +872,22 @@ class View {
       right: right
     };
   }
+  /**
+  * Removes a container's content, removes all previous class names, and assigns
+  * a novel class name.
+  * If the content of a container can vary, then it is useful to indicate the
+  * current type of its content in its class name.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.container Reference to container element.
+  * @param {string} parameters.className Class for element.
+  */
+  static removeContainerContentSetClass({container, className} = {}) {
+    // Remove container's content.
+    General.removeDocumentChildren(container);
+    // Change container's class.
+    container.classList = "";
+    container.classList.add(className);
+  }
 }
 
 /**
@@ -967,6 +991,9 @@ class TipView {
   }
 }
 
+// TODO: PromptView needs to persist across changes to state...
+// TODO: I need a state variable to preserve PromptView's state...
+
 /**
 * Interface to provide transient, specific controls.
 * This interface is independent of application's persistent state.
@@ -974,11 +1001,14 @@ class TipView {
 class PromptView {
   /**
   * Initializes an instance of a class.
+  * @param {Object} state Application's state.
   */
-  constructor () {
+  constructor (state) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
+    // Set reference to application's state.
+    self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
     // Set reference to browser's window.
@@ -989,7 +1019,7 @@ class PromptView {
     // Initialize view.
     self.initializeView(self);
     // Restore view.
-    self.clearView(self);
+    self.restoreView(self);
   }
   /**
   * Initializes aspects of the view's composition and behavior that do not vary
@@ -1008,6 +1038,174 @@ class PromptView {
   /**
   * Restores aspects of the view's composition and behavior that vary with
   * changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // Determine type of prompt to create if any.
+    if (self.state.prompt.type === "none") {
+      self.clearView(self);
+    } else if (self.state.prompt.type === "network-diagram") {
+      self.createActivateRestoreRepresentNetworkDiagramPrompt(self);
+    } else if (self.state.prompt.type === "network-node") {
+      //self.createActivateRestoreRepresentNetworkNodePrompt(self);
+    }
+  }
+  /**
+  * Clears view.
+  * @param {Object} self Instance of a class.
+  */
+  clearView(self) {
+    // Remove container's previous contents and assign a class name to indicate
+    // view's novel type.
+    View.removeContainerContentSetClass({
+      container: self.container,
+      className: self.state.prompt.type
+    });
+    // Represent view.
+    self.representView({
+      visibility: false,
+      horizontalPosition: self.state.prompt.horizontalPosition,
+      verticalPosition: self.state.prompt.verticalPosition,
+      horizontalShift: self.state.prompt.horizontalShift,
+      verticalShift: self.state.prompt.verticalShift,
+      self: self
+    });
+  }
+  /**
+  * Creates, activates, and restores controls for prompt for network's diagram.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestoreRepresentNetworkDiagramPrompt(self) {
+    self.createActivateNetworkDiagramPrompt(self);
+    self.restoreNetworkDiagramPrompt(self);
+    // Represent view.
+    self.representView({
+      visibility: true,
+      horizontalPosition: self.state.prompt.horizontalPosition,
+      verticalPosition: self.state.prompt.verticalPosition,
+      horizontalShift: self.state.prompt.horizontalShift,
+      verticalShift: self.state.prompt.verticalShift,
+      self: self
+    });
+  }
+  /**
+  * Creates and activates controls for prompt for network's diagram.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateNetworkDiagramPrompt(self) {
+    // Determine whether container's current content matches view's novel type.
+    // Container's class indicates type of content.
+    if (!self.container.classList.contains(self.state.prompt.type)) {
+      // Container's current content does not match view's novel type.
+      // Remove container's previous contents and assign a class name to
+      // indicate view's novel type.
+      View.removeContainerContentSetClass({
+        container: self.container,
+        className: self.state.prompt.type
+      });
+      // Create content.
+      self.createNetworkDiagramPrompt(self);
+      // Activate behavior.
+      self.activateNetworkDiagramPrompt(self);
+    } else {
+      // Container's current content matches view's novel type.
+      // Set references to content.
+      self.search = self.document.getElementById("diagram-rogue-focus-search");
+    }
+  }
+  /**
+  * Creates controls for prompt for network's diagram.
+  * @param {Object} self Instance of a class.
+  */
+  createNetworkDiagramPrompt(self) {
+    // Create button.
+    self.remove = View.createButton({
+      text: "remove",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Create break.
+    self.container.appendChild(self.document.createElement("br"));
+    // Create button.
+    self.lock = View.createButton({
+      text: "lock",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Create break.
+    self.container.appendChild(self.document.createElement("br"));
+    // Create button.
+    self.unlock = View.createButton({
+      text: "unlock",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Create break.
+    self.container.appendChild(self.document.createElement("br"));
+    // Create button.
+    self.add = View.createButton({
+      text: "+",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Create search menu.
+    self.search = View.createSearchOptionsList({
+      identifier: "diagram-rogue-focus-search",
+      prompt: "select node...",
+      parent: self.container,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Activates controls for prompt for network's diagram.
+  * @param {Object} self Instance of a class.
+  */
+  activateNetworkDiagramPrompt(self) {
+    // Activate behavior.
+    // Buttons.
+    self.remove.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      // TODO: Call appropriate action...
+    });
+    self.lock.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      // TODO: Call appropriate action...
+    });
+    self.unlock.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      // TODO: Call appropriate action...
+    });
+    self.add.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.executeRogueTraversalCombination(self.state);
+    });
+    // Search.
+    TraversalView.activateTraversalSearch({
+      search: self.search,
+      variableName: "traversalRogueFocus",
+      recordSource: "network",
+      state: self.state
+    });
+  }
+  /**
+  * Restores controls for prompt for network's diagram.
+  * @param {Object} self Instance of a class.
+  */
+  restoreNetworkDiagramPrompt(self) {
+    // Create search options.
+    TraversalView.restoreTraversalSearch({
+      search: self.search,
+      variableName: "traversalRogueFocus",
+      recordSource: "network",
+      state: self.state
+    });
+  }
+  /**
+  * Represents view in specific position.
   * @param {Object} parameters Destructured object of parameters.
   * @param {boolean} parameters.visibility Whether tip view is visible.
   * @param {number} parameters.horizontalPosition Horizontal position in pixels
@@ -1018,17 +1216,9 @@ class PromptView {
   * relative to reference point.
   * @param {number} parameters.verticalShift Horizontal shift in pixels relative
   * to reference point.
-  * @param {string} parameters.type Type of prompt view for reference.
-  * @param {Object} parameters.content Reference to element for content.
   * @param {Object} parameters.self Instance of a class.
   */
-  restoreView({visibility, horizontalPosition, verticalPosition, horizontalShift, verticalShift, type, content, self} = {}) {
-    // Remove any children.
-    if (!(self.container.children.length === 0)) {
-      General.removeDocumentChildren(self.container);
-    }
-    // Remove any classes.
-    self.container.classList = "";
+  representView({visibility, horizontalPosition, verticalPosition, horizontalShift, verticalShift, self} = {}) {
     // Determine whether view is visible.
     if (visibility) {
       self.container.classList.remove("invisible");
@@ -1036,13 +1226,6 @@ class PromptView {
     } else {
       self.container.classList.remove("visible");
       self.container.classList.add("invisible");
-    }
-    // Create view's contents.
-    self.container.appendChild(content);
-    // Specify view's type.
-    // It is useful to preserve the view's type for future reference.
-    if (type.length > 0) {
-      self.container.classList.add(type);
     }
     // Determine positions of view.
     var positions = View.determineTransientViewPositions({
@@ -1058,26 +1241,14 @@ class PromptView {
     self.container.style.left = positions.left;
     self.container.style.right = positions.right;
   }
-  /**
-  * Clears view.
-  * @param {Object} self Instance of a class.
-  */
-  clearView(self) {
-    self.restoreView({
-      visibility: false,
-      horizontalPosition: 0,
-      verticalPosition: 0,
-      horizontalShift: 0,
-      verticalShift: 0,
-      type: "",
-      content: View.createSpanText({text: "",documentReference: self.document}),
-      self: self
-    });
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Control view and views within control view.
+
+// TODO: Let ControlView determine which sub-views to create.
+// TODO: At any rate, ControlView always create new sub-views from scratch
+// TODO: Inefficient...
 
 /**
 * Interface to contain other interfaces for controls.
@@ -2793,7 +2964,6 @@ class TraversalView {
       self.createActivateExport(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
-
       // Create and activate controls for combination.
       self.createActivateCombinationControl("union", self);
       self.createActivateCombinationControl("difference", self);
@@ -2954,29 +3124,6 @@ class TraversalView {
     self.createActivateRestoreTraversalControl(self);
   }
   /**
-  * Determines whether a combination strategy matches the value in the
-  * application's state.
-  * @param {string} type Type of combination, union or difference.
-  * @param {Object} state Application's state.
-  * @returns {boolean} Whether combination strategy matches the value in the
-  * application's state.
-  */
-  static determineTraversalCombinationMatch(type, state) {
-    return type === state.traversalCombination;
-  }
-  /**
-  * Determines whether a type of traversal matches the value in the
-  * application's state.
-  * @param {string} type Type of traversal, rogue, proximity, or path.
-  * @param {Object} state Application's state.
-  * @returns {boolean} Whether type of traversal matches the value in the
-  * application's state.
-  */
-  static determineTraversalTypeMatch(type, state) {
-    var value = state.traversalType;
-    return value === type;
-  }
-  /**
   * Creates, activates, and restores controls for traversal.
   * @param {Object} self Instance of a class.
   */
@@ -3003,17 +3150,23 @@ class TraversalView {
   * @param {Object} self Instance of a class.
   */
   createActivateRogueTraversalControl(self) {
-    // Use class of controls' container to store type of controls.
-    // Determine whether controls exist for the type of traversal.
+    // Determine whether container's current content matches view's novel type.
+    // Container's class indicates type of content.
     if (!self.controlContainer.classList.contains("rogue")) {
-      // Elements do not exist for traversal's controls.
-      // Create elements.
+      // Container's current content does not match view's novel type.
+      // Remove container's previous contents and assign a class name to
+      // indicate view's novel type.
+      View.removeContainerContentSetClass({
+        container: self.controlContainer,
+        className: "rogue"
+      });
+      // Create content.
       self.createRogueTraversalControl(self);
       // Activate behavior.
       self.activateRogueTraversalControl(self);
     } else {
-      // Elements exist for traversal's controls.
-      // Set references to elements.
+      // Container's current content matches view's novel type.
+      // Set references to content.
       self.traversalRogueFocusSearch = self
       .document.getElementById("traversal-rogue-focus-search");
     }
@@ -3023,11 +3176,6 @@ class TraversalView {
   * @param {Object} self Instance of a class.
   */
   createRogueTraversalControl(self) {
-    // Change class of the container.
-    self.controlContainer.classList.remove("rogue", "proximity", "path");
-    self.controlContainer.classList.add("rogue");
-    // Remove contents of container.
-    General.removeDocumentChildren(self.controlContainer);
     // Create and activate elements.
     // Create search menu.
     self.traversalRogueFocusSearch = View.createSearchOptionsList({
@@ -3051,26 +3199,12 @@ class TraversalView {
   * @param {Object} self Instance of a class.
   */
   activateRogueTraversalControl(self) {
-    // Activate search menu.
-    self.traversalRogueFocusSearch.addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Determine identifier of any option that matches the search's value.
-      var identifier = View.determineSearchOptionName(event.currentTarget);
-      // Determine whether search's value matches a valid option.
-      if (identifier) {
-        // Access information.
-        var node = self.state.networkNodesRecords.find(function (record) {
-          return identifier === record.identifier;
-        });
-        // Call action.
-        Action.changeTraversalRogueFocus({
-          identifier: identifier,
-          type: node.type,
-          state: self.state
-        });
-      } else {
-        event.currentTarget.value = "";
-      }
+    // Activate search.
+    TraversalView.activateTraversalSearch({
+      search: self.traversalRogueFocusSearch,
+      variableName: "traversalRogueFocus",
+      recordSource: "network",
+      state: self.state
     });
     // Activate execute.
     self.execute.addEventListener("click", function (event) {
@@ -3086,11 +3220,425 @@ class TraversalView {
   restoreRogueTraversalControl(self) {
     // Restore controls' settings.
     // Restore search.
-    TraversalView.restoreNodeSearch({
+    TraversalView.restoreTraversalSearch({
       search: self.traversalRogueFocusSearch,
       variableName: "traversalRogueFocus",
-      nodeSource: "network",
+      recordSource: "network",
       state: self.state
+    });
+  }
+  /**
+  * Creates, activates, and restores controls for proximity traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestoreProximityTraversalControl(self) {
+    self.createActivateProximityTraversalControl(self);
+    self.restoreProximityTraversalControl(self);
+  }
+  /**
+  * Creates and activates controls for proximity traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateProximityTraversalControl(self) {
+    // Determine whether container's current content matches view's novel type.
+    // Container's class indicates type of content.
+    if (!self.container.classList.contains("proximity")) {
+      // Container's current content does not match view's novel type.
+      // Remove container's previous contents and assign a class name to
+      // indicate view's novel type.
+      View.removeContainerContentSetClass({
+        container: self.controlContainer,
+        className: "proximity"
+      });
+      // Create content.
+      self.createProximityTraversalControl(self);
+      // Activate behavior.
+      self.activateProximityTraversalControl(self);
+    } else {
+      // Container's current content matches view's novel type.
+      // Set references to content.
+      self.traversalProximityFocusSearch = self
+      .document.getElementById("traversal-proximity-focus-search");
+      self.traversalProximityDirection = self
+      .document.getElementById("traversal-proximity-direction");
+      self.traversalProximityDepth = self
+      .document.getElementById("traversal-proximity-depth");
+    }
+  }
+  /**
+  * Creates controls for proximity traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createProximityTraversalControl(self) {
+    // Create and activate elements.
+    // Create search menu.
+    self.traversalProximityFocusSearch = View.createSearchOptionsList({
+      identifier: "traversal-proximity-focus-search",
+      prompt: "select node...",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create break.
+    self.controlContainer.appendChild(self.document.createElement("br"));
+    // Create direction.
+    // Create control for direction.
+    self.traversalProximityDirection = View.createButtonIdentifier({
+      identifier: "traversal-proximity-direction",
+      text: "",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create control for depth.
+    self.traversalProximityDepth = View.createSelector({
+      identifier: "traversal-proximity-depth",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create break.
+    self.controlContainer.appendChild(self.document.createElement("br"));
+    // Create execute.
+    // Create button for execution.
+    self.execute = View.createButton({
+      text: "execute",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Activates controls for proximity traversal.
+  * @param {Object} self Instance of a class.
+  */
+  activateProximityTraversalControl(self) {
+    // Activate search.
+    TraversalView.activateTraversalSearch({
+      search: self.traversalProximityFocusSearch,
+      variableName: "traversalProximityFocus",
+      recordSource: "subnetwork",
+      state: self.state
+    });
+    // Activate direction.
+    self
+    .traversalProximityDirection.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.changeTraversalProximityDirection(self.state);
+    });
+    // Activate depth.
+    self
+    .traversalProximityDepth.addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine value.
+      var value = Number(event.currentTarget.value);
+      // Call action.
+      Action.changeTraversalProximityDepth(value, self.state);
+    });
+    // Activate execute.
+    self.execute.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.executeProximityTraversalCombination(self.state);
+    });
+  }
+  /**
+  * Restores controls for path traversal.
+  * @param {Object} self Instance of a class.
+  */
+  restoreProximityTraversalControl(self) {
+    // Restore controls' settings.
+    // Restore search.
+    TraversalView.restoreTraversalSearch({
+      search: self.traversalProximityFocusSearch,
+      variableName: "traversalProximityFocus",
+      recordSource: "subnetwork",
+      state: self.state
+    });
+    // Restore direction.
+    // Represent direction.
+    if (self.state.traversalProximityDirection === "successors") {
+      self.traversalProximityDirection.textContent = "->";
+    } else if (self.state.traversalProximityDirection === "neighbors") {
+      self.traversalProximityDirection.textContent = "<->";
+    } else if (self.state.traversalProximityDirection === "predecessors") {
+      self.traversalProximityDirection.textContent = "<-";
+    }
+    // Restore depth.
+    // Create options.
+    var options = [1, 2, 3, 4, 5].map(function (depth) {
+      // Determine whether depth matches state variable.
+      var match = (depth === self.state.traversalProximityDepth);
+      return {
+        label: String(depth) + " links",
+        value: depth,
+        selection: match
+      };
+    });
+    View.createSelectorOptions({
+      options: options,
+      selector: self.traversalProximityDepth,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Creates, activates, and restores controls for path traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestorePathTraversalControl(self) {
+    self.createActivatePathTraversalControl(self);
+    self.restorePathTraversalControl(self);
+  }
+  /**
+  * Creates and activates controls for path traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createActivatePathTraversalControl(self) {
+    // Determine whether container's current content matches view's novel type.
+    // Container's class indicates type of content.
+    if (!self.container.classList.contains("path")) {
+      // Container's current content does not match view's novel type.
+      // Remove container's previous contents and assign a class name to
+      // indicate view's novel type.
+      View.removeContainerContentSetClass({
+        container: self.controlContainer,
+        className: "path"
+      });
+      // Create content.
+      self.createPathTraversalControl(self);
+      // Activate behavior.
+      self.activatePathTraversalControl(self);
+    } else {
+      // Container's current content matches view's novel type.
+      // Set references to content.
+      self.traversalPathSourceSearch = self
+      .document.getElementById("traversal-path-source-search");
+      self.traversalPathTargetSearch = self
+      .document.getElementById("traversal-path-target-search");
+      self.traversalPathDirection = self
+      .document.getElementById("traversal-path-direction");
+      self.traversalPathCount = self
+      .document.getElementById("traversal-path-count");
+    }
+  }
+  /**
+  * Creates controls for path traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createPathTraversalControl(self) {
+    // Create and activate elements.
+    // Create search menu.
+    self.traversalPathSourceSearch = View.createSearchOptionsList({
+      identifier: "traversal-path-source-search",
+      prompt: "select node...",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create break.
+    self.controlContainer.appendChild(self.document.createElement("br"));
+    // Create direction.
+    // Create control for direction.
+    self.traversalPathDirection = View.createButtonIdentifier({
+      identifier: "traversal-path-direction",
+      text: "",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create control for count.
+    self.traversalPathCount = View.createSelector({
+      identifier: "traversal-path-count",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create break.
+    self.controlContainer.appendChild(self.document.createElement("br"));
+    // Create search menu.
+    self.traversalPathTargetSearch = View.createSearchOptionsList({
+      identifier: "traversal-path-target-search",
+      prompt: "select node...",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create break.
+    self.controlContainer.appendChild(self.document.createElement("br"));
+    // Create execute.
+    // Create button for execution.
+    self.execute = View.createButton({
+      text: "execute",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Activates controls for path traversal.
+  * @param {Object} self Instance of a class.
+  */
+  activatePathTraversalControl(self) {
+    // Activate search.
+    TraversalView.activateTraversalSearch({
+      search: self.traversalPathSourceSearch,
+      variableName: "traversalPathSource",
+      recordSource: "subnetwork",
+      state: self.state
+    });
+    // Activate direction.
+    self
+    .traversalPathDirection.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.changeTraversalPathDirection(self.state);
+    });
+    // Activate count.
+    self
+    .traversalPathCount.addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine value.
+      var value = Number(event.currentTarget.value);
+      // Call action.
+      Action.changeTraversalPathCount(value, self.state);
+    });
+    // Activate search.
+    TraversalView.activateTraversalSearch({
+      search: self.traversalPathTargetSearch,
+      variableName: "traversalPathTarget",
+      recordSource: "subnetwork",
+      state: self.state
+    });
+    // Activate execute.
+    self.execute.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.executePathTraversalCombination(self.state);
+    });
+  }
+  /**
+  * Restores controls for path traversal.
+  * @param {Object} self Instance of a class.
+  */
+  restorePathTraversalControl(self) {
+    // Restore controls' settings.
+    // Restore search.
+    TraversalView.restoreTraversalSearch({
+      search: self.traversalPathSourceSearch,
+      variableName: "traversalPathSource",
+      recordSource: "subnetwork",
+      state: self.state
+    });
+    // Restore direction.
+    // Represent direction.
+    if (self.state.traversalPathDirection === "forward") {
+      self.traversalPathDirection.textContent = "->";
+    } else if (self.state.traversalPathDirection === "both") {
+      self.traversalPathDirection.textContent = "<->";
+    } else if (self.state.traversalPathDirection === "reverse") {
+      self.traversalPathDirection.textContent = "<-";
+    }
+    // Restore count.
+    // Create options.
+    var options = [1, 2, 3, 4, 5].map(function (count) {
+      // Determine whether depth matches state variable.
+      var match = (count === self.state.traversalPathCount);
+      return {
+        label: String(count) + " paths",
+        value: count,
+        selection: match
+      };
+    });
+    View.createSelectorOptions({
+      options: options,
+      selector: self.traversalPathCount,
+      documentReference: self.document
+    });
+    // Restore search.
+    TraversalView.restoreTraversalSearch({
+      search: self.traversalPathTargetSearch,
+      variableName: "traversalPathTarget",
+      recordSource: "subnetwork",
+      state: self.state
+    });
+  }
+  /**
+  * Determines whether a combination strategy matches the value in the
+  * application's state.
+  * @param {string} type Type of combination, union or difference.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether combination strategy matches the value in the
+  * application's state.
+  */
+  static determineTraversalCombinationMatch(type, state) {
+    return type === state.traversalCombination;
+  }
+  /**
+  * Determines whether a type of traversal matches the value in the
+  * application's state.
+  * @param {string} type Type of traversal, rogue, proximity, or path.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether type of traversal matches the value in the
+  * application's state.
+  */
+  static determineTraversalTypeMatch(type, state) {
+    var value = state.traversalType;
+    return value === type;
+  }
+  /**
+  * Activates the search for a focal node for rogue traversal.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.search Reference to search menu.
+  * @param {string} parameters.variableName Name of state variable.
+  * @param {string} parameters.recordSource Source of records for nodes, either
+  * "subnetwork" or "network".
+  * @param {Object} parameters.state Application's state.
+  */
+  static activateTraversalSearch({search, variableName, recordSource, state} = {}) {
+    // Determine source of nodes' records.
+    if (recordSource === "subnetwork") {
+      var nodesRecords = state.subnetworkNodesRecords;
+    } else if (recordSource === "network") {
+      var nodesRecords = state.networkNodesRecords;
+    }
+    // Activate behavior.
+    search.addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine identifier of any option that matches the search's value.
+      var identifier = View.determineSearchOptionName(event.currentTarget);
+      // Determine whether search's value matches a valid option.
+      if (identifier.length > 0) {
+        // Access information.
+        var node = state.networkNodesRecords.find(function (record) {
+          return identifier === record.identifier;
+        });
+        // Call action.
+        if (variableName === "traversalRogueFocus") {
+          Action.changeTraversalRogueFocus({
+            identifier: identifier,
+            type: node.type,
+            state: state
+          });
+        } else if (variableName === "traversalProximityFocus") {
+          Action.changeTraversalProximityFocus({
+            identifier: identifier,
+            type: node.type,
+            state: self.state
+          });
+        } else if (variableName === "traversalPathSource") {
+          Action.changeTraversalPathSource({
+            identifier: identifier,
+            type: node.type,
+            state: self.state
+          });
+        } else if (variableName === "traversalPathTarget") {
+          Action.changeTraversalPathTarget({
+            identifier: identifier,
+            type: node.type,
+            state: self.state
+          });
+        }
+      } else {
+        // Restore search.
+        TraversalView.restoreTraversalSearch({
+          search: search,
+          variableName: variableName,
+          recordSource: recordSource,
+          state: state
+        });
+      }
     });
   }
   /**
@@ -3098,15 +3646,15 @@ class TraversalView {
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.search Reference to search menu.
   * @param {string} parameters.variableName Name of state variable.
-  * @param {string} parameters.nodeSource Source of records for nodes, either
+  * @param {string} parameters.recordSource Source of records for nodes, either
   * "subnetwork" or "network".
   * @param {Object} parameters.state Application's state.
   */
-  static restoreNodeSearch({search, variableName, nodeSource, state} = {}) {
+  static restoreTraversalSearch({search, variableName, recordSource, state} = {}) {
     // Determine source of nodes' records.
-    if (nodeSource === "subnetwork") {
+    if (recordSource === "subnetwork") {
       var nodesRecords = state.subnetworkNodesRecords;
-    } else if (nodeSource === "network") {
+    } else if (recordSource === "network") {
       var nodesRecords = state.networkNodesRecords;
     }
     // Prepare records for search menu's options.
@@ -3158,376 +3706,6 @@ class TraversalView {
     } else {
       search.value = "";
     }
-  }
-  /**
-  * Creates, activates, and restores controls for proximity traversal.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateRestoreProximityTraversalControl(self) {
-    self.createActivateProximityTraversalControl(self);
-    self.restoreProximityTraversalControl(self);
-  }
-  /**
-  * Creates and activates controls for proximity traversal.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateProximityTraversalControl(self) {
-    // Use class of controls' container to store type of controls.
-    // Determine whether controls exist for the type of traversal.
-    if (!self.controlContainer.classList.contains("proximity")) {
-      // Elements do not exist for traversal's controls.
-      // Create elements.
-      self.createProximityTraversalControl(self);
-      // Activate behavior.
-      self.activateProximityTraversalControl(self);
-    } else {
-      // Elements exist for traversal's controls.
-      // Set references to elements.
-      self.traversalProximityFocusSearch = self
-      .document.getElementById("traversal-proximity-focus-search");
-      self.traversalProximityDirection = self
-      .document.getElementById("traversal-proximity-direction");
-      self.traversalProximityDepth = self
-      .document.getElementById("traversal-proximity-depth");
-    }
-  }
-  /**
-  * Creates controls for proximity traversal.
-  * @param {Object} self Instance of a class.
-  */
-  createProximityTraversalControl(self) {
-    // Change class of the container.
-    self.controlContainer.classList.remove("rogue", "proximity", "path");
-    self.controlContainer.classList.add("proximity");
-    // Remove contents of container.
-    General.removeDocumentChildren(self.controlContainer);
-    // Create and activate elements.
-    // Create search menu.
-    self.traversalProximityFocusSearch = View.createSearchOptionsList({
-      identifier: "traversal-proximity-focus-search",
-      prompt: "select node...",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
-    // Create break.
-    self.controlContainer.appendChild(self.document.createElement("br"));
-    // Create direction.
-    // Create control for direction.
-    self.traversalProximityDirection = View.createButtonIdentifier({
-      identifier: "traversal-proximity-direction",
-      text: "",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
-    // Create control for depth.
-    self.traversalProximityDepth = View.createSelector({
-      identifier: "traversal-proximity-depth",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
-    // Create break.
-    self.controlContainer.appendChild(self.document.createElement("br"));
-    // Create execute.
-    // Create button for execution.
-    self.execute = View.createButton({
-      text: "execute",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
-  }
-  /**
-  * Activates controls for proximity traversal.
-  * @param {Object} self Instance of a class.
-  */
-  activateProximityTraversalControl(self) {
-    // Activate search.
-    self
-    .traversalProximityFocusSearch.addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Determine identifier of any option that matches the search's value.
-      var identifier = View.determineSearchOptionName(event.currentTarget);
-      // Determine whether search's value matches a valid option.
-      if (identifier) {
-        // Access information.
-        var node = self.state.networkNodesRecords.find(function (record) {
-          return identifier === record.identifier;
-        });
-        // Call action.
-        Action.changeTraversalProximityFocus({
-          identifier: identifier,
-          type: node.type,
-          state: self.state
-        });
-      } else {
-        event.currentTarget.value = "";
-      }
-    });
-    // Activate direction.
-    self
-    .traversalProximityDirection.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      Action.changeTraversalProximityDirection(self.state);
-    });
-    // Activate depth.
-    self
-    .traversalProximityDepth.addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Determine value.
-      var value = Number(event.currentTarget.value);
-      // Call action.
-      Action.changeTraversalProximityDepth(value, self.state);
-    });
-    // Activate execute.
-    self.execute.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      Action.executeProximityTraversalCombination(self.state);
-    });
-  }
-  /**
-  * Restores controls for path traversal.
-  * @param {Object} self Instance of a class.
-  */
-  restoreProximityTraversalControl(self) {
-    // Restore controls' settings.
-    // Restore search.
-    TraversalView.restoreNodeSearch({
-      search: self.traversalProximityFocusSearch,
-      variableName: "traversalProximityFocus",
-      nodeSource: "subnetwork",
-      state: self.state
-    });
-    // Restore direction.
-    // Represent direction.
-    if (self.state.traversalProximityDirection === "successors") {
-      self.traversalProximityDirection.textContent = "->";
-    } else if (self.state.traversalProximityDirection === "neighbors") {
-      self.traversalProximityDirection.textContent = "<->";
-    } else if (self.state.traversalProximityDirection === "predecessors") {
-      self.traversalProximityDirection.textContent = "<-";
-    }
-    // Restore depth.
-    // Create options.
-    var options = [1, 2, 3, 4, 5].map(function (depth) {
-      // Determine whether depth matches state variable.
-      var match = (depth === self.state.traversalProximityDepth);
-      return {
-        label: String(depth) + " links",
-        value: depth,
-        selection: match
-      };
-    });
-    View.createSelectorOptions({
-      options: options,
-      selector: self.traversalProximityDepth,
-      documentReference: self.document
-    });
-  }
-  /**
-  * Creates, activates, and restores controls for path traversal.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateRestorePathTraversalControl(self) {
-    self.createActivatePathTraversalControl(self);
-    self.restorePathTraversalControl(self);
-  }
-  /**
-  * Creates and activates controls for path traversal.
-  * @param {Object} self Instance of a class.
-  */
-  createActivatePathTraversalControl(self) {
-    // Use class of controls' container to store type of controls.
-    // Determine whether controls exist for the type of traversal.
-    if (!self.controlContainer.classList.contains("path")) {
-      // Elements do not exist for traversal's controls.
-      // Create elements.
-      self.createPathTraversalControl(self);
-      // Activate behavior.
-      self.activatePathTraversalControl(self);
-    } else {
-      // Elements exist for traversal's controls.
-      // Set references to elements.
-      self.traversalPathSourceSearch = self
-      .document.getElementById("traversal-path-source-search");
-      self.traversalPathTargetSearch = self
-      .document.getElementById("traversal-path-target-search");
-      self.traversalPathDirection = self
-      .document.getElementById("traversal-path-direction");
-      self.traversalPathCount = self
-      .document.getElementById("traversal-path-count");
-    }
-  }
-  /**
-  * Creates controls for path traversal.
-  * @param {Object} self Instance of a class.
-  */
-  createPathTraversalControl(self) {
-    // Change class of the container.
-    self.controlContainer.classList.remove("rogue", "proximity", "path");
-    self.controlContainer.classList.add("path");
-    // Remove contents of container.
-    General.removeDocumentChildren(self.controlContainer);
-    // Create and activate elements.
-    // Create search menu.
-    self.traversalPathSourceSearch = View.createSearchOptionsList({
-      identifier: "traversal-path-source-search",
-      prompt: "select node...",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
-    // Create break.
-    self.controlContainer.appendChild(self.document.createElement("br"));
-    // Create direction.
-    // Create control for direction.
-    self.traversalPathDirection = View.createButtonIdentifier({
-      identifier: "traversal-path-direction",
-      text: "",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
-    // Create control for count.
-    self.traversalPathCount = View.createSelector({
-      identifier: "traversal-path-count",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
-    // Create break.
-    self.controlContainer.appendChild(self.document.createElement("br"));
-    // Create search menu.
-    self.traversalPathTargetSearch = View.createSearchOptionsList({
-      identifier: "traversal-path-target-search",
-      prompt: "select node...",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
-    // Create break.
-    self.controlContainer.appendChild(self.document.createElement("br"));
-    // Create execute.
-    // Create button for execution.
-    self.execute = View.createButton({
-      text: "execute",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
-  }
-  /**
-  * Activates controls for path traversal.
-  * @param {Object} self Instance of a class.
-  */
-  activatePathTraversalControl(self) {
-    // Activate search.
-    self
-    .traversalPathSourceSearch.addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Determine identifier of any option that matches the search's value.
-      var identifier = View.determineSearchOptionName(event.currentTarget);
-      // Determine whether search's value matches a valid option.
-      if (identifier) {
-        // Access information.
-        var node = self.state.networkNodesRecords.find(function (record) {
-          return identifier === record.identifier;
-        });
-        // Call action.
-        Action.changeTraversalPathSource({
-          identifier: identifier,
-          type: node.type,
-          state: self.state
-        });
-      } else {
-        event.currentTarget.value = "";
-      }
-    });
-    // Activate direction.
-    self
-    .traversalPathDirection.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      Action.changeTraversalPathDirection(self.state);
-    });
-    // Activate count.
-    self
-    .traversalPathCount.addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Determine value.
-      var value = Number(event.currentTarget.value);
-      // Call action.
-      Action.changeTraversalPathCount(value, self.state);
-    });
-    // Activate search.
-    self
-    .traversalPathTargetSearch.addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Determine identifier of any option that matches the search's value.
-      var identifier = View.determineSearchOptionName(event.currentTarget);
-      // Determine whether search's value matches a valid option.
-      if (identifier) {
-        // Access information.
-        var node = self.state.networkNodesRecords.find(function (record) {
-          return identifier === record.identifier;
-        });
-        // Call action.
-        Action.changeTraversalPathTarget({
-          identifier: identifier,
-          type: node.type,
-          state: self.state
-        });
-      } else {
-        event.currentTarget.value = "";
-      }
-    });
-    // Activate execute.
-    self.execute.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      Action.executePathTraversalCombination(self.state);
-    });
-  }
-  /**
-  * Restores controls for path traversal.
-  * @param {Object} self Instance of a class.
-  */
-  restorePathTraversalControl(self) {
-    // Restore controls' settings.
-    // Restore search.
-    TraversalView.restoreNodeSearch({
-      search: self.traversalPathSourceSearch,
-      variableName: "traversalPathSource",
-      nodeSource: "subnetwork",
-      state: self.state
-    });
-    // Restore direction.
-    // Represent direction.
-    if (self.state.traversalPathDirection === "forward") {
-      self.traversalPathDirection.textContent = "->";
-    } else if (self.state.traversalPathDirection === "both") {
-      self.traversalPathDirection.textContent = "<->";
-    } else if (self.state.traversalPathDirection === "reverse") {
-      self.traversalPathDirection.textContent = "<-";
-    }
-    // Restore count.
-    // Create options.
-    var options = [1, 2, 3, 4, 5].map(function (count) {
-      // Determine whether depth matches state variable.
-      var match = (count === self.state.traversalPathCount);
-      return {
-        label: String(count) + " paths",
-        value: count,
-        selection: match
-      };
-    });
-    View.createSelectorOptions({
-      options: options,
-      selector: self.traversalPathCount,
-      documentReference: self.document
-    });
-    // Restore search.
-    TraversalView.restoreNodeSearch({
-      search: self.traversalPathTargetSearch,
-      variableName: "traversalPathTarget",
-      nodeSource: "subnetwork",
-      state: self.state
-    });
   }
 }
 
@@ -3778,7 +3956,7 @@ class TopologyView {
       // Define links' directional marker.
       self.defineLinkDirectionalMarker(self);
       // Create graph's base.
-      self.createBase(self);
+      self.createActivateBase(self);
       // Create group for links.
       self.createLinksGroup(self);
       // Create group for nodes.
@@ -3790,6 +3968,7 @@ class TopologyView {
       self.graphWidth = General.determineElementDimension(self.graph, "width");
       self.graphHeight = General
       .determineElementDimension(self.graph, "height");
+      self.base = self.graph.querySelector("rect.base")
       self.linksGroup = self.container.querySelector("svg g.links");
       self.nodesGroup = self.container.querySelector("svg g.nodes");
     }
@@ -3848,19 +4027,11 @@ class TopologyView {
       .attr("d", "M 0 0 L 10 5 L 0 10 z");
     }
   }
-
-  // TODO: Activate the graph's base.
-  // TODO: Clicking on the base itself should allow adding a rogue node or clearing subnetwork
-  // TODO: Handle all of that through the prompt view.
-
-  // TODO: Make the prompt view toggle-able...
-  // TODO: first click turns it on... next click turns it off...
-
   /**
-  * Creates a base within a graphical container.
+  * Creates and activates a base within a graphical container.
   * @param {Object} self Instance of a class.
   */
-  createBase(self) {
+  createActivateBase(self) {
     // Create base.
     var base = self
     .document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -3870,55 +4041,19 @@ class TopologyView {
     base.setAttribute("y", "0px");
     base.setAttribute("width", self.graphWidth);
     base.setAttribute("height", self.graphHeight);
-
-    // TODO: Clicking on the diagram's base should remove selections of nodes
-    // TODO: and activate an abbreviation of the prompt view...
-    // TODO: hover on this abbreviation should then display the entire prompt view with controls and the like...
-
     // Activate behavior.
     base.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
+      // Determine event's positions.
+      var horizontalPosition = event.clientX;
+      var verticalPosition = event.clientY;
       // Call action.
-      // Determine whether to create or remove a prompt view for network's
-      // diagram.
-      if (self.prompt.container.classList.contains("network-diagram")) {
-        // A prompt is active for network's diagram.
-        // Remove the prompt for network's diagram.
-        self.prompt.clearView(self.prompt);
-      } else {
-        // A prompt is not active for network's diagram.
-        // Create a prompt for network's diagram.
-        // Determine cursor's positions.
-        var horizontalPosition = event.clientX;
-        var verticalPosition = event.clientY;
-        TopologyView.createNetworkDiagramPrompt({
-          horizontalPosition: horizontalPosition,
-          verticalPosition: verticalPosition,
-          prompt: self.prompt,
-          documentReference: self.document,
-          state: self.state
-        });
-      }
-      // TODO: Remove any selections of entities...
-    });
-
-    if (false) {
-      // Determine cursor's positions.
-      var positionX = d3.mouse(self.view)[0];
-      var positionY = d3.mouse(self.view)[1];
-      // Call action.
-      TopologyView.createTip({
-        identifier: element.identifier,
-        type: element.type,
-        positionX: positionX,
-        positionY: positionY,
-        tip: self.tip,
-        documentReference: self.document,
+      Action.selectNetworkDiagram({
+        horizontalPosition: horizontalPosition,
+        verticalPosition: verticalPosition,
         state: self.state
       });
-
-      self.prompt.clearView(self.prompt);
-    }
+    });
   }
   /**
   * Creates a single group to contain all links.
@@ -4732,8 +4867,6 @@ class TopologyView {
     Action.changeTopologyNovelty(self.state);
   }
 
-
-
   /**
   * Restores positions of nodes' visual representations according to results of
   * force simulation.
@@ -4974,6 +5107,10 @@ class TopologyView {
     // Determine size of font for annotations of network's elements.
     nodesLabels.attr("font-size", self.scaleFont + "px");
   }
+
+  // TODO: Consider creating a new class, TopologyViewUtility to store the static
+  // TODO: methods with utility to TopologyView...
+
   /**
   * Accesses a link.
   * @param {Object} parameters Destructured object of parameters.
@@ -5171,76 +5308,6 @@ class TopologyView {
     });
     // Return reference to element.
     return table.node();
-  }
-  /**
-  * Creates prompt for network's diagram.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.horizontalPosition Horizontal position in pixels
-  * relative to the browser's view window of reference point.
-  * @param {number} parameters.verticalPosition Horizontal position in pixels
-  * relative to the browser's view window of reference point.
-  * @param {Object} parameters.prompt Instance of PromptView's class.
-  * @param {Object} parameters.documentReference Reference to document object
-  * model.
-  * @param {Object} parameters.state Application's state.
-  */
-  static createNetworkDiagramPrompt({horizontalPosition, verticalPosition, prompt, documentReference, state} = {}) {
-    // Create content for prompt.
-    // Create element.
-    var content = documentReference.createElement("div");
-    // Create button for restoration.
-    var remove = View.createButton({
-      text: "remove all",
-      parent: content,
-      documentReference: documentReference
-    });
-    // Create break.
-    content.appendChild(self.document.createElement("br"));
-    // Create button for restoration.
-    var lock = View.createButton({
-      text: "lock all",
-      parent: content,
-      documentReference: documentReference
-    });
-    // Create break.
-    content.appendChild(self.document.createElement("br"));
-    // Create button for restoration.
-    var unlock = View.createButton({
-      text: "unlock all",
-      parent: content,
-      documentReference: documentReference
-    });
-    // Create break.
-    content.appendChild(self.document.createElement("br"));
-
-    // TODO: Also include a simple control to add a node by "rogue traversal".
-
-
-
-    // Activate behavior.
-    remove.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-    });
-    lock.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-    });
-    unlock.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-    });
-    // Create prompt.
-    prompt.restoreView({
-      visibility: true,
-      horizontalPosition: horizontalPosition,
-      verticalPosition: verticalPosition,
-      horizontalShift: 15,
-      verticalShift: 0,
-      type: "network-diagram",
-      content: content,
-      self: prompt
-    });
   }
   /**
   * Sorts identifiers of nodes for metabolites by their roles in a reaction.

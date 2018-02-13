@@ -129,6 +129,7 @@ class Action {
       candidacy: false,
       traversal: false
     };
+    var prompt = Action.initializePromptViewControls();
     var topology = false;
     var topologyNovelty = true;
     var entitySelection = {
@@ -147,6 +148,7 @@ class Action {
     var novelVariablesValues = {
       source: source,
       controlViews: controlViews,
+      prompt: prompt,
       topology: topology,
       topologyNovelty: topologyNovelty,
       entitySelection: entitySelection
@@ -1473,61 +1475,87 @@ class Action {
     });
   }
   /**
-  * Changes the selection of a node's entity.
+  * Responds to a selection on the network's diagram.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.identifier Identifier of a node.
-  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
   * @param {Object} parameters.state Application's state.
   */
-  static changeEntitySelection({identifier, type, state} = {}) {
-    // Access information.
-    if (type === "metabolite") {
-      var node = state.networkNodesMetabolites[identifier];
-      var candidate = state.metabolitesCandidates[node.candidate];
-      var entity = state.metabolites[candidate.metabolite];
-    } else if (type === "reaction") {
-      var node = state.networkNodesReactions[identifier];
-      var candidate = state.reactionsCandidates[node.candidate];
-      var entity = state.reactions[candidate.reaction];
-    }
-    // Determine entity selection.
-    if (candidate.identifier === state.entitySelection) {
-      var record = {
-        type: null,
-        node: null,
-        candidate: null,
-        entity: null
-      };
-    } else {
-      var record = {
-        type: type,
-        node: node.identifier,
-        candidate: candidate.identifier,
-        entity: entity.identifier
-      };
-    }
-    // Determine whether to activate detail view.
-    if (record.candidate) {
-      // TODO: Activate DetailView within ControlView.
-      // TODO: DetailView's contents should depend on whether or not there's an entitySelection...
-      // TODO: If there isn't an entitySelection, consider giving information about the network or something...
-    }
+  static selectNetworkDiagram({horizontalPosition, verticalPosition, state} = {}) {
+    var prompt = Action.changePromptTypePosition({
+      type: "network-diagram",
+      reference: {},
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: 0,
+      verticalShift: 0,
+      state: state
+    });
+    var entitySelection = Action.changeEntitySelection({
+      identifier: "",
+      type: "",
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
-      entitySelection: record
+      prompt: prompt,
+      entitySelection: entitySelection
     };
-    var variablesValues = Object.assign(novelVariablesValues);
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
   }
+  /**
+  * Responds to a selection on a network's node.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static selectNetworkNode({identifier, type, state} = {}) {
+
+
+    // TODO: Activate detail view... change state variable to activate view for entity selection
+    // TODO: Activate DetailView within ControlView.
+    // TODO: DetailView's contents should depend on whether or not there's an entitySelection...
+    // TODO: If there isn't an entitySelection, consider giving information about the network or something...
+  }
+
+
 
 // TODO: I need an action to remove entity Selection... ie restore it to empty...
 
   // Indirect actions.
 
+  /**
+  * Initializes values of variables of application's controls for prompt view.
+  * @param {Object} state Application's state.
+  */
+  static initializePromptViewControls() {
+    // Initialize controls.
+    var type = "none";
+    var horizontalPosition = 0;
+    var verticalPosition = 0;
+    var horizontalShift = 0;
+    var verticalShift = 0;
+    // Compile information.
+    var variablesValues = {
+      type: type,
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: horizontalShift,
+      verticalShift: verticalShift
+    };
+    // Return information.
+    return variablesValues;
+  }
   /**
   * Initializes values of variables of application's controls for set view.
   * @param {Object} state Application's state.
@@ -1604,10 +1632,6 @@ class Action {
     // Return information.
     return variablesValues;
   }
-
-  // TODO: Probably make an indirect action to make an empty entitySelection...
-
-
   /**
   * Restores basic information about metabolic entities and sets.
   * @param {Object} parameters Destructured object of parameters.
@@ -1774,9 +1798,93 @@ class Action {
     var novelSearches = Object.assign(copySearches, entry);
     return novelSearches;
   }
-
-
-
+  /**
+  * Changes the type and position of the prompt view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of prompt view.
+  * @param {Object} parameters.reference Reference information for the specific
+  * type of prompt.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.horizontalShift Horizontal shift in pixels
+  * relative to reference point.
+  * @param {number} parameters.verticalShift Horizontal shift in pixels relative
+  * to reference point.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changePromptTypePosition({type, reference, horizontalPosition, verticalPosition, horizontalShift, verticalShift, state} = {}) {
+    // Determine prompt's type and positions.
+    if (state.prompt.type === "none") {
+      // Compile information.
+      var prompt = {
+        type: type,
+        reference: reference,
+        horizontalPosition: horizontalPosition,
+        verticalPosition: verticalPosition,
+        horizontalShift: horizontalShift,
+        verticalShift: verticalShift
+      };
+    } else if (state.prompt.type === type) {
+      // Compile information.
+      var prompt = {
+        type: "none",
+        horizontalPosition: 0,
+        verticalPosition: 0,
+        horizontalShift: 0,
+        verticalShift: 0
+      };
+    }
+    // Return information.
+    return prompt;
+  }
+  /**
+  * Changes the selection of a node's entity.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeEntitySelection({identifier, type, state} = {}) {
+    // Determine novel selection's information.
+    if ((identifier.length > 0) && (type.length > 0)) {
+      // Access information.
+      if (type === "metabolite") {
+        var node = state.networkNodesMetabolites[identifier];
+        var candidate = state.metabolitesCandidates[node.candidate];
+        var entity = state.metabolites[candidate.metabolite];
+      } else if (type === "reaction") {
+        var node = state.networkNodesReactions[identifier];
+        var candidate = state.reactionsCandidates[node.candidate];
+        var entity = state.reactions[candidate.reaction];
+      }
+      if (candidate.identifier === state.entitySelection.candidate) {
+        var entitySelection = {
+          type: null,
+          node: null,
+          candidate: null,
+          entity: null
+        };
+      } else {
+        var entitySelection = {
+          type: type,
+          node: node.identifier,
+          candidate: candidate.identifier,
+          entity: entity.identifier
+        };
+      }
+    } else {
+      var entitySelection = {
+        type: null,
+        node: null,
+        candidate: null,
+        entity: null
+      };
+    }
+    // Return information.
+    return entitySelection;
+  }
 
   ////////////////////////////////////////////////////////////////////////// ???
 

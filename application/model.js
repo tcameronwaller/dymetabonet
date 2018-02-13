@@ -101,7 +101,7 @@ class Model {
       var tip = new TipView();
       // Prompt view.
       // Prompt view always exists but is only visible when active.
-      var prompt = new PromptView();
+      var prompt = new PromptView(self.state);
       // Control view.
       // TODO: Maybe it would be more orderly to pass ControlView the controlViews variable directly...
       var tabs = Object.keys(self.state.controlViews);
@@ -194,6 +194,7 @@ class Model {
     return (
       //(state.source === null) &&
       !(state.controlViews === null) &&
+      !(state.prompt === null) &&
       !(state.topology === null) &&
       !(state.topologyNovelty === null) &&
       !(state.setsFilters === null) &&

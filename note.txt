@@ -4,6 +4,24 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+12 February 2018
+
+----------
+Progress
+
+View.createReferenceContainer is not behaving properly.
+The intent is for this function to create a new container for a view if such a container does not exist already.
+Instead, the function creates a new container with every update to the application's state.
+
+The function works properly for all views except those within the control view.
+The problem is probably in the control view.
+
+The problem is probably actually in General.filterRemoveDocumentElements.
+Correct this problem for the sake of efficiency.
+
+Consider letting the control view determine which sub views to create.
+
+--------------------------------------------------
 10 February 2018
 
 ----------

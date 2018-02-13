@@ -49,6 +49,9 @@ class State {
       // Variable "controlViews" stores information about whether each view
       // within the control view is active.
       "controlViews",
+      // Variable "prompt" stores information about the type and position of the
+      // prompt view within the interface.
+      "prompt",
       // Variable "topology" stores information about whether to draw a visual
       // representation of the network's topology.
       "topology",
