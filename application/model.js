@@ -72,7 +72,7 @@ class Model {
   /**
   * Evaluates the application's state and represents it accordingly in a visual
   * interface.
-  * All alterations to the application's state initiates restoration of the
+  * All alterations to the application's state initiate restoration of the
   * application's interface.
   * Evaluation only considers which views to initialize or restore in the
   * interface.
@@ -98,57 +98,15 @@ class Model {
 
       // Tip view.
       // Tip view always exists but is only visible when active.
-      var tip = new TipView();
+      var tipView = new TipView();
       // Prompt view.
       // Prompt view always exists but is only visible when active.
-      var prompt = new PromptView(self.state);
+      var promptView = new PromptView(self.state);
       // Control view.
-      // TODO: Maybe it would be more orderly to pass ControlView the controlViews variable directly...
-      var tabs = Object.keys(self.state.controlViews);
-      var panels = tabs.filter(function (tab) {
-        return self.state.controlViews[tab];
-      });
-      var controlContents = {
-        tabs: tabs,
-        panels: panels
-      };
-      var control = new ControlView({
-        tip: tip,
-        contents: controlContents,
+      var controlView = new ControlView({
+        tipView: tipView,
         state: self.state
       });
-      // State view.
-      if (Model.determineControlState(self.state)) {
-        new StateView({
-          tip: tip,
-          control: control,
-          state: self.state
-        });
-      }
-      // Set view.
-      if (Model.determineControlSet(self.state)) {
-        new SetView({
-          tip: tip,
-          control: control,
-          state: self.state
-        });
-      }
-      // Candidacy view.
-      if (Model.determineControlCandidacy(self.state)) {
-        new CandidacyView({
-          tip: tip,
-          control: control,
-          state: self.state
-        });
-      }
-      // Traversal view.
-      if (Model.determineControlTraversal(self.state)) {
-        new TraversalView({
-          tip: tip,
-          control: control,
-          state: self.state
-        });
-      }
       // Exploration view.
       if (!Model.determineTopology(self.state)) {
         // Exploration view.
@@ -192,7 +150,7 @@ class Model {
   */
   static determineApplicationControls(state) {
     return (
-      //(state.source === null) &&
+      !(state.source === null) &&
       !(state.controlViews === null) &&
       !(state.prompt === null) &&
       !(state.topology === null) &&
@@ -208,6 +166,14 @@ class Model {
       !(state.candidatesSorts === null) &&
       !(state.traversalCombination === null) &&
       !(state.traversalType === null) &&
+      !(state.traversalRogueFocus === null) &&
+      !(state.traversalProximityFocus === null) &&
+      !(state.traversalProximityDirection === null) &&
+      !(state.traversalProximityDepth === null) &&
+      !(state.traversalPathSource === null) &&
+      !(state.traversalPathTarget === null) &&
+      !(state.traversalPathDirection === null) &&
+      !(state.traversalPathCount === null) &&
       !(state.entitySelection === null)
     );
   }
@@ -232,18 +198,18 @@ class Model {
   */
   static determineMetabolismDerivationInformation(state) {
     return (
-      !(state.totalReactionsSets === null) &&
-      !(state.totalMetabolitesSets === null) &&
-      !(state.accessReactionsSets === null) &&
-      !(state.accessMetabolitesSets === null) &&
-      !(state.filterReactionsSets === null) &&
-      !(state.filterMetabolitesSets === null) &&
+      !(state.totalSetsReactions === null) &&
+      !(state.totalSetsMetabolites === null) &&
+      !(state.accessSetsReactions === null) &&
+      !(state.accessSetsMetabolites === null) &&
+      !(state.filterSetsReactions === null) &&
+      !(state.filterSetsMetabolites === null) &&
       !(state.setsCardinalities === null) &&
       !(state.setsSummaries === null) &&
       !(state.reactionsSimplifications === null) &&
       !(state.metabolitesSimplifications === null) &&
-      !(state.reactionsCandidates === null) &&
-      !(state.metabolitesCandidates === null) &&
+      !(state.candidatesReactions === null) &&
+      !(state.candidatesMetabolites === null) &&
       !(state.candidatesSummaries === null) &&
       !(state.networkNodesReactions === null) &&
       !(state.networkNodesMetabolites === null) &&
@@ -271,6 +237,14 @@ class Model {
     return !(state.prompt === null);
   }
   /**
+  * Determines tabs within control view.
+  * @param {Object} state Application's state.
+  * @returns {Array<string>} Names of tabs in control view.
+  */
+  static determineControlTabs(state) {
+    return Object.keys(state.controlViews);
+  }
+  /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
@@ -283,16 +257,16 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineControlSet(state) {
-    return state.controlViews.set;
+  static determineControlFilter(state) {
+    return state.controlViews.filter;
   }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineControlCandidacy(state) {
-    return state.controlViews.candidacy;
+  static determineControlSimplification(state) {
+    return state.controlViews.simplification;
   }
   /**
   * Determines whether the application's state has specific information.
@@ -301,6 +275,14 @@ class Model {
   */
   static determineControlTraversal(state) {
     return state.controlViews.traversal;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineControlDetail(state) {
+    return state.controlViews.detail;
   }
   /**
   * Determines whether the application's state has specific information.

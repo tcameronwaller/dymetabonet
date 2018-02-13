@@ -4,6 +4,15 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+13 February 2018
+
+----------
+Progress
+
+I changed the names of several state variables for consistency.
+I changed the organization of subordinate views within control view for greater efficiency.
+
+--------------------------------------------------
 12 February 2018
 
 ----------

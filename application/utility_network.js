@@ -39,9 +39,9 @@ class Network {
   * Creates network's elements, nodes and links, to represent metabolic
   * entities, metabolites and reactions, and relations between them.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
   * @param {Object<Object>} parameters.reactionsSimplifications
   * Information about simplification of reactions.
@@ -54,11 +54,11 @@ class Network {
   * compartmentalization is relevant.
   * @returns {Object<Array<Object>>} Information about network's elements.
   */
-  static createNetworkElements({reactionsCandidates, metabolitesCandidates, reactionsSimplifications, metabolitesSimplifications, reactions, metabolites, compartmentalization} = {}) {
+  static createNetworkElements({candidatesReactions, candidatesMetabolites, reactionsSimplifications, metabolitesSimplifications, reactions, metabolites, compartmentalization} = {}) {
     // Collect network's elements.
     var networkNodesLinks = Network.collectReactionsMetabolitesNetworkNodesLinks({
-      reactionsCandidates: reactionsCandidates,
-      metabolitesCandidates: metabolitesCandidates,
+      candidatesReactions: candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites,
       reactionsSimplifications: reactionsSimplifications,
       metabolitesSimplifications: metabolitesSimplifications,
       reactions: reactions,
@@ -87,9 +87,9 @@ class Network {
   * Collects network's elements, nodes and links, across reactions and their
   * metabolites.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
   * @param {Object<Object>} parameters.reactionsSimplifications
   * Information about simplification of reactions.
@@ -102,7 +102,7 @@ class Network {
   * compartmentalization is relevant.
   * @returns {Object<Array<Object>>} Information about network's elements.
   */
-  static collectReactionsMetabolitesNetworkNodesLinks({reactionsCandidates, metabolitesCandidates, reactionsSimplifications, metabolitesSimplifications, reactions, metabolites, compartmentalization} = {}) {
+  static collectReactionsMetabolitesNetworkNodesLinks({candidatesReactions, candidatesMetabolites, reactionsSimplifications, metabolitesSimplifications, reactions, metabolites, compartmentalization} = {}) {
     // Initialize collection.
     var initialCollection = {
       networkNodesReactions: {},
@@ -110,15 +110,15 @@ class Network {
       networkLinks: {}
     };
     // Iterate on reactions.
-    var candidateReactionsIdentifiers = Object.keys(reactionsCandidates);
+    var candidateReactionsIdentifiers = Object.keys(candidatesReactions);
     return candidateReactionsIdentifiers
     .reduce(function (collectionReactions, candidateReactionIdentifier) {
       // Access information.
-      var candidateReaction = reactionsCandidates[candidateReactionIdentifier];
+      var candidateReaction = candidatesReactions[candidateReactionIdentifier];
       var reaction = reactions[candidateReaction.reaction];
       return Network.collectReactionMetabolitesNetworkNodesLinks({
         candidateReaction: candidateReaction,
-        metabolitesCandidates: metabolitesCandidates,
+        candidatesMetabolites: candidatesMetabolites,
         reactionsSimplifications: reactionsSimplifications,
         metabolitesSimplifications: metabolitesSimplifications,
         reaction: reaction,
@@ -134,7 +134,7 @@ class Network {
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.candidateReaction Information about a candidate
   * reaction.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
   * @param {Object<Object>} parameters.reactionsSimplifications
   * Information about simplification of reactions.
@@ -149,7 +149,7 @@ class Network {
   * about network's elements.
   * @returns {Object<Array<Object>>} Information about network's elements.
   */
-  static collectReactionMetabolitesNetworkNodesLinks({candidateReaction, metabolitesCandidates, reactionsSimplifications, metabolitesSimplifications, reaction, metabolites, compartmentalization, collectionReactions} = {}) {
+  static collectReactionMetabolitesNetworkNodesLinks({candidateReaction, candidatesMetabolites, reactionsSimplifications, metabolitesSimplifications, reaction, metabolites, compartmentalization, collectionReactions} = {}) {
     // Evaluate reaction's candidacy.
     // Consider both explicit and implicit designations for simplification.
     var omission = Network.determineCandidateSimplificationMethod({
@@ -200,7 +200,7 @@ class Network {
       var networkNodesLinksMetabolites = candidateMetabolitesIdentifiers
       .reduce(function (collectionMetabolites, candidateMetaboliteIdentifier) {
         // Access information.
-        var candidateMetabolite = metabolitesCandidates
+        var candidateMetabolite = candidatesMetabolites
         [candidateMetaboliteIdentifier];
         var metabolite = metabolites[candidateMetabolite.metabolite];
         return Network.collectReactionMetaboliteNetworkNodesLinks({

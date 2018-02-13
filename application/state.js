@@ -81,25 +81,25 @@ class State {
       "processes"
     ];
     var totalEntitiesSets = [
-      // Variable "totalReactionsSets" stores information for all reactions
+      // Variable "totalSetsReactions" stores information for all reactions
       // about all the metabolites that participate in each reaction and the
       // sets to which each reaction belongs by all its values of variables.
-      // The purpose of variable "totalReactionsSets" is to provide complete
+      // The purpose of variable "totalSetsReactions" is to provide complete
       // information against which to apply filters.
       // Information includes references to variables "reactions",
       // "metabolites", "compartments", and "processes".
       // Information derives from variable "reactions".
-      "totalReactionsSets",
-      // Variable "totalMetabolitesSets" stores information for all metabolites
+      "totalSetsReactions",
+      // Variable "totalSetsMetabolites" stores information for all metabolites
       // about all the reactions in which each metabolite participates and the
       // sets to which each metabolite belongs by all its values of variables.
-      // The purpose of variable "totalMetabolitesSets" is to provide complete
+      // The purpose of variable "totalSetsMetabolites" is to provide complete
       // information against which to apply filters.
       // Information includes references to variables "metabolites",
       // "reactions", "compartments", and "processes".
-      // Information derives from variables "totalReactionsSets" and
+      // Information derives from variables "totalSetsReactions" and
       // "reactions".
-      "totalMetabolitesSets"
+      "totalSetsMetabolites"
     ];
     var entitiesSetsFilters = [
       // Variable "setsFilters" stores information about selections of sets
@@ -111,50 +111,50 @@ class State {
       "setsFilters"
     ];
     var currentEntitiesSets = [
-      // Variable "accessReactionsSets" stores information for reactions that
+      // Variable "accessSetsReactions" stores information for reactions that
       // pass filters about all the metabolites that participate in each
       // reaction and the sets to which each reaction belongs by all its values
       // of variables.
-      // The purpose of variable "accessReactionsSets" is to constrain the
+      // The purpose of variable "accessSetsReactions" is to constrain the
       // accessibility of sets for selection in the sets' menu.
       // Information includes references to variables "reactions",
       // "metabolites", "compartments", and "processes".
       // Information derives from variables "setsFilters",
-      // "totalReactionsSets", and "reactions".
-      "accessReactionsSets",
-      // Variable "accessMetabolitesSets" stores information for metabolites
+      // "totalSetsReactions", and "reactions".
+      "accessSetsReactions",
+      // Variable "accessSetsMetabolites" stores information for metabolites
       // that pass filters about all the reactions in which each metabolite
       // participates and the sets to which each metabolite belongs by all its
       // values of variables.
-      // The purpose of variable "accessMetabolitesSets" is to constrain the
+      // The purpose of variable "accessSetsMetabolites" is to constrain the
       // accessibility of sets for selection in the sets' menu.
       // Information includes references to variables "metabolites",
       // "reactions", "compartments", and "processes".
-      // Information derives from variables "totalMetabolitesSets",
-      // "accessReactionsSets" and "reactions".
-      "accessMetabolitesSets",
-      // Variable "filterReactionsSets" stores information for reactions that
+      // Information derives from variables "totalSetsMetabolites",
+      // "accessSetsReactions" and "reactions".
+      "accessSetsMetabolites",
+      // Variable "filterSetsReactions" stores information for reactions that
       // pass filters about the metabolites that participate in each reaction in
       // contexts that pass filters and the sets to which each reaction belongs
       // by its values of variables that pass filters.
-      // The purpose of variable "filterReactionsSets" is to define reactions,
+      // The purpose of variable "filterSetsReactions" is to define reactions,
       // metabolites, and their variables that pass filters.
       // Information includes references to variables "reactions",
       // "metabolites", "compartments", and "processes".
       // Information derives from variables "setsFilters",
-      // "totalReactionsSets", and "reactions".
-      "filterReactionsSets",
-      // Variable "filterMetabolitesSets" stores information for metabolites
+      // "totalSetsReactions", and "reactions".
+      "filterSetsReactions",
+      // Variable "filterSetsMetabolites" stores information for metabolites
       // that pass filters about the reactions in which each metabolite
       // participates in contexts that pass filters and the sets to which each
       // metabolite belongs by its values of variables that pass filters.
-      // The purpose of variable "filterMetabolitesSets" is to define
+      // The purpose of variable "filterSetsMetabolites" is to define
       // metabolites and their variables that pass filters.
       // Information includes references to variables "metabolites",
       // "reactions", "compartments", and "processes".
-      // Information derives from variables "totalMetabolitesSets",
-      // "filterReactionsSets" and "reactions".
-      "filterMetabolitesSets"
+      // Information derives from variables "totalSetsMetabolites",
+      // "filterSetsReactions" and "reactions".
+      "filterSetsMetabolites"
     ];
     var setsCardinalitiesSummaries = [
       // Variable "setsEntities" stores information about the type of entities,
@@ -169,8 +169,8 @@ class State {
       // Information includes references to variables "compartments" and
       // "processes".
       // Information derives from variables "setsEntities", "setsFilter",
-      // "currentReactionsSets", "currentMetabolitesSets", "totalReactionsSets",
-      // "totalMetabolitesSets".
+      // "currentReactionsSets", "currentMetabolitesSets", "totalSetsReactions",
+      // "totalSetsMetabolites".
       "setsCardinalities",
       // Variable "setsSearches" stores information about searches' strings by
       // which to filter the summaries of sets' cardinalities.
@@ -198,32 +198,32 @@ class State {
       "defaultSimplifications",
       // Variable "reactionsSimplifications" stores information about
       // selections of reactions for simplification by omission.
-      // Information includes references to variable "reactionsCandidates".
+      // Information includes references to variable "candidatesReactions".
       "reactionsSimplifications",
       // Variable "metabolitesSimplifications" stores information about
       // selections of metabolites for simplification either by replication or
       // omission.
-      // Information includes references to variable "metabolitesCandidates".
+      // Information includes references to variable "candidatesMetabolites".
       "metabolitesSimplifications"
     ];
     var candidateEntities = [
-      // Variable "reactionsCandidates" stores information about reactions and
+      // Variable "candidatesReactions" stores information about reactions and
       // their metabolites that are relevant in the context of interest and are
       // candidates for representation in the network.
       // Information includes compartmentalization of metabolites.
       // Information includes references to variables "reactions",
       // "metabolites", and "compartments".
       // Information derives from variables "compartmentalization",
-      // "filterReactionsSets", and "reactions".
-      "reactionsCandidates",
-      // Variable "metabolitesCandidates" stores information about metabolites
+      // "filterSetsReactions", and "reactions".
+      "candidatesReactions",
+      // Variable "candidatesMetabolites" stores information about metabolites
       // and their reactions that are relevant in the context of interest and
       // are candidates for representation in the network.
       // Information includes compartmentalization of metabolites.
       // Information includes references to variables "metabolites",
       // "reactions", and "compartments".
-      // Information derives from variable "reactionsCandidates".
-      "metabolitesCandidates"
+      // Information derives from variable "candidatesReactions".
+      "candidatesMetabolites"
     ];
     var candidatesSummaries = [
       // Variable "candidatesSearches" stores information about searches'
@@ -231,32 +231,32 @@ class State {
       "candidatesSearches",
       // Variable "candidatesSorts" stores information about the sort criteria
       // and orders for the summaries of candidates' degrees.
-      // Information includes references to variables "reactionsCandidates" and
-      // "metabolitesCandidates".
+      // Information includes references to variables "candidatesReactions" and
+      // "candidatesMetabolites".
       "candidatesSorts",
       // Variable "candidatesSummaries" stores information about the counts of
       // other candidate entities to which each candidate entity relates.
       // Information includes additional details for representation in menus.
-      // Information includes references to variables "reactionsCandidates" and
-      // "metabolitesCandidates".
-      // Information derives from variables "reactionsCandidates",
-      // "metabolitesCandidates", and "candidatesSorts".
+      // Information includes references to variables "candidatesReactions" and
+      // "candidatesMetabolites".
+      // Information derives from variables "candidatesReactions",
+      // "candidatesMetabolites", and "candidatesSorts".
       "candidatesSummaries"
     ];
     var network = [
       // Variable "networkNodesReactions" stores information about
       // representations of reactions in the network.
       // Information includes references to variables "reactions" and
-      // "reactionsCandidates".
-      // Information derives from variables "reactions", "reactionsCandidates",
+      // "candidatesReactions".
+      // Information derives from variables "reactions", "candidatesReactions",
       // and "reactionsSimplifications".
       "networkNodesReactions",
       // Variable "networkNodesMetabolites" stores information about
       // representations of metabolites in the network.
       // Information includes references to variables "metabolites" and
-      // "metabolitesCandidates".
+      // "candidatesMetabolites".
       // Information derives from variables "metabolites",
-      // "metabolitesCandidates", and "metabolitesSimplifications".
+      // "candidatesMetabolites", and "metabolitesSimplifications".
       "networkNodesMetabolites",
       // Variable "networkLinks" stores information about representations of
       // relations between reactions and metabolites in the network.
@@ -335,7 +335,7 @@ class State {
       // Variable "entitySelection" stores information about selection of an
       // entity of interest.
       // Information includes references to variables "metabolites",
-      // "reactions", "metabolitesCandidates", "reactionsCandidates",
+      // "reactions", "candidatesMetabolites", "candidatesReactions",
       // "networkNodesMetabolites", and "networkNodesReactions".
       "entitySelection"
     ];

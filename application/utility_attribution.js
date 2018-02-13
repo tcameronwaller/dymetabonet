@@ -51,26 +51,26 @@ class Attribution {
     // chemical conversion or physical transport.
     // Reactions localize to the compartments in which their metabolites
     // participate.
-    // Records within attribute "totalReactionsSets" include information about
+    // Records within attribute "totalSetsReactions" include information about
     // all reactions and all their metabolites, processes, and compartments.
     // Collect information about reactions' metabolites and sets.
-    var totalReactionsSets = Attribution
+    var totalSetsReactions = Attribution
     .collectReactionsMetabolitesAttributesValues(reactions);
     // Metabolites participate in reactions.
     // Metabolites inherit from the reactions in which they participate all of
     // the reactions' processses.
     // Metabolites inherit from the reactions in which they participate only the
     // compartments in which they occur and participate in the reaction.
-    // Records within attribute "totalMetabolitesSets" include information about
+    // Records within attribute "totalSetsMetabolites" include information about
     // all metabolites and all processes and compartments of participation that
     // they inherit from the reactions in which they participate.
     // Collect information about metabolites' reactions and sets.
-    var totalMetabolitesSets = Attribution
-    .collectMetabolitesReactionsAttributesValues(totalReactionsSets, reactions);
+    var totalSetsMetabolites = Attribution
+    .collectMetabolitesReactionsAttributesValues(totalSetsReactions, reactions);
     // Compile information.
     var totalEntitiesSets = {
-      totalReactionsSets: totalReactionsSets,
-      totalMetabolitesSets: totalMetabolitesSets
+      totalSetsReactions: totalSetsReactions,
+      totalSetsMetabolites: totalSetsMetabolites
     };
     // Return information.
     return totalEntitiesSets;
@@ -81,14 +81,14 @@ class Attribution {
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object<Array<string>>} parameters.setsFilters Sets' filters by
   * attributes' values.
-  * @param {Object<Object>} parameters.totalReactionsSets Information about all
+  * @param {Object<Object>} parameters.totalSetsReactions Information about all
   * reactions' metabolites and sets.
-  * @param {Object<Object>} parameters.totalMetabolitesSets Information about
+  * @param {Object<Object>} parameters.totalSetsMetabolites Information about
   * all metabolites' reactions and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Object} Information about current entities' sets.
   */
-  static determineCurrentEntitiesSets({setsFilters, totalReactionsSets, totalMetabolitesSets, reactions} = {}) {
+  static determineCurrentEntitiesSets({setsFilters, totalSetsReactions, totalSetsMetabolites, reactions} = {}) {
     // The filtration procedures are computationally expensive.
     // Determine whether there are any selections of attributes' values to apply
     // as filters.
@@ -98,12 +98,12 @@ class Attribution {
       // There are not any selections of attributes' values to apply as filters.
       // Copy information about entities' sets.
       var reactionsSets = {
-        access: General.copyValueJSON(totalReactionsSets),
-        filter: General.copyValueJSON(totalReactionsSets)
+        access: General.copyValueJSON(totalSetsReactions),
+        filter: General.copyValueJSON(totalSetsReactions)
       };
       var metabolitesSets = {
-        access: General.copyValueJSON(totalMetabolitesSets),
-        filter: General.copyValueJSON(totalMetabolitesSets)
+        access: General.copyValueJSON(totalSetsMetabolites),
+        filter: General.copyValueJSON(totalSetsMetabolites)
       };
     } else {
       // There are selections of attributes' values to apply as filters.
@@ -113,24 +113,24 @@ class Attribution {
       var reactionsSets = Attribution
       .filterReactionsMetabolitesAttributesValues({
         setsFilters: setsFilters,
-        totalReactionsSets: totalReactionsSets,
+        totalSetsReactions: totalSetsReactions,
         reactions: reactions
       });
       // Filter information about metabolites' reactions and sets.
       var metabolitesSets = Attribution
       .filterMetabolitesReactionsAttributesValues({
-        totalMetabolitesSets: totalMetabolitesSets,
-        accessReactionsSets: reactionsSets.access,
-        filterReactionsSets: reactionsSets.filter,
+        totalSetsMetabolites: totalSetsMetabolites,
+        accessSetsReactions: reactionsSets.access,
+        filterSetsReactions: reactionsSets.filter,
         reactions: reactions
       });
     }
     // Compile information.
     var currentEntitiesSets = {
-      accessReactionsSets: reactionsSets.access,
-      accessMetabolitesSets: metabolitesSets.access,
-      filterReactionsSets: reactionsSets.filter,
-      filterMetabolitesSets: metabolitesSets.filter
+      accessSetsReactions: reactionsSets.access,
+      accessSetsMetabolites: metabolitesSets.access,
+      filterSetsReactions: reactionsSets.filter,
+      filterSetsMetabolites: metabolitesSets.filter
     };
     // Return information.
     return currentEntitiesSets;
@@ -466,13 +466,13 @@ class Attribution {
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object<Array<string>>} parameters.setsFilters Sets' filters by
   * attributes' values.
-  * @param {Object<Object>} parameters.totalReactionsSets Information about all
+  * @param {Object<Object>} parameters.totalSetsReactions Information about all
   * reactions' metabolites and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Object<Object>} Information about reactions' metabolites
   * and sets.
   */
-  static filterReactionsMetabolitesAttributesValues({setsFilters, totalReactionsSets, reactions} = {}) {
+  static filterReactionsMetabolitesAttributesValues({setsFilters, totalSetsReactions, reactions} = {}) {
     // Filter reactions, their metabolites, and their values of attributes.
     // Initialize collection.
     var initialCollection = {
@@ -480,12 +480,12 @@ class Attribution {
       filter: {}
     };
     // Iterate on reactions' records.
-    var reactionsIdentifiers = Object.keys(totalReactionsSets);
+    var reactionsIdentifiers = Object.keys(totalSetsReactions);
     return reactionsIdentifiers
     .reduce(function (collection, reactionIdentifier) {
       // Access information about reaction.
       var reaction = reactions[reactionIdentifier];
-      var reactionSets = totalReactionsSets[reactionIdentifier];
+      var reactionSets = totalSetsReactions[reactionIdentifier];
       // Filter and collect reactions and their values of attributes.
       // The filtration method for access retains processes or compartments by
       // whether any values of the other reciprocal attribute pass filters.
@@ -493,7 +493,7 @@ class Attribution {
       // The method retains reactions with any metabolites and any processes or
       // compartments that pass filters.
       // access only is 37 seconds for either matrix or cytosol...
-      var accessReactionsSets = Attribution.filterCollectReactionsSets({
+      var accessSetsReactions = Attribution.filterCollectReactionsSets({
         method: "access",
         setsFilters: setsFilters,
         reactionSets: reactionSets,
@@ -508,7 +508,7 @@ class Attribution {
       // and any compartments that pass filters.
       // filter only is 1 second for matrix, 12 seconds for cytosol...
       // Filter method is much more efficient than access method... ???
-      var filterReactionsSets = Attribution.filterCollectReactionsSets({
+      var filterSetsReactions = Attribution.filterCollectReactionsSets({
         method: "filter",
         setsFilters: setsFilters,
         reactionSets: reactionSets,
@@ -518,8 +518,8 @@ class Attribution {
       // Compile information.
       // Include information in collection.
       return {
-        access: accessReactionsSets,
-        filter: filterReactionsSets
+        access: accessSetsReactions,
+        filter: filterSetsReactions
       };
     }, initialCollection);
   }
@@ -774,16 +774,16 @@ class Attribution {
   * participates and the sets to which the entity belongs by its values of
   * attributes.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Object>} parameters.totalMetabolitesSets Information about all
+  * @param {Object<Object>} parameters.totalSetsMetabolites Information about all
   * metabolites' reactions and sets.
-  * @param {Object<Object>} parameters.accessReactionsSets Information about
+  * @param {Object<Object>} parameters.accessSetsReactions Information about
   * reactions' metabolites and sets that pass filtration by access method.
-  * @param {Object<Object>} parameters.filterReactionsSets Information about
+  * @param {Object<Object>} parameters.filterSetsReactions Information about
   * reactions' metabolites and sets that pass filtration by filter method.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {Object<Object>} Information about metabolites' reactions and sets.
   */
-  static filterMetabolitesReactionsAttributesValues({totalMetabolitesSets, accessReactionsSets, filterReactionsSets, reactions} = {}) {
+  static filterMetabolitesReactionsAttributesValues({totalSetsMetabolites, accessSetsReactions, filterSetsReactions, reactions} = {}) {
     // Filter metabolites, their reactions, and their values of attributes.
     // Initialize collection.
     var initialCollection = {
@@ -791,29 +791,29 @@ class Attribution {
       filter: {}
     };
     // Iterate on metabolites' records.
-    var metabolitesIdentifiers = Object.keys(totalMetabolitesSets);
+    var metabolitesIdentifiers = Object.keys(totalSetsMetabolites);
     return metabolitesIdentifiers
     .reduce(function (collection, metaboliteIdentifier) {
       // Access information about metabolite.
-      var metaboliteSets = totalMetabolitesSets[metaboliteIdentifier];
+      var metaboliteSets = totalSetsMetabolites[metaboliteIdentifier];
       // Filter and collect metabolites and their values of attributes.
-      var accessMetabolitesSets = Attribution.filterCollectMetabolitesSets({
+      var accessSetsMetabolites = Attribution.filterCollectMetabolitesSets({
         metaboliteSets: metaboliteSets,
-        reactionsSets: accessReactionsSets,
+        reactionsSets: accessSetsReactions,
         reactions: reactions,
         collection: collection.access
       });
-      var filterMetabolitesSets = Attribution.filterCollectMetabolitesSets({
+      var filterSetsMetabolites = Attribution.filterCollectMetabolitesSets({
         metaboliteSets: metaboliteSets,
-        reactionsSets: filterReactionsSets,
+        reactionsSets: filterSetsReactions,
         reactions: reactions,
         collection: collection.filter
       });
       // Compile information.
       // Include information in collection.
       return {
-        access: accessMetabolitesSets,
-        filter: filterMetabolitesSets
+        access: accessSetsMetabolites,
+        filter: filterSetsMetabolites
       };
     }, initialCollection);
   }

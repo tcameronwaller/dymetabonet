@@ -44,13 +44,13 @@ class Cardinality {
   * reactions for sets' cardinalities.
   * @param {boolean} parameters.setsFilter Whether to filter sets' entities for
   * summary.
-  * @param {Object<Object>} parameters.accessReactionsSets Information about
+  * @param {Object<Object>} parameters.accessSetsReactions Information about
   * reactions' metabolites and sets that pass filtration by access method.
-  * @param {Object<Object>} parameters.accessMetabolitesSets Information about
+  * @param {Object<Object>} parameters.accessSetsMetabolites Information about
   * metabolites' reactions and sets that pass filtration by access method.
-  * @param {Object<Object>} parameters.filterReactionsSets Information about
+  * @param {Object<Object>} parameters.filterSetsReactions Information about
   * reactions' metabolites and sets that pass filtration by filter method.
-  * @param {Object<Object>} parameters.filterMetabolitesSets Information about
+  * @param {Object<Object>} parameters.filterSetsMetabolites Information about
   * metabolites' reactions and sets that pass filtration by filter method.
   * @param {Object<string>} parameters.setsSearches Searches to filter sets'
   * summaries.
@@ -61,15 +61,15 @@ class Cardinality {
   * @returns {Object} Cardinalities of entities in sets and summaries of these
   * sets' cardinalities.
   */
-  static determineSetsCardinalitiesSummaries({setsEntities, setsFilter, accessReactionsSets, accessMetabolitesSets, filterReactionsSets, filterMetabolitesSets, setsSearches, setsSorts, compartments, processes} = {}) {
+  static determineSetsCardinalitiesSummaries({setsEntities, setsFilter, accessSetsReactions, accessSetsMetabolites, filterSetsReactions, filterSetsMetabolites, setsSearches, setsSorts, compartments, processes} = {}) {
     // Determine sets' cardinalities.
     var setsCardinalities = Cardinality.determineSetsCardinalities({
       setsEntities: setsEntities,
       setsFilter: setsFilter,
-      accessReactionsSets: accessReactionsSets,
-      accessMetabolitesSets: accessMetabolitesSets,
-      filterReactionsSets: filterReactionsSets,
-      filterMetabolitesSets: filterMetabolitesSets
+      accessSetsReactions: accessSetsReactions,
+      accessSetsMetabolites: accessSetsMetabolites,
+      filterSetsReactions: filterSetsReactions,
+      filterSetsMetabolites: filterSetsMetabolites
     });
     // Prepare summaries of sets' cardinalities.
     var setsSummaries = Cardinality.prepareSetsSummaries({
@@ -98,18 +98,18 @@ class Cardinality {
   * reactions for sets' cardinalities.
   * @param {boolean} parameters.setsFilter Whether to filter sets' entities for
   * summary.
-  * @param {Object<Object>} parameters.accessReactionsSets Information about
+  * @param {Object<Object>} parameters.accessSetsReactions Information about
   * reactions' metabolites and sets that pass filtration by access method.
-  * @param {Object<Object>} parameters.accessMetabolitesSets Information about
+  * @param {Object<Object>} parameters.accessSetsMetabolites Information about
   * metabolites' reactions and sets that pass filtration by access method.
-  * @param {Object<Object>} parameters.filterReactionsSets Information about
+  * @param {Object<Object>} parameters.filterSetsReactions Information about
   * reactions' metabolites and sets that pass filtration by filter method.
-  * @param {Object<Object>} parameters.filterMetabolitesSets Information about
+  * @param {Object<Object>} parameters.filterSetsMetabolites Information about
   * metabolites' reactions and sets that pass filtration by filter method.
   * @returns {Object<Object<number>>} Cardinalities of entities in sets by
   * attributes and values.
   */
-  static determineSetsCardinalities({setsEntities, setsFilter, accessReactionsSets, accessMetabolitesSets, filterReactionsSets, filterMetabolitesSets} = {}) {
+  static determineSetsCardinalities({setsEntities, setsFilter, accessSetsReactions, accessSetsMetabolites, filterSetsReactions, filterSetsMetabolites} = {}) {
     // Determine for which type of entities to count sets' cardinalities.
     if (setsEntities === "metabolites") {
       // Entities of interest are metabolites.
@@ -117,11 +117,11 @@ class Cardinality {
       if (setsFilter) {
         // Filter selection is true.
         // Consider only entities and their attributes that pass filters.
-        var entitiesSets = filterMetabolitesSets;
+        var entitiesSets = filterSetsMetabolites;
       } else {
         // Filter selection is false.
         // Consider all accessible entities.
-        var entitiesSets = accessMetabolitesSets;
+        var entitiesSets = accessSetsMetabolites;
       }
     } else if (setsEntities === "reactions") {
       // Entities of interest are reactions.
@@ -129,11 +129,11 @@ class Cardinality {
       if (setsFilter) {
         // Filter selection is true.
         // Consider only entities and their attributes that pass filters.
-        var entitiesSets = filterReactionsSets;
+        var entitiesSets = filterSetsReactions;
       } else {
         // Filter selection is false.
         // Consider all accessible entities.
-        var entitiesSets = accessReactionsSets;
+        var entitiesSets = accessSetsReactions;
       }
     }
     // There are 3 dimensions of information within records for entities' values

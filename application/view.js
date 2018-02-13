@@ -50,11 +50,6 @@ class View {
     // target.insertAdjacentElement("beforeend", element).
     return target.insertAdjacentElement(position, element);
   }
-
-  // TODO: The problem is NOT in createReferenceContainer.
-  // TODO: The problem is in the ControlView...
-  // TODO: Use the console.log entries here to evaluate if ControlView behaves properly
-
   /**
   * Creates or sets reference to a view's container.
   * @param {Object} parameters Destructured object of parameters.
@@ -69,10 +64,7 @@ class View {
   */
   static createReferenceContainer({identifier, target, position, documentReference} = {}) {
     // Determine whether container's element exists in the document.
-    console.log("what does it find for: " + identifier);
-    console.log(Boolean(documentReference.getElementById(identifier)));
     if (!documentReference.getElementById(identifier)) {
-      console.log("creating new: " + identifier);
       // Element does not exist in the document.
       // Create element.
       var container = documentReference.createElement("div");
@@ -888,6 +880,17 @@ class View {
     container.classList = "";
     container.classList.add(className);
   }
+  /**
+  * Removes an element from the document if it exists.
+  * @param {string} identifier Identifier for element.
+  * @param {Object} documentReference Reference to document object model.
+  */
+  static removeExistElement(identifier, documentReference) {
+    var element = documentReference.getElementById(identifier);
+    if (element) {
+      element.parentElement.removeChild(element);
+    }
+  }
 }
 
 /**
@@ -916,8 +919,8 @@ class TipView {
     self.clearView(self);
   }
   /**
-  * Initializes aspects of the view's composition and behavior that do not vary
-  * with changes to the application's state.
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
@@ -930,8 +933,8 @@ class TipView {
     });
   }
   /**
-  * Restores aspects of the view's composition and behavior that vary with
-  * changes to the application's state.
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
   * @param {Object} parameters Destructured object of parameters.
   * @param {boolean} parameters.visibility Whether tip view is visible.
   * @param {number} parameters.horizontalPosition Horizontal position in pixels
@@ -1022,8 +1025,8 @@ class PromptView {
     self.restoreView(self);
   }
   /**
-  * Initializes aspects of the view's composition and behavior that do not vary
-  * with changes to the application's state.
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
@@ -1036,8 +1039,8 @@ class PromptView {
     });
   }
   /**
-  * Restores aspects of the view's composition and behavior that vary with
-  * changes to the application's state.
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
@@ -1257,12 +1260,10 @@ class ControlView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Array<string>>} parameters.contents Identifiers of contents
-  * within view.
-  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
   * @param {Object} parameters.state Application's state.
   */
-  constructor ({contents, tip, state} = {}) {
+  constructor ({contents, tipView, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -1272,9 +1273,7 @@ class ControlView {
     self.document = document;
     // Set references to other views
     self.view = self.document.getElementById("view");
-    self.tip = tip;
-    // Set reference to contents.
-    self.contents = contents;
+    self.tipView = tipView;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -1282,8 +1281,8 @@ class ControlView {
     self.restoreView(self);
   }
   /**
-  * Initializes aspects of the view's composition and behavior that do not vary
-  * with changes to the application's state.
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
@@ -1294,43 +1293,31 @@ class ControlView {
       position: "beforeend",
       documentReference: self.document
     });
-  }
-  /**
-  * Restores aspects of the view's composition and behavior that vary with
-  * changes to the application's state.
-  * @param {Object} self Instance of a class.
-  */
-  restoreView(self) {
-    // Remove any extraneous content from view.
-    self.filterContents(self);
-    // Create and activate tabs.
-    self.createActivateTabs(self);
-  }
-  /**
-  * Filters view's contents to remove all but relevant content.
-  * @param {Object} self Instance of a class.
-  */
-  filterContents(self) {
-    // Tabs.
-    var tabsIdentifiers = ControlView.createTabsIdentifiers(self.contents.tabs);
-    General.filterRemoveDocumentElements({
-      values: tabsIdentifiers,
-      attribute: "id",
-      elements: self.container.children
-    });
-    // Panels.
-    General.filterRemoveDocumentElements({
-      values: self.contents.panels,
-      attribute: "id",
-      elements: self.container.children
-    });
+    // Determine whether to create and activate behavior of content.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create and activate behavior of content.
+      // Create and activate tabs.
+      self.createActivateTabs(self);
+    } else {
+      // Container is not empty.
+      // Set references to content.
+      // Tabs.
+      self.stateTab = self.document.getElementById("state-tab");
+      self.filterTab = self.document.getElementById("filter-tab");
+      self.simplificationTab = self
+      .document.getElementById("simplification-tab");
+      self.traversalTab = self.document.getElementById("traversal-tab");
+      self.detailTab = self.document.getElementById("detail-tab");
+    }
   }
   /**
   * Creates and activates tabs.
   * @param {Object} self Instance of a class.
   */
   createActivateTabs(self) {
-    self.contents.tabs.forEach(function (category) {
+    var tabs = Model.determineControlTabs(self.state);
+    tabs.forEach(function (category) {
       self.createActivateTab({
         category: category,
         self: self
@@ -1344,60 +1331,97 @@ class ControlView {
   * @param {Object} parameters.self Instance of a class.
   */
   createActivateTab({category, self} = {}) {
-    // Create or set reference to container.
+    // Create container.
     var identifier = ControlView.createTabIdentifier(category);
-    var reference = (category + "Tab");
-    self[reference] = View.createReferenceContainer({
-      identifier: identifier,
-      target: self.container,
-      position: "beforeend",
+    var reference = ControlView.createTabReference(category);
+    self[reference] = self.document.createElement("div");
+    self.container.appendChild(self[reference]);
+    var label = View.createAppendSpanText({
+      text: category,
+      parent: self[reference],
       documentReference: self.document
     });
-    // Determine whether the container is empty.
-    if (self[reference].children.length === 0) {
-      // Container is empty.
-      // Create element.
-      var label = View.createAppendSpanText({
-        text: category,
-        parent: self[reference],
-        documentReference: self.document
+    // Assign attributes.
+    self[reference].setAttribute("id", identifier);
+    self[reference].setAttribute("name", category);
+    self[reference].classList.add("tab");
+    self[reference].classList.add("normal");
+    // Activate behavior.
+    self[reference].addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.changeControlViews({
+        category: event.currentTarget.getAttribute("name"),
+        state: self.state
       });
-      // Assign attributes.
-      self[reference].setAttribute("name", category);
-      self[reference].classList.add("tab");
-      self[reference].classList.add("normal");
-      // Activate behavior.
-      self[reference].addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        Action.changeControlViews({
-          category: event.currentTarget.getAttribute("name"),
-          state: self.state
-        });
-      });
-      self[reference].addEventListener("mouseenter", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        event.currentTarget.classList.remove("normal");
-        event.currentTarget.classList.add("emphasis");
-      });
-      self[reference].addEventListener("mouseleave", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        event.currentTarget.classList.remove("emphasis");
-        event.currentTarget.classList.add("normal");
-      });
-    }
+    });
+    self[reference].addEventListener("mouseenter", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      event.currentTarget.classList.remove("normal");
+      event.currentTarget.classList.add("emphasis");
+    });
+    self[reference].addEventListener("mouseleave", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      event.currentTarget.classList.remove("emphasis");
+      event.currentTarget.classList.add("normal");
+    });
   }
   /**
-  * Creates identifiers for tabs.
-  * @param {Array<string>} categories Categories for tabs.
-  * @returns {Array<string>} Identifiers for tabs.
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
+  * @param {Object} self Instance of a class.
   */
-  static createTabsIdentifiers(categories) {
-    return categories.map(function (category) {
-      return ControlView.createTabIdentifier(category);
-    });
+  restoreView(self) {
+    // Determine which subordinate views to create, activate, and restore.
+    // Multiple subordinate views within control view can be active
+    // simultaneously.
+    if (Model.determineControlState(self.state)) {
+      new StateView({
+        tipView: self.tipView,
+        controlView: self,
+        state: self.state
+      });
+    } else {
+      View.removeExistElement("state", self.document);
+    }
+    if (Model.determineControlFilter(self.state)) {
+      new FilterView({
+        tipView: self.tipView,
+        controlView: self,
+        state: self.state
+      });
+    } else {
+      View.removeExistElement("filter", self.document);
+    }
+    if (Model.determineControlSimplification(self.state)) {
+      new SimplificationView({
+        tipView: self.tipView,
+        controlView: self,
+        state: self.state
+      });
+    } else {
+      View.removeExistElement("simplification", self.document);
+    }
+    if (Model.determineControlTraversal(self.state)) {
+      new TraversalView({
+        tipView: self.tipView,
+        controlView: self,
+        state: self.state
+      });
+    } else {
+      View.removeExistElement("traversal", self.document);
+    }
+    if (Model.determineControlDetail(self.state)) {
+      new DetailView({
+        tipView: self.tipView,
+        controlView: self,
+        state: self.state
+      });
+    } else {
+      View.removeExistElement("detail", self.document);
+    }
   }
   /**
   * Creates identifier for a tab.
@@ -1407,7 +1431,16 @@ class ControlView {
   static createTabIdentifier(category) {
     return (category + "-tab");
   }
+  /**
+  * Creates reference for a tab.
+  * @param {string} category Category for a tab.
+  * @returns {string} Reference for a tab.
+  */
+  static createTabReference(category) {
+    return (category + "Tab");
+  }
 }
+
 /**
 * Interface to control load and save of application's state.
 */
@@ -1415,11 +1448,11 @@ class StateView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.tip Instance of TipView's class.
-  * @param {Object} parameters.control Instance of ControlView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.controlView Instance of ControlView's class.
   * @param {Object} parameters.state Application's state.
   */
-  constructor ({tip, control, state} = {}) {
+  constructor ({tipView, controlView, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -1429,8 +1462,8 @@ class StateView {
     self.document = document;
     // Set references to other views
     self.view = self.document.getElementById("view");
-    self.tip = tip;
-    self.control = control;
+    self.tipView = tipView;
+    self.controlView = controlView;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -1438,23 +1471,22 @@ class StateView {
     self.restoreView(self);
   }
   /**
-  * Initializes aspects of the view's composition and behavior that do not vary
-  * with changes to the application's state.
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "state",
-      target: self.control.stateTab,
+      target: self.controlView.stateTab,
       position: "afterend",
       documentReference: self.document
     });
-    // Determine whether the container is empty.
+    // Determine whether to create and activate behavior of content.
     if (self.container.children.length === 0) {
       // Container is empty.
-      // Create view's invariant elements.
-      // Activate invariant behavior of view's elements.
+      // Create and activate behavior of content.
       // Create text.
       self.sourceLabel = self.document.createElement("span");
       self.container.appendChild(self.sourceLabel);
@@ -1515,13 +1547,13 @@ class StateView {
       });
     } else {
       // Container is not empty.
-      // Set references to view's variant elements.
+      // Set references to content.
       self.sourceLabel = self.container.getElementsByTagName("span").item(0);
     }
   }
   /**
-  * Restores aspects of the view's composition and behavior that vary with
-  * changes to the application's state.
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
@@ -1542,15 +1574,15 @@ class StateView {
 /**
 * Interface to summarize sets of entities and control filters by these sets.
 */
-class SetView {
+class FilterView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.tip Instance of TipView's class.
-  * @param {Object} parameters.control Instance of ControlView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.controlView Instance of ControlView's class.
   * @param {Object} parameters.state Application's state.
   */
-  constructor ({tip, control, state} = {}) {
+  constructor ({tipView, controlView, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -1560,8 +1592,8 @@ class SetView {
     self.document = document;
     // Set references to other views
     self.view = self.document.getElementById("view");
-    self.tip = tip;
-    self.control = control;
+    self.tipView = tipView;
+    self.controlView = controlView;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -1569,23 +1601,22 @@ class SetView {
     self.restoreView(self);
   }
   /**
-  * Initializes aspects of the view's composition and behavior that do not vary
-  * with changes to the application's state.
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
-      identifier: "set",
-      target: self.control.setTab,
+      identifier: "filter",
+      target: self.controlView.filterTab,
       position: "afterend",
       documentReference: self.document
     });
-    // Determine whether the container is empty.
+    // Determine whether to create and activate behavior of content.
     if (self.container.children.length === 0) {
       // Container is empty.
-      // Create view's invariant elements.
-      // Activate invariant behavior of view's elements.
+      // Create and activate behavior of content.
       // Create and activate restore.
       self.createActivateRestore(self);
       // Create and activate export.
@@ -1600,22 +1631,22 @@ class SetView {
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create menu for sets by processes.
-      new SetMenuView({
+      new FilterMenuView({
         category: "processes",
-        tip: self.tip,
-        set: self,
+        tipView: self.tipView,
+        filterView: self,
         state: self.state
       });
       // Create menu for sets by compartments.
-      new SetMenuView({
+      new FilterMenuView({
         category: "compartments",
-        tip: self.tip,
-        set: self,
+        tipView: self.tipView,
+        filterView: self,
         state: self.state
       });
     } else {
       // Container is not empty.
-      // Set references to view's variant elements.
+      // Set references to content.
       // Control for type of entities.
       self.metabolites = self.document.getElementById("set-metabolites");
       self.reactions = self.document.getElementById("set-reactions");
@@ -1638,7 +1669,7 @@ class SetView {
     restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.restoreSetViewControls(self.state);
+      Action.restoreFilterViewControls(self.state);
     });
   }
   /**
@@ -1706,30 +1737,30 @@ class SetView {
     });
   }
   /**
-  * Restores aspects of the view's composition and behavior that vary with
-  * changes to the application's state.
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
-    self.metabolites.checked = SetView
+    self.metabolites.checked = FilterView
     .determineEntityMatch("metabolites", self.state);
-    self.reactions.checked = SetView
+    self.reactions.checked = FilterView
     .determineEntityMatch("reactions", self.state);
-    self.filter.checked = SetView.determineFilter(self.state);
+    self.filter.checked = FilterView.determineFilter(self.state);
     // Create menu for sets by processes.
-    new SetMenuView({
+    new FilterMenuView({
       category: "processes",
-      tip: self.tip,
-      set: self,
+      tipView: self.tipView,
+      filterView: self,
       state: self.state
     });
     // Create menu for sets by compartments.
-    new SetMenuView({
+    new FilterMenuView({
       category: "compartments",
-      tip: self.tip,
-      set: self,
+      tipView: self.tipView,
+      filterView: self,
       state: self.state
     });
   }
@@ -1759,16 +1790,16 @@ class SetView {
 /**
 * Interface to organize menu of sets.
 */
-class SetMenuView {
+class FilterMenuView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.category Name of category.
-  * @param {Object} parameters.tip Instance of TipView's class.
-  * @param {Object} parameters.set Instance of SetView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.filterView Instance of FilterView's class.
   * @param {Object} parameters.state Application's state.
   */
-  constructor ({category, tip, set, state} = {}) {
+  constructor ({category, tipView, filterView, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -1778,8 +1809,8 @@ class SetMenuView {
     self.document = document;
     // Set references to other views
     self.view = self.document.getElementById("view");
-    self.tip = tip;
-    self.set = set;
+    self.tipView = tipView;
+    self.filterView = filterView;
     // Set reference to category.
     self.category = category;
     // Control view's composition and behavior.
@@ -1789,23 +1820,22 @@ class SetMenuView {
     self.restoreView(self);
   }
   /**
-  * Initializes aspects of the view's composition and behavior that do not vary
-  * with changes to the application's state.
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
-      identifier: ("set-" + self.category + "-menu"),
-      target: self.set.container,
+      identifier: ("filter-" + self.category + "-menu"),
+      target: self.filterView.container,
       position: "beforeend",
       documentReference: self.document
     });
-    // Determine whether the container is empty.
+    // Determine whether to create and activate behavior of content.
     if (self.container.children.length === 0) {
       // Container is empty.
-      // Create view's invariant elements.
-      // Activate invariant behavior of view's elements.
+      // Create and activate behavior of content.
       self.container.classList.add("menu");
       // Create search.
       self.search = View.createActivateSearch({
@@ -1821,7 +1851,7 @@ class SetMenuView {
       self.createActivateTable(self);
     } else {
       // Container is not empty.
-      // Set references to view's variant elements.
+      // Set references to content.
       // Search.
       self.search = self.container.querySelector("input.search");
       // Sorts.
@@ -1891,8 +1921,8 @@ class SetMenuView {
     });
   }
   /**
-  * Restores aspects of the view's composition and behavior that vary with
-  * changes to the application's state.
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
@@ -1997,13 +2027,13 @@ class SetMenuView {
       // Call action.
       rowSelection.classed("normal", false);
       rowSelection.classed("emphasis", true);
-      SetMenuView.createTip({
+      FilterMenuView.createTip({
         attribute: element.attribute,
         value: element.value,
         count: element.count,
         horizontalPosition: horizontalPosition,
         verticalPosition: verticalPosition,
-        tip: self.tip,
+        tipView: self.tipView,
         documentReference: self.document,
         state: self.state
       });
@@ -2013,13 +2043,13 @@ class SetMenuView {
       var horizontalPosition = d3.event.clientX;
       var verticalPosition = d3.event.clientY;
       // Call action.
-      SetMenuView.createTip({
+      FilterMenuView.createTip({
         attribute: element.attribute,
         value: element.value,
         count: element.count,
         horizontalPosition: horizontalPosition,
         verticalPosition: verticalPosition,
-        tip: self.tip,
+        tipView: self.tipView,
         documentReference: self.document,
         state: self.state
       });
@@ -2031,7 +2061,7 @@ class SetMenuView {
       // Call action.
       rowSelection.classed("emphasis", false);
       rowSelection.classed("normal", true);
-      self.tip.clearView(self.tip);
+      self.tipView.clearView(self.tipView);
     });
   }
   /**
@@ -2084,7 +2114,7 @@ class SetMenuView {
     self.names
     .classed("name", true)
     .text(function (element, index, nodes) {
-      return SetMenuView.accessName({
+      return FilterMenuView.accessName({
         attribute: element.attribute,
         value: element.value,
         state: self.state
@@ -2104,14 +2134,14 @@ class SetMenuView {
     // Assign attributes to elements.
     barMarks
     .classed("normal", function (element, index, nodes) {
-      return !SetMenuView.determineSetSelection({
+      return !FilterMenuView.determineSetSelection({
         value: element.value,
         attribute: element.attribute,
         state: self.state
       });
     })
     .classed("emphasis", function (element, index, nodes) {
-      return SetMenuView.determineSetSelection({
+      return FilterMenuView.determineSetSelection({
         value: element.value,
         attribute: element.attribute,
         state: self.state
@@ -2128,14 +2158,14 @@ class SetMenuView {
   * relative to the browser's view window of reference point.
   * @param {number} parameters.verticalPosition Horizontal position in pixels
   * relative to the browser's view window of reference point.
-  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
   * @param {Object} parameters.state Application's state.
   */
-  static createTip({attribute, value, count, horizontalPosition, verticalPosition, tip, documentReference, state} = {}) {
+  static createTip({attribute, value, count, horizontalPosition, verticalPosition, tipView, documentReference, state} = {}) {
     // Create summary for tip.
-    var name = SetMenuView.accessName({
+    var name = FilterMenuView.accessName({
       attribute: attribute,
       value: value,
       state: state
@@ -2146,14 +2176,14 @@ class SetMenuView {
       documentReference: documentReference
     });
     // Create tip.
-    tip.restoreView({
+    tipView.restoreView({
       visibility: true,
       horizontalPosition: horizontalPosition,
       verticalPosition: verticalPosition,
       horizontalShift: 15,
       verticalShift: 0,
       content: summary,
-      self: tip
+      self: tipView
     });
   }
   /**
@@ -2188,15 +2218,15 @@ class SetMenuView {
 /**
 * Interface to summarize candidate entities and control simplifications.
 */
-class CandidacyView {
+class SimplificationView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.tip Instance of TipView's class.
-  * @param {Object} parameters.control Instance of ControlView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.controlView Instance of ControlView's class.
   * @param {Object} parameters.state Application's state.
   */
-  constructor ({tip, control, state} = {}) {
+  constructor ({tipView, controlView, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -2206,8 +2236,8 @@ class CandidacyView {
     self.document = document;
     // Set references to other views
     self.view = self.document.getElementById("view");
-    self.tip = tip;
-    self.control = control;
+    self.tipView = tipView;
+    self.controlView = controlView;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -2215,23 +2245,22 @@ class CandidacyView {
     self.restoreView(self);
   }
   /**
-  * Initializes aspects of the view's composition and behavior that do not vary
-  * with changes to the application's state.
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
-      identifier: "candidacy",
-      target: self.control.candidacyTab,
+      identifier: "simplification",
+      target: self.controlView.simplificationTab,
       position: "afterend",
       documentReference: self.document
     });
-    // Determine whether the container is empty.
+    // Determine whether to create and activate behavior of content.
     if (self.container.children.length === 0) {
       // Container is empty.
-      // Create view's invariant elements.
-      // Activate invariant behavior of view's elements.
+      // Create and activate behavior of content.
       // Create and activate restore.
       self.createActivateRestore(self);
       // Create break.
@@ -2245,22 +2274,22 @@ class CandidacyView {
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create menu for candidate metabolites.
-      new CandidacyMenuView({
+      new SimplificationMenuView({
         category: "metabolites",
-        tip: self.tip,
-        candidacy: self,
+        tipView: self.tipView,
+        simplificationView: self,
         state: self.state
       });
       // Create menu for candidate reactions.
-      new CandidacyMenuView({
+      new SimplificationMenuView({
         category: "reactions",
-        tip: self.tip,
-        candidacy: self,
+        tipView: self.tipView,
+        simplificationView: self,
         state: self.state
       });
     } else {
       // Container is not empty.
-      // Set references to view's variant elements.
+      // Set references to content.
       self.compartmentalization = self
       .document.getElementById("candidacy-compartmentalization");
       self.simplifications = self
@@ -2326,33 +2355,33 @@ class CandidacyView {
     restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.restoreCandidacyViewControls(self.state);
+      Action.restoreSimplificationViewControls(self.state);
     });
   }
   /**
-  * Restores aspects of the view's composition and behavior that vary with
-  * changes to the application's state.
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
-    self.compartmentalization.checked = CandidacyView
+    self.compartmentalization.checked = SimplificationView
     .determineCompartmentalization(self.state);
-    self.simplifications.checked = CandidacyView
+    self.simplifications.checked = SimplificationView
     .determineSimplifications(self.state);
     // Create menu for candidate metabolites.
-    new CandidacyMenuView({
+    new SimplificationMenuView({
       category: "metabolites",
-      tip: self.tip,
-      candidacy: self,
+      tipView: self.tipView,
+      simplificationView: self,
       state: self.state
     });
     // Create menu for candidate reactions.
-    new CandidacyMenuView({
+    new SimplificationMenuView({
       category: "reactions",
-      tip: self.tip,
-      candidacy: self,
+      tipView: self.tipView,
+      simplificationView: self,
       state: self.state
     });
   }
@@ -2379,18 +2408,19 @@ class CandidacyView {
 }
 
 /**
-* Interface to organize menu of candidates.
+* Interface to organize menu of candidates for simplification.
 */
-class CandidacyMenuView {
+class SimplificationMenuView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.category Name of category.
-  * @param {Object} parameters.tip Instance of TipView's class.
-  * @param {Object} parameters.candidacy Instance of CandidacyView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.simplificationView Instance of
+  * SimplificationView's class.
   * @param {Object} parameters.state Application's state.
   */
-  constructor ({category, tip, candidacy, state} = {}) {
+  constructor ({category, tipView, simplificationView, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -2400,8 +2430,8 @@ class CandidacyMenuView {
     self.document = document;
     // Set references to other views
     self.view = self.document.getElementById("view");
-    self.tip = tip;
-    self.candidacy = candidacy;
+    self.tipView = tipView;
+    self.simplificationView = simplificationView;
     // Set reference to category.
     self.category = category;
     // Control view's composition and behavior.
@@ -2411,23 +2441,22 @@ class CandidacyMenuView {
     self.restoreView(self);
   }
   /**
-  * Initializes aspects of the view's composition and behavior that do not vary
-  * with changes to the application's state.
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
-      identifier: ("candidacy-" + self.category + "-menu"),
-      target: self.candidacy.container,
+      identifier: ("simplification-" + self.category + "-menu"),
+      target: self.simplificationView.container,
       position: "beforeend",
       documentReference: self.document
     });
-    // Determine whether the container is empty.
+    // Determine whether to create and activate behavior of content.
     if (self.container.children.length === 0) {
       // Container is empty.
-      // Create view's invariant elements.
-      // Activate invariant behavior of view's elements.
+      // Create and activate behavior of content.
       self.container.classList.add("menu");
       // Create search.
       self.search = View.createActivateSearch({
@@ -2443,7 +2472,7 @@ class CandidacyMenuView {
       self.createActivateTable(self);
     } else {
       // Container is not empty.
-      // Set references to view's variant elements.
+      // Set references to content.
       // Search.
       self.search = self.container.querySelector("input.search");
       // Sorts.
@@ -2539,8 +2568,8 @@ class CandidacyMenuView {
     });
   }
   /**
-  * Restores aspects of the view's composition and behavior that vary with
-  * changes to the application's state.
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
@@ -2637,13 +2666,13 @@ class CandidacyMenuView {
       // Call action.
       rowSelection.classed("normal", false);
       rowSelection.classed("emphasis", true);
-      CandidacyMenuView.createTip({
+      SimplificationMenuView.createTip({
         identifier: element.candidate,
         entity: element.entity,
         count: element.count,
         horizontalPosition: horizontalPosition,
         verticalPosition: verticalPosition,
-        tip: self.tip,
+        tipView: self.tipView,
         documentReference: self.document,
         state: self.state
       });
@@ -2653,13 +2682,13 @@ class CandidacyMenuView {
       var horizontalPosition = d3.event.clientX;
       var verticalPosition = d3.event.clientY;
       // Call action.
-      CandidacyMenuView.createTip({
+      SimplificationMenuView.createTip({
         identifier: element.candidate,
         entity: element.entity,
         count: element.count,
         horizontalPosition: horizontalPosition,
         verticalPosition: verticalPosition,
-        tip: self.tip,
+        tipView: self.tipView,
         documentReference: self.document,
         state: self.state
       });
@@ -2671,7 +2700,7 @@ class CandidacyMenuView {
       // Call action.
       rowSelection.classed("emphasis", false);
       rowSelection.classed("normal", true);
-      self.tip.clearView(self.tip);
+      self.tipView.clearView(self.tipView);
     });
   }
   /**
@@ -2739,7 +2768,7 @@ class CandidacyMenuView {
     self.names
     .classed("name", true)
     .text(function (element, index, nodes) {
-      return CandidacyMenuView.accessName({
+      return SimplificationMenuView.accessName({
         identifier: element.identifier,
         entity: element.entity,
         state: self.state
@@ -2787,7 +2816,7 @@ class CandidacyMenuView {
     checks
     .attr("type", "checkbox")
     .property("checked", function (element, index, nodes) {
-      return CandidacyMenuView.determineSimplification({
+      return SimplificationMenuView.determineSimplification({
         identifier: element.identifier,
         category: element.entity,
         method: element.type,
@@ -2815,14 +2844,14 @@ class CandidacyMenuView {
   * relative to the browser's view window of reference point.
   * @param {number} parameters.verticalPosition Horizontal position in pixels
   * relative to the browser's view window of reference point.
-  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
   * @param {Object} parameters.state Application's state.
   */
-  static createTip({identifier, entity, count, horizontalPosition, verticalPosition, tip, documentReference, state} = {}) {
+  static createTip({identifier, entity, count, horizontalPosition, verticalPosition, tipView, documentReference, state} = {}) {
     // Create summary for tip.
-    var name = CandidacyMenuView.accessName({
+    var name = SimplificationMenuView.accessName({
       identifier: identifier,
       entity: entity,
       state: state
@@ -2833,14 +2862,14 @@ class CandidacyMenuView {
       documentReference: documentReference
     });
     // Create tip.
-    tip.restoreView({
+    tipView.restoreView({
       visibility: true,
       horizontalPosition: horizontalPosition,
       verticalPosition: verticalPosition,
       horizontalShift: 15,
       verticalShift: 0,
       content: summary,
-      self: tip
+      self: tipView
     });
   }
   /**
@@ -2854,9 +2883,9 @@ class CandidacyMenuView {
   static accessName({identifier, entity, state} = {}) {
     // Determine reference.
     if (entity === "metabolites") {
-      var reference = state.metabolitesCandidates;
+      var reference = state.candidatesMetabolites;
     } else if (entity === "reactions") {
-      var reference = state.reactionsCandidates;
+      var reference = state.candidatesReactions;
     }
     return reference[identifier].name;
   }
@@ -2914,11 +2943,11 @@ class TraversalView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.tip Instance of TipView's class.
-  * @param {Object} parameters.control Instance of ControlView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.controlView Instance of ControlView's class.
   * @param {Object} parameters.state Application's state.
   */
-  constructor ({tip, control, state} = {}) {
+  constructor ({tipView, controlView, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -2928,8 +2957,8 @@ class TraversalView {
     self.document = document;
     // Set references to other views
     self.view = self.document.getElementById("view");
-    self.tip = tip;
-    self.control = control;
+    self.tipView = tipView;
+    self.controlView = controlView;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -2937,23 +2966,22 @@ class TraversalView {
     self.restoreView(self);
   }
   /**
-  * Initializes aspects of the view's composition and behavior that do not vary
-  * with changes to the application's state.
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "traversal",
-      target: self.control.traversalTab,
+      target: self.controlView.traversalTab,
       position: "afterend",
       documentReference: self.document
     });
-    // Determine whether the container is empty.
+    // Determine whether to create and activate behavior of content.
     if (self.container.children.length === 0) {
       // Container is empty.
-      // Create view's invariant elements.
-      // Activate invariant behavior of view's elements.
+      // Create and activate behavior of content.
 
       // TODO: Add informative tips on hover over each button...
       // Create and activate restore.
@@ -2981,7 +3009,7 @@ class TraversalView {
       self.controlContainer.setAttribute("id", "traversal-control-container");
     } else {
       // Container is not empty.
-      // Set references to view's variant elements.
+      // Set references to content.
       // Control for combination.
       self.union = self.document.getElementById("combination-union");
       self.difference = self.document.getElementById("combination-difference");
@@ -3103,8 +3131,8 @@ class TraversalView {
     });
   }
   /**
-  * Restores aspects of the view's composition and behavior that vary with
-  * changes to the application's state.
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
@@ -3662,12 +3690,12 @@ class TraversalView {
       if (record.type === "metabolite") {
         // Access information.
         var node = state.networkNodesMetabolites[record.identifier];
-        var candidate = state.metabolitesCandidates[node.candidate];
+        var candidate = state.candidatesMetabolites[node.candidate];
         var name = candidate.name;
       } else if (record.type === "reaction") {
         // Access information.
         var node = state.networkNodesReactions[record.identifier];
-        var candidate = state.reactionsCandidates[node.candidate];
+        var candidate = state.candidatesReactions[node.candidate];
         var name = candidate.name;
       }
       // Create record.
@@ -3693,13 +3721,13 @@ class TraversalView {
         // Access information.
         var node = state
         .networkNodesMetabolites[state[variableName].identifier];
-        var candidate = state.metabolitesCandidates[node.candidate];
+        var candidate = state.candidatesMetabolites[node.candidate];
         var name = candidate.name;
       } else if (state[variableName].type === "reaction") {
         // Access information.
         var node = state
         .networkNodesReactions[state[variableName].identifier];
-        var candidate = state.reactionsCandidates[node.candidate];
+        var candidate = state.candidatesReactions[node.candidate];
         var name = candidate.name;
       }
       search.value = name;
@@ -3712,6 +3740,8 @@ class TraversalView {
 ////////////////////////////////////////////////////////////////////////////////
 // Exploration view and views within exploration view.
 
+// TODO: Re-organize ExplorationView as I did for ControlView...
+
 /**
 * Interface to contain other interfaces for exploration.
 */
@@ -3721,10 +3751,10 @@ class ExplorationView {
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object<Array<string>>} parameters.contents Identifiers of contents
   * within view.
-  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
   * @param {Object} parameters.state Application's state.
   */
-  constructor ({contents, tip, state} = {}) {
+  constructor ({contents, tipView, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -3734,7 +3764,7 @@ class ExplorationView {
     self.document = document;
     // Set references to other views
     self.view = self.document.getElementById("view");
-    self.tip = tip;
+    self.tipView = tipView;
     // Set reference to contents.
     self.contents = contents;
     // Control view's composition and behavior.
@@ -3744,8 +3774,8 @@ class ExplorationView {
     self.restoreView(self);
   }
   /**
-  * Initializes aspects of the view's composition and behavior that do not vary
-  * with changes to the application's state.
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
@@ -3758,8 +3788,8 @@ class ExplorationView {
     });
   }
   /**
-  * Restores aspects of the view's composition and behavior that vary with
-  * changes to the application's state.
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
@@ -3789,11 +3819,11 @@ class SummaryView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
   * @param {Object} parameters.exploration Instance of ExplorationView's class.
   * @param {Object} parameters.state Application's state.
   */
-  constructor ({tip, exploration, state} = {}) {
+  constructor ({tipView, exploration, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -3803,7 +3833,7 @@ class SummaryView {
     self.document = document;
     // Set references to other views
     self.view = self.document.getElementById("view");
-    self.tip = tip;
+    self.tipView = tipView;
     self.exploration = exploration;
     // Control view's composition and behavior.
     // Initialize view.
@@ -3812,8 +3842,8 @@ class SummaryView {
     self.restoreView(self);
   }
   /**
-  * Initializes aspects of the view's composition and behavior that do not vary
-  * with changes to the application's state.
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
@@ -3824,11 +3854,10 @@ class SummaryView {
       position: "beforeend",
       documentReference: self.document
     });
-    // Determine whether the container is empty.
+    // Determine whether to create and activate behavior of content.
     if (self.container.children.length === 0) {
       // Container is empty.
-      // Create view's invariant elements.
-      // Activate invariant behavior of view's elements.
+      // Create and activate behavior of content.
       // Create instructions.
       var instruction = self.document.createElement("div");
       self.container.appendChild(instruction);
@@ -3855,7 +3884,7 @@ class SummaryView {
       });
     } else {
       // Container is not empty.
-      // Set references to view's variant elements.
+      // Set references to content.
       self.summaryNetwork = self.container.querySelector("div span.network");
       self.summarySubnetwork = self
       .container.querySelector("div span.subnetwork");
@@ -3878,8 +3907,8 @@ class SummaryView {
     self.summarySubnetwork.classList.add("subnetwork");
   }
   /**
-  * Restores aspects of the view's composition and behavior that vary with
-  * changes to the application's state.
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
@@ -3909,12 +3938,12 @@ class TopologyView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
   * @param {Object} parameters.prompt Instance of PromptView's class.
   * @param {Object} parameters.exploration Instance of ExplorationView's class.
   * @param {Object} parameters.state Application's state.
   */
-  constructor ({tip, prompt, exploration, state} = {}) {
+  constructor ({tipView, prompt, exploration, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -3924,7 +3953,7 @@ class TopologyView {
     self.document = document;
     // Set references to other views.
     self.view = self.document.getElementById("view");
-    self.tip = tip;
+    self.tipView = tipView;
     self.prompt = prompt;
     self.exploration = exploration;
     // Control view's composition and behavior.
@@ -3934,8 +3963,8 @@ class TopologyView {
     self.restoreView(self);
   }
   /**
-  * Initializes aspects of the view's composition and behavior that do not vary
-  * with changes to the application's state.
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
   * @param {Object} self Instance of a class.
   */
   initializeView(self) {
@@ -3946,11 +3975,10 @@ class TopologyView {
       position: "beforeend",
       documentReference: self.document
     });
-    // Determine whether the container is empty.
+    // Determine whether to create and activate behavior of content.
     if (self.container.children.length === 0) {
       // Container is empty.
-      // Create view's invariant elements.
-      // Activate invariant behavior of view's elements.
+      // Create and activate behavior of content.
       // Create graphical container.
       self.createGraph(self);
       // Define links' directional marker.
@@ -3963,7 +3991,7 @@ class TopologyView {
       self.createNodesGroup(self);
     } else {
       // Container is not empty.
-      // Set references to view's variant elements.
+      // Set references to content.
       self.graph = self.container.getElementsByTagName("svg").item(0);
       self.graphWidth = General.determineElementDimension(self.graph, "width");
       self.graphHeight = General
@@ -4082,8 +4110,8 @@ class TopologyView {
   // TODO: I guess just restore the network's diagram with each update to state and view
 
   /**
-  * Restores aspects of the view's composition and behavior that vary with
-  * changes to the application's state.
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
@@ -4422,7 +4450,7 @@ class TopologyView {
           verticalShift: verticalShift,
           positionX: positionX,
           positionY: positionY,
-          tip: self.tip,
+          tipView: self.tipView,
           documentReference: self.document,
           state: self.state
         });
@@ -4441,7 +4469,7 @@ class TopologyView {
           type: element.type,
           positionX: positionX,
           positionY: positionY,
-          tip: self.tip,
+          tipView: self.tipView,
           documentReference: self.document,
           state: self.state
         });
@@ -4461,7 +4489,7 @@ class TopologyView {
         type: element.type,
         positionX: positionX,
         positionY: positionY,
-        tip: self.tip,
+        tipView: self.tipView,
         documentReference: self.document,
         state: self.state
       });
@@ -4471,7 +4499,7 @@ class TopologyView {
       var node = nodes[index];
       var nodeSelection = d3.select(node);
       // Call action.
-      self.tip.clearView(self.tip);
+      self.tipView.clearView(self.tipView);
     });
   }
   /**
@@ -4548,7 +4576,7 @@ class TopologyView {
     .classed("supplement", function (element, index, nodes) {
       // Access information.
       var node = self.state.networkNodesReactions[element.identifier];
-      var candidate = self.state.reactionsCandidates[node.candidate];
+      var candidate = self.state.candidatesReactions[node.candidate];
       return candidate.supplement;
     });
     nodesMarksReactions.attr("width", self.reactionNodeWidth);
@@ -4925,7 +4953,7 @@ class TopologyView {
     reactionsNodes.forEach(function (reactionNode) {
       // Access information.
       var node = self.state.networkNodesReactions[reactionNode.identifier];
-      var candidate = self.state.reactionsCandidates[node.candidate];
+      var candidate = self.state.candidatesReactions[node.candidate];
       var reaction = self.state.reactions[candidate.reaction];
       // Collect identifiers of metabolites' nodes that surround the reaction's
       // node.
@@ -4943,7 +4971,7 @@ class TopologyView {
         identifiers: neighbors,
         participants: reaction.participants,
         networkNodesmetabolites: self.state.networkNodesMetabolites,
-        metabolitesCandidates: self.state.metabolitesCandidates
+        candidatesMetabolites: self.state.candidatesMetabolites
       });
       // Collect records for nodes of metabolites that participate in the
       // reaction in each role.
@@ -4985,7 +5013,7 @@ class TopologyView {
         side: "left",
         reactionNode: element,
         networkNodesReactions: self.state.networkNodesReactions,
-        reactionsCandidates: self.state.reactionsCandidates,
+        candidatesReactions: self.state.candidatesReactions,
         reactions: self.state.reactions
       });
       return self.document.createElementNS("http://www.w3.org/2000/svg", type);
@@ -4997,7 +5025,7 @@ class TopologyView {
         side: "right",
         reactionNode: element,
         networkNodesReactions: self.state.networkNodesReactions,
-        reactionsCandidates: self.state.reactionsCandidates,
+        candidatesReactions: self.state.candidatesReactions,
         reactions: self.state.reactions
       });
       return self.document.createElementNS("http://www.w3.org/2000/svg", type);
@@ -5094,12 +5122,12 @@ class TopologyView {
       if (element.type === "metabolite") {
         // Access information.
         var node = self.state.networkNodesMetabolites[element.identifier];
-        var candidate = self.state.metabolitesCandidates[node.candidate];
+        var candidate = self.state.candidatesMetabolites[node.candidate];
         var name = candidate.name;
       } else if (element.type === "reaction") {
         // Access information.
         var node = self.state.networkNodesReactions[element.identifier];
-        var candidate = self.state.reactionsCandidates[node.candidate];
+        var candidate = self.state.candidatesReactions[node.candidate];
         var name = candidate.name;
       }
       return (name.slice(0, 5) + "...");
@@ -5157,12 +5185,12 @@ class TopologyView {
   * @param {string} parameters.type Type of entity, metabolite or reaction.
   * @param {number} parameters.positionX Pointer's horizontal coordinate.
   * @param {number} parameters.positionY Pointer's vertical coordinate.
-  * @param {Object} parameters.tip Instance of TipView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
   * @param {Object} parameters.state Application's state.
   */
-  static createTip({identifier, type, positionX, positionY, tip, documentReference, state} = {}) {
+  static createTip({identifier, type, positionX, positionY, tipView, documentReference, state} = {}) {
     // Create summary for tip.
     // Determine the type of entity.
     if (type === "metabolite") {
@@ -5179,12 +5207,12 @@ class TopologyView {
       });
     }
     // Create tip.
-    tip.restoreView({
+    tipView.restoreView({
       visibility: true,
       positionX: positionX,
       positionY: positionY,
       content: summary,
-      self: tip
+      self: tipView
     });
   }
   /**
@@ -5198,7 +5226,7 @@ class TopologyView {
   static createTipSummaryMetabolite({identifier, documentReference, state} = {}) {
     // Access information.
     var node = state.networkNodesMetabolites[identifier];
-    var candidate = state.metabolitesCandidates[node.candidate];
+    var candidate = state.candidatesMetabolites[node.candidate];
     var metabolite = state.metabolites[candidate.metabolite];
     var name = metabolite.name;
     var formula = metabolite.formula;
@@ -5253,7 +5281,7 @@ class TopologyView {
   static createTipSummaryReaction({identifier, documentReference, state} = {}) {
     // Access information.
     var node = state.networkNodesReactions[identifier];
-    var candidate = state.reactionsCandidates[node.candidate];
+    var candidate = state.candidatesReactions[node.candidate];
     var reaction = state.reactions[candidate.reaction];
     var replicates = [].concat(reaction.identifier, candidate.replicates);
     // Collect consensus properties of replicates.
@@ -5261,7 +5289,7 @@ class TopologyView {
       identifiers: replicates,
       reactions: state.reactions,
       metabolites: state.metabolites,
-      reactionsSets: state.filterReactionsSets,
+      reactionsSets: state.filterSetsReactions,
       compartments: state.compartments,
       processes: state.processes
     });
@@ -5318,12 +5346,12 @@ class TopologyView {
   * metabolites' and compartments' participation in a reaction.
   * @param {Object} parameters.networkNodesMetabolites Information about
   * network's nodes for metabolites.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
   * @returns {Object<Array<string>>} Identifiers of nodes for metabolites that
   * participate in a reaction either as reactants or products.
   */
-  static sortMetabolitesNodesReactionRoles({identifiers, participants, networkNodesMetabolites, metabolitesCandidates} = {}) {
+  static sortMetabolitesNodesReactionRoles({identifiers, participants, networkNodesMetabolites, candidatesMetabolites} = {}) {
     // Initialize a collection of metabolites' nodes by roles in a reaction.
     var initialCollection = {
       reactants: [],
@@ -5333,7 +5361,7 @@ class TopologyView {
     return identifiers.reduce(function (collection, identifier) {
       // Access information.
       var node = networkNodesMetabolites[identifier];
-      var candidate = metabolitesCandidates[node.candidate];
+      var candidate = candidatesMetabolites[node.candidate];
       // Determine details of node's relation to the reaction.
       if (candidate.compartment) {
         // Node represents compartmentalization.
@@ -5447,16 +5475,16 @@ class TopologyView {
   * @param {Object} parameters.reactionNode Record of a reaction's node.
   * @param {Object} parameters.networkNodesReactions Information about network's
   * nodes for reactions.
-  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @returns {string} Type of graphical element to represet direction of a
   * reaction's node.
   */
-  static determineDirectionalMarkType({side, reactionNode, networkNodesReactions, reactionsCandidates, reactions} = {}) {
+  static determineDirectionalMarkType({side, reactionNode, networkNodesReactions, candidatesReactions, reactions} = {}) {
     // Access information.
     var node = networkNodesReactions[reactionNode.identifier];
-    var candidate = reactionsCandidates[node.candidate];
+    var candidate = candidatesReactions[node.candidate];
     var reaction = reactions[candidate.reaction];
     var direction = TopologyView.determineReactionDirection({
       left: reactionNode.left,
