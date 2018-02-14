@@ -44,6 +44,12 @@ class Model {
     var self = this;
     // Set reference to application's state.
     self.state = state;
+    // Set reference to browser's window.
+    self.window = window;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Set reference to body.
+    self.body = self.document.getElementsByTagName("body").item(0);
     // Evaluate application's state, respond, and represent accordingly.
     self.act(self);
     self.represent(self);
@@ -93,50 +99,88 @@ class Model {
       Model.determineMetabolismBaseInformation(self.state) &&
       Model.determineMetabolismDerivationInformation(self.state)
     ) {
-
-      // TODO: Maybe also introduce a prompt view for pop-up controls on nodes and such.
-
+      // Interface view.
+      var interfaceView = new InterfaceView({
+        body: self.body,
+        state: self.state,
+        documentReference: self.document
+      });
+      // Panel view.
+      var panelView = new PanelView({
+        interfaceView: interfaceView,
+        state: self.state,
+        documentReference: self.document
+      });
       // Tip view.
       // Tip view always exists but is only visible when active.
-      var tipView = new TipView();
+      var tipView = new TipView({
+        interfaceView: interfaceView,
+        state: self.state,
+        documentReference: self.document,
+        windowReference: self.window
+      });
       // Prompt view.
       // Prompt view always exists but is only visible when active.
-      var promptView = new PromptView(self.state);
+      var promptView = new PromptView({
+        interfaceView: interfaceView,
+        state: self.state,
+        documentReference: self.document,
+        windowReference: self.window
+      });
+      // Detail view.
+      var detailView = new DetailView({
+        interfaceView: interfaceView,
+        panelView: panelView,
+        tipView: tipView,
+        promptView: promptView,
+        state: self.state,
+        documentReference: self.document
+      });
       // Control view.
       var controlView = new ControlView({
+        interfaceView: interfaceView,
+        panelView: panelView,
         tipView: tipView,
-        state: self.state
+        promptView: promptView,
+        state: self.state,
+        documentReference: self.document
       });
       // Exploration view.
-      if (!Model.determineTopology(self.state)) {
-        // Exploration view.
-        var explorationContents = ["summary"];
-        var exploration = new ExplorationView({
-          contents: explorationContents,
-          tip: tip,
-          state: self.state
-        });
-        // Summary view.
-        new SummaryView({
-          tip: tip,
-          exploration: exploration,
-          state: self.state
-        });
-      } else {
-        // Exploration view.
-        var explorationContents = ["topology"];
-        var exploration = new ExplorationView({
-          contents: explorationContents,
-          tip: tip,
-          state: self.state
-        });
-        // Topology view.
-        new TopologyView({
-          tip: tip,
-          prompt: prompt,
-          exploration: exploration,
-          state: self.state
-        });
+      var explorationView = new ExplorationView({
+        interfaceView: interfaceView,
+        tipView: tipView,
+        promptView: promptView,
+        state: self.state,
+        documentReference: self.document
+      });
+
+
+      if (false) {
+        if (!Model.determineTopology(self.state)) {
+          // Exploration view.
+          var explorationContents = ["summary"];
+          var exploration = new ExplorationView({
+            contents: explorationContents,
+            tip: tip,
+            state: self.state
+          });
+          // Summary view.
+          new SummaryView({
+            tipView: tipView,
+            explorationView: explorationView,
+            state: self.state
+          });
+        } else {
+          // Exploration view.
+          var explorationContents = ["topology"];
+          // Topology view.
+          new TopologyView({
+            tipView: tipView,
+            promptView: promptView,
+            explorationView: explorationView,
+            state: self.state
+          });
+        }
       }
     }
   }
@@ -153,8 +197,7 @@ class Model {
       !(state.source === null) &&
       !(state.controlViews === null) &&
       !(state.prompt === null) &&
-      !(state.topology === null) &&
-      !(state.topologyNovelty === null) &&
+      !(state.forceTopology === null) &&
       !(state.setsFilters === null) &&
       !(state.setsEntities === null) &&
       !(state.setsFilter === null) &&
@@ -226,15 +269,7 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineSource(state) {
-    return !(state.source === null);
-  }
-  /**
-  * Determines whether the application's state has specific information.
-  * @param {Object} state Application's state.
-  * @returns {boolean} Whether the application's state matches criteria.
-  */
-  static determinePrompt(state) {
-    return !(state.prompt === null);
+    return (state.source.hasOwnProperty("name"));
   }
   /**
   * Determines tabs within control view.
@@ -322,15 +357,28 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineTopology(state) {
-    return state.topology;
+  static determineEntitySelection(state) {
+    return (
+      (state.entitySelection.type.length > 0) &&
+      (state.entitySelection.node.length > 0) &&
+      (state.entitySelection.candidate.length > 0) &&
+      (state.entitySelection.entity.length > 0)
+    );
   }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineTopologyNovelty(state) {
-    return state.topologyNovelty;
+  static determineForceTopology(state) {
+    return state.ForceTopology;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSubnetworkScale(state) {
+    return state.networkNodesRecords.length < 3000;
   }
 }

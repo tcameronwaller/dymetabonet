@@ -122,17 +122,16 @@ class Action {
   * @param {Object} state Application's state.
   */
   static initializeApplicationControls(state) {
-    var source = "";
+    var source = {};
     var controlViews = {
       state: false,
       filter: false,
       simplification: false,
-      traversal: false,
-      detail: false
+      traversal: false
     };
+    // Initialize controls for pompt view.
     var prompt = Action.initializePromptViewControls();
-    var topology = false;
-    var topologyNovelty = true;
+    var forceTopology = false;
     var entitySelection = {type: "", node: "", candidate: "", entity: ""};
     // Initialize controls for set view.
     var filterViewControls = Action.initializeFilterViewControls();
@@ -146,8 +145,7 @@ class Action {
       source: source,
       controlViews: controlViews,
       prompt: prompt,
-      topology: topology,
-      topologyNovelty: topologyNovelty,
+      forceTopology: forceTopology,
       entitySelection: entitySelection
     };
     var variablesValues = Object.assign(
@@ -314,21 +312,19 @@ class Action {
   * restore the application's state.
   * @param {Object} state Application's state.
   */
-  static evaluateLoadSource(state) {
+  static evaluateSourceLoadRestoreState(state) {
     // Determine whether the application's state includes a source file.
     if (Model.determineSource(state)) {
       // Application's state includes a source file.
       General.loadPassObject({
         file: state.source,
-        call: Action.evaluateRestoreState,
+        call: Action.evaluateSourceRestoreState,
         parameters: {state: state}
       });
     } else {
       // Application's state does not include a source file.
-      // Display error message.
-      // Report message to remind user to select source file.
-      var message = "please select a source file...";
-      window.alert(message);
+      // Restore application to initial state.
+      Action.initializeApplication(state);
     }
   }
   /**
@@ -1202,6 +1198,42 @@ class Action {
     }
   }
   /**
+  * Executes rogue traversal and union on the network.
+  * @param {Object} state Application's state.
+  */
+  static executeRogueTraversalUnion(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineRogueTraversal(state)) {
+      var subnetworkElements = Traversal.combineRogueNodeNetwork({
+        focus: state.traversalRogueFocus.identifier,
+        combination: "union",
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for traversal view.
+      var traversalViewControls = Action.initializeTraversalViewControls();
+      // Initialize controls for pompt view.
+      var prompt = Action.initializePromptViewControls();
+      // Compile variables' values.
+      var novelVariablesValues = {
+        prompt: prompt
+      };
+      var variablesValues = Object.assign(
+        novelVariablesValues,
+        subnetworkElements,
+        traversalViewControls
+      );
+      // Submit variables' values to the application's state.
+      Action.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+  /**
   * Changes the selection of focus for proximity traversal.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
@@ -1680,28 +1712,28 @@ class Action {
   * Evaluates information from a persistent source to restore the application's
   * state.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Persistent source of information about
+  * @param {Object} parameters.source Persistent source of information about
   * application's state.
   * @param {Object} parameters.state Application's state.
   */
-  static evaluateRestoreState({data, state} = {}) {
+  static evaluateSourceRestoreState({source, state} = {}) {
     // Determine appropriate procedure for source information.
-    var model = (data.id === "MODEL1603150001");
-    var clean = data.clean;
-    if (!model) {
+    if (source.hasOwnProperty("id") && (data.id === "MODEL1603150001")) {
+      if (data.hasOwnProperty("clean")) {
+        Action.extractMetabolicEntitiesSets({
+          data: data,
+          state: state
+        });
+      } else {
+        var cleanData = Clean.checkCleanMetabolicEntitiesSetsRecon2(data);
+        Action.extractMetabolicEntitiesSets({
+          data: cleanData,
+          state: state
+        });
+      }
+    } else {
       Action.restoreState({
         data: data,
-        state: state
-      });
-    } else if (model && clean) {
-      Action.extractMetabolicEntitiesSets({
-        data: data,
-        state: state
-      });
-    } else if (model && !clean) {
-      var cleanData = Clean.checkCleanMetabolicEntitiesSetsRecon2(data);
-      Action.extractMetabolicEntitiesSets({
-        data: cleanData,
         state: state
       });
     }
@@ -1715,7 +1747,7 @@ class Action {
   */
   static restoreState({data, state} = {}) {
     // Remove any information about source from the application's state.
-    var source = null;
+    var source = {};
     // Compile variables' values.
     var novelVariablesValues = {
       source: source
@@ -1868,12 +1900,7 @@ class Action {
         var entity = state.reactions[candidate.reaction];
       }
       if (candidate.identifier === state.entitySelection.candidate) {
-        var entitySelection = {
-          type: null,
-          node: null,
-          candidate: null,
-          entity: null
-        };
+        var entitySelection = {type: "", node: "", candidate: "", entity: ""};
       } else {
         var entitySelection = {
           type: type,
@@ -1883,12 +1910,7 @@ class Action {
         };
       }
     } else {
-      var entitySelection = {
-        type: null,
-        node: null,
-        candidate: null,
-        entity: null
-      };
+      var entitySelection = {type: "", node: "", candidate: "", entity: ""};
     }
     // Return information.
     return entitySelection;

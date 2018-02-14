@@ -52,13 +52,10 @@ class State {
       // Variable "prompt" stores information about the type and position of the
       // prompt view within the interface.
       "prompt",
-      // Variable "topology" stores information about whether to draw a visual
-      // representation of the network's topology.
-      "topology",
-      // Variable "topologyNovelty" stores information about whether to current
-      // network's topology is novel in comparison to any current visual
-      // representations.
-      "topologyNovelty"
+      // Variable "forceTopology" stores information about whether to force the
+      // application to draw a visual representation of the network's topology
+      // even when this network is excessively large.
+      "forceTopology"
     ];
     var entities = [
       // Metabolic entities and sets.

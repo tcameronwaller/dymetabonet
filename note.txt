@@ -12,6 +12,15 @@ Progress
 I changed the names of several state variables for consistency.
 I changed the organization of subordinate views within control view for greater efficiency.
 
+----------
+Plan
+
+Place the detail view at the top of the control view.
+Activate this view by default.
+Show in detail view a summary in bar charts of the nodes in network and subnetwork.
+Export information about metabolites and reactions from the detail view.
+Consider making the detail view a permanent window of a fixed size above the control view.
+
 --------------------------------------------------
 12 February 2018
 

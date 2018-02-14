@@ -67,18 +67,39 @@ class View {
     if (!documentReference.getElementById(identifier)) {
       // Element does not exist in the document.
       // Create element.
-      var container = documentReference.createElement("div");
-      View.insertElement({
-        element: container,
+      var container = View.createInsertContainer({
+        identifier: identifier,
         target: target,
-        position: position
+        position: position,
+        documentReference: documentReference
       });
-      container.setAttribute("id", identifier);
     } else {
       // Element exists in the document.
       // Set reference to element.
       var container = documentReference.getElementById(identifier);
     }
+    return container;
+  }
+  /**
+  * Creates a container and inserts it at a specific position in the document.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of element.
+  * @param {Object} parameters.target Reference to element for relative
+  * position of insertion.
+  * @param {string} parameters.position Position of insertion relative to
+  * target, either "beforebegin", "afterbegin", "beforeend", or "afterend".
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createInsertContainer({identifier, target, position, documentReference} = {}) {
+    var container = documentReference.createElement("div");
+    View.insertElement({
+      element: container,
+      target: target,
+      position: position
+    });
+    container.setAttribute("id", identifier);
     return container;
   }
   /**
@@ -394,13 +415,62 @@ class View {
     var container = documentReference.createElement("div");
     parent.appendChild(container);
     container.classList.add("scroll");
+    var body = View.createTableBody({
+      className: className,
+      parent: container,
+      documentReference: self.document
+    });
+    // Return reference to element.
+    return body;
+  }
+  /**
+  * Creates a table, and body.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.className Class for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createTableBody({className, parent, documentReference} = {}) {
+    // Create elements.
     var table = documentReference.createElement("table");
-    container.appendChild(table);
+    parent.appendChild(table);
     table.classList.add(className);
     var body = documentReference.createElement("tbody");
     table.appendChild(body);
     // Return reference to element.
     return body;
+  }
+  /**
+  * Creates a row within a table's body.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.body Reference to table's body.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createTableBodyRow({body, documentReference} = {}) {
+    // Create elements.
+    var row = documentReference.createElement("tr");
+    body.appendChild(row);
+    // Return reference to element.
+    return row;
+  }
+  /**
+  * Creates a cell within a row of a table's body.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.row Reference to row within table's body.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createTableBodyRowCell({row, documentReference} = {}) {
+    // Create elements.
+    var cell = documentReference.createElement("td");
+    row.appendChild(cell);
+    // Return reference to element.
+    return cell;
   }
   /**
   * Represents specifications for sorts.
@@ -894,6 +964,90 @@ class View {
 }
 
 /**
+* Interface to contain and organize all other interfaces.
+*/
+class InterfaceView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.body Reference to document's body.
+  * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  */
+  constructor ({body, state, documentReference} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = documentReference;
+    // Set reference to other views.
+    self.body = body;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+  }
+  /**
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "view",
+      target: self.body,
+      position: "beforeend",
+      documentReference: self.document
+    });
+  }
+}
+
+/**
+* Interface to contain and organize interfaces on left side of window.
+*/
+class PanelView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
+  * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  */
+  constructor ({interfaceView, state, documentReference} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+  }
+  /**
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "panel",
+      target: self.interfaceView.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
+  }
+}
+
+/**
 * Interface to communicate transient, concise, supplemental information about
 * other elements in interface's views.
 * This interface is independent of application's persistent state.
@@ -901,17 +1055,25 @@ class View {
 class TipView {
   /**
   * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
+  * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.windowReference Reference to browser's window.
   */
-  constructor () {
+  constructor ({interfaceView, state, documentReference, windowReference} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
-    // Set reference to document object model (DOM).
-    self.document = document;
+    // Set reference to application's state.
+    self.state = state;
     // Set reference to browser's window.
-    self.window = window;
-    // Set references to other views
-    self.view = self.document.getElementById("view");
+    self.window = windowReference;
+    // Set reference to document object model (DOM).
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -927,7 +1089,7 @@ class TipView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "tip",
-      target: self.document.getElementById("view"),
+      target: self.interfaceView.container,
       position: "beforeend",
       documentReference: self.document
     });
@@ -994,9 +1156,6 @@ class TipView {
   }
 }
 
-// TODO: PromptView needs to persist across changes to state...
-// TODO: I need a state variable to preserve PromptView's state...
-
 /**
 * Interface to provide transient, specific controls.
 * This interface is independent of application's persistent state.
@@ -1004,20 +1163,25 @@ class TipView {
 class PromptView {
   /**
   * Initializes an instance of a class.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
+  * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.windowReference Reference to browser's window.
   */
-  constructor (state) {
+  constructor ({interfaceView, state, documentReference, windowReference} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
-    // Set reference to document object model (DOM).
-    self.document = document;
     // Set reference to browser's window.
-    self.window = window;
-    // Set references to other views
-    self.view = self.document.getElementById("view");
+    self.window = windowReference;
+    // Set reference to document object model (DOM).
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -1033,7 +1197,7 @@ class PromptView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "prompt",
-      target: self.document.getElementById("view"),
+      target: self.interfaceView.container,
       position: "beforeend",
       documentReference: self.document
     });
@@ -1184,7 +1348,7 @@ class PromptView {
     self.add.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.executeRogueTraversalCombination(self.state);
+      Action.executeRogueTraversalUnion(self.state);
     });
     // Search.
     TraversalView.activateTraversalSearch({
@@ -1246,12 +1410,286 @@ class PromptView {
   }
 }
 
+/**
+* Interface to provide information in detail about the entire network or about
+* entities within this network.
+*/
+class DetailView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
+  * @param {Object} parameters.panelView Instance of PanelView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.promptView Instance of PromptView's class.
+  * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  */
+  constructor ({interfaceView, panelView, tipView, promptView, state, documentReference} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
+    self.panelView = panelView;
+    self.tipView = tipView;
+    self.promptView = promptView;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
+  }
+  /**
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "detail",
+      target: self.panelView.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
+    // Determine whether to create and activate behavior of content.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create and activate behavior of content.
+      // Create container.
+      self.summaryContainer = View.createInsertContainer({
+        identifier: "detail-summary-container",
+        target: self.container,
+        position: "beforeend",
+        documentReference: self.document
+      });
+      // Create export.
+      self.createExport(self);
+    } else {
+      // Container is not empty.
+      // Set references to content.
+      // Control for type of entities.
+      self.summaryContainer = self
+      .document.getElementById("detail-summary-container");
+      self.export = self.document.getElementById("detail-export");
+    }
+  }
+  /**
+  * Creates a button to export information.
+  * @param {Object} self Instance of a class.
+  */
+  createExport(self) {
+    // Create button for export.
+    self.export = View.createButton({
+      text: "export",
+      parent: self.container,
+      documentReference: self.document
+    });
+    self.export.setAttribute("id", "detail-export");
+  }
+  /**
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // Determine type of summary to create.
+    if (Model.determineEntitySelection(self.state)) {
+      // Summarize information about entity.
+      // TODO: summarize the entity... similar to old tip for topology view.
+    } else {
+      // Summarize information about the entirety of entities and their network.
+      self.createRestoreActivateSummaryEntirety(self);
+    }
+  }
+  /**
+  * Creates, restores, and activates a summary of the entirety of entities and
+  * their network.
+  * @param {Object} self Instance of a class.
+  */
+  createRestoreActivateSummaryEntirety(self) {
+    self.createSummaryEntirety(self);
+    self.restoreSummaryEntirety(self);
+    self.activateSummaryEntirety(self);
+  }
+  /**
+  * Creates summary of the entirety of entities and their network.
+  * @param {Object} self Instance of a class.
+  */
+  createSummaryEntirety(self) {
+    // Determine whether container's current content matches view's novel type.
+    // Container's class indicates type of content.
+    if (!self.summaryContainer.classList.contains("entirety")) {
+      // Container's current content does not match view's novel type.
+      // Remove container's previous contents and assign a class name to
+      // indicate view's novel type.
+      View.removeContainerContentSetClass({
+        container: self.summaryContainer,
+        className: "entirety"
+      });
+      // Create content.
+      var filterReferences = DetailView.createSummaryEntiretyTable({
+        name: "filter",
+        categories: ["metabolites", "reactions"],
+        parent: self.summaryContainer,
+        documentReference: self.document
+      });
+      self.filterMetabolitesGraph = filterReferences.graphOne;
+      self.filterReactionsGraph = filterReferences.graphTwo;
+      var traversalReferences = DetailView.createSummaryEntiretyTable({
+        name: "traversal",
+        categories: ["nodes", "links"],
+        parent: self.summaryContainer,
+        documentReference: self.document
+      });
+      self.traversalNodesGraph = traversalReferences.graphOne;
+      self.traversalLinksGraph = traversalReferences.graphTwo;
+    } else {
+      // Container's current content matches view's novel type.
+      // Set references to content.
+      self.filterMetabolitesGraph = self
+      .summaryContainer.querySelector("table.filter tbody td svg.metabolites");
+      self.filterReactionsGraph = self
+      .summaryContainer.querySelector("table.filter tbody td svg.reactions");
+      self.traversalNodesGraph = self
+      .summaryContainer
+      .querySelector("table.traversal tbody td svg.nodes");
+      self.traversalLinksGraph = self
+      .summaryContainer.querySelector("table.traversal tbody td svg.links");
+    }
+  }
+  /**
+  * Creates a table to summarize the entirety of entities and their network.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.name Name for table.
+  * @param {Array<string>} parameters.categories Names of categories for rows.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} References to elements.
+  */
+  static createSummaryEntiretyTable({name, categories, parent, documentReference} = {}) {
+    // Create title.
+    var title = View.createAppendSpanText({
+      text: name,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Create break.
+    parent.appendChild(documentReference.createElement("br"));
+    // Create table body.
+    var body = View.createTableBody({
+      className: name,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Create table body row, name cell, and graph cell.
+    var graphOne = DetailView.createSummaryEntiretyTableBodyRowCells({
+      category: categories[0],
+      body: body,
+      documentReference: documentReference
+    });
+    var graphTwo = DetailView.createSummaryEntiretyTableBodyRowCells({
+      category: categories[1],
+      body: body,
+      documentReference: documentReference
+    });
+    // Compile and return references to elements.
+    return {
+      graphOne: graphOne,
+      graphTwo: graphTwo
+    };
+  }
+  /**
+  * Creates a row and cells in a table's body to summarize the entirety of
+  * entities and their network.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Names of category for row.
+  * @param {Object} parameters.body Reference to tabel's body.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createSummaryEntiretyTableBodyRowCells({category, body, documentReference} = {}) {
+    // Create row.
+    var row = View.createTableBodyRow({
+      body: body,
+      documentReference: documentReference
+    });
+    // Create title cell.
+    var titleCell = View.createTableBodyRowCell({
+      row: row,
+      documentReference: documentReference
+    });
+    var title = View.createAppendSpanText({
+      text: (category + ":"),
+      parent: titleCell,
+      documentReference: documentReference
+    });
+    // Create summary cell.
+    var summaryCell = View.createTableBodyRowCell({
+      row: row,
+      documentReference: documentReference
+    });
+    // Create graphical container.
+    var graph = View.createGraph({
+      parent: summaryCell,
+      documentReference: documentReference
+    });
+    return graph;
+  }
+  /**
+  * Restores summary of the entirety of entities and their network.
+  * @param {Object} self Instance of a class.
+  */
+  restoreSummaryEntirety(self) {
+    // Prepare information for summary.
+    // Filter.
+    var reactionsTotal = Object.keys(self.state.totalSetsReactions).length;
+    var reactionsFilter = Object.keys(self.state.filterSetsReactions).length;
+    var metabolitesTotal = Object.keys(self.state.totalSetsMetabolites).length;
+    var metabolitesFilter = Object
+    .keys(self.state.filterSetsMetabolites).length;
+    // Traversal.
+    var nodesNetwork = self.state.networkNodesRecords.length;
+    var nodesSubnetwork = self.state.subnetworkNodesRecords.length;
+    var linksNetwork = self.state.networkLinksRecords.length;
+    var linksSubnetwork = self.state.subnetworkLinksRecords.length;
+
+    // TODO: Write a function that accepts the graph, its total and current and
+    // TODO: Makes the labeled bar chart.
+    //self.filterMetabolitesGraph
+    //self.filterReactionsGraph
+    //self.traversalNodesGraph
+    //self.traversalLinksGraph
+
+    // Determine graphs' dimensions.
+    //self.graphWidth = General.determineElementDimension(self.graph, "width");
+    //self.graphHeight = General.determineElementDimension(self.graph, "height");
+  }
+  /**
+  * Activates summary of the entirety of entities and their network.
+  * @param {Object} self Instance of a class.
+  */
+  activateSummaryEntirety(self) {
+    // Activate behavior.
+    self.export.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      // TODO: Update this action... need to be specific to type of summary...
+      Action.exportFilterEntitiesSummary(self.state);
+    });
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Control view and views within control view.
-
-// TODO: Let ControlView determine which sub-views to create.
-// TODO: At any rate, ControlView always create new sub-views from scratch
-// TODO: Inefficient...
 
 /**
 * Interface to contain other interfaces for controls.
@@ -1260,20 +1698,27 @@ class ControlView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
+  * @param {Object} parameters.panelView Instance of PanelView's class.
   * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.promptView Instance of PromptView's class.
   * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
   */
-  constructor ({contents, tipView, state} = {}) {
+  constructor ({interfaceView, panelView, tipView, promptView, state, documentReference} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
     // Set reference to document object model (DOM).
-    self.document = document;
-    // Set references to other views
-    self.view = self.document.getElementById("view");
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
+    self.panelView = panelView;
     self.tipView = tipView;
+    self.promptView = promptView;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -1289,7 +1734,7 @@ class ControlView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "control",
-      target: self.view,
+      target: self.panelView.container,
       position: "beforeend",
       documentReference: self.document
     });
@@ -1308,7 +1753,6 @@ class ControlView {
       self.simplificationTab = self
       .document.getElementById("simplification-tab");
       self.traversalTab = self.document.getElementById("traversal-tab");
-      self.detailTab = self.document.getElementById("detail-tab");
     }
   }
   /**
@@ -1379,48 +1823,51 @@ class ControlView {
     // simultaneously.
     if (Model.determineControlState(self.state)) {
       new StateView({
+        interfaceView: self.interfaceView,
         tipView: self.tipView,
+        promptView: self.promptView,
         controlView: self,
-        state: self.state
+        state: self.state,
+        documentReference: self.document
       });
     } else {
       View.removeExistElement("state", self.document);
     }
     if (Model.determineControlFilter(self.state)) {
       new FilterView({
+        interfaceView: self.interfaceView,
         tipView: self.tipView,
+        promptView: self.promptView,
         controlView: self,
-        state: self.state
+        state: self.state,
+        documentReference: self.document
       });
     } else {
       View.removeExistElement("filter", self.document);
     }
     if (Model.determineControlSimplification(self.state)) {
       new SimplificationView({
+        interfaceView: self.interfaceView,
         tipView: self.tipView,
+        promptView: self.promptView,
         controlView: self,
-        state: self.state
+        state: self.state,
+        documentReference: self.document
       });
     } else {
       View.removeExistElement("simplification", self.document);
     }
     if (Model.determineControlTraversal(self.state)) {
       new TraversalView({
+        interfaceView: self.interfaceView,
         tipView: self.tipView,
+        promptView: self.promptView,
         controlView: self,
-        state: self.state
+        state: self.state,
+        documentReference: self.document
       });
     } else {
       View.removeExistElement("traversal", self.document);
-    }
-    if (Model.determineControlDetail(self.state)) {
-      new DetailView({
-        tipView: self.tipView,
-        controlView: self,
-        state: self.state
-      });
-    } else {
-      View.removeExistElement("detail", self.document);
     }
   }
   /**
@@ -1448,21 +1895,26 @@ class StateView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
   * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.promptView Instance of PromptView's class.
   * @param {Object} parameters.controlView Instance of ControlView's class.
   * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
   */
-  constructor ({tipView, controlView, state} = {}) {
+  constructor ({interfaceView, tipView, promptView, controlView, state, documentReference} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
     // Set reference to document object model (DOM).
-    self.document = document;
-    // Set references to other views
-    self.view = self.document.getElementById("view");
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
     self.tipView = tipView;
+    self.promptView = promptView;
     self.controlView = controlView;
     // Control view's composition and behavior.
     // Initialize view.
@@ -1533,7 +1985,7 @@ class StateView {
       self.restore.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        Action.evaluateLoadSource(self.state);
+        Action.evaluateSourceLoadRestoreState(self.state);
       });
       self.execute = View.createButton({
         text: "execute",
@@ -1578,21 +2030,26 @@ class FilterView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
   * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.promptView Instance of PromptView's class.
   * @param {Object} parameters.controlView Instance of ControlView's class.
   * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
   */
-  constructor ({tipView, controlView, state} = {}) {
+  constructor ({interfaceView, tipView, promptView, controlView, state, documentReference} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
     // Set reference to document object model (DOM).
-    self.document = document;
-    // Set references to other views
-    self.view = self.document.getElementById("view");
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
     self.tipView = tipView;
+    self.promptView = promptView;
     self.controlView = controlView;
     // Control view's composition and behavior.
     // Initialize view.
@@ -1633,16 +2090,22 @@ class FilterView {
       // Create menu for sets by processes.
       new FilterMenuView({
         category: "processes",
+        interfaceView: self.interfaceView,
         tipView: self.tipView,
+        promptView: self.promptView,
         filterView: self,
-        state: self.state
+        state: self.state,
+        documentReference: self.document
       });
       // Create menu for sets by compartments.
       new FilterMenuView({
         category: "compartments",
+        interfaceView: self.interfaceView,
         tipView: self.tipView,
+        promptView: self.promptView,
         filterView: self,
-        state: self.state
+        state: self.state,
+        documentReference: self.document
       });
     } else {
       // Container is not empty.
@@ -1752,16 +2215,22 @@ class FilterView {
     // Create menu for sets by processes.
     new FilterMenuView({
       category: "processes",
+      interfaceView: self.interfaceView,
       tipView: self.tipView,
+      promptView: self.promptView,
       filterView: self,
-      state: self.state
+      state: self.state,
+      documentReference: self.document
     });
     // Create menu for sets by compartments.
     new FilterMenuView({
       category: "compartments",
+      interfaceView: self.interfaceView,
       tipView: self.tipView,
+      promptView: self.promptView,
       filterView: self,
-      state: self.state
+      state: self.state,
+      documentReference: self.document
     });
   }
   /**
@@ -1795,21 +2264,26 @@ class FilterMenuView {
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.category Name of category.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
   * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.promptView Instance of PromptView's class.
   * @param {Object} parameters.filterView Instance of FilterView's class.
   * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
   */
-  constructor ({category, tipView, filterView, state} = {}) {
+  constructor ({category, interfaceView, tipView, promptView, filterView, state, documentReference} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
     // Set reference to document object model (DOM).
-    self.document = document;
-    // Set references to other views
-    self.view = self.document.getElementById("view");
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
     self.tipView = tipView;
+    self.promptView = promptView;
     self.filterView = filterView;
     // Set reference to category.
     self.category = category;
@@ -2222,21 +2696,26 @@ class SimplificationView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
   * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.promptView Instance of PromptView's class.
   * @param {Object} parameters.controlView Instance of ControlView's class.
   * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
   */
-  constructor ({tipView, controlView, state} = {}) {
+  constructor ({interfaceView, tipView, promptView, controlView, state, documentReference} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
     // Set reference to document object model (DOM).
-    self.document = document;
-    // Set references to other views
-    self.view = self.document.getElementById("view");
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
     self.tipView = tipView;
+    self.promptView = promptView;
     self.controlView = controlView;
     // Control view's composition and behavior.
     // Initialize view.
@@ -2276,16 +2755,22 @@ class SimplificationView {
       // Create menu for candidate metabolites.
       new SimplificationMenuView({
         category: "metabolites",
+        interfaceView: self.interfaceView,
         tipView: self.tipView,
+        promptView: self.promptView,
         simplificationView: self,
-        state: self.state
+        state: self.state,
+        documentReference: self.document
       });
       // Create menu for candidate reactions.
       new SimplificationMenuView({
         category: "reactions",
+        interfaceView: self.interfaceView,
         tipView: self.tipView,
+        promptView: self.promptView,
         simplificationView: self,
-        state: self.state
+        state: self.state,
+        documentReference: self.document
       });
     } else {
       // Container is not empty.
@@ -2373,16 +2858,22 @@ class SimplificationView {
     // Create menu for candidate metabolites.
     new SimplificationMenuView({
       category: "metabolites",
+      interfaceView: self.interfaceView,
       tipView: self.tipView,
+      promptView: self.promptView,
       simplificationView: self,
-      state: self.state
+      state: self.state,
+      documentReference: self.document
     });
     // Create menu for candidate reactions.
     new SimplificationMenuView({
       category: "reactions",
+      interfaceView: self.interfaceView,
       tipView: self.tipView,
+      promptView: self.promptView,
       simplificationView: self,
-      state: self.state
+      state: self.state,
+      documentReference: self.document
     });
   }
   /**
@@ -2415,22 +2906,27 @@ class SimplificationMenuView {
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.category Name of category.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
   * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.promptView Instance of PromptView's class.
   * @param {Object} parameters.simplificationView Instance of
   * SimplificationView's class.
   * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
   */
-  constructor ({category, tipView, simplificationView, state} = {}) {
+  constructor ({category, interfaceView, tipView, promptView, simplificationView, state, documentReference} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
     // Set reference to document object model (DOM).
-    self.document = document;
-    // Set references to other views
-    self.view = self.document.getElementById("view");
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
     self.tipView = tipView;
+    self.promptView = promptView;
     self.simplificationView = simplificationView;
     // Set reference to category.
     self.category = category;
@@ -2943,21 +3439,26 @@ class TraversalView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
   * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.promptView Instance of PromptView's class.
   * @param {Object} parameters.controlView Instance of ControlView's class.
   * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
   */
-  constructor ({tipView, controlView, state} = {}) {
+  constructor ({interfaceView, tipView, promptView, controlView, state, documentReference} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
     // Set reference to document object model (DOM).
-    self.document = document;
-    // Set references to other views
-    self.view = self.document.getElementById("view");
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
     self.tipView = tipView;
+    self.promptView = promptView;
     self.controlView = controlView;
     // Control view's composition and behavior.
     // Initialize view.
@@ -2982,7 +3483,6 @@ class TraversalView {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
-
       // TODO: Add informative tips on hover over each button...
       // Create and activate restore.
       self.createActivateRestore(self);
@@ -3003,10 +3503,13 @@ class TraversalView {
       self.createActivateTraversalTypeControl("path", self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
-      // Create container for traversal's controls.
-      self.controlContainer = self.document.createElement("div");
-      self.container.appendChild(self.controlContainer);
-      self.controlContainer.setAttribute("id", "traversal-control-container");
+      // Create container.
+      self.controlContainer = View.createInsertContainer({
+        identifier: "traversal-control-container",
+        target: self.container,
+        position: "beforeend",
+        documentReference: self.document
+      });
     } else {
       // Container is not empty.
       // Set references to content.
@@ -3130,6 +3633,7 @@ class TraversalView {
       Action.changeTraversalType(type, self.state);
     });
   }
+
   /**
   * Restores view's content and behavior that varies with changes to the
   * application's state.
@@ -3643,19 +4147,19 @@ class TraversalView {
           Action.changeTraversalProximityFocus({
             identifier: identifier,
             type: node.type,
-            state: self.state
+            state: state
           });
         } else if (variableName === "traversalPathSource") {
           Action.changeTraversalPathSource({
             identifier: identifier,
             type: node.type,
-            state: self.state
+            state: state
           });
         } else if (variableName === "traversalPathTarget") {
           Action.changeTraversalPathTarget({
             identifier: identifier,
             type: node.type,
-            state: self.state
+            state: state
           });
         }
       } else {
@@ -3716,7 +4220,7 @@ class TraversalView {
       records: sortOptionsRecords
     });
     // Represent search's current value.
-    if (state[variableName]) {
+    if (state[variableName].type.length > 0) {
       if (state[variableName].type === "metabolite") {
         // Access information.
         var node = state
@@ -3749,24 +4253,25 @@ class ExplorationView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Array<string>>} parameters.contents Identifiers of contents
-  * within view.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
   * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.promptView Instance of PromptView's class.
   * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
   */
-  constructor ({contents, tipView, state} = {}) {
+  constructor ({interfaceView, tipView, promptView, state, documentReference} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
     // Set reference to document object model (DOM).
-    self.document = document;
-    // Set references to other views
-    self.view = self.document.getElementById("view");
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
     self.tipView = tipView;
-    // Set reference to contents.
-    self.contents = contents;
+    self.promptView = promptView;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -3782,7 +4287,7 @@ class ExplorationView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "exploration",
-      target: self.view,
+      target: self.interfaceView.container,
       position: "beforeend",
       documentReference: self.document
     });
@@ -3831,7 +4336,7 @@ class SummaryView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set references to other views
+    // Set reference to other views.
     self.view = self.document.getElementById("view");
     self.tipView = tipView;
     self.exploration = exploration;
@@ -3939,7 +4444,7 @@ class TopologyView {
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.tipView Instance of TipView's class.
-  * @param {Object} parameters.prompt Instance of PromptView's class.
+  * @param {Object} parameters.promptView Instance of PromptView's class.
   * @param {Object} parameters.exploration Instance of ExplorationView's class.
   * @param {Object} parameters.state Application's state.
   */
@@ -3951,7 +4456,7 @@ class TopologyView {
     self.state = state;
     // Set reference to document object model (DOM).
     self.document = document;
-    // Set references to other views.
+    // Set reference to other views..
     self.view = self.document.getElementById("view");
     self.tipView = tipView;
     self.prompt = prompt;
