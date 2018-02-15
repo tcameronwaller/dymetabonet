@@ -1410,6 +1410,9 @@ class PromptView {
   }
 }
 
+// TODO: DetailView might change and move...
+// TODO: Maybe move information to a summary view...
+
 /**
 * Interface to provide information in detail about the entire network or about
 * entities within this network.
@@ -1505,7 +1508,7 @@ class DetailView {
       // TODO: summarize the entity... similar to old tip for topology view.
     } else {
       // Summarize information about the entirety of entities and their network.
-      self.createRestoreActivateSummaryEntirety(self);
+      //self.createRestoreActivateSummaryEntirety(self);
     }
   }
   /**
@@ -3633,7 +3636,6 @@ class TraversalView {
       Action.changeTraversalType(type, self.state);
     });
   }
-
   /**
   * Restores view's content and behavior that varies with changes to the
   * application's state.
@@ -4298,19 +4300,34 @@ class ExplorationView {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
-    // Remove any extraneous content from view.
-    self.filterContents(self);
-  }
-  /**
-  * Filters view's contents to remove all but relevant content.
-  * @param {Object} self Instance of a class.
-  */
-  filterContents(self) {
-    General.filterRemoveDocumentElements({
-      values: self.contents,
-      attribute: "id",
-      elements: self.container.children
-    });
+    // Determine which subordinate views to create, activate, and restore.
+    // Determine whether to represent subnetwork's elements in a visual diagram.
+    // Represent if counts of subnetwork's elements are not excessive or if user
+    // specified to force representation.
+    if (
+      Model.determineForceTopology(self.state) ||
+      Model.determineSubnetworkScale(self.state)
+    ) {
+      View.removeExistElement("gate", self.document);
+      new TopologyView({
+        interfaceView: self.interfaceView,
+        tipView: self.tipView,
+        promptView: self.promptView,
+        explorationView: self,
+        state: self.state,
+        documentReference: self.document
+      });
+    } else {
+      View.removeExistElement("topology", self.document);
+      new GateView({
+        interfaceView: self.interfaceView,
+        tipView: self.tipView,
+        promptView: self.promptView,
+        explorationView: self,
+        state: self.state,
+        documentReference: self.document
+      });
+    }
   }
 }
 
@@ -4437,30 +4454,111 @@ class SummaryView {
 }
 
 /**
-* Interface to represent visually the network's topology.
+* Interface to control whether to force representation of subnetwork.
 */
-class TopologyView {
+class GateView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
   * @param {Object} parameters.tipView Instance of TipView's class.
   * @param {Object} parameters.promptView Instance of PromptView's class.
-  * @param {Object} parameters.exploration Instance of ExplorationView's class.
+  * @param {Object} parameters.explorationView Instance of ExplorationView's
+  * class.
   * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
   */
-  constructor ({tipView, prompt, exploration, state} = {}) {
+  constructor ({interfaceView, tipView, promptView, explorationView, state, documentReference} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
     // Set reference to document object model (DOM).
-    self.document = document;
-    // Set reference to other views..
-    self.view = self.document.getElementById("view");
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
     self.tipView = tipView;
-    self.prompt = prompt;
-    self.exploration = exploration;
+    self.promptView = promptView;
+    self.explorationView = explorationView;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+  }
+  /**
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "gate",
+      target: self.explorationView.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
+    // Determine whether to create and activate behavior of content.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create and activate behavior of content.
+      // Create text.
+      var textContainer = self.document.createElement("span");
+      self.container.appendChild(textContainer);
+      var message = (
+        "There are a lot of elements in the current subnetwork. Force draw?"
+      );
+      textContainer.textContent = message;
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create and activate buttons.
+      self.force = View.createButton({
+        text: "force draw",
+        parent: self.container,
+        documentReference: self.document
+      });
+      self.force.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.changeForceTopology(self.state);
+      });
+    } else {
+      // Container is not empty.
+      // Set references to content.
+    }
+  }
+}
+
+/**
+* Interface to represent visually the network's topology.
+*/
+class TopologyView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.promptView Instance of PromptView's class.
+  * @param {Object} parameters.explorationView Instance of ExplorationView's
+  * class.
+  * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  */
+  constructor ({interfaceView, tipView, promptView, explorationView, state, documentReference} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
+    self.tipView = tipView;
+    self.promptView = promptView;
+    self.explorationView = explorationView;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -4476,7 +4574,7 @@ class TopologyView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "topology",
-      target: self.exploration.container,
+      target: self.explorationView.container,
       position: "beforeend",
       documentReference: self.document
     });
@@ -4611,6 +4709,9 @@ class TopologyView {
     self.nodesGroup.classList.add("nodes");
   }
 
+  // TODO: Dragging a node should not submit anything to state...
+  // TODO: Dragging should re-initiate the simulation.
+
   // TODO: no more need for flag for topology novelty.
   // TODO: I guess just restore the network's diagram with each update to state and view
 
@@ -4620,21 +4721,28 @@ class TopologyView {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
+
+    // TODO: Try running the simulation BEFORE creating the visual elements.
+    // TODO: Then just make the simulation live when dragging and stuff... use simulation.restart()
+    // TODO: That didn't work... change it back and just don't draw for first 200 iterations...
+
+    // TODO: Wait... this should work. Why doesn't it?
+    // TODO: The simulation is VERY fast this way, so it'd be nice to get it to work.
+
+
     // Prepare information about network's elements.
     self.prepareNetworkElementsRecords(self);
+    // Create scales for the visual representation of network's elements.
+    // These scales also inform the simulation.
+    self.createRepresentationScales(self);
+    // Create network's layout.
+    self.createNetworkLayout(self);
+
     // Create, activate, and restore visual representations of network's
     // elements.
     self.createActivateNetworkRepresentation(self);
-    // Many alterations to the application's state do not change the network's
-    // elements or topology.
-    // As calculation of layout by force simulations is computationally
-    // expensive, only initiate this procedure if necessary.
-    // Determine whether to determine layout for network's elements and
-    // topology.
-    // TODO: I don't think that the flag for topology novelty will be necessary anymore...
-    if (Model.determineTopologyNovelty(self.state)) {
-      self.createNetworkLayout(self);
-    }
+
+    self.completeForceSimulation(self);
   }
   /**
   * Prepares local records of information about network's elements.
@@ -4646,18 +4754,12 @@ class TopologyView {
     self.nodesRecords = self.state.subnetworkNodesRecords;
     self.linksRecords = self.state.subnetworkLinksRecords;
   }
+
   /**
   * Creates and activates a visual representation of a network.
   * @param {Object} self Instance of a class.
   */
   createActivateNetworkRepresentation(self) {
-    // Create scales for the visual representation of network's elements.
-    // Determine these scales dynamically within the script.
-    // Otherwise an alternative is to determine dimensions within style and then
-    // access the dimension using element.getBoundingClientRect or
-    // window.getComputeStyle.
-    // Create scales for representation of network's elements.
-    self.createRepresentationScales(self);
     // Create graph to represent metabolic network.
     // Graph structure.
     // - graph (scalable vector graphical container)
@@ -4748,6 +4850,10 @@ class TopologyView {
     // Compute dimensions from scale.
     self.scaleNodeDimension = nodeDimensionScale(self.scaleRatio);
     self.scaleLinkDimension = linkDimensionScale(self.scaleRatio);
+    self.metaboliteNodeWidth = self.scaleNodeDimension * 1;
+    self.metaboliteNodeHeight = self.scaleNodeDimension * 0.5;
+    self.reactionNodeWidth = self.scaleNodeDimension * 2.5;
+    self.reactionNodeHeight = self.scaleNodeDimension * 0.75;
     // Compute font size from scale.
     self.scaleFont = fontScale(self.scaleRatio);
   }
@@ -4844,9 +4950,11 @@ class TopologyView {
     // Create nodes.
     // Create groups to contain elements for individual nodes.
     self.createNodesGroups(self);
-    self.activateNodesGroups(self);
+    //self.activateNodesGroups(self);
     // Create marks for individual nodes.
     self.createNodesMarks(self);
+    // Create labels for individual nodes.
+    self.createNodesLabels(self);
   }
   /**
   * Creates nodes's groups.
@@ -5040,8 +5148,6 @@ class TopologyView {
     nodesMarks.classed("mark", true);
     // Determine dimensions for representations of network's elements.
     // Set dimensions of metabolites' nodes.
-    self.metaboliteNodeWidth = self.scaleNodeDimension * 1;
-    self.metaboliteNodeHeight = self.scaleNodeDimension * 0.5;
     var nodesMarksMetabolites = nodesMarks
     .filter(function (element, index, nodes) {
       return element.type === "metabolite";
@@ -5071,8 +5177,6 @@ class TopologyView {
       }
     });
     // Set dimensions of reactions' nodes.
-    self.reactionNodeWidth = self.scaleNodeDimension * 2.5;
-    self.reactionNodeHeight = self.scaleNodeDimension * 0.75;
     var nodesMarksReactions = nodesMarks
     .filter(function (element, index, nodes) {
       return element.type === "reaction";
@@ -5093,6 +5197,43 @@ class TopologyView {
       return "translate(" + x + "," + y + ")";
     });
   }
+  /**
+  * Creates labels for nodes in a node-link diagram.
+  * @param {Object} self Instance of a class.
+  */
+  createNodesLabels(self) {
+    // Determine whether it is practical to create labels for nodes.
+    if (self.nodesRecords.length < 3000) {
+      // Define function to access data.
+      function access(element, index, nodes) {
+        return [element];
+      };
+      // Create children elements by association to data.
+      var nodesLabels = View.createElementsData({
+        parent: self.nodesGroups,
+        type: "text",
+        accessor: access
+      });
+      // Assign attributes to elements.
+      nodesLabels.classed("label", true);
+      nodesLabels.text(function (element, index, nodes) {
+        if (element.type === "metabolite") {
+          // Access information.
+          var node = self.state.networkNodesMetabolites[element.identifier];
+          var candidate = self.state.candidatesMetabolites[node.candidate];
+          var name = candidate.name;
+        } else if (element.type === "reaction") {
+          // Access information.
+          var node = self.state.networkNodesReactions[element.identifier];
+          var candidate = self.state.candidatesReactions[node.candidate];
+          var name = candidate.name;
+        }
+        return (name.slice(0, 5) + "...");
+      });
+      // Determine size of font for annotations of network's elements.
+      nodesLabels.attr("font-size", self.scaleFont + "px");
+    }
+  }
 
   // TODO: Probably call this "restoreNetworkDiagramPositions" or something.
   // TODO: I want to be able to call this method conveniently to re-initiate
@@ -5100,6 +5241,13 @@ class TopologyView {
   // TODO: I should only need to re-initiate the force simulation for drags...
   // TODO: I can probably just call self.simulation.restart();
   // TODO: No need to re-define the simulation after I've already defined it.
+
+  // TODO: Rendering with each iteration of simulation is extremely slow...
+  // TODO: If most nodes have positions at origin (brand new layout), then don't even draw the first
+  // TODO: 300 iterations or so...
+
+  // TODO: Any premature change to the subnetwork needs to terminate previous simulation
+  // TODO: and start a new one...
 
   /**
   * Creates layout for visual representations of network's elements.
@@ -5110,11 +5258,8 @@ class TopologyView {
     self.createSimulationScales(self);
     // Create scales for efficiency.
     self.createEfficiencyScales(self);
-    // Remove nodes' labels.
-    // For efficiency, only include node's labels after simulation completes.
-    self.removeNodesLabels(self);
     // Initiate force simulation.
-    self.initiateForceSimulation(self);
+    self.restoreInitiateForceSimulation(self);
   }
   /**
   * Creates scales for simulations of forces between network's elements.
@@ -5197,40 +5342,17 @@ class TopologyView {
     var intervalScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([3, 5, 10, 15, 25, 50, 100]);
-    // Define scale for representation of labels for nodes.
-    // Domain's unit is count of nodes.
-    // Range's unit is arbitrary.
-    //domain: range
-    //0-100: true
-    //100-500: true
-    //500-1000: true
-    //1000-2500: true
-    //2500-5000: false
-    //5000-10000: false
-    //10000-1000000: false
-    var labelScale = d3
-    .scaleThreshold()
-    .domain(domainCounts)
-    .range([true, true, true, true, false, false, false]);
+    .range([1, 1, 1, 1, 1, 1, 1]);
     // Compute efficient behavior rules from scales.
     self.scaleInterval = intervalScale(self.nodesRecords.length);
-    self.scaleLabel = labelScale(self.nodesRecords.length);
   }
+
   /**
-  * Removes nodes' labels from a node-link diagram.
+  * Restores and initiates a force simulation to determine positions of
+  * network's nodes and links in a node-link diagram.
   * @param {Object} self Instance of a class.
   */
-  removeNodesLabels(self) {
-    // Remove labels for individual nodes.
-    self.nodesGroups.selectAll("text").remove();
-  }
-  /**
-  * Initiates a force simulation for placement of network's nodes and links in a
-  * node-link diagram.
-  * @param {Object} self Instance of a class.
-  */
-  initiateForceSimulation(self) {
+  restoreInitiateForceSimulation(self) {
     // Define parameters of the force simulation.
     self.alpha = 1;
     self.alphaMinimum = 0.001;
@@ -5247,6 +5369,23 @@ class TopologyView {
     // with node elements.
     // Any elements with access to the nodes' data, such as nodes' marks and
     // labels, also have access to the coordinates of these positions.
+    // The visual representation of the subnetwork's elements in the network's
+    // diagram constitutes an important and persistent part of the application's
+    // state.
+    // The force simulation that creates the positions of nodes and links in the
+    // network's diagram is similarly an important and persistent part of the
+    // application's state.
+    // It is important to manage a single relevant simulation to avoid
+    // continuations of previous simulations after changes to the application's
+    // state.
+    // This force simulation depends both on the subnetwork's elements and on
+    // the dimensions of the view within the document object model.
+    // Determine whether the application's state has a previous simulation.
+    if (Model.determineSimulation(self.state)) {
+      // Stop the previous simulation.
+      // Replace the simulation in the application's state.
+      self.state.simulation.stop();
+    }
     self.simulation = d3.forceSimulation()
     .alphaTarget(0)
     .alpha(self.alpha)
@@ -5336,9 +5475,13 @@ class TopologyView {
     })
     .on("end", function () {
       // Complete tasks dependent on simulation's completion.
-      self.completeForceSimulation(self);
+      //self.completeForceSimulation(self);
     });
+    // Preserve a reference to the simulation in the application's state.
+    self.state.simulation = self.simulation;
   }
+
+
   /**
   * Initiates a monitor of force simulation's progress.
   * @param {Object} self Instance of a class.
@@ -5375,8 +5518,8 @@ class TopologyView {
     // Restore positions of nodes and links periodically throughout the
     // simulation.
     if (self.simulationCounter % self.scaleInterval === 0) {
-      self.restoreNodesPositions(self);
-      self.restoreLinksPositions(self);
+      //self.restoreNodesPositions(self);
+      //self.restoreLinksPositions(self);
     }
   }
   /**
@@ -5395,11 +5538,10 @@ class TopologyView {
     );
     //console.log(message);
     //window.alert(message);
-    // Change the novelty of the network's topology to indicate unnecessity of
-    // determination of layout until the network changes.
-    Action.changeTopologyNovelty(self.state);
+    console.log(self.nodesRecords);
+    console.log(self.linksRecords);
+    console.log(self.simulation);
   }
-
   /**
   * Restores positions of nodes' visual representations according to results of
   * force simulation.
@@ -5432,10 +5574,6 @@ class TopologyView {
     self.determineReactionsNodesOrientations(self);
     // Represent reactions' directionalities on their nodes.
     self.createReactionsNodesDirectionalMarks(self);
-    // Create nodes' labels.
-    if (self.scaleLabel) {
-      self.createNodesLabels(self);
-    }
     // Represent reactions' directionalities in links.
     self.restoreLinksPositions(self);
   }
@@ -5605,40 +5743,6 @@ class TopologyView {
       });
       return points;
     });
-  }
-  /**
-  * Creates labels for nodes in a node-link diagram.
-  * @param {Object} self Instance of a class.
-  */
-  createNodesLabels(self) {
-    // Define function to access data.
-    function access(element, index, nodes) {
-      return [element];
-    };
-    // Create children elements by association to data.
-    var nodesLabels = View.createElementsData({
-      parent: self.nodesGroups,
-      type: "text",
-      accessor: access
-    });
-    // Assign attributes to elements.
-    nodesLabels.classed("label", true);
-    nodesLabels.text(function (element, index, nodes) {
-      if (element.type === "metabolite") {
-        // Access information.
-        var node = self.state.networkNodesMetabolites[element.identifier];
-        var candidate = self.state.candidatesMetabolites[node.candidate];
-        var name = candidate.name;
-      } else if (element.type === "reaction") {
-        // Access information.
-        var node = self.state.networkNodesReactions[element.identifier];
-        var candidate = self.state.candidatesReactions[node.candidate];
-        var name = candidate.name;
-      }
-      return (name.slice(0, 5) + "...");
-    });
-    // Determine size of font for annotations of network's elements.
-    nodesLabels.attr("font-size", self.scaleFont + "px");
   }
 
   // TODO: Consider creating a new class, TopologyViewUtility to store the static

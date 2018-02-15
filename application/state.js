@@ -55,7 +55,11 @@ class State {
       // Variable "forceTopology" stores information about whether to force the
       // application to draw a visual representation of the network's topology
       // even when this network is excessively large.
-      "forceTopology"
+      "forceTopology",
+      // Variable "simulation" stores references to iterative functions that
+      // determine the positions of the subnetwork's elements in the network's
+      // diagram.
+      "simulation"
     ];
     var entities = [
       // Metabolic entities and sets.

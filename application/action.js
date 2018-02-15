@@ -140,13 +140,15 @@ class Action {
     .initializeSimplificationViewControls();
     // Initialize controls for traversal view.
     var traversalViewControls = Action.initializeTraversalViewControls();
+    var simulation = {};
     // Compile variables' values.
     var novelVariablesValues = {
       source: source,
       controlViews: controlViews,
       prompt: prompt,
       forceTopology: forceTopology,
-      entitySelection: entitySelection
+      entitySelection: entitySelection,
+      simulation: simulation
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -1471,41 +1473,20 @@ class Action {
     }
   }
   /**
-  * Changes the selection of topology.
+  * Changes the selection of whether to force representation of subnetwork's
+  * topology.
   * @param {Object} state Application's state.
   */
-  static changeTopology(state) {
-    // Determine topology's novelty.
-    if (state.topology) {
-      var topology = false;
+  static changeForceTopology(state) {
+    // Determine whether to force topology.
+    if (state.forceTopology) {
+      var forceTopology = false;
     } else {
-      var topology = true;
+      var forceTopology = true;
     }
     // Compile variables' values.
     var novelVariablesValues = {
-      topology: topology
-    };
-    var variablesValues = novelVariablesValues;
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Changes the selection of the novelty of the current network's topology.
-  * @param {Object} state Application's state.
-  */
-  static changeTopologyNovelty(state) {
-    // Determine topology's novelty.
-    if (state.topologyNovelty) {
-      var topologyNovelty = false;
-    } else {
-      var topologyNovelty = true;
-    }
-    // Compile variables' values.
-    var novelVariablesValues = {
-      topologyNovelty: topologyNovelty
+      forceTopology: forceTopology
     };
     var variablesValues = novelVariablesValues;
     // Submit variables' values to the application's state.
@@ -1567,8 +1548,6 @@ class Action {
     // TODO: DetailView's contents should depend on whether or not there's an entitySelection...
     // TODO: If there isn't an entitySelection, consider giving information about the network or something...
   }
-
-
 
 // TODO: I need an action to remove entity Selection... ie restore it to empty...
 

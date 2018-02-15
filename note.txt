@@ -4,6 +4,107 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+14 February 2018
+
+----------
+Progress
+
+I think the application needs a state variable for the force simulation for the network's diagram.
+This simulation requires many iterations and is slow.
+If user otherwise changes application's state while a simulation is running, that simulation continues to run even though the application re-initiates with new subnetwork's elements and an new simulation.
+
+I implemented persistence of the force simulation for positions of subnetwork's elements in the network's diagram.
+This persistence avoids problems from previous and irrelevant simulations continuing to run after updates to the application's state.
+
+I realized that the simulation is much quicker if it runs idependently of elements in the document.
+Option 1: Find out how to run the simulation entirely before even creating elements for nodes and links.
+Option 2: If the layout is brand new (most or all nodes' records have x and y at origin), then run first 500 or so iterations of the simulation before changing the positions of the nodes and links.
+
+
+----------
+Plan
+
+-mutation and persistence of positions within network's diagram
+--records for subnetwork's elements are mutable
+--records for subnetwork's elements include information about nodes' positions
+--topology view needs to initiate force simulations for position with every change to positions or subnetwork
+--novel records for subnetwork's elements should initiate positions at center of view
+
+-interaction with nodes in network's diagram
+--tip
+--prompt
+--default click and drag to lock to new position
+--display information in detail view
+
+-prompt for network's nodes
+--hover on a node should display a promt in addition to tip
+--user clicks the prompt to open small menu of controls for actions on the individual node
+--lock or unlock node's position in network's diagram
+--remove node from subnetwork
+--expand subnetwork by proximity from node to depth of 1 link
+
+-prompt for network's diagram view
+--click on blank portion of network's diagram view should also display prompt
+--lock or unlock all nodes' positions
+--remove all nodes and links from subnetwork
+--add a single node to the network (rogue)
+
+-representation of replicate nodes for metabolites
+--distinct bubbles on periphery of reaction's node
+--reaction's node needs information about replicate metabolites
+--reaction might also need some representation of whether or not all of its metabolites are in the subnetwork
+
+-representation of reaction's nodes
+--visual mark for reactions without all metabolites in network (only those omitted)
+--when preparing reactions' nodes, determine whether all of the reaction's participants have explict representations in nodes and links
+--if not all of reactions' participants have representations, include indicator on reaction's node
+--maybe an asterisk or something
+--re-determine and re-draw directional markers for reactions at conclusion of simulations for layout
+--drag of node should initiate simulation and re-draw of reactions' directions
+
+-tips for network's nodes
+--make local tips concise
+--include only name of metabolite or reaction
+--include more information in detail view within side panel
+--determine horizontal and vertical center points of view
+--if cursor is on right side of view, then draw tip to left of cursor
+--if cursor is on left side of view, then draw tip to right of cursor
+--similar for top and bottom
+
+-labels on nodes in network's diagram
+--draw labels initially and always on nodes
+--color contrast for visibility of nodes' labels
+
+-detail view
+--include comprehensive information in detail about metabolite or reaction of current selection from network's diagram
+--make information from selections of multiple entities persistent within view
+--include control to clear the view
+
+-representation of hierarchy of selection of entities for network
+--representations of selections by filters, simplifications, and traversals
+--representations of network's elements
+--representations of subnetwork's elements
+--consider bar graphs within traversal view or within summary view (when no network's diagram)
+
+-association and representation of custom data with network's elements
+--menu to create table of associations between data values and entities
+--state variable array of objects with identifiers of entities and data values
+
+----------
+Meet with Alexander Lex
+
+Alex recommends selecting and accessing an exemplary data set for development and demonstration of representation of data on the network.
+Alex recommends against requiring the user to enter data manually.
+To avoid problems in reference mapping to entities, require data files to have unique identifiers for metabolites.
+It might be necessary to include multiple identifiers for metabolites in the model, since Recon 2.2 does not include these identifiers.
+
+Consider placing some summary information in a view at the top of the exploration view.
+Summarize the current filters and traversals that composed the candidate entities and subnetwork.
+
+Alex recommends calling the traversal view the query view instead.
+I still think that traversal accurately represents the behavior of the view's controls, but query is a reasonable and accessible name.
+
+--------------------------------------------------
 13 February 2018
 
 ----------

@@ -153,35 +153,6 @@ class Model {
         state: self.state,
         documentReference: self.document
       });
-
-
-      if (false) {
-        if (!Model.determineTopology(self.state)) {
-          // Exploration view.
-          var explorationContents = ["summary"];
-          var exploration = new ExplorationView({
-            contents: explorationContents,
-            tip: tip,
-            state: self.state
-          });
-          // Summary view.
-          new SummaryView({
-            tipView: tipView,
-            explorationView: explorationView,
-            state: self.state
-          });
-        } else {
-          // Exploration view.
-          var explorationContents = ["topology"];
-          // Topology view.
-          new TopologyView({
-            tipView: tipView,
-            promptView: promptView,
-            explorationView: explorationView,
-            state: self.state
-          });
-        }
-      }
     }
   }
 
@@ -217,7 +188,8 @@ class Model {
       !(state.traversalPathTarget === null) &&
       !(state.traversalPathDirection === null) &&
       !(state.traversalPathCount === null) &&
-      !(state.entitySelection === null)
+      !(state.entitySelection === null) &&
+      !(state.simulation === null)
     );
   }
   /**
@@ -371,7 +343,7 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineForceTopology(state) {
-    return state.ForceTopology;
+    return state.forceTopology;
   }
   /**
   * Determines whether the application's state has specific information.
@@ -379,6 +351,28 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineSubnetworkScale(state) {
-    return state.networkNodesRecords.length < 3000;
+    return state.subnetworkNodesRecords.length < 3000;
   }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSimulation(state) {
+    return (
+      state.simulation.hasOwnProperty("alpha") &&
+      state.simulation.hasOwnProperty("alphaDecay") &&
+      state.simulation.hasOwnProperty("alphaMin") &&
+      state.simulation.hasOwnProperty("alphaTarget") &&
+      state.simulation.hasOwnProperty("find") &&
+      state.simulation.hasOwnProperty("force") &&
+      state.simulation.hasOwnProperty("nodes") &&
+      state.simulation.hasOwnProperty("on") &&
+      state.simulation.hasOwnProperty("restart") &&
+      state.simulation.hasOwnProperty("stop") &&
+      state.simulation.hasOwnProperty("tick") &&
+      state.simulation.hasOwnProperty("velocityDecay")
+    );
+  }
+
 }
