@@ -4,6 +4,24 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+16 February 2018
+
+----------
+Plan
+
+Next, implement the prompt view for nodes with selections.
+Implement actions for controls of prompt view for both network's diagram and network's nodes.
+
+Improve the visual representation of reactions with replicate metabolites.
+Eliminate distinct nodes for replicate metabolites, and instead represent these as small bubbles on their reactions' nodes.
+
+For determination of initial positions in network's diagram, consider drawing the visual representations at least occasionally (every 100 iterations) before the simulation completes.
+Maybe draw the visual representations after the simulation proceeds 50% so that user can begin evaluating the network while the simulations completes.
+Try to keep the user waiting as little as possible.
+
+Also repair the restoration of the application's state from a persistent representation on file.
+
+--------------------------------------------------
 15 February 2018
 
 ----------
@@ -36,7 +54,6 @@ This persistence avoids problems from previous and irrelevant simulations contin
 I realized that the simulation is much quicker if it runs idependently of elements in the document.
 Option 1: Find out how to run the simulation entirely before even creating elements for nodes and links.
 Option 2: If the layout is brand new (most or all nodes' records have x and y at origin), then run first 500 or so iterations of the simulation before changing the positions of the nodes and links.
-
 
 ----------
 Plan
