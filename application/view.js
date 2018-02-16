@@ -962,6 +962,15 @@ class View {
     }
   }
   /**
+  * Removes elements from the document.
+  * @param {Array<Object>} elements References to elements.
+  */
+  static removeElements(elements) {
+    Array.from(elements).forEach(function (element) {
+      View.removeElement(element);
+    });
+  }
+  /**
   * Removes an element from the document.
   * @param {Object} element Reference to element.
   */
@@ -4752,8 +4761,13 @@ class TopologyView {
   prepareNetworkElementsRecords(self) {
     // Records for subnetwork's elements contain mutable information, especially
     // about positions of elements within network's diagram.
+    // Allow network's diagram to modify nodes' records in order to preserve
+    // information about elements' positions.
     self.nodesRecords = self.state.subnetworkNodesRecords;
-    self.linksRecords = self.state.subnetworkLinksRecords;
+    // Do not allow network's diagram to modify links' records.
+    // Network's diagram replaces entries for links' source and target.
+    self.linksRecords = General
+    .copyDeepArrayElements(self.state.subnetworkLinksRecords, true);
   }
   /**
   * Creates scales for visual representation of network's elements.
@@ -4850,6 +4864,8 @@ class TopologyView {
     // Initiate force simulation.
     self.restoreInitiateSimulation(self);
     // Respond to simulation's progress and completion.
+    // To initialize positions in network's diagrams, respond to simulation in a
+    // way to optimize efficiency and report progress.
     self.progressSimulationInitializePositions(self);
   }
   /**
@@ -4857,6 +4873,10 @@ class TopologyView {
   * @param {Object} self Instance of a class.
   */
   restoreNetworkDiagramPositions(self) {
+    // Remove message about simulation's progress.
+    self.removeSimulationProgressReport(self);
+    // Remove any previous directions of reactions' nodes.
+    self.removeReactionsNodesDirections(self);
     // Create scales for simulation of forces between network's elements.
     self.createSimulationScales(self);
     // Create scales for efficiency.
@@ -4864,7 +4884,42 @@ class TopologyView {
     // Initiate force simulation.
     self.restoreInitiateSimulation(self);
     // Respond to simulation's progress and completion.
+    // To restore positions in network's diagrams, respond to simulation in a
+    // way to promote interactivity.
     self.progressSimulationRestorePositions(self);
+  }
+  /**
+  * Removes directionality of reaction's nodes.
+  * @param {Object} self Instance of a class.
+  */
+  removeReactionsNodesDirections(self) {
+    // Remove any previous information about directionality of reaction's nodes.
+    self.removeReactionsNodesDirectionalInformation(self);
+    // Remove any previous directional marks on reactions' nodes.
+    self.removeReactionsNodesDirectionalMarks(self);
+  }
+  /**
+  * Removes directional information from nodes' records for reactions.
+  * @param {Object} self Instance of a class.
+  */
+  removeReactionsNodesDirectionalInformation(self) {
+    // Iterate on nodes' records.
+    self.nodesRecords.forEach(function (nodeRecord) {
+      // Determine whether node's record is for a reaction.
+      if (nodeRecord.type === "reaction") {
+        delete nodeRecord.left;
+        delete nodeRecord.right;
+      }
+    });
+  }
+  /**
+  * Removes directional marks from nodes for reactions.
+  * @param {Object} self Instance of a class.
+  */
+  removeReactionsNodesDirectionalMarks(self) {
+    var reactionsDirectionalMarks = self
+    .nodesGroup.querySelectorAll("polygon.direction, rect.direction");
+    View.removeElements(reactionsDirectionalMarks);
   }
   /**
   * Creates scales for simulations of forces between network's elements.
@@ -5053,15 +5108,7 @@ class TopologyView {
     .force("positionY", d3.forceY()
       .y(self.graphWidth / 2)
       .strength(0.03)
-    )
-    .on("tick", function () {
-      // Restore monitor of simulation's progress.
-      //self.restoreForceSimulationProgress(self);
-    })
-    .on("end", function () {
-      // Complete tasks dependent on simulation's completion.
-      //self.completeForceSimulation(self);
-    });
+    );
     // Preserve a reference to the simulation in the application's state.
     self.state.simulation = self.simulation;
   }
@@ -5087,6 +5134,11 @@ class TopologyView {
       self.restoreNodesPositions(self);
       self.restoreLinksPositions(self);
       self.refineNodesLinksRepresentations(self);
+      // Prepare for subsequent restorations to positions in network's diagram.
+      // Respond to simulation's progress and completion.
+      // To restore positions in network's diagrams, respond to simulation in a
+      // way to promote interactivity.
+      self.progressSimulationRestorePositions(self);
     });
   }
   /**
@@ -5149,6 +5201,7 @@ class TopologyView {
   removeSimulationProgressReport(self) {
     // Determine whether text container exists for message about simulation's
     // progress.
+    self.simulationProgressReport = self.graph.querySelector("text.progress");
     if (self.simulationProgressReport) {
       View.removeElement(self.simulationProgressReport);
     }
@@ -5174,7 +5227,6 @@ class TopologyView {
       self.refineNodesLinksRepresentations(self);
     });
   }
-
   /**
   * Creates and activates a visual representation of a network.
   * @param {Object} self Instance of a class.
@@ -5236,7 +5288,6 @@ class TopologyView {
     self.linksMarks.attr("stroke-width", (self.scaleLinkDimension * 1));
   }
 
-  // TODO: Implement tip view
   // TODO: Implement prompt view with controls for individual nodes
   // TODO: Selection of node highlights node (emphasis class), activates detail view, and displays details in detail view
   // TODO: Maybe only create and display prompt view for current node selection.
@@ -5248,30 +5299,6 @@ class TopologyView {
   // TODO: I can probably just call self.simulation.restart();
   // TODO: No need to re-define the simulation after I've already defined it.
 
-  //nodes.call(
-  //  d3.drag()
-  //  .on("start", startDrag)
-  //  .on("drag", drag)
-  //  .on("end", endDrag)
-  //)
-  //.on("dblclick", relsease);
-
-//  function dragStart(d) {
-//    if (!d3.event.active) self.simulation.alphaTarget(0.3).restart();
-//    d.fx = d.x;
-//    d.fy = d.y;
-//    d3.select(this)
-//        .classed("fixed", true);
-//};
-//function dragged(d) {
-//    d.fx = d3.event.x;
-//    d.fy = d3.event.y;
-//};
-//function dragEnd(d) {
-//    if (!d3.event.active) self.simulation.alphaTarget(0);
-//    //d.fx = null;
-//    //d.fy = null;
-//};
 //function release(d) {
 //    d.fx = null;
 //    d.fy = null;
@@ -5353,7 +5380,7 @@ class TopologyView {
       //var node = nodes[index];
       //var nodeSelection = d3.select(node);
       // Call action.
-      Action.changeEntitySelection({
+      Action.selectNetworkNode({
         identifier: element.identifier,
         type: element.type,
         state: self.state
@@ -5402,6 +5429,7 @@ class TopologyView {
       } else {
         // Create tip view for node.
         // Determine event's positions.
+        // Determine positions relative to the browser's window.
         var horizontalPosition = d3.event.clientX;
         var verticalPosition = d3.event.clientY;
         // Create tip.
@@ -5444,6 +5472,45 @@ class TopologyView {
       // Call action.
       self.tipView.clearView(self.tipView);
     });
+    self.nodesGroups.call(
+      d3.drag()
+      .on("start", startDrag)
+      .on("drag", continueDrag)
+      .on("end", endDrag)
+    );
+    function startDrag(element, index, nodes) {
+      // Select element.
+      var node = nodes[index];
+      var nodeSelection = d3.select(node);
+      // Force simulation to continue while drag event is active.
+      if (d3.event.active === 0) {
+        // Remove any previous directions of reactions' nodes.
+        self.removeReactionsNodesDirections(self);
+        // Initiate simulation.
+        self.simulation.alphaTarget(0.5).restart();
+      }
+      // Restore node's position.
+      element.fx = element.x;
+      element.fy = element.y;
+      // Set class.
+      nodeSelection.classed("anchor", true);
+    }
+    function continueDrag(element, index, nodes) {
+      // Determine event's positions.
+      // Determine positions relative to the container.
+      var horizontalPosition = d3.event.x;
+      var verticalPosition = d3.event.y;
+      // Restore node's position.
+      element.fx = horizontalPosition;
+      element.fy = verticalPosition;
+    }
+    function endDrag(element, index, nodes) {
+      // Allow simulation to terminate when drag event is inactive.
+      if (d3.event.active === 0) {
+        self.simulation.alphaTarget(0);
+      }
+      // Leave node as anchor in its current position.
+    }
   }
   /**
   * Creates nodes's marks.
@@ -5651,12 +5718,15 @@ class TopologyView {
       var reaction = self.state.reactions[candidate.reaction];
       // Collect identifiers of metabolites' nodes that surround the reaction's
       // node.
+      // Traversal function needs identifiers of nodes that are source and
+      // target of each link.
+      // Use original records for subnetwork's links.
       var neighbors = Traversal.collectNodeNeighbors({
         focus: reactionNode.identifier,
         direction: "neighbors",
         omissionNodes: [],
         omissionLinks: [],
-        links: self.linksRecords
+        links: self.state.subnetworkLinksRecords
       });
       // Determine the roles in which metabolites participate in the reaction.
       // Reaction's store information about metabolites' participation.
@@ -5664,7 +5734,7 @@ class TopologyView {
       var neighborsRoles = TopologyView.sortMetabolitesNodesReactionRoles({
         identifiers: neighbors,
         participants: reaction.participants,
-        networkNodesmetabolites: self.state.networkNodesMetabolites,
+        networkNodesMetabolites: self.state.networkNodesMetabolites,
         candidatesMetabolites: self.state.candidatesMetabolites
       });
       // Collect records for nodes of metabolites that participate in the
@@ -5677,7 +5747,7 @@ class TopologyView {
       );
       // Determine orientation of reaction's node.
       // Include designations of orientation in record for reaction's node.
-      var orientations = TopologyView.determineReactionNodeOrientation({
+      var orientation = TopologyView.determineReactionNodeOrientation({
         reactionNode: reactionNode,
         reactantsNodes: reactantsNodes,
         productsNodes: productsNodes,
@@ -5685,8 +5755,8 @@ class TopologyView {
       });
       // Include information about orientation in record for reaction's node.
       // Modify current record to preserve references from existing elements.
-      reactionNode.left = orientations.left;
-      reactionNode.right = orientations.right;
+      reactionNode.left = orientation.left;
+      reactionNode.right = orientation.right;
     });
   }
   /**

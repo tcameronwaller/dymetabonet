@@ -367,11 +367,11 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   fill: rgba(255, 0, 100, 1);
 }
 
-#topology svg .node.seaction .mark.supplement {
+#topology svg .node.reaction .mark.supplement {
   fill: rgba(255, 255, 100, 1);
 }
 
-#topology svg .node.reaction .direction {
+#topology svg .node.reaction polygon.direction, rect.direction {
   /*dark*/
   fill: rgba(50, 0, 200, 1);
 }

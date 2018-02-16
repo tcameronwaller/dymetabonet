@@ -1514,7 +1514,8 @@ class Action {
       verticalShift: 0,
       state: state
     });
-    var entitySelection = {type: "", node: "", candidate: "", entity: ""};
+    // Remove any entity selection.
+    var entitySelection = Action.initializeEntitySelection();
     // Compile variables' values.
     var novelVariablesValues = {
       prompt: prompt,
@@ -1530,41 +1531,25 @@ class Action {
     });
   }
   /**
-  * Changes the selection of a node's entity.
+  * Responds to a selection on a network's node.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
   * @param {string} parameters.type Type of a node, metabolite or reaction.
   * @param {Object} parameters.state Application's state.
   */
-  static changeEntitySelection({identifier, type, state} = {}) {
-    // Determine novel selection's information.
-    if ((identifier.length > 0) && (type.length > 0)) {
-      // Access information.
-      if (type === "metabolite") {
-        var node = state.networkNodesMetabolites[identifier];
-        var candidate = state.candidatesMetabolites[node.candidate];
-        var entity = state.metabolites[candidate.metabolite];
-      } else if (type === "reaction") {
-        var node = state.networkNodesReactions[identifier];
-        var candidate = state.candidatesReactions[node.candidate];
-        var entity = state.reactions[candidate.reaction];
-      }
-      if (candidate.identifier === state.entitySelection.candidate) {
-        var entitySelection = {type: "", node: "", candidate: "", entity: ""};
-      } else {
-        var entitySelection = {
-          type: type,
-          node: node.identifier,
-          candidate: candidate.identifier,
-          entity: entity.identifier
-        };
-      }
-    } else {
-      var entitySelection = {type: "", node: "", candidate: "", entity: ""};
-    }
+  static selectNetworkNode({identifier, type, state} = {}) {
+    // Determine novel information about entity selection.
+    var entitySelection = Action.changeEntitySelection({
+      identifier: identifier,
+      type: type,
+      state: state
+    });
+    // Remove any prompt view.
+    var prompt = Action.initializePromptViewControls();
     // Compile variables' values.
     var novelVariablesValues = {
-      entitySelection: entitySelection
+      entitySelection: entitySelection,
+      prompt: prompt
     };
     var variablesValues = Object.assign(
       novelVariablesValues
@@ -1582,7 +1567,7 @@ class Action {
 
   /**
   * Initializes values of variables of application's controls for prompt view.
-  * @param {Object} state Application's state.
+  * @returns {Object} Information about prompt view.
   */
   static initializePromptViewControls() {
     // Initialize controls.
@@ -1598,6 +1583,26 @@ class Action {
       verticalPosition: verticalPosition,
       horizontalShift: horizontalShift,
       verticalShift: verticalShift
+    };
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Initializes information about selection of an entity.
+  * @returns {Object} Information about an entity selection.
+  */
+  static initializeEntitySelection() {
+    // Initialize controls.
+    var type = "";
+    var node = "";
+    var candidate = "";
+    var entity = "";
+    // Compile information.
+    var variablesValues = {
+      type: type,
+      node: node,
+      candidate: candidate,
+      entity: entity
     };
     // Return information.
     return variablesValues;
@@ -1859,6 +1864,7 @@ class Action {
   * @param {number} parameters.verticalShift Horizontal shift in pixels relative
   * to reference point.
   * @param {Object} parameters.state Application's state.
+  * @returns {Object} Information about prompt view.
   */
   static changePromptTypePosition({type, reference, horizontalPosition, verticalPosition, horizontalShift, verticalShift, state} = {}) {
     // Determine prompt's type and positions.
@@ -1884,6 +1890,43 @@ class Action {
     }
     // Return information.
     return prompt;
+  }
+  /**
+  * Changes the selection of a node's entity.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Information about an entity selection.
+  */
+  static changeEntitySelection({identifier, type, state} = {}) {
+    // Determine novel selection's information.
+    if ((identifier.length > 0) && (type.length > 0)) {
+      // Access information.
+      if (type === "metabolite") {
+        var node = state.networkNodesMetabolites[identifier];
+        var candidate = state.candidatesMetabolites[node.candidate];
+        var entity = state.metabolites[candidate.metabolite];
+      } else if (type === "reaction") {
+        var node = state.networkNodesReactions[identifier];
+        var candidate = state.candidatesReactions[node.candidate];
+        var entity = state.reactions[candidate.reaction];
+      }
+      if (candidate.identifier === state.entitySelection.candidate) {
+        var entitySelection = Action.initializeEntitySelection();
+      } else {
+        var entitySelection = {
+          type: type,
+          node: node.identifier,
+          candidate: candidate.identifier,
+          entity: entity.identifier
+        };
+      }
+    } else {
+      var entitySelection = Action.initializeEntitySelection();
+    }
+    // Return information.
+    return entitySelection;
   }
 
   ////////////////////////////////////////////////////////////////////////// ???
