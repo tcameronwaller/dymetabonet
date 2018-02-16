@@ -958,8 +958,15 @@ class View {
   static removeExistElement(identifier, documentReference) {
     var element = documentReference.getElementById(identifier);
     if (element) {
-      element.parentElement.removeChild(element);
+      View.removeElement(element);
     }
+  }
+  /**
+  * Removes an element from the document.
+  * @param {Object} element Reference to element.
+  */
+  static removeElement(element) {
+    element.parentElement.removeChild(element);
   }
 }
 
@@ -4708,41 +4715,35 @@ class TopologyView {
     self.graph.appendChild(self.nodesGroup);
     self.nodesGroup.classList.add("nodes");
   }
-
-  // TODO: Dragging a node should not submit anything to state...
-  // TODO: Dragging should re-initiate the simulation.
-
-  // TODO: no more need for flag for topology novelty.
-  // TODO: I guess just restore the network's diagram with each update to state and view
-
   /**
   * Restores view's content and behavior that varies with changes to the
   * application's state.
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
-
-    // TODO: Try running the simulation BEFORE creating the visual elements.
-    // TODO: Then just make the simulation live when dragging and stuff... use simulation.restart()
-    // TODO: That didn't work... change it back and just don't draw for first 200 iterations...
-
-    // TODO: Wait... this should work. Why doesn't it?
-    // TODO: The simulation is VERY fast this way, so it'd be nice to get it to work.
-
-
     // Prepare information about network's elements.
     self.prepareNetworkElementsRecords(self);
     // Create scales for the visual representation of network's elements.
     // These scales also inform the simulation.
     self.createRepresentationScales(self);
-    // Create network's layout.
-    self.createNetworkLayout(self);
-
-    // Create, activate, and restore visual representations of network's
-    // elements.
-    self.createActivateNetworkRepresentation(self);
-
-    self.completeForceSimulation(self);
+    // Determine whether the network's diagram requires mostly novel positions.
+    var novelPositions = TopologyView
+    .determineNovelNetworkDiagramPositions(self.nodesRecords);
+    if (novelPositions) {
+      // For efficiency, determine positions of network's elements before
+      // creating visual representations of these elements.
+      // Remove any visual representations.
+      General.removeDocumentChildren(self.linksGroup);
+      General.removeDocumentChildren(self.nodesGroup);
+      // Initialize positions in network's diagram.
+      self.initializeNetworkDiagramPositions(self);
+    } else {
+      // Create, activate, and restore visual representations of network's
+      // elements.
+      self.createActivateNetworkRepresentation(self);
+      // Initialize positions in network's diagram.
+      self.restoreNetworkDiagramPositions(self);
+    }
   }
   /**
   * Prepares local records of information about network's elements.
@@ -4753,28 +4754,6 @@ class TopologyView {
     // about positions of elements within network's diagram.
     self.nodesRecords = self.state.subnetworkNodesRecords;
     self.linksRecords = self.state.subnetworkLinksRecords;
-  }
-
-  /**
-  * Creates and activates a visual representation of a network.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateNetworkRepresentation(self) {
-    // Create graph to represent metabolic network.
-    // Graph structure.
-    // - graph (scalable vector graphical container)
-    // -- linksGroup (group)
-    // --- linksMarks (polylines)
-    // -- nodesGroup (group)
-    // --- nodesGroups (groups)
-    // ---- nodesMarks (ellipses, rectangles)
-    // ---- nodesDirectionalMarks (rectangles, polygons)
-    // ---- nodesLabels (text)
-    // Create links.
-    // Create links before nodes so that nodes will appear over the links.
-    self.createLinks(self);
-    // Create nodes.
-    self.createActivateNodes(self);
   }
   /**
   * Creates scales for visual representation of network's elements.
@@ -4806,7 +4785,7 @@ class TopologyView {
     var nodeDimensionScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([1, 3, 5, 7, 10, 15, 30, 40, 50, 60]);
+    .range([1, 3, 5, 7, 10, 15, 20, 30, 40, 50]);
     // Define scale for dimensions of links' representations.
     // Domain's unit is pixel for ratio of graphical container's width to count
     // of nodes.
@@ -4844,7 +4823,7 @@ class TopologyView {
     var fontScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([1, 2, 3, 4, 5, 7, 11, 13, 15, 17]);
+    .range([1, 2, 3, 4, 5, 7, 10, 11, 13, 15]);
     // Compute ratio for scales' domain.
     self.scaleRatio = self.graphWidth / self.nodesRecords.length;
     // Compute dimensions from scale.
@@ -4856,6 +4835,366 @@ class TopologyView {
     self.reactionNodeHeight = self.scaleNodeDimension * 0.75;
     // Compute font size from scale.
     self.scaleFont = fontScale(self.scaleRatio);
+  }
+  /**
+  * Initializes positions of network's elements in network's diagram.
+  * @param {Object} self Instance of a class.
+  */
+  initializeNetworkDiagramPositions(self) {
+    // Create scales for simulation of forces between network's elements.
+    self.createSimulationScales(self);
+    // Create scales for efficiency.
+    self.createEfficiencyScales(self);
+    // Initialize monitor of simulation's progress.
+    self.initializeSimulationProgress(self);
+    // Initiate force simulation.
+    self.restoreInitiateSimulation(self);
+    // Respond to simulation's progress and completion.
+    self.progressSimulationInitializePositions(self);
+  }
+  /**
+  * Restores positions of network's elements in network's diagram.
+  * @param {Object} self Instance of a class.
+  */
+  restoreNetworkDiagramPositions(self) {
+    // Create scales for simulation of forces between network's elements.
+    self.createSimulationScales(self);
+    // Create scales for efficiency.
+    self.createEfficiencyScales(self);
+    // Initiate force simulation.
+    self.restoreInitiateSimulation(self);
+    // Respond to simulation's progress and completion.
+    self.progressSimulationRestorePositions(self);
+  }
+  /**
+  * Creates scales for simulations of forces between network's elements.
+  * @param {Object} self Instance of a class.
+  */
+  createSimulationScales(self) {
+    // Simulations of forces between network's elements are computationally
+    // expensive.
+    // The computational cost varies with the counts of network's elements.
+    // To maintain efficiency, vary the rigor of these simulations by the counts
+    // of network's elements.
+    // Define scales' domain on the basis of the count of nodes.
+    var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
+    // Define scale for alpha decay rate in force simulation.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.05, iterations = 134.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.03, iterations = 227.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.02, iterations = 300.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.015, iterations = 458.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.013, iterations = 528.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.01, iterations = 688.
+    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.005, iterations = 1379.
+    // Domain's unit is count of nodes.
+    // Range's unit is arbitrary for decay rates.
+    //domain: range
+    //0-100: 0.01
+    //100-500: 0.013
+    //500-1000: 0.015
+    //1000-2500: 0.02
+    //2500-5000: 0.03
+    //5000-10000: 0.04
+    //10000-1000000: 0.05
+    var alphaDecayScale = d3
+    .scaleThreshold()
+    .domain(domainCounts)
+    .range([0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04]);
+    // Define scale for velocity decay rate in force simulation.
+    // Domain's unit is count of nodes.
+    // Range's unit is arbitrary for decay rates.
+    //domain: range
+    //0-100: 0.2
+    //100-500: 0.2
+    //500-1000: 0.2
+    //1000-2500: 0.2
+    //2500-5000: 0.25
+    //5000-10000: 0.3
+    //10000-1000000: 0.3
+    var velocityDecayScale = d3
+    .scaleThreshold()
+    .domain(domainCounts)
+    .range([0.2, 0.2, 0.2, 0.2, 0.25, 0.3, 0.3]);
+    // Compute simulation decay rates from scale.
+    self.scaleAlphaDecay = alphaDecayScale(self.nodesRecords.length);
+    self.scaleVelocityDecay = velocityDecayScale(self.nodesRecords.length);
+    // Define parameters of the force simulation.
+    self.alpha = 1;
+    self.alphaMinimum = 0.001;
+  }
+  /**
+  * Creates scale for efficiency in the application.
+  * @param {Object} self Instance of a class.
+  */
+  createEfficiencyScales(self) {
+    // Graphical rendering of visual elements for network's elements is
+    // computationally expensive
+    // The maintenance of efficient interactivity in the application requires
+    // restriction on behavior.
+    // Greater scale of the network requires more stringent restriction for
+    // computational efficiency.
+    // Define scale's domain on the basis of the count of nodes.
+    var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
+    // Define scale for intervals at which to restore positions of nodes and
+    // links during simulation's iterations.
+    // Domain's unit is count of nodes.
+    // Range's unit is arbitrary.
+    //domain: range
+    //0-100: 3
+    //100-500: 5
+    //500-1000: 10
+    //1000-2500: 15
+    //2500-5000: 25
+    //5000-10000: 50
+    //10000-1000000: 100
+    var intervalScale = d3
+    .scaleThreshold()
+    .domain(domainCounts)
+    .range([1, 1, 1, 1, 1, 1, 1]);
+    // Compute efficient behavior rules from scales.
+    self.scaleInterval = intervalScale(self.nodesRecords.length);
+  }
+  /**
+  * Initiates a monitor of force simulation's progress.
+  * @param {Object} self Instance of a class.
+  */
+  initializeSimulationProgress(self) {
+    // Compute an estimate of the simulation's iterations.
+    self.estimateIterations = self.computeSimulationIterations(self);
+    // Initiate counter for simulation's iterations.
+    self.simulationCounter = 0;
+  }
+  /**
+  * Computes an estimate of iterations for a simulation.
+  * @param {Object} self Instance of a class.
+  */
+  computeSimulationIterations(self) {
+    return (
+      (Math.log10(self.alphaMinimum)) /
+      (Math.log10(self.alpha - self.scaleAlphaDecay))
+    );
+  }
+  /**
+  * Restores and initiates a force simulation to determine positions of
+  * network's nodes and links in a node-link diagram.
+  * @param {Object} self Instance of a class.
+  */
+  restoreInitiateSimulation(self) {
+    // Initiate the force simulation.
+    // The force method assigns a specific force simulation to the name.
+    // Collision force prevents overlap and occlusion of nodes.
+    // The center force causes nodes to behave strangely when user repositions
+    // them manually.
+    // The force simulation assigns positions to the nodes, recording
+    // coordinates of these positions in novel attributes within nodes' records.
+    // These coordinates are accessible in the original data that associates
+    // with node elements.
+    // Any elements with access to the nodes' data, such as nodes' marks and
+    // labels, also have access to the coordinates of these positions.
+    // The visual representation of the subnetwork's elements in the network's
+    // diagram constitutes an important and persistent part of the application's
+    // state.
+    // The force simulation that creates the positions of nodes and links in the
+    // network's diagram is similarly an important and persistent part of the
+    // application's state.
+    // It is important to manage a single relevant simulation to avoid
+    // continuations of previous simulations after changes to the application's
+    // state.
+    // This force simulation depends both on the subnetwork's elements and on
+    // the dimensions of the view within the document object model.
+    // Determine whether the application's state has a previous simulation.
+    if (Model.determineSimulation(self.state)) {
+      // Stop the previous simulation.
+      // Replace the simulation in the application's state.
+      self.state.simulation.stop();
+      self.state.simulation = {};
+    }
+    self.simulation = d3.forceSimulation()
+    .alphaTarget(0)
+    .alpha(self.alpha)
+    .alphaDecay(self.scaleAlphaDecay)
+    .alphaMin(self.alphaMinimum)
+    .velocityDecay(self.scaleVelocityDecay)
+    .nodes(self.nodesRecords)
+    .force("center", d3.forceCenter()
+      .x(self.graphWidth / 2)
+      .y(self.graphHeight / 2)
+    )
+    .force("collision", d3.forceCollide()
+      .radius(function (element, index, nodes) {
+        if (element.type === "metabolite") {
+          return self.metaboliteNodeWidth;
+        } else if (element.type === "reaction") {
+          return self.reactionNodeWidth;
+        }
+      })
+      .strength(0.7)
+      .iterations(1)
+    )
+    .force("charge", d3.forceManyBody()
+      .theta(0.3)
+      .strength(-500)
+      .distanceMin(1)
+      .distanceMax(self.scaleNodeDimension * 25)
+    )
+    .force("link", d3.forceLink()
+      .links(self.linksRecords)
+      .id(function (element, index, nodes) {
+        return element.identifier;
+      })
+      .distance(1.3 * (self.reactionNodeWidth + self.metaboliteNodeWidth))
+      //.strength()
+      //.iterations()
+    )
+    .force("positionX", d3.forceX()
+      .x(self.graphWidth / 2)
+      .strength(0.00007)
+    )
+    .force("positionY", d3.forceY()
+      .y(self.graphWidth / 2)
+      .strength(0.03)
+    )
+    .on("tick", function () {
+      // Restore monitor of simulation's progress.
+      //self.restoreForceSimulationProgress(self);
+    })
+    .on("end", function () {
+      // Complete tasks dependent on simulation's completion.
+      //self.completeForceSimulation(self);
+    });
+    // Preserve a reference to the simulation in the application's state.
+    self.state.simulation = self.simulation;
+  }
+  /**
+  * Responds to simulation's progress and completion.
+  * @param {Object} self Instance of a class.
+  */
+  progressSimulationInitializePositions(self) {
+    self.simulation
+    .on("tick", function () {
+      // Execute behavior during simulation's progress.
+      // Report simulation's progress.
+      self.reportSimulationProgress(self);
+    })
+    .on("end", function () {
+      // Execute behavior upon simulation's completion.
+      // Remove message about simulation's progress.
+      self.removeSimulationProgressReport(self);
+      // Create, activate, and restore visual representations of network's
+      // elements.
+      self.createActivateNetworkRepresentation(self);
+      // Restore and refine positions in network's diagram.
+      self.restoreNodesPositions(self);
+      self.restoreLinksPositions(self);
+      self.refineNodesLinksRepresentations(self);
+    });
+  }
+  /**
+  * Reports progress of iterative force simulation.
+  * @param {Object} self Instance of a class.
+  */
+  reportSimulationProgress(self) {
+    // Increment count of simulation's iterations.
+    self.simulationCounter += 1;
+    // Estimate simulation's progress.
+    var progress = (
+      Math.round((self.simulationCounter / self.estimateIterations) * 100) / 100
+    );
+    if (progress > self.simulationProgress) {
+      self.createRestoreSimulationProgressReport(progress, self);
+    }
+    self.simulationProgress = progress;
+  }
+  /**
+  * Creates and restores a report of simulation's progress.
+  * @param {number} progress Instance of a class.
+  * @param {Object} self Instance of a class.
+  */
+  createRestoreSimulationProgressReport(progress, self) {
+    // Determine whether text container exists for message about simulation's
+    // progress.
+    self.simulationProgressReport = self.graph.querySelector("text.progress");
+    if (self.simulationProgressReport) {
+      // Text container exists.
+      // Restore position.
+      self.simulationProgressReport
+      .setAttribute("x", (String(self.graphWidth / 2) + "px"));
+      self.simulationProgressReport
+      .setAttribute("y", (String(self.graphHeight / 2) + "px"));
+      // Restore message.
+      var message = (
+        "simulation progress: " + (progress * 100).toFixed() + "%"
+      );
+      self.simulationProgressReport.textContent = message;
+    } else {
+      // Create text container.
+      self.simulationProgressReport = self
+      .document.createElementNS("http://www.w3.org/2000/svg", "text");
+      self.graph.appendChild(self.simulationProgressReport);
+      self.simulationProgressReport.classList.add("progress");
+      // Restore position.
+      self.simulationProgressReport.setAttribute("x", "0px");
+      self.simulationProgressReport.setAttribute("y", "0px");
+      // Restore message.
+      var message = (
+        "simulation progress: " + (progress * 100).toFixed() + "%"
+      );
+      self.simulationProgressReport.textContent = message;
+    }
+  }
+  /**
+  * Removes report of simulation's progress.
+  * @param {Object} self Instance of a class.
+  */
+  removeSimulationProgressReport(self) {
+    // Determine whether text container exists for message about simulation's
+    // progress.
+    if (self.simulationProgressReport) {
+      View.removeElement(self.simulationProgressReport);
+    }
+    self.simulationProgress = 0;
+  }
+  /**
+  * Responds to simulation's progress and completion.
+  * @param {Object} self Instance of a class.
+  */
+  progressSimulationRestorePositions(self) {
+    self.simulation
+    .on("tick", function () {
+      // Execute behavior during simulation's progress.
+      // Restore positions in network's diagram.
+      self.restoreNodesPositions(self);
+      self.restoreLinksPositions(self);
+    })
+    .on("end", function () {
+      // Execute behavior upon simulation's completion.
+      // Restore and refine positions in network's diagram.
+      self.restoreNodesPositions(self);
+      self.restoreLinksPositions(self);
+      self.refineNodesLinksRepresentations(self);
+    });
+  }
+
+  /**
+  * Creates and activates a visual representation of a network.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateNetworkRepresentation(self) {
+    // Create graph to represent metabolic network.
+    // Graph structure.
+    // - graph (scalable vector graphical container)
+    // -- linksGroup (group)
+    // --- linksMarks (polylines)
+    // -- nodesGroup (group)
+    // --- nodesGroups (groups)
+    // ---- nodesMarks (ellipses, rectangles)
+    // ---- nodesDirectionalMarks (rectangles, polygons)
+    // ---- nodesLabels (text)
+    // Create links.
+    // Create links before nodes so that nodes will appear over the links.
+    self.createLinks(self);
+    // Create nodes.
+    self.createActivateNodes(self);
   }
   /**
   * Creates links.
@@ -4891,13 +5230,6 @@ class TopologyView {
       });
       return link.role === "product";
     });
-    self.linksMarks.classed("replication", function (element, index, nodes) {
-      var link = TopologyView.accessLink({
-        identifier: element.identifier,
-        state: self.state
-      });
-      return link.replication;
-    });
     self.linksMarks.attr("marker-mid", "url(#link-marker)");
     // Determine dimensions for representations of network's elements.
     // Set dimensions of links.
@@ -4910,6 +5242,11 @@ class TopologyView {
   // TODO: Maybe only create and display prompt view for current node selection.
   // TODO: Click and drag moves node and locks in new position...
   // TODO: I want new classes for selected (emphasis) and anchored nodes.
+
+  // TODO: Dragging a node should not submit anything to state...
+  // TODO: Re-initiate the force simulation for drags...
+  // TODO: I can probably just call self.simulation.restart();
+  // TODO: No need to re-define the simulation after I've already defined it.
 
   //nodes.call(
   //  d3.drag()
@@ -4950,7 +5287,7 @@ class TopologyView {
     // Create nodes.
     // Create groups to contain elements for individual nodes.
     self.createNodesGroups(self);
-    //self.activateNodesGroups(self);
+    self.activateNodesGroups(self);
     // Create marks for individual nodes.
     self.createNodesMarks(self);
     // Create labels for individual nodes.
@@ -5019,64 +5356,77 @@ class TopologyView {
         state: self.state
       });
     });
-    self.nodesGroups.on("mouseenter", function (element, index, nodes) {
-      // Select element.
-      var node = nodes[index];
-      var nodeSelection = d3.select(node);
-      // Determine whether node's entity has a selection.
-      var selection = TopologyView.determineNodeEntitySelection({
-        identifier: element.identifier,
-        type: element.type,
-        state: self.state
-      });
 
-      // Write new function in View container to translate coordinates for tip and prompt...
-      // containerWidth (use to determine left/right side)
-      // containerHeight (use to determine top/bottom side)
-      // horizontalPosition (use to determine left/right side)
-      // verticalPosition (use to determine top/bottom side)
-      // horizontalShift (either 15 for cursor or node's width)
-      // verticalShift (similar)
-
-      if (selection) {
-        // Determine dimensions and positions.
-        var dimensionsPositions = TopologyView
-        .determineNodeDimensionsPositions({
-          node: node,
-          windowReference: self.window
-        });
-
-
-        // Create stationary tip.
-        // Create tip.
-
-        // TODO: Maybe split up "createTipSummary" and "createTip"
-
-
-        TopologyView.createTip({
+    if (false) {
+      self.nodesGroups.on("mouseenter", function (element, index, nodes) {
+        // Select element.
+        var node = nodes[index];
+        var nodeSelection = d3.select(node);
+        // Determine whether node's entity has a selection.
+        var selection = TopologyView.determineNodeEntitySelection({
           identifier: element.identifier,
           type: element.type,
-          containerWidth: 20,
-          horizontalPosition: horizontalPosition,
-          verticalPosition: verticalPosition,
-          horizontalShift: horizontalShift,
-          verticalShift: verticalShift,
-          positionX: positionX,
-          positionY: positionY,
-          tipView: self.tipView,
-          documentReference: self.document,
           state: self.state
         });
-        // Create prompt's abbreviation.
+        if (selection) {
+          // Determine dimensions and positions.
+          var dimensionsPositions = TopologyView
+          .determineNodeDimensionsPositions({
+            node: node,
+            windowReference: self.window
+          });
 
-      } else {
-        // Create mobile tip.
+
+          // Create stationary tip.
+          // Create tip.
+
+          // TODO: Maybe split up "createTipSummary" and "createTip"
+
+
+          TopologyView.createTip({
+            identifier: element.identifier,
+            type: element.type,
+            containerWidth: 20,
+            horizontalPosition: horizontalPosition,
+            verticalPosition: verticalPosition,
+            horizontalShift: horizontalShift,
+            verticalShift: verticalShift,
+            positionX: positionX,
+            positionY: positionY,
+            tipView: self.tipView,
+            documentReference: self.document,
+            state: self.state
+          });
+          // Create prompt's abbreviation.
+
+        } else {
+          // Create mobile tip.
+          // Determine cursor's positions.
+          //.clientX
+          //.clientY
+          var positionX = d3.mouse(self.view)[0];
+          var positionY = d3.mouse(self.view)[1];
+          // Create tip.
+          TopologyView.createTip({
+            identifier: element.identifier,
+            type: element.type,
+            positionX: positionX,
+            positionY: positionY,
+            tipView: self.tipView,
+            documentReference: self.document,
+            state: self.state
+          });
+        }
+
+        // TODO: Behavior should differ dependent on whether node has class emphasis (meaning its selected)
+        // TODO: Activate on click behavior to change entity selection state variable.
+
+      });
+      self.nodesGroups.on("mousemove", function (element, index, nodes) {
         // Determine cursor's positions.
-        //.clientX
-        //.clientY
         var positionX = d3.mouse(self.view)[0];
         var positionY = d3.mouse(self.view)[1];
-        // Create tip.
+        // Call action.
         TopologyView.createTip({
           identifier: element.identifier,
           type: element.type,
@@ -5086,34 +5436,15 @@ class TopologyView {
           documentReference: self.document,
           state: self.state
         });
-      }
-
-      // TODO: Behavior should differ dependent on whether node has class emphasis (meaning its selected)
-      // TODO: Activate on click behavior to change entity selection state variable.
-
-    });
-    self.nodesGroups.on("mousemove", function (element, index, nodes) {
-      // Determine cursor's positions.
-      var positionX = d3.mouse(self.view)[0];
-      var positionY = d3.mouse(self.view)[1];
-      // Call action.
-      TopologyView.createTip({
-        identifier: element.identifier,
-        type: element.type,
-        positionX: positionX,
-        positionY: positionY,
-        tipView: self.tipView,
-        documentReference: self.document,
-        state: self.state
       });
-    });
-    self.nodesGroups.on("mouseleave", function (element, index, nodes) {
-      // Select element.
-      var node = nodes[index];
-      var nodeSelection = d3.select(node);
-      // Call action.
-      self.tipView.clearView(self.tipView);
-    });
+      self.nodesGroups.on("mouseleave", function (element, index, nodes) {
+        // Select element.
+        var node = nodes[index];
+        var nodeSelection = d3.select(node);
+        // Call action.
+        self.tipView.clearView(self.tipView);
+      });
+    }
   }
   /**
   * Creates nodes's marks.
@@ -5235,313 +5566,6 @@ class TopologyView {
     }
   }
 
-  // TODO: Probably call this "restoreNetworkDiagramPositions" or something.
-  // TODO: I want to be able to call this method conveniently to re-initiate
-  // TODO: simulations when I drag a node and that sort of thing.
-  // TODO: I should only need to re-initiate the force simulation for drags...
-  // TODO: I can probably just call self.simulation.restart();
-  // TODO: No need to re-define the simulation after I've already defined it.
-
-  // TODO: Rendering with each iteration of simulation is extremely slow...
-  // TODO: If most nodes have positions at origin (brand new layout), then don't even draw the first
-  // TODO: 300 iterations or so...
-
-  // TODO: Any premature change to the subnetwork needs to terminate previous simulation
-  // TODO: and start a new one...
-
-  /**
-  * Creates layout for visual representations of network's elements.
-  * @param {Object} self Instance of a class.
-  */
-  createNetworkLayout(self) {
-    // Create scales for simulation of forces between network's elements.
-    self.createSimulationScales(self);
-    // Create scales for efficiency.
-    self.createEfficiencyScales(self);
-    // Initiate force simulation.
-    self.restoreInitiateForceSimulation(self);
-  }
-  /**
-  * Creates scales for simulations of forces between network's elements.
-  * @param {Object} self Instance of a class.
-  */
-  createSimulationScales(self) {
-    // Simulations of forces between network's elements are computationally
-    // expensive.
-    // The computational cost varies with the counts of network's elements.
-    // To maintain efficiency, vary the rigor of these simulations by the counts
-    // of network's elements.
-    // Define scales' domain on the basis of the count of nodes.
-    var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
-    // Define scale for alpha decay rate in force simulation.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.05, iterations = 134.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.03, iterations = 227.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.02, iterations = 300.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.015, iterations = 458.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.013, iterations = 528.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.01, iterations = 688.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.005, iterations = 1379.
-    // Domain's unit is count of nodes.
-    // Range's unit is arbitrary for decay rates.
-    //domain: range
-    //0-100: 0.005
-    //100-500: 0.006
-    //500-1000: 0.007
-    //1000-2500: 0.008
-    //2500-5000: 0.009
-    //5000-10000: 0.01
-    //10000-1000000: 0.011
-    var alphaDecayScale = d3
-    .scaleThreshold()
-    .domain(domainCounts)
-    .range([0.02, 0.02, 0.02, 0.02, 0.025, 0.025, 0.03]);
-    // Define scale for velocity decay rate in force simulation.
-    // Domain's unit is count of nodes.
-    // Range's unit is arbitrary for decay rates.
-    //domain: range
-    //0-100: 0.2
-    //100-500: 0.2
-    //500-1000: 0.2
-    //1000-2500: 0.2
-    //2500-5000: 0.25
-    //5000-10000: 0.3
-    //10000-1000000: 0.3
-    var velocityDecayScale = d3
-    .scaleThreshold()
-    .domain(domainCounts)
-    .range([0.2, 0.2, 0.2, 0.2, 0.25, 0.3, 0.3]);
-    // Compute simulation decay rates from scale.
-    self.scaleAlphaDecay = alphaDecayScale(self.nodesRecords.length);
-    self.scaleVelocityDecay = velocityDecayScale(self.nodesRecords.length);
-  }
-  /**
-  * Creates scale for efficiency in the application.
-  * @param {Object} self Instance of a class.
-  */
-  createEfficiencyScales(self) {
-    // Graphical rendering of visual elements for network's elements is
-    // computationally expensive
-    // The maintenance of efficient interactivity in the application requires
-    // restriction on behavior.
-    // Greater scale of the network requires more stringent restriction for
-    // computational efficiency.
-    // Define scale's domain on the basis of the count of nodes.
-    var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
-    // Define scale for intervals at which to restore positions of nodes and
-    // links during simulation's iterations.
-    // Domain's unit is count of nodes.
-    // Range's unit is arbitrary.
-    //domain: range
-    //0-100: 3
-    //100-500: 5
-    //500-1000: 10
-    //1000-2500: 15
-    //2500-5000: 25
-    //5000-10000: 50
-    //10000-1000000: 100
-    var intervalScale = d3
-    .scaleThreshold()
-    .domain(domainCounts)
-    .range([1, 1, 1, 1, 1, 1, 1]);
-    // Compute efficient behavior rules from scales.
-    self.scaleInterval = intervalScale(self.nodesRecords.length);
-  }
-
-  /**
-  * Restores and initiates a force simulation to determine positions of
-  * network's nodes and links in a node-link diagram.
-  * @param {Object} self Instance of a class.
-  */
-  restoreInitiateForceSimulation(self) {
-    // Define parameters of the force simulation.
-    self.alpha = 1;
-    self.alphaMinimum = 0.001;
-    // Initiate monitor of simulation's progress.
-    self.initiateForceSimulationProgress(self);
-    // Initiate the force simulation.
-    // The force method assigns a specific force simulation to the name.
-    // Collision force prevents overlap and occlusion of nodes.
-    // The center force causes nodes to behave strangely when user repositions
-    // them manually.
-    // The force simulation assigns positions to the nodes, recording
-    // coordinates of these positions in novel attributes within nodes' records.
-    // These coordinates are accessible in the original data that associates
-    // with node elements.
-    // Any elements with access to the nodes' data, such as nodes' marks and
-    // labels, also have access to the coordinates of these positions.
-    // The visual representation of the subnetwork's elements in the network's
-    // diagram constitutes an important and persistent part of the application's
-    // state.
-    // The force simulation that creates the positions of nodes and links in the
-    // network's diagram is similarly an important and persistent part of the
-    // application's state.
-    // It is important to manage a single relevant simulation to avoid
-    // continuations of previous simulations after changes to the application's
-    // state.
-    // This force simulation depends both on the subnetwork's elements and on
-    // the dimensions of the view within the document object model.
-    // Determine whether the application's state has a previous simulation.
-    if (Model.determineSimulation(self.state)) {
-      // Stop the previous simulation.
-      // Replace the simulation in the application's state.
-      self.state.simulation.stop();
-    }
-    self.simulation = d3.forceSimulation()
-    .alphaTarget(0)
-    .alpha(self.alpha)
-    .alphaDecay(self.scaleAlphaDecay)
-    .alphaMin(self.alphaMinimum)
-    .velocityDecay(self.scaleVelocityDecay)
-    .nodes(self.nodesRecords)
-    .force("center", d3.forceCenter()
-      .x(self.graphWidth / 2)
-      .y(self.graphHeight / 2)
-    )
-    .force("collision", d3.forceCollide()
-      .radius(function (element, index, nodes) {
-        if (element.type === "metabolite") {
-          var node = TopologyView.accessNode({
-            identifier: element.identifier,
-            type: element.type,
-            state: self.state
-          });
-          if (node.replication) {
-            return (self.metaboliteNodeWidth / 3);
-          } else {
-            return self.metaboliteNodeWidth;
-          }
-        } else if (element.type === "reaction") {
-          return self.reactionNodeWidth;
-        }
-      })
-      .strength(0.7)
-      .iterations(1)
-    )
-    .force("charge", d3.forceManyBody()
-      .theta(0.3)
-      .strength(function (element, index, nodes) {
-        if (element.type === "metabolite") {
-          var node = TopologyView.accessNode({
-            identifier: element.identifier,
-            type: element.type,
-            state: self.state
-          });
-          if (node.replication) {
-            return -1;
-          } else {
-            return -500;
-          }
-        } else if (element.type === "reaction") {
-          return -500;
-        }
-      })
-      .distanceMin(1)
-      .distanceMax(self.scaleNodeDimension * 25)
-    )
-    .force("link", d3.forceLink()
-      .links(self.linksRecords)
-      .id(function (element, index, nodes) {
-        return element.identifier;
-      })
-      .distance(function (element, index, nodes) {
-        // Determine whether the link represents relation between nodes that
-        // have designations for simplification.
-        var link = TopologyView.accessLink({
-          identifier: element.identifier,
-          state: self.state
-        });
-        if (link.replication) {
-          // Link is for a replicate node.
-          return (self.metaboliteNodeWidth * 0.1);
-        } else {
-          // Link is not for a replicate node.
-          return (1.3 * (self.reactionNodeWidth + self.metaboliteNodeWidth));
-        }
-      })
-      //.strength()
-      //.iterations()
-    )
-    .force("positionX", d3.forceX()
-      .x(self.graphWidth / 2)
-      .strength(0.00007)
-    )
-    .force("positionY", d3.forceY()
-      .y(self.graphWidth / 2)
-      .strength(0.03)
-    )
-    .on("tick", function () {
-      // Restore monitor of simulation's progress.
-      self.restoreForceSimulationProgress(self);
-    })
-    .on("end", function () {
-      // Complete tasks dependent on simulation's completion.
-      //self.completeForceSimulation(self);
-    });
-    // Preserve a reference to the simulation in the application's state.
-    self.state.simulation = self.simulation;
-  }
-
-
-  /**
-  * Initiates a monitor of force simulation's progress.
-  * @param {Object} self Instance of a class.
-  */
-  initiateForceSimulationProgress(self) {
-    // Compute an estimate of the simulation's iterations.
-    self.estimateIterations = self.computeSimulationIterations(self);
-    // Initiate counter for simulation's iterations.
-    self.simulationCounter = 0;
-  }
-  /**
-  * Computes an estimate of iterations for a simulation.
-  * @param {Object} self Instance of a class.
-  */
-  computeSimulationIterations(self) {
-    return (
-      (Math.log10(self.alphaMinimum)) /
-      (Math.log10(self.alpha - self.scaleAlphaDecay))
-    );
-  }
-  /**
-  * Restores a monitor of force simulation's progress.
-  * @param {Object} self Instance of a class.
-  */
-  restoreForceSimulationProgress(self) {
-    // Increment count of simulation's iterations.
-    self.simulationCounter += 1;
-    // Report simulation's progress.
-    var percentage = Math
-    .round((self.simulationCounter / self.estimateIterations) * 100);
-    if (percentage % 10 === 0) {
-      //console.log("simulation: " + percentage + "%");
-    }
-    // Restore positions of nodes and links periodically throughout the
-    // simulation.
-    if (self.simulationCounter % self.scaleInterval === 0) {
-      //self.restoreNodesPositions(self);
-      //self.restoreLinksPositions(self);
-    }
-  }
-  /**
-  * Completes tasks dependent on force simulation.
-  * @param {Object} self Instance of a class.
-  */
-  completeForceSimulation(self) {
-    // Restore and refine network's representation.
-    self.restoreNodesPositions(self);
-    self.restoreLinksPositions(self);
-    self.refineNodesLinksRepresentations(self);
-    // Report completion of network's representation.
-    var message = (
-      "network representation complete... " +
-      self.simulationCounter + " iterations"
-    );
-    //console.log(message);
-    //window.alert(message);
-    console.log(self.nodesRecords);
-    console.log(self.linksRecords);
-    console.log(self.simulation);
-  }
   /**
   * Restores positions of nodes' visual representations according to results of
   * force simulation.
@@ -5563,6 +5587,34 @@ class TopologyView {
       // Determine coordinates for nodes' marks from results of simulation in
       // nodes' records.
       return "translate(" + element.x + "," + element.y + ")";
+    });
+  }
+  /**
+  * Restores links' positions according to results of force simulation.
+  * @param {Object} self Instance of a class.
+  */
+  restoreLinksPositions(self) {
+    // Restore positions of links according to results of simulation.
+    // D3's procedure for force simulation copies references to records for
+    // source and target nodes within records for links.
+    self.linksMarks.attr("points", function (element, index, nodes) {
+      // Determine positions of link's termini.
+      var link = TopologyView.accessLink({
+        identifier: element.identifier,
+        state: self.state
+      });
+      var termini = TopologyView.determineLinkTermini({
+        role: link.role,
+        source: element.source,
+        target: element.target,
+        width: self.reactionNodeWidth
+      });
+      // Create points for vertices at source, center, and target of polyline.
+      var points = General.createStraightPolylinePoints({
+        source: termini.source,
+        target: termini.target
+      });
+      return points;
     });
   }
   /**
@@ -5716,38 +5768,32 @@ class TopologyView {
       return "translate(" + x + "," + y + ")";
     });
   }
-  /**
-  * Restores links' positions according to results of force simulation.
-  * @param {Object} self Instance of a class.
-  */
-  restoreLinksPositions(self) {
-    // Restore positions of links according to results of simulation.
-    // D3's procedure for force simulation copies references to records for
-    // source and target nodes within records for links.
-    self.linksMarks.attr("points", function (element, index, nodes) {
-      // Determine positions of link's termini.
-      var link = TopologyView.accessLink({
-        identifier: element.identifier,
-        state: self.state
-      });
-      var termini = TopologyView.determineLinkTermini({
-        role: link.role,
-        source: element.source,
-        target: element.target,
-        width: self.reactionNodeWidth
-      });
-      // Create points for vertices at source, center, and target of polyline.
-      var points = General.createStraightPolylinePoints({
-        source: termini.source,
-        target: termini.target
-      });
-      return points;
-    });
-  }
 
   // TODO: Consider creating a new class, TopologyViewUtility to store the static
   // TODO: methods with utility to TopologyView...
 
+  /**
+  * Determines whether the network's diagram requires mostly novel positions.
+  * @param {Array<Object>} networkNodesRecords Information about network's
+  * nodes.
+  * @returns {boolean} Whether the network's diagram requires mostly novel
+  * positions.
+  */
+  static determineNovelNetworkDiagramPositions(networkNodesRecords) {
+    // Iterate on records.
+    // Count records with positions at origin.
+    var originCount = networkNodesRecords.reduce(function (count, record) {
+      // Determine whether record's positions are at origin.
+      var origin = ((record.x === 0) && (record.y === 0));
+      if (origin) {
+        return count + 1;
+      } else {
+        return count;
+      }
+    }, 0);
+    // Determine whether more than half of records have positions at origin.
+    return (originCount > (networkNodesRecords.length / 2));
+  }
   /**
   * Accesses a link.
   * @param {Object} parameters Destructured object of parameters.

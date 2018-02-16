@@ -570,11 +570,6 @@ class Network {
     .concat(reactionsNodesRecords, metabolitesNodesRecords);
     return nodesRecords;
   }
-
-  // TODO: Initialize positions within records for network's nodes
-  // TODO: nodes' records need x, y, vx, vy, fx (null), and fy (null);
-  // TODO: https://github.com/d3/d3-force
-
   /**
   * Creates concise records for representation of network's nodes.
   * @param {Object} parameters Destructured object of parameters.
@@ -588,6 +583,7 @@ class Network {
       // Access information.
       var entry = nodes[identifier];
       // Create record.
+      // Initialize node's positions to origin.
       return {
         identifier: entry.identifier,
         type: entry.type,

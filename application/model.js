@@ -351,7 +351,7 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineSubnetworkScale(state) {
-    return state.subnetworkNodesRecords.length < 3000;
+    return state.subnetworkNodesRecords.length < 1000;
   }
   /**
   * Determines whether the application's state has specific information.

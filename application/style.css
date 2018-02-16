@@ -355,15 +355,19 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   fill: rgba(255, 255, 255, 1);
 }
 
-#topology svg .node.metabolite .mark {
+#topology svg .node.emphasis .mark {
+  fill: rgba(200, 200, 0, 1);
+}
+
+#topology svg .node.normal.metabolite .mark {
   fill: rgba(0, 100, 255, 1);
 }
 
-#topology svg .node.reaction .mark {
+#topology svg .node.normal.reaction .mark {
   fill: rgba(255, 0, 100, 1);
 }
 
-#topology svg .node.reaction .mark.supplement {
+#topology svg .node.seaction .mark.supplement {
   fill: rgba(255, 255, 100, 1);
 }
 

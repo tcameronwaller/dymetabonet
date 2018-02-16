@@ -4,6 +4,23 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+15 February 2018
+
+----------
+Progress
+
+I can determine positions of network's elements before creating visual representations of these elements.
+This strategy is much more efficient.
+The problem is that when I use D3 to create visual representations of these elements by association with data, D3 restores x and y values from the original records to 0 in the elements' data.
+
+Instead, try creating visual representations of the elements first and then determining positions without setting positions of visual representations until after the simulation completes.
+That also seems to be problematic.
+
+The problem is that D3 executes iterations of the simulation non-sequentially.
+Hence, the positions in the records really are still 0 when associating elements to the data.
+Use the simulation's event handler to wait to create elements after the simulation completes.
+
+--------------------------------------------------
 14 February 2018
 
 ----------

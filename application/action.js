@@ -1514,11 +1514,7 @@ class Action {
       verticalShift: 0,
       state: state
     });
-    var entitySelection = Action.changeEntitySelection({
-      identifier: "",
-      type: "",
-      state: state
-    });
+    var entitySelection = {type: "", node: "", candidate: "", entity: ""};
     // Compile variables' values.
     var novelVariablesValues = {
       prompt: prompt,
@@ -1534,22 +1530,53 @@ class Action {
     });
   }
   /**
-  * Responds to a selection on a network's node.
+  * Changes the selection of a node's entity.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
   * @param {string} parameters.type Type of a node, metabolite or reaction.
   * @param {Object} parameters.state Application's state.
   */
-  static selectNetworkNode({identifier, type, state} = {}) {
-
-
-    // TODO: Activate detail view... change state variable to activate view for entity selection
-    // TODO: Activate DetailView within ControlView.
-    // TODO: DetailView's contents should depend on whether or not there's an entitySelection...
-    // TODO: If there isn't an entitySelection, consider giving information about the network or something...
+  static changeEntitySelection({identifier, type, state} = {}) {
+    // Determine novel selection's information.
+    if ((identifier.length > 0) && (type.length > 0)) {
+      // Access information.
+      if (type === "metabolite") {
+        var node = state.networkNodesMetabolites[identifier];
+        var candidate = state.candidatesMetabolites[node.candidate];
+        var entity = state.metabolites[candidate.metabolite];
+      } else if (type === "reaction") {
+        var node = state.networkNodesReactions[identifier];
+        var candidate = state.candidatesReactions[node.candidate];
+        var entity = state.reactions[candidate.reaction];
+      }
+      if (candidate.identifier === state.entitySelection.candidate) {
+        var entitySelection = {type: "", node: "", candidate: "", entity: ""};
+      } else {
+        var entitySelection = {
+          type: type,
+          node: node.identifier,
+          candidate: candidate.identifier,
+          entity: entity.identifier
+        };
+      }
+    } else {
+      var entitySelection = {type: "", node: "", candidate: "", entity: ""};
+    }
+    // Compile variables' values.
+    var novelVariablesValues = {
+      entitySelection: entitySelection
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
   }
 
-// TODO: I need an action to remove entity Selection... ie restore it to empty...
+  // TODO: I'll also need an action for hover over a selected node...
 
   // Indirect actions.
 
@@ -1857,42 +1884,6 @@ class Action {
     }
     // Return information.
     return prompt;
-  }
-  /**
-  * Changes the selection of a node's entity.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.identifier Identifier of a node.
-  * @param {string} parameters.type Type of a node, metabolite or reaction.
-  * @param {Object} parameters.state Application's state.
-  */
-  static changeEntitySelection({identifier, type, state} = {}) {
-    // Determine novel selection's information.
-    if ((identifier.length > 0) && (type.length > 0)) {
-      // Access information.
-      if (type === "metabolite") {
-        var node = state.networkNodesMetabolites[identifier];
-        var candidate = state.candidatesMetabolites[node.candidate];
-        var entity = state.metabolites[candidate.metabolite];
-      } else if (type === "reaction") {
-        var node = state.networkNodesReactions[identifier];
-        var candidate = state.candidatesReactions[node.candidate];
-        var entity = state.reactions[candidate.reaction];
-      }
-      if (candidate.identifier === state.entitySelection.candidate) {
-        var entitySelection = {type: "", node: "", candidate: "", entity: ""};
-      } else {
-        var entitySelection = {
-          type: type,
-          node: node.identifier,
-          candidate: candidate.identifier,
-          entity: entity.identifier
-        };
-      }
-    } else {
-      var entitySelection = {type: "", node: "", candidate: "", entity: ""};
-    }
-    // Return information.
-    return entitySelection;
   }
 
   ////////////////////////////////////////////////////////////////////////// ???
