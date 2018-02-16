@@ -5349,6 +5349,9 @@ class TopologyView {
   activateNodesGroups(self) {
     // Activate behavior.
     self.nodesGroups.on("click", function (element, index, nodes) {
+      // Select element.
+      //var node = nodes[index];
+      //var nodeSelection = d3.select(node);
       // Call action.
       Action.changeEntitySelection({
         identifier: element.identifier,
@@ -5356,95 +5359,91 @@ class TopologyView {
         state: self.state
       });
     });
-
-    if (false) {
-      self.nodesGroups.on("mouseenter", function (element, index, nodes) {
-        // Select element.
-        var node = nodes[index];
-        var nodeSelection = d3.select(node);
-        // Determine whether node's entity has a selection.
-        var selection = TopologyView.determineNodeEntitySelection({
-          identifier: element.identifier,
-          type: element.type,
-          state: self.state
-        });
-        if (selection) {
-          // Determine dimensions and positions.
-          var dimensionsPositions = TopologyView
-          .determineNodeDimensionsPositions({
-            node: node,
-            windowReference: self.window
-          });
-
-
-          // Create stationary tip.
-          // Create tip.
-
-          // TODO: Maybe split up "createTipSummary" and "createTip"
-
-
-          TopologyView.createTip({
-            identifier: element.identifier,
-            type: element.type,
-            containerWidth: 20,
-            horizontalPosition: horizontalPosition,
-            verticalPosition: verticalPosition,
-            horizontalShift: horizontalShift,
-            verticalShift: verticalShift,
-            positionX: positionX,
-            positionY: positionY,
-            tipView: self.tipView,
-            documentReference: self.document,
-            state: self.state
-          });
-          // Create prompt's abbreviation.
-
-        } else {
-          // Create mobile tip.
-          // Determine cursor's positions.
-          //.clientX
-          //.clientY
-          var positionX = d3.mouse(self.view)[0];
-          var positionY = d3.mouse(self.view)[1];
-          // Create tip.
-          TopologyView.createTip({
-            identifier: element.identifier,
-            type: element.type,
-            positionX: positionX,
-            positionY: positionY,
-            tipView: self.tipView,
-            documentReference: self.document,
-            state: self.state
-          });
-        }
-
-        // TODO: Behavior should differ dependent on whether node has class emphasis (meaning its selected)
-        // TODO: Activate on click behavior to change entity selection state variable.
-
+    self.nodesGroups.on("mouseenter", function (element, index, nodes) {
+      // Determine whether node's entity has a selection.
+      var selection = TopologyView.determineNodeEntitySelection({
+        identifier: element.identifier,
+        type: element.type,
+        state: self.state
       });
-      self.nodesGroups.on("mousemove", function (element, index, nodes) {
-        // Determine cursor's positions.
-        var positionX = d3.mouse(self.view)[0];
-        var positionY = d3.mouse(self.view)[1];
-        // Call action.
+      if (selection) {
+        // Create prompt view for node.
+        // Determine dimensions and positions.
+        // TODO: Still useful for prompt view... need center points of node
+        // TODO: and shifts for node's dimensions.
+        var dimensionsPositions = TopologyView
+        .determineNodeDimensionsPositions({
+          node: node,
+          windowReference: self.window
+        });
+
+        // Create stationary tip.
+        // Create tip.
+
+        // TODO: Maybe split up "createTipSummary" and "createTip"
+
+
         TopologyView.createTip({
           identifier: element.identifier,
           type: element.type,
+          containerWidth: 20,
+          horizontalPosition: horizontalPosition,
+          verticalPosition: verticalPosition,
+          horizontalShift: horizontalShift,
+          verticalShift: verticalShift,
           positionX: positionX,
           positionY: positionY,
           tipView: self.tipView,
           documentReference: self.document,
           state: self.state
         });
+        // Create prompt's abbreviation.
+
+      } else {
+        // Create tip view for node.
+        // Determine event's positions.
+        var horizontalPosition = d3.event.clientX;
+        var verticalPosition = d3.event.clientY;
+        // Create tip.
+        TopologyView.createTip({
+          identifier: element.identifier,
+          type: element.type,
+          horizontalPosition: horizontalPosition,
+          verticalPosition: verticalPosition,
+          tipView: self.tipView,
+          documentReference: self.document,
+          state: self.state
+        });
+      }
+    });
+    self.nodesGroups.on("mousemove", function (element, index, nodes) {
+      // Determine whether node's entity has a selection.
+      var selection = TopologyView.determineNodeEntitySelection({
+        identifier: element.identifier,
+        type: element.type,
+        state: self.state
       });
-      self.nodesGroups.on("mouseleave", function (element, index, nodes) {
-        // Select element.
-        var node = nodes[index];
-        var nodeSelection = d3.select(node);
-        // Call action.
-        self.tipView.clearView(self.tipView);
-      });
-    }
+      if (!selection) {
+        // Create tip view for node.
+        // Determine event's positions.
+        var horizontalPosition = d3.event.clientX;
+        var verticalPosition = d3.event.clientY;
+        // Create tip.
+        TopologyView.createTip({
+          identifier: element.identifier,
+          type: element.type,
+          horizontalPosition: horizontalPosition,
+          verticalPosition: verticalPosition,
+          tipView: self.tipView,
+          documentReference: self.document,
+          state: self.state
+        });
+      }
+    });
+    self.nodesGroups.on("mouseleave", function (element, index, nodes) {
+      // Call action.
+      self.tipView.clearView(self.tipView);
+    });
   }
   /**
   * Creates nodes's marks.
@@ -5833,165 +5832,50 @@ class TopologyView {
       (identifier === state.entitySelection.node)
     );
   }
+
   /**
   * Creates tip.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
-  * @param {string} parameters.type Type of entity, metabolite or reaction.
-  * @param {number} parameters.positionX Pointer's horizontal coordinate.
-  * @param {number} parameters.positionY Pointer's vertical coordinate.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
   * @param {Object} parameters.tipView Instance of TipView's class.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
   * @param {Object} parameters.state Application's state.
   */
-  static createTip({identifier, type, positionX, positionY, tipView, documentReference, state} = {}) {
+  static createTip({identifier, type, horizontalPosition, verticalPosition, tipView, documentReference, state} = {}) {
     // Create summary for tip.
-    // Determine the type of entity.
+    // Access information.
     if (type === "metabolite") {
-      var summary = TopologyView.createTipSummaryMetabolite({
-        identifier: identifier,
-        documentReference: documentReference,
-        state: state
-      });
+      var node = state.networkNodesMetabolites[identifier];
+      var candidate = state.candidatesMetabolites[node.candidate];
+      var entity = state.metabolites[candidate.metabolite];
     } else if (type === "reaction") {
-      var summary = TopologyView.createTipSummaryReaction({
-        identifier: identifier,
-        documentReference: documentReference,
-        state: state
-      });
+      var node = state.networkNodesReactions[identifier];
+      var candidate = state.candidatesReactions[node.candidate];
+      var entity = state.reactions[candidate.reaction];
     }
+    var name = candidate.name;
+    var summary = View.createSpanText({
+      text: name,
+      documentReference: documentReference
+    });
     // Create tip.
     tipView.restoreView({
       visibility: true,
-      positionX: positionX,
-      positionY: positionY,
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: 15,
+      verticalShift: 0,
       content: summary,
       self: tipView
     });
   }
-  /**
-  * Creates tip's summary for a metabolite.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.identifier Identifier of a node.
-  * @param {Object} parameters.documentReference Reference to document object
-  * model.
-  * @param {Object} parameters.state Application's state.
-  */
-  static createTipSummaryMetabolite({identifier, documentReference, state} = {}) {
-    // Access information.
-    var node = state.networkNodesMetabolites[identifier];
-    var candidate = state.candidatesMetabolites[node.candidate];
-    var metabolite = state.metabolites[candidate.metabolite];
-    var name = metabolite.name;
-    var formula = metabolite.formula;
-    var charge = metabolite.charge;
-    var compartment = state.compartments[candidate.compartment];
-    // Compile information.
-    var information = [
-      {title: "name:", value: name},
-      {title: "formula:", value: formula},
-      {title: "charge:", value: charge},
-      {title: "compartment:", value: compartment}
-    ];
-    // Create table.
-    // Select parent.
-    var table = d3.select("body").append("table");
-    // Define function to access data.
-    function accessOne() {
-      return information;
-    };
-    // Create children elements by association to data.
-    var rows = View.createElementsData({
-      parent: table,
-      type: "tr",
-      accessor: accessOne
-    });
-    // Define function to access data.
-    function accessTwo(element, index, nodes) {
-      // Organize data.
-      return [].concat(element.title, element.value);
-    };
-    // Create children elements by association to data.
-    var cells = View.createElementsData({
-      parent: rows,
-      type: "td",
-      accessor: accessTwo
-    });
-    // Assign attributes to elements.
-    cells.text(function (element, index, nodes) {
-      return element;
-    });
-    // Return reference to element.
-    return table.node();
-  }
-  /**
-  * Creates tip's summary for a reaction.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.identifier Identifier of a node.
-  * @param {Object} parameters.documentReference Reference to document object
-  * model.
-  * @param {Object} parameters.state Application's state.
-  */
-  static createTipSummaryReaction({identifier, documentReference, state} = {}) {
-    // Access information.
-    var node = state.networkNodesReactions[identifier];
-    var candidate = state.candidatesReactions[node.candidate];
-    var reaction = state.reactions[candidate.reaction];
-    var replicates = [].concat(reaction.identifier, candidate.replicates);
-    // Collect consensus properties of replicates.
-    var properties = Evaluation.collectReplicateReactionsConsensusProperties({
-      identifiers: replicates,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      reactionsSets: state.filterSetsReactions,
-      compartments: state.compartments,
-      processes: state.processes
-    });
-    // Compile information.
-    var information = [
-      {title: "name:", value: properties.name},
-      {title: "reactants:", value: properties.reactants.join(", ")},
-      {title: "products:", value: properties.products.join(", ")},
-      {title: "reversibility:", value: properties.reversibility},
-      {title: "conversion:", value: properties.conversion},
-      {title: "dispersal:", value: properties.dispersal},
-      {title: "transport:", value: properties.transport},
-      {title: "compartments:", value: properties.compartments.join(", ")},
-      {title: "processes:", value: properties.processes.join(", ")},
-      {title: "genes:", value: properties.genes.join(", ")},
-    ];
-    // Create table.
-    // Select parent.
-    var table = d3.select("body").append("table");
-    // Define function to access data.
-    function accessOne() {
-      return information;
-    };
-    // Create children elements by association to data.
-    var rows = View.createElementsData({
-      parent: table,
-      type: "tr",
-      accessor: accessOne
-    });
-    // Define function to access data.
-    function accessTwo(element, index, nodes) {
-      // Organize data.
-      return [].concat(element.title, element.value);
-    };
-    // Create children elements by association to data.
-    var cells = View.createElementsData({
-      parent: rows,
-      type: "td",
-      accessor: accessTwo
-    });
-    // Assign attributes to elements.
-    cells.text(function (element, index, nodes) {
-      return element;
-    });
-    // Return reference to element.
-    return table.node();
-  }
+
   /**
   * Sorts identifiers of nodes for metabolites by their roles in a reaction.
   * @param {Object} parameters Destructured object of parameters.
@@ -6263,6 +6147,9 @@ class TopologyView {
       return 0;
     }
   }
+
+  // TODO: Maybe still useful for prompt view...
+
   /**
   * Determines dimensions and positions for a node.
   * @param {Object} parameters Destructured object of parameters.
@@ -6289,6 +6176,131 @@ class TopologyView {
       viewWidth: viewWidth,
       viewHeight: viewHeight
     });
+  }
+
+  // TODO: Maybe use some of these procedures for the detail/summary view for nodes?
+
+  /**
+  * Creates tip's summary for a metabolite.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  */
+  static createTipSummaryMetabolite({identifier, documentReference, state} = {}) {
+    // Access information.
+    var node = state.networkNodesMetabolites[identifier];
+    var candidate = state.candidatesMetabolites[node.candidate];
+    var metabolite = state.metabolites[candidate.metabolite];
+    var name = metabolite.name;
+    var formula = metabolite.formula;
+    var charge = metabolite.charge;
+    var compartment = state.compartments[candidate.compartment];
+    // Compile information.
+    var information = [
+      {title: "name:", value: name},
+      {title: "formula:", value: formula},
+      {title: "charge:", value: charge},
+      {title: "compartment:", value: compartment}
+    ];
+    // Create table.
+    // Select parent.
+    var table = d3.select("body").append("table");
+    // Define function to access data.
+    function accessOne() {
+      return information;
+    };
+    // Create children elements by association to data.
+    var rows = View.createElementsData({
+      parent: table,
+      type: "tr",
+      accessor: accessOne
+    });
+    // Define function to access data.
+    function accessTwo(element, index, nodes) {
+      // Organize data.
+      return [].concat(element.title, element.value);
+    };
+    // Create children elements by association to data.
+    var cells = View.createElementsData({
+      parent: rows,
+      type: "td",
+      accessor: accessTwo
+    });
+    // Assign attributes to elements.
+    cells.text(function (element, index, nodes) {
+      return element;
+    });
+    // Return reference to element.
+    return table.node();
+  }
+  /**
+  * Creates tip's summary for a reaction.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  */
+  static createTipSummaryReaction({identifier, documentReference, state} = {}) {
+    // Access information.
+    var node = state.networkNodesReactions[identifier];
+    var candidate = state.candidatesReactions[node.candidate];
+    var reaction = state.reactions[candidate.reaction];
+    var replicates = [].concat(reaction.identifier, candidate.replicates);
+    // Collect consensus properties of replicates.
+    var properties = Evaluation.collectReplicateReactionsConsensusProperties({
+      identifiers: replicates,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.filterSetsReactions,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    // Compile information.
+    var information = [
+      {title: "name:", value: properties.name},
+      {title: "reactants:", value: properties.reactants.join(", ")},
+      {title: "products:", value: properties.products.join(", ")},
+      {title: "reversibility:", value: properties.reversibility},
+      {title: "conversion:", value: properties.conversion},
+      {title: "dispersal:", value: properties.dispersal},
+      {title: "transport:", value: properties.transport},
+      {title: "compartments:", value: properties.compartments.join(", ")},
+      {title: "processes:", value: properties.processes.join(", ")},
+      {title: "genes:", value: properties.genes.join(", ")},
+    ];
+    // Create table.
+    // Select parent.
+    var table = d3.select("body").append("table");
+    // Define function to access data.
+    function accessOne() {
+      return information;
+    };
+    // Create children elements by association to data.
+    var rows = View.createElementsData({
+      parent: table,
+      type: "tr",
+      accessor: accessOne
+    });
+    // Define function to access data.
+    function accessTwo(element, index, nodes) {
+      // Organize data.
+      return [].concat(element.title, element.value);
+    };
+    // Create children elements by association to data.
+    var cells = View.createElementsData({
+      parent: rows,
+      type: "td",
+      accessor: accessTwo
+    });
+    // Assign attributes to elements.
+    cells.text(function (element, index, nodes) {
+      return element;
+    });
+    // Return reference to element.
+    return table.node();
   }
 }
 
