@@ -977,6 +977,29 @@ class View {
   static removeElement(element) {
     element.parentElement.removeChild(element);
   }
+  /**
+  * Determines an element's dimensions and position relative to browser's
+  * window.
+  * @param {Object} element Reference to element.
+  * @returns {Object<number>} Element's dimensions and position.
+  */
+  static determineElementPositionDimensions(element) {
+    // Determine information about element's dimensions and position relative to
+    // browser's window.
+    // Alternative is to use window.getComputedStyle().
+    var information = element.getBoundingClientRect();
+    var width = information.width;
+    var height = information.height;
+    var horizontalPosition = (information.left + (width / 2));
+    var verticalPosition = (information.top + (height / 2));
+    // Compile and return information.
+    return {
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      width: width,
+      height: height
+    };
+  }
 }
 
 /**
@@ -1229,8 +1252,10 @@ class PromptView {
       self.clearView(self);
     } else if (self.state.prompt.type === "network-diagram") {
       self.createActivateRestoreRepresentNetworkDiagramPrompt(self);
+    } else if (self.state.prompt.type === "network-node-abbreviation") {
+      self.createActivateRepresentNetworkNodeAbbreviationPrompt(self);
     } else if (self.state.prompt.type === "network-node") {
-      //self.createActivateRestoreRepresentNetworkNodePrompt(self);
+      self.createActivateRepresentNetworkNodePrompt(self);
     }
   }
   /**
@@ -1255,7 +1280,8 @@ class PromptView {
     });
   }
   /**
-  * Creates, activates, and restores controls for prompt for network's diagram.
+  * Creates, activates, restores, and represents controls for prompt for
+  * network's diagram.
   * @param {Object} self Instance of a class.
   */
   createActivateRestoreRepresentNetworkDiagramPrompt(self) {
@@ -1385,6 +1411,146 @@ class PromptView {
       variableName: "traversalRogueFocus",
       recordSource: "network",
       state: self.state
+    });
+  }
+  /**
+  * Creates, activates, and represents controls for prompt abbreviation for
+  * network's node.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRepresentNetworkNodeAbbreviationPrompt(self) {
+    self.createActivateNetworkNodeAbbreviationPrompt(self);
+    // Represent view.
+    self.representView({
+      visibility: true,
+      horizontalPosition: self.state.prompt.horizontalPosition,
+      verticalPosition: self.state.prompt.verticalPosition,
+      horizontalShift: self.state.prompt.horizontalShift,
+      verticalShift: self.state.prompt.verticalShift,
+      self: self
+    });
+  }
+  /**
+  * Creates and activates controls for prompt abbreviation for network's node.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateNetworkNodeAbbreviationPrompt(self) {
+    // Determine whether container's current content matches view's novel type.
+    // Container's class indicates type of content.
+    if (!self.container.classList.contains(self.state.prompt.type)) {
+      // Container's current content does not match view's novel type.
+      // Remove container's previous contents and assign a class name to
+      // indicate view's novel type.
+      View.removeContainerContentSetClass({
+        container: self.container,
+        className: self.state.prompt.type
+      });
+      // Create content.
+      var span = View.createAppendSpanText({
+        text: "...",
+        parent: self.container,
+        documentReference: self.document
+      });
+      // Activate behavior.
+      self.container.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.changePromptType({type: "network-node", state: self.state});
+      });
+    } else {
+      // Container's current content matches view's novel type.
+      // Set references to content.
+    }
+  }
+  /**
+  * Creates, activates, and represents controls for prompt for network's node.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRepresentNetworkNodePrompt(self) {
+    self.createActivateNetworkNodePrompt(self);
+    // Represent view.
+    self.representView({
+      visibility: true,
+      horizontalPosition: self.state.prompt.horizontalPosition,
+      verticalPosition: self.state.prompt.verticalPosition,
+      horizontalShift: self.state.prompt.horizontalShift,
+      verticalShift: self.state.prompt.verticalShift,
+      self: self
+    });
+  }
+  /**
+  * Creates and activates controls for prompt for network's node.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateNetworkNodePrompt(self) {
+    // Determine whether container's current content matches view's novel type.
+    // Container's class indicates type of content.
+    if (!self.container.classList.contains(self.state.prompt.type)) {
+      // Container's current content does not match view's novel type.
+      // Remove container's previous contents and assign a class name to
+      // indicate view's novel type.
+      View.removeContainerContentSetClass({
+        container: self.container,
+        className: self.state.prompt.type
+      });
+      // Create content.
+      self.createNetworkNodePrompt(self);
+      // Activate behavior.
+      self.activateNetworkNodePrompt(self);
+    } else {
+      // Container's current content matches view's novel type.
+      // Set references to content.
+    }
+  }
+  /**
+  * Creates controls for prompt for network's node.
+  * @param {Object} self Instance of a class.
+  */
+  createNetworkNodePrompt(self) {
+    // Create button.
+    self.lock = View.createButton({
+      text: "lock",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Create break.
+    self.container.appendChild(self.document.createElement("br"));
+    // Create button.
+    self.unlock = View.createButton({
+      text: "unlock",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Create break.
+    self.container.appendChild(self.document.createElement("br"));
+    // Create button.
+    self.expand = View.createButton({
+      text: "expand",
+      parent: self.container,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Activates controls for prompt for network's node.
+  * @param {Object} self Instance of a class.
+  */
+  activateNetworkNodePrompt(self) {
+    // Activate behavior.
+    // Buttons.
+    self.lock.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      // TODO: Call appropriate action...
+    });
+    self.unlock.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      // TODO: Call appropriate action...
+    });
+    self.expand.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      // TODO: Call appropriate action...
     });
   }
   /**
@@ -4277,13 +4443,16 @@ class ExplorationView {
   * @param {Object} parameters.state Application's state.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
+  * @param {Object} parameters.windowReference Reference to browser's window.
   */
-  constructor ({interfaceView, tipView, promptView, state, documentReference} = {}) {
+  constructor ({interfaceView, tipView, promptView, state, documentReference, windowReference} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
+    // Set reference to browser's window.
+    self.window = windowReference;
     // Set reference to document object model (DOM).
     self.document = documentReference;
     // Set reference to other views.
@@ -4331,7 +4500,8 @@ class ExplorationView {
         promptView: self.promptView,
         explorationView: self,
         state: self.state,
-        documentReference: self.document
+        documentReference: self.document,
+        windowReference: self.window
       });
     } else {
       View.removeExistElement("topology", self.document);
@@ -4561,13 +4731,16 @@ class TopologyView {
   * @param {Object} parameters.state Application's state.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
+  * @param {Object} parameters.windowReference Reference to browser's window.
   */
-  constructor ({interfaceView, tipView, promptView, explorationView, state, documentReference} = {}) {
+  constructor ({interfaceView, tipView, promptView, explorationView, state, documentReference, windowReference} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
+    // Set reference to browser's window.
+    self.window = windowReference;
     // Set reference to document object model (DOM).
     self.document = documentReference;
     // Set reference to other views.
@@ -4850,6 +5023,9 @@ class TopologyView {
     // Compute font size from scale.
     self.scaleFont = fontScale(self.scaleRatio);
   }
+
+  // TODO: Draw the network after 50% of simulation is complete?
+
   /**
   * Initializes positions of network's elements in network's diagram.
   * @param {Object} self Instance of a class.
@@ -5352,14 +5528,14 @@ class TopologyView {
       return element.type === "reaction";
     })
     .classed("normal", function (element, index, nodes) {
-      return !TopologyView.determineNodeEntitySelection({
+      return !Model.determineNodeEntitySelection({
         identifier: element.identifier,
         type: element.type,
         state: self.state
       });
     })
     .classed("emphasis", function (element, index, nodes) {
-      return TopologyView.determineNodeEntitySelection({
+      return Model.determineNodeEntitySelection({
         identifier: element.identifier,
         type: element.type,
         state: self.state
@@ -5374,58 +5550,95 @@ class TopologyView {
   * @param {Object} self Instance of a class.
   */
   activateNodesGroups(self) {
+    // Activate behavior on click.
+    self.activateNodesGroupsClick(self);
+    // Activate behavior on hover.
+    self.activateNodesGroupsHover(self);
+    // Activate behavior on drag.
+    self.activateNodesGroupsDrag(self);
+  }
+  /**
+  * Activates nodes's groups on click.
+  * @param {Object} self Instance of a class.
+  */
+  activateNodesGroupsClick(self) {
     // Activate behavior.
     self.nodesGroups.on("click", function (element, index, nodes) {
       // Select element.
-      //var node = nodes[index];
-      //var nodeSelection = d3.select(node);
-      // Call action.
-      Action.selectNetworkNode({
-        identifier: element.identifier,
-        type: element.type,
-        state: self.state
-      });
-    });
-    self.nodesGroups.on("mouseenter", function (element, index, nodes) {
+      var node = nodes[index];
+      var nodeSelection = d3.select(node);
       // Determine whether node's entity has a selection.
-      var selection = TopologyView.determineNodeEntitySelection({
+      var selection = Model.determineNodeEntitySelection({
         identifier: element.identifier,
         type: element.type,
         state: self.state
       });
       if (selection) {
+        // Do not anchor node's position.
+        element.fx = null;
+        element.fy = null;
+        // Set class.
+        nodeSelection.classed("anchor", false);
+      } else {
+        // Anchor node's position.
+        element.fx = element.x;
+        element.fy = element.y;
+        // Set class.
+        nodeSelection.classed("anchor", true);
+      }
+      // Create prompt view for node.
+      // Determine dimensions and positions.
+      // Prompt view for node has its center on node's center and shifts
+      // proportionally to the node's dimensions.
+      var positionDimensions = View.determineElementPositionDimensions(node);
+      // Call action.
+      Action.selectNetworkNode({
+        identifier: element.identifier,
+        type: element.type,
+        horizontalPosition: positionDimensions.horizontalPosition,
+        verticalPosition: positionDimensions.verticalPosition,
+        horizontalShift: (0.75 * (positionDimensions.width / 2)),
+        verticalShift: (0.75 * (positionDimensions.height / 2)),
+        state: self.state
+      });
+    });
+  }
+  /**
+  * Activates nodes's groups on hover.
+  * @param {Object} self Instance of a class.
+  */
+  activateNodesGroupsHover(self) {
+    // Activate behavior.
+    self.nodesGroups.on("mouseenter", function (element, index, nodes) {
+      // Determine whether node's entity has a selection.
+      var selection = Model.determineNodeEntitySelection({
+        identifier: element.identifier,
+        type: element.type,
+        state: self.state
+      });
+      if (selection) {
+        // Select element.
+        var node = nodes[index];
+        var nodeSelection = d3.select(node);
+        // Determine event's positions.
+        // Determine positions relative to the browser's window.
+        var horizontalPosition = d3.event.clientX;
+        var verticalPosition = d3.event.clientY;
         // Create prompt view for node.
         // Determine dimensions and positions.
-        // TODO: Still useful for prompt view... need center points of node
-        // TODO: and shifts for node's dimensions.
-        var dimensionsPositions = TopologyView
-        .determineNodeDimensionsPositions({
-          node: node,
-          windowReference: self.window
-        });
-
-        // Create stationary tip.
-        // Create tip.
-
-        // TODO: Maybe split up "createTipSummary" and "createTip"
-
-
-        TopologyView.createTip({
+        // Prompt view for node has its center on node's center and shifts
+        // proportionally to the node's dimensions.
+        var positionDimensions = View.determineElementPositionDimensions(node);
+        // Call action.
+        Action.hoverSelectNetworkNode({
           identifier: element.identifier,
           type: element.type,
-          containerWidth: 20,
-          horizontalPosition: horizontalPosition,
-          verticalPosition: verticalPosition,
-          horizontalShift: horizontalShift,
-          verticalShift: verticalShift,
-          positionX: positionX,
-          positionY: positionY,
-          tipView: self.tipView,
-          documentReference: self.document,
+          horizontalPosition: positionDimensions.horizontalPosition,
+          verticalPosition: positionDimensions.verticalPosition,
+          horizontalShift: (0.75 * (positionDimensions.width / 2)),
+          verticalShift: (0.75 * (positionDimensions.height / 2)),
           state: self.state
         });
-        // Create prompt's abbreviation.
-
       } else {
         // Create tip view for node.
         // Determine event's positions.
@@ -5446,7 +5659,7 @@ class TopologyView {
     });
     self.nodesGroups.on("mousemove", function (element, index, nodes) {
       // Determine whether node's entity has a selection.
-      var selection = TopologyView.determineNodeEntitySelection({
+      var selection = Model.determineNodeEntitySelection({
         identifier: element.identifier,
         type: element.type,
         state: self.state
@@ -5469,9 +5682,29 @@ class TopologyView {
       }
     });
     self.nodesGroups.on("mouseleave", function (element, index, nodes) {
-      // Call action.
-      self.tipView.clearView(self.tipView);
+      // Determine whether node's entity has a selection.
+      var selection = Model.determineNodeEntitySelection({
+        identifier: element.identifier,
+        type: element.type,
+        state: self.state
+      });
+      if (selection) {
+        // Remove prompt view.
+        self.window.setTimeout(function () {
+          Action.removePromptView({permanence: true, state: self.state});
+        }, 1000);
+      } else {
+        // Remove tip view.
+        self.tipView.clearView(self.tipView);
+      }
     });
+  }
+  /**
+  * Activates nodes's groups on drag.
+  * @param {Object} self Instance of a class.
+  */
+  activateNodesGroupsDrag(self) {
+    // Activate behavior.
     self.nodesGroups.call(
       d3.drag()
       .on("start", startDrag)
@@ -5489,6 +5722,9 @@ class TopologyView {
         // Initiate simulation.
         self.simulation.alphaTarget(0.5).restart();
       }
+      // Keep track of initial position.
+      element.dragInitialX = element.x;
+      element.dragInitialY = element.y;
       // Restore node's position.
       element.fx = element.x;
       element.fy = element.y;
@@ -5505,9 +5741,26 @@ class TopologyView {
       element.fy = verticalPosition;
     }
     function endDrag(element, index, nodes) {
+      // Select element.
+      var node = nodes[index];
+      var nodeSelection = d3.select(node);
       // Allow simulation to terminate when drag event is inactive.
       if (d3.event.active === 0) {
         self.simulation.alphaTarget(0);
+      }
+      // Determine whether a drag actually happened.
+      if (
+        (element.x === element.dragInitialX) &&
+        (element.y === element.dragInitialY)
+      ) {
+        // A drag event did not happen.
+        // Do not anchor node's position.
+        element.fx = null;
+        element.fy = null;
+        delete element.dragInitialX;
+        delete element.dragInitialY;
+        // Set class.
+        nodeSelection.classed("anchor", false);
       }
       // Leave node as anchor in its current position.
     }
@@ -5888,20 +6141,6 @@ class TopologyView {
       return state.networkNodesReactions[identifier];
     }
   }
-  /**
-  * Determines whether a node's entity has a selection.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.identifier Identifier of a node.
-  * @param {string} parameters.type Type of entity, metabolite or reaction.
-  * @param {Object} parameters.state Application's state.
-  * @returns {boolean} Whether the node's entity has a selection.
-  */
-  static determineNodeEntitySelection({identifier, type, state} = {}) {
-    return (
-      (type === state.entitySelection.type) &&
-      (identifier === state.entitySelection.node)
-    );
-  }
 
   /**
   * Creates tip.
@@ -6216,36 +6455,6 @@ class TopologyView {
       //return terminus.x
       return 0;
     }
-  }
-
-  // TODO: Maybe still useful for prompt view...
-
-  /**
-  * Determines dimensions and positions for a node.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.node Reference to node's element.
-  * @param {Object} parameters.windowReference Referece to view of browser's
-  * window.
-  * @returns {Object<number>} Dimensions and positions.
-  */
-  static determineNodeDimensionsPositions({node, windowReference} = {}) {
-    var nodeDimensions = node.getBoundingClientRect();
-    var horizontalPosition = (
-      nodeDimensions.left + (nodeDimensions.width / 2)
-    );
-    var verticalPosition = (
-      nodeDimensions.top + (nodeDimensions.height / 2)
-    );
-    var horizontalShift = (nodeDimensions.width / 2);
-    var verticalShift = (nodeDimensions.height / 2);
-    return View.determineTipPrompPositions({
-      horizontalPosition: horizontalPosition,
-      verticalPosition: verticalPosition,
-      horizontalShift: horizontalShift,
-      verticalShift: verticalShift,
-      viewWidth: viewWidth,
-      viewHeight: viewHeight
-    });
   }
 
   // TODO: Maybe use some of these procedures for the detail/summary view for nodes?

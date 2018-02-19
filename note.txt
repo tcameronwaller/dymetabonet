@@ -4,6 +4,18 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+18 February 2018
+
+----------
+Plan
+
+Activate prompt view.
+
+Make the wait for layout shorter.
+
+After implementing the new representation of replicate metabolites, make replication the default simplification method for the default entities.
+
+--------------------------------------------------
 16 February 2018
 
 ----------
@@ -15,7 +27,7 @@ Implement actions for controls of prompt view for both network's diagram and net
 Improve the visual representation of reactions with replicate metabolites.
 Eliminate distinct nodes for replicate metabolites, and instead represent these as small bubbles on their reactions' nodes.
 
-For determination of initial positions in network's diagram, consider drawing the visual representations at least occasionally (every 100 iterations) before the simulation completes.
+For determination of initial positions in network's diagram, consider drawing the visual representations at least occasionally (every 100 iterations or so) before the simulation completes.
 Maybe draw the visual representations after the simulation proceeds 50% so that user can begin evaluating the network while the simulations completes.
 Try to keep the user waiting as little as possible.
 

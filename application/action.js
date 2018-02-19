@@ -1505,13 +1505,15 @@ class Action {
   * @param {Object} parameters.state Application's state.
   */
   static selectNetworkDiagram({horizontalPosition, verticalPosition, state} = {}) {
-    var prompt = Action.changePromptTypePosition({
+    // Change information about prompt view.
+    var prompt = Action.changePromptInformation({
       type: "network-diagram",
       reference: {},
       horizontalPosition: horizontalPosition,
       verticalPosition: verticalPosition,
       horizontalShift: 0,
       verticalShift: 0,
+      permanence: true,
       state: state
     });
     // Remove any entity selection.
@@ -1535,17 +1537,51 @@ class Action {
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
   * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.horizontalShift Horizontal shift in pixels
+  * relative to reference point.
+  * @param {number} parameters.verticalShift Horizontal shift in pixels relative
+  * to reference point.
   * @param {Object} parameters.state Application's state.
   */
-  static selectNetworkNode({identifier, type, state} = {}) {
+  static selectNetworkNode({identifier, type, horizontalPosition, verticalPosition, horizontalShift, verticalShift, state} = {}) {
     // Determine novel information about entity selection.
     var entitySelection = Action.changeEntitySelection({
       identifier: identifier,
       type: type,
       state: state
     });
-    // Remove any prompt view.
-    var prompt = Action.initializePromptViewControls();
+    // Determine whether to create prompt.
+    // Determine whether node's entity has a selection.
+    var selection = (
+      (type === entitySelection.type) && (identifier === entitySelection.node)
+    );
+    if (selection) {
+      // Create prompt for the network's node.
+      // Compile reference information for prompt view.
+      var reference = {
+        identifier: identifier,
+        type: type
+      };
+      // Change information about prompt view.
+      var prompt = Action.changePromptInformation({
+        type: "network-node-abbreviation",
+        reference: reference,
+        horizontalPosition: horizontalPosition,
+        verticalPosition: verticalPosition,
+        horizontalShift: horizontalShift,
+        verticalShift: verticalShift,
+        permanence: false,
+        state: state
+      });
+    } else {
+      // Do not create prompt for the network's node.
+      // Remove any prompt view.
+      var prompt = Action.initializePromptViewControls();
+    }
     // Compile variables' values.
     var novelVariablesValues = {
       entitySelection: entitySelection,
@@ -1560,8 +1596,112 @@ class Action {
       state: state
     });
   }
-
-  // TODO: I'll also need an action for hover over a selected node...
+  /**
+  * Responds to a hover on a network's node with selection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.horizontalShift Horizontal shift in pixels
+  * relative to reference point.
+  * @param {number} parameters.verticalShift Horizontal shift in pixels relative
+  * to reference point.
+  * @param {Object} parameters.state Application's state.
+  */
+  static hoverSelectNetworkNode({identifier, type, horizontalPosition, verticalPosition, horizontalShift, verticalShift, state} = {}) {
+    // Compile reference information for prompt view.
+    var reference = {
+      identifier: identifier,
+      type: type
+    };
+    // Change information about prompt view.
+    var prompt = Action.changePromptInformation({
+      type: "network-node-abbreviation",
+      reference: reference,
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: horizontalShift,
+      verticalShift: verticalShift,
+      state: state
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {
+      prompt: prompt
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the type of the prompt view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of prompt view.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changePromptType({type, state} = {}) {
+    // Compile information.
+    var prompt = {
+      type: type,
+      reference: state.prompt.reference,
+      horizontalPosition: state.prompt.horizontalPosition,
+      verticalPosition: state.prompt.verticalPosition,
+      horizontalShift: state.prompt.horizontalShift,
+      verticalShift: state.prompt.verticalShift,
+      permanence: true
+    };
+    // Compile variables' values.
+    var novelVariablesValues = {
+      prompt: prompt
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Removes the prompt view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.permanence Whether to remove only transient
+  * prompt view.
+  * @param {Object} parameters.state Application's state.
+  */
+  static removePromptView({permanence, state} = {}) {
+    if (permanence) {
+      if (!state.prompt.permanence) {
+        // Remove any prompt view.
+        var prompt = Action.initializePromptViewControls();
+      } else {
+        var prompt = state.prompt;
+      }
+    } else {
+      // Remove any prompt view.
+      var prompt = Action.initializePromptViewControls();
+    }
+    // Compile variables' values.
+    var novelVariablesValues = {
+      prompt: prompt
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
 
   // Indirect actions.
 
@@ -1572,17 +1712,21 @@ class Action {
   static initializePromptViewControls() {
     // Initialize controls.
     var type = "none";
+    var reference = {};
     var horizontalPosition = 0;
     var verticalPosition = 0;
     var horizontalShift = 0;
     var verticalShift = 0;
+    var permanence = false;
     // Compile information.
     var variablesValues = {
       type: type,
+      reference: reference,
       horizontalPosition: horizontalPosition,
       verticalPosition: verticalPosition,
       horizontalShift: horizontalShift,
-      verticalShift: verticalShift
+      verticalShift: verticalShift,
+      permanence: permanence
     };
     // Return information.
     return variablesValues;
@@ -1637,7 +1781,7 @@ class Action {
   static initializeSimplificationViewControls() {
     // Initialize controls.
     var compartmentalization = false;
-    var defaultSimplifications = false;
+    var defaultSimplifications = true;
     var candidatesSearches = Candidacy.createInitialCandidatesSearches();
     var candidatesSorts = Candidacy.createInitialCandidatesSorts();
     // Compile information.
@@ -1863,12 +2007,16 @@ class Action {
   * relative to reference point.
   * @param {number} parameters.verticalShift Horizontal shift in pixels relative
   * to reference point.
+  * @param {boolean} parameters.permanence Whether prompt is permanent.
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Information about prompt view.
   */
-  static changePromptTypePosition({type, reference, horizontalPosition, verticalPosition, horizontalShift, verticalShift, state} = {}) {
+  static changePromptInformation({type, reference, horizontalPosition, verticalPosition, horizontalShift, verticalShift, permanence, state} = {}) {
     // Determine prompt's type and positions.
-    if (state.prompt.type === "none") {
+    if (state.prompt.type === type) {
+      // Remove any prompt view.
+      var prompt = Action.initializePromptViewControls();
+    } else {
       // Compile information.
       var prompt = {
         type: type,
@@ -1876,16 +2024,8 @@ class Action {
         horizontalPosition: horizontalPosition,
         verticalPosition: verticalPosition,
         horizontalShift: horizontalShift,
-        verticalShift: verticalShift
-      };
-    } else if (state.prompt.type === type) {
-      // Compile information.
-      var prompt = {
-        type: "none",
-        horizontalPosition: 0,
-        verticalPosition: 0,
-        horizontalShift: 0,
-        verticalShift: 0
+        verticalShift: verticalShift,
+        permanence: permanence
       };
     }
     // Return information.

@@ -151,7 +151,8 @@ class Model {
         tipView: tipView,
         promptView: promptView,
         state: self.state,
-        documentReference: self.document
+        documentReference: self.document,
+        windowReference: self.window
       });
     }
   }
@@ -374,5 +375,18 @@ class Model {
       state.simulation.hasOwnProperty("velocityDecay")
     );
   }
-
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of entity, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  * @returns {boolean} Whether the node's entity has a selection.
+  */
+  static determineNodeEntitySelection({identifier, type, state} = {}) {
+    return (
+      (type === state.entitySelection.type) &&
+      (identifier === state.entitySelection.node)
+    );
+  }
 }
