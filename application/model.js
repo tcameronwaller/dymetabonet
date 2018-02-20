@@ -242,7 +242,7 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineSource(state) {
-    return (state.source.hasOwnProperty("name"));
+    return (Boolean(state.source.name));
   }
   /**
   * Determines tabs within control view.

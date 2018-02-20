@@ -298,16 +298,6 @@ class Traversal {
       subnetworkRecords: subnetworkLinksRecords,
       networkRecords: networkLinksRecords
     });
-    if (false) {
-      // Filter records for network's elements.
-      var nodesRecords = General
-      .filterArrayRecordsByIdentifiers(nodesIdentifiers, networkNodesRecords);
-      var linksRecords = General
-      .filterArrayRecordsByIdentifiers(linksIdentifiers, networkLinksRecords);
-      // Copy records for network's elements.
-      var copyNodesRecords = General.copyDeepArrayElements(nodesRecords, true);
-      var copyLinksRecords = General.copyDeepArrayElements(linksRecords, true);
-    }
     // Compile and return information.
     return {
       subnetworkNodesRecords: nodesRecords,
@@ -340,12 +330,12 @@ class Traversal {
         return record.identifier === identifier;
       });
       if (subnetworkRecord) {
-        return General.copyValue(subnetworkRecord);
+        return General.copyValue(subnetworkRecord, true);
       } else {
         var networkRecord = networkRecords.find(function (record) {
           return record.identifier === identifier;
         });
-        return General.copyValue(networkRecord);
+        return General.copyValue(networkRecord, true);
       }
     });
   }

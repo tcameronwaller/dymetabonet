@@ -1375,17 +1375,17 @@ class PromptView {
     self.remove.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      // TODO: Call appropriate action...
+      Action.clearSubnetworkRestoreTraversalViewControls(self.state);
     });
     self.lock.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      // TODO: Call appropriate action...
+      // TODO: Call appropriate action... lock all nodes in subnetwork
     });
     self.unlock.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      // TODO: Call appropriate action...
+      // TODO: Call appropriate action... unlock all nodes in subnetwork
     });
     self.add.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
@@ -1452,7 +1452,7 @@ class PromptView {
         documentReference: self.document
       });
       // Activate behavior.
-      self.container.addEventListener("click", function (event) {
+      span.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
         Action.changePromptType({type: "network-node", state: self.state});
@@ -1550,7 +1550,7 @@ class PromptView {
     self.expand.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      // TODO: Call appropriate action...
+      Action.executeNodeProximityTraversalExpansion(self.state)
     });
   }
   /**

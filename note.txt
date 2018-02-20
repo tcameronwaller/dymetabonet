@@ -4,6 +4,27 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+19 February 2018
+
+----------
+Plan
+
+Consider moving the control for default simplifications to a second header row in the candidate table for metabolites.
+Make it possible to simplify these default metabolites either by omission or by replication.
+
+lock
+unlock
+expand
+
+remove all
+lock all
+unlock all
+add node
+
+The proximity expansion does not seem to be working properly.
+I do not know why.
+
+--------------------------------------------------
 18 February 2018
 
 ----------
@@ -28,7 +49,7 @@ Improve the visual representation of reactions with replicate metabolites.
 Eliminate distinct nodes for replicate metabolites, and instead represent these as small bubbles on their reactions' nodes.
 
 For determination of initial positions in network's diagram, consider drawing the visual representations at least occasionally (every 100 iterations or so) before the simulation completes.
-Maybe draw the visual representations after the simulation proceeds 50% so that user can begin evaluating the network while the simulations completes.
+Maybe draw the visual representations after the simulation proceeds 50% so that user can begin evaluating the network while the simulations complete.
 Try to keep the user waiting as little as possible.
 
 Also repair the restoration of the application's state from a persistent representation on file.

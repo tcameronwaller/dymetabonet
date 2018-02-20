@@ -1342,6 +1342,35 @@ class Action {
     }
   }
   /**
+  * Executes proximity traversal expansion to depth of one and combination by
+  * union.
+  * @param {Object} state Application's state.
+  */
+  static executeNodeProximityTraversalExpansion(state) {
+    var subnetworkElements = Traversal.combineProximityNetwork({
+      focus: state.prompt.reference.identifier,
+      direction: "neighbors",
+      depth: 1,
+      combination: "union",
+      subnetworkNodesRecords: state.subnetworkNodesRecords,
+      subnetworkLinksRecords: state.subnetworkLinksRecords,
+      networkNodesRecords: state.networkNodesRecords,
+      networkLinksRecords: state.networkLinksRecords
+    });
+    // Initialize controls for traversal view.
+    var traversalViewControls = Action.initializeTraversalViewControls();
+    // Compile variables' values.
+    var variablesValues = Object.assign(
+      subnetworkElements,
+      traversalViewControls
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
   * Changes the selection of source for path traversal.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
@@ -1867,13 +1896,13 @@ class Action {
   * Evaluates information from a persistent source to restore the application's
   * state.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.source Persistent source of information about
+  * @param {Object} parameters.data Persistent source of information about
   * application's state.
   * @param {Object} parameters.state Application's state.
   */
-  static evaluateSourceRestoreState({source, state} = {}) {
+  static evaluateSourceRestoreState({data, state} = {}) {
     // Determine appropriate procedure for source information.
-    if (source.hasOwnProperty("id") && (data.id === "MODEL1603150001")) {
+    if (data.hasOwnProperty("id") && (data.id === "MODEL1603150001")) {
       if (data.hasOwnProperty("clean")) {
         Action.extractMetabolicEntitiesSets({
           data: data,
