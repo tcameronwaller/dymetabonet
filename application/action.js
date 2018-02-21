@@ -215,13 +215,18 @@ class Action {
       compartments: state.compartments
     });
     // Determine simplifications of candidate entities.
-    var simplifications = Candidacy.createDefaultSimplifications({
-      defaultSimplifications: state.defaultSimplifications,
+    // Create simplifications for default entities and include with other
+    // simplifications.
+    var simplifications = Candidacy.createIncludeDefaultSimplifications({
+      defaultSimplificationsMetabolites: state
+      .defaultSimplificationsMetabolites,
       candidatesReactions: candidatesSummaries.candidatesReactions,
       candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
       reactionsSets: currentEntitiesSets.filterSetsReactions,
       reactions: state.reactions,
-      compartmentalization: state.compartmentalization
+      compartmentalization: state.compartmentalization,
+      reactionsSimplifications: {},
+      metabolitesSimplifications: {}
     });
     // Create network's elements.
     var networkElements = Network.createNetworkElements({
@@ -756,16 +761,10 @@ class Action {
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
-    // Initialize whether to draw a visual representation of network's topology.
-    var topology = false;
-    // Initialize novelty of network's topology.
-    var topologyNovelty = true;
     // Compile variables' values.
     var novelVariablesValues = {
       setsFilters: setsFilters,
-      defaultSimplifications: defaultSimplifications,
-      topology: topology,
-      topologyNovelty: topologyNovelty
+      defaultSimplifications: defaultSimplifications
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -959,16 +958,10 @@ class Action {
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
-    // Initialize whether to draw a visual representation of network's topology.
-    var topology = false;
-    // Initialize novelty of network's topology.
-    var topologyNovelty = true;
     // Compile variables' values.
     var novelVariablesValues = {
       compartmentalization: compartmentalization,
-      defaultSimplifications: defaultSimplifications,
-      topology: topology,
-      topologyNovelty: topologyNovelty
+      defaultSimplifications: defaultSimplifications
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -989,20 +982,39 @@ class Action {
   */
   static changeDefaultSimplifications(state) {
     // Determine default simplifications.
-    if (state.defaultSimplifications) {
-      var defaultSimplifications = false;
-    } else {
-      var defaultSimplifications = true;
-    }
     // Determine simplifications of candidate entities.
-    var simplifications = Candidacy.createDefaultSimplifications({
-      defaultSimplifications: defaultSimplifications,
-      candidatesReactions: state.candidatesReactions,
-      candidatesMetabolites: state.candidatesMetabolites,
-      reactionsSets: state.filterSetsReactions,
-      reactions: state.reactions,
-      compartmentalization: state.compartmentalization
-    });
+    if (state.defaultSimplifications) {
+      // Change default simplifications to false.
+      var defaultSimplifications = false;
+      // Remove simplifications for default entities.
+      var simplifications = Candidacy.removeDefaultSimplifications({
+        defaultSimplificationsMetabolites: state
+        .defaultSimplificationsMetabolites,
+        candidatesReactions: state.candidatesReactions,
+        candidatesMetabolites: state.candidatesMetabolites,
+        reactionsSets: state.filterSetsReactions,
+        reactions: state.reactions,
+        compartmentalization: state.compartmentalization,
+        reactionsSimplifications: state.reactionsSimplifications,
+        metabolitesSimplifications: state.metabolitesSimplifications
+      });
+    } else {
+      // Change default simplifications to true.
+      var defaultSimplifications = true;
+      // Create simplifications for default entities and include with other
+      // simplifications.
+      var simplifications = Candidacy.createIncludeDefaultSimplifications({
+        defaultSimplificationsMetabolites: state
+        .defaultSimplificationsMetabolites,
+        candidatesReactions: state.candidatesReactions,
+        candidatesMetabolites: state.candidatesMetabolites,
+        reactionsSets: state.filterSetsReactions,
+        reactions: state.reactions,
+        compartmentalization: state.compartmentalization,
+        reactionsSimplifications: state.reactionsSimplifications,
+        metabolitesSimplifications: state.metabolitesSimplifications
+      });
+    }
     // Create network's elements.
     var networkElements = Network.createNetworkElements({
       candidatesReactions: state.candidatesReactions,
@@ -1018,15 +1030,9 @@ class Action {
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
-    // Initialize whether to draw a visual representation of network's topology.
-    var topology = false;
-    // Initialize novelty of network's topology.
-    var topologyNovelty = true;
     // Compile variables' values.
     var novelVariablesValues = {
-      defaultSimplifications: defaultSimplifications,
-      topology: topology,
-      topologyNovelty: topologyNovelty
+      defaultSimplifications: defaultSimplifications
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -1052,7 +1058,6 @@ class Action {
   */
   static changeSimplification({identifier, category, method, state} = {}) {
     // Change explicit and implicit designations of entities for simplification.
-    var defaultSimplifications = false;
     var simplifications = Candidacy.changeSimplifications({
       identifier: identifier,
       category: category,
@@ -1064,6 +1069,12 @@ class Action {
       compartmentalization: state.compartmentalization,
       reactionsSimplifications: state.reactionsSimplifications,
       metabolitesSimplifications: state.metabolitesSimplifications
+    });
+    // Determine whether simplifications exist for all default entities.
+    var defaultSimplifications = Candidacy.determineDefaultSimplifications({
+      defaultSimplificationsMetabolites: state.defaultSimplificationsMetabolites,
+      candidatesMetabolites: state.candidatesMetabolites,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications
     });
     // Create network's elements.
     var networkElements = Network.createNetworkElements({
@@ -1080,15 +1091,9 @@ class Action {
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
-    // Initialize whether to draw a visual representation of network's topology.
-    var topology = false;
-    // Initialize novelty of network's topology.
-    var topologyNovelty = true;
     // Compile variables' values.
     var novelVariablesValues = {
-      defaultSimplifications: defaultSimplifications,
-      topology: topology,
-      topologyNovelty: topologyNovelty
+      defaultSimplifications: defaultSimplifications
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -1178,17 +1183,8 @@ class Action {
       });
       // Initialize controls for traversal view.
       var traversalViewControls = Action.initializeTraversalViewControls();
-      // Initialize whether to draw a visual representation of network's topology.
-      var topology = false;
-      // Initialize novelty of network's topology.
-      var topologyNovelty = true;
       // Compile variables' values.
-      var novelVariablesValues = {
-        topology: topology,
-        topologyNovelty: topologyNovelty
-      };
       var variablesValues = Object.assign(
-        novelVariablesValues,
         subnetworkElements,
         traversalViewControls
       );
@@ -1320,17 +1316,8 @@ class Action {
       });
       // Initialize controls for traversal view.
       var traversalViewControls = Action.initializeTraversalViewControls();
-      // Initialize whether to draw a visual representation of network's topology.
-      var topology = false;
-      // Initialize novelty of network's topology.
-      var topologyNovelty = true;
       // Compile variables' values.
-      var novelVariablesValues = {
-        topology: topology,
-        topologyNovelty: topologyNovelty
-      };
       var variablesValues = Object.assign(
-        novelVariablesValues,
         subnetworkElements,
         traversalViewControls
       );
@@ -1359,8 +1346,14 @@ class Action {
     });
     // Initialize controls for traversal view.
     var traversalViewControls = Action.initializeTraversalViewControls();
+    // Remove any prompt view.
+    var prompt = Action.initializePromptViewControls();
     // Compile variables' values.
+    var novelVariablesValues = {
+      prompt: prompt
+    };
     var variablesValues = Object.assign(
+      novelVariablesValues,
       subnetworkElements,
       traversalViewControls
     );
@@ -1480,17 +1473,8 @@ class Action {
       });
       // Initialize controls for traversal view.
       var traversalViewControls = Action.initializeTraversalViewControls();
-      // Initialize whether to draw a visual representation of network's topology.
-      var topology = false;
-      // Initialize novelty of network's topology.
-      var topologyNovelty = true;
       // Compile variables' values.
-      var novelVariablesValues = {
-        topology: topology,
-        topologyNovelty: topologyNovelty
-      };
       var variablesValues = Object.assign(
-        novelVariablesValues,
         subnetworkElements,
         traversalViewControls
       );
@@ -1811,12 +1795,19 @@ class Action {
     // Initialize controls.
     var compartmentalization = false;
     var defaultSimplifications = true;
+    // Create list of identifiers of metabolites for default simplification.
+    var defaultSimplificationsMetabolites = [
+      "h", "h2o", "coa", "o2", "atp", "nadp", "nadph", "nad", "nadh", "pi",
+      "adp", "accoa", "h2o2", "ppi", "fad", "co2", "fadh2", "amp", "so4",
+      "nh4", "na1", "hco3"
+    ];
     var candidatesSearches = Candidacy.createInitialCandidatesSearches();
     var candidatesSorts = Candidacy.createInitialCandidatesSorts();
     // Compile information.
     var variablesValues = {
       compartmentalization: compartmentalization,
       defaultSimplifications: defaultSimplifications,
+      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
       candidatesSearches: candidatesSearches,
       candidatesSorts: candidatesSorts
     };

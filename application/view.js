@@ -4905,26 +4905,28 @@ class TopologyView {
   restoreView(self) {
     // Prepare information about network's elements.
     self.prepareNetworkElementsRecords(self);
-    // Create scales for the visual representation of network's elements.
-    // These scales also inform the simulation.
-    self.createRepresentationScales(self);
-    // Determine whether the network's diagram requires mostly novel positions.
-    var novelPositions = TopologyView
-    .determineNovelNetworkDiagramPositions(self.nodesRecords);
-    if (novelPositions) {
-      // For efficiency, determine positions of network's elements before
-      // creating visual representations of these elements.
-      // Remove any visual representations.
-      General.removeDocumentChildren(self.linksGroup);
-      General.removeDocumentChildren(self.nodesGroup);
-      // Initialize positions in network's diagram.
-      self.initializeNetworkDiagramPositions(self);
-    } else {
-      // Create, activate, and restore visual representations of network's
-      // elements.
-      self.createActivateNetworkRepresentation(self);
-      // Initialize positions in network's diagram.
-      self.restoreNetworkDiagramPositions(self);
+    if (self.nodesRecords.length > 0) {
+      // Create scales for the visual representation of network's elements.
+      // These scales also inform the simulation.
+      self.createDimensionScales(self);
+      // Determine whether the network's diagram requires mostly novel positions.
+      var novelPositions = TopologyView
+      .determineNovelNetworkDiagramPositions(self.nodesRecords);
+      if (novelPositions) {
+        // For efficiency, determine positions of network's elements before
+        // creating visual representations of these elements.
+        // Remove any visual representations.
+        General.removeDocumentChildren(self.linksGroup);
+        General.removeDocumentChildren(self.nodesGroup);
+        // Initialize positions in network's diagram.
+        self.initializeNetworkDiagramPositions(self);
+      } else {
+        // Create, activate, and restore visual representations of network's
+        // elements.
+        self.createActivateNetworkRepresentation(self);
+        // Initialize positions in network's diagram.
+        self.restoreNetworkDiagramPositions(self);
+      }
     }
   }
   /**
@@ -4946,15 +4948,14 @@ class TopologyView {
   * Creates scales for visual representation of network's elements.
   * @param {Object} self Instance of a class.
   */
-  createRepresentationScales(self) {
+  createDimensionScales(self) {
     // The optimal dimensions for visual marks that represent network's elements
     // depend on the dimensions of the graphical container and on the count of
     // elements.
-    //var node = self.graph.querySelector(".node.mark.metabolite .entity");
     // Define scales' domain on the basis of the ratio of the graphical
     // container's width to the count of nodes.
     var domainRatios = [0.3, 1, 5, 10, 15, 25, 50, 100, 150];
-    // Define scale for dimensions of nodes' representations.
+    // Define scale for lengths of visual marks.
     // Domain's unit is pixel for ratio of graphical container's width to count
     // of nodes.
     // Range's unit is pixel for dimension of graphical elements.
@@ -4972,7 +4973,7 @@ class TopologyView {
     var nodeDimensionScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([1, 3, 5, 7, 10, 15, 20, 30, 40, 50]);
+    .range([1, 2, 3, 5, 7, 10, 15, 20, 30, 40]);
     // Define scale for dimensions of links' representations.
     // Domain's unit is pixel for ratio of graphical container's width to count
     // of nodes.
@@ -5024,8 +5025,6 @@ class TopologyView {
     self.scaleFont = fontScale(self.scaleRatio);
   }
 
-  // TODO: Draw the network after 50% of simulation is complete?
-
   /**
   * Initializes positions of network's elements in network's diagram.
   * @param {Object} self Instance of a class.
@@ -5033,12 +5032,27 @@ class TopologyView {
   initializeNetworkDiagramPositions(self) {
     // Create scales for simulation of forces between network's elements.
     self.createSimulationScales(self);
-    // Create scales for efficiency.
-    self.createEfficiencyScales(self);
-    // Initialize monitor of simulation's progress.
-    self.initializeSimulationProgress(self);
-    // Initiate force simulation.
-    self.restoreInitiateSimulation(self);
+    // Initialize simulation's progress.
+    self.initializeSimulationProgress({
+      alpha: 1,
+      alphaDecay: 0.01,
+      alphaMinimum: 0.001,
+      self: self
+    });
+    // Create and initiate force simulation.
+    self.simulation = TopologyView.createInitiateSimulation({
+      alpha: 1,
+      alphaDecay: 0.013,
+      velocityDecay: 0.15,
+      alphaTarget: 0,
+      alphaMinimum: 0.001,
+      lengthFactor: self.scaleNodeDimension,
+      graphWidth: self.graphWidth,
+      graphHeight: self.graphHeight,
+      nodesRecords: self.nodesRecords,
+      linksRecords: self.linksRecords,
+      state: self.state
+    });
     // Respond to simulation's progress and completion.
     // To initialize positions in network's diagrams, respond to simulation in a
     // way to optimize efficiency and report progress.
@@ -5055,10 +5069,20 @@ class TopologyView {
     self.removeReactionsNodesDirections(self);
     // Create scales for simulation of forces between network's elements.
     self.createSimulationScales(self);
-    // Create scales for efficiency.
-    self.createEfficiencyScales(self);
-    // Initiate force simulation.
-    self.restoreInitiateSimulation(self);
+    // Create and initiate force simulation.
+    self.simulation = TopologyView.createInitiateSimulation({
+      alpha: 0.75,
+      alphaDecay: 0.025,
+      velocityDecay: 0.5,
+      alphaTarget: 0,
+      alphaMinimum: 0.001,
+      lengthFactor: self.scaleNodeDimension,
+      graphWidth: self.graphWidth,
+      graphHeight: self.graphHeight,
+      nodesRecords: self.nodesRecords,
+      linksRecords: self.linksRecords,
+      state: self.state
+    });
     // Respond to simulation's progress and completion.
     // To restore positions in network's diagrams, respond to simulation in a
     // way to promote interactivity.
@@ -5097,6 +5121,8 @@ class TopologyView {
     .nodesGroup.querySelectorAll("polygon.direction, rect.direction");
     View.removeElements(reactionsDirectionalMarks);
   }
+
+
   /**
   * Creates scales for simulations of forces between network's elements.
   * @param {Object} self Instance of a class.
@@ -5107,8 +5133,15 @@ class TopologyView {
     // The computational cost varies with the counts of network's elements.
     // To maintain efficiency, vary the rigor of these simulations by the counts
     // of network's elements.
+    // Graphical rendering of visual elements for network's elements is
+    // computationally expensive
+    // The maintenance of efficient interactivity in the application requires
+    // restriction on behavior.
+    // Greater scale of the network requires more stringent restriction for
+    // computational efficiency.
+    // Define scale's domain on the basis of the count of nodes.
     // Define scales' domain on the basis of the count of nodes.
-    var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
+    var domainCounts = [250, 1000, 2500, 5000];
     // Define scale for alpha decay rate in force simulation.
     // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.05, iterations = 134.
     // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.03, iterations = 227.
@@ -5119,174 +5152,45 @@ class TopologyView {
     // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.005, iterations = 1379.
     // Domain's unit is count of nodes.
     // Range's unit is arbitrary for decay rates.
-    //domain: range
-    //0-100: 0.01
-    //100-500: 0.013
-    //500-1000: 0.015
-    //1000-2500: 0.02
-    //2500-5000: 0.03
-    //5000-10000: 0.04
-    //10000-1000000: 0.05
-    var alphaDecayScale = d3
-    .scaleThreshold()
-    .domain(domainCounts)
-    .range([0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04]);
     // Define scale for velocity decay rate in force simulation.
     // Domain's unit is count of nodes.
     // Range's unit is arbitrary for decay rates.
-    //domain: range
-    //0-100: 0.2
-    //100-500: 0.2
-    //500-1000: 0.2
-    //1000-2500: 0.2
-    //2500-5000: 0.25
-    //5000-10000: 0.3
-    //10000-1000000: 0.3
-    var velocityDecayScale = d3
-    .scaleThreshold()
-    .domain(domainCounts)
-    .range([0.2, 0.2, 0.2, 0.2, 0.25, 0.3, 0.3]);
-    // Compute simulation decay rates from scale.
-    self.scaleAlphaDecay = alphaDecayScale(self.nodesRecords.length);
-    self.scaleVelocityDecay = velocityDecayScale(self.nodesRecords.length);
-    // Define parameters of the force simulation.
-    self.alpha = 1;
-    self.alphaMinimum = 0.001;
-  }
-  /**
-  * Creates scale for efficiency in the application.
-  * @param {Object} self Instance of a class.
-  */
-  createEfficiencyScales(self) {
-    // Graphical rendering of visual elements for network's elements is
-    // computationally expensive
-    // The maintenance of efficient interactivity in the application requires
-    // restriction on behavior.
-    // Greater scale of the network requires more stringent restriction for
-    // computational efficiency.
-    // Define scale's domain on the basis of the count of nodes.
-    var domainCounts = [100, 500, 1000, 2500, 5000, 10000];
     // Define scale for intervals at which to restore positions of nodes and
     // links during simulation's iterations.
     // Domain's unit is count of nodes.
     // Range's unit is arbitrary.
     //domain: range
-    //0-100: 3
-    //100-500: 5
-    //500-1000: 10
-    //1000-2500: 15
-    //2500-5000: 25
-    //5000-10000: 50
-    //10000-1000000: 100
+    //0-250: 0.1
+    //250-1000: 0.25
+    //1000-2500: 0.5
+    //2500-5000: 0.75
+    //5000-1000000: 0.99
     var intervalScale = d3
     .scaleThreshold()
     .domain(domainCounts)
-    .range([1, 1, 1, 1, 1, 1, 1]);
+    .range([0.1, 0.25, 0.5, 0.75, 0.99]);
     // Compute efficient behavior rules from scales.
     self.scaleInterval = intervalScale(self.nodesRecords.length);
   }
   /**
-  * Initiates a monitor of force simulation's progress.
-  * @param {Object} self Instance of a class.
+  * Initializes a force simulation's progress.
+  * @param {number} parameters.alpha Value of alpha, 0-1.
+  * @param {number} parameters.alphaDecay Value of alpha's decay rate, 0-1.
+  * @param {number} parameters.alphaMinimum Value of minimal alpha, 0-1.
+  * @param {Object} parameters.self Instance of a class.
   */
-  initializeSimulationProgress(self) {
-    // Compute an estimate of the simulation's iterations.
-    self.estimateIterations = self.computeSimulationIterations(self);
+  initializeSimulationProgress({alpha, alphaDecay, alphaMinimum, self} = {}) {
     // Initiate counter for simulation's iterations.
     self.simulationCounter = 0;
-  }
-  /**
-  * Computes an estimate of iterations for a simulation.
-  * @param {Object} self Instance of a class.
-  */
-  computeSimulationIterations(self) {
-    return (
-      (Math.log10(self.alphaMinimum)) /
-      (Math.log10(self.alpha - self.scaleAlphaDecay))
-    );
-  }
-  /**
-  * Restores and initiates a force simulation to determine positions of
-  * network's nodes and links in a node-link diagram.
-  * @param {Object} self Instance of a class.
-  */
-  restoreInitiateSimulation(self) {
-    // Initiate the force simulation.
-    // The force method assigns a specific force simulation to the name.
-    // Collision force prevents overlap and occlusion of nodes.
-    // The center force causes nodes to behave strangely when user repositions
-    // them manually.
-    // The force simulation assigns positions to the nodes, recording
-    // coordinates of these positions in novel attributes within nodes' records.
-    // These coordinates are accessible in the original data that associates
-    // with node elements.
-    // Any elements with access to the nodes' data, such as nodes' marks and
-    // labels, also have access to the coordinates of these positions.
-    // The visual representation of the subnetwork's elements in the network's
-    // diagram constitutes an important and persistent part of the application's
-    // state.
-    // The force simulation that creates the positions of nodes and links in the
-    // network's diagram is similarly an important and persistent part of the
-    // application's state.
-    // It is important to manage a single relevant simulation to avoid
-    // continuations of previous simulations after changes to the application's
-    // state.
-    // This force simulation depends both on the subnetwork's elements and on
-    // the dimensions of the view within the document object model.
-    // Determine whether the application's state has a previous simulation.
-    if (Model.determineSimulation(self.state)) {
-      // Stop the previous simulation.
-      // Replace the simulation in the application's state.
-      self.state.simulation.stop();
-      self.state.simulation = {};
-    }
-    self.simulation = d3.forceSimulation()
-    .alphaTarget(0)
-    .alpha(self.alpha)
-    .alphaDecay(self.scaleAlphaDecay)
-    .alphaMin(self.alphaMinimum)
-    .velocityDecay(self.scaleVelocityDecay)
-    .nodes(self.nodesRecords)
-    .force("center", d3.forceCenter()
-      .x(self.graphWidth / 2)
-      .y(self.graphHeight / 2)
-    )
-    .force("collision", d3.forceCollide()
-      .radius(function (element, index, nodes) {
-        if (element.type === "metabolite") {
-          return self.metaboliteNodeWidth;
-        } else if (element.type === "reaction") {
-          return self.reactionNodeWidth;
-        }
-      })
-      .strength(0.7)
-      .iterations(1)
-    )
-    .force("charge", d3.forceManyBody()
-      .theta(0.3)
-      .strength(-500)
-      .distanceMin(1)
-      .distanceMax(self.scaleNodeDimension * 25)
-    )
-    .force("link", d3.forceLink()
-      .links(self.linksRecords)
-      .id(function (element, index, nodes) {
-        return element.identifier;
-      })
-      .distance(1.3 * (self.reactionNodeWidth + self.metaboliteNodeWidth))
-      //.strength()
-      //.iterations()
-    )
-    .force("positionX", d3.forceX()
-      .x(self.graphWidth / 2)
-      .strength(0.00007)
-    )
-    .force("positionY", d3.forceY()
-      .y(self.graphWidth / 2)
-      .strength(0.03)
-    );
-    // Preserve a reference to the simulation in the application's state.
-    self.state.simulation = self.simulation;
+    // Assume that alpha's target is less than alpha's minimum.
+    // Compute an estimate of the simulation's total iterations.
+    var totalIterations = TopologyView.computeSimulationTotalIterations({
+      alpha: alpha,
+      alphaDecay: alphaDecay,
+      alphaMinimum: alphaMinimum
+    });
+    // Compute iterations to complete before creating visual representations.
+    self.preliminaryIterations = (totalIterations * self.scaleInterval);
   }
   /**
   * Responds to simulation's progress and completion.
@@ -5296,16 +5200,35 @@ class TopologyView {
     self.simulation
     .on("tick", function () {
       // Execute behavior during simulation's progress.
-      // Report simulation's progress.
-      self.reportSimulationProgress(self);
+      if (self.simulationCounter < self.preliminaryIterations) {
+        // Confine record's positions within graphical container.
+        TopologyView.confineRecordsPositions({
+          records: self.nodesRecords,
+          graphWidth: self.graphWidth,
+          graphHeight: self.graphHeight
+        });
+        // Report simulation's progress.
+        self.restoreReportSimulationProgress(self);
+      } else {
+        // Represent network's elements visually.
+        // Determine whether visual representations of network's elements exist.
+        if (
+          (self.nodesGroup.children.length === 0) &&
+          (self.linksGroup.children.length === 0)
+        ) {
+          // Remove message about simulation's progress.
+          self.removeSimulationProgressReport(self);
+          // Create, activate, and restore visual representations of network's
+          // elements.
+          self.createActivateNetworkRepresentation(self);
+        }
+        // Restore and refine positions in network's diagram.
+        self.restoreNodesPositions(self);
+        self.restoreLinksPositions(self);
+      }
     })
     .on("end", function () {
       // Execute behavior upon simulation's completion.
-      // Remove message about simulation's progress.
-      self.removeSimulationProgressReport(self);
-      // Create, activate, and restore visual representations of network's
-      // elements.
-      self.createActivateNetworkRepresentation(self);
       // Restore and refine positions in network's diagram.
       self.restoreNodesPositions(self);
       self.restoreLinksPositions(self);
@@ -5321,12 +5244,13 @@ class TopologyView {
   * Reports progress of iterative force simulation.
   * @param {Object} self Instance of a class.
   */
-  reportSimulationProgress(self) {
+  restoreReportSimulationProgress(self) {
     // Increment count of simulation's iterations.
     self.simulationCounter += 1;
-    // Estimate simulation's progress.
+    // Estimate simulation's progress to point of visual representation.
     var progress = (
-      Math.round((self.simulationCounter / self.estimateIterations) * 100) / 100
+      Math.round(
+        (self.simulationCounter / self.preliminaryIterations) * 100) / 100
     );
     if (progress > self.simulationProgress) {
       self.createRestoreSimulationProgressReport(progress, self);
@@ -5349,11 +5273,6 @@ class TopologyView {
       .setAttribute("x", (String(self.graphWidth / 2) + "px"));
       self.simulationProgressReport
       .setAttribute("y", (String(self.graphHeight / 2) + "px"));
-      // Restore message.
-      var message = (
-        "simulation progress: " + (progress * 100).toFixed() + "%"
-      );
-      self.simulationProgressReport.textContent = message;
     } else {
       // Create text container.
       self.simulationProgressReport = self
@@ -5363,12 +5282,12 @@ class TopologyView {
       // Restore position.
       self.simulationProgressReport.setAttribute("x", "0px");
       self.simulationProgressReport.setAttribute("y", "0px");
-      // Restore message.
-      var message = (
-        "simulation progress: " + (progress * 100).toFixed() + "%"
-      );
-      self.simulationProgressReport.textContent = message;
     }
+    // Restore message.
+    var message = (
+      "progress: " + (progress * 100).toFixed() + "%"
+    );
+    self.simulationProgressReport.textContent = message;
   }
   /**
   * Removes report of simulation's progress.
@@ -5463,24 +5382,6 @@ class TopologyView {
     // Set dimensions of links.
     self.linksMarks.attr("stroke-width", (self.scaleLinkDimension * 1));
   }
-
-  // TODO: Implement prompt view with controls for individual nodes
-  // TODO: Selection of node highlights node (emphasis class), activates detail view, and displays details in detail view
-  // TODO: Maybe only create and display prompt view for current node selection.
-  // TODO: Click and drag moves node and locks in new position...
-  // TODO: I want new classes for selected (emphasis) and anchored nodes.
-
-  // TODO: Dragging a node should not submit anything to state...
-  // TODO: Re-initiate the force simulation for drags...
-  // TODO: I can probably just call self.simulation.restart();
-  // TODO: No need to re-define the simulation after I've already defined it.
-
-//function release(d) {
-//    d.fx = null;
-//    d.fy = null;
-//    d3.select(this)
-//        .classed("fixed", false);
-//};
 
   /**
   * Creates and activates nodes.
@@ -5891,23 +5792,28 @@ class TopologyView {
   * @param {Object} self Instance of a class.
   */
   restoreNodesPositions(self) {
-    // Set radius.
-    var radius = self.reactionNodeWidth;
     // Restore positions of nodes' marks according to results of simulation.
     // Impose constraints on node positions according to dimensions of graphical
     // container.
     self.nodesGroups.attr("transform", function (element, index, nodes) {
-      // Constrain nodes' positions according to dimensions of graphical
-      // container.
-      element.x = Math
-      .max(radius, Math.min(self.graphWidth - radius, element.x));
-      element.y = Math
-      .max(radius, Math.min(self.graphHeight - radius, element.y));
+      // Confine nodes' positions within graphical container.
+      element.x = TopologyView.confinePosition({
+        position: element.x,
+        radius: self.reactionNodeWidth,
+        boundary: self.graphWidth
+      });
+      element.y = TopologyView.confinePosition({
+        position: element.y,
+        radius: self.reactionNodeWidth,
+        boundary: self.graphHeight
+      });
       // Determine coordinates for nodes' marks from results of simulation in
       // nodes' records.
       return "translate(" + element.x + "," + element.y + ")";
     });
   }
+
+
   /**
   * Restores links' positions according to results of force simulation.
   * @param {Object} self Instance of a class.
@@ -5916,25 +5822,27 @@ class TopologyView {
     // Restore positions of links according to results of simulation.
     // D3's procedure for force simulation copies references to records for
     // source and target nodes within records for links.
-    self.linksMarks.attr("points", function (element, index, nodes) {
-      // Determine positions of link's termini.
-      var link = TopologyView.accessLink({
-        identifier: element.identifier,
-        state: self.state
+    if (self.linksRecords.length > 0) {
+      self.linksMarks.attr("points", function (element, index, nodes) {
+        // Determine positions of link's termini.
+        var link = TopologyView.accessLink({
+          identifier: element.identifier,
+          state: self.state
+        });
+        var termini = TopologyView.determineLinkTermini({
+          role: link.role,
+          source: element.source,
+          target: element.target,
+          width: self.reactionNodeWidth
+        });
+        // Create points for vertices at source, center, and target of polyline.
+        var points = General.createStraightPolylinePoints({
+          source: termini.source,
+          target: termini.target
+        });
+        return points;
       });
-      var termini = TopologyView.determineLinkTermini({
-        role: link.role,
-        source: element.source,
-        target: element.target,
-        width: self.reactionNodeWidth
-      });
-      // Create points for vertices at source, center, and target of polyline.
-      var points = General.createStraightPolylinePoints({
-        source: termini.source,
-        target: termini.target
-      });
-      return points;
-    });
+    }
   }
   /**
   * Refines the representations of nodes and links.
@@ -6095,16 +6003,167 @@ class TopologyView {
   // TODO: methods with utility to TopologyView...
 
   /**
-  * Determines whether the network's diagram requires mostly novel positions.
-  * @param {Array<Object>} networkNodesRecords Information about network's
+  * Computes an estimate of a simulation's total iterations.
+  * @param {number} parameters.alpha Value of alpha, 0-1.
+  * @param {number} parameters.alphaDecay Value of alpha's decay rate, 0-1.
+  * @param {number} parameters.alphaMinimum Value of minimal alpha, 0-1.
+  * @returns {Object} Estimate of simulation's total iterations.
+  */
+  static computeSimulationTotalIterations({alpha, alphaDecay, alphaMinimum} = {}) {
+    return ((Math.log10(alphaMinimum)) / (Math.log10(alpha - alphaDecay)));
+  }
+  /**
+  * Creates and initiates a simulation of forces to determine positions of
+  * network's nodes and links in a node-link diagram.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.alpha Value of alpha, 0-1.
+  * @param {number} parameters.alphaDecay Value of alpha's decay rate, 0-1.
+  * @param {number} parameters.velocityDecay Value of velocity's decay rate,
+  * 0-1.
+  * @param {number} parameters.alphaTarget Value of alpha's target, 0-1.
+  * @param {number} parameters.alphaMinimum Value of minimal alpha, 0-1.
+  * @param {number} parameters.lengthFactor Length in pixels by which to
+  * scale dimensions of representations of nodes and links.
+  * @param {number} parameters.graphWidth Width in pixels of graphical
+  * container.
+  * @param {number} parameters.graphHeight Height in pixels of graphical
+  * container.
+  * @param {Array<Object>} parameters.nodesRecords Information about network's
   * nodes.
+  * @param {Array<Object>} parameters.linksRecords Information about network's
+  * links.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Reference to simulation.
+  */
+  static createInitiateSimulation({alpha, alphaDecay, velocityDecay, alphaTarget, alphaMinimum, lengthFactor, graphWidth, graphHeight, nodesRecords, linksRecords, state} = {}) {
+    // Initiate the force simulation.
+    // The force method assigns a specific force simulation to the name.
+    // Collision force prevents overlap and occlusion of nodes.
+    // The center force causes nodes to behave strangely when user repositions
+    // them manually.
+    // The force simulation assigns positions to the nodes, recording
+    // coordinates of these positions in novel attributes within nodes' records.
+    // These coordinates are accessible in the original data that associates
+    // with node elements.
+    // Any elements with access to the nodes' data, such as nodes' marks and
+    // labels, also have access to the coordinates of these positions.
+    // The visual representation of the subnetwork's elements in the network's
+    // diagram constitutes an important and persistent part of the application's
+    // state.
+    // The force simulation that creates the positions of nodes and links in the
+    // network's diagram is similarly an important and persistent part of the
+    // application's state.
+    // It is important to manage a single relevant simulation to avoid
+    // continuations of previous simulations after changes to the application's
+    // state.
+    // This force simulation depends both on the subnetwork's elements and on
+    // the dimensions of the view within the document object model.
+    // Determine whether the application's state has a previous simulation.
+    if (Model.determineSimulation(state)) {
+      // Stop the previous simulation.
+      // Replace the simulation in the application's state.
+      state.simulation.stop();
+      state.simulation = {};
+    }
+    var simulation = d3.forceSimulation()
+    .alpha(alpha)
+    .alphaDecay(alphaDecay)
+    .velocityDecay(velocityDecay)
+    .alphaTarget(alphaTarget)
+    .alphaMin(alphaMinimum)
+    .nodes(nodesRecords)
+    .force("center", d3.forceCenter()
+      .x(graphWidth / 2)
+      .y(graphHeight / 2)
+    )
+    .force("collision", d3.forceCollide()
+      .radius(function (element, index, nodes) {
+        if (element.type === "metabolite") {
+          return lengthFactor;
+        } else if (element.type === "reaction") {
+          return (lengthFactor * 3);
+        }
+      })
+      .strength(0.7)
+      .iterations(1)
+    )
+    .force("charge", d3.forceManyBody()
+      .theta(0.3)
+      .strength(-500)
+      .distanceMin(1)
+      .distanceMax(lengthFactor * 10)
+    )
+    .force("link", d3.forceLink()
+      .links(linksRecords)
+      .id(function (element, index, nodes) {
+        return element.identifier;
+      })
+      .distance(4 * lengthFactor)
+      //.strength()
+      //.iterations()
+    )
+    .force("positionX", d3.forceX()
+      .x(graphWidth / 2)
+      .strength(0.00007)
+    )
+    .force("positionY", d3.forceY()
+      .y(graphHeight / 2)
+      .strength(0.025)
+    );
+    // Preserve a reference to the simulation in the application's state.
+    state.simulation = simulation;
+    // Return simulation.
+    return simulation;
+  }
+  /**
+  * Confines positions of records for network's entities within dimensions of
+  * graphical container.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.records Information about network's
+  * entities.
+  * @param {number} parameters.graphWidth Width in pixels of graphical
+  * container.
+  * @param {number} parameters.graphHeight Height in pixels of graphical
+  * container.
+  */
+  static confineRecordsPositions({records, graphWidth, graphHeight} = {}) {
+    // Iterate on records for network's entities.
+    records.forEach(function (record) {
+      // Confine record's positions within graphical container.
+      record.x = TopologyView.confinePosition({
+        position: record.x,
+        radius: 0,
+        boundary: graphWidth
+      });
+      record.y = TopologyView.confinePosition({
+        position: record.y,
+        radius: 0,
+        boundary: graphHeight
+      });
+    });
+  }
+  /**
+  * Confines a position within a boundary.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.position A position to confine.
+  * @param {number} parameters.radius Radius around position.
+  * @param {number} parameters.boundary Boundary within which to confine
+  * position.
+  * @returns {number} Position within boundary.
+  */
+  static confinePosition({position, radius, boundary} = {}) {
+    return Math.max(radius, Math.min(boundary - radius, position));
+  }
+  /**
+  * Determines whether the network's diagram requires mostly novel positions.
+  * @param {Array<Object>} nodesRecords Information about network's nodes.
   * @returns {boolean} Whether the network's diagram requires mostly novel
   * positions.
   */
-  static determineNovelNetworkDiagramPositions(networkNodesRecords) {
+  static determineNovelNetworkDiagramPositions(nodesRecords) {
     // Iterate on records.
     // Count records with positions at origin.
-    var originCount = networkNodesRecords.reduce(function (count, record) {
+    var originCount = nodesRecords.reduce(function (count, record) {
       // Determine whether record's positions are at origin.
       var origin = ((record.x === 0) && (record.y === 0));
       if (origin) {
@@ -6114,7 +6173,7 @@ class TopologyView {
       }
     }, 0);
     // Determine whether more than half of records have positions at origin.
-    return (originCount > (networkNodesRecords.length / 2));
+    return (originCount > (nodesRecords.length / 3));
   }
   /**
   * Accesses a link.

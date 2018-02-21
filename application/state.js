@@ -197,6 +197,10 @@ class State {
       // Variable "defaultSimplifications" stores information about whether to
       // simplify default entities.
       "defaultSimplifications",
+      // Variable "defaultSimplificationsMetabolites" stores information about
+      // metabolites for which to create default simplifications.
+      // Information includes references to variable "metabolites".
+      "defaultSimplificationsMetabolites",
       // Variable "reactionsSimplifications" stores information about
       // selections of reactions for simplification by omission.
       // Information includes references to variable "candidatesReactions".

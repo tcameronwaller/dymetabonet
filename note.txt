@@ -4,6 +4,15 @@ Research With Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+20 February 2018
+
+----------
+Progress
+
+The proximity expansion works properly.
+Filters define the total network and hence the network that is accessible for traversal.
+
+--------------------------------------------------
 19 February 2018
 
 ----------

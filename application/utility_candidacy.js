@@ -909,8 +909,8 @@ class Candidacy {
   * @returns {Object<Object>} Information about simplification of entities.
   */
   static changeSimplifications({identifier, category, method, candidatesReactions, candidatesMetabolites, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
-    // Filter information about simplifications to omit those that are implicit
-    // and include only those that are explicit.
+    // Filter simplifications to omit those that are implicit and include only
+    // those that are explicit.
     var explicitSimplifications = Candidacy.filterExplicitSimplifications({
       metabolitesSimplifications: metabolitesSimplifications,
       reactionsSimplifications: reactionsSimplifications
@@ -982,10 +982,45 @@ class Candidacy {
     return completeSimplifications;
   }
   /**
-  * Creates information about default simplifications.
+  * Determines whether explicit simplifications exist for candidates of all
+  * default entities.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} parameters.defaultSimplifications Whether to include
-  * explicit simplifications for default entities.
+  * @param {Array<string>} parameters.defaultSimplificationsMetabolites
+  * Identifiers of metabolites for which to create default simplifications.
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
+  * @returns {boolean} Whether simplifications exist for candidates of all
+  * default entities.
+  */
+  static determineDefaultSimplifications({defaultSimplificationsMetabolites, candidatesMetabolites, metabolitesSimplifications} = {}) {
+    // Collect identifiers of candidates that match entities for default
+    // simplifications.
+    var defaultSimplificationsCandidatesIdentifiers = Candidacy
+    .collectDefaultSimplificationsCandidatesIdentifiers({
+      defaultSimplificationsEntities: defaultSimplificationsMetabolites,
+      type: "metabolite",
+      candidates: candidatesMetabolites
+    });
+    // Determine whether explicit simplifications exist for all candidates for
+    // default entities.
+    return defaultSimplificationsCandidatesIdentifiers
+    .every(function (identifier) {
+      // Determine whether an explicit simplification exists for the candidate.
+      if (metabolitesSimplifications.hasOwnProperty(identifier)) {
+        return !metabolitesSimplifications[identifier].dependency;
+      } else {
+        return false;
+      }
+    });
+  }
+  /**
+  * Creates information about simplifications for default entities and includes
+  * with information about simplifications of other entities.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsMetabolites
+  * Identifiers of metabolites for which to create default simplifications.
   * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
   * @param {Object<Object>} parameters.candidatesMetabolites Information about
@@ -995,12 +1030,27 @@ class Candidacy {
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
+  * @param {Object<Object>} parameters.reactionsSimplifications Information
+  * about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
   * @returns {Object<Object>} Information about simplification of entities.
   */
-  static createDefaultSimplifications({defaultSimplifications, candidatesReactions, candidatesMetabolites, reactionsSets, reactions, compartmentalization} = {}) {
-    var explicitSimplifications = Candidacy
-    .createDefaultExplicitSimplifications({
-      defaultSimplifications: defaultSimplifications,
+  static createIncludeDefaultSimplifications({defaultSimplificationsMetabolites, candidatesReactions, candidatesMetabolites, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
+    // Filter simplifications to omit those that are implicit and include only
+    // those that are explicit.
+    var explicitSimplifications = Candidacy.filterExplicitSimplifications({
+      metabolitesSimplifications: metabolitesSimplifications,
+      reactionsSimplifications: reactionsSimplifications
+    });
+    // Determine explicit simplifications.
+    var novelSimplifications = Candidacy
+    .createIncludeDefaultExplicitSimplifications({
+      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
+      reactionsSimplifications: explicitSimplifications
+      .reactionsSimplifications,
+      metabolitesSimplifications: explicitSimplifications
+      .metabolitesSimplifications,
       candidatesReactions: candidatesReactions,
       candidatesMetabolites: candidatesMetabolites
     });
@@ -1012,51 +1062,77 @@ class Candidacy {
       reactionsSets: reactionsSets,
       reactions: reactions,
       compartmentalization: compartmentalization,
-      reactionsSimplifications: explicitSimplifications
-      .reactionsSimplifications,
-      metabolitesSimplifications: explicitSimplifications
+      reactionsSimplifications: novelSimplifications.reactionsSimplifications,
+      metabolitesSimplifications: novelSimplifications
       .metabolitesSimplifications
     });
     // Return information.
     return completeSimplifications;
   }
   /**
-  * Creates information about explicit simplifications for default entities.
+  * Creates information about explicit simplifications for default entities and
+  * includes with information about explicit simplifications for other entities.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} parameters.defaultSimplifications Whether to include
-  * explicit simplifications for default entities.
+  * @param {Array<string>} parameters.defaultSimplificationsMetabolites
+  * Identifiers of metabolites for which to create default simplifications.
   * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
   * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
+  * @param {Object<Object>} parameters.reactionsSimplifications Information
+  * about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
   * @returns {Object<Object>} Information about simplification of entities.
   */
-  static createDefaultExplicitSimplifications({defaultSimplifications, candidatesReactions, candidatesMetabolites} = {}) {
-    // Determine default explicit simplifications.
-    if (defaultSimplifications) {
-      // Create explicit simplifications for default entities.
-      // Define list of identifiers of metabolites for default simplification.
-      var metabolitesIdentifiers = [
-        "h", "h2o", "coa", "o2", "atp", "nadp", "nadph", "nad", "nadh", "pi",
-        "adp", "h2o2", "ppi", "fad", "co2", "fadh2", "amp", "so4", "nh4", "na1",
-        "hco3"
-      ];
-      // Determine identifiers of general or compartmental candidates.
-      // Relevant candidates are all that reference the relevant metabolites.
-      // As this procedure creates simplifications for candidate metabolites
-      // that already exist, any change to candidate metabolites requires novel
-      // creation of default simplifications.
-      // Filter identifiers of candidate metabolites.
-      var candidateMetabolitesIdentifiers = Object.keys(candidatesMetabolites);
-      var simplificationIdentifiers = candidateMetabolitesIdentifiers
-      .filter(function (identifier) {
-        // Access information.
-        var candidate = candidatesMetabolites[identifier];
-        return metabolitesIdentifiers.includes(candidate.metabolite);
-      });
-      // Create information for explicit simplifications.
-      var metabolitesSimplifications = simplificationIdentifiers
-      .reduce(function (collection, identifier) {
+  static createIncludeDefaultExplicitSimplifications({defaultSimplificationsMetabolites, candidatesReactions, candidatesMetabolites, reactionsSimplifications, metabolitesSimplifications} = {}) {
+    // Create explicit simplifications for default entities.
+    var novelMetabolitesSimplifications = Candidacy
+    .createIncludeTypeDefaultSimplifications({
+      defaultSimplificationsEntities: defaultSimplificationsMetabolites,
+      type: "metabolite",
+      candidates: candidatesMetabolites,
+      simplifications: metabolitesSimplifications
+    });
+    var novelReactionsSimplifications = reactionsSimplifications;
+    // Compile and return information.
+    return {
+      reactionsSimplifications: novelReactionsSimplifications,
+      metabolitesSimplifications: novelMetabolitesSimplifications
+    };
+  }
+  /**
+  * Creates information about explicit simplifications for default entities of a
+  * specific type and includes with information about explicit simplifications
+  * for other entities of that type.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsEntities
+  * Identifiers of entities for which to create default simplifications.
+  * @param {string} parameters.type Type of entity, metabolite or reaction.
+  * @param {Object<Object>} parameters.candidates Information about candidate
+  * entities.
+  * @param {Object<Object>} parameters.simplifications Information about
+  * simplification of entities.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static createIncludeTypeDefaultSimplifications({defaultSimplificationsEntities, type, candidates, simplifications} = {}) {
+    // Collect identifiers of candidates that match entities for default
+    // simplifications.
+    var defaultSimplificationsCandidatesIdentifiers = Candidacy
+    .collectDefaultSimplificationsCandidatesIdentifiers({
+      defaultSimplificationsEntities: defaultSimplificationsEntities,
+      type: type,
+      candidates: candidates
+    });
+    // Create information about novel explicit simplifications for default
+    // entities and include with information about other explicit
+    // simplifications.
+    return defaultSimplificationsCandidatesIdentifiers
+    .reduce(function (collection, identifier) {
+      // Determine whether a simplification exists for the candidate.
+      if (collection.hasOwnProperty(identifier)) {
+        return collection;
+      } else {
         // Create record.
         var record = {
           identifier: identifier,
@@ -1069,18 +1145,150 @@ class Candidacy {
         };
         // Include entry in collection.
         return Object.assign(collection, entry);
-      }, {});
-      var reactionsSimplifications = {};
-    } else {
-      // Create empty simplifications.
-      var reactionsSimplifications = {};
-      var metabolitesSimplifications = {};
-    }
+      }
+    }, simplifications);
+  }
+  /**
+  * Collects identifiers of candidate entities that match entities for default
+  * simplifications.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsEntities
+  * Identifiers of entities for which to create default simplifications.
+  * @param {string} parameters.type Type of entity, metabolite or reaction.
+  * @param {Object<Object>} parameters.candidates Information about candidate
+  * entities.
+  * @returns {Array<string>} Identifiers of candidate entities.
+  */
+  static collectDefaultSimplificationsCandidatesIdentifiers({defaultSimplificationsEntities, type, candidates} = {}) {
+    // Default simplifications include identifiers of entities for
+    // simplification.
+    // Determine identifiers of candidates that match these default entities for
+    // simplification.
+    var candidatesIdentifiers = Object.keys(candidates);
+    return candidatesIdentifiers.filter(function (identifier) {
+      // Access information.
+      var candidate = candidates[identifier];
+      return defaultSimplificationsEntities.includes(candidate[type]);
+    });
+  }
+  /**
+  * Removes information about simplifications for default entities and from
+  * information about simplifications of other entities.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsMetabolites
+  * Identifiers of metabolites for which to create default simplifications.
+  * @param {Object<Object>} parameters.candidatesReactions Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.reactionsSets Information about
+  * reactions' metabolites and sets.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
+  * @param {Object<Object>} parameters.reactionsSimplifications Information
+  * about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static removeDefaultSimplifications({defaultSimplificationsMetabolites, candidatesReactions, candidatesMetabolites, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
+    // Filter simplifications to omit those that are implicit and include only
+    // those that are explicit.
+    var explicitSimplifications = Candidacy.filterExplicitSimplifications({
+      metabolitesSimplifications: metabolitesSimplifications,
+      reactionsSimplifications: reactionsSimplifications
+    });
+    // Remove simplifications for default entities from explicit
+    // simplifications.
+    var novelSimplifications = Candidacy.removeDefaultExplicitSimplifications({
+      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
+      reactionsSimplifications: explicitSimplifications
+      .reactionsSimplifications,
+      metabolitesSimplifications: explicitSimplifications
+      .metabolitesSimplifications,
+      candidatesReactions: candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites
+    });
+    // Create information about any implicit simplifications for entities and
+    // include with information about explicit simplifications.
+    var completeSimplifications = Candidacy.createImplicitSimplifications({
+      candidatesReactions: candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites,
+      reactionsSets: reactionsSets,
+      reactions: reactions,
+      compartmentalization: compartmentalization,
+      reactionsSimplifications: novelSimplifications.reactionsSimplifications,
+      metabolitesSimplifications: novelSimplifications
+      .metabolitesSimplifications
+    });
+    // Return information.
+    return completeSimplifications;
+  }
+  /**
+  * Removes information about explicit simplifications for default entities.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsMetabolites
+  * Identifiers of metabolites for which to create default simplifications.
+  * @param {Object<Object>} parameters.candidatesReactions Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.reactionsSimplifications Information
+  * about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static removeDefaultExplicitSimplifications({defaultSimplificationsMetabolites, candidatesReactions, candidatesMetabolites, reactionsSimplifications, metabolitesSimplifications} = {}) {
+    var novelMetabolitesSimplifications = Candidacy
+    .removeTypeDefaultSimplifications({
+      defaultSimplificationsEntities: defaultSimplificationsMetabolites,
+      type: "metabolite",
+      candidates: candidatesMetabolites,
+      simplifications: metabolitesSimplifications
+    });
+    var novelReactionsSimplifications = reactionsSimplifications;
     // Compile and return information.
     return {
-      reactionsSimplifications: reactionsSimplifications,
-      metabolitesSimplifications: metabolitesSimplifications
+      reactionsSimplifications: novelReactionsSimplifications,
+      metabolitesSimplifications: novelMetabolitesSimplifications
     };
+  }
+  /**
+  * Removes information about explicit simplifications for default entities of a
+  * specific type from information about explicit simplifications for other
+  * entities of that type.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsEntities
+  * Identifiers of entities for which to create default simplifications.
+  * @param {string} parameters.type Type of entity, metabolite or reaction.
+  * @param {Object<Object>} parameters.candidates Information about candidate
+  * entities.
+  * @param {Object<Object>} parameters.simplifications Information about
+  * simplification of entities.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static removeTypeDefaultSimplifications({defaultSimplificationsEntities, type, candidates, simplifications} = {}) {
+    // Collect identifiers of candidates that match entities for default
+    // simplifications.
+    var defaultSimplificationsCandidatesIdentifiers = Candidacy
+    .collectDefaultSimplificationsCandidatesIdentifiers({
+      defaultSimplificationsEntities: defaultSimplificationsEntities,
+      type: type,
+      candidates: candidates
+    });
+    // Remove default simplifications for default entities.
+    // Define function for filter against simplifications.
+    function filter(entryValue) {
+      return !defaultSimplificationsCandidatesIdentifiers
+      .includes(entryValue.identifier);
+    };
+    // Filter simplifications to omit those that are for default entities.
+    return General.filterObjectEntries({
+      filter: filter,
+      entries: simplifications
+    });
   }
   /**
   * Filters designations of entities for simplification to omit implicit

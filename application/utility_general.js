@@ -885,7 +885,7 @@ class General {
       // Determine whether entry's value passes filter.
       if (filter(entries[key])) {
         // Copy and include entry.
-        var valueCopy = General.copyValue(entries[key]);
+        var valueCopy = General.copyValue(entries[key], true);
         // Create entry.
         var entry = {
           [key]: valueCopy

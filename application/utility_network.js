@@ -56,7 +56,8 @@ class Network {
   */
   static createNetworkElements({candidatesReactions, candidatesMetabolites, reactionsSimplifications, metabolitesSimplifications, reactions, metabolites, compartmentalization} = {}) {
     // Collect network's elements.
-    var networkNodesLinks = Network.collectReactionsMetabolitesNetworkNodesLinks({
+    var networkNodesLinks = Network
+    .collectReactionsMetabolitesNetworkNodesLinks({
       candidatesReactions: candidatesReactions,
       candidatesMetabolites: candidatesMetabolites,
       reactionsSimplifications: reactionsSimplifications,
