@@ -122,140 +122,41 @@ class Action {
   * @param {Object} state Application's state.
   */
   static initializeApplicationControls(state) {
-    var source = null;
+    var source = {};
     var controlViews = {
-      state: true,
-      set: false,
-      candidacy: false
+      state: false,
+      filter: false,
+      simplification: false,
+      traversal: false
     };
-    var topology = false;
-    var topologyNovelty = true;
-    var setViewControls = Action.initializeSetViewControls();
-    var candidacyViewControls = Action.initializeCandidacyViewControls();
+    // Initialize controls for pompt view.
+    var prompt = Action.initializePromptViewControls();
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
+    var entitySelection = {type: "", node: "", candidate: "", entity: ""};
+    // Initialize controls for set view.
+    var filterViewControls = Action.initializeFilterViewControls();
+    // Initialize controls for candidacy view.
+    var simplificationViewControls = Action
+    .initializeSimplificationViewControls();
+    // Initialize controls for traversal view.
+    var traversalViewControls = Action.initializeTraversalViewControls();
+    var simulation = {};
     // Compile variables' values.
     var novelVariablesValues = {
       source: source,
       controlViews: controlViews,
-      topology: topology,
-      topologyNovelty: topologyNovelty
+      prompt: prompt,
+      forceTopology: forceTopology,
+      entitySelection: entitySelection,
+      simulation: simulation
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
-      setViewControls,
-      candidacyViewControls
-    );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Restores values of variables of application's controls for set view.
-  * @param {Object} state Application's state.
-  */
-  static restoreSetViewControls(state) {
-    var setViewControls = Action.initializeSetViewControls();
-    // Determine current entities' attribution to sets.
-    var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
-      setsFilters: setViewControls.setsFilters,
-      totalReactionsSets: state.totalReactionsSets,
-      totalMetabolitesSets: state.totalMetabolitesSets,
-      reactions: state.reactions
-    });
-    // Determine sets' cardinalities and prepare sets' summaries.
-    var setsCardinalitiesSummaries = Cardinality
-    .determineSetsCardinalitiesSummaries({
-      setsEntities: setViewControls.setsEntities,
-      setsFilter: setViewControls.setsFilter,
-      accessReactionsSets: currentEntitiesSets.accessReactionsSets,
-      accessMetabolitesSets: currentEntitiesSets.accessMetabolitesSets,
-      filterReactionsSets: currentEntitiesSets.filterReactionsSets,
-      filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets,
-      setsSearches: setViewControls.setsSearches,
-      setsSorts: setViewControls.setsSorts,
-      compartments: state.compartments,
-      processes: state.processes
-    });
-    // Determine candidate entities, their simplifications, and summaries.
-    var candidatesSimplificationsSummaries = Candidacy
-    .evaluateCandidacyContext({
-      reactionsSets: currentEntitiesSets.filterReactionsSets,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: state.compartmentalization,
-      metabolitesSimplifications: state.metabolitesSimplifications,
-      reactionsSimplifications: state.reactionsSimplifications,
-      candidatesSearches: state.candidatesSearches,
-      candidatesSorts: state.candidatesSorts,
-      compartments: state.compartments
-    });
-    // Create network's elements.
-    var networkElements = Network.createNetworkElements({
-      reactionsCandidates: candidatesSimplificationsSummaries
-      .reactionsCandidates,
-      metabolitesCandidates: candidatesSimplificationsSummaries
-      .metabolitesCandidates,
-      reactionsSimplifications: candidatesSimplificationsSummaries
-      .reactionsSimplifications,
-      metabolitesSimplifications: candidatesSimplificationsSummaries
-      .metabolitesSimplifications,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: state.compartmentalization
-    });
-    // Compile variables' values.
-    var variablesValues = Object.assign(
-      setViewControls,
-      currentEntitiesSets,
-      setsCardinalitiesSummaries,
-      candidatesSimplificationsSummaries,
-      networkElements,
-    );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Restores values of variables of application's controls for candidacy view.
-  * @param {Object} state Application's state.
-  */
-  static restoreCandidacyViewControls(state) {
-    var candidacyViewControls = Action.initializeCandidacyViewControls();
-    // Determine candidate entities, their simplifications, and summaries.
-    var candidatesSimplificationsSummaries = Candidacy
-    .evaluateCandidacyContext({
-      reactionsSets: state.filterReactionsSets,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: candidacyViewControls.compartmentalization,
-      metabolitesSimplifications: candidacyViewControls.metabolitesSimplifications,
-      reactionsSimplifications: candidacyViewControls.reactionsSimplifications,
-      candidatesSearches: candidacyViewControls.candidatesSearches,
-      candidatesSorts: candidacyViewControls.candidatesSorts,
-      compartments: state.compartments
-    });
-    // Create network's elements.
-    var networkElements = Network.createNetworkElements({
-      reactionsCandidates: candidatesSimplificationsSummaries
-      .reactionsCandidates,
-      metabolitesCandidates: candidatesSimplificationsSummaries
-      .metabolitesCandidates,
-      reactionsSimplifications: candidatesSimplificationsSummaries
-      .reactionsSimplifications,
-      metabolitesSimplifications: candidatesSimplificationsSummaries
-      .metabolitesSimplifications,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: state.compartmentalization
-    });
-    // Compile variables' values.
-    var variablesValues = Object.assign(
-      candidacyViewControls,
-      candidatesSimplificationsSummaries,
-      networkElements,
+      filterViewControls,
+      simplificationViewControls,
+      traversalViewControls
     );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
@@ -287,8 +188,8 @@ class Action {
     // Determine current entities' attribution to sets.
     var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
       setsFilters: state.setsFilters,
-      totalReactionsSets: totalEntitiesSets.totalReactionsSets,
-      totalMetabolitesSets: totalEntitiesSets.totalMetabolitesSets,
+      totalSetsReactions: totalEntitiesSets.totalSetsReactions,
+      totalSetsMetabolites: totalEntitiesSets.totalSetsMetabolites,
       reactions: state.reactions
     });
     // Determine sets' cardinalities and prepare sets' summaries.
@@ -296,49 +197,63 @@ class Action {
     .determineSetsCardinalitiesSummaries({
       setsEntities: state.setsEntities,
       setsFilter: state.setsFilter,
-      accessReactionsSets: currentEntitiesSets.accessReactionsSets,
-      accessMetabolitesSets: currentEntitiesSets.accessMetabolitesSets,
-      filterReactionsSets: currentEntitiesSets.filterReactionsSets,
-      filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets,
+      accessSetsReactions: currentEntitiesSets.accessSetsReactions,
+      accessSetsMetabolites: currentEntitiesSets.accessSetsMetabolites,
+      filterSetsReactions: currentEntitiesSets.filterSetsReactions,
+      filterSetsMetabolites: currentEntitiesSets.filterSetsMetabolites,
       setsSearches: state.setsSearches,
       setsSorts: state.setsSorts,
       compartments: state.compartments,
       processes: state.processes
     });
-    // Determine candidate entities, their simplifications, and summaries.
-    var candidatesSimplificationsSummaries = Candidacy
-    .evaluateCandidacyContext({
-      reactionsSets: currentEntitiesSets.filterReactionsSets,
+    // Determine candidate entities and prepare their summaries.
+    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
+      reactionsSets: currentEntitiesSets.filterSetsReactions,
       reactions: state.reactions,
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization,
-      metabolitesSimplifications: state.metabolitesSimplifications,
-      reactionsSimplifications: state.reactionsSimplifications,
       candidatesSearches: state.candidatesSearches,
       candidatesSorts: state.candidatesSorts,
       compartments: state.compartments
     });
+    // Determine simplifications of candidate entities.
+    // Create simplifications for default entities and include with other
+    // simplifications.
+    var simplifications = Candidacy.createIncludeDefaultSimplifications({
+      defaultSimplificationsMetabolites: state
+      .defaultSimplificationsMetabolites,
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSets: currentEntitiesSets.filterSetsReactions,
+      reactions: state.reactions,
+      compartmentalization: state.compartmentalization,
+      reactionsSimplifications: {},
+      metabolitesSimplifications: {}
+    });
     // Create network's elements.
     var networkElements = Network.createNetworkElements({
-      reactionsCandidates: candidatesSimplificationsSummaries
-      .reactionsCandidates,
-      metabolitesCandidates: candidatesSimplificationsSummaries
-      .metabolitesCandidates,
-      reactionsSimplifications: candidatesSimplificationsSummaries
-      .reactionsSimplifications,
-      metabolitesSimplifications: candidatesSimplificationsSummaries
-      .metabolitesSimplifications,
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSimplifications: simplifications.reactionsSimplifications,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications,
       reactions: state.reactions,
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization
+    });
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copyNetworkElementsRecords({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
     });
     // Compile variables' values.
     var variablesValues = Object.assign(
       totalEntitiesSets,
       currentEntitiesSets,
       setsCardinalitiesSummaries,
-      candidatesSimplificationsSummaries,
+      candidatesSummaries,
+      simplifications,
       networkElements,
+      subnetworkElements
     );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
@@ -353,6 +268,8 @@ class Action {
   * @param {Object} parameters.state Application's state.
   */
   static changeControlViews({category, state}) {
+    // Multiple subordinate views within control view can be active
+    // simultaneously.
     // Change the view's selection.
     if (state.controlViews[category]) {
       var selection = false;
@@ -404,21 +321,19 @@ class Action {
   * restore the application's state.
   * @param {Object} state Application's state.
   */
-  static evaluateLoadSource(state) {
+  static evaluateSourceLoadRestoreState(state) {
     // Determine whether the application's state includes a source file.
     if (Model.determineSource(state)) {
       // Application's state includes a source file.
       General.loadPassObject({
         file: state.source,
-        call: Action.evaluateRestoreState,
+        call: Action.evaluateSourceRestoreState,
         parameters: {state: state}
       });
     } else {
       // Application's state does not include a source file.
-      // Display error message.
-      // Report message to remind user to select source file.
-      var message = "please select a source file...";
-      window.alert(message);
+      // Restore application to initial state.
+      Action.initializeApplication(state);
     }
   }
   /**
@@ -431,11 +346,245 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
+    // TODO: Determine whether any links connect to undefined nodes...
+
+    var badLinks = state.networkLinksRecords.filter(function (record) {
+      return ((record.source === "undefined") || (record.target === "undefined"));
+    });
+    console.log(badLinks);
+
+
     // Terminate process timer.
     //console.timeEnd("timer");
     var endTime = window.performance.now();
     var duration = Math.round(endTime - startTime);
     console.log("process duration: " + duration + " milliseconds");
+  }
+  /**
+  * Restores values of variables of application's controls for set view.
+  * @param {Object} state Application's state.
+  */
+  static restoreFilterViewControls(state) {
+    // Initialize controls for set view.
+    var setViewControls = Action.initializeFilterViewControls();
+    // Determine current entities' attribution to sets.
+    var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
+      setsFilters: setViewControls.setsFilters,
+      totalSetsReactions: state.totalSetsReactions,
+      totalSetsMetabolites: state.totalSetsMetabolites,
+      reactions: state.reactions
+    });
+    // Determine sets' cardinalities and prepare sets' summaries.
+    var setsCardinalitiesSummaries = Cardinality
+    .determineSetsCardinalitiesSummaries({
+      setsEntities: setViewControls.setsEntities,
+      setsFilter: setViewControls.setsFilter,
+      accessSetsReactions: currentEntitiesSets.accessSetsReactions,
+      accessSetsMetabolites: currentEntitiesSets.accessSetsMetabolites,
+      filterSetsReactions: currentEntitiesSets.filterSetsReactions,
+      filterSetsMetabolites: currentEntitiesSets.filterSetsMetabolites,
+      setsSearches: setViewControls.setsSearches,
+      setsSorts: setViewControls.setsSorts,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    // Determine candidate entities and prepare their summaries.
+    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
+      reactionsSets: currentEntitiesSets.filterSetsReactions,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      compartmentalization: state.compartmentalization,
+      candidatesSearches: state.candidatesSearches,
+      candidatesSorts: state.candidatesSorts,
+      compartments: state.compartments
+    });
+    // Determine simplifications of candidate entities.
+    // Restore simplifications.
+    var simplifications = Candidacy.restoreSimplifications({
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSets: currentEntitiesSets.filterSetsReactions,
+      reactions: state.reactions,
+      compartmentalization: state.compartmentalization,
+      reactionsSimplifications: state.reactionsSimplifications,
+      metabolitesSimplifications: state.metabolitesSimplifications
+    });
+    // Determine default simplifications.
+    // Determine whether simplifications exist for all default entities.
+    var defaultSimplifications = Candidacy.determineDefaultSimplifications({
+      defaultSimplificationsMetabolites: state
+      .defaultSimplificationsMetabolites,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications
+    });
+    // Create network's elements.
+    var networkElements = Network.createNetworkElements({
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSimplifications: simplifications.reactionsSimplifications,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      compartmentalization: state.compartmentalization
+    });
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copyNetworkElementsRecords({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
+    // Compile variables' values.
+    var novelVariablesValues = {
+      defaultSimplifications: defaultSimplifications,
+      forceTopology: forceTopology
+    };
+    // Compile variables' values.
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      setViewControls,
+      currentEntitiesSets,
+      setsCardinalitiesSummaries,
+      candidatesSummaries,
+      simplifications,
+      networkElements,
+      subnetworkElements
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Restores values of variables of application's controls for candidacy view.
+  * @param {Object} state Application's state.
+  */
+  static restoreSimplificationViewControls(state) {
+    // Initialize controls for candidacy view.
+    var candidacyViewControls = Action.initializeCandidacyViewControls();
+    // Determine candidate entities and prepare their summaries.
+    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
+      reactionsSets: state.filterSetsReactions,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      compartmentalization: candidacyViewControls.compartmentalization,
+      candidatesSearches: candidacyViewControls.candidatesSearches,
+      candidatesSorts: candidacyViewControls.candidatesSorts,
+      compartments: state.compartments
+    });
+    // Determine simplifications of candidate entities.
+    // Create simplifications for default entities and include with other
+    // simplifications.
+    var simplifications = Candidacy.createIncludeDefaultSimplifications({
+      defaultSimplificationsMetabolites: candidacyViewControls
+      .defaultSimplificationsMetabolites,
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSets: state.filterSetsReactions,
+      reactions: state.reactions,
+      compartmentalization: candidacyViewControls.compartmentalization,
+      reactionsSimplifications: {},
+      metabolitesSimplifications: {}
+    });
+    // Create network's elements.
+    var networkElements = Network.createNetworkElements({
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSimplifications: simplifications.reactionsSimplifications,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      compartmentalization: candidacyViewControls.compartmentalization
+    });
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copyNetworkElementsRecords({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
+    // Compile variables' values.
+    var novelVariablesValues = {
+      forceTopology: forceTopology
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      candidacyViewControls,
+      candidatesSummaries,
+      simplifications,
+      networkElements,
+      subnetworkElements,
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Copies the subnetwork from the network and restores values of variables of
+  * application's controls for traversal view.
+  * @param {Object} state Application's state.
+  */
+  static copySubnetworkRestoreTraversalViewControls(state) {
+    // Initialize controls for traversal view.
+    var traversalViewControls = Action.initializeTraversalViewControls();
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copyNetworkElementsRecords({
+      networkNodesRecords: state.networkNodesRecords,
+      networkLinksRecords: state.networkLinksRecords
+    });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
+    // Compile variables' values.
+    var novelVariablesValues = {
+      forceTopology: forceTopology
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      traversalViewControls,
+      subnetworkElements
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Clears the subnetwork and restores values of variables of application's
+  * controls for traversal view.
+  * @param {Object} state Application's state.
+  */
+  static clearSubnetworkRestoreTraversalViewControls(state) {
+    // Initialize controls for traversal view.
+    var traversalViewControls = Action.initializeTraversalViewControls();
+    // Create subnetwork's elements.
+    var subnetworkElements = {
+      subnetworkNodesRecords: [],
+      subnetworkLinksRecords: []
+    };
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
+    // Compile variables' values.
+    var novelVariablesValues = {
+      forceTopology: forceTopology
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      traversalViewControls,
+      subnetworkElements
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
   }
   /**
   * Prepares and exports information about entities, reactions and metabolites,
@@ -448,11 +597,11 @@ class Action {
     // Reactions.
     var reactionsSummary = Evaluation.createEntitiesSummary({
       type: "reaction",
-      identifiers: Object.keys(state.filterReactionsSets),
+      identifiers: Object.keys(state.filterSetsReactions),
       reactions: state.reactions,
       metabolites: state.metabolites,
-      reactionsSets: state.totalReactionsSets,
-      metabolitesSets: state.totalMetabolitesSets,
+      reactionsSets: state.totalSetsReactions,
+      metabolitesSets: state.totalSetsMetabolites,
       compartments: state.compartments,
       processes: state.processes
     });
@@ -462,11 +611,59 @@ class Action {
     // Metabolites.
     var metabolitesSummary = Evaluation.createEntitiesSummary({
       type: "metabolite",
-      identifiers: Object.keys(state.filterMetabolitesSets),
+      identifiers: Object.keys(state.filterSetsMetabolites),
       reactions: state.reactions,
       metabolites: state.metabolites,
-      reactionsSets: state.totalReactionsSets,
-      metabolitesSets: state.totalMetabolitesSets,
+      reactionsSets: state.totalSetsReactions,
+      metabolitesSets: state.totalSetsMetabolites,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    var metabolitesSummaryString = General
+    .convertRecordsStringTabSeparateTable(metabolitesSummary);
+    General.saveString("metabolites_summary.txt", metabolitesSummaryString);
+  }
+  /**
+  * Prepares and exports information about entities, reactions and metabolites,
+  * that merit representation in the subnetwork.
+  * @param {Object} state Application's state.
+  */
+  static exportNetworkEntitiesSummary(state) {
+    // Prepare information.
+    // Save information.
+    // Reactions.
+    var nodesReactions = state.subnetworkNodesRecords.filter(function (record) {
+      return record.type === "reaction";
+    });
+    var nodesReactionsIdentifiers = General
+    .collectValueFromObjects("identifier", nodesReactions);
+    var reactionsSummary = Evaluation.createEntitiesSummary({
+      type: "reaction",
+      identifiers: nodesReactionsIdentifiers,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalSetsReactions,
+      metabolitesSets: state.totalSetsMetabolites,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    var reactionsSummaryString = General
+    .convertRecordsStringTabSeparateTable(reactionsSummary);
+    General.saveString("reactions_summary.txt", reactionsSummaryString);
+    // Metabolites.
+    var nodesMetabolites = state
+    .subnetworkNodesRecords.filter(function (record) {
+      return record.type === "metabolite";
+    });
+    var nodesMetabolitesIdentifiers = General
+    .collectValueFromObjects("identifier", nodesMetabolites);
+    var metabolitesSummary = Evaluation.createEntitiesSummary({
+      type: "metabolite",
+      identifiers: nodesMetabolitesIdentifiers,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalSetsReactions,
+      metabolitesSets: state.totalSetsMetabolites,
       compartments: state.compartments,
       processes: state.processes
     });
@@ -509,8 +706,8 @@ class Action {
     } else if (type === "candidates") {
       var summariesName = "candidatesSummaries";
       var summaries = Candidacy.prepareCandidatesSummaries({
-        reactionsCandidates: state.reactionsCandidates,
-        metabolitesCandidates: state.metabolitesCandidates,
+        candidatesReactions: state.candidatesReactions,
+        candidatesMetabolites: state.candidatesMetabolites,
         candidatesSearches: searches,
         candidatesSorts: state.candidatesSorts
       });
@@ -544,8 +741,8 @@ class Action {
     // Determine current entities' attribution to sets.
     var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
       setsFilters: setsFilters,
-      totalReactionsSets: state.totalReactionsSets,
-      totalMetabolitesSets: state.totalMetabolitesSets,
+      totalSetsReactions: state.totalSetsReactions,
+      totalSetsMetabolites: state.totalSetsMetabolites,
       reactions: state.reactions
     });
     // Determine sets' cardinalities and prepare sets' summaries.
@@ -553,58 +750,76 @@ class Action {
     .determineSetsCardinalitiesSummaries({
       setsEntities: state.setsEntities,
       setsFilter: state.setsFilter,
-      accessReactionsSets: currentEntitiesSets.accessReactionsSets,
-      accessMetabolitesSets: currentEntitiesSets.accessMetabolitesSets,
-      filterReactionsSets: currentEntitiesSets.filterReactionsSets,
-      filterMetabolitesSets: currentEntitiesSets.filterMetabolitesSets,
+      accessSetsReactions: currentEntitiesSets.accessSetsReactions,
+      accessSetsMetabolites: currentEntitiesSets.accessSetsMetabolites,
+      filterSetsReactions: currentEntitiesSets.filterSetsReactions,
+      filterSetsMetabolites: currentEntitiesSets.filterSetsMetabolites,
       setsSearches: state.setsSearches,
       setsSorts: state.setsSorts,
       compartments: state.compartments,
       processes: state.processes
     });
-    // Determine candidate entities, their simplifications, and summaries.
-    var candidatesSimplificationsSummaries = Candidacy
-    .evaluateCandidacyContext({
-      reactionsSets: currentEntitiesSets.filterReactionsSets,
+    // Determine candidate entities and prepare their summaries.
+    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
+      reactionsSets: currentEntitiesSets.filterSetsReactions,
       reactions: state.reactions,
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization,
-      metabolitesSimplifications: state.metabolitesSimplifications,
-      reactionsSimplifications: state.reactionsSimplifications,
       candidatesSearches: state.candidatesSearches,
       candidatesSorts: state.candidatesSorts,
       compartments: state.compartments
     });
+    // Determine simplifications of candidate entities.
+    // Restore simplifications.
+    var simplifications = Candidacy.restoreSimplifications({
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSets: currentEntitiesSets.filterSetsReactions,
+      reactions: state.reactions,
+      compartmentalization: state.compartmentalization,
+      reactionsSimplifications: state.reactionsSimplifications,
+      metabolitesSimplifications: state.metabolitesSimplifications
+    });
+    // Determine default simplifications.
+    // Determine whether simplifications exist for all default entities.
+    var defaultSimplifications = Candidacy.determineDefaultSimplifications({
+      defaultSimplificationsMetabolites: state
+      .defaultSimplificationsMetabolites,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications
+    });
     // Create network's elements.
     var networkElements = Network.createNetworkElements({
-      reactionsCandidates: candidatesSimplificationsSummaries
-      .reactionsCandidates,
-      metabolitesCandidates: candidatesSimplificationsSummaries
-      .metabolitesCandidates,
-      reactionsSimplifications: candidatesSimplificationsSummaries
-      .reactionsSimplifications,
-      metabolitesSimplifications: candidatesSimplificationsSummaries
-      .metabolitesSimplifications,
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSimplifications: simplifications.reactionsSimplifications,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications,
       reactions: state.reactions,
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization
     });
-    // Initialize whether to draw a visual representation of network's topology.
-    var topology = false;
-    // Initialize novelty of network's topology.
-    var topologyNovelty = true;
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copyNetworkElementsRecords({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
     // Compile variables' values.
     var novelVariablesValues = {
       setsFilters: setsFilters,
-      topology: topology,
-      topologyNovelty: topologyNovelty
+      defaultSimplifications: defaultSimplifications,
+      forceTopology: forceTopology
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
       currentEntitiesSets,
       setsCardinalitiesSummaries,
-      candidatesSimplificationsSummaries,
-      networkElements
+      candidatesSummaries,
+      simplifications,
+      networkElements,
+      subnetworkElements
     );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
@@ -628,10 +843,10 @@ class Action {
     .determineSetsCardinalitiesSummaries({
       setsEntities: setsEntities,
       setsFilter: state.setsFilter,
-      accessReactionsSets: state.accessReactionsSets,
-      accessMetabolitesSets: state.accessMetabolitesSets,
-      filterReactionsSets: state.filterReactionsSets,
-      filterMetabolitesSets: state.filterMetabolitesSets,
+      accessSetsReactions: state.accessSetsReactions,
+      accessSetsMetabolites: state.accessSetsMetabolites,
+      filterSetsReactions: state.filterSetsReactions,
+      filterSetsMetabolites: state.filterSetsMetabolites,
       setsSearches: state.setsSearches,
       setsSorts: state.setsSorts,
       compartments: state.compartments,
@@ -667,10 +882,10 @@ class Action {
     .determineSetsCardinalitiesSummaries({
       setsEntities: state.setsEntities,
       setsFilter: setsFilter,
-      accessReactionsSets: state.accessReactionsSets,
-      accessMetabolitesSets: state.accessMetabolitesSets,
-      filterReactionsSets: state.filterReactionsSets,
-      filterMetabolitesSets: state.filterMetabolitesSets,
+      accessSetsReactions: state.accessSetsReactions,
+      accessSetsMetabolites: state.accessSetsMetabolites,
+      filterSetsReactions: state.filterSetsReactions,
+      filterSetsMetabolites: state.filterSetsMetabolites,
       setsSearches: state.setsSearches,
       setsSorts: state.setsSorts,
       compartments: state.compartments,
@@ -725,8 +940,8 @@ class Action {
       var summaries = Candidacy.sortCandidatesSummaries({
         candidatesSummaries: state.candidatesSummaries,
         candidatesSorts: sorts,
-        reactionsCandidates: state.reactionsCandidates,
-        metabolitesCandidates: state.metabolitesCandidates
+        candidatesReactions: state.candidatesReactions,
+        candidatesMetabolites: state.candidatesMetabolites
       });
     }
     // Compile variables' values.
@@ -742,7 +957,7 @@ class Action {
     });
   }
   /**
-  * Changes specification of compartmentalization's relevance
+  * Changes specification of compartmentalization's relevance.
   * @param {Object} state Application's state.
   */
   static changeCompartmentalization(state) {
@@ -752,51 +967,136 @@ class Action {
     } else {
       var compartmentalization = true;
     }
-    // Initialize selections for entities' simplification.
-    // Simplifications are specific to candidate entities, which are specific to
-    // the context of interest, of which compartmentalization is part.
-    var simplifications = Candidacy.createInitialSimplifications();
-    // Determine candidate entities, their simplifications, and summaries.
-    var candidatesSimplificationsSummaries = Candidacy
-    .evaluateCandidacyContext({
-      reactionsSets: state.filterReactionsSets,
+    // Determine candidate entities and prepare their summaries.
+    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
+      reactionsSets: state.filterSetsReactions,
       reactions: state.reactions,
       metabolites: state.metabolites,
       compartmentalization: compartmentalization,
-      metabolitesSimplifications: simplifications.metabolitesSimplifications,
-      reactionsSimplifications: simplifications.reactionsSimplifications,
       candidatesSearches: state.candidatesSearches,
       candidatesSorts: state.candidatesSorts,
       compartments: state.compartments
     });
+    // Determine simplifications of candidate entities.
+    // Create simplifications for default entities and include with other
+    // simplifications.
+    var simplifications = Candidacy.createIncludeDefaultSimplifications({
+      defaultSimplificationsMetabolites: state
+      .defaultSimplificationsMetabolites,
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSets: state.filterSetsReactions,
+      reactions: state.reactions,
+      compartmentalization: state.compartmentalization,
+      reactionsSimplifications: state.reactionsSimplifications,
+      metabolitesSimplifications: state.metabolitesSimplifications
+    });
+    // Determine default simplifications.
+    var defaultSimplifications = true;
     // Create network's elements.
     var networkElements = Network.createNetworkElements({
-      reactionsCandidates: candidatesSimplificationsSummaries
-      .reactionsCandidates,
-      metabolitesCandidates: candidatesSimplificationsSummaries
-      .metabolitesCandidates,
-      reactionsSimplifications: candidatesSimplificationsSummaries
-      .reactionsSimplifications,
-      metabolitesSimplifications: candidatesSimplificationsSummaries
-      .metabolitesSimplifications,
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSimplifications: simplifications.reactionsSimplifications,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications,
       reactions: state.reactions,
       metabolites: state.metabolites,
       compartmentalization: compartmentalization
     });
-    // Initialize whether to draw a visual representation of network's topology.
-    var topology = false;
-    // Initialize novelty of network's topology.
-    var topologyNovelty = true;
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copyNetworkElementsRecords({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
     // Compile variables' values.
     var novelVariablesValues = {
       compartmentalization: compartmentalization,
-      topology: topology,
-      topologyNovelty: topologyNovelty
+      defaultSimplifications: defaultSimplifications,
+      forceTopology: forceTopology
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
-      candidatesSimplificationsSummaries,
-      networkElements
+      candidatesSummaries,
+      simplifications,
+      networkElements,
+      subnetworkElements
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes whether to create default simplifications.
+  * @param {Object} state Application's state.
+  */
+  static changeDefaultSimplifications(state) {
+    // Determine default simplifications.
+    // Determine simplifications of candidate entities.
+    if (state.defaultSimplifications) {
+      // Change default simplifications to false.
+      var defaultSimplifications = false;
+      // Remove simplifications for default entities.
+      var simplifications = Candidacy.removeDefaultSimplifications({
+        defaultSimplificationsMetabolites: state
+        .defaultSimplificationsMetabolites,
+        candidatesReactions: state.candidatesReactions,
+        candidatesMetabolites: state.candidatesMetabolites,
+        reactionsSets: state.filterSetsReactions,
+        reactions: state.reactions,
+        compartmentalization: state.compartmentalization,
+        reactionsSimplifications: state.reactionsSimplifications,
+        metabolitesSimplifications: state.metabolitesSimplifications
+      });
+    } else {
+      // Change default simplifications to true.
+      var defaultSimplifications = true;
+      // Create simplifications for default entities and include with other
+      // simplifications.
+      var simplifications = Candidacy.createIncludeDefaultSimplifications({
+        defaultSimplificationsMetabolites: state
+        .defaultSimplificationsMetabolites,
+        candidatesReactions: state.candidatesReactions,
+        candidatesMetabolites: state.candidatesMetabolites,
+        reactionsSets: state.filterSetsReactions,
+        reactions: state.reactions,
+        compartmentalization: state.compartmentalization,
+        reactionsSimplifications: state.reactionsSimplifications,
+        metabolitesSimplifications: state.metabolitesSimplifications
+      });
+    }
+    // Create network's elements.
+    var networkElements = Network.createNetworkElements({
+      candidatesReactions: state.candidatesReactions,
+      candidatesMetabolites: state.candidatesMetabolites,
+      reactionsSimplifications: simplifications.reactionsSimplifications,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      compartmentalization: state.compartmentalization
+    });
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copyNetworkElementsRecords({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
+    // Compile variables' values.
+    var novelVariablesValues = {
+      defaultSimplifications: defaultSimplifications,
+      forceTopology: forceTopology
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      simplifications,
+      networkElements,
+      subnetworkElements
     );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
@@ -820,37 +1120,49 @@ class Action {
       identifier: identifier,
       category: category,
       method: method,
-      reactionsCandidates: state.reactionsCandidates,
-      metabolitesCandidates: state.metabolitesCandidates,
-      reactionsSets: state.filterReactionsSets,
+      candidatesReactions: state.candidatesReactions,
+      candidatesMetabolites: state.candidatesMetabolites,
+      reactionsSets: state.filterSetsReactions,
       reactions: state.reactions,
       compartmentalization: state.compartmentalization,
       reactionsSimplifications: state.reactionsSimplifications,
       metabolitesSimplifications: state.metabolitesSimplifications
     });
+    // Determine default simplifications.
+    // Determine whether simplifications exist for all default entities.
+    var defaultSimplifications = Candidacy.determineDefaultSimplifications({
+      defaultSimplificationsMetabolites: state.defaultSimplificationsMetabolites,
+      candidatesMetabolites: state.candidatesMetabolites,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications
+    });
     // Create network's elements.
     var networkElements = Network.createNetworkElements({
-      reactionsCandidates: state.reactionsCandidates,
-      metabolitesCandidates: state.metabolitesCandidates,
+      candidatesReactions: state.candidatesReactions,
+      candidatesMetabolites: state.candidatesMetabolites,
       reactionsSimplifications: simplifications.reactionsSimplifications,
       metabolitesSimplifications: simplifications.metabolitesSimplifications,
       reactions: state.reactions,
       metabolites: state.metabolites,
       compartmentalization: state.compartmentalization
     });
-    // Initialize whether to draw a visual representation of network's topology.
-    var topology = false;
-    // Initialize novelty of network's topology.
-    var topologyNovelty = true;
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copyNetworkElementsRecords({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
     // Compile variables' values.
     var novelVariablesValues = {
-      topology: topology,
-      topologyNovelty: topologyNovelty
+      defaultSimplifications: defaultSimplifications,
+      forceTopology: forceTopology
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
       simplifications,
-      networkElements
+      networkElements,
+      subnetworkElements
     );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
@@ -859,19 +1171,398 @@ class Action {
     });
   }
   /**
-  * Changes the selection of topology.
+  * Changes the selection of combination in traversal view.
+  * @param {string} combination Method of combination, union or difference.
   * @param {Object} state Application's state.
   */
-  static changeTopology(state) {
-    // Determine topology's novelty.
-    if (state.topology) {
-      var topology = false;
-    } else {
-      var topology = true;
+  static changeCombination(combination, state) {
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalCombination: combination
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of type of controls in traversal view.
+  * @param {string} type Type of traversal, rogue, proximity, or path.
+  * @param {Object} state Application's state.
+  */
+  static changeTraversalType(type, state) {
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalType: type
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of focus for rogue traversal.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeTraversalRogueFocus({identifier, type, state} = {}) {
+    // Create record.
+    var record = {
+      identifier: identifier,
+      type: type
+    };
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalRogueFocus: record
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Executes rogue traversal and combination on the network.
+  * @param {Object} state Application's state.
+  */
+  static executeRogueTraversalCombination(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineRogueTraversal(state)) {
+      var subnetworkElements = Traversal.combineRogueNodeNetwork({
+        focus: state.traversalRogueFocus.identifier,
+        combination: state.traversalCombination,
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for traversal view.
+      var traversalViewControls = Action.initializeTraversalViewControls();
+      // Compile variables' values.
+      var variablesValues = Object.assign(
+        subnetworkElements,
+        traversalViewControls
+      );
+      // Submit variables' values to the application's state.
+      Action.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+  /**
+  * Executes rogue traversal and union on the network.
+  * @param {Object} state Application's state.
+  */
+  static executeRogueTraversalUnion(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineRogueTraversal(state)) {
+      var subnetworkElements = Traversal.combineRogueNodeNetwork({
+        focus: state.traversalRogueFocus.identifier,
+        combination: "union",
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for traversal view.
+      var traversalViewControls = Action.initializeTraversalViewControls();
+      // Initialize controls for pompt view.
+      var prompt = Action.initializePromptViewControls();
+      // Compile variables' values.
+      var novelVariablesValues = {
+        prompt: prompt
+      };
+      var variablesValues = Object.assign(
+        novelVariablesValues,
+        subnetworkElements,
+        traversalViewControls
+      );
+      // Submit variables' values to the application's state.
+      Action.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+  /**
+  * Changes the selection of focus for proximity traversal.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeTraversalProximityFocus({identifier, type, state} = {}) {
+    // Create record.
+    var record = {
+      identifier: identifier,
+      type: type
+    };
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalProximityFocus: record
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of direction for proximity traversal.
+  * @param {Object} state Application's state.
+  */
+  static changeTraversalProximityDirection(state) {
+    // Determine direction.
+    if (state.traversalProximityDirection === "successors") {
+      var direction = "neighbors";
+    } else if (state.traversalProximityDirection === "neighbors") {
+      var direction = "predecessors";
+    } else if (state.traversalProximityDirection === "predecessors") {
+      var direction = "successors";
     }
     // Compile variables' values.
     var novelVariablesValues = {
-      topology: topology
+      traversalProximityDirection: direction
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of depth for proximity traversal.
+  * @param {number} depth Depth in links to which to traverse.
+  * @param {Object} state Application's state.
+  */
+  static changeTraversalProximityDepth(depth, state) {
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalProximityDepth: depth
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Executes proximity traversal and combination on the network.
+  * @param {Object} state Application's state.
+  */
+  static executeProximityTraversalCombination(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineProximityTraversal(state)) {
+      var subnetworkElements = Traversal.combineProximityNetwork({
+        focus: state.traversalProximityFocus.identifier,
+        direction: state.traversalProximityDirection,
+        depth: state.traversalProximityDepth,
+        combination: state.traversalCombination,
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for traversal view.
+      var traversalViewControls = Action.initializeTraversalViewControls();
+      // Compile variables' values.
+      var variablesValues = Object.assign(
+        subnetworkElements,
+        traversalViewControls
+      );
+      // Submit variables' values to the application's state.
+      Action.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+  /**
+  * Executes proximity traversal expansion to depth of one and combination by
+  * union.
+  * @param {Object} state Application's state.
+  */
+  static executeNodeProximityTraversalExpansion(state) {
+    var subnetworkElements = Traversal.combineProximityNetwork({
+      focus: state.prompt.reference.identifier,
+      direction: "neighbors",
+      depth: 1,
+      combination: "union",
+      subnetworkNodesRecords: state.subnetworkNodesRecords,
+      subnetworkLinksRecords: state.subnetworkLinksRecords,
+      networkNodesRecords: state.networkNodesRecords,
+      networkLinksRecords: state.networkLinksRecords
+    });
+    // Initialize controls for traversal view.
+    var traversalViewControls = Action.initializeTraversalViewControls();
+    // Remove any prompt view.
+    var prompt = Action.initializePromptViewControls();
+    // Compile variables' values.
+    var novelVariablesValues = {
+      prompt: prompt
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      subnetworkElements,
+      traversalViewControls
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of source for path traversal.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeTraversalPathSource({identifier, type, state} = {}) {
+    // Create record.
+    var record = {
+      identifier: identifier,
+      type: type
+    };
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalPathSource: record
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of target for path traversal.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeTraversalPathTarget({identifier, type, state} = {}) {
+    // Create record.
+    var record = {
+      identifier: identifier,
+      type: type
+    };
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalPathTarget: record
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of direction for path traversal.
+  * @param {Object} state Application's state.
+  */
+  static changeTraversalPathDirection(state) {
+    // Determine direction.
+    if (state.traversalPathDirection === "forward") {
+      var direction = "both";
+    } else if (state.traversalPathDirection === "both") {
+      var direction = "reverse";
+    } else if (state.traversalPathDirection === "reverse") {
+      var direction = "forward";
+    }
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalPathDirection: direction
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the selection of count for path traversal.
+  * @param {number} depth Depth in links to which to traverse.
+  * @param {Object} state Application's state.
+  */
+  static changeTraversalPathCount(count, state) {
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalPathCount: count
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Executes path traversal and combination on the network.
+  * @param {Object} state Application's state.
+  */
+  static executePathTraversalCombination(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determinePathTraversal(state)) {
+      var subnetworkElements = Traversal.combinePathNetwork({
+        source: state.traversalPathSource.identifier,
+        target: state.traversalPathTarget.identifier,
+        direction: state.traversalPathDirection,
+        count: state.traversalPathCount,
+        combination: state.traversalCombination,
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for traversal view.
+      var traversalViewControls = Action.initializeTraversalViewControls();
+      // Compile variables' values.
+      var variablesValues = Object.assign(
+        subnetworkElements,
+        traversalViewControls
+      );
+      // Submit variables' values to the application's state.
+      Action.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+  /**
+  * Changes the selection of whether to force representation of subnetwork's
+  * topology.
+  * @param {Object} state Application's state.
+  */
+  static changeForceTopology(state) {
+    // Determine whether to force topology.
+    if (state.forceTopology) {
+      var forceTopology = false;
+    } else {
+      var forceTopology = true;
+    }
+    // Compile variables' values.
+    var novelVariablesValues = {
+      forceTopology: forceTopology
     };
     var variablesValues = novelVariablesValues;
     // Submit variables' values to the application's state.
@@ -881,21 +1572,206 @@ class Action {
     });
   }
   /**
-  * Changes the selection of the novelty of the current network's topology.
-  * @param {Object} state Application's state.
+  * Responds to a selection on the network's diagram.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {Object} parameters.state Application's state.
   */
-  static changeTopologyNovelty(state) {
-    // Determine topology's novelty.
-    if (state.topologyNovelty) {
-      var topologyNovelty = false;
+  static selectNetworkDiagram({horizontalPosition, verticalPosition, state} = {}) {
+    // Change information about prompt view.
+    var prompt = Action.changePromptInformation({
+      type: "network-diagram",
+      reference: {},
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: 0,
+      verticalShift: 0,
+      permanence: true,
+      state: state
+    });
+    // Remove any entity selection.
+    var entitySelection = Action.initializeEntitySelection();
+    // Compile variables' values.
+    var novelVariablesValues = {
+      prompt: prompt,
+      entitySelection: entitySelection
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Responds to a selection on a network's node.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.horizontalShift Horizontal shift in pixels
+  * relative to reference point.
+  * @param {number} parameters.verticalShift Horizontal shift in pixels relative
+  * to reference point.
+  * @param {Object} parameters.state Application's state.
+  */
+  static selectNetworkNode({identifier, type, horizontalPosition, verticalPosition, horizontalShift, verticalShift, state} = {}) {
+    // Determine novel information about entity selection.
+    var entitySelection = Action.changeEntitySelection({
+      identifier: identifier,
+      type: type,
+      state: state
+    });
+    // Determine whether to create prompt.
+    // Determine whether node's entity has a selection.
+    var selection = (
+      (type === entitySelection.type) && (identifier === entitySelection.node)
+    );
+    if (selection) {
+      // Create prompt for the network's node.
+      // Compile reference information for prompt view.
+      var reference = {
+        identifier: identifier,
+        type: type
+      };
+      // Change information about prompt view.
+      var prompt = Action.changePromptInformation({
+        type: "network-node-abbreviation",
+        reference: reference,
+        horizontalPosition: horizontalPosition,
+        verticalPosition: verticalPosition,
+        horizontalShift: horizontalShift,
+        verticalShift: verticalShift,
+        permanence: false,
+        state: state
+      });
     } else {
-      var topologyNovelty = true;
+      // Do not create prompt for the network's node.
+      // Remove any prompt view.
+      var prompt = Action.initializePromptViewControls();
     }
     // Compile variables' values.
     var novelVariablesValues = {
-      topologyNovelty: topologyNovelty
+      entitySelection: entitySelection,
+      prompt: prompt
     };
-    var variablesValues = novelVariablesValues;
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Responds to a hover on a network's node with selection.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.horizontalShift Horizontal shift in pixels
+  * relative to reference point.
+  * @param {number} parameters.verticalShift Horizontal shift in pixels relative
+  * to reference point.
+  * @param {Object} parameters.state Application's state.
+  */
+  static hoverSelectNetworkNode({identifier, type, horizontalPosition, verticalPosition, horizontalShift, verticalShift, state} = {}) {
+    // Compile reference information for prompt view.
+    var reference = {
+      identifier: identifier,
+      type: type
+    };
+    // Change information about prompt view.
+    var prompt = Action.changePromptInformation({
+      type: "network-node-abbreviation",
+      reference: reference,
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: horizontalShift,
+      verticalShift: verticalShift,
+      state: state
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {
+      prompt: prompt
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the type of the prompt view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of prompt view.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changePromptType({type, state} = {}) {
+    // Compile information.
+    var prompt = {
+      type: type,
+      reference: state.prompt.reference,
+      horizontalPosition: state.prompt.horizontalPosition,
+      verticalPosition: state.prompt.verticalPosition,
+      horizontalShift: state.prompt.horizontalShift,
+      verticalShift: state.prompt.verticalShift,
+      permanence: true
+    };
+    // Compile variables' values.
+    var novelVariablesValues = {
+      prompt: prompt
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Removes the prompt view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.permanence Whether to remove only transient
+  * prompt view.
+  * @param {Object} parameters.state Application's state.
+  */
+  static removePromptView({permanence, state} = {}) {
+    if (permanence) {
+      if (!state.prompt.permanence) {
+        // Remove any prompt view.
+        var prompt = Action.initializePromptViewControls();
+      } else {
+        var prompt = state.prompt;
+      }
+    } else {
+      // Remove any prompt view.
+      var prompt = Action.initializePromptViewControls();
+    }
+    // Compile variables' values.
+    var novelVariablesValues = {
+      prompt: prompt
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -906,10 +1782,57 @@ class Action {
   // Indirect actions.
 
   /**
+  * Initializes values of variables of application's controls for prompt view.
+  * @returns {Object} Information about prompt view.
+  */
+  static initializePromptViewControls() {
+    // Initialize controls.
+    var type = "none";
+    var reference = {};
+    var horizontalPosition = 0;
+    var verticalPosition = 0;
+    var horizontalShift = 0;
+    var verticalShift = 0;
+    var permanence = false;
+    // Compile information.
+    var variablesValues = {
+      type: type,
+      reference: reference,
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: horizontalShift,
+      verticalShift: verticalShift,
+      permanence: permanence
+    };
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Initializes information about selection of an entity.
+  * @returns {Object} Information about an entity selection.
+  */
+  static initializeEntitySelection() {
+    // Initialize controls.
+    var type = "";
+    var node = "";
+    var candidate = "";
+    var entity = "";
+    // Compile information.
+    var variablesValues = {
+      type: type,
+      node: node,
+      candidate: candidate,
+      entity: entity
+    };
+    // Return information.
+    return variablesValues;
+  }
+  /**
   * Initializes values of variables of application's controls for set view.
   * @param {Object} state Application's state.
   */
-  static initializeSetViewControls() {
+  static initializeFilterViewControls() {
+    // Initialize controls.
     var setsFilters = Attribution.createInitialSetsFilters();
     var setsEntities = "metabolites";
     var setsFilter = false;
@@ -931,18 +1854,61 @@ class Action {
   * view.
   * @param {Object} state Application's state.
   */
-  static initializeCandidacyViewControls() {
+  static initializeSimplificationViewControls() {
+    // Initialize controls.
     var compartmentalization = false;
-    var simplifications = Candidacy.createInitialSimplifications();
+    var defaultSimplifications = true;
+    // Create list of identifiers of metabolites for default simplification.
+    var defaultSimplificationsMetabolites = [
+      "h", "h2o", "coa", "o2", "atp", "nadp", "nadph", "nad", "nadh", "pi",
+      "adp", "accoa", "h2o2", "ppi", "fad", "co2", "fadh2", "amp", "so4",
+      "nh4", "na1", "hco3", "udp", "cmp", "gdp", "gtp", "ctp", "utp", "dadp",
+      "o2s", "datp", "cdp", "ump", "dcdp", "dcmp", "dgdp", "dgtp", "imp", "gmp",
+      "itp", "idp", "dtdp", "so3", "Ser_Gly_Ala_X_Gly", "dctp", "dttp", "dtmp",
+      "dudp", "dutp", "dgmp"
+    ];
     var candidatesSearches = Candidacy.createInitialCandidatesSearches();
     var candidatesSorts = Candidacy.createInitialCandidatesSorts();
     // Compile information.
     var variablesValues = {
       compartmentalization: compartmentalization,
-      reactionsSimplifications: simplifications.reactionsSimplifications,
-      metabolitesSimplifications: simplifications.metabolitesSimplifications,
+      defaultSimplifications: defaultSimplifications,
+      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
       candidatesSearches: candidatesSearches,
       candidatesSorts: candidatesSorts
+    };
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Initializes values of variables of application's controls for traversal
+  * view.
+  * @param {Object} state Application's state.
+  */
+  static initializeTraversalViewControls() {
+    // Initialize controls.
+    var traversalCombination = "union";
+    var traversalType = "rogue";
+    var traversalRogueFocus = {identifier: "", type: ""};
+    var traversalProximityFocus = {identifier: "", type: ""};
+    var traversalProximityDirection = "successors";
+    var traversalProximityDepth = 1;
+    var traversalPathSource = {identifier: "", type: ""};
+    var traversalPathTarget = {identifier: "", type: ""};
+    var traversalPathDirection = "forward";
+    var traversalPathCount = 1;
+    // Compile information.
+    var variablesValues = {
+      traversalCombination: traversalCombination,
+      traversalType: traversalType,
+      traversalRogueFocus: traversalRogueFocus,
+      traversalProximityFocus: traversalProximityFocus,
+      traversalProximityDirection: traversalProximityDirection,
+      traversalProximityDepth: traversalProximityDepth,
+      traversalPathSource: traversalPathSource,
+      traversalPathTarget: traversalPathTarget,
+      traversalPathDirection: traversalPathDirection,
+      traversalPathCount: traversalPathCount
     };
     // Return information.
     return variablesValues;
@@ -991,24 +1957,24 @@ class Action {
   * application's state.
   * @param {Object} parameters.state Application's state.
   */
-  static evaluateRestoreState({data, state} = {}) {
+  static evaluateSourceRestoreState({data, state} = {}) {
     // Determine appropriate procedure for source information.
-    var model = (data.id === "MODEL1603150001");
-    var clean = data.clean;
-    if (!model) {
+    if (data.hasOwnProperty("id") && (data.id === "MODEL1603150001")) {
+      if (data.hasOwnProperty("clean")) {
+        Action.extractMetabolicEntitiesSets({
+          data: data,
+          state: state
+        });
+      } else {
+        var cleanData = Clean.checkCleanMetabolicEntitiesSetsRecon2(data);
+        Action.extractMetabolicEntitiesSets({
+          data: cleanData,
+          state: state
+        });
+      }
+    } else {
       Action.restoreState({
         data: data,
-        state: state
-      });
-    } else if (model && clean) {
-      Action.extractMetabolicEntitiesSets({
-        data: data,
-        state: state
-      });
-    } else if (model && !clean) {
-      var cleanData = Clean.checkCleanMetabolicEntitiesSetsRecon2(data);
-      Action.extractMetabolicEntitiesSets({
-        data: cleanData,
         state: state
       });
     }
@@ -1022,7 +1988,7 @@ class Action {
   */
   static restoreState({data, state} = {}) {
     // Remove any information about source from the application's state.
-    var source = null;
+    var source = {};
     // Compile variables' values.
     var novelVariablesValues = {
       source: source
@@ -1113,9 +2079,81 @@ class Action {
     var novelSearches = Object.assign(copySearches, entry);
     return novelSearches;
   }
-
-
-
+  /**
+  * Changes the type and position of the prompt view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of prompt view.
+  * @param {Object} parameters.reference Reference information for the specific
+  * type of prompt.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.horizontalShift Horizontal shift in pixels
+  * relative to reference point.
+  * @param {number} parameters.verticalShift Horizontal shift in pixels relative
+  * to reference point.
+  * @param {boolean} parameters.permanence Whether prompt is permanent.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Information about prompt view.
+  */
+  static changePromptInformation({type, reference, horizontalPosition, verticalPosition, horizontalShift, verticalShift, permanence, state} = {}) {
+    // Determine prompt's type and positions.
+    if (state.prompt.type === type) {
+      // Remove any prompt view.
+      var prompt = Action.initializePromptViewControls();
+    } else {
+      // Compile information.
+      var prompt = {
+        type: type,
+        reference: reference,
+        horizontalPosition: horizontalPosition,
+        verticalPosition: verticalPosition,
+        horizontalShift: horizontalShift,
+        verticalShift: verticalShift,
+        permanence: permanence
+      };
+    }
+    // Return information.
+    return prompt;
+  }
+  /**
+  * Changes the selection of a node's entity.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Information about an entity selection.
+  */
+  static changeEntitySelection({identifier, type, state} = {}) {
+    // Determine novel selection's information.
+    if ((identifier.length > 0) && (type.length > 0)) {
+      // Access information.
+      if (type === "metabolite") {
+        var node = state.networkNodesMetabolites[identifier];
+        var candidate = state.candidatesMetabolites[node.candidate];
+        var entity = state.metabolites[candidate.metabolite];
+      } else if (type === "reaction") {
+        var node = state.networkNodesReactions[identifier];
+        var candidate = state.candidatesReactions[node.candidate];
+        var entity = state.reactions[candidate.reaction];
+      }
+      if (candidate.identifier === state.entitySelection.candidate) {
+        var entitySelection = Action.initializeEntitySelection();
+      } else {
+        var entitySelection = {
+          type: type,
+          node: node.identifier,
+          candidate: candidate.identifier,
+          entity: entity.identifier
+        };
+      }
+    } else {
+      var entitySelection = Action.initializeEntitySelection();
+    }
+    // Return information.
+    return entitySelection;
+  }
 
   ////////////////////////////////////////////////////////////////////////// ???
 

@@ -4485,6 +4485,8 @@ class ExplorationView {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
+    // Terminate any previous simulations from topology view.
+    TopologyView.terminatePreviousSimulation(self.state);
     // Determine which subordinate views to create, activate, and restore.
     // Determine whether to represent subnetwork's elements in a visual diagram.
     // Represent if counts of subnetwork's elements are not excessive or if user
@@ -5071,8 +5073,8 @@ class TopologyView {
     self.createSimulationScales(self);
     // Create and initiate force simulation.
     self.simulation = TopologyView.createInitiateSimulation({
-      alpha: 0.75,
-      alphaDecay: 0.025,
+      alpha: 1,
+      alphaDecay: 0.03,
       velocityDecay: 0.5,
       alphaTarget: 0,
       alphaMinimum: 0.001,
@@ -5121,7 +5123,6 @@ class TopologyView {
     .nodesGroup.querySelectorAll("polygon.direction, rect.direction");
     View.removeElements(reactionsDirectionalMarks);
   }
-
 
   /**
   * Creates scales for simulations of forces between network's elements.
@@ -5822,7 +5823,7 @@ class TopologyView {
     // Restore positions of links according to results of simulation.
     // D3's procedure for force simulation copies references to records for
     // source and target nodes within records for links.
-    if (self.linksRecords.length > 0) {
+    if (self.linksMarks.size() > 0) {
       self.linksMarks.attr("points", function (element, index, nodes) {
         // Determine positions of link's termini.
         var link = TopologyView.accessLink({
@@ -6013,6 +6014,28 @@ class TopologyView {
     return ((Math.log10(alphaMinimum)) / (Math.log10(alpha - alphaDecay)));
   }
   /**
+  * Terminates any previous simulation in the application's state.
+  * @param {Object} state Application's state.
+  */
+  static terminatePreviousSimulation(state) {
+    // The simulation that creates the positions of nodes and links in the
+    // network's diagram is an important and persistent part of the
+    // application's state.
+    // It is important to manage a single relevant simulation to avoid
+    // continuations of previous simulations after changes to the application's
+    // state.
+    // This force simulation depends both on the subnetwork's elements and on
+    // the dimensions of the view within the document object model.
+    // Determine whether the application's state has a previous simulation.
+    if (Model.determineSimulation(state)) {
+      // Stop the previous simulation.
+      // Replace the simulation in the application's state.
+      state.simulation.on("tick", null).on("end", null);
+      state.simulation.stop();
+      state.simulation = {};
+    }
+  }
+  /**
   * Creates and initiates a simulation of forces to determine positions of
   * network's nodes and links in a node-link diagram.
   * @param {Object} parameters Destructured object of parameters.
@@ -6050,21 +6073,6 @@ class TopologyView {
     // The visual representation of the subnetwork's elements in the network's
     // diagram constitutes an important and persistent part of the application's
     // state.
-    // The force simulation that creates the positions of nodes and links in the
-    // network's diagram is similarly an important and persistent part of the
-    // application's state.
-    // It is important to manage a single relevant simulation to avoid
-    // continuations of previous simulations after changes to the application's
-    // state.
-    // This force simulation depends both on the subnetwork's elements and on
-    // the dimensions of the view within the document object model.
-    // Determine whether the application's state has a previous simulation.
-    if (Model.determineSimulation(state)) {
-      // Stop the previous simulation.
-      // Replace the simulation in the application's state.
-      state.simulation.stop();
-      state.simulation = {};
-    }
     var simulation = d3.forceSimulation()
     .alpha(alpha)
     .alphaDecay(alphaDecay)

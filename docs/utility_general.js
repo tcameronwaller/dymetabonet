@@ -186,7 +186,8 @@ class General {
   };
 
   // Methods for document object model (DOM).
-  // TODO: Consider placing all of these methods within a separate utility class...
+
+  // TODO: Consider placing all of these methods within the View utility class...
 
   /**
   * Removes from the Document Object Model (DOM) elements that do not have
@@ -848,6 +849,7 @@ class General {
   * @returns {Object<Object>} Copy of entries without the single entry.
   */
   static excludeObjectEntry({key, entries} = {}) {
+    // This function is an immutable alternative to delete entries[key].
     // Copy and include all entries except the entry with the key.
     var entriesKeys = Object.keys(entries);
     return entriesKeys.reduce(function (collection, entryKey) {
@@ -883,7 +885,7 @@ class General {
       // Determine whether entry's value passes filter.
       if (filter(entries[key])) {
         // Copy and include entry.
-        var valueCopy = General.copyValue(entries[key]);
+        var valueCopy = General.copyValue(entries[key], true);
         // Create entry.
         var entry = {
           [key]: valueCopy
@@ -1215,13 +1217,26 @@ class General {
   * Compares two arrays by values of elements at specific indices.
   * @param {Array} firstArray Array of elements.
   * @param {Array} secondArray Array of elements.
-  * @returns {boolean} Whether or not the arrays have identical values at
-  * every index.
+  * @returns {boolean} Whether or not the second array has identical values at
+  * each index of the first array.
   */
   static compareArraysByValuesIndices(firstArray, secondArray) {
     return firstArray.every(function (element, index) {
       return element === secondArray[index];
     });
+  }
+  /**
+  * Compares two arrays by mutual values of elements at specific indices.
+  * @param {Array} firstArray Array of elements.
+  * @param {Array} secondArray Array of elements.
+  * @returns {boolean} Whether or not the arrays have identical values at every
+  * index.
+  */
+  static compareArraysByMutualValuesIndices(firstArray, secondArray) {
+    return (
+      (firstArray.length === secondArray.length) &&
+      General.compareArraysByValuesIndices(firstArray, secondArray)
+    );
   }
   /**
   * Checks objects elements for replicates by identifier.
@@ -1283,6 +1298,41 @@ class General {
     });
   }
   /**
+  * Sorts records in arrray in ascending order first by their names' lengths and
+  * then by their names' characters.
+  * @param {Array<Object<string>>} array Array of elements to sort.
+  * @returns {Array<Object<string>>} Shallow copy of array's records in sort
+  * order.
+  */
+  static sortArrayRecordsByNameLengthCharacter(records) {
+    return records.slice().sort(function (firstRecord, secondRecord) {
+      // Convert record's names to lower case for comparison.
+      var firstName = firstRecord.name.toLowerCase();
+      var secondName = secondRecord.name.toLowerCase();
+      // Compare names by lengths.
+      if (firstName.length < secondName.length) {
+        // Place first record before second record.
+        return -1;
+      } else if (firstName.length > secondName.length) {
+        // Place first record after second record.
+        return 1;
+      } else {
+        // Names have identical lengths.
+        // Compare names by characters.
+        if (firstName < secondName) {
+          // Place first record before second record.
+          return -1;
+        } else if (firstName > secondName) {
+          // Place first record after second record.
+          return 1;
+        } else {
+          // Preserve current relative placements of elements.
+          return 0;
+        }
+      }
+    });
+  }
+  /**
   * Sorts records in arrray.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<Object>} parameters.array Array of records.
@@ -1314,6 +1364,41 @@ class General {
         var secondValue = secondRecord[key];
       }
       // Compare values.
+      if (firstValue < secondValue) {
+        if (order === "ascend") {
+          // Place first element before second element.
+          return -1;
+        } else if (order === "descend") {
+          // Place first element after second element.
+          return 1;
+        }
+      } else if (firstValue > secondValue) {
+        if (order === "ascend") {
+          // Place first element after second element.
+          return 1;
+        } else if (order === "descend") {
+          // Place first element before second element.
+          return -1;
+        }
+      } else {
+        // Preserve current relative placements of elements.
+        return 0;
+      }
+    });
+  }
+  /**
+  * Sorts arrays by lengths within an arrray.
+  * @param {Array<Array>} array Array of arrays.
+  * @param {string} order Direction, ascend or descend, in which to sort arrays.
+  * @returns {Array<Array>} Copy of array with arrays in sort order by lengths.
+  */
+  static sortArrayArrays(arrays, order) {
+    // Copy array.
+    var arraysCopy = General.copyDeepArrayElements(arrays, true);
+    return arraysCopy.sort(function (firstArray, secondArray) {
+      // Compare arrays by their lengths.
+      var firstValue = firstArray.length;
+      var secondValue = secondArray.length;
       if (firstValue < secondValue) {
         if (order === "ascend") {
           // Place first element before second element.
@@ -1495,7 +1580,7 @@ class General {
   * @param {Array<Object>} parameters.records Array of records.
   * @returns {Array<Object>} Records.
   */
-  static filterArrayRecordsByIdentifier(identifiers, records) {
+  static filterArrayRecordsByIdentifiers(identifiers, records) {
     return records.filter(function (record) {
       return identifiers.includes(record.identifier);
     });

@@ -37,15 +37,36 @@ United States of America
 */
 class Candidacy {
 
+  // Candidate entities are entities that are elligible candidates for
+  // representation in the network.
+  // An entity's candidacy depends on filters by its values of attributes, the
+  // context of interest in terms of relevance of compartmentalization, and the
+  // candidacies of other entities to which the entity relates.
+  // A reaction's candidacy depends on the candidacies of metabolites that
+  // participate in it.
+  // A metabolite's candidacy depends on the candidacies of reactions in which
+  // it participates.
+  // The purpose of candidate entities is to allow access to information about
+  // individual entities and to change their representations in the network by
+  // simplification.
+  // An entity's candidacy does not depend on its own designation for
+  // simplification or on the simplification of entities to which it relates.
+  // This separation between candidacy and simplification is important to
+  // maintain accessibility of entities.
+  // In contrast, entities do inherit simplification by their dependency on
+  // entities to which they relate.
+  // An entity can be an elligible candidate but still merit simplification by
+  // its dependency on other entities that merit simplification.
+  // There are explicit and implicit designations for simplification.
+  // Explicit designations for simplification come from explicit selections.
+  // Implicit designations for simplification come from an entity's dependency
+  // on other entities with explicit designations for simplification.
+
   // Master procedures for collection of candidate entities, collection of their
   // simplifications, and preparation of summaries.
 
-  // TODO: Maybe I should consider reversibility in redundant reactions.
-
-
   /**
-  * Evaluates the context of interest and collects candidate entities and their
-  * implicit simplifications.
+  * Collects information about candidate entities and creates summaries.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object<Object>} parameters.reactionsSets Information about
   * reactions' metabolites and sets.
@@ -54,117 +75,42 @@ class Candidacy {
   * metabolites.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
-  * @param {Object<Object>} parameters.metabolitesSimplifications
-  * Information about simplification of metabolites.
-  * @param {Object<Object>} parameters.reactionsSimplifications
-  * Information about simplification of reactions.
   * @param {Object<string>} parameters.candidatesSearches Searches to filter
   * candidates' summaries.
   * @param {Object<Object<string>>} parameters.candidatesSorts Specifications to
   * sort candidates' summaries.
   * @param {Object} parameters.compartments Information about compartments.
-  * @returns {Object} Information about candidate entities, their
-  * simplifications, and summaries.
+  * @returns {Object} Information about candidate entities and their summaries.
   */
-  static evaluateCandidacyContext({reactionsSets, reactions, metabolites, compartmentalization, metabolitesSimplifications, reactionsSimplifications, candidatesSearches, candidatesSorts, compartments} = {}) {
-    // Filter information about simplifications for entities to omit those that
-    // are implicit and include only those that are explicit.
-    var simplifications = Candidacy.filterExplicitSimplifications({
-      metabolitesSimplifications: metabolitesSimplifications,
-      reactionsSimplifications: reactionsSimplifications
-    });
-    // Collect information about candidate entities and their simplifications.
-    var candidatesSimplifications = Candidacy.collectCandidatesSimplifications({
+  static collectCandidatesPrepareSummaries({reactionsSets, reactions, metabolites, compartmentalization, candidatesSearches, candidatesSorts, compartments} = {}) {
+    // Collect information about candidate entities.
+    var candidates = Candidacy.collectCandidates({
       reactionsSets: reactionsSets,
       reactions: reactions,
       metabolites: metabolites,
       compartmentalization: compartmentalization,
-      metabolitesSimplifications: simplifications.metabolitesSimplifications,
-      reactionsSimplifications: simplifications.reactionsSimplifications,
       compartments: compartments
     });
     // Prepare summaries of candidates' degrees.
     var candidatesSummaries = Candidacy.prepareCandidatesSummaries({
-      reactionsCandidates: candidatesSimplifications.reactionsCandidates,
-      metabolitesCandidates: candidatesSimplifications.metabolitesCandidates,
+      candidatesReactions: candidates.candidatesReactions,
+      candidatesMetabolites: candidates.candidatesMetabolites,
       candidatesSearches: candidatesSearches,
       candidatesSorts: candidatesSorts
     });
-    // Compile information.
-    var candidatesSimplificationsSummaries = {
-      reactionsCandidates: candidatesSimplifications.reactionsCandidates,
-      metabolitesCandidates: candidatesSimplifications.metabolitesCandidates,
-      reactionsSimplifications: candidatesSimplifications
-      .reactionsSimplifications,
-      metabolitesSimplifications: candidatesSimplifications
-      .metabolitesSimplifications,
+    // Compile and return information.
+    return {
+      candidatesReactions: candidates.candidatesReactions,
+      candidatesMetabolites: candidates.candidatesMetabolites,
       candidatesSummaries: candidatesSummaries
     };
-    // Return information.
-    return candidatesSimplificationsSummaries;
-  }
-
-  /**
-  * Changes designations of entities for simplification.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.identifier Identifier of a candidate entity.
-  * @param {string} parameters.category Category of entities, metabolites or
-  * reactions.
-  * @param {string} parameters.method Method for simplification, omission or
-  * replication.
-  * @param {Object<Object>} parameters.reactionsCandidates Information about
-  * candidate reactions.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
-  * candidate metabolites.
-  * @param {Object<Object>} parameters.reactionsSets Information about
-  * reactions' metabolites and sets.
-  * @param {Object<Object>} parameters.reactions Information about reactions.
-  * @param {boolean} parameters.compartmentalization Whether
-  * compartmentalization is relevant.
-  * @param {Object<Object>} parameters.reactionsSimplifications
-  * Information about simplification of reactions.
-  * @param {Object<Object>} parameters.metabolitesSimplifications
-  * Information about simplification of metabolites.
-  * @returns {Object<Object>} Information about simplification of entities.
-  */
-  static changeSimplifications({identifier, category, method, reactionsCandidates, metabolitesCandidates, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
-    // Filter information about simplifications for entities to omit those that
-    // are implicit and include only those that are explicit.
-    var explicitSimplifications = Candidacy.filterExplicitSimplifications({
-      metabolitesSimplifications: metabolitesSimplifications,
-      reactionsSimplifications: reactionsSimplifications
-    });
-    // Change information about explicit simplification of entities to represent
-    // change to a single entity.
-    var novelSimplifications = Candidacy.changeTypeExplicitSimplifications({
-      identifier: identifier,
-      method: method,
-      type: category,
-      metabolitesSimplifications: explicitSimplifications
-      .metabolitesSimplifications,
-      reactionsSimplifications: explicitSimplifications.reactionsSimplifications
-    });
-    // Collect information about any implicit simplifications for entities and
-    // include with information about explicit simplifications.
-    var completeSimplifications = Candidacy.collectImplicitSimplifications({
-      reactionsCandidates: reactionsCandidates,
-      metabolitesCandidates: metabolitesCandidates,
-      reactionsSets: reactionsSets,
-      reactions: reactions,
-      compartmentalization: compartmentalization,
-      reactionsSimplifications: novelSimplifications.reactionsSimplifications,
-      metabolitesSimplifications: novelSimplifications
-      .metabolitesSimplifications
-    });
-    // Return information.
-    return completeSimplifications;
   }
 
   // Management of candidate entities.
 
   /**
   * Collects information about entities that are candidates for representation
-  * in the network and their implicit simplifications.
+  * in the network.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object<Object>} parameters.reactionsSets Information about
   * reactions' metabolites and sets.
@@ -173,75 +119,34 @@ class Candidacy {
   * metabolites.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
-  * @param {Object<Object>} parameters.metabolitesSimplifications
-  * Information about simplification of metabolites.
-  * @param {Object<Object>} parameters.reactionsSimplifications
-  * Information about simplification of reactions.
   * @param {Object} parameters.compartments Information about compartments.
-  * @returns {Object} Information about candidate entities and their
-  * simplifications.
+  * @returns {Object} Information about candidate entities.
   */
-  static collectCandidatesSimplifications({reactionsSets, reactions, metabolites, compartmentalization, metabolitesSimplifications, reactionsSimplifications, compartments} = {}) {
-    // Candidate entities are entities that are elligible candidates for
-    // representation in the network.
-    // An entity's candidacy depends on filters by its values of attributes,
-    // the context of interest in terms of relevance of compartmentalization,
-    // and the candidacies of other entities to which the entity relates.
-    // A reaction's candidacy depends on the candidacies of metabolites that
-    // participate in it.
-    // A metabolite's candidacy depends on the candidacies of reactions in which
-    // it participates.
-    // The purpose of candidate entities is to allow access to information about
-    // individual entities and to change their representations in the network by
-    // simplification.
-    // An entity's candidacy does not depend on its own designation for
-    // simplification or on the simplification of entities to which it relates.
-    // This separation between candidacy and simplification is important to
-    // maintain accessibility of entities.
-    // In contrast, entities do inherit simplification by their dependency on
-    // entities to which they relate.
-    // An entity can be an elligible candidate but still merit simplification by
-    // its dependency on other entities that merit simplification.
-    // There are explicit and implicit designations for simplification.
-    // Explicit designations for simplification come from explicit selections.
-    // Implicit designations for simplification come from an entity's dependency
-    // on other entities with explicit designations for simplification.
+  static collectCandidates({reactionsSets, reactions, metabolites, compartmentalization, compartments} = {}) {
     // Collect information about candidate entities and their simplifications.
-    var reactionsCollection = Candidacy
-    .collectCandidateReactionsMetabolitesSimplifications({
+    var reactionsCollection = Candidacy.collectCandidateReactionsMetabolites({
       reactionsSets: reactionsSets,
       reactions: reactions,
       metabolites: metabolites,
       compartmentalization: compartmentalization,
-      metabolitesSimplifications: metabolitesSimplifications,
-      reactionsSimplifications: reactionsSimplifications,
       compartments: compartments
     });
-    var metabolitesCollection = Candidacy
-    .collectCandidateMetabolitesReactionsSimplifications({
-      reactionsCandidates: reactionsCollection.reactionsCandidates,
-      reactionsMetabolites: reactionsCollection.reactionsMetabolites,
-      metabolitesSimplifications: metabolitesSimplifications,
-      reactionsSimplifications: reactionsCollection.reactionsSimplifications,
+    var candidatesMetabolites = Candidacy.collectCandidateMetabolitesReactions({
+      candidatesReactions: reactionsCollection.candidatesReactions,
+      reactionsMetabolites: reactionsCollection.reactionsMetabolites
     });
-    // Compile information.
-    var candidatesSimplifications = {
-      reactionsCandidates: reactionsCollection.reactionsCandidates,
-      metabolitesCandidates: metabolitesCollection.metabolitesCandidates,
-      reactionsSimplifications: reactionsCollection.reactionsSimplifications,
-      metabolitesSimplifications: metabolitesCollection
-      .metabolitesSimplifications
+    // Compile and return information.
+    return {
+      candidatesReactions: reactionsCollection.candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites
     };
-    // Return information.
-    return candidatesSimplifications;
   }
 
   // Definition of candidate reactions.
 
   /**
   * Collects information about reactions and their metabolites that are
-  * candidates for representation in the network and their implicit
-  * simplifications.
+  * candidates for representation in the network.
   * @param {Object} parameters Destructured object of parameters.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
@@ -250,36 +155,28 @@ class Candidacy {
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @param {Object<Object>} parameters.metabolites Information about
   * metabolites.
-  * @param {Object<Object>} parameters.metabolitesSimplifications
-  * Information about simplification of metabolites.
-  * @param {Object<Object>} parameters.reactionsSimplifications
-  * Information about simplification of reactions.
   * @param {Object} parameters.compartments Information about compartments.
-  * @returns {Object<Object>} Information about candidate reactions, their
-  * metabolites, and their simplifications.
+  * @returns {Object<Object>} Information about candidate reactions and their
+  * metabolites.
   */
-  static collectCandidateReactionsMetabolitesSimplifications({compartmentalization, reactionsSets, reactions, metabolites, metabolitesSimplifications, reactionsSimplifications, compartments} = {}) {
+  static collectCandidateReactionsMetabolites({compartmentalization, reactionsSets, reactions, metabolites, compartments} = {}) {
     // Collect information about reactions and their metabolites that are
     // candidates for representation in the network.
-    // Collect information about reactions' implicit simplifications and include
-    // with information about reactions' explicit simplifications.
     // Initialize collection.
     var initialCollection = {
-      reactionsCandidates: {},
-      reactionsSimplifications: reactionsSimplifications,
+      candidatesReactions: {},
       reactionsMetabolites: {}
     };
     // Iterate on reactions.
     var reactionsIdentifiers = Object.keys(reactionsSets);
     return reactionsIdentifiers
     .reduce(function (collection, reactionIdentifier) {
-      return Candidacy.collectCandidateReactionMetabolitesSimplification({
+      return Candidacy.collectCandidateReactionMetabolites({
         reactionIdentifier: reactionIdentifier,
         reactionsSets: reactionsSets,
         reactions: reactions,
         metabolites: metabolites,
         compartmentalization: compartmentalization,
-        metabolitesSimplifications: metabolitesSimplifications,
         compartments: compartments,
         collection: collection
       });
@@ -287,8 +184,7 @@ class Candidacy {
   }
   /**
   * Collects information about a reaction and its metabolites that are
-  * candidates for representation in the network and its implicit
-  * simplification.
+  * candidates for representation in the network.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.reactionIdentifier Identifier of a reaction.
   * @param {Object<Object>} parameters.reactionsSets Information about
@@ -298,15 +194,13 @@ class Candidacy {
   * metabolites.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
-  * @param {Object<Object>} parameters.metabolitesSimplifications
-  * Information about simplification of metabolites.
   * @param {Object} parameters.compartments Information about compartments.
   * @param {Object<Object>} parameters.collection Information about candidate
   * reactions, their metabolites, and their simplifications.
-  * @returns {Object<Object>} Information about candidate reactions, their
-  * metabolites, and their simplifications.
+  * @returns {Object<Object>} Information about candidate reactions and their
+  * metabolites.
   */
-  static collectCandidateReactionMetabolitesSimplification({reactionIdentifier, reactionsSets, reactions, metabolites, compartmentalization, metabolitesSimplifications, compartments, collection} = {}) {
+  static collectCandidateReactionMetabolites({reactionIdentifier, reactionsSets, reactions, metabolites, compartmentalization, compartments, collection} = {}) {
     // Evaluate reaction's candidacy.
     var candidacy = Candidacy.evaluateReactionCandidacy({
       reactionIdentifier: reactionIdentifier,
@@ -322,7 +216,7 @@ class Candidacy {
       var reaction = reactions[reactionIdentifier];
       var reactionSets = reactionsSets[reactionIdentifier];
       // Include information about candidate reaction in collection.
-      // Collect information about reaction's metabolites.
+      // Collect information about reaction's relevant metabolites.
       var reactionMetabolites = Candidacy.collectReactionMetabolites({
         reaction: reaction,
         reactionSets: reactionSets,
@@ -348,24 +242,12 @@ class Candidacy {
         [reactionIdentifier]: information
       };
       // Include record in collection.
-      var reactionsCandidates = Object
-      .assign(collection.reactionsCandidates, entry);
-      // Collect information about any implicit simplification for the reaction
-      // and include with information about simplifications for other reactions.
-      var reactionsSimplifications = Candidacy
-      .collectReactionImplicitSimplification({
-        reactionCandidate: information,
-        reactions: reactions,
-        reactionsSets: reactionsSets,
-        compartmentalization: compartmentalization,
-        metabolitesSimplifications: metabolitesSimplifications,
-        reactionsSimplifications: collection.reactionsSimplifications
-      });
-      // Compile information.
+      var candidatesReactions = Object
+      .assign(collection.candidatesReactions, entry);
+      // Compile and return information.
       return {
-        reactionsCandidates: reactionsCandidates,
-        reactionsMetabolites: reactionsMetabolites,
-        reactionsSimplifications: reactionsSimplifications
+        candidatesReactions: candidatesReactions,
+        reactionsMetabolites: reactionsMetabolites
       };
     } else {
       // Reaction is not a valid candidate.
@@ -420,7 +302,7 @@ class Candidacy {
           // Reaction is the priority replicate.
           // Determine whether reaction is novel in the collection.
           var novelty = !collection
-          .reactionsCandidates.hasOwnProperty(reactionIdentifier);
+          .candidatesReactions.hasOwnProperty(reactionIdentifier);
         } else {
           // Reaction is not a priority.
           var novelty = false;
@@ -431,7 +313,7 @@ class Candidacy {
         var priority = true;
         // Determine whether reaction is novel in the collection.
         var novelty = !collection
-        .reactionsCandidates.hasOwnProperty(reactionIdentifier);
+        .candidatesReactions.hasOwnProperty(reactionIdentifier);
       }
     } else {
       // Reaction is irrelevant in the context of interest.
@@ -840,14 +722,14 @@ class Candidacy {
   */
   static collectReactionMetabolites({reaction, reactionSets, compartmentalization, metabolites, compartments} = {}) {
     // Filter for reaction's relevant participants.
-    var relevantParticipants = Extraction.filterReactionParticipants({
+    var participants = Extraction.filterReactionParticipants({
       criteria: {
         metabolites: reactionSets.metabolites,
         compartments: reactionSets.compartments
       },
       participants: reaction.participants
     });
-    return relevantParticipants.reduce(function (collection, participant) {
+    return participants.reduce(function (collection, participant) {
       // Create identifier for candidate metabolite.
       var identifier = Candidacy.createCandidateMetaboliteIdentifier({
         metabolite: participant.metabolite,
@@ -897,7 +779,7 @@ class Candidacy {
   /**
   * Creates the identifier for a candidate metabolite.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.metabolite Identifier of a general metabolite.
+  * @param {string} parameters.metabolite Identifier of a metabolite.
   * @param {string} parameters.compartment Identifier of a compartment.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
@@ -913,7 +795,7 @@ class Candidacy {
   /**
   * Creates the name for a candidate metabolite.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.metabolite Name of a general metabolite.
+  * @param {string} parameters.metabolite Name of a metabolite.
   * @param {string} parameters.compartment Name of a compartment.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
@@ -931,68 +813,50 @@ class Candidacy {
 
   /**
   * Collects information about metabolites and their reactions that are
-  * candidates for representation in the network and their implicit
-  * simplifications.
+  * candidates for representation in the network.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
   * @param {Object<Object>} parameters.reactionsMetabolites Information about
   * metabolites that participate in candidate reactions.
-  * @param {Object<Object>} parameters.reactionsSimplifications
-  * Information about simplification of reactions.
-  * @param {Object<Object>} parameters.metabolitesSimplifications
-  * Information about simplification of metabolites.
-  * @returns {Object<Object>} Information about candidate metabolites and their
-  * simplifications.
+  * @returns {Object<Object>} Information about candidate metabolites.
   */
-  static collectCandidateMetabolitesReactionsSimplifications({reactionsCandidates, reactionsMetabolites, reactionsSimplifications, metabolitesSimplifications} = {}) {
+  static collectCandidateMetabolitesReactions({candidatesReactions, reactionsMetabolites} = {}) {
     // Collect the identifiers of candidate reactions in which each candidate
     // metabolite participates.
     var metabolitesReactions = General.collectRecordsTargetsByCategories({
       target: "reaction",
       category: "metabolites",
-      records: reactionsCandidates
+      records: candidatesReactions
     });
     // Collect information about metabolites and their reactions that are
     // candidates for representation in the network.
-    // Collect information about metabolites' implicit simplifications and
-    // include with information about metabolites' explicit simplifications.
-    // Initialize collection.
-    var initialCollection = {
-      metabolitesCandidates: {},
-      metabolitesSimplifications: metabolitesSimplifications
-    };
     // Iterate on metabolites.
     var metabolitesIdentifiers = Object.keys(metabolitesReactions);
     return metabolitesIdentifiers
     .reduce(function (collection, metaboliteIdentifier) {
-      return Candidacy.collectCandidateMetaboliteReactionsSimplification({
+      return Candidacy.collectCandidateMetaboliteReactions({
         metaboliteIdentifier: metaboliteIdentifier,
         reactionsMetabolites: reactionsMetabolites,
         metabolitesReactions: metabolitesReactions,
-        reactionsSimplifications: reactionsSimplifications,
         collection: collection
       });
-    }, initialCollection);
+    }, {});
   }
   /**
   * Collects information about a metabolite and its reactions that are
-  * candidates for representation in the network and its implicit
-  * simplification.
+  * candidates for representation in the network.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.metaboliteIdentifier Identifier of a metabolite.
   * @param {Object<Object>} parameters.reactionsMetabolites Information about
   * metabolites that participate in candidate reactions.
   * @param {Object} parameters.metabolitesReactions Information candidate
   * reactions in which each candidate metabolite participates.
-  * @param {Object<Object>} parameters.reactionsSimplifications
-  * Information about simplification of reactions.
   * @param {Object<Object>} parameters.collection Information about candidate
   * metabolites and their simplifications.
-  * @returns {Object<Object>} Information about candidate metabolites and their
-  * simplifications.
+  * @returns {Object<Object>} Information about candidate metabolites.
   */
-  static collectCandidateMetaboliteReactionsSimplification({metaboliteIdentifier, reactionsMetabolites, metabolitesReactions, reactionsSimplifications, collection} = {}) {
+  static collectCandidateMetaboliteReactions({metaboliteIdentifier, reactionsMetabolites, metabolitesReactions, collection} = {}) {
     // Metabolite is a valid candidate.
     // Access information about metabolite.
     var reactionMetabolite = reactionsMetabolites[metaboliteIdentifier];
@@ -1015,37 +879,416 @@ class Candidacy {
       [reactionMetabolite.identifier]: information
     };
     // Include record in collection.
-    var metabolitesCandidates = Object
-    .assign(collection.metabolitesCandidates, entry);
-    // Collect information about any implicit simplification for the metabolite
-    // and include with information about simplifications for other metabolites.
-    var metabolitesSimplifications = Candidacy
-    .collectMetaboliteImplicitSimplification({
-      metaboliteCandidate: information,
-      reactionsSimplifications: reactionsSimplifications,
-      metabolitesSimplifications: collection.metabolitesSimplifications
-    });
-    // Compile information.
-    return {
-      metabolitesCandidates: metabolitesCandidates,
-      metabolitesSimplifications: metabolitesSimplifications
-    };
+    var candidatesMetabolites = Object.assign(collection, entry);
+    return candidatesMetabolites;
   }
 
   // Management of simplifications of candidate entities.
 
   /**
-  * Creates initial, empty, information about entities for simplification.
+  * Changes designations of entities for simplification.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a candidate entity.
+  * @param {string} parameters.category Category of entities, metabolites or
+  * reactions.
+  * @param {string} parameters.method Method for simplification, omission or
+  * replication.
+  * @param {Object<Object>} parameters.candidatesReactions Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.reactionsSets Information about
+  * reactions' metabolites and sets.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
+  * @param {Object<Object>} parameters.reactionsSimplifications Information
+  * about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
   * @returns {Object<Object>} Information about simplification of entities.
   */
-  static createInitialSimplifications() {
-    // Compile information.
-    var simplifications = {
-      reactionsSimplifications: {},
-      metabolitesSimplifications: {}
-    };
+  static changeSimplifications({identifier, category, method, candidatesReactions, candidatesMetabolites, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
+    // Filter simplifications to omit those that are implicit and include only
+    // those that are explicit.
+    var explicitSimplifications = Candidacy.filterExplicitSimplifications({
+      metabolitesSimplifications: metabolitesSimplifications,
+      reactionsSimplifications: reactionsSimplifications
+    });
+    // Change information about explicit simplification of entities to represent
+    // change to a single entity.
+    var novelSimplifications = Candidacy.changeTypeExplicitSimplifications({
+      identifier: identifier,
+      method: method,
+      type: category,
+      metabolitesSimplifications: explicitSimplifications
+      .metabolitesSimplifications,
+      reactionsSimplifications: explicitSimplifications.reactionsSimplifications
+    });
+    // Create information about any implicit simplifications for entities and
+    // include with information about explicit simplifications.
+    var completeSimplifications = Candidacy.createImplicitSimplifications({
+      candidatesReactions: candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites,
+      reactionsSets: reactionsSets,
+      reactions: reactions,
+      compartmentalization: compartmentalization,
+      reactionsSimplifications: novelSimplifications.reactionsSimplifications,
+      metabolitesSimplifications: novelSimplifications
+      .metabolitesSimplifications
+    });
     // Return information.
-    return simplifications;
+    return completeSimplifications;
+  }
+  /**
+  * Restores information about simplifications.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Object>} parameters.candidatesReactions Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.reactionsSets Information about
+  * reactions' metabolites and sets.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
+  * @param {Object<Object>} parameters.reactionsSimplifications Information
+  * about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static restoreSimplifications({candidatesReactions, candidatesMetabolites, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
+    // Filter information about simplifications to omit those that are implicit
+    // and include only those that are explicit.
+    var explicitSimplifications = Candidacy.filterExplicitSimplifications({
+      metabolitesSimplifications: metabolitesSimplifications,
+      reactionsSimplifications: reactionsSimplifications
+    });
+    // Create information about any implicit simplifications for entities and
+    // include with information about explicit simplifications.
+    var completeSimplifications = Candidacy.createImplicitSimplifications({
+      candidatesReactions: candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites,
+      reactionsSets: reactionsSets,
+      reactions: reactions,
+      compartmentalization: compartmentalization,
+      reactionsSimplifications: explicitSimplifications
+      .reactionsSimplifications,
+      metabolitesSimplifications: explicitSimplifications
+      .metabolitesSimplifications
+    });
+    // Return information.
+    return completeSimplifications;
+  }
+  /**
+  * Determines whether explicit simplifications exist for candidates of all
+  * default entities.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsMetabolites
+  * Identifiers of metabolites for which to create default simplifications.
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
+  * @returns {boolean} Whether simplifications exist for candidates of all
+  * default entities.
+  */
+  static determineDefaultSimplifications({defaultSimplificationsMetabolites, candidatesMetabolites, metabolitesSimplifications} = {}) {
+    // Collect identifiers of candidates that match entities for default
+    // simplifications.
+    var defaultSimplificationsCandidatesIdentifiers = Candidacy
+    .collectDefaultSimplificationsCandidatesIdentifiers({
+      defaultSimplificationsEntities: defaultSimplificationsMetabolites,
+      type: "metabolite",
+      candidates: candidatesMetabolites
+    });
+    // Determine whether explicit simplifications exist for all candidates for
+    // default entities.
+    return defaultSimplificationsCandidatesIdentifiers
+    .every(function (identifier) {
+      // Determine whether an explicit simplification exists for the candidate.
+      if (metabolitesSimplifications.hasOwnProperty(identifier)) {
+        return !metabolitesSimplifications[identifier].dependency;
+      } else {
+        return false;
+      }
+    });
+  }
+  /**
+  * Creates information about simplifications for default entities and includes
+  * with information about simplifications of other entities.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsMetabolites
+  * Identifiers of metabolites for which to create default simplifications.
+  * @param {Object<Object>} parameters.candidatesReactions Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.reactionsSets Information about
+  * reactions' metabolites and sets.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
+  * @param {Object<Object>} parameters.reactionsSimplifications Information
+  * about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static createIncludeDefaultSimplifications({defaultSimplificationsMetabolites, candidatesReactions, candidatesMetabolites, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
+    // Filter simplifications to omit those that are implicit and include only
+    // those that are explicit.
+    var explicitSimplifications = Candidacy.filterExplicitSimplifications({
+      metabolitesSimplifications: metabolitesSimplifications,
+      reactionsSimplifications: reactionsSimplifications
+    });
+    // Determine explicit simplifications.
+    var novelSimplifications = Candidacy
+    .createIncludeDefaultExplicitSimplifications({
+      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
+      reactionsSimplifications: explicitSimplifications
+      .reactionsSimplifications,
+      metabolitesSimplifications: explicitSimplifications
+      .metabolitesSimplifications,
+      candidatesReactions: candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites
+    });
+    // Create information about any implicit simplifications for entities and
+    // include with information about explicit simplifications.
+    var completeSimplifications = Candidacy.createImplicitSimplifications({
+      candidatesReactions: candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites,
+      reactionsSets: reactionsSets,
+      reactions: reactions,
+      compartmentalization: compartmentalization,
+      reactionsSimplifications: novelSimplifications.reactionsSimplifications,
+      metabolitesSimplifications: novelSimplifications
+      .metabolitesSimplifications
+    });
+    // Return information.
+    return completeSimplifications;
+  }
+  /**
+  * Creates information about explicit simplifications for default entities and
+  * includes with information about explicit simplifications for other entities.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsMetabolites
+  * Identifiers of metabolites for which to create default simplifications.
+  * @param {Object<Object>} parameters.candidatesReactions Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.reactionsSimplifications Information
+  * about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static createIncludeDefaultExplicitSimplifications({defaultSimplificationsMetabolites, candidatesReactions, candidatesMetabolites, reactionsSimplifications, metabolitesSimplifications} = {}) {
+    // Create explicit simplifications for default entities.
+    var novelMetabolitesSimplifications = Candidacy
+    .createIncludeTypeDefaultSimplifications({
+      defaultSimplificationsEntities: defaultSimplificationsMetabolites,
+      type: "metabolite",
+      candidates: candidatesMetabolites,
+      simplifications: metabolitesSimplifications
+    });
+    var novelReactionsSimplifications = reactionsSimplifications;
+    // Compile and return information.
+    return {
+      reactionsSimplifications: novelReactionsSimplifications,
+      metabolitesSimplifications: novelMetabolitesSimplifications
+    };
+  }
+  /**
+  * Creates information about explicit simplifications for default entities of a
+  * specific type and includes with information about explicit simplifications
+  * for other entities of that type.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsEntities
+  * Identifiers of entities for which to create default simplifications.
+  * @param {string} parameters.type Type of entity, metabolite or reaction.
+  * @param {Object<Object>} parameters.candidates Information about candidate
+  * entities.
+  * @param {Object<Object>} parameters.simplifications Information about
+  * simplification of entities.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static createIncludeTypeDefaultSimplifications({defaultSimplificationsEntities, type, candidates, simplifications} = {}) {
+    // Collect identifiers of candidates that match entities for default
+    // simplifications.
+    var defaultSimplificationsCandidatesIdentifiers = Candidacy
+    .collectDefaultSimplificationsCandidatesIdentifiers({
+      defaultSimplificationsEntities: defaultSimplificationsEntities,
+      type: type,
+      candidates: candidates
+    });
+    // Create information about novel explicit simplifications for default
+    // entities and include with information about other explicit
+    // simplifications.
+    return defaultSimplificationsCandidatesIdentifiers
+    .reduce(function (collection, identifier) {
+      // Determine whether a simplification exists for the candidate.
+      if (collection.hasOwnProperty(identifier)) {
+        return collection;
+      } else {
+        // Create record.
+        var record = {
+          identifier: identifier,
+          method: "omission",
+          dependency: false
+        };
+        // Create entry.
+        var entry = {
+          [identifier]: record
+        };
+        // Include entry in collection.
+        return Object.assign(collection, entry);
+      }
+    }, simplifications);
+  }
+  /**
+  * Collects identifiers of candidate entities that match entities for default
+  * simplifications.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsEntities
+  * Identifiers of entities for which to create default simplifications.
+  * @param {string} parameters.type Type of entity, metabolite or reaction.
+  * @param {Object<Object>} parameters.candidates Information about candidate
+  * entities.
+  * @returns {Array<string>} Identifiers of candidate entities.
+  */
+  static collectDefaultSimplificationsCandidatesIdentifiers({defaultSimplificationsEntities, type, candidates} = {}) {
+    // Default simplifications include identifiers of entities for
+    // simplification.
+    // Determine identifiers of candidates that match these default entities for
+    // simplification.
+    var candidatesIdentifiers = Object.keys(candidates);
+    return candidatesIdentifiers.filter(function (identifier) {
+      // Access information.
+      var candidate = candidates[identifier];
+      return defaultSimplificationsEntities.includes(candidate[type]);
+    });
+  }
+  /**
+  * Removes information about simplifications for default entities and from
+  * information about simplifications of other entities.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsMetabolites
+  * Identifiers of metabolites for which to create default simplifications.
+  * @param {Object<Object>} parameters.candidatesReactions Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.reactionsSets Information about
+  * reactions' metabolites and sets.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
+  * @param {Object<Object>} parameters.reactionsSimplifications Information
+  * about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static removeDefaultSimplifications({defaultSimplificationsMetabolites, candidatesReactions, candidatesMetabolites, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
+    // Filter simplifications to omit those that are implicit and include only
+    // those that are explicit.
+    var explicitSimplifications = Candidacy.filterExplicitSimplifications({
+      metabolitesSimplifications: metabolitesSimplifications,
+      reactionsSimplifications: reactionsSimplifications
+    });
+    // Remove simplifications for default entities from explicit
+    // simplifications.
+    var novelSimplifications = Candidacy.removeDefaultExplicitSimplifications({
+      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
+      reactionsSimplifications: explicitSimplifications
+      .reactionsSimplifications,
+      metabolitesSimplifications: explicitSimplifications
+      .metabolitesSimplifications,
+      candidatesReactions: candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites
+    });
+    // Create information about any implicit simplifications for entities and
+    // include with information about explicit simplifications.
+    var completeSimplifications = Candidacy.createImplicitSimplifications({
+      candidatesReactions: candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites,
+      reactionsSets: reactionsSets,
+      reactions: reactions,
+      compartmentalization: compartmentalization,
+      reactionsSimplifications: novelSimplifications.reactionsSimplifications,
+      metabolitesSimplifications: novelSimplifications
+      .metabolitesSimplifications
+    });
+    // Return information.
+    return completeSimplifications;
+  }
+  /**
+  * Removes information about explicit simplifications for default entities.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsMetabolites
+  * Identifiers of metabolites for which to create default simplifications.
+  * @param {Object<Object>} parameters.candidatesReactions Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.reactionsSimplifications Information
+  * about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static removeDefaultExplicitSimplifications({defaultSimplificationsMetabolites, candidatesReactions, candidatesMetabolites, reactionsSimplifications, metabolitesSimplifications} = {}) {
+    var novelMetabolitesSimplifications = Candidacy
+    .removeTypeDefaultSimplifications({
+      defaultSimplificationsEntities: defaultSimplificationsMetabolites,
+      type: "metabolite",
+      candidates: candidatesMetabolites,
+      simplifications: metabolitesSimplifications
+    });
+    var novelReactionsSimplifications = reactionsSimplifications;
+    // Compile and return information.
+    return {
+      reactionsSimplifications: novelReactionsSimplifications,
+      metabolitesSimplifications: novelMetabolitesSimplifications
+    };
+  }
+  /**
+  * Removes information about explicit simplifications for default entities of a
+  * specific type from information about explicit simplifications for other
+  * entities of that type.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.defaultSimplificationsEntities
+  * Identifiers of entities for which to create default simplifications.
+  * @param {string} parameters.type Type of entity, metabolite or reaction.
+  * @param {Object<Object>} parameters.candidates Information about candidate
+  * entities.
+  * @param {Object<Object>} parameters.simplifications Information about
+  * simplification of entities.
+  * @returns {Object<Object>} Information about simplification of entities.
+  */
+  static removeTypeDefaultSimplifications({defaultSimplificationsEntities, type, candidates, simplifications} = {}) {
+    // Collect identifiers of candidates that match entities for default
+    // simplifications.
+    var defaultSimplificationsCandidatesIdentifiers = Candidacy
+    .collectDefaultSimplificationsCandidatesIdentifiers({
+      defaultSimplificationsEntities: defaultSimplificationsEntities,
+      type: type,
+      candidates: candidates
+    });
+    // Remove default simplifications for default entities.
+    // Define function for filter against simplifications.
+    function filter(entryValue) {
+      return !defaultSimplificationsCandidatesIdentifiers
+      .includes(entryValue.identifier);
+    };
+    // Filter simplifications to omit those that are for default entities.
+    return General.filterObjectEntries({
+      filter: filter,
+      entries: simplifications
+    });
   }
   /**
   * Filters designations of entities for simplification to omit implicit
@@ -1222,31 +1465,31 @@ class Candidacy {
     });
   }
   /**
-  * Collects information about any implicit simplifications for entities and
+  * Creates information about any implicit simplifications for entities and
   * includes with information about explicit simplifications.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
   * @param {Object<Object>} parameters.reactionsSets Information about
   * reactions' metabolites and sets.
   * @param {Object<Object>} parameters.reactions Information about reactions.
   * @param {boolean} parameters.compartmentalization Whether
   * compartmentalization is relevant.
-  * @param {Object<Object>} parameters.reactionsSimplifications
-  * Information about simplification of reactions.
-  * @param {Object<Object>} parameters.metabolitesSimplifications
-  * Information about simplification of metabolites.
+  * @param {Object<Object>} parameters.reactionsSimplifications Information
+  * about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
   * @returns {Object<Object>} Information about simplification of entities.
   */
-  static collectImplicitSimplifications({reactionsCandidates, metabolitesCandidates, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
+  static createImplicitSimplifications({candidatesReactions, candidatesMetabolites, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
     // The default method for implicit simplifications is omission.
     // Collect information about any implicit simplifications for entities and
     // include with information about explicit simplifications.
     var reactionsCompleteSimplifications = Candidacy
     .collectReactionsImplicitSimplifications({
-      reactionsCandidates: reactionsCandidates,
+      candidatesReactions: candidatesReactions,
       reactionsSets: reactionsSets,
       reactions: reactions,
       compartmentalization: compartmentalization,
@@ -1257,7 +1500,7 @@ class Candidacy {
     // determine metabolites' relevance by dependency.
     var metabolitesCompleteSimplifications = Candidacy
     .collectMetabolitesImplicitSimplifications({
-      metabolitesCandidates: metabolitesCandidates,
+      candidatesMetabolites: candidatesMetabolites,
       reactionsSimplifications: reactionsCompleteSimplifications,
       metabolitesSimplifications: metabolitesSimplifications
     });
@@ -1273,7 +1516,7 @@ class Candidacy {
   * Collects information about any implicit simplifications for reactions and
   * includes with information about explicit simplifications for reactions.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
   * @param {Object<Object>} parameters.reactionsSets Information about
   * reactions' metabolites and sets.
@@ -1286,15 +1529,15 @@ class Candidacy {
   * Information about simplification of metabolites.
   * @returns {Object<Object>} Information about simplification of reactions.
   */
-  static collectReactionsImplicitSimplifications({reactionsCandidates, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
+  static collectReactionsImplicitSimplifications({candidatesReactions, reactionsSets, reactions, compartmentalization, reactionsSimplifications, metabolitesSimplifications} = {}) {
     // Collect information about reactions' implicit simplifications and include
     // with information about reactions' explicit simplifications.
     // Iterate on reactions.
-    var reactionsIdentifiers = Object.keys(reactionsCandidates);
+    var reactionsIdentifiers = Object.keys(candidatesReactions);
     return reactionsIdentifiers
     .reduce(function (collection, reactionIdentifier) {
       // Access information about candidate reaction.
-      var reactionCandidate = reactionsCandidates[reactionIdentifier];
+      var reactionCandidate = candidatesReactions[reactionIdentifier];
       // Collect information about any implicit simplification for the reaction
       // and include with information about simplifications for other reactions.
       return Candidacy.collectReactionImplicitSimplification({
@@ -1421,7 +1664,7 @@ class Candidacy {
   * Collects information about any implicit simplifications for metabolites and
   * includes with information about explicit simplifications for metabolites.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
   * @param {Object<Object>} parameters.reactionsSimplifications
   * Information about simplification of reactions.
@@ -1429,15 +1672,15 @@ class Candidacy {
   * Information about simplification of metabolites.
   * @returns {Object<Object>} Information about simplification of metabolites.
   */
-  static collectMetabolitesImplicitSimplifications({metabolitesCandidates, reactionsSimplifications, metabolitesSimplifications} = {}) {
+  static collectMetabolitesImplicitSimplifications({candidatesMetabolites, reactionsSimplifications, metabolitesSimplifications} = {}) {
     // Collect information about metabolites' implicit simplifications and
     // include with information about metabolites' explicit simplifications.
     // Iterate on metabolites.
-    var metabolitesIdentifiers = Object.keys(metabolitesCandidates);
+    var metabolitesIdentifiers = Object.keys(candidatesMetabolites);
     return metabolitesIdentifiers
     .reduce(function (collection, metaboliteIdentifier) {
       // Access information about candidate metabolite.
-      var metaboliteCandidate = metabolitesCandidates[metaboliteIdentifier];
+      var metaboliteCandidate = candidatesMetabolites[metaboliteIdentifier];
       // Collect information about any implicit simplification for the reaction
       // and include with information about simplifications for other reactions.
       return Candidacy.collectMetaboliteImplicitSimplification({
@@ -1554,9 +1797,9 @@ class Candidacy {
   /**
   * Prepares summaries of candidates' degrees.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
   * @param {Object<string>} parameters.candidatesSearches Searches to filter
   * candidates' summaries.
@@ -1564,47 +1807,47 @@ class Candidacy {
   * sort candidates' summaries.
   * @returns {Object<Array<Object>>} Summaries of candidates' degrees.
   */
-  static prepareCandidatesSummaries({reactionsCandidates, metabolitesCandidates, candidatesSearches, candidatesSorts} = {}) {
+  static prepareCandidatesSummaries({candidatesReactions, candidatesMetabolites, candidatesSearches, candidatesSorts} = {}) {
     // Create candidates' summaries.
     var candidatesSummaries = Candidacy.createCandidatesSummaries({
-      reactionsCandidates: reactionsCandidates,
-      metabolitesCandidates: metabolitesCandidates
+      candidatesReactions: candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites
     });
     // Filter candidates' summaries.
     var filterCandidatesSummaries = Candidacy.filterCandidatesSummaries({
       candidatesSummaries: candidatesSummaries,
       candidatesSearches: candidatesSearches,
-      reactionsCandidates: reactionsCandidates,
-      metabolitesCandidates: metabolitesCandidates
+      candidatesReactions: candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites
     });
     // Sort candidates' summaries.
     var sortCandidatesSummaries = Candidacy.sortCandidatesSummaries({
       candidatesSummaries: filterCandidatesSummaries,
       candidatesSorts: candidatesSorts,
-      reactionsCandidates: reactionsCandidates,
-      metabolitesCandidates: metabolitesCandidates
+      candidatesReactions: candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites
     });
     return sortCandidatesSummaries;
   }
   /**
   * Creates summaries of candidates' degrees.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
   * @returns {Object<Array<Object>>} Summaries of candidates' degrees.
   */
-  static createCandidatesSummaries({reactionsCandidates, metabolitesCandidates} = {}) {
+  static createCandidatesSummaries({candidatesReactions, candidatesMetabolites} = {}) {
     // Prepare records for entities.
     var entities = ["metabolites", "reactions"];
     return entities.reduce(function (collection, entity) {
       // Access information about candidates of the entity's type.
       if (entity === "metabolites") {
-        var candidates = metabolitesCandidates;
+        var candidates = candidatesMetabolites;
         var relations = "reactions";
       } else if (entity === "reactions") {
-        var candidates = reactionsCandidates;
+        var candidates = candidatesReactions;
         var relations = "metabolites";
       }
       var identifiers = Object.keys(candidates);
@@ -1642,21 +1885,21 @@ class Candidacy {
   * candidates' degrees.
   * @param {Object<string>} parameters.candidatesSearches Searches to filter
   * candidates' summaries.
-  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
   * @returns {Object<Array<Object>>} Summaries of candidates' degrees.
   */
-  static filterCandidatesSummaries({candidatesSummaries, candidatesSearches, reactionsCandidates, metabolitesCandidates} = {}) {
+  static filterCandidatesSummaries({candidatesSummaries, candidatesSearches, candidatesReactions, candidatesMetabolites} = {}) {
     // Iterate on categories.
     var categories = Object.keys(candidatesSummaries);
     return categories.reduce(function (collection, category) {
       // Determine reference.
       if (category === "metabolites") {
-        var reference = metabolitesCandidates;
+        var reference = candidatesMetabolites;
       } else if (category === "reactions") {
-        var reference = reactionsCandidates;
+        var reference = candidatesReactions;
       }
       // Access category's records.
       var records = candidatesSummaries[category];
@@ -1684,21 +1927,21 @@ class Candidacy {
   * candidates' degrees.
   * @param {Object<Object<string>>} parameters.candidatesSorts Specifications to
   * sort candidates' summaries.
-  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
   * @returns {Object<Array<Object>>} Summaries of candidates' degrees.
   */
-  static sortCandidatesSummaries({candidatesSummaries, candidatesSorts, reactionsCandidates, metabolitesCandidates}) {
+  static sortCandidatesSummaries({candidatesSummaries, candidatesSorts, candidatesReactions, candidatesMetabolites}) {
     // Iterate on categories.
     var categories = Object.keys(candidatesSummaries);
     return categories.reduce(function (collection, category) {
       // Determine reference.
       if (category === "metabolites") {
-        var reference = metabolitesCandidates;
+        var reference = candidatesMetabolites;
       } else if (category === "reactions") {
-        var reference = reactionsCandidates;
+        var reference = candidatesReactions;
       }
       // Determine appropriate value by which to sort records.
       if (candidatesSorts[category].criterion === "count") {

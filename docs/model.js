@@ -44,6 +44,12 @@ class Model {
     var self = this;
     // Set reference to application's state.
     self.state = state;
+    // Set reference to browser's window.
+    self.window = window;
+    // Set reference to document object model (DOM).
+    self.document = document;
+    // Set reference to body.
+    self.body = self.document.getElementsByTagName("body").item(0);
     // Evaluate application's state, respond, and represent accordingly.
     self.act(self);
     self.represent(self);
@@ -72,7 +78,7 @@ class Model {
   /**
   * Evaluates the application's state and represents it accordingly in a visual
   * interface.
-  * All alterations to the application's state initiates restoration of the
+  * All alterations to the application's state initiate restoration of the
   * application's interface.
   * Evaluation only considers which views to initialize or restore in the
   * interface.
@@ -93,76 +99,61 @@ class Model {
       Model.determineMetabolismBaseInformation(self.state) &&
       Model.determineMetabolismDerivationInformation(self.state)
     ) {
+      // Interface view.
+      var interfaceView = new InterfaceView({
+        body: self.body,
+        state: self.state,
+        documentReference: self.document
+      });
+      // Panel view.
+      var panelView = new PanelView({
+        interfaceView: interfaceView,
+        state: self.state,
+        documentReference: self.document
+      });
       // Tip view.
-      var tip = new TipView();
+      // Tip view always exists but is only visible when active.
+      var tipView = new TipView({
+        interfaceView: interfaceView,
+        state: self.state,
+        documentReference: self.document,
+        windowReference: self.window
+      });
+      // Prompt view.
+      // Prompt view always exists but is only visible when active.
+      var promptView = new PromptView({
+        interfaceView: interfaceView,
+        state: self.state,
+        documentReference: self.document,
+        windowReference: self.window
+      });
+      // Detail view.
+      var detailView = new DetailView({
+        interfaceView: interfaceView,
+        panelView: panelView,
+        tipView: tipView,
+        promptView: promptView,
+        state: self.state,
+        documentReference: self.document
+      });
       // Control view.
-      var tabs = Object.keys(self.state.controlViews);
-      var panels = tabs.filter(function (tab) {
-        return self.state.controlViews[tab];
+      var controlView = new ControlView({
+        interfaceView: interfaceView,
+        panelView: panelView,
+        tipView: tipView,
+        promptView: promptView,
+        state: self.state,
+        documentReference: self.document
       });
-      var controlContents = {
-        tabs: tabs,
-        panels: panels
-      };
-      var control = new ControlView({
-        tip: tip,
-        contents: controlContents,
-        state: self.state
-      });
-      if (Model.determineControlState(self.state)) {
-        // State view.
-        new StateView({
-          tip: tip,
-          control: control,
-          state: self.state
-        });
-      }
-      if (Model.determineControlSet(self.state)) {
-        // Set view.
-        new SetView({
-          tip: tip,
-          control: control,
-          state: self.state
-        });
-      }
-      if (Model.determineControlCandidacy(self.state)) {
-        // Candidacy view.
-        new CandidacyView({
-          tip: tip,
-          control: control,
-          state: self.state
-        });
-      }
       // Exploration view.
-      if (!Model.determineTopology(self.state)) {
-        // Exploration view.
-        var explorationContents = ["summary"];
-        var exploration = new ExplorationView({
-          contents: explorationContents,
-          tip: tip,
-          state: self.state
-        });
-        // Summary view.
-        new SummaryView({
-          tip: tip,
-          exploration: exploration,
-          state: self.state
-        });
-      } else {
-        // Exploration view.
-        var explorationContents = ["topology"];
-        var exploration = new ExplorationView({
-          contents: explorationContents,
-          tip: tip,
-          state: self.state
-        });
-        // Topology view.
-        new TopologyView({
-          tip: tip,
-          exploration: exploration,
-          state: self.state
-        });
-      }
+      var explorationView = new ExplorationView({
+        interfaceView: interfaceView,
+        tipView: tipView,
+        promptView: promptView,
+        state: self.state,
+        documentReference: self.document,
+        windowReference: self.window
+      });
     }
   }
 
@@ -175,20 +166,31 @@ class Model {
   */
   static determineApplicationControls(state) {
     return (
-      //(state.source === null) &&
+      !(state.source === null) &&
       !(state.controlViews === null) &&
-      !(state.topology === null) &&
-      !(state.topologyNovelty === null) &&
+      !(state.prompt === null) &&
+      !(state.forceTopology === null) &&
       !(state.setsFilters === null) &&
       !(state.setsEntities === null) &&
       !(state.setsFilter === null) &&
       !(state.setsSearches === null) &&
       !(state.setsSorts === null) &&
       !(state.compartmentalization === null) &&
-      !(state.reactionsSimplifications === null) &&
-      !(state.metabolitesSimplifications === null) &&
+      !(state.defaultSimplifications === null) &&
       !(state.candidatesSearches === null) &&
-      !(state.candidatesSorts === null)
+      !(state.candidatesSorts === null) &&
+      !(state.traversalCombination === null) &&
+      !(state.traversalType === null) &&
+      !(state.traversalRogueFocus === null) &&
+      !(state.traversalProximityFocus === null) &&
+      !(state.traversalProximityDirection === null) &&
+      !(state.traversalProximityDepth === null) &&
+      !(state.traversalPathSource === null) &&
+      !(state.traversalPathTarget === null) &&
+      !(state.traversalPathDirection === null) &&
+      !(state.traversalPathCount === null) &&
+      !(state.entitySelection === null) &&
+      !(state.simulation === null)
     );
   }
   /**
@@ -212,22 +214,26 @@ class Model {
   */
   static determineMetabolismDerivationInformation(state) {
     return (
-      !(state.totalReactionsSets === null) &&
-      !(state.totalMetabolitesSets === null) &&
-      !(state.accessReactionsSets === null) &&
-      !(state.accessMetabolitesSets === null) &&
-      !(state.filterReactionsSets === null) &&
-      !(state.filterMetabolitesSets === null) &&
+      !(state.totalSetsReactions === null) &&
+      !(state.totalSetsMetabolites === null) &&
+      !(state.accessSetsReactions === null) &&
+      !(state.accessSetsMetabolites === null) &&
+      !(state.filterSetsReactions === null) &&
+      !(state.filterSetsMetabolites === null) &&
       !(state.setsCardinalities === null) &&
       !(state.setsSummaries === null) &&
-      !(state.reactionsCandidates === null) &&
-      !(state.metabolitesCandidates === null) &&
+      !(state.reactionsSimplifications === null) &&
+      !(state.metabolitesSimplifications === null) &&
+      !(state.candidatesReactions === null) &&
+      !(state.candidatesMetabolites === null) &&
       !(state.candidatesSummaries === null) &&
       !(state.networkNodesReactions === null) &&
       !(state.networkNodesMetabolites === null) &&
       !(state.networkLinks === null) &&
       !(state.networkNodesRecords === null) &&
-      !(state.networkLinksRecords === null)
+      !(state.networkLinksRecords === null) &&
+      !(state.subnetworkNodesRecords === null) &&
+      !(state.subnetworkLinksRecords === null)
     );
   }
   /**
@@ -236,7 +242,15 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineSource(state) {
-    return !(state.source === null);
+    return (Boolean(state.source.name));
+  }
+  /**
+  * Determines tabs within control view.
+  * @param {Object} state Application's state.
+  * @returns {Array<string>} Names of tabs in control view.
+  */
+  static determineControlTabs(state) {
+    return Object.keys(state.controlViews);
   }
   /**
   * Determines whether the application's state has specific information.
@@ -251,31 +265,128 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineControlSet(state) {
-    return state.controlViews.set;
+  static determineControlFilter(state) {
+    return state.controlViews.filter;
   }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineControlCandidacy(state) {
-    return state.controlViews.candidacy;
+  static determineControlSimplification(state) {
+    return state.controlViews.simplification;
   }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineTopology(state) {
-    return state.topology;
+  static determineControlTraversal(state) {
+    return state.controlViews.traversal;
   }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineTopologyNovelty(state) {
-    return state.topologyNovelty;
+  static determineControlDetail(state) {
+    return state.controlViews.detail;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineRogueTraversal(state) {
+    return state.traversalRogueFocus;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineProximityTraversal(state) {
+    return (
+      !(state.traversalProximityFocus === null) &&
+      !(state.traversalProximityDirection === null) &&
+      !(state.traversalProximityDepth === null)
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determinePathTraversal(state) {
+    return (
+      !(state.traversalPathSource === null) &&
+      !(state.traversalPathTarget === null) &&
+      !(state.traversalPathDirection === null) &&
+      !(state.traversalPathCount === null)
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineEntitySelection(state) {
+    return (
+      (state.entitySelection.type.length > 0) &&
+      (state.entitySelection.node.length > 0) &&
+      (state.entitySelection.candidate.length > 0) &&
+      (state.entitySelection.entity.length > 0)
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineForceTopology(state) {
+    return state.forceTopology;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSubnetworkScale(state) {
+    return state.subnetworkNodesRecords.length < 3000;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSimulation(state) {
+    return (
+      state.simulation.hasOwnProperty("alpha") &&
+      state.simulation.hasOwnProperty("alphaDecay") &&
+      state.simulation.hasOwnProperty("alphaMin") &&
+      state.simulation.hasOwnProperty("alphaTarget") &&
+      state.simulation.hasOwnProperty("find") &&
+      state.simulation.hasOwnProperty("force") &&
+      state.simulation.hasOwnProperty("nodes") &&
+      state.simulation.hasOwnProperty("on") &&
+      state.simulation.hasOwnProperty("restart") &&
+      state.simulation.hasOwnProperty("stop") &&
+      state.simulation.hasOwnProperty("tick") &&
+      state.simulation.hasOwnProperty("velocityDecay")
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of entity, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  * @returns {boolean} Whether the node's entity has a selection.
+  */
+  static determineNodeEntitySelection({identifier, type, state} = {}) {
+    return (
+      (type === state.entitySelection.type) &&
+      (identifier === state.entitySelection.node)
+    );
   }
 }

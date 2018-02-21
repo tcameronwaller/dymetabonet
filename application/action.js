@@ -131,6 +131,8 @@ class Action {
     };
     // Initialize controls for pompt view.
     var prompt = Action.initializePromptViewControls();
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
     var forceTopology = false;
     var entitySelection = {type: "", node: "", candidate: "", entity: ""};
     // Initialize controls for set view.
@@ -397,9 +399,6 @@ class Action {
       compartments: state.compartments
     });
     // Determine simplifications of candidate entities.
-    // As default simplifications depend on candidates, any change to
-    // candidates requires novel definition of simplifications.
-    var defaultSimplifications = false;
     // Restore simplifications.
     var simplifications = Candidacy.restoreSimplifications({
       candidatesReactions: candidatesSummaries.candidatesReactions,
@@ -409,6 +408,14 @@ class Action {
       compartmentalization: state.compartmentalization,
       reactionsSimplifications: state.reactionsSimplifications,
       metabolitesSimplifications: state.metabolitesSimplifications
+    });
+    // Determine default simplifications.
+    // Determine whether simplifications exist for all default entities.
+    var defaultSimplifications = Candidacy.determineDefaultSimplifications({
+      defaultSimplificationsMetabolites: state
+      .defaultSimplificationsMetabolites,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications
     });
     // Create network's elements.
     var networkElements = Network.createNetworkElements({
@@ -425,9 +432,13 @@ class Action {
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
     // Compile variables' values.
     var novelVariablesValues = {
-      defaultSimplifications: defaultSimplifications
+      defaultSimplifications: defaultSimplifications,
+      forceTopology: forceTopology
     };
     // Compile variables' values.
     var variablesValues = Object.assign(
@@ -464,13 +475,18 @@ class Action {
       compartments: state.compartments
     });
     // Determine simplifications of candidate entities.
-    var simplifications = Candidacy.createDefaultSimplifications({
-      defaultSimplifications: candidacyViewControls.defaultSimplifications,
+    // Create simplifications for default entities and include with other
+    // simplifications.
+    var simplifications = Candidacy.createIncludeDefaultSimplifications({
+      defaultSimplificationsMetabolites: candidacyViewControls
+      .defaultSimplificationsMetabolites,
       candidatesReactions: candidatesSummaries.candidatesReactions,
       candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
       reactionsSets: state.filterSetsReactions,
       reactions: state.reactions,
-      compartmentalization: candidacyViewControls.compartmentalization
+      compartmentalization: candidacyViewControls.compartmentalization,
+      reactionsSimplifications: {},
+      metabolitesSimplifications: {}
     });
     // Create network's elements.
     var networkElements = Network.createNetworkElements({
@@ -487,13 +503,20 @@ class Action {
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
     // Compile variables' values.
+    var novelVariablesValues = {
+      forceTopology: forceTopology
+    };
     var variablesValues = Object.assign(
+      novelVariablesValues,
       candidacyViewControls,
       candidatesSummaries,
       simplifications,
       networkElements,
-      subnetworkElements
+      subnetworkElements,
     );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
@@ -514,8 +537,15 @@ class Action {
       networkNodesRecords: state.networkNodesRecords,
       networkLinksRecords: state.networkLinksRecords
     });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
     // Compile variables' values.
+    var novelVariablesValues = {
+      forceTopology: forceTopology
+    };
     var variablesValues = Object.assign(
+      novelVariablesValues,
       traversalViewControls,
       subnetworkElements
     );
@@ -538,8 +568,15 @@ class Action {
       subnetworkNodesRecords: [],
       subnetworkLinksRecords: []
     };
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
     // Compile variables' values.
+    var novelVariablesValues = {
+      forceTopology: forceTopology
+    };
     var variablesValues = Object.assign(
+      novelVariablesValues,
       traversalViewControls,
       subnetworkElements
     );
@@ -733,9 +770,6 @@ class Action {
       compartments: state.compartments
     });
     // Determine simplifications of candidate entities.
-    // As default simplifications depend on candidates, any change to
-    // candidates requires novel definition of simplifications.
-    var defaultSimplifications = false;
     // Restore simplifications.
     var simplifications = Candidacy.restoreSimplifications({
       candidatesReactions: candidatesSummaries.candidatesReactions,
@@ -745,6 +779,14 @@ class Action {
       compartmentalization: state.compartmentalization,
       reactionsSimplifications: state.reactionsSimplifications,
       metabolitesSimplifications: state.metabolitesSimplifications
+    });
+    // Determine default simplifications.
+    // Determine whether simplifications exist for all default entities.
+    var defaultSimplifications = Candidacy.determineDefaultSimplifications({
+      defaultSimplificationsMetabolites: state
+      .defaultSimplificationsMetabolites,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications
     });
     // Create network's elements.
     var networkElements = Network.createNetworkElements({
@@ -761,10 +803,14 @@ class Action {
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
     // Compile variables' values.
     var novelVariablesValues = {
       setsFilters: setsFilters,
-      defaultSimplifications: defaultSimplifications
+      defaultSimplifications: defaultSimplifications,
+      forceTopology: forceTopology
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -932,17 +978,21 @@ class Action {
       compartments: state.compartments
     });
     // Determine simplifications of candidate entities.
-    // As default simplifications depend on candidates, any change to candidates
-    // requires novel definition of simplifications.
-    var defaultSimplifications = false;
-    var simplifications = Candidacy.createDefaultSimplifications({
-      defaultSimplifications: defaultSimplifications,
+    // Create simplifications for default entities and include with other
+    // simplifications.
+    var simplifications = Candidacy.createIncludeDefaultSimplifications({
+      defaultSimplificationsMetabolites: state
+      .defaultSimplificationsMetabolites,
       candidatesReactions: candidatesSummaries.candidatesReactions,
       candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
       reactionsSets: state.filterSetsReactions,
       reactions: state.reactions,
-      compartmentalization: compartmentalization
+      compartmentalization: state.compartmentalization,
+      reactionsSimplifications: state.reactionsSimplifications,
+      metabolitesSimplifications: state.metabolitesSimplifications
     });
+    // Determine default simplifications.
+    var defaultSimplifications = true;
     // Create network's elements.
     var networkElements = Network.createNetworkElements({
       candidatesReactions: candidatesSummaries.candidatesReactions,
@@ -958,10 +1008,14 @@ class Action {
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
     // Compile variables' values.
     var novelVariablesValues = {
       compartmentalization: compartmentalization,
-      defaultSimplifications: defaultSimplifications
+      defaultSimplifications: defaultSimplifications,
+      forceTopology: forceTopology
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -1030,9 +1084,13 @@ class Action {
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
     // Compile variables' values.
     var novelVariablesValues = {
-      defaultSimplifications: defaultSimplifications
+      defaultSimplifications: defaultSimplifications,
+      forceTopology: forceTopology
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -1070,6 +1128,7 @@ class Action {
       reactionsSimplifications: state.reactionsSimplifications,
       metabolitesSimplifications: state.metabolitesSimplifications
     });
+    // Determine default simplifications.
     // Determine whether simplifications exist for all default entities.
     var defaultSimplifications = Candidacy.determineDefaultSimplifications({
       defaultSimplificationsMetabolites: state.defaultSimplificationsMetabolites,
@@ -1091,9 +1150,13 @@ class Action {
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
     // Compile variables' values.
     var novelVariablesValues = {
-      defaultSimplifications: defaultSimplifications
+      defaultSimplifications: defaultSimplifications,
+      forceTopology: forceTopology
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -1799,7 +1862,10 @@ class Action {
     var defaultSimplificationsMetabolites = [
       "h", "h2o", "coa", "o2", "atp", "nadp", "nadph", "nad", "nadh", "pi",
       "adp", "accoa", "h2o2", "ppi", "fad", "co2", "fadh2", "amp", "so4",
-      "nh4", "na1", "hco3"
+      "nh4", "na1", "hco3", "udp", "cmp", "gdp", "gtp", "ctp", "utp", "dadp",
+      "o2s", "datp", "cdp", "ump", "dcdp", "dcmp", "dgdp", "dgtp", "imp", "gmp",
+      "itp", "idp", "dtdp", "so3", "Ser_Gly_Ala_X_Gly", "dctp", "dttp", "dtmp",
+      "dudp", "dutp", "dgmp"
     ];
     var candidatesSearches = Candidacy.createInitialCandidatesSearches();
     var candidatesSorts = Candidacy.createInitialCandidatesSorts();
@@ -1821,7 +1887,7 @@ class Action {
   */
   static initializeTraversalViewControls() {
     // Initialize controls.
-    var traversalCombination = "difference";
+    var traversalCombination = "union";
     var traversalType = "rogue";
     var traversalRogueFocus = {identifier: "", type: ""};
     var traversalProximityFocus = {identifier: "", type: ""};

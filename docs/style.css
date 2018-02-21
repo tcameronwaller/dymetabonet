@@ -65,7 +65,6 @@ flex-direction: column;
   display: none;
 }
 
-
 /******************************************************************************/
 /* Interface View */
 /******************************************************************************/
@@ -80,26 +79,47 @@ flex-direction: column;
 }
 
 /******************************************************************************/
-/* Tip View */
+/* Tip View, Prompt View */
 /******************************************************************************/
 
-#tip {
+#tip, #prompt {
   background-color: rgba(0, 0, 0, 0.7);
   color: rgba(255, 255, 255, 1);
-  position: absolute;
+  position: fixed;
   z-index: 10;
   height: auto;
   width: auto;
 }
 
-#tip .invisible {
+#tip, #prompt .invisible {
   /*visibility: hidden;*/
   display: none;
 }
 
-#tip .visible {
+#tip, #prompt .visible {
   /*visibility: visible;*/
   display: inline;
+}
+
+/******************************************************************************/
+/* Panel View */
+/******************************************************************************/
+
+#panel {
+  flex-basis: 9cm;
+}
+
+/******************************************************************************/
+/* Detail View */
+/******************************************************************************/
+
+/* style the detail view differently from control views to distinguish*/
+/* light background with dark text */
+
+#detail {
+  background-color: rgba(255, 255, 255, 1);
+  height: 5%;
+  width: 100%;
 }
 
 /******************************************************************************/
@@ -109,8 +129,8 @@ flex-direction: column;
 
 #control {
   background-color: rgba(200, 200, 200, 1);
-  flex-basis: 9cm;
-  height: 100%;
+  height: 95%;
+  width: 100%;
   overflow: auto;
 }
 
@@ -281,16 +301,16 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 }
 
 /******************************************************************************/
-/* Set View */
+/* Filter View */
 /******************************************************************************/
 
-#set {
+#filter {
   background-color: rgba(200, 200, 200, 1);
   display: block;
   width: 100%;
 }
 
-#set > div.title {
+#filter > div.title {
   background-color: rgba(100, 100, 100, 1);
   font-size: large;
   color: rgba(255, 255, 255, 1);
@@ -300,9 +320,8 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   width: 100%;
 }
 
-
 /******************************************************************************/
-/* Candidacy View */
+/* Simplification View */
 /******************************************************************************/
 
 
@@ -336,15 +355,23 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   fill: rgba(255, 255, 255, 1);
 }
 
-#topology svg .node.metabolite .mark {
+#topology svg .node.emphasis .mark {
+  fill: rgba(200, 200, 0, 1);
+}
+
+#topology svg .node.normal.metabolite .mark {
   fill: rgba(0, 100, 255, 1);
 }
 
-#topology svg .node.reaction .mark {
+#topology svg .node.normal.reaction .mark {
   fill: rgba(255, 0, 100, 1);
 }
 
-#topology svg .node.reaction .direction {
+#topology svg .node.reaction .mark.supplement {
+  fill: rgba(255, 255, 100, 1);
+}
+
+#topology svg .node.reaction polygon.direction, rect.direction {
   /*dark*/
   fill: rgba(50, 0, 200, 1);
 }
@@ -455,35 +482,3 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   font-size: 13px;
   fill: rgba(0, 0, 0, 1);
 }
-
-
-
-
-
-/******************************************************************************/
-/* Assembly View */
-/******************************************************************************/
-
-#assembly-replication {
-  width: 90%;
-}
-
-#assembly-replication-current {
-  width: 100%;
-  height: 5cm;
-  overflow-y: auto;
-}
-
-#assembly-replication-novel input {}
-
-  /******************************************************************************/
-  /* Panel View */
-  /******************************************************************************/
-
-  #panel {
-    /*display:inline;*/
-    /*float: left;*/
-    flex: 1;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 1);
-  }

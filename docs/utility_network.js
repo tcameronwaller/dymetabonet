@@ -29,25 +29,19 @@ United States of America
 */
 
 /**
-* Functionality of utility for collecting nodes for metabolic entities,
+* Functionality of utility for creating nodes for metabolic entities,
 * metabolites and reactions, and links for relations between them.
 * This class stores methods for external utility.
 * This class does not store any attributes and does not require instantiation.
 */
 class Network {
-  // Master control of procedure to assemble network elements.
-
-// TODO: If a candidate reaction is a representative selection from multiple redundant replicate reactions,
-// TODO: then maybe it would be appropriate to combine the attributes of the original reactions, such as
-// TODO: compartments and processes.
-
   /**
   * Creates network's elements, nodes and links, to represent metabolic
   * entities, metabolites and reactions, and relations between them.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
   * @param {Object<Object>} parameters.reactionsSimplifications
   * Information about simplification of reactions.
@@ -60,11 +54,12 @@ class Network {
   * compartmentalization is relevant.
   * @returns {Object<Array<Object>>} Information about network's elements.
   */
-  static createNetworkElements({reactionsCandidates, metabolitesCandidates, reactionsSimplifications, metabolitesSimplifications, reactions, metabolites, compartmentalization} = {}) {
+  static createNetworkElements({candidatesReactions, candidatesMetabolites, reactionsSimplifications, metabolitesSimplifications, reactions, metabolites, compartmentalization} = {}) {
     // Collect network's elements.
-    var networkNodesLinks = Network.collectReactionsMetabolitesNetworkNodesLinks({
-      reactionsCandidates: reactionsCandidates,
-      metabolitesCandidates: metabolitesCandidates,
+    var networkNodesLinks = Network
+    .collectReactionsMetabolitesNetworkNodesLinks({
+      candidatesReactions: candidatesReactions,
+      candidatesMetabolites: candidatesMetabolites,
       reactionsSimplifications: reactionsSimplifications,
       metabolitesSimplifications: metabolitesSimplifications,
       reactions: reactions,
@@ -93,9 +88,9 @@ class Network {
   * Collects network's elements, nodes and links, across reactions and their
   * metabolites.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object<Object>} parameters.reactionsCandidates Information about
+  * @param {Object<Object>} parameters.candidatesReactions Information about
   * candidate reactions.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
   * @param {Object<Object>} parameters.reactionsSimplifications
   * Information about simplification of reactions.
@@ -108,7 +103,7 @@ class Network {
   * compartmentalization is relevant.
   * @returns {Object<Array<Object>>} Information about network's elements.
   */
-  static collectReactionsMetabolitesNetworkNodesLinks({reactionsCandidates, metabolitesCandidates, reactionsSimplifications, metabolitesSimplifications, reactions, metabolites, compartmentalization} = {}) {
+  static collectReactionsMetabolitesNetworkNodesLinks({candidatesReactions, candidatesMetabolites, reactionsSimplifications, metabolitesSimplifications, reactions, metabolites, compartmentalization} = {}) {
     // Initialize collection.
     var initialCollection = {
       networkNodesReactions: {},
@@ -116,15 +111,15 @@ class Network {
       networkLinks: {}
     };
     // Iterate on reactions.
-    var candidateReactionsIdentifiers = Object.keys(reactionsCandidates);
+    var candidateReactionsIdentifiers = Object.keys(candidatesReactions);
     return candidateReactionsIdentifiers
     .reduce(function (collectionReactions, candidateReactionIdentifier) {
       // Access information.
-      var candidateReaction = reactionsCandidates[candidateReactionIdentifier];
+      var candidateReaction = candidatesReactions[candidateReactionIdentifier];
       var reaction = reactions[candidateReaction.reaction];
       return Network.collectReactionMetabolitesNetworkNodesLinks({
         candidateReaction: candidateReaction,
-        metabolitesCandidates: metabolitesCandidates,
+        candidatesMetabolites: candidatesMetabolites,
         reactionsSimplifications: reactionsSimplifications,
         metabolitesSimplifications: metabolitesSimplifications,
         reaction: reaction,
@@ -140,7 +135,7 @@ class Network {
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.candidateReaction Information about a candidate
   * reaction.
-  * @param {Object<Object>} parameters.metabolitesCandidates Information about
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
   * candidate metabolites.
   * @param {Object<Object>} parameters.reactionsSimplifications
   * Information about simplification of reactions.
@@ -155,7 +150,7 @@ class Network {
   * about network's elements.
   * @returns {Object<Array<Object>>} Information about network's elements.
   */
-  static collectReactionMetabolitesNetworkNodesLinks({candidateReaction, metabolitesCandidates, reactionsSimplifications, metabolitesSimplifications, reaction, metabolites, compartmentalization, collectionReactions} = {}) {
+  static collectReactionMetabolitesNetworkNodesLinks({candidateReaction, candidatesMetabolites, reactionsSimplifications, metabolitesSimplifications, reaction, metabolites, compartmentalization, collectionReactions} = {}) {
     // Evaluate reaction's candidacy.
     // Consider both explicit and implicit designations for simplification.
     var omission = Network.determineCandidateSimplificationMethod({
@@ -167,6 +162,21 @@ class Network {
     // Determine whether reaction is a valid candidate.
     if (candidacy) {
       // Reaction is a valid candidate.
+      // Filters and simplifications may cause incomplete representation of
+      // reaction's participants in the network.
+      // Eventually, consider designating reactions as to the completeness of
+      // representation of their participants.
+      // To do so, evaluate candidacy and simplification of reaction's
+      // participants and include some designation in the reaction's node.
+      // Collect information about reaction's metabolite participants with
+      // designation for simplification by replication.
+      var replicates = Network.filterCandidatesSimplification({
+        identifiers: candidateReaction.metabolites,
+        method: "replication",
+        keep: false,
+        simplifications: metabolitesSimplifications
+      });
+
       // Create node for reaction.
       var networkNodeReaction = Network.createNodeReaction({
         candidateReaction: candidateReaction,
@@ -177,6 +187,8 @@ class Network {
         value: networkNodeReaction,
         entries: collectionReactions.networkNodesReactions
       });
+
+
       // Create nodes and links for reaction's metabolites.
       // Include nodes and links for reaction's metabolites.
       // Initialize collection.
@@ -189,7 +201,7 @@ class Network {
       var networkNodesLinksMetabolites = candidateMetabolitesIdentifiers
       .reduce(function (collectionMetabolites, candidateMetaboliteIdentifier) {
         // Access information.
-        var candidateMetabolite = metabolitesCandidates
+        var candidateMetabolite = candidatesMetabolites
         [candidateMetaboliteIdentifier];
         var metabolite = metabolites[candidateMetabolite.metabolite];
         return Network.collectReactionMetaboliteNetworkNodesLinks({
@@ -202,6 +214,11 @@ class Network {
           collectionMetabolites: collectionMetabolites
         });
       }, initialCollection);
+
+
+
+
+
       // Compile information.
       var information = {
         networkNodesReactions: networkNodesReactions,
@@ -237,6 +254,29 @@ class Network {
     } else {
       return false;
     }
+  }
+  /**
+  * Filters candidate entities by their designations for simplification.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.identifiers Identifiers of candidate
+  * entities.
+  * @param {string} parameters.method Method of simplification, omission or
+  * replication.
+  * @param {boolean} parameters.keep Whether to keep or discard candidate
+  * entities with the designation for simplification.
+  * @param {Object<Object>} parameters.simplifications Information about
+  * simplification of candidate entities.
+  * @returns {Array<string>} Identifiers of candidate entities.
+  */
+  static filterCandidatesSimplification({identifiers, method, keep, simplifications} = {}) {
+    return identifiers.filter(function (identifier) {
+      var match = Network.determineCandidateSimplificationMethod({
+        identifier: identifier,
+        method: method,
+        simplifications: simplifications
+      });
+      return (match === keep);
+    });
   }
   /**
   * Creates a record of a node for a reaction.
@@ -277,6 +317,13 @@ class Network {
   static collectReactionMetaboliteNetworkNodesLinks({networkNodeReaction, candidateMetabolite, metabolitesSimplifications, reaction, metabolite, compartmentalization, collectionMetabolites} = {}) {
     // Evaluate metabolite's candidacy.
     // Consider both explicit and implicit designations for simplification.
+
+
+    // TODO: Do not actually create any nodes for replicate metabolites
+
+
+
+
     var omission = Network.determineCandidateSimplificationMethod({
       identifier: candidateMetabolite.identifier,
       method: "omission",
@@ -482,13 +529,28 @@ class Network {
     // Use a special delimiter, "_-_", between identifiers of source and target
     // nodes for links in order to avoid ambiguity with other combinations of
     // identifiers.
-    var identifier = source + "_-_" + target;
+    var identifier = Network.createLinkIdentifier({
+      source: source,
+      target: target
+    });
     var record = {
       identifier: identifier,
       source: source,
       target: target
     };
     return Object.assign({}, record, attributes);
+  }
+  /**
+  * Creates an identifier for a link.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.source Identifier of a node to be the link's
+  * source.
+  * @param {string} parameters.target Identifier of a node to be the link's
+  * target.
+  * @returns {string} Identifier for a link.
+  */
+  static createLinkIdentifier({source, target} = {}) {
+    return (source + "_-_" + target);
   }
   /**
   * Creates concise records for representation of network's nodes for reactions
@@ -522,9 +584,16 @@ class Network {
       // Access information.
       var entry = nodes[identifier];
       // Create record.
+      // Initialize node's positions to origin.
       return {
         identifier: entry.identifier,
-        type: entry.type
+        type: entry.type,
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        fx: null,
+        fy: null
       };
     });
   }
@@ -532,7 +601,7 @@ class Network {
   * Creates concise records for representation of network's links.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.links Information about network's links.
-  * @returns {Array<Object>} Information about network's nodes.
+  * @returns {Array<Object>} Information about network's links.
   */
   static createLinksRecords(links) {
     // Iterate on entries.
@@ -548,46 +617,28 @@ class Network {
       };
     });
   }
-
   /**
-  * Collects identifiers of nodes that are direct neighbors of a single focal
-  * node.
+  * Copies records of network's nodes and links.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.focus Identifier of a single node in a network
-  * that is the focal node.
-  * @param {Array<Object>} parameters.links Records for network's links.
-  * @returns {Array<string>} Identifiers of nodes that are direct neighbors of
-  * focal node.
+  * @param {Array<Object>} parameters.networkNodesRecords Information about
+  * network's nodes.
+  * @param {Array<Object>} parameters.networkLinksRecords Information about
+  * network's links.
+  * @returns {Object<Array<Object>>} Information about network's elements.
   */
-  static collectNeighborsNodes({focus, links} = {}) {
-    // Iterate on links to collect neighbors.
-    var neighbors = links.reduce(function (collection, link) {
-      // Collect identifiers of nodes to which the link connects.
-      var linkNodes = [].concat(link.source, link.target);
-      // Determine whether link connects to focal node.
-      var match = linkNodes.some(function (identifier) {
-        return identifier === focus;
-      });
-      if (match) {
-        // Link connects to focal node.
-        // Include neighbor in collection.
-        // Assume that link connects to a real node and that this node's
-        // identifier is the same that the link references.
-        var neighbor = linkNodes.filter(function (identifier) {
-          return identifier !== focus;
-        });
-        return [].concat(collection, neighbor[0]);
-      } else {
-        // Link does not connect to focal node.
-        // Preserve collection.
-        return collection;
-      }
-    }, []);
-    // Return identifiers of unique neighbors.
-    return General.collectUniqueElements(neighbors);
+  static copyNetworkElementsRecords({networkNodesRecords, networkLinksRecords} = {}) {
+    var copyNetworkNodesRecords = General
+    .copyDeepArrayElements(networkNodesRecords, true);
+    var copyNetworkLinksRecords = General
+    .copyDeepArrayElements(networkLinksRecords, true);
+    // Compile and return information.
+    return {
+      subnetworkNodesRecords: copyNetworkNodesRecords,
+      subnetworkLinksRecords: copyNetworkLinksRecords
+    };
   }
 
-
+  //////////////////////////////////////////////////////////////////////////////
 
 // Scrap...
 

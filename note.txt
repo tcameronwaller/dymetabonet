@@ -7,6 +7,17 @@ Research With Alexander Lex
 20 February 2018
 
 ----------
+Plan
+
+Activate functionality for prompt views for diagram and node.
+
+Create a simple symbol (such as "*") to indicate nodes in diagram which are anchors.
+
+Represent replicate metabolites on their reactions' nodes.
+
+Implement some sort of simple detail view.
+
+----------
 Progress
 
 The proximity expansion works properly.
@@ -113,7 +124,7 @@ Plan
 --display information in detail view
 
 -prompt for network's nodes
---hover on a node should display a promt in addition to tip
+--hover on a node should display a prompt in addition to tip
 --user clicks the prompt to open small menu of controls for actions on the individual node
 --lock or unlock node's position in network's diagram
 --remove node from subnetwork
