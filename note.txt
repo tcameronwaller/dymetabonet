@@ -1,7 +1,237 @@
 --------------------------------------------------
 Notes
-Research With Alexander Lex
+Research With Jared P. Rutter and Alexander Lex
 --------------------------------------------------
+
+--------------------------------------------------
+21 February 2018
+
+----------
+Plan, project direction
+
+Current (or nearly complete) contributions of project...
+
+1. Inclusion of transport events between relevant metabolites and compartments in processes.
+The reactions in the metabolic model only have annotation for a single process (subsystem).
+Processes with dispersal between multiple compartments are discontinuous in the model; though in reality they behave continuously.
+Discontinuous processes are inaccessible for topological traversals.
+
+2. Representation of the metabolic network with and without compartmentalization.
+Metabolomics does not distinguish between cellular compartments.
+The topology of the network differs dramatically with and without compartmentalization.
+
+3. Simplifications of metabolites with excessive promiscuity.
+
+4. Contextual filters.
+Transport reactions are irrelevant if compartmentalization is irrelevant.
+Reactions and metabolites depend on each other for their relevance.
+If set filters remove a reaction's metabolites, then they also remove that reaction.
+Demonstrate the utility of these contextual filters.
+
+5. Topological traversal.
+Implement pair-wise shortest simple paths for custom subnetwork from multiple entities of interest.
+Traversals by proximity and paths should have access to nodes from the network, not just subnetwork.
+Maybe the access should depend on the combination strategy.
+Traversals give information about relations within the network, and this information is very useful to analysts.
+
+Consider how to demonstrate these contributions effectively.
+
+Audience for publication...
+
+Select a journal that is specific to audiences in the study of metabolism and the application of metabolomics technology.
+This project is novel in its accessibility of systems biological information for application to metabolomics.
+
+Select example articles to illustrate fit.
+
+----------
+Plan
+
+Use COBRApy to read the information from file in SBML format.
+
+Export to convenient format for use in Python.
+A package is available to use JSON in Python.
+Maybe export to JSON, make changes, then import in COBRApy back to SBML.
+
+Try multiple parameters for MetaNetX mapping.
+Use results of MetaNetX translation to inform custom translation of compartmental metabolites to general metabolites.
+Use MetaNetX identifiers.
+Correct specific erroneous identities that MetaNetX finds as different identifiers and different descriptions.
+If both Recon 2M.2 and MetaNetX have accurate descriptions or matching identifiers, then use the more descriptive name.
+
+Correct erroneous identifiers for compartments as MetaNetX recognizes them.
+
+Enhance the references for metabolites in the model.
+Include identifiers for MetaNetX, ChEBI, HMDB, and PubChem.
+
+Maybe edit the Recon 2M.2 model and then export back to SBML?
+Publish the edit version along with the rest of the project.
+
+----------
+Identifiers of Metabolites
+
+MetaNetX Reference (MNXref)
+https://www.metanetx.org/
+Cross references to BiGG, ChEBI, HMDB.
+Downloadable data.
+
+Chemical Entities of Biological Interest (ChEBI)
+http://www.ebi.ac.uk/chebi/init.do
+No cross references.
+
+Human Metabolome Database (HMDB)
+http://www.hmdb.ca/
+Cross references to ChEBI, PubChem, BiGG.
+Downloadable data.
+
+PubChem
+https://pubchem.ncbi.nlm.nih.gov/#
+No cross references.
+Identifiers used for analytes in Metabolomics Workbench.
+
+----------
+COBRA
+
+Constraint-Based Reconstruction and Analysis (COBRA)
+https://opencobra.github.io/
+http://opencobra.github.io/cobrapy/
+https://cobrapy.readthedocs.io/en/stable/
+
+COBRA-compliant SBML files have records for compartmental metabolites.
+https://www.nature.com/protocolexchange/system/uploads/1808/original/Supplementary_Material.pdf?1304792680
+
+----------
+Metabolic Model
+
+Genome-scale metabolic model (GEM) for human
+https://www.ncbi.nlm.nih.gov/pubmed/29078384
+http://www.pnas.org/content/114/45/E9740.long
+Recon 2M.2
+Compilation and curation of Recon 2, Recon 2.2
+More extensive coverage of general identifiers for metabolites
+BiGG Models
+https://www.ncbi.nlm.nih.gov/pubmed/26476456
+MetaNetX
+https://www.ncbi.nlm.nih.gov/pubmed/26527720
+Both BiGG and MetaNetX standardize identifiers for compartments, pathways, metabolites, reactions, and genes in genome-scale metabolic models.
+It seems that the website for MetaNetX is more current and has more helpful information and functionality than the website for BiGG.
+I find the identifiers of MetaNetX to be much more practical than those of BiGG.
+Also, MetaNetX has a convenient tool for translating identifiers.
+
+Recon 2M.1 and Recon 2M.2
+https://www.ncbi.nlm.nih.gov/pubmed/29078384
+http://www.pnas.org/content/114/45/E9740.long
+https://zenodo.org/record/583326
+Use version with MetaNetX identifiers for model's entities and Entrez identifiers for gene associations to proteins and reactions.
+
+Translation of identifiers in MetaNetX found multiple errors in Recon 2M.2.
+Consider especially the identifiers that MetaNetX mapped to different identifiers and different descriptions.
+
+There are also errors in compartmental identifiers.
+
+MetaNetX 
+
+----------
+Meet with Alexander Lex
+
+Data
+Top priority right now is to integrate and represent custom experimental data.
+
+Interface
+Above the control panel, place a view to summarize filters on entities and queries on the network.
+Below that view in a separate view, place view to offer information about individual entities.
+
+General
+Compare and contrast our tool to other tools.
+MetExplore and MetExploreViz are examples.
+I tried using MetExplore.
+While MetExplore looks impressive, a lot of functionality does not work.
+It is also not convenient to actually visualize a network.
+http://metexplore.toulouse.inra.fr/metexploreViz/doc/
+https://metexplore.toulouse.inra.fr/metexplore2/
+WikiPathways is another example.
+https://www.ncbi.nlm.nih.gov/pubmed/29136241
+
+----------
+Search for data sets
+
+PubChem
+https://pubchem.ncbi.nlm.nih.gov/#
+https://www.ncbi.nlm.nih.gov/pubmed/26400175
+Common identifiers
+Compound database has better curation than substance database
+PubChemPy provides a Python interface to information from PubChem
+https://pubchempy.readthedocs.io/en/latest/
+
+Metabolomics Workbench
+http://www.metabolomicsworkbench.org/
+Repository for metabolomics data
+Affiliate of initiative from National Institutes of Health
+Data use PubChem identifiers
+
+Human Metabolome Database (HMDB)
+-Extensive information about individual metabolites
+-Match names and formulas of metabolites in Recon 2.2 to names, synonyms, and formulas in HMDB
+-Use identifiers from HMDB
+-Maybe also use principal names from HMDB
+
+Genome-scale metabolic model (GEM) for human
+https://www.ncbi.nlm.nih.gov/pubmed/29078384
+http://www.pnas.org/content/114/45/E9740.long
+Recon 2M.2
+Compilation and curation of Recon 2, Recon 2.2
+More extensive coverage of general identifiers for metabolites
+BiGG Models
+https://www.ncbi.nlm.nih.gov/pubmed/26476456
+MetaNetX
+https://www.ncbi.nlm.nih.gov/pubmed/26527720
+Both BiGG and MetaNetX standardize identifiers for compartments, pathways, metabolites, reactions, and genes in genome-scale metabolic models.
+It seems that the website for MetaNetX is more current and has more helpful information and functionality than the website for BiGG.
+
+MitoCore
+Miniature model of central human metabolism
+https://www.ncbi.nlm.nih.gov/pubmed/29178872
+
+----------
+Plan for interface
+
+-custom data
+--association and representation of custom data with network's elements
+--incorporate general identifiers with information about metabolic entities
+--control view to import and view custom data's association to entities
+--only support association to metabolites
+--color saturation
+--data control view changes color scheme in network's diagram for favorable data representations
+
+-prompt view
+--activate behavior for network's diagram and network's node
+---remove all nodes and links from subnetwork
+---remove single node from subnetwork
+---lock or unlock all nodes or specific node
+
+-detail view
+--comprehensive information about entity of node's selection
+--summary information about filters on entities and queries on network
+--export information about all entities in network, subnetwork, or current selection
+
+-emphasis of selections of sets
+--hover over row for compartment or process highlights relevant nodes in network's diagram
+
+-representation of replicate nodes for metabolites
+--distinct bubbles on periphery of reaction's node
+--reaction's node needs information about replicate metabolites
+--reaction might also need some representation of whether or not all of its metabolites are in the subnetwork
+
+-representation of reaction's nodes
+--visual mark for reactions without all metabolites in network (only those omitted)
+--when preparing reactions' nodes, determine whether all of the reaction's participants have explict representations in nodes and links
+--if not all of reactions' participants have representations, include indicator on reaction's node
+--maybe an asterisk or something
+--re-determine and re-draw directional markers for reactions at conclusion of simulations for layout
+--drag of node should initiate simulation and re-draw of reactions' directions
+
+-tip view to explain the utility of various controls
+
+-style for clarity and aesthetics
 
 --------------------------------------------------
 20 February 2018
