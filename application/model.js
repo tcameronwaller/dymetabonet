@@ -330,6 +330,21 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
+  static determineConnectionTraversal(state) {
+    return (
+      (
+        (state.traversalCombination === "union") ||
+        (state.traversalCombination === "difference")
+      ) &&
+      (state.traversalConnectionTargets.length > 1) &&
+      (state.traversalConnectionCount >= 1)
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
   static determineEntitySelection(state) {
     return (
       (state.entitySelection.type.length > 0) &&

@@ -188,7 +188,7 @@ class Traversal {
   * network's links.
   * @returns {Object<Array<Object>>} Information about network's elements.
   */
-  static combineMultipleConnectionNetwork({targets, count, combination, subnetworkNodesRecords, subnetworkLinksRecords, networkNodesRecords, networkLinksRecords} = {}) {
+  static combineConnectionNetwork({targets, count, combination, subnetworkNodesRecords, subnetworkLinksRecords, networkNodesRecords, networkLinksRecords} = {}) {
     // Collect candidate nodes.
     // Determine pairs of connections.
     var pairs = General.combineElementsPairwise(targets);

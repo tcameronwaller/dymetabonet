@@ -3696,6 +3696,7 @@ class TraversalView {
         position: "beforeend",
         documentReference: self.document
       });
+      self.controlContainer.classList.add("menu");
     } else {
       // Container is not empty.
       // Set references to content.
@@ -3826,6 +3827,12 @@ class TraversalView {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
+    // The accessibility of nodes to each traversal procedure depends on the
+    // method of combination.
+    // For combination by union, all traversal procedures have access to nodes
+    // in the network.
+    // For combination by difference, all traversal procedures have access to
+    // nodes in the subnetwork.
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
     self.union.checked = TraversalView
@@ -3922,12 +3929,21 @@ class TraversalView {
   */
   activateRogueTraversalControl(self) {
     // Activate search.
-    TraversalView.activateTraversalSearch({
-      search: self.traversalRogueFocusSearch,
-      variableName: "traversalRogueFocus",
-      recordSource: "network",
-      state: self.state
-    });
+    if (self.state.traversalCombination === "union") {
+      TraversalView.activateTraversalSearch({
+        search: self.traversalRogueFocusSearch,
+        variableName: "traversalRogueFocus",
+        recordSource: "network",
+        state: self.state
+      });
+    } else if (self.state.traversalCombination === "difference") {
+      TraversalView.activateTraversalSearch({
+        search: self.traversalRogueFocusSearch,
+        variableName: "traversalRogueFocus",
+        recordSource: "subnetwork",
+        state: self.state
+      });
+    }
     // Activate execute.
     self.execute.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
@@ -4587,7 +4603,7 @@ class TraversalView {
       accessor: access
     });
     // Assign attributes to elements.
-    buttons.text("X");
+    buttons.text("x");
     // Activate behavior.
     buttons.on("click", function (element, index, nodes) {
       // Call action.
@@ -4681,9 +4697,6 @@ class TraversalView {
           });
         }
       } else {
-
-        // TODO: I don't think this part is necessary.
-
         // Restore search.
         TraversalView.restoreTraversalSearch({
           search: search,

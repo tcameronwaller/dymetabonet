@@ -1651,17 +1651,40 @@ class Action {
       state: state
     });
   }
-
+  /**
+  * Executes connection traversal and combination on the network.
+  * @param {Object} state Application's state.
+  */
   static executeConnectionTraversalCombination(state) {
-    // Make sure that there are at least 2 targets for connection.
-
-    // Be sure to pass only the identifier of the node's object to the traversal function.
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineConnectionTraversal(state)) {
+      // Extract targets.
+      var targets = General
+      .collectValueFromObjects("identifier", state.traversalConnectionTargets);
+      var subnetworkElements = Traversal.combineConnectionNetwork({
+        targets: targets,
+        count: state.traversalConnectionCount,
+        combination: state.traversalCombination,
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for traversal view.
+      var traversalViewControls = Action.initializeTraversalViewControls();
+      // Compile variables' values.
+      var variablesValues = Object.assign(
+        subnetworkElements,
+        traversalViewControls
+      );
+      // Submit variables' values to the application's state.
+      Action.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
   }
-
-
-
-
-
 
   /**
   * Changes the selection of whether to force representation of subnetwork's
