@@ -4,6 +4,32 @@ Research With Jared P. Rutter and Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+23 February 2018
+
+----------
+Plan
+
+Implement functionality and interface's controls for multiple pairwise paths between a list of nodes.
+
+Change nodes available to rogue, proximity, path, and connection traversals according to the combination strategy.
+Union should make network's nodes accessible.
+Difference should make only subnetwork's nodes accessible.
+
+--------------------------------------------------
+22 February 2018
+
+----------
+http://www.mdpi.com/2218-1989/8/1/3
+
+
+https://stackoverflow.com/questions/12991758/creating-all-possible-k-combinations-of-n-items-in-c
+
+https://codereview.stackexchange.com/questions/75658/pairwise-combinations-of-an-array-in-javascript
+
+Use search fields to add metabolites to list for pairwise path construction of custom subnetwork.
+
+
+--------------------------------------------------
 21 February 2018
 
 ----------

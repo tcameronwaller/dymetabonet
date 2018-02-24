@@ -327,6 +327,22 @@ class State {
       // Variable "traversalPathCount" stores information about the count of
       // simple shortest paths to collect by path traversal.
       "traversalPathCount",
+      // Variable "traversalConnectionTarget" stores information about a
+      // network's node to include or exclude from targets.
+      // Information includes references to variables
+      // "networkNodesMetabolites", "networkNodesReactions", and
+      //"networkNodesRecords".
+      "traversalConnectionTarget",
+      // Variable "traversalConnectionTargets" stores information about a
+      // network's nodes between which to traverse paths.
+      // Information includes references to variables
+      // "networkNodesMetabolites", "networkNodesReactions", and
+      //"networkNodesRecords".
+      "traversalConnectionTargets",
+      // Variable "traversalConnectionCount" stores information about the count
+      // of simple shortest paths to collect by path traversal between each pair
+      // of targets.
+      "traversalConnectionCount",
       // Variable "subnetworkNodesRecords" stores concise information about
       // network's nodes of interest.
       // Information includes references to variables "networkNodesReactions",

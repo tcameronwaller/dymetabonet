@@ -346,13 +346,18 @@ class Action {
     var startTime = window.performance.now();
     // Execute process.
 
-    // TODO: Determine whether any links connect to undefined nodes...
+    var elements = ["a", "b", "c", "d", "e", "f", "g"];
+    console.log("elements");
+    console.log(elements);
+    var pairs = General.combineElementsPairwise(elements);
+    console.log("pairs");
+    console.log(pairs);
 
-    var badLinks = state.networkLinksRecords.filter(function (record) {
-      return ((record.source === "undefined") || (record.target === "undefined"));
-    });
-    console.log(badLinks);
-
+    // For pairwise combinations...
+    // I need an array of nodes' identifiers.
+    // Determine pairwise combinations.
+    // For each pair, find nodes in path(s) and add to unique list.
+    // Collect records for all nodes and links between them.
 
     // Terminate process timer.
     //console.timeEnd("timer");
@@ -1499,14 +1504,24 @@ class Action {
     });
   }
   /**
-  * Changes the selection of count for path traversal.
-  * @param {number} depth Depth in links to which to traverse.
-  * @param {Object} state Application's state.
+  * Changes the selection of count for a traversal's method.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.count Count of paths to collect between each pair
+  * of targets.
+  * @param {string} parameters.type Type of method for traversal, path or
+  * connection.
+  * @param {Object} parameters.state Application's state.
   */
-  static changeTraversalPathCount(count, state) {
+  static changeTraversalTypeCount({count, type, state} = {}) {
+    // Determine type of traversal.
+    if (type === "path") {
+      var varableName = "traversalPathCount";
+    } else if (type === "connection") {
+      var variableName = "traversalConnectionCount";
+    }
     // Compile variables' values.
     var novelVariablesValues = {
-      traversalPathCount: count
+      [variableName]: count
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
@@ -1548,6 +1563,106 @@ class Action {
       });
     }
   }
+  /**
+  * Changes the selection of target for connection traversal.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeTraversalConnectionTarget({identifier, type, state} = {}) {
+    // Create record.
+    var record = {
+      identifier: identifier,
+      type: type
+    };
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalConnectionTarget: record
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Includes a node in the targets for connection traversal.
+  * @param {Object} state Application's state.
+  */
+  static includeTraversalConnectionTarget(state) {
+    // Determine whether there is a valid candidate for inclusion.
+    if (state.traversalConnectionTarget.identifier.length > 0) {
+      // Determine whether collection of targets includes the node.
+      var match = state.traversalConnectionTargets.find(function (record) {
+        return (
+          (record.identifier === state.traversalConnectionTarget.identifier) &&
+          (record.type === state.traversalConnectionTarget.type)
+        );
+      });
+      if (!match) {
+        // Create record.
+        var record = {
+          identifier: state.traversalConnectionTarget.identifier,
+          type: state.traversalConnectionTarget.type
+        };
+        // Include record in collection.
+        var traversalConnectionTargets = state
+        .traversalConnectionTargets.concat(record);
+      } else {
+        var tranversalConnectionTargets = state.traversalConnectionTargets;
+      }
+      // Restore candidate.
+      var traversalConnectionTarget = {identifier: "", type: ""};
+      // Compile variables' values.
+      var novelVariablesValues = {
+        traversalConnectionTargets: traversalConnectionTargets,
+        traversalConnectionTarget: traversalConnectionTarget
+      };
+      var variablesValues = Object.assign(novelVariablesValues);
+      // Submit variables' values to the application's state.
+      Action.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+  /**
+  * Excludes a node from targets for connection traversal.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static excludeTraversalConnectionTarget({identifier, type, state} = {}) {
+    var traversalConnectionTargets = state
+    .traversalConnectionTargets.filter(function (record) {
+      return !((record.identifier === identifier) && (record.type === type));
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {
+      traversalConnectionTargets: traversalConnectionTargets
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+
+  static executeConnectionTraversalCombination(state) {
+    // Make sure that there are at least 2 targets for connection.
+
+    // Be sure to pass only the identifier of the node's object to the traversal function.
+  }
+
+
+
+
+
+
   /**
   * Changes the selection of whether to force representation of subnetwork's
   * topology.
@@ -1897,6 +2012,9 @@ class Action {
     var traversalPathTarget = {identifier: "", type: ""};
     var traversalPathDirection = "forward";
     var traversalPathCount = 1;
+    var traversalConnectionTarget = {identifier: "", type: ""};
+    var traversalConnectionTargets = [];
+    var traversalConnectionCount = 1;
     // Compile information.
     var variablesValues = {
       traversalCombination: traversalCombination,
@@ -1908,7 +2026,10 @@ class Action {
       traversalPathSource: traversalPathSource,
       traversalPathTarget: traversalPathTarget,
       traversalPathDirection: traversalPathDirection,
-      traversalPathCount: traversalPathCount
+      traversalPathCount: traversalPathCount,
+      traversalConnectionTarget: traversalConnectionTarget,
+      traversalConnectionTargets: traversalConnectionTargets,
+      traversalConnectionCount: traversalConnectionCount
     };
     // Return information.
     return variablesValues;
