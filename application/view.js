@@ -5247,6 +5247,17 @@ class TopologyView {
         state: self.state
       });
     });
+    // Zoom and pan behavior.
+    var baseSelection = d3.select(base);
+    baseSelection.call(
+      d3.zoom()
+      .scaleExtent([0, 5])
+      .on("zoom", zoomPan)
+    );
+    function zoomPan(element, index, nodes) {
+      self.nodesGroupSelection.attr("transform", d3.event.transform);
+      self.linksGroupSelection.attr("transform", d3.event.transform);
+    }
   }
   /**
   * Creates a single group to contain all links.
@@ -5258,6 +5269,7 @@ class TopologyView {
     .document.createElementNS("http://www.w3.org/2000/svg", "g");
     self.graph.appendChild(self.linksGroup);
     self.linksGroup.classList.add("links");
+    self.linksGroupSelection = d3.select(self.linksGroup);
   }
   /**
   * Creates a single group to contain all nodes.
@@ -5269,6 +5281,7 @@ class TopologyView {
     .document.createElementNS("http://www.w3.org/2000/svg", "g");
     self.graph.appendChild(self.nodesGroup);
     self.nodesGroup.classList.add("nodes");
+    self.nodesGroupSelection = d3.select(self.nodesGroup);
   }
   /**
   * Restores view's content and behavior that varies with changes to the
@@ -5401,7 +5414,6 @@ class TopologyView {
     // Compute font size from scale.
     self.scaleFont = fontScale(self.scaleRatio);
   }
-
   /**
   * Initializes positions of network's elements in network's diagram.
   * @param {Object} self Instance of a class.
@@ -5447,8 +5459,9 @@ class TopologyView {
     // Create scales for simulation of forces between network's elements.
     self.createSimulationScales(self);
     // Create and initiate force simulation.
+    // Initiate simulation with little energy to maintain stability.
     self.simulation = TopologyView.createInitiateSimulation({
-      alpha: 1,
+      alpha: 0.1,
       alphaDecay: 0.03,
       velocityDecay: 0.5,
       alphaTarget: 0,
@@ -5997,7 +6010,13 @@ class TopologyView {
         // Remove any previous directions of reactions' nodes.
         self.removeReactionsNodesDirections(self);
         // Initiate simulation.
-        self.simulation.alphaTarget(0.5).restart();
+        self.simulation
+        .alpha(0.1)
+        .alphaDecay(0.03)
+        .velocityDecay(0.5)
+        .alphaTarget(0.5)
+        .alphaMin(0.001)
+        .restart();
       }
       // Keep track of initial position.
       element.dragInitialX = element.x;

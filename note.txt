@@ -7,6 +7,11 @@ Research With Jared P. Rutter and Alexander Lex
 25 February 2018
 
 ----------
+Progress
+
+Implement zoom and pan behavior on network's diagram.
+If drag interaction on diagram's base interferes with click behavior for prompt, then place an abbreviation prompt in the top left corner and require click there to activate prompt view for network's diagram.
+
 
 
 --------------------------------------------------
