@@ -138,11 +138,7 @@ class Traversal {
         links: networkLinksRecords
       });
     } else if (direction === "both") {
-      // The traversal algorithm is only reliable for a directional traversal.
-      // A nondirectional traversal produces redundant paths.
-      // Combine paths from directional traversals in both directions.
-      // Keep the shortest of these paths.
-      var forwardPaths = Traversal.collectShortestSimplePaths({
+      var paths = Traversal.collectBidirectionalShortestSimplePaths({
         source: source,
         target: target,
         direction: true,
@@ -150,17 +146,6 @@ class Traversal {
         count: count,
         links: networkLinksRecords
       });
-      var reversePaths = Traversal.collectShortestSimplePaths({
-        source: target,
-        target: source,
-        direction: true,
-        algorithm: "immutable",
-        count: count,
-        links: networkLinksRecords
-      });
-      var totalPaths = [].concat(forwardPaths, reversePaths);
-      var sortPaths = General.sortArrayArrays(totalPaths, "ascend");
-      var paths = sortPaths.slice(0, count);
     } else if (direction === "reverse") {
       var paths = Traversal.collectShortestSimplePaths({
         source: target,
@@ -172,15 +157,11 @@ class Traversal {
       });
     }
     // Combine identifiers of nodes in all paths.
-    var nodesIdentifiers = paths.reduce(function (pathCollection, path) {
-      return path.reduce(function (nodeCollection, node) {
-        if (!nodeCollection.includes(node)) {
-          return [].concat(nodeCollection, node);
-        } else {
-          return nodeCollection;
-        }
-      }, pathCollection);
-    }, []);
+    var pathsNodesIdentifiers = Traversal.combinePathsNodes(paths);
+    // Ensure that collection includes source and target nodes even if traversal
+    // did not find any paths.
+    var nodesIdentifiers = General
+    .collectUniqueElements(pathsNodesIdentifiers.concat(source, target));
     // Combine candidate nodes to subnetwork.
     return Traversal.combineNodesLinksSubnetwork({
       candidateNodes: nodesIdentifiers,
@@ -191,6 +172,68 @@ class Traversal {
       networkLinksRecords: networkLinksRecords
     });
   }
+  /**
+  * Combines nodes in connection paths between multiple pairs of source and
+  * target to a collection of nodes and collects links between nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<string>} parameters.targets Identifiers of nodes in a
+  * network.
+  * @param {number} parameters.count Count of paths to collect between each
+  * pair of targets.
+  * @param {string} parameters.combination Method of combination, union or
+  * difference.
+  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
+  * subnetwork's nodes.
+  * @param {Array<Object>} parameters.subnetworkLinksRecords Information about
+  * subnetwork's links.
+  * @param {Array<Object>} parameters.networkNodesRecords Information about
+  * network's nodes.
+  * @param {Array<Object>} parameters.networkLinksRecords Information about
+  * network's links.
+  * @returns {Object<Array<Object>>} Information about network's elements.
+  */
+  static combineConnectionNetwork({targets, count, combination, subnetworkNodesRecords, subnetworkLinksRecords, networkNodesRecords, networkLinksRecords} = {}) {
+    // Collect candidate nodes.
+    // Determine pairs of connections.
+    var pairs = General.combineElementsPairwise(targets);
+    // Iterate on pairs, combining nodes from paths between each.
+    var pathsNodesIdentifiers = pairs.reduce(function (pairsCollection, pair) {
+      // Collect nodes in paths.
+      var paths = Traversal.collectBidirectionalShortestSimplePaths({
+        source: pair[0],
+        target: pair[1],
+        direction: true,
+        algorithm: "immutable",
+        count: count,
+        links: networkLinksRecords
+      });
+      // Combine identifiers of nodes in all paths.
+      var nodesIdentifiers = Traversal.combinePathsNodes(paths);
+      return nodesIdentifiers.reduce(function (nodesCollection, node) {
+        if (!nodesCollection.includes(node)) {
+          return [].concat(nodesCollection, node);
+        } else {
+          return nodesCollection;
+        }
+      }, pairsCollection);
+    }, []);
+    // Ensure that collection includes all target nodes even if traversal did
+    //not find paths between some pairs.
+    var nodesIdentifiers = General
+    .collectUniqueElements(pathsNodesIdentifiers.concat(targets));
+    // Combine candidate nodes to subnetwork.
+    return Traversal.combineNodesLinksSubnetwork({
+      candidateNodes: nodesIdentifiers,
+      combination: combination,
+      subnetworkNodesRecords: subnetworkNodesRecords,
+      subnetworkLinksRecords: subnetworkLinksRecords,
+      networkNodesRecords: networkNodesRecords,
+      networkLinksRecords: networkLinksRecords
+    });
+  }
+
+
+
   /**
   * Combines candidate nodes and links to a subnetwork.
   * @param {Object} parameters Destructured object of parameters.
@@ -546,6 +589,45 @@ class Traversal {
   }
   /**
   * Collects identifiers of nodes within multiple shortest, simple, weightless,
+  * directional paths between a source and target node in both directions.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.source Identifier of a single node in a network.
+  * @param {string} parameters.target Identifier of a single node in a network.
+  * @param {boolean} parameters.direction Whether to traverse links in specific
+  * direction from source to target.
+  * @param {number} parameters.count Count of paths to collect.
+  * @param {Array<Object>} parameters.links Information about network's links.
+  * @param {string} parameters.algorithm Algorithm to use, either "mutable" or
+  * "immutable".
+  * @returns {Array<Array<string>>} Identifiers of nodes in paths.
+  */
+  static collectBidirectionalShortestSimplePaths({source, target, direction, count, links, algorithm} = {}) {
+    // The traversal algorithm is only reliable for a directional traversal.
+    // A nondirectional traversal produces redundant paths.
+    // Combine paths from directional traversals in both directions.
+    // Keep the shortest of these paths.
+    var forwardPaths = Traversal.collectShortestSimplePaths({
+      source: source,
+      target: target,
+      direction: direction,
+      algorithm: algorithm,
+      count: count,
+      links: links
+    });
+    var reversePaths = Traversal.collectShortestSimplePaths({
+      source: target,
+      target: source,
+      direction: direction,
+      algorithm: algorithm,
+      count: count,
+      links: links
+    });
+    var totalPaths = [].concat(forwardPaths, reversePaths);
+    var sortPaths = General.sortArrayArrays(totalPaths, "ascend");
+    return sortPaths.slice(0, count);
+  }
+  /**
+  * Collects identifiers of nodes within multiple shortest, simple, weightless,
   * directional paths between a source and target node.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.source Identifier of a single node in a network.
@@ -761,9 +843,6 @@ class Traversal {
       links: links
     });
     return paths;
-    // TODO: Now I guess I need to respond appropriately to the results...
-    // TODO: Determine whether paths were found?
-    // TODO: Return paths.
   }
   /**
   * Collects identifiers of nodes within multiple shortest, simple, weightless,
@@ -1502,5 +1581,21 @@ class Traversal {
       // Compile and return information.
       return path;
     }
+  }
+  /**
+  * Combines nodes from multiple paths.
+  * @param {Array<Array<string>>} paths Identifiers of nodes in paths.
+  * @returns {Array<string>} Identifiers of nodes.
+  */
+  static combinePathsNodes(paths) {
+    return paths.reduce(function (pathCollection, path) {
+      return path.reduce(function (nodeCollection, node) {
+        if (!nodeCollection.includes(node)) {
+          return [].concat(nodeCollection, node);
+        } else {
+          return nodeCollection;
+        }
+      }, pathCollection);
+    }, []);
   }
 }

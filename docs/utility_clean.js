@@ -586,9 +586,7 @@ class Clean {
   * metabolic model.
   * @returns {Object<string>} Information about a reaction.
   */
-  static checkCleanReaction(
-    reaction, metaboliteIdentifiers, geneIdentifiers
-  ) {
+  static checkCleanReaction(reaction, metaboliteIdentifiers, geneIdentifiers) {
     // Genes.
     var genes = Clean.checkCleanReactionGenes(
       reaction.id, reaction.gene_reaction_rule, geneIdentifiers
@@ -690,9 +688,7 @@ class Clean {
   * metabolites in a metabolic model.
   * @returns {Object<number>} Metabolites of the reaction.
   */
-  static checkCleanReactionMetabolites(
-    identifier, metabolites, metaboliteIdentifiers
-  ) {
+  static checkCleanReactionMetabolites(identifier, metabolites, metaboliteIdentifiers) {
     // Confirm that metabolites participate in the reaction.
     if ((metabolites) && (Object.keys(metabolites).length > 0)) {
       // Extract metabolite identifiers and role indicators from reaction.

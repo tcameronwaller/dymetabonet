@@ -3673,8 +3673,6 @@ class TraversalView {
       self.createActivateRestore(self);
       // Create and activate clear.
       self.createActivateClear(self);
-      // Create and activate export.
-      self.createActivateExport(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create and activate controls for combination.
@@ -3686,6 +3684,7 @@ class TraversalView {
       self.createActivateTraversalTypeControl("rogue", self);
       self.createActivateTraversalTypeControl("proximity", self);
       self.createActivateTraversalTypeControl("path", self);
+      self.createActivateTraversalTypeControl("connection", self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create container.
@@ -3695,6 +3694,7 @@ class TraversalView {
         position: "beforeend",
         documentReference: self.document
       });
+      self.controlContainer.classList.add("menu");
     } else {
       // Container is not empty.
       // Set references to content.
@@ -3705,6 +3705,7 @@ class TraversalView {
       self.rogue = self.document.getElementById("traversal-rogue");
       self.proximity = self.document.getElementById("traversal-proximity");
       self.path = self.document.getElementById("traversal-path");
+      self.connection = self.document.getElementById("traversal-connection");
       // Container for traversal's controls.
       self.controlContainer = self
       .document.getElementById("traversal-control-container");
@@ -3749,24 +3750,6 @@ class TraversalView {
     });
   }
   /**
-  * Creates and activates a button to export information.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateExport(self) {
-    // Create button for export.
-    var exporter = View.createButton({
-      text: "export",
-      parent: self.container,
-      documentReference: self.document
-    });
-    // Activate behavior.
-    exporter.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      Action.exportNetworkEntitiesSummary(self.state);
-    });
-  }
-  /**
   * Creates and activates a control for the combination of sets of nodes.
   * @param {string} type Type of combination, union or difference.
   * @param {Object} self Instance of a class.
@@ -3789,7 +3772,7 @@ class TraversalView {
       // Determine method of combination.
       var combination = event.currentTarget.value;
       // Call action.
-      Action.changeCombination(combination, self.state);
+      Action.changeTraversalCombination(combination, self.state);
     });
   }
   /**
@@ -3824,6 +3807,12 @@ class TraversalView {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
+    // The accessibility of nodes to each traversal procedure depends on the
+    // method of combination.
+    // For combination by union, all traversal procedures have access to nodes
+    // in the network.
+    // For combination by difference, all traversal procedures have access to
+    // nodes in the subnetwork.
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
     self.union.checked = TraversalView
@@ -3836,6 +3825,8 @@ class TraversalView {
     .determineTraversalTypeMatch("proximity", self.state);
     self.path.checked = TraversalView
     .determineTraversalTypeMatch("path", self.state);
+    self.connection.checked = TraversalView
+    .determineTraversalTypeMatch("connection", self.state);
     // Create, activate, and restore controls for traversal.
     self.createActivateRestoreTraversalControl(self);
   }
@@ -3851,6 +3842,8 @@ class TraversalView {
       self.createActivateRestoreProximityTraversalControl(self);
     } else if (self.state.traversalType === "path") {
       self.createActivateRestorePathTraversalControl(self);
+    } else if (self.state.traversalType === "connection") {
+      self.createActivateRestoreConnectionTraversalControl(self);
     }
   }
   /**
@@ -3916,10 +3909,15 @@ class TraversalView {
   */
   activateRogueTraversalControl(self) {
     // Activate search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
     TraversalView.activateTraversalSearch({
       search: self.traversalRogueFocusSearch,
       variableName: "traversalRogueFocus",
-      recordSource: "network",
+      recordSource: recordSource,
       state: self.state
     });
     // Activate execute.
@@ -3936,10 +3934,15 @@ class TraversalView {
   restoreRogueTraversalControl(self) {
     // Restore controls' settings.
     // Restore search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
     TraversalView.restoreTraversalSearch({
       search: self.traversalRogueFocusSearch,
       variableName: "traversalRogueFocus",
-      recordSource: "network",
+      recordSource: recordSource,
       state: self.state
     });
   }
@@ -4026,10 +4029,15 @@ class TraversalView {
   */
   activateProximityTraversalControl(self) {
     // Activate search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
     TraversalView.activateTraversalSearch({
       search: self.traversalProximityFocusSearch,
       variableName: "traversalProximityFocus",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
     });
     // Activate direction.
@@ -4062,10 +4070,15 @@ class TraversalView {
   restoreProximityTraversalControl(self) {
     // Restore controls' settings.
     // Restore search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
     TraversalView.restoreTraversalSearch({
       search: self.traversalProximityFocusSearch,
       variableName: "traversalProximityFocus",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
     });
     // Restore direction.
@@ -4188,10 +4201,15 @@ class TraversalView {
   */
   activatePathTraversalControl(self) {
     // Activate search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
     TraversalView.activateTraversalSearch({
       search: self.traversalPathSourceSearch,
       variableName: "traversalPathSource",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
     });
     // Activate direction.
@@ -4208,13 +4226,17 @@ class TraversalView {
       // Determine value.
       var value = Number(event.currentTarget.value);
       // Call action.
-      Action.changeTraversalPathCount(value, self.state);
+      Action.changeTraversalTypeCount({
+        count: value,
+        type: "path",
+        state: self.state
+      });
     });
     // Activate search.
     TraversalView.activateTraversalSearch({
       search: self.traversalPathTargetSearch,
       variableName: "traversalPathTarget",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
     });
     // Activate execute.
@@ -4231,10 +4253,15 @@ class TraversalView {
   restorePathTraversalControl(self) {
     // Restore controls' settings.
     // Restore search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
     TraversalView.restoreTraversalSearch({
       search: self.traversalPathSourceSearch,
       variableName: "traversalPathSource",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
     });
     // Restore direction.
@@ -4266,8 +4293,336 @@ class TraversalView {
     TraversalView.restoreTraversalSearch({
       search: self.traversalPathTargetSearch,
       variableName: "traversalPathTarget",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
+    });
+  }
+  /**
+  * Creates, activates, and restores controls for connection traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestoreConnectionTraversalControl(self) {
+    self.createActivateConnectionTraversalControl(self);
+    self.restoreActivateConnectionTraversalControl(self);
+  }
+  /**
+  * Creates and activates controls for connection traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateConnectionTraversalControl(self) {
+    // Determine whether container's current content matches view's novel type.
+    // Container's class indicates type of content.
+    if (!self.container.classList.contains("connection")) {
+      // Container's current content does not match view's novel type.
+      // Remove container's previous contents and assign a class name to
+      // indicate view's novel type.
+      View.removeContainerContentSetClass({
+        container: self.controlContainer,
+        className: "connection"
+      });
+      // Create content.
+      self.createConnectionTraversalControl(self);
+      // Activate behavior.
+      self.activateConnectionTraversalControl(self);
+    } else {
+      // Container's current content matches view's novel type.
+      // Set references to content.
+      self.traversalConnectionTargetSearch = self
+      .document.getElementById("traversal-connection-target-search");
+      self.traversalConnectionTargetSummary = self
+      .document.getElementById("traversal-connection-target-summary");
+      self.traversalConnectionCount = self
+      .document.getElementById("traversal-connection-count");
+    }
+  }
+  /**
+  * Creates controls for connection traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createConnectionTraversalControl(self) {
+    // Create summary of targets.
+    self.createConnectionTraversalTargetSummary(self);
+    // Create button for inclusion.
+    self.includeTarget = View.createButton({
+      text: "+",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create search menu.
+    self.traversalConnectionTargetSearch = View.createSearchOptionsList({
+      identifier: "traversal-connection-target-search",
+      prompt: "select node...",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create break.
+    self.controlContainer.appendChild(self.document.createElement("br"));
+    // Create control for count.
+    self.traversalConnectionCount = View.createSelector({
+      identifier: "traversal-connection-count",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create button for execution.
+    self.execute = View.createButton({
+      text: "execute",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Creates and activates summary of targets for connection traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createConnectionTraversalTargetSummary(self) {
+    // Create separate tables for head and body to support stationary head and
+    // scrollable body.
+    // Create head table.
+    var tableHeadRow = View.createTableHeadRow({
+      className: "connection-target",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create titles, sorts, and scale in table's header.
+    // Create head for name.
+    var nameCell = View.createTableHeadCellLabel({
+      text: "targets",
+      className: "name",
+      parent: tableHeadRow,
+      documentReference: self.document
+    });
+    // Create head for name.
+    var nameCell = View.createTableHeadCellLabel({
+      text: "",
+      className: "removal",
+      parent: tableHeadRow,
+      documentReference: self.document
+    });
+    // Create body table.
+    self.traversalConnectionTargetSummary = View.createScrollTableBody({
+      className: "connection",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Activates controls for connection traversal.
+  * @param {Object} self Instance of a class.
+  */
+  activateConnectionTraversalControl(self) {
+    // Activate inclusion.
+    self.includeTarget.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.includeTraversalConnectionTarget(self.state);
+    });
+    // Activate search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
+    TraversalView.activateTraversalSearch({
+      search: self.traversalConnectionTargetSearch,
+      variableName: "traversalConnectionTarget",
+      recordSource: recordSource,
+      state: self.state
+    });
+    // Activate count.
+    self
+    .traversalConnectionCount.addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine value.
+      var value = Number(event.currentTarget.value);
+      // Call action.
+      Action.changeTraversalTypeCount({
+        count: value,
+        type: "connection",
+        state: self.state
+      });
+    });
+    // Activate execute.
+    self.execute.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      Action.executeConnectionTraversalCombination(self.state);
+    });
+  }
+  /**
+  * Restores and activates controls for connection traversal.
+  * @param {Object} self Instance of a class.
+  */
+  restoreActivateConnectionTraversalControl(self) {
+    // Restore controls' settings.
+    // Create and activate summary of targets.
+    self.createActivateConnectionTraversalTargetSummary(self);
+    // Restore search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
+    TraversalView.restoreTraversalSearch({
+      search: self.traversalConnectionTargetSearch,
+      variableName: "traversalConnectionTarget",
+      recordSource: recordSource,
+      state: self.state
+    });
+    // Restore count.
+    // Create options.
+    var options = [1, 2, 3, 4, 5].map(function (count) {
+      // Determine whether depth matches state variable.
+      var match = (count === self.state.traversalConnectionCount);
+      return {
+        label: String(count) + " paths",
+        value: count,
+        selection: match
+      };
+    });
+    View.createSelectorOptions({
+      options: options,
+      selector: self.traversalConnectionCount,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Restores and activates summary of targets for connection traversal.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateConnectionTraversalTargetSummary(self) {
+    self.createActivateConnectionTraversalTargetSummaryRows(self);
+    self.createActivateConnectionTraversalTargetSummaryCells(self);
+  }
+  /**
+  * Creates and activates rows.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateConnectionTraversalTargetSummaryRows(self) {
+    // Create and activate rows.
+    // Select parent.
+    var body = d3.select(self.traversalConnectionTargetSummary);
+    // Define function to access data.
+    function access() {
+      return self.state.traversalConnectionTargets;
+    };
+    // Create children elements by association to data.
+    self.rows = View.createElementsData({
+      parent: body,
+      type: "tr",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    self.rows.classed("normal", true);
+    // Activate behavior.
+    self.rows.on("mouseenter", function (element, index, nodes) {
+      // Select element.
+      var row = nodes[index];
+      var rowSelection = d3.select(row);
+      // Call action.
+      rowSelection.classed("normal", false);
+      rowSelection.classed("emphasis", true);
+    });
+    self.rows.on("mouseleave", function (element, index, nodes) {
+      // Select element.
+      var row = nodes[index];
+      var rowSelection = d3.select(row);
+      // Call action.
+      rowSelection.classed("emphasis", false);
+      rowSelection.classed("normal", true);
+    });
+  }
+  /**
+  * Creates cells.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateConnectionTraversalTargetSummaryCells(self) {
+    // Create cells for names, counts, omissions, and replications.
+    // Define function to access data.
+    function access(element, index, nodes) {
+      // Access node's name.
+      var name = TraversalView.accessNodeName({
+        identifier: element.identifier,
+        type: element.type,
+        state: self.state
+      });
+      // Organize data.
+      var name = {
+        type: "name",
+        entity: element.type,
+        identifier: element.identifier
+      };
+      var removal = {
+        type: "removal",
+        entity: element.type,
+        identifier: element.identifier
+      };
+      return [].concat(name, removal);
+    };
+    // Create children elements by association to data.
+    self.cells = View.createElementsData({
+      parent: self.rows,
+      type: "td",
+      accessor: access
+    });
+    // Create cells for names.
+    self.createConnectionTraversalTargetSummaryNames(self);
+    // Create and activate cells for removals.
+    self.createActivateConnectionTraversalTargetSummaryRemovals(self);
+  }
+  /**
+  * Creates summary names.
+  * @param {Object} self Instance of a class.
+  */
+  createConnectionTraversalTargetSummaryNames(self) {
+    // Assign attributes to cells.
+    // Assign attributes to elements.
+    // Select cells for names.
+    self.names = self.cells.filter(function (element, index, nodes) {
+      return element.type === "name";
+    });
+    self.names
+    .classed("name", true)
+    .text(function (element, index, nodes) {
+      return TraversalView.accessNodeName({
+        identifier: element.identifier,
+        type: element.entity,
+        state: self.state
+      });
+    });
+  }
+  /**
+  * Creates summary removals.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateConnectionTraversalTargetSummaryRemovals(self) {
+    // Assign attributes to cells.
+    // Assign attributes to elements.
+    // Select cells.
+    self.removals = self.cells.filter(function (element, index, nodes) {
+      return element.type === "removal";
+    });
+    self.removals.classed("removal", true);
+    // Create check boxes.
+    // Define function to access data.
+    function access(element, index, nodes) {
+      return [element];
+    };
+    // Create children elements by association to data.
+    var buttons = View.createElementsData({
+      parent: self.removals,
+      type: "button",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    buttons.text("x");
+    // Activate behavior.
+    buttons.on("click", function (element, index, nodes) {
+      // Call action.
+      Action.excludeTraversalConnectionTarget({
+        identifier: element.identifier,
+        type: element.entity,
+        state: self.state
+      });
     });
   }
   /**
@@ -4345,6 +4700,12 @@ class TraversalView {
             type: node.type,
             state: state
           });
+        } else if (variableName === "traversalConnectionTarget") {
+          Action.changeTraversalConnectionTarget({
+            identifier: identifier,
+            type: node.type,
+            state: state
+          });
         }
       } else {
         // Restore search.
@@ -4375,17 +4736,12 @@ class TraversalView {
     }
     // Prepare records for search menu's options.
     var optionsRecords = nodesRecords.map(function (record) {
-      if (record.type === "metabolite") {
-        // Access information.
-        var node = state.networkNodesMetabolites[record.identifier];
-        var candidate = state.candidatesMetabolites[node.candidate];
-        var name = candidate.name;
-      } else if (record.type === "reaction") {
-        // Access information.
-        var node = state.networkNodesReactions[record.identifier];
-        var candidate = state.candidatesReactions[node.candidate];
-        var name = candidate.name;
-      }
+      // Access node's name.
+      var name = TraversalView.accessNodeName({
+        identifier: record.identifier,
+        type: record.type,
+        state: state
+      });
       // Create record.
       return {
         identifier: record.identifier,
@@ -4405,23 +4761,38 @@ class TraversalView {
     });
     // Represent search's current value.
     if (state[variableName].type.length > 0) {
-      if (state[variableName].type === "metabolite") {
-        // Access information.
-        var node = state
-        .networkNodesMetabolites[state[variableName].identifier];
-        var candidate = state.candidatesMetabolites[node.candidate];
-        var name = candidate.name;
-      } else if (state[variableName].type === "reaction") {
-        // Access information.
-        var node = state
-        .networkNodesReactions[state[variableName].identifier];
-        var candidate = state.candidatesReactions[node.candidate];
-        var name = candidate.name;
-      }
+      // Access node's name.
+      var name = TraversalView.accessNodeName({
+        identifier: state[variableName].identifier,
+        type: state[variableName].type,
+        state: state
+      });
       search.value = name;
     } else {
       search.value = "";
     }
+  }
+  /**
+  * Accesses a node's name.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  * @returns {string} Node's name.
+  */
+  static accessNodeName({identifier, type, state} = {}) {
+    if (type === "metabolite") {
+      // Access information.
+      var node = state.networkNodesMetabolites[identifier];
+      var candidate = state.candidatesMetabolites[node.candidate];
+      var name = candidate.name;
+    } else if (type === "reaction") {
+      // Access information.
+      var node = state.networkNodesReactions[identifier];
+      var candidate = state.candidatesReactions[node.candidate];
+      var name = candidate.name;
+    }
+    return name;
   }
 }
 
@@ -4876,6 +5247,17 @@ class TopologyView {
         state: self.state
       });
     });
+    // Zoom and pan behavior.
+    var baseSelection = d3.select(base);
+    baseSelection.call(
+      d3.zoom()
+      .scaleExtent([0, 5])
+      .on("zoom", zoomPan)
+    );
+    function zoomPan(element, index, nodes) {
+      self.nodesGroupSelection.attr("transform", d3.event.transform);
+      self.linksGroupSelection.attr("transform", d3.event.transform);
+    }
   }
   /**
   * Creates a single group to contain all links.
@@ -4887,6 +5269,7 @@ class TopologyView {
     .document.createElementNS("http://www.w3.org/2000/svg", "g");
     self.graph.appendChild(self.linksGroup);
     self.linksGroup.classList.add("links");
+    self.linksGroupSelection = d3.select(self.linksGroup);
   }
   /**
   * Creates a single group to contain all nodes.
@@ -4898,6 +5281,7 @@ class TopologyView {
     .document.createElementNS("http://www.w3.org/2000/svg", "g");
     self.graph.appendChild(self.nodesGroup);
     self.nodesGroup.classList.add("nodes");
+    self.nodesGroupSelection = d3.select(self.nodesGroup);
   }
   /**
   * Restores view's content and behavior that varies with changes to the
@@ -4929,6 +5313,10 @@ class TopologyView {
         // Initialize positions in network's diagram.
         self.restoreNetworkDiagramPositions(self);
       }
+    } else {
+      // Remove any visual representations.
+      General.removeDocumentChildren(self.linksGroup);
+      General.removeDocumentChildren(self.nodesGroup);
     }
   }
   /**
@@ -5026,7 +5414,6 @@ class TopologyView {
     // Compute font size from scale.
     self.scaleFont = fontScale(self.scaleRatio);
   }
-
   /**
   * Initializes positions of network's elements in network's diagram.
   * @param {Object} self Instance of a class.
@@ -5072,8 +5459,9 @@ class TopologyView {
     // Create scales for simulation of forces between network's elements.
     self.createSimulationScales(self);
     // Create and initiate force simulation.
+    // Initiate simulation with little energy to maintain stability.
     self.simulation = TopologyView.createInitiateSimulation({
-      alpha: 1,
+      alpha: 0.1,
       alphaDecay: 0.03,
       velocityDecay: 0.5,
       alphaTarget: 0,
@@ -5622,7 +6010,13 @@ class TopologyView {
         // Remove any previous directions of reactions' nodes.
         self.removeReactionsNodesDirections(self);
         // Initiate simulation.
-        self.simulation.alphaTarget(0.5).restart();
+        self.simulation
+        .alpha(0.1)
+        .alphaDecay(0.03)
+        .velocityDecay(0.5)
+        .alphaTarget(0.5)
+        .alphaMin(0.001)
+        .restart();
       }
       // Keep track of initial position.
       element.dragInitialX = element.x;

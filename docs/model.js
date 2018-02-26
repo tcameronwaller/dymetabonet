@@ -298,7 +298,7 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineRogueTraversal(state) {
-    return state.traversalRogueFocus;
+    return (state.traversalRogueFocus.identifier.length > 0);
   }
   /**
   * Determines whether the application's state has specific information.
@@ -307,9 +307,13 @@ class Model {
   */
   static determineProximityTraversal(state) {
     return (
-      !(state.traversalProximityFocus === null) &&
-      !(state.traversalProximityDirection === null) &&
-      !(state.traversalProximityDepth === null)
+      (state.traversalProximityFocus.identifier.length > 0) &&
+      (
+        (state.traversalProximityDirection === "successors") ||
+        (state.traversalProximityDirection === "neighbors") ||
+        (state.traversalProximityDirection === "predecessors")
+      ) &&
+      (state.traversalProximityDepth > 0)
     );
   }
   /**
@@ -319,10 +323,28 @@ class Model {
   */
   static determinePathTraversal(state) {
     return (
-      !(state.traversalPathSource === null) &&
-      !(state.traversalPathTarget === null) &&
-      !(state.traversalPathDirection === null) &&
-      !(state.traversalPathCount === null)
+      (state.traversalPathSource.identifier.length > 0) &&
+      (state.traversalPathTarget.identifier.length > 0) &&
+      (
+        (state.traversalPathDirection === "forward") ||
+        (state.traversalPathDirection === "reverse")
+      ) &&
+      (state.traversalPathCount > 0)
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineConnectionTraversal(state) {
+    return (
+      (
+        (state.traversalCombination === "union") ||
+        (state.traversalCombination === "difference")
+      ) &&
+      (state.traversalConnectionTargets.length > 1) &&
+      (state.traversalConnectionCount > 0)
     );
   }
   /**

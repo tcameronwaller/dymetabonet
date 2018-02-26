@@ -744,6 +744,25 @@ class General {
   // Methods for management of values.
 
   /**
+  * Combines elements in pairs of two without regard for order.
+  * @param {Array} elements Elements in an array.
+  * @returns {Array<Array>} Combinations of elements.
+  */
+  static combineElementsPairwise(elements) {
+    // Iterate on first members of pairs.
+    var firstMembers = elements;
+    return firstMembers.reduce(function (collectionOne, firstMember, index) {
+      // Iterate on second members of pairs.
+      var secondMembers = firstMembers.slice(index + 1);
+      return secondMembers.reduce(function (collectionTwo, secondMember) {
+        // Create pair.
+        var pair = [].concat(firstMember, secondMember);
+        // Include pair in collection.
+        return collectionTwo.concat([pair]);
+      }, collectionOne);
+    }, []);
+  }
+  /**
   * Includes novel entries in a collection.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<Object>} parameters.values Records of information.
