@@ -1247,11 +1247,6 @@ class Action {
       state: state
     });
   }
-
-  // TODO: Include focus, source, and target nodes in traversals...
-
-
-
   /**
   * Executes rogue traversal and combination on the network.
   * @param {Object} state Application's state.
@@ -1421,34 +1416,38 @@ class Action {
   * @param {Object} state Application's state.
   */
   static executeNodeProximityTraversalExpansion(state) {
-    var subnetworkElements = Traversal.combineProximityNetwork({
-      focus: state.prompt.reference.identifier,
-      direction: "neighbors",
-      depth: 1,
-      combination: "union",
-      subnetworkNodesRecords: state.subnetworkNodesRecords,
-      subnetworkLinksRecords: state.subnetworkLinksRecords,
-      networkNodesRecords: state.networkNodesRecords,
-      networkLinksRecords: state.networkLinksRecords
-    });
-    // Initialize controls for traversal view.
-    var traversalViewControls = Action.initializeTraversalViewControls();
-    // Remove any prompt view.
-    var prompt = Action.initializePromptViewControls();
-    // Compile variables' values.
-    var novelVariablesValues = {
-      prompt: prompt
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      subnetworkElements,
-      traversalViewControls
-    );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineProximityTraversal(state)) {
+      var subnetworkElements = Traversal.combineProximityNetwork({
+        focus: state.prompt.reference.identifier,
+        direction: "neighbors",
+        depth: 1,
+        combination: "union",
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for traversal view.
+      var traversalViewControls = Action.initializeTraversalViewControls();
+      // Remove any prompt view.
+      var prompt = Action.initializePromptViewControls();
+      // Compile variables' values.
+      var novelVariablesValues = {
+        prompt: prompt
+      };
+      var variablesValues = Object.assign(
+        novelVariablesValues,
+        subnetworkElements,
+        traversalViewControls
+      );
+      // Submit variables' values to the application's state.
+      Action.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
   }
   /**
   * Changes the selection of source for path traversal.
@@ -1534,7 +1533,7 @@ class Action {
   static changeTraversalTypeCount({count, type, state} = {}) {
     // Determine type of traversal.
     if (type === "path") {
-      var varableName = "traversalPathCount";
+      var variableName = "traversalPathCount";
     } else if (type === "connection") {
       var variableName = "traversalConnectionCount";
     }
@@ -1935,6 +1934,36 @@ class Action {
       state: state
     });
   }
+
+  static lockAllNodesPositions() {
+    // probably more efficient to just call same function on all nodes?
+  }
+
+  static unlockAllNodesPositions() {
+    // probably more efficient to just call same function on all nodes?
+  }
+
+  static lockPromptNodePosition() {
+    // call Action.lockNodePosition for prompt's node
+    // then submit to app's state.
+  }
+  static unlockPromptNodePosition() {
+    // call Action.unlockNodePosition for prompt's node
+    // then submit to app's state.
+  }
+  static lockNodePosition() {
+    // make this an indirect action that doesn't submit to app's state.
+    // modify records for subnetwork's nodes and then return
+  }
+
+  static unlockNodePosition() {
+    // make this an indirect action that doesn't submit to app's state.
+    // modify records for subnetwork's nodes and then return
+  }
+
+  static removePromptNode() {}
+
+
 
   // Indirect actions.
 
