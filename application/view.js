@@ -3673,8 +3673,6 @@ class TraversalView {
       self.createActivateRestore(self);
       // Create and activate clear.
       self.createActivateClear(self);
-      // Create and activate export.
-      self.createActivateExport(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create and activate controls for combination.
@@ -3752,24 +3750,6 @@ class TraversalView {
     });
   }
   /**
-  * Creates and activates a button to export information.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateExport(self) {
-    // Create button for export.
-    var exporter = View.createButton({
-      text: "export",
-      parent: self.container,
-      documentReference: self.document
-    });
-    // Activate behavior.
-    exporter.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      Action.exportNetworkEntitiesSummary(self.state);
-    });
-  }
-  /**
   * Creates and activates a control for the combination of sets of nodes.
   * @param {string} type Type of combination, union or difference.
   * @param {Object} self Instance of a class.
@@ -3792,7 +3772,7 @@ class TraversalView {
       // Determine method of combination.
       var combination = event.currentTarget.value;
       // Call action.
-      Action.changeCombination(combination, self.state);
+      Action.changeTraversalCombination(combination, self.state);
     });
   }
   /**
@@ -3930,20 +3910,16 @@ class TraversalView {
   activateRogueTraversalControl(self) {
     // Activate search.
     if (self.state.traversalCombination === "union") {
-      TraversalView.activateTraversalSearch({
-        search: self.traversalRogueFocusSearch,
-        variableName: "traversalRogueFocus",
-        recordSource: "network",
-        state: self.state
-      });
+      var recordSource = "network";
     } else if (self.state.traversalCombination === "difference") {
-      TraversalView.activateTraversalSearch({
-        search: self.traversalRogueFocusSearch,
-        variableName: "traversalRogueFocus",
-        recordSource: "subnetwork",
-        state: self.state
-      });
+      var recordSource = "subnetwork";
     }
+    TraversalView.activateTraversalSearch({
+      search: self.traversalRogueFocusSearch,
+      variableName: "traversalRogueFocus",
+      recordSource: recordSource,
+      state: self.state
+    });
     // Activate execute.
     self.execute.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
@@ -3958,10 +3934,15 @@ class TraversalView {
   restoreRogueTraversalControl(self) {
     // Restore controls' settings.
     // Restore search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
     TraversalView.restoreTraversalSearch({
       search: self.traversalRogueFocusSearch,
       variableName: "traversalRogueFocus",
-      recordSource: "network",
+      recordSource: recordSource,
       state: self.state
     });
   }
@@ -4048,10 +4029,15 @@ class TraversalView {
   */
   activateProximityTraversalControl(self) {
     // Activate search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
     TraversalView.activateTraversalSearch({
       search: self.traversalProximityFocusSearch,
       variableName: "traversalProximityFocus",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
     });
     // Activate direction.
@@ -4084,10 +4070,15 @@ class TraversalView {
   restoreProximityTraversalControl(self) {
     // Restore controls' settings.
     // Restore search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
     TraversalView.restoreTraversalSearch({
       search: self.traversalProximityFocusSearch,
       variableName: "traversalProximityFocus",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
     });
     // Restore direction.
@@ -4210,10 +4201,15 @@ class TraversalView {
   */
   activatePathTraversalControl(self) {
     // Activate search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
     TraversalView.activateTraversalSearch({
       search: self.traversalPathSourceSearch,
       variableName: "traversalPathSource",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
     });
     // Activate direction.
@@ -4240,7 +4236,7 @@ class TraversalView {
     TraversalView.activateTraversalSearch({
       search: self.traversalPathTargetSearch,
       variableName: "traversalPathTarget",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
     });
     // Activate execute.
@@ -4257,10 +4253,15 @@ class TraversalView {
   restorePathTraversalControl(self) {
     // Restore controls' settings.
     // Restore search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
     TraversalView.restoreTraversalSearch({
       search: self.traversalPathSourceSearch,
       variableName: "traversalPathSource",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
     });
     // Restore direction.
@@ -4292,7 +4293,7 @@ class TraversalView {
     TraversalView.restoreTraversalSearch({
       search: self.traversalPathTargetSearch,
       variableName: "traversalPathTarget",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
     });
   }
@@ -4416,10 +4417,15 @@ class TraversalView {
       Action.includeTraversalConnectionTarget(self.state);
     });
     // Activate search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
     TraversalView.activateTraversalSearch({
       search: self.traversalConnectionTargetSearch,
       variableName: "traversalConnectionTarget",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
     });
     // Activate count.
@@ -4451,10 +4457,15 @@ class TraversalView {
     // Create and activate summary of targets.
     self.createActivateConnectionTraversalTargetSummary(self);
     // Restore search.
+    if (self.state.traversalCombination === "union") {
+      var recordSource = "network";
+    } else if (self.state.traversalCombination === "difference") {
+      var recordSource = "subnetwork";
+    }
     TraversalView.restoreTraversalSearch({
       search: self.traversalConnectionTargetSearch,
       variableName: "traversalConnectionTarget",
-      recordSource: "subnetwork",
+      recordSource: recordSource,
       state: self.state
     });
     // Restore count.
@@ -5289,6 +5300,10 @@ class TopologyView {
         // Initialize positions in network's diagram.
         self.restoreNetworkDiagramPositions(self);
       }
+    } else {
+      // Remove any visual representations.
+      General.removeDocumentChildren(self.linksGroup);
+      General.removeDocumentChildren(self.nodesGroup);
     }
   }
   /**

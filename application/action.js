@@ -529,68 +529,9 @@ class Action {
       state: state
     });
   }
-  /**
-  * Copies the subnetwork from the network and restores values of variables of
-  * application's controls for traversal view.
-  * @param {Object} state Application's state.
-  */
-  static copySubnetworkRestoreTraversalViewControls(state) {
-    // Initialize controls for traversal view.
-    var traversalViewControls = Action.initializeTraversalViewControls();
-    // Create subnetwork's elements.
-    var subnetworkElements = Network.copyNetworkElementsRecords({
-      networkNodesRecords: state.networkNodesRecords,
-      networkLinksRecords: state.networkLinksRecords
-    });
-    // Initialize whether to force representation of topology for networks of
-    // excessive scale.
-    var forceTopology = false;
-    // Compile variables' values.
-    var novelVariablesValues = {
-      forceTopology: forceTopology
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      traversalViewControls,
-      subnetworkElements
-    );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Clears the subnetwork and restores values of variables of application's
-  * controls for traversal view.
-  * @param {Object} state Application's state.
-  */
-  static clearSubnetworkRestoreTraversalViewControls(state) {
-    // Initialize controls for traversal view.
-    var traversalViewControls = Action.initializeTraversalViewControls();
-    // Create subnetwork's elements.
-    var subnetworkElements = {
-      subnetworkNodesRecords: [],
-      subnetworkLinksRecords: []
-    };
-    // Initialize whether to force representation of topology for networks of
-    // excessive scale.
-    var forceTopology = false;
-    // Compile variables' values.
-    var novelVariablesValues = {
-      forceTopology: forceTopology
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      traversalViewControls,
-      subnetworkElements
-    );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
+
+  // TODO: Consolidate export behavior... I don't think I need to handle differently...
+
   /**
   * Prepares and exports information about entities, reactions and metabolites,
   * that pass current filters by sets.
@@ -676,6 +617,8 @@ class Action {
     .convertRecordsStringTabSeparateTable(metabolitesSummary);
     General.saveString("metabolites_summary.txt", metabolitesSummaryString);
   }
+
+
   /**
   * Changes the searches to filter summaries.
   * @param {Object} parameters Destructured object of parameters.
@@ -1175,17 +1118,88 @@ class Action {
       state: state
     });
   }
+
+  // Query.
+
+  /**
+  * Copies the subnetwork from the network and restores values of variables of
+  * application's controls for traversal view.
+  * @param {Object} state Application's state.
+  */
+  static copySubnetworkRestoreTraversalViewControls(state) {
+    // Initialize controls for traversal view.
+    var traversalViewControls = Action.initializeTraversalViewControls();
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copyNetworkElementsRecords({
+      networkNodesRecords: state.networkNodesRecords,
+      networkLinksRecords: state.networkLinksRecords
+    });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
+    // Compile variables' values.
+    var novelVariablesValues = {
+      forceTopology: forceTopology
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      traversalViewControls,
+      subnetworkElements
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Clears the subnetwork and restores values of variables of application's
+  * controls for traversal view.
+  * @param {Object} state Application's state.
+  */
+  static clearSubnetworkRestoreTraversalViewControls(state) {
+    // Initialize controls for traversal view.
+    var traversalViewControls = Action.initializeTraversalViewControls();
+    // Create subnetwork's elements.
+    var subnetworkElements = {
+      subnetworkNodesRecords: [],
+      subnetworkLinksRecords: []
+    };
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
+    // Compile variables' values.
+    var novelVariablesValues = {
+      forceTopology: forceTopology
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      traversalViewControls,
+      subnetworkElements
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
   /**
   * Changes the selection of combination in traversal view.
   * @param {string} combination Method of combination, union or difference.
   * @param {Object} state Application's state.
   */
-  static changeCombination(combination, state) {
+  static changeTraversalCombination(combination, state) {
+    // Initialize controls for traversal view.
+    var traversalViewControls = Action
+    .initializeTraversalViewSubordinateControls();
     // Compile variables' values.
     var novelVariablesValues = {
       traversalCombination: combination
     };
-    var variablesValues = Object.assign(novelVariablesValues);
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      traversalViewControls
+    );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -1233,6 +1247,11 @@ class Action {
       state: state
     });
   }
+
+  // TODO: Include focus, source, and target nodes in traversals...
+
+
+
   /**
   * Executes rogue traversal and combination on the network.
   * @param {Object} state Application's state.
@@ -2026,6 +2045,26 @@ class Action {
   static initializeTraversalViewControls() {
     // Initialize controls.
     var traversalCombination = "union";
+    var subordinateControls = Action
+    .initializeTraversalViewSubordinateControls();
+    // Compile information.
+    var novelVariablesValues = {
+      traversalCombination: traversalCombination
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      subordinateControls
+    );
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Initializes values of variables of application's controls for traversal
+  * view.
+  * @param {Object} state Application's state.
+  */
+  static initializeTraversalViewSubordinateControls() {
+    // Initialize controls.
     var traversalType = "rogue";
     var traversalRogueFocus = {identifier: "", type: ""};
     var traversalProximityFocus = {identifier: "", type: ""};
@@ -2040,7 +2079,6 @@ class Action {
     var traversalConnectionCount = 1;
     // Compile information.
     var variablesValues = {
-      traversalCombination: traversalCombination,
       traversalType: traversalType,
       traversalRogueFocus: traversalRogueFocus,
       traversalProximityFocus: traversalProximityFocus,

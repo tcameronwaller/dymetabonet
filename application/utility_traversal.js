@@ -157,7 +157,11 @@ class Traversal {
       });
     }
     // Combine identifiers of nodes in all paths.
-    var nodesIdentifiers = Traversal.combinePathsNodes(paths);
+    var pathsNodesIdentifiers = Traversal.combinePathsNodes(paths);
+    // Ensure that collection includes source and target nodes even if traversal
+    // did not find any paths.
+    var nodesIdentifiers = General
+    .collectUniqueElements(pathsNodesIdentifiers.concat(source, target));
     // Combine candidate nodes to subnetwork.
     return Traversal.combineNodesLinksSubnetwork({
       candidateNodes: nodesIdentifiers,
@@ -193,7 +197,7 @@ class Traversal {
     // Determine pairs of connections.
     var pairs = General.combineElementsPairwise(targets);
     // Iterate on pairs, combining nodes from paths between each.
-    var nodesIdentifiers = pairs.reduce(function (pairsCollection, pair) {
+    var pathsNodesIdentifiers = pairs.reduce(function (pairsCollection, pair) {
       // Collect nodes in paths.
       var paths = Traversal.collectBidirectionalShortestSimplePaths({
         source: pair[0],
@@ -213,6 +217,10 @@ class Traversal {
         }
       }, pairsCollection);
     }, []);
+    // Ensure that collection includes all target nodes even if traversal did
+    //not find paths between some pairs.
+    var nodesIdentifiers = General
+    .collectUniqueElements(pathsNodesIdentifiers.concat(targets));
     // Combine candidate nodes to subnetwork.
     return Traversal.combineNodesLinksSubnetwork({
       candidateNodes: nodesIdentifiers,
@@ -835,9 +843,6 @@ class Traversal {
       links: links
     });
     return paths;
-    // TODO: Now I guess I need to respond appropriately to the results...
-    // TODO: Determine whether paths were found?
-    // TODO: Return paths.
   }
   /**
   * Collects identifiers of nodes within multiple shortest, simple, weightless,
