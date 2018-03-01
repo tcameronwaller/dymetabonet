@@ -33,7 +33,7 @@ Author:
     72 South Central Campus Drive
     Salt Lake City, Utah 84112
     United States of America
-    
+
 License:
 
     This file is part of project Profondeur
@@ -102,42 +102,81 @@ import xml.etree.ElementTree as et
 # Test script
 
 
+def interpretContent(content=None):
+    """
+    Interprets content in Systems Biology Markup Language (SBML)
+
+    This function interprets content in Systems Biology Markup Language (SBML),
+    a form of Extensible Markup Language (XML).
+
+    arguments:
+        content (object): content from file in Systems Biology Markup Language
+            (XML)
+
+    returns:
+        (object): references to definition of name space and sections within
+            content
+
+    raises:
+
+    """
+
+    #https://docs.python.org/3/library/xml.etree.elementtree.html#module-xml.etree.ElementTree
+
+    # Define name space
+    space = {"version": "http://www.sbml.org/sbml/level2/version4"}
+    # Set references to sections within content
+    sbml = content.getroot()
+    model = sbml[0]
+    compartments = model[1]
+    metabolites = model[2]
+    reactions = model[3]
+    # Compile information
+    return {
+        space: space,
+        model: model,
+        compartments: compartments,
+        metabolites: metabolites,
+        reactions: reactions
+    }
+
+
 def correctModelBoundary(content=None):
     """
     Corrects annotations in for a model's boundary.
-    
+
     This function corrects annotations of the model's boundary in compartments,
     metabolites, and reactions.
-    
+
     arguments:
         content (object): content from file in Extensible Markup Language (XML)
-        
+
     returns:
         content with changes to attributes of compartments, metabolites, and
         reactions
-        
+
     raises:
-        
+
     """
-    
+
     # Set references in content
     sbml = content.getroot()
     model = sbml[0]
     compartments = model[1]
     metabolites = model[2]
     reactions = model[3]
+    print("compartments")
+    print(compartments)
     print("children in compartments")
     for child in compartments:
-        print(child.tag, child.attrib)
+        print(child.tag)
     #https://docs.python.org/3/library/xml.etree.elementtree.html#module-xml.etree.ElementTree
     # use for child in model.findall(species) or for child in model.iter(species)
     print("now do it the more intelligent way")
-    for compartment in model.findall("compartment"):
-        print(compartment.tag, compartment.attrib)
-        
-    # TODO: That doesn't work, and it might be a proble with my references to sub parts of the model?
+    print(list(sbml.iter("{http://www.sbml.org/sbml/level2/version4}compartment")))
+    for compartment in compartments.findall("compartment"):
+        print(compartment)
 
-    
     # Correct name of boundary compartment
     #content_boundary = content.replace("Extra organism", "model boundary")
     # Correct identifiers of metabolites in boundary compartment
@@ -152,22 +191,22 @@ def changeModelMetabolitesIdentifiers(
         ):
     """
     Changes metabolites' identifiers in a model.
-    
+
     This function changes metabolites' identifiers according to information
     about translation.
-    
+
     arguments:
         metabolites_identifiers (list<dict<str>>): translations of metabolites'
             identifiers
         content (str): content of a model in Extensible Markup Language (XML)
-        
+
     returns:
         content of a model in XML with changes to metabolites' identifiers
-        
+
     raises:
-        
+
     """
-    
+
     # Change content for each combination of original and novel identifiers
     for row in metabolites_identifiers:
         # Construct targets to recognize original and novel identifiers
@@ -183,7 +222,7 @@ def main():
     """
     This function defines the main activity of the module.
     """
-    
+
     # Specify directories and files
     directory = os.path.join(
             os.sep, "media", "tcameronwaller", "primary", "data", "local",
@@ -206,29 +245,32 @@ def main():
         metabolites_identifiers = list(
                 map(lambda row: dict(row), list(reader))
                 )
-    
+    # Interpret content
+    reference = interpretContent(content=content)
+
+
     # Correct content
     content_boundary = correctModelBoundary(content=content)
-    
-    
+
+
     # Remove unnecessary prefix from metabolites' identifiers
     #content_prefixes = re.sub(r"M_MNXM", "MNXM", content)
     # Correct annotations for model's boundary
     # TODO: content_boundary = correctModelBoundary(content=model_content)
     # Correct identifiers of metabolites
-    
+
     # TODO: content_identifier = changeModelMetabolitesIdentifiers(
     #        content=content_boundary,
     #        metabolites_identifiers=metabolites_identifiers
     #        )
 
-    
+
     #Write information to file
     #with open(out_file_path_model, "w") as out_file:
     #    out_file.write(content_identifier)
     content_final = content
     content_final.write(out_file_path_model)
-    
+
 ###############################################################################
 # Script functionality
 
