@@ -1,0 +1,59 @@
+{
+    "id": "e_coli_core", 
+    "metabolites": [
+        {
+            "id": "13dpg_c",
+            "charge": -4,
+            "formula": "C3H4O10P2",
+            "compartment": "c",
+            "name": "3-Phospho-D-glyceroyl phosphate",
+            "annotation": {
+                "seed.compound": "cpd00203",
+                "pubchem.substance": "3535",
+                "hmdb": "HMDB01270",
+                "kegg.compound": "C00236",
+                "bigg.metabolite": "13dpg",
+                "reactome": "REACT_29800",
+                "chebi": [
+                    "CHEBI:16001", "CHEBI:1658",
+                    "CHEBI:20189", "CHEBI:57604",
+                    "CHEBI:11881"
+                ],
+                "unipathway.compound": "UPC00236",
+                "biocyc": "DPG"
+            }
+        },
+    ], 
+    "genes": [
+        {
+            "id": "b1241",
+            "name": "adhE"
+        },
+    ],
+    "version": 1, 
+    "reactions": [
+        {
+            "upper_bound": 1000.0,
+            "id": "ACALD",
+            "metabolites": {
+                "coa_c": -1.0,
+                "acald_c": -1.0,
+                "accoa_c": 1.0,
+                "nad_c": -1.0,
+                "h_c": 1.0,
+                "nadh_c": 1.0
+            },
+            "lower_bound": -1000.0,
+            "gene_reaction_rule": "b0351 or b1241",
+            "name": "acetaldehyde dehydrogenase
+                (acetylating)",
+            "annotation": {
+                "bigg.reaction": "ACALD"
+            }
+        },
+    ],
+    "compartments": {
+        "c": "cytosol",
+        "e": "extracellular"
+    }
+}

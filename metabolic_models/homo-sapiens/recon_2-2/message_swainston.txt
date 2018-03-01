@@ -1,0 +1,67 @@
+
+
+Message date: 9 November 2016
+Message from: T Cameron Waller (cameron.waller@biochem.utah.edu)
+Message to: Neil Swainston (neil.swainston@manchester.ac.uk)
+
+Hi Neil,
+
+Thanks. I think you're right that the format compatibility will be fine. I just wanted to make sure before proceeding.
+
+Cheers,
+
+Cameron
+
+----------
+----------
+----------
+
+Message date: 9 November 2016
+Message from: Neil Swainston (neil.swainston@manchester.ac.uk)
+Message to: T Cameron Waller (cameron.waller@biochem.utah.edu)
+
+Hi Cameron,
+
+There isn’t an FBC-formatted version, I’m afraid. So you will have to do the libsbml conversion, it seems.
+
+I understand that this should be straightforward enough? I was at one point reasonably involved with SBML development, so am pretty sure that Recon 2.2 is 100% valid with the legacy format. (It was checked numerous times with the online validator).
+
+Anyways, sorry about not making the leap to FBC-version, but I think that you’ll be ok. If you have any problems, then please let me know, or perhaps better still, mail to the rather wonderful SBML Google Group:
+
+https://groups.google.com/forum/#!forum/sbml-discuss
+
+Cheers,
+
+Neil.
+
+Neil Swainston, PhD
+Senior Experimental Officer
+
+Centre for Synthetic Biology of Fine and Speciaity Chemicals (SYNBIOCHEM)
+Manchester Institute of Biotechnology
+University of Manchester
+Manchester M1 7DN
+United Kingdom
+
+----------
+----------
+----------
+
+Message date: 9 November 2016
+Message from: T Cameron Waller (cameron.waller@biochem.utah.edu)
+Message to: Neil Swainston (neil.swainston@manchester.ac.uk)
+
+Hi Neil,
+
+I am very interested in your current model of human metabolism, Recon 2.2 (https://www.ncbi.nlm.nih.gov/pubmed/27358602). Thank you very much for making this contribution to the scientific community! My team studies metabolism, and I would like to use your model to give general context to our experiments and data. My intention is to use Recon 2.2 as a (framework for a) general model of the metabolic network, representing properties of metabolites, proteins, transcripts, and genes and relations between them. I do not intend to use Recon 2.2 for computational simulations.
+
+I accessed Recon 2.2 from the BioModels Database (http://www.ebi.ac.uk/biomodels-main/MODEL1603150001) with format in SBML Level 2 Version 4. When I tried to load the model into COBRApy (https://opencobra.github.io/cobrapy/) for general exploration and format conversion, I learned that Recon 2.2's version of SBML is apparently pre-FBC Version 2 and so is not the preferred format for use in COBRApy. I think I can resolve compatibility issues using LibSBML.
+
+Before I proceed, I want to make sure to use the most current version of Recon 2.2 and the best strategy for compatibility. Do you have recommendations for using Recon 2.2 in COBRApy? Do you have a version of Recon 2.2 in a more current version of SBML?
+
+Thank you,
+
+T Cameron Waller
+
+Department of Biochemistry
+University of Utah

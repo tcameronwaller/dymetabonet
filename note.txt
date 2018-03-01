@@ -4,6 +4,328 @@ Research With Jared P. Rutter and Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+28 February 2018
+
+----------
+Metabolite identifiers
+
+Recon 2M.2 has many metabolites with incorrect identifiers.
+These identifiers follow a pattern similar to "MNXMK_0000".
+This problem applies to 215 metabolites and their reactions in Recon 2M.2.
+Manual curation is necessary to correct these identifiers.
+
+Be careful when changing identifiers.
+"MNXMK_05321" could match "MNXMK_05321000".
+
+----------
+Boundary
+
+Enable MetaNetX to reconcile metabolites at model's boundary.
+
+Recon 2M.2 includes a compartment with identifier "b" and description "Extra organism".
+Change this compartment's description to "model boundary".
+The identifiers of metabolites in Recon 2M.2 have designations for the boundary such as "MNXM1053_c_boundary".
+Change this annotation to "MNXM1053_b".
+MetaNetX seems to recognize this annotation correctly.
+
+This problem applies to 632 metabolites and their reactions in Recon 2M.2.
+
+When preparing information for use in my application, I will probably remove all boundary metabolites and reactions, as these are only relevant to simulations.
+
+--------------------------------------------------
+27 February 2018
+
+----------
+Boundary
+
+The metabolic model needs metabolites and reactions to represent exchange with the environment.
+
+Do not remove all designations of metabolites to the boundary.
+Metabolites with "boundaryCondition=true" need to have unique identifiers.
+The problem is that MetaNetX expects the identifier "BOUNDARY" for this compartment.
+Also, "MNXM1053_e_boundary" should instead be "MNXM1053_BOUNDARY".
+
+https://docs.python.org/3/howto/regex.html
+https://docs.python.org/3/library/re.html
+
+re.sub(r"_[ecimxr]_boundary", "_BOUNDARY", content)
+
+MetaNetX recognizes neither "MNXM1053_e_boundary" nor "MNXM1053_BOUNDARY" nor "MNXM1053@BOUNDARY".
+I need to figure out what notation MetaNetX will recognize.
+What is the BiGG notation for boundary?
+
+Maybe try changing to "MNXM1053_boundary".
+Or, define some new single character and define a new compartment for the boundary with an identifier to match that character.
+
+----------
+MetaNetX Reconciliation for Recon 2M.2
+
+Plan 
+
+Change identifiers of metabolites in Recon 2M.2 to help MetaNetX recognize.
+
+"M_MNXM1001_e_boundary" to "M_MNXM1001_e"
+This change might improve MetaNetX's reconciliation.
+
+Parse SBML XML file as text.
+In both list of species and list of reactions...
+Replace "_e_boundary" with "_e"
+Replace "_c_boundary" with "_c"
+Replace "_m_boundary" with "_m"
+
+----------
+MetaNetX Reconciliation for Recon 2M.2
+
+Reconciliaion parameters
+Source: "Recon2M.2_MNX_Entrez_Gene.xml"
+Mapping evidence: "all"
+SBML type: "Generic"
+
+Reconciliation Summary
+
+metabolites
+0: "not mapped to the MNXref namespace"
+177: "not mapped to the MNXref namespace and ID modified"
+-bad
+0: "partially mapped to the MNXref namespace"
+2: "mapped to the MNXref namespace with same ID and same description"
+-good
+1374: "mapped to the MNXref namespace with different ID but same description"
+-good
+0 "mapped to the MNXref namespace with same ID but different description"
+815: "mapped to the MNXref namespace with different ID and different description"
+-bad
+461: "merged with the same description"
+-bad
+8: "merged with different description"
+-bad
+
+reactions
+0: "not mapped to the MNXref namespace"
+0: "not mapped to the MNXref namespace and ID modified"
+1618: "partially mapped to the MNXref namespace"
+-good
+0: "mapped to the MNXref namespace with same ID and same description"
+0: "mapped to the MNXref namespace with different ID but same description"
+0 "mapped to the MNXref namespace with same ID but different description"
+4864: "mapped to the MNXref namespace with different ID and different description"
+-good
+25: "merged with the same description"
+-bad
+31: "merged with different description"
+-bad
+
+----------
+MetaNetX Reconciliation for Recon 2M.2
+
+Reconciliaion parameters
+Source: "Recon2M.2_MNX_Entrez_Gene.xml"
+Mapping evidence: "medium"
+SBML type: "Generic"
+
+Reconciliation Summary
+
+metabolites
+0: "not mapped to the MNXref namespace"
+594: "not mapped to the MNXref namespace and ID modified"
+0: "partially mapped to the MNXref namespace"
+2: "mapped to the MNXref namespace with same ID and same description"
+1051: "mapped to the MNXref namespace with different ID but same description"
+0 "mapped to the MNXref namespace with same ID but different description"
+721: "mapped to the MNXref namespace with different ID and different description"
+110: "merged with the same description"
+1: "merged with different description"
+
+reactions
+0: "not mapped to the MNXref namespace"
+0: "not mapped to the MNXref namespace and ID modified"
+2102: "partially mapped to the MNXref namespace"
+0: "mapped to the MNXref namespace with same ID and same description"
+0: "mapped to the MNXref namespace with different ID but same description"
+0 "mapped to the MNXref namespace with same ID but different description"
+4379: "mapped to the MNXref namespace with different ID and different description"
+25: "merged with the same description"
+27: "merged with different description"
+
+Improvement of reconciliation
+
+Metabolites
+0: "not mapped to the MNXref namespace"
+594: "not mapped to the MNXref namespace and ID modified"
+-bad
+-plan: change "M_MNXM1001_e_boundary" to "M_MNXM1001_e"
+-plan: manually determine correct identifiers, MNXMK_0000 -> MNXM527231
+0: "partially mapped to the MNXref namespace"
+2: "mapped to the MNXref namespace with same ID and same description"
+1051: "mapped to the MNXref namespace with different ID but same description"
+-good
+0 "mapped to the MNXref namespace with same ID but different description"
+721: "mapped to the MNXref namespace with different ID and different description"
+-bad
+-plan: manually curate which descriptions to use, those from Recon 2M.2 or MetaNetX
+110: "merged with the same description"
+-plan: change "M_MNXM103_e_boundary" to "M_MNXM103"
+1: "merged with different description"
+
+reactions
+0: "not mapped to the MNXref namespace"
+0: "not mapped to the MNXref namespace and ID modified"
+2102: "partially mapped to the MNXref namespace"
+-good
+0: "mapped to the MNXref namespace with same ID and same description"
+0: "mapped to the MNXref namespace with different ID but same description"
+0 "mapped to the MNXref namespace with same ID but different description"
+4379: "mapped to the MNXref namespace with different ID and different description"
+-good
+25: "merged with the same description"
+-bad
+-plan: manually curate
+27: "merged with different description"
+-bad
+-plan: manually curate
+
+----------
+MetaNetX, MNXref
+
+https://www.ncbi.nlm.nih.gov/pubmed/26527720
+
+MNXref is a more universal naming system than BiGG.
+MetaNetX provides better tools for identifier mapping that BiGG.
+
+----------
+BiGG Models
+
+https://www.ncbi.nlm.nih.gov/pubmed/26476456
+
+
+----------
+Plan
+
+-model, basic information about metabolic entities and sets
+--
+--use Recon 2M.2
+--refine model using MetaNetX and Python
+--use HMDB identifiers from MetaNetX
+--use Python XML parser to read information from HMDB
+--extract PubChem identifiers from HMDB
+
+-custom data
+--association and representation of custom data with network's elements
+--incorporate general identifiers with information about metabolic entities
+--control view to import and view custom data's association to entities
+--only support association to metabolites
+--color saturation
+--data control view changes color scheme in network's diagram for favorable data representations
+
+-summary view
+--top left corner of view
+--concise summary information about filters on entities and query of network and subnetwork
+--summary information about filters on entities and queries on network
+--export information about all entities in network, subnetwork, or current selection
+
+-detail view
+--below summary view in top left corner
+--node selection
+---comprehensive information about entity of node's selection
+--path selection
+---list of nodes in path
+---bar chart of experimental values for each node in path
+
+-prompt view
+--activate behavior for network's diagram and network's node
+---remove all nodes and links or specific single node from subnetwork
+---lock or unlock all nodes or specific node
+
+-query view
+--table to summarize all paths that traversal found
+--selection of path from list emphasizes nodes in network's diagram and displays names or experimental data in detail view
+
+-emphasis of selections of sets
+--hover over row for compartment or process highlights relevant nodes in network's diagram
+--as this behavior needs to traverse between views, I will need to change a state variable for set selection
+--to avoid unnecessary restoration of views, I will probably change this state variable without initiating a recursive loop
+--I can still use an action that just does not initiate a recursive loop
+
+-representation of replicate nodes for metabolites
+--distinct bubbles on periphery of reaction's node
+--reaction's node needs information about replicate metabolites
+--reaction might also need some representation of whether or not all of its metabolites are in the subnetwork
+
+-representation of reaction's nodes
+--visual mark for reactions without all metabolites in network (only those omitted)
+--when preparing reactions' nodes, determine whether all of the reaction's participants have explict representations in nodes and links
+--if not all of reactions' participants have representations, include indicator on reaction's node
+--maybe an asterisk or something
+--re-determine and re-draw directional markers for reactions at conclusion of simulations for layout
+--drag of node should initiate simulation and re-draw of reactions' directions
+
+-tip view to explain the utility of various controls
+
+-style for clarity and aesthetics
+
+--------------------------------------------------
+26 February 2018
+
+----------
+Plan
+Meeting with Jared P. Rutter and Alexander Lex
+
+Contributions
+
+1. Inclusion of transport events between processes' compartments
+Reactions in the metabolic model have annotation only for a single process (subsystem).
+Processes with dispersal between multiple compartments are discontinuous in the model, while in reality they behave continuously.
+Discontinuous processes are inaccessible for topological traversals.
+
+2. Representation of the metabolic network with and without compartmentalization
+Metabolomics does not distinguish between cellular compartments.
+The topology of the network differs dramatically with and without compartmentalization's modularity.
+
+3. Simplifications of metabolites with excessive connectivity
+Without simplifications, promiscuous metabolites like water dominate topological traversals with irrelevant information.
+Metabolomics usually has little interest in these promiscuous metabolites.
+
+4. Contextual filters
+Contextual filters simplify the representation of the network.
+Transport reactions are irrelevant if compartmentalization is irrelevant.
+Reactions and metabolites depend on each other for their relevance.
+If filters remove a reaction's metabolites, then they also remove that reaction.
+Demonstrate the utility of these contextual filters.
+
+5. Topological traversals or graph queries
+Proximity traversal (breadth-first) accesses a single entity's context.
+Path traversal (shortest simple path) accesses close-range and long range relations.
+Connection traversal (pair-wise shortest simple path) accesses a custom subset for multiple analytes of interest.
+Traversals give information about relations within the network, and this information is useful to analysts.
+
+6. Association and representation of custom data on metabolic network
+Enhance association of definitive identifiers to metabolites.
+Input custom data with identifiers.
+Represent values visually on nodes in network.
+
+Audience
+
+Target audience includes investigators who use metabolomics.
+Catering to this audience enhances the novelty and contribution of the project.
+Select a journal in which the project's report will be a competitive candidate for a favorable schedule to publication.
+
+Journal
+
+1. Frontiers in Molecular Biosciences, Metabolomics (https://www.frontiersin.org/journals/molecular-biosciences#)
+Example Articles:
+1. Benjamin Merlet et al. "A Computational Solution to Automatically Map Metabolite Libraries in the Context of Genome Scale Metabolic Networks". Frontiers in Molecular Biosciences. 2016. <https://www.ncbi.nlm.nih.gov/pubmed/26909353>.
+2. Philippe Rinaudo et al. "biosigner: A New Method for the Discovery of Significant Molecular Signatures from Omics Data". Frontiers in Molecular Biosciences. 2016. <https://www.ncbi.nlm.nih.gov/pubmed/27446929>.
+3. Thomas Nagele et al. "A Strategy for Functional Interpretation of Metabolomic Time Series Data in Context of Metabolic Network Information". Frontiers in Molecular Biosciences. 2016. <https://www.ncbi.nlm.nih.gov/pubmed/27014700>.
+4. Dhouha Grissa et al. "Feature Selection Methods for Early Predictive Biomarker Discovery Using Untargeted Metabolomic Data". Frontiers in Molecular Biosciences. 2016. <https://www.ncbi.nlm.nih.gov/pubmed/27458587>.
+5. Martin Kaltdorf et al. "Systematic Identification of Anti-Fungal Drug Targets by a Metabolic Network Approach". Frontiers in Molecular Biosciences. 2016. <https://www.ncbi.nlm.nih.gov/pubmed/27379244>.
+
+2. Metabolites (http://www.mdpi.com/journal/metabolites)
+Example Articles:
+1. Shaurya Chanana et al. "Natural Product Discovery Using Planes of Principal Component Analysis in R (PoPCAR)". Metabolites. 2017. 7. 3. 34. <https://www.ncbi.nlm.nih.gov/pubmed/28703778>.
+2. Tyler W. H. Backman et al. "Constraining Genome-Scale Models to Represent the Bow Tie Structure of Metabolism for 13C Metabolic Flux Analysis". Metabolites. 2018. 8. 1. 3. <https://www.ncbi.nlm.nih.gov/pubmed/29300340>.
+3. Bofei Zhang et al. "RaMP: A Comprehensive Relational Database of Metabolomics Pathways for Pathway Enrichment Analysis of Genes and Metabolites". Metabolites. 2018. 8. 1. 16. <https://www.ncbi.nlm.nih.gov/pubmed/29470400>.
+
+--------------------------------------------------
 25 February 2018
 
 ----------
@@ -11,8 +333,6 @@ Progress
 
 Implement zoom and pan behavior on network's diagram.
 If drag interaction on diagram's base interferes with click behavior for prompt, then place an abbreviation prompt in the top left corner and require click there to activate prompt view for network's diagram.
-
-
 
 --------------------------------------------------
 23 February 2018
