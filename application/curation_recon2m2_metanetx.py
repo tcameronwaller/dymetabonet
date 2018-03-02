@@ -171,6 +171,8 @@ def correctModelBoundary(content=None):
         # Determine whether compartment is for model's boundary
         if compartment.attrib["id"] == "b":
             compartment.attrib["name"] = "model boundary"
+        if compartment.attrib["id"] == "e":
+            compartment.attrib["name"] = "extracellular region"
     # Correct metabolites for model's boundary
     for metabolite in reference["metabolites"].findall(
     "version:species", reference["space"]
@@ -227,7 +229,6 @@ def changeModelMetabolitesIdentifiers(
     reference = copyInterpretContent(content=content)
     # Change content for each combination of original and novel identifiers
     for row in metabolites_identifiers:
-        print(row)
         # Construct targets to recognize original and novel identifiers
         original_elements = ["_", row["identifier_original"], "_"]
         original_target = "".join(original_elements)
@@ -242,25 +243,21 @@ def changeModelMetabolitesIdentifiers(
                 metabolite.attrib["id"] = metabolite.attrib["id"].replace(
                     original_target, novel_target
                 )
-
-    # TODO: This procedure for reactions' metabolites doesn't work...
-
-    # Change identifiers of reactions' metabolites
-    for reaction in reference["reactions"].findall(
-    "version:reaction", reference["space"]
-    ):
-        # Search reaction's metabolites
-        for metabolite in reaction.iter(
-        "{http://www.sbml.org/sbml/level2/version4}speciesReference"
+        # Change identifiers of reactions' metabolites
+        for reaction in reference["reactions"].findall(
+        "version:reaction", reference["space"]
         ):
-            # Determine whether to change metabolite's identifier
-            if original_target in metabolite.attrib["species"]:
-                print(metabolite.attrib["species"])
-                metabolite.attrib["species"] = (
-                    metabolite.attrib["species"].replace(
-                        original_target, novel_target
+            # Search reaction's metabolites
+            for metabolite in reaction.iter(
+            "{http://www.sbml.org/sbml/level2/version4}speciesReference"
+            ):
+                # Determine whether to change metabolite's identifier
+                if original_target in metabolite.attrib["species"]:
+                    metabolite.attrib["species"] = (
+                        metabolite.attrib["species"].replace(
+                            original_target, novel_target
+                        )
                     )
-                )
     # Return content with changes
     return reference["content"]
 
@@ -280,7 +277,7 @@ def main():
             directory, "recon2m2_mnx_entrez_gene.xml"
             )
     in_file_path_metabolites_identifiers = os.path.join(
-            directory, "translation_metabolite_identifier.csv"
+            directory, "curation_metabolite_identifier.csv"
             )
     out_file_path_model = os.path.join(directory, "test.xml")
     # Read information from file
@@ -293,7 +290,15 @@ def main():
                 map(lambda row: dict(row), list(reader))
                 )
     # Correct content
-    content_boundary = correctModelBoundary(content=content)
+
+    # TODO: Remove unnecessary prefixes from identifiers for metabolites and reactions' metabolites
+    #content_prefix = removeModelPrefix(content=content)
+
+    content_boundary = correctModelBoundary(content=content_prefix)
+
+    # TODO: correct name of extracellular space... separate from boundary...
+    # TODO: Or just make correctModelBoundary more general, like changeTerminology
+
     content_identifier = changeModelMetabolitesIdentifiers(
         metabolites_identifiers=metabolites_identifiers,
         content=content_boundary
