@@ -4,6 +4,16 @@ Research With Jared P. Rutter and Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+2 March 2018
+
+----------
+
+MetaNetX merges replicate metabolites or reactions to a single metabolite or reaction.
+This final metabolite or reaction might have mapped successfully to MetaNetX's name space.
+Make sure the final metabolite or reaction mapped successfully.
+If the final metabolite or reaction mapped successfully, then there is not a problem.
+
+--------------------------------------------------
 28 February 2018
 
 ----------
