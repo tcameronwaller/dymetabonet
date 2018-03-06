@@ -4,6 +4,49 @@ Research With Jared P. Rutter and Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+6 March 2018
+
+----------
+Preparation of Metabolic Model
+
+1. Reconciliation
+Reconciliation involves translating information from Recon 2M.2 to MetaNetX's name space.
+MetaNetX offers standardized names and identifiers and also controls for some discrepancies in the model.
+-correct annotations for model's boundary
+-include manual assistance for mapping of identifiers to MetaNetX's name space
+
+2. Extraction
+Extraction involves accessing relevant information from files from MetaNetX.
+-extract basic information about compartments, metabolites, and reactions
+
+3. Refinement
+Refinement involves curation, correction, and derivation of information for use in the application.
+-remove redundant metabolites
+--MNXM1 and MNXM01 both refer to proton
+--changing the identifier for any metabolite should also change reactions' participants
+-remove irrelevant reactions
+--MNXR01 converts proton to proton
+--boundary reactions are only relevant for simulation and are irrelevant for this project
+-correct names of many metabolites from MetaNetX
+--change name of MNXM1 to "proton"
+-include identifiers for metabolites in PubChem
+-derive transport behavior of reactions
+-include transport reactions in processes
+-determine reactions that are replicates or partially redundant
+
+Errors in information from MetaNetX
+
+MNXM1 and MNXM01 both refer to proton
+MNXR01 refers to conversion of proton to proton
+Remove the redundancy of MNXM1 and MNXM01.
+Remove the unnecessary MNXR01.
+Change the description of MNXM1 to "proton".
+
+Some reactions have empty string, "", for process.
+Some reactions have "model:Unassigned" for process.
+Assign reactions in these categories to "other".
+
+--------------------------------------------------
 5 March 2018
 
 ----------
