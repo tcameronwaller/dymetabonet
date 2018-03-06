@@ -369,7 +369,9 @@ def main():
     in_file_path_metabolites_identifiers = os.path.join(
             directory, "curation_metabolite_identifier.csv"
             )
-    out_file_path_model = os.path.join(directory, "test.xml")
+    out_file_path_model = os.path.join(
+        directory, "recon2m2_metanetx_curation.xml"
+    )
     # Read information from file
     #with open(in_file_path_model, "r") as in_file:
     #    content = in_file.read()

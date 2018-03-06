@@ -4,6 +4,69 @@ Research With Jared P. Rutter and Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+5 March 2018
+
+----------
+Report Plan
+
+Report the percentage of metabolites with coverage by each type of identifier.
+
+Report progress on curation of Recon 2M.2 for reconciliation in MetaNetX.
+
+----------
+Data translation from MetaNetX
+
+Do not use the SBML export from MetaNetX.
+Use the export in MetaNetX's tabular format.
+
+----------
+Data curation in Recon 2M.2
+
+After import to MetaNetX, change names of metabolites to be more descriptive.
+For some metabolites, use the names from Recon 2M.2 instead of information from MetaNetX.
+
+----------
+MetaNetX Reconciliation of Recon 2M.2
+
+Script "curation_recon2m2_metanetx.py" modifies information in Recon 2M.2 in multiple ways to facilitate reconciliation with MetaNetX.
+With these modifications, here is the summary of reconciliation to MetaNetX.
+
+compartments
+0: "not mapped to the MNXref namespace"
+0: "not mapped to the MNXref namespace and ID modified"
+0: "partially mapped to the MNXref namespace"
+0: "mapped to the MNXref namespace with same ID and same description"
+9: "mapped to the MNXref namespace with different ID but same description"
+0 "mapped to the MNXref namespace with same ID but different description"
+0: "mapped to the MNXref namespace with different ID and different description"
+0: "merged with the same description"
+0: "merged with different description"
+
+metabolites
+0: "not mapped to the MNXref namespace"
+43: "not mapped to the MNXref namespace and ID modified"
+0: "partially mapped to the MNXref namespace"
+2: "mapped to the MNXref namespace with same ID and same description"
+944: "mapped to the MNXref namespace with different ID but same description"
+0 "mapped to the MNXref namespace with same ID but different description"
+743: "mapped to the MNXref namespace with different ID and different description"
+0: "merged with the same description"
+0: "merged with different description"
+
+reactions
+0: "not mapped to the MNXref namespace"
+0: "not mapped to the MNXref namespace and ID modified"
+1208: "partially mapped to the MNXref namespace"
+0: "mapped to the MNXref namespace with same ID and same description"
+0: "mapped to the MNXref namespace with different ID but same description"
+0 "mapped to the MNXref namespace with same ID but different description"
+4638: "mapped to the MNXref namespace with different ID and different description"
+26: "merged with the same description"
+27: "merged with different description"
+
+If MetaNetX found reactions to be redundant with other reactions, then it merged them to eliminate redundancy.
+
+--------------------------------------------------
 2 March 2018
 
 ----------
