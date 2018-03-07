@@ -89,7 +89,7 @@ import pickle
 # Functionality
 
 
-def readFileTable(path_file=None, names=None, delimiter=None):
+def read_file_table(path_file=None, names=None, delimiter=None):
     """
     Reads and organizes source information from file
 

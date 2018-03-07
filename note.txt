@@ -4,6 +4,20 @@ Research With Jared P. Rutter and Alexander Lex
 --------------------------------------------------
 
 --------------------------------------------------
+7 March 2018
+
+----------
+Plan
+
+Prepare a report with details about preparation and customization of the metabolic model.
+
+For example, use names from Recon 2M.2 if they are more neat or informative than those from MetaNetX.
+
+Extract names for reactions from the SBML version of the model after reconciliation to MetaNetX.
+Export these to a table with tab delimiters.
+Import into spread sheet for customization.
+
+--------------------------------------------------
 6 March 2018
 
 ----------

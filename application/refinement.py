@@ -85,24 +85,13 @@ import pickle
 
 # Packages and modules from local source
 
-#directory = os.path.join("C:\\", "Data")
-#print(directory)
-#os.chdir(directory)
-#print(os.getcwd())
-#print(os.listdir())
-
-#print(sys.path)
-#sys.path.append(directory)
-
-#import classes
-
-#importlib.reload(package_module)
+import utility
 
 ###############################################################################
 # Functionality
 
 
-def readSource():
+def read_source():
     """
     Reads and organizes source information from file
 
@@ -124,15 +113,30 @@ def readSource():
     path_file_metabolism = os.path.join(
             directory, "metabolism_sets_entities_extraction.pickle"
     )
-    path_file_metabolite_removal = os.path.join(
-            directory, "refinement_metabolite_removal.csv"
+    path_file_removal_metabolites = os.path.join(
+            directory, "refinement_removal_metabolites.csv"
     )
-
+    path_file_removal_reactions = os.path.join(
+            directory, "refinement_removal_reactions.csv"
+    )
+    path_file_change_metabolites = os.path.join(
+            directory, "refinement_change_metabolites.csv"
+    )
     # Read information from file
     with open(path_file_metabolism, "rb") as file_source:
         metabolism = pickle.load(file_source)
-    metabolite_removal = utility.readFileTable(
-        path_file=path_file_metabolite_removal,
+    removal_metabolites = utility.read_file_table(
+        path_file=path_file_removal_metabolites,
+        names=None,
+        delimiter="\t"
+    )
+    removal_reactions = utility.read_file_table(
+        path_file=path_file_removal_reactions,
+        names=None,
+        delimiter="\t"
+    )
+    change_metabolites = utility.read_file_table(
+        path_file=path_file_change_metabolites,
         names=None,
         delimiter="\t"
     )
@@ -141,8 +145,88 @@ def readSource():
         "compartments": metabolism["compartments"],
         "metabolites": metabolism["metabolites"],
         "reactions": metabolism["reactions"],
-        "metabolite_removal": metabolite_removal,
+        "removal_metabolites": removal_metabolites,
+        "removal_reactions": removal_reactions,
+        "change_metabolites": change_metabolites,
     }
+
+
+def remove_metabolites(
+    removal_metabolites=None, metabolites_original=None,
+    reactions_original=None
+):
+    """
+    Removes information about specific metabolites
+
+    arguments:
+        removal_metabolites (list<dict<str>>): identifiers of metabolites to
+            remove and identifiers of metabolites with which to replace them
+        metabolites_original (dict<dict>): information about metabolites
+        reactions_original (dict<dict>): information about reactions
+
+    returns:
+        (dict<dict<dict>>): information about metabolites and reactions
+
+    raises:
+
+    """
+
+    # Removal of a metabolite requires changes to information about both
+    # metabolites and reactions.
+    # Removal of a metabolite requires its replacement with another metabolite.
+    # Copy information
+    metabolites_novel = copy.deepcopy(metabolites_original)
+    reactions_novel = copy.deepcopy(reactions_original)
+    for row in removal_metabolites:
+        # Determine identifiers of metabolites for removal and replacement
+        removal = row["removal_identifier"]
+        replacement = row["replacement_identifier"]
+        # Change information about metabolites
+        if removal in metabolites_novel:
+            del metabolites_novel[removal]
+        # Change information about reactions
+        for key, value in reactions_novel.items():
+            participants = value["participants"]
+            for participant in participants:
+                if participant["metabolite"] == removal:
+                    participant["metabolite"] = replacement
+    # Compile and return information
+    return {
+        "metabolites": metabolites_novel,
+        "reactions": reactions_novel
+    }
+
+
+def remove_reactions(removal_reactions=None, reactions_original=None):
+    """
+    Removes information about specific reactions
+
+    arguments:
+        removal_reactions (list<dict<str>>): identifiers of reactions to
+            remove
+        reactions_original (dict<dict>): information about reactions
+
+    returns:
+        (dict<dict>): information about reactions
+
+    raises:
+
+    """
+
+    # Copy information
+    reactions_novel = copy.deepcopy(reactions_original)
+    for row in removal_reactions:
+        # Determine identifiers of metabolites for removal and replacement
+        removal = row["identifier"]
+        # Change information about metabolites
+        if removal in reactions_novel:
+            del reactions_novel[removal]
+    # Return information
+    return reactions_novel
+
+
+
+
 
 
 ###############################################################################
@@ -155,18 +239,17 @@ def main():
     """
 
     # Read source information from file
-    source = readSource()
+    source = read_source()
     # Remove irrelevant metabolites
-    removal_metabolites = removeMetabolites(
+    removal_metabolites = remove_metabolites(
         removal_metabolites=source["removal_metabolites"],
-        original_metabolties=source["metabolites"],
-        original_reactions=source["reactions"]
+        metabolites_original=source["metabolites"],
+        reactions_original=source["reactions"]
     )
     # Remove irrelevant reactions
-    # TODO: I need a file with identifiers of all reactions to remove
-    removal_reactions = removeReactions(
-        removal_identifiers=source["removal_reactions"],
-        original_reactions=removal_metabolites["reactions"]
+    removal_reactions = remove_reactions(
+        removal_reactions=source["removal_reactions"],
+        reactions_original=removal_metabolites["reactions"]
     )
     # Remove irrelevant compartments
     # TODO: remove the boundary compartment? Probably yes...
@@ -174,7 +257,10 @@ def main():
     # Change metabolites' information
     # TODO: I need a file with identifiers of metabolites to change
     # TODO: then I need all the information to change for each metabolite
-
+    change_metabolites = change_metabolites(
+        change_metabolites=source["change_metabolites"],
+        metabolites_original=removal_metabolites["metabolites"]
+    )
     # Change reactions' information
     # TODO: I need a file with identifiers of reactions to change and what to change
     # TODO: I especially need names for reactions

@@ -91,7 +91,7 @@ import utility
 # Functionality
 
 
-def readSource():
+def read_source():
     """
     Reads and organizes source information from file
 
@@ -125,17 +125,17 @@ def readSource():
     # Read information from file
     #with open(in_file_path_model, "r") as in_file:
     #    content = in_file.read()
-    genes = utility.readFileTable(
+    genes = utility.read_file_table(
         path_file=path_file_genes,
         names=["reaction", "genes", "low_bound", "up_bound", "direction"],
         delimiter="\t"
     )
-    compartments = utility.readFileTable(
+    compartments = utility.read_file_table(
         path_file=path_file_compartments,
         names=["identifier", "name", "source"],
         delimiter="\t"
     )
-    metabolites = utility.readFileTable(
+    metabolites = utility.read_file_table(
         path_file=path_file_metabolites,
         names=[
             "identifier", "name", "source", "formula", "mass", "charge",
@@ -143,7 +143,7 @@ def readSource():
         ],
         delimiter="\t"
     )
-    reactions = utility.readFileTable(
+    reactions = utility.read_file_table(
         path_file=path_file_reactions,
         names=[
             "identifier", "equation", "recon2m2", "metanetx",
@@ -160,7 +160,7 @@ def readSource():
     }
 
 
-def extractCompartments(source_compartments=None):
+def extract_compartments(source_compartments=None):
     """
     Extracts information from source about compartments
 
@@ -184,7 +184,7 @@ def extractCompartments(source_compartments=None):
     return compartments
 
 
-def extractMetabolites(source_metabolites=None):
+def extract_metabolites(source_metabolites=None):
     """
     Extracts information from source about metabolites
 
@@ -200,12 +200,12 @@ def extractMetabolites(source_metabolites=None):
 
     metabolites = {}
     for source_metabolite in source_metabolites:
-        record = extractMetabolite(source_metabolite=source_metabolite)
+        record = extract_metabolite(source_metabolite=source_metabolite)
         metabolites[record["identifier"]] = record
     return metabolites
 
 
-def extractMetabolite(source_metabolite=None):
+def extract_metabolite(source_metabolite=None):
     """
     Extracts information from source about a metabolite
 
@@ -225,7 +225,7 @@ def extractMetabolite(source_metabolite=None):
     formula = source_metabolite["formula"]
     mass = source_metabolite["mass"]
     charge = source_metabolite["charge"]
-    reference = extractMetaboliteReference(
+    reference = extract_metabolite_reference(
         identifier=identifier, source_reference=source_metabolite["reference"]
     )
     # Compile and return information
@@ -239,7 +239,7 @@ def extractMetabolite(source_metabolite=None):
     }
 
 
-def extractMetaboliteReference(identifier=None, source_reference=None):
+def extract_metabolite_reference(identifier=None, source_reference=None):
     """
     Extracts references from source about a metabolite
 
@@ -256,41 +256,41 @@ def extractMetaboliteReference(identifier=None, source_reference=None):
     """
 
     # Collect identifiers for each reference
-    chebi = extractReferenceInformation(
+    chebi = extract_reference_information(
         source_reference=source_reference, key="chebi:"
     )
-    bigg = extractReferenceInformation(
+    bigg = extract_reference_information(
         source_reference=source_reference, key="bigg:"
     )
-    metanetx_prior = extractReferenceInformation(
+    metanetx_prior = extract_reference_information(
         source_reference=source_reference, key="deprecated:"
     )
     metanetx = [identifier] + metanetx_prior
-    envipath = extractReferenceInformation(
+    envipath = extract_reference_information(
         source_reference=source_reference, key="envipath:"
     )
-    hmdb = extractReferenceInformation(
+    hmdb = extract_reference_information(
         source_reference=source_reference, key="hmdb:"
     )
-    kegg = extractReferenceInformation(
+    kegg = extract_reference_information(
         source_reference=source_reference, key="kegg:"
     )
-    lipidmaps = extractReferenceInformation(
+    lipidmaps = extract_reference_information(
         source_reference=source_reference, key="lipidmaps:"
     )
-    metacyc = extractReferenceInformation(
+    metacyc = extract_reference_information(
         source_reference=source_reference, key="metacyc:"
     )
-    reactome = extractReferenceInformation(
+    reactome = extract_reference_information(
         source_reference=source_reference, key="reactome:"
     )
-    sabiork = extractReferenceInformation(
+    sabiork = extract_reference_information(
         source_reference=source_reference, key="sabiork:"
     )
-    seed = extractReferenceInformation(
+    seed = extract_reference_information(
         source_reference=source_reference, key="seed:"
     )
-    slm = extractReferenceInformation(
+    slm = extract_reference_information(
         source_reference=source_reference, key="slm:"
     )
     # Compile and return information
@@ -310,7 +310,7 @@ def extractMetaboliteReference(identifier=None, source_reference=None):
     }
 
 
-def extractReferenceInformation(key=None, source_reference=None):
+def extract_reference_information(key=None, source_reference=None):
     """
     Extracts reference information
 
@@ -335,7 +335,7 @@ def extractReferenceInformation(key=None, source_reference=None):
     return identifiers
 
 
-def extractReactions(source_reactions=None, source_genes=None):
+def extract_reactions(source_reactions=None, source_genes=None):
     """
     Extracts information from source about reactions
 
@@ -352,17 +352,17 @@ def extractReactions(source_reactions=None, source_genes=None):
 
     reactions = {}
     for source_reaction in source_reactions:
-        def matchReactionGene(gene_record):
+        def match_reaction_gene(gene_record):
             return gene_record["reaction"] == source_reaction["identifier"]
-        source_gene = utility.find(matchReactionGene, source_genes)
-        record = extractReaction(
+        source_gene = utility.find(match_reaction_gene, source_genes)
+        record = extract_reaction(
             source_reaction=source_reaction, source_gene=source_gene
         )
         reactions[record["identifier"]] = record
     return reactions
 
 
-def extractReaction(source_reaction=None, source_gene=None):
+def extract_reaction(source_reaction=None, source_gene=None):
     """
     Extracts information from source about a reaction
 
@@ -380,18 +380,18 @@ def extractReaction(source_reaction=None, source_gene=None):
     # Determine information
     identifier = source_reaction["identifier"]
     equation = source_reaction["equation"]
-    reversibility = extractReactionReversibility(equation=equation)
-    participants = extractReactionParticipants(equation=equation)
-    processes = extractReactionProcess(
+    reversibility = extract_reaction_reversibility(equation=equation)
+    participants = extract_reaction_participants(equation=equation)
+    processes = extract_reaction_processes(
         source_process=source_reaction["process"]
     )
-    reference = extractReactionReference(
+    reference = extract_reaction_reference(
         recon2m2=source_reaction["recon2m2"],
         metanetx=source_reaction["metanetx"],
         enzyme_commission=source_reaction["enzyme_commission"],
         source_reference=source_reaction["reference"]
     )
-    genes = extractReactionGenes(source_gene=source_gene)
+    genes = extract_reaction_genes(source_gene=source_gene)
     # Compile and return information
     return {
         "identifier": identifier,
@@ -404,7 +404,7 @@ def extractReaction(source_reaction=None, source_gene=None):
     }
 
 
-def extractReactionReversibility(equation=None):
+def extract_reaction_reversibility(equation=None):
     """
     Extracts information about a reaction's reversibility
 
@@ -424,7 +424,7 @@ def extractReactionReversibility(equation=None):
         return False
 
 
-def extractReactionParticipants(equation=None):
+def extract_reaction_participants(equation=None):
     """
     Extracts information about a reaction's participants
 
@@ -439,16 +439,16 @@ def extractReactionParticipants(equation=None):
     """
 
     # Extract raw information about reaction's participants
-    participants_raw = extractReactionEquationRawParticipantsByRole(
+    participants_raw = extract_reaction_equation_raw_participants_by_role(
         equation=equation
     )
     # Extract information about participants' role, coefficient, metabolite,
     # and compartment
-    reactants = extractReactionParticipantsByRole(
+    reactants = extract_reaction_participants_by_role(
         participants_raw=participants_raw["reactants"],
         role="reactant"
     )
-    products = extractReactionParticipantsByRole(
+    products = extract_reaction_participants_by_role(
         participants_raw=participants_raw["products"],
         role="product"
     )
@@ -456,7 +456,7 @@ def extractReactionParticipants(equation=None):
     return reactants + products
 
 
-def extractReactionEquationRawParticipantsByRole(equation=None):
+def extract_reaction_equation_raw_participants_by_role(equation=None):
     """
     Extracts raw information about a reaction's participants from its equation
 
@@ -495,7 +495,7 @@ def extractReactionEquationRawParticipantsByRole(equation=None):
     }
 
 
-def extractReactionParticipantsByRole(participants_raw=None, role=None):
+def extract_reaction_participants_by_role(participants_raw=None, role=None):
     """
     Extracts information about a reaction's participants by role
 
@@ -514,14 +514,14 @@ def extractReactionParticipantsByRole(participants_raw=None, role=None):
     # Extract information about participants
     participants = []
     for participant_raw in participants_raw:
-        record = extractReactionParticipantByRole(
+        record = extract_reaction_participant_by_role(
             participant_raw=participant_raw, role=role
         )
         participants.append(record)
     return participants
 
 
-def extractReactionParticipantByRole(participant_raw=None, role=None):
+def extract_reaction_participant_by_role(participant_raw=None, role=None):
     """
     Extracts information about a reaction's participant by role
 
@@ -551,7 +551,7 @@ def extractReactionParticipantByRole(participant_raw=None, role=None):
     }
 
 
-def extractReactionProcess(source_process=None):
+def extract_reaction_processes(source_process=None):
     """
     Extracts information about a reaction's metabolic process
 
@@ -566,13 +566,13 @@ def extractReactionProcess(source_process=None):
     """
 
     # Separate references
-    processes = extractReferenceInformation(
+    processes = extract_reference_information(
         source_reference=source_process, key="model:"
     )
     return processes
 
 
-def extractReactionGenes(source_gene=None):
+def extract_reaction_genes(source_gene=None):
     """
     Extracts information about a reaction's genes
 
@@ -591,7 +591,7 @@ def extractReactionGenes(source_gene=None):
     return genes
 
 
-def extractReactionReference(
+def extract_reaction_reference(
     recon2m2=None, metanetx=None, enzyme_commission=None, source_reference=None
 ):
     """
@@ -613,29 +613,29 @@ def extractReactionReference(
     """
 
     # Collect identifiers for each reference
-    rhea = extractReferenceInformation(
+    rhea = extract_reference_information(
         source_reference=source_reference, key="rhea:"
     )
-    bigg = extractReferenceInformation(
+    bigg = extract_reference_information(
         source_reference=source_reference, key="bigg:"
     )
-    metanetx_prior = extractReferenceInformation(
+    metanetx_prior = extract_reference_information(
         source_reference=source_reference, key="deprecated:"
     )
     metanetx_current = [metanetx] + metanetx_prior
-    kegg = extractReferenceInformation(
+    kegg = extract_reference_information(
         source_reference=source_reference, key="kegg:"
     )
-    metacyc = extractReferenceInformation(
+    metacyc = extract_reference_information(
         source_reference=source_reference, key="metacyc:"
     )
-    reactome = extractReferenceInformation(
+    reactome = extract_reference_information(
         source_reference=source_reference, key="reactome:"
     )
-    sabiork = extractReferenceInformation(
+    sabiork = extract_reference_information(
         source_reference=source_reference, key="sabiork:"
     )
-    seed = extractReferenceInformation(
+    seed = extract_reference_information(
         source_reference=source_reference, key="seed:"
     )
     # Compile and return information
@@ -653,7 +653,7 @@ def extractReactionReference(
     }
 
 
-def writeProduct(information=None):
+def write_product(information=None):
     """
     Writes product information to file
 
@@ -692,15 +692,15 @@ def main():
     """
 
     # Read source information from file
-    source = readSource()
+    source = read_source()
     # Extract information about compartments
-    compartments = extractCompartments(
+    compartments = extract_compartments(
         source_compartments=source["compartments"]
     )
     # Extract information about metabolites
-    metabolites = extractMetabolites(source_metabolites=source["metabolites"])
+    metabolites = extract_metabolites(source_metabolites=source["metabolites"])
     # Extract information about reactions
-    reactions = extractReactions(
+    reactions = extract_reactions(
         source_reactions=source["reactions"], source_genes=source["genes"]
     )
     # Compile information
@@ -710,7 +710,7 @@ def main():
         "reactions": reactions
     }
     #Write product information to file
-    writeProduct(information=metabolism_sets_entities)
+    write_product(information=metabolism_sets_entities)
 
 
 if __name__ == "__main__":

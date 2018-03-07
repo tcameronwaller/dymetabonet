@@ -92,7 +92,7 @@ import utility
 # Test script
 
 
-def readSource():
+def read_source():
     """
     Reads and organizes source information from file
 
@@ -119,7 +119,7 @@ def readSource():
             )
     # Read information from file
     content = et.parse(path_file_model)
-    metabolites_identifiers = utility.readFileTable(
+    metabolites_identifiers = utility.read_file_table(
         path_file=path_file_metabolites_identifiers,
         names=None,
         delimiter="\t"
@@ -131,7 +131,7 @@ def readSource():
     }
 
 
-def copyInterpretModelContent(content=None):
+def copy_interpret_model_content(content=None):
     """
     Copies and interprets content in Systems Biology Markup Language (SBML)
 
@@ -175,7 +175,7 @@ def copyInterpretModelContent(content=None):
     }
 
 
-def removeModelIdentifierPrefix(content=None):
+def remove_model_identifier_prefix(content=None):
     """
     Removes unnecessary prefixes from identifiers for model's entities
 
@@ -194,7 +194,7 @@ def removeModelIdentifierPrefix(content=None):
     """
 
     # Copy and interpret content
-    reference = copyInterpretModelContent(content=content)
+    reference = copy_interpret_model_content(content=content)
     # Remove prefixes from identifiers for metabolites
     for metabolite in reference["metabolites"].findall(
     "version:species", reference["space"]
@@ -232,7 +232,7 @@ def removeModelIdentifierPrefix(content=None):
     return reference["content"]
 
 
-def changeModelBoundary(content=None):
+def change_model_boundary(content=None):
     """
     Changes annotations for a model's boundary
 
@@ -252,7 +252,7 @@ def changeModelBoundary(content=None):
     """
 
     # Copy and interpret content
-    reference = copyInterpretModelContent(content=content)
+    reference = copy_interpret_model_content(content=content)
     # Correct compartment for model's boundary
     for compartment in reference["compartments"].findall(
     "version:compartment", reference["space"]
@@ -290,7 +290,7 @@ def changeModelBoundary(content=None):
     return reference["content"]
 
 
-def changeModelCompartment(content=None):
+def change_model_compartment(content=None):
     """
     Changes annotations for a model's compartments
 
@@ -309,7 +309,7 @@ def changeModelCompartment(content=None):
     """
 
     # Copy and interpret content
-    reference = copyInterpretModelContent(content=content)
+    reference = copy_interpret_model_content(content=content)
     # Correct compartment for model's boundary
     for compartment in reference["compartments"].findall(
     "version:compartment", reference["space"]
@@ -321,7 +321,7 @@ def changeModelCompartment(content=None):
     return reference["content"]
 
 
-def changeModelMetabolitesIdentifiers(
+def change_model_metabolites_identifiers(
         metabolites_identifiers=None, content=None
 ):
     """
@@ -344,7 +344,7 @@ def changeModelMetabolitesIdentifiers(
     """
 
     # Copy and interpret content
-    reference = copyInterpretModelContent(content=content)
+    reference = copy_interpret_model_content(content=content)
     # Change content for each combination of original and novel identifiers
     for row in metabolites_identifiers:
         # Construct targets to recognize original and novel identifiers
@@ -380,7 +380,7 @@ def changeModelMetabolitesIdentifiers(
     return reference["content"]
 
 
-def writeProduct(content=None):
+def write_product(content=None):
     """
     Writes product content to file
 
@@ -417,17 +417,17 @@ def main():
     """
 
     # Read source information from file
-    source = readSource()
+    source = read_source()
     # Correct content
-    content_compartment = changeModelCompartment(content=source["content"])
-    content_boundary = changeModelBoundary(content=content_compartment)
-    content_prefix = removeModelIdentifierPrefix(content=content_boundary)
-    content_identifier = changeModelMetabolitesIdentifiers(
+    content_compartment = change_model_compartment(content=source["content"])
+    content_boundary = change_model_boundary(content=content_compartment)
+    content_prefix = remove_model_identifier_prefix(content=content_boundary)
+    content_identifier = change_model_metabolites_identifiers(
         metabolites_identifiers=source["metabolites_identifiers"],
         content=content_prefix
     )
     #Write product content to file
-    writeProduct(content=content_identifier)
+    write_product(content=content_identifier)
 
 
 if __name__ == "__main__":
