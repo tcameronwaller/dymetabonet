@@ -29,10 +29,13 @@ Refinement involves curation, correction, and derivation of information for use 
 --boundary reactions are only relevant for simulation and are irrelevant for this project
 -correct names of many metabolites from MetaNetX
 --change name of MNXM1 to "proton"
+-correct reactions
+--RAEFECF36 is erroneously MNXR01
 -include identifiers for metabolites in PubChem
 -derive transport behavior of reactions
 -include transport reactions in processes
 -determine reactions that are replicates or partially redundant
+
 
 Errors in information from MetaNetX
 
