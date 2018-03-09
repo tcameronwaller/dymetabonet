@@ -131,50 +131,6 @@ def read_source():
     }
 
 
-def copy_interpret_model_content(content=None):
-    """
-    Copies and interprets content in Systems Biology Markup Language (SBML)
-
-    This function copies and interprets content describing a metabolic model in
-    Systems Biology Markup Language (SBML), a form of Extensible Markup
-    Language (XML).
-
-    arguments:
-        content (object): content from file in Systems Biology Markup Language
-            (XML)
-
-    returns:
-        (object): references to definition of name space and sections within
-            content
-
-    raises:
-
-    """
-
-    # Copy content
-    content_copy = copy.deepcopy(content)
-    # Define name space
-    space = {
-        "version": "http://www.sbml.org/sbml/level2/version4",
-        "syntax": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    }
-    # Set references to sections within content
-    sbml = content_copy.getroot()
-    model = sbml[0]
-    compartments = model[1]
-    metabolites = model[2]
-    reactions = model[3]
-    # Compile information
-    return {
-        "space": space,
-        "content": content_copy,
-        "model": model,
-        "compartments": compartments,
-        "metabolites": metabolites,
-        "reactions": reactions
-    }
-
-
 def remove_model_identifier_prefix(content=None):
     """
     Removes unnecessary prefixes from identifiers for model's entities
@@ -194,7 +150,7 @@ def remove_model_identifier_prefix(content=None):
     """
 
     # Copy and interpret content
-    reference = copy_interpret_model_content(content=content)
+    reference = utility.copy_interpret_model_content(content=content)
     # Remove prefixes from identifiers for metabolites
     for metabolite in reference["metabolites"].findall(
     "version:species", reference["space"]
@@ -252,7 +208,7 @@ def change_model_boundary(content=None):
     """
 
     # Copy and interpret content
-    reference = copy_interpret_model_content(content=content)
+    reference = utility.copy_interpret_model_content(content=content)
     # Correct compartment for model's boundary
     for compartment in reference["compartments"].findall(
     "version:compartment", reference["space"]
@@ -309,7 +265,7 @@ def change_model_compartment(content=None):
     """
 
     # Copy and interpret content
-    reference = copy_interpret_model_content(content=content)
+    reference = utility.copy_interpret_model_content(content=content)
     # Correct compartment for model's boundary
     for compartment in reference["compartments"].findall(
     "version:compartment", reference["space"]
@@ -344,7 +300,7 @@ def change_model_metabolites_identifiers(
     """
 
     # Copy and interpret content
-    reference = copy_interpret_model_content(content=content)
+    reference = utility.copy_interpret_model_content(content=content)
     # Change content for each combination of original and novel identifiers
     for row in metabolites_identifiers:
         # Construct targets to recognize original and novel identifiers

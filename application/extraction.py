@@ -676,8 +676,6 @@ def write_product(information=None):
             directory, "metabolism_sets_entities_extraction.pickle"
             )
     # Write information to file
-    #with open(out_file_path_model, "w") as out_file:
-    #    out_file.write(content_identifier)
     with open(path_file, "wb") as file_product:
         pickle.dump(information, file_product)
 

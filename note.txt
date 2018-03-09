@@ -10,6 +10,7 @@ Research With Jared P. Rutter and Alexander Lex
 Plan
 
 Prepare a report with details about preparation and customization of the metabolic model.
+Store this report in a note document within the directory with other files for preparation of the metabolic model from Recon 2M.2.
 
 For example, use names from Recon 2M.2 if they are more neat or informative than those from MetaNetX.
 

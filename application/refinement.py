@@ -76,6 +76,7 @@ import shutil
 import csv
 import copy
 import pickle
+import xml.etree.ElementTree as et
 
 # Packages and modules from third parties
 
@@ -109,7 +110,10 @@ def read_source():
             os.sep, "media", "tcameronwaller", "primary", "data", "local",
             "research_lex", "project_profondeur", "profondeur",
             "metabolic_models", "homo-sapiens", "recon_2-m-2"
-            )
+    )
+    path_file_model = os.path.join(
+            directory, "recon2m2_mnx_entrez_gene.xml"
+    )
     path_file_metabolism = os.path.join(
             directory, "metabolism_sets_entities_extraction.pickle"
     )
@@ -122,7 +126,11 @@ def read_source():
     path_file_change_metabolites = os.path.join(
             directory, "refinement_change_metabolites.csv"
     )
+    path_file_change_reactions = os.path.join(
+            directory, "refinement_change_reactions.csv"
+    )
     # Read information from file
+    content = et.parse(path_file_model)
     with open(path_file_metabolism, "rb") as file_source:
         metabolism = pickle.load(file_source)
     removal_metabolites = utility.read_file_table(
@@ -140,14 +148,21 @@ def read_source():
         names=None,
         delimiter="\t"
     )
+    change_reactions = utility.read_file_table(
+        path_file=path_file_change_reactions,
+        names=None,
+        delimiter="\t"
+    )
     # Compile and return information
     return {
+        "content": content,
         "compartments": metabolism["compartments"],
         "metabolites": metabolism["metabolites"],
         "reactions": metabolism["reactions"],
         "removal_metabolites": removal_metabolites,
         "removal_reactions": removal_reactions,
         "change_metabolites": change_metabolites,
+        "change_reactions": change_reactions
     }
 
 
@@ -225,6 +240,62 @@ def remove_reactions(removal_reactions=None, reactions_original=None):
     return reactions_novel
 
 
+def remove_compartments(removal_compartments=None, compartments_original=None):
+    """
+    Removes information about specific compartments
+
+    arguments:
+        removal_compartments (list<str>): identifiers of compartments to remove
+        compartments_original (dict<dict>): information about compartments
+
+    returns:
+        (dict<dict>): information about compartments
+
+    raises:
+
+    """
+
+    # Copy information
+    compartments_novel = copy.deepcopy(compartments_original)
+    for removal in removal_compartments:
+        # Change information about compartments
+        if removal in compartments_novel:
+            del compartments_novel[removal]
+    # Return information
+    return compartments_novel
+
+
+def extract_reactions_names(content=None):
+    """
+    Extracts reactions' names
+
+    arguments:
+        content (object): content from file in Systems Biology Markup Language
+            (XML)
+
+    returns:
+        (dict<str>): names of reactions
+
+    raises:
+
+    """
+
+    # Copy and interpret content
+    reference = copy_interpret_model_content(content=content)
+    rows = []
+    # Change identifiers of reactions' metabolites
+    for reaction in reference["reactions"].findall(
+        "version:reaction", reference["space"]
+    ):
+        identifier = reaction.attrib["id"]
+        name = reaction.attrib["name"]
+        record = {
+            "identifier": identifier,
+            "name": name
+        }
+        rows.append(record)
+    # Return content with changes
+    return rows
 
 
 
@@ -252,18 +323,25 @@ def main():
         reactions_original=removal_metabolites["reactions"]
     )
     # Remove irrelevant compartments
-    # TODO: remove the boundary compartment? Probably yes...
-
+    removal_compartments = remove_compartments(
+        removal_compartments=["b"],
+        compartments_original=source["compartments"]
+    )
     # Change metabolites' information
-    # TODO: I need a file with identifiers of metabolites to change
-    # TODO: then I need all the information to change for each metabolite
     change_metabolites = change_metabolites(
         change_metabolites=source["change_metabolites"],
         metabolites_original=removal_metabolites["metabolites"]
     )
+    # Extract reactions' names from Recon 2M.2
+    reactions_names = extract_reactions_names(content=source["content"])
+    print("reactions names")
+    print(reactions_names)
+
     # Change reactions' information
     # TODO: I need a file with identifiers of reactions to change and what to change
     # TODO: I especially need names for reactions
+    # TODO: extract reaction names from Recon 2M.2 SBML
+    #change_reactions = change_reactions()
 
     # Enhance metabolites' identifiers
     # TODO: include PubChem identifiers from HMDB

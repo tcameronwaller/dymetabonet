@@ -119,6 +119,34 @@ def read_file_table(path_file=None, names=None, delimiter=None):
     return information
 
 
+def write_file_table(
+    information=None, path_file=None, names=None, delimiter=None
+):
+    """
+    Writes information to file
+
+    arguments:
+        path_file (str): path to directory and file
+        names (list<str>): names for values in each row of table
+        delimiter (str): delimiter between values in the table
+
+    returns:
+
+    raises:
+
+    """
+
+    # Write information to file
+    #with open(out_file_path_model, "w") as out_file:
+    #    out_file.write(content_identifier)
+    with open(path_file, "w", newline="") as file_product:
+        writer = csv.DictWriter(
+            file_product, fieldnames=names, delimiter=delimiter
+        )
+        writer.writeheader()
+        writer.writerows(information)
+
+
 def find(match=None, sequence=None):
     """
     Finds the first element in a sequence to match a condition, otherwise none
@@ -139,6 +167,50 @@ def find(match=None, sequence=None):
         if match(element):
             return element
     return None
+
+
+def copy_interpret_model_content(content=None):
+    """
+    Copies and interprets content in Systems Biology Markup Language (SBML)
+
+    This function copies and interprets content describing a metabolic model in
+    Systems Biology Markup Language (SBML), a form of Extensible Markup
+    Language (XML).
+
+    arguments:
+        content (object): content from file in Systems Biology Markup Language
+            (XML)
+
+    returns:
+        (object): references to definition of name space and sections within
+            content
+
+    raises:
+
+    """
+
+    # Copy content
+    content_copy = copy.deepcopy(content)
+    # Define name space
+    space = {
+        "version": "http://www.sbml.org/sbml/level2/version4",
+        "syntax": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    }
+    # Set references to sections within content
+    sbml = content_copy.getroot()
+    model = sbml[0]
+    compartments = model[1]
+    metabolites = model[2]
+    reactions = model[3]
+    # Compile information
+    return {
+        "space": space,
+        "content": content_copy,
+        "model": model,
+        "compartments": compartments,
+        "metabolites": metabolites,
+        "reactions": reactions
+    }
 
 
 ###############################################################################
