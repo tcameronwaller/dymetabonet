@@ -1366,6 +1366,12 @@ def main():
 
     # Read source information from file
     source = read_source()
+
+
+
+
+
+
     # Extract metabolites' references from Human Metabolome Database
     hmdb_metabolites_references = extract_hmdb_metabolites_references(
         hmdb=source["hmdb"]
@@ -1384,6 +1390,10 @@ def main():
         recon2m2_reactions_names=recon2m2_reactions_names,
         reactions_original=source["reactions"]
     )
+
+    # TODO: Move change procedures to before the enhancement from HMDB...
+
+
     # Change procedures allow custom changes to metabolites and reactions
     # Change compartments' information
     compartments_change = change_compartments(
@@ -1408,6 +1418,9 @@ def main():
         changer_reactions=source["changer_reactions"],
         reactions_original=metabolites_change["reactions"]
     )
+
+
+
     # Include information about reactions' behavior
     reactions_behavior = include_reactions_behaviors(
         reactions_original=reactions_change

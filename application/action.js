@@ -122,7 +122,7 @@ class Action {
   * @param {Object} state Application's state.
   */
   static loadMetabolismBaseInformation(state) {
-    d3.json("metabolism_sets_entities_recon2m2.json", function (data) {
+    d3.json("data/metabolism_sets_entities_recon2m2.json", function (data) {
       Action.restoreMetabolismBaseInformation({
         data: data,
         state: state
@@ -135,7 +135,8 @@ class Action {
   */
   static loadMetabolismSupplementInformation(state) {
     console.log("called load supplement")
-    d3.tsv("curation_simplification_default_metabolites.tsv", function (data) {
+    d3.tsv(
+      "data/curation_simplification_default_metabolites.tsv", function (data) {
       Action.restoreMetabolismSupplementInformation({
         data: data,
         state: state
