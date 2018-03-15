@@ -135,7 +135,7 @@ class Action {
   */
   static loadMetabolismSupplementInformation(state) {
     console.log("called load supplement")
-    d3.tsv("simplifications_default_metabolites.csv", function (data) {
+    d3.tsv("curation_simplification_default_metabolites.tsv", function (data) {
       Action.restoreMetabolismSupplementInformation({
         data: data,
         state: state

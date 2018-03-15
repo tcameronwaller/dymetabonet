@@ -62,6 +62,11 @@ License:
 ###############################################################################
 # Notes
 
+# The purpose of this procedure is to improve reconciliation of information
+# about metabolic sets and entities from the Recon 2M.2 model of human
+# metabolism to MetaNetX's name space.
+# In the process of reconciliation, MetaNetX also exerts some checks and
+# changes for quality.
 
 ###############################################################################
 # Installation and importation of packages and modules
@@ -89,7 +94,7 @@ import copy
 import utility
 
 ###############################################################################
-# Test script
+# Functionality
 
 
 def read_source():
@@ -112,11 +117,11 @@ def read_source():
         "recon_2-m-2"
     )
     path_file_model = os.path.join(
-            directory, "recon2m2_mnx_entrez_gene.xml"
-            )
+        directory, "recon2m2.xml"
+    )
     path_file_metabolites_identifiers = os.path.join(
-            directory, "reconciliation_metabolite_identifier.csv"
-            )
+        directory, "curation_reconciliation_metabolites.tsv"
+    )
     # Read information from file
     content = et.parse(path_file_model)
     metabolites_identifiers = utility.read_file_table(

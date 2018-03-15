@@ -62,6 +62,10 @@ License:
 ###############################################################################
 # Notes
 
+# The purpose of this procedure is to extract information about metabolic sets
+# and entities from information that MetaNetX exports from its reconciliation.
+# This extraction converts information into a convenient format for subsequent
+# use and also begins to derive supplemental information.
 
 ###############################################################################
 # Installation and importation of packages and modules
@@ -655,7 +659,12 @@ def extract_reaction_genes(identifier=None, genes_source=None):
         return gene_record["reaction"] == identifier
     gene_source = utility.find(match_reaction_gene, genes_source)
     genes_references = gene_source["genes"]
-    genes = genes_references.split(";")
+    genes_split_one = genes_references.split(";")
+    genes_split_two = genes_references.split("+")
+    genes = []
+    for gene_pair in genes_split_two:
+        identifier = gene_pair.replace("gene:", "")
+        genes.append(identifier)
     return genes
 
 

@@ -62,6 +62,8 @@ License:
 ###############################################################################
 # Notes
 
+# The purpose of this procedure is to enhance information about metabolic sets
+# and entities.
 
 ###############################################################################
 # Installation and importation of packages and modules
@@ -112,7 +114,7 @@ def read_source():
         "recon_2-m-2"
     )
     path_file_hmdb = os.path.join(directory, "hmdb_metabolites.xml")
-    path_file_recon2m2 = os.path.join(directory, "recon2m2_mnx_entrez_gene.xml")
+    path_file_recon2m2 = os.path.join(directory, "recon2m2.xml")
     path_file_compartments = os.path.join(
         directory, "extraction_compartments.pickle"
     )
@@ -126,16 +128,16 @@ def read_source():
         directory, "extraction_reactions.pickle"
     )
     path_file_changer_compartments = os.path.join(
-        directory, "enhancement_change_compartments.csv"
+        directory, "curation_enhancement_compartments.tsv"
     )
     path_file_changer_processes = os.path.join(
-        directory, "enhancement_change_processes.csv"
+        directory, "curation_enhancement_processes.tsv"
     )
     path_file_changer_metabolites = os.path.join(
-        directory, "enhancement_change_metabolites.csv"
+        directory, "curation_enhancement_metabolites.tsv"
     )
     path_file_changer_reactions = os.path.join(
-        directory, "enhancement_change_reactions.csv"
+        directory, "curation_enhancement_reactions.tsv"
     )
     # Read information from file
     recon2m2 = et.parse(path_file_recon2m2)
@@ -1312,9 +1314,9 @@ def write_product(information=None):
         "project_metabolism", "metabolism_models", "homo_sapiens",
         "recon_2-m-2"
     )
-    path_file_hmdb = os.path.join(
-        directory, "enhancement_hmdb_metabolites_references.csv"
-    )
+    #path_file_hmdb = os.path.join(
+    #    directory, "enhancement_hmdb_metabolites_references.csv"
+    #)
     #path_file_recon2m2 = os.path.join(
     #    directory, "enhancement_recon2m2_reactions_names.csv"
     #)
@@ -1331,12 +1333,12 @@ def write_product(information=None):
         directory, "enhancement_reactions.pickle"
     )
     # Write information to file
-    utility.write_file_table(
-        information=information["hmdb_metabolites_references"],
-        path_file=path_file_hmdb,
-        names=["identifier", "name", "hmdb", "pubchem", "chebi", "kegg"],
-        delimiter="\t"
-    )
+    #utility.write_file_table(
+    #    information=information["hmdb_metabolites_references"],
+    #    path_file=path_file_hmdb,
+    #    names=["identifier", "name", "hmdb", "pubchem", "chebi", "kegg"],
+    #    delimiter="\t"
+    #)
     #utility.write_file_table(
     #    information=information["recon2m2_reactions_names"],
     #    path_file=path_file_recon2m2,
@@ -1418,9 +1420,6 @@ def main():
     reactions_replication = include_reactions_replications(
         reactions_original=reactions_process
     )
-    for reaction in reactions_replication.values():
-        if reaction["replication"]:
-            print(reaction)
     #Write product information to file
     information = {
         "hmdb_metabolites_references": list(
