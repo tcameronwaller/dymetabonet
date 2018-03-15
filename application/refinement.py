@@ -107,9 +107,9 @@ def read_source():
 
     # Specify directories and files
     directory = os.path.join(
-        os.sep, "media", "tcameronwaller", "primary", "data", "local",
-        "research_lex", "project_profondeur", "profondeur", "metabolic_models",
-        "homo-sapiens", "recon_2-m-2"
+        os.sep, "media", "tcameronwaller", "primary", "data", "local", "work",
+        "project_metabolism", "metabolism_models", "homo_sapiens",
+        "recon_2-m-2"
     )
     path_file_compartments = os.path.join(
         directory, "enhancement_compartments.pickle"
@@ -156,9 +156,9 @@ def write_product(information=None):
 
     # Specify directories and files
     directory = os.path.join(
-        os.sep, "media", "tcameronwaller", "primary", "data", "local",
-        "research_lex", "project_profondeur", "profondeur", "metabolic_models",
-        "homo-sapiens", "recon_2-m-2"
+        os.sep, "media", "tcameronwaller", "primary", "data", "local", "work",
+        "project_metabolism", "metabolism_models", "homo_sapiens",
+        "recon_2-m-2"
     )
     path_file_metabolism = os.path.join(
         directory, "metabolic_sets_entities.json"

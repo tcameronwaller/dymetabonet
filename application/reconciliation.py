@@ -107,10 +107,10 @@ def read_source():
 
     # Specify directories and files
     directory = os.path.join(
-            os.sep, "media", "tcameronwaller", "primary", "data", "local",
-            "research_lex", "project_profondeur", "profondeur",
-            "metabolic_models", "homo-sapiens", "recon_2-m-2"
-            )
+        os.sep, "media", "tcameronwaller", "primary", "data", "local", "work",
+        "project_metabolism", "metabolism_models", "homo_sapiens",
+        "recon_2-m-2"
+    )
     path_file_model = os.path.join(
             directory, "recon2m2_mnx_entrez_gene.xml"
             )
@@ -352,10 +352,10 @@ def write_product(content=None):
 
     # Specify directories and files
     directory = os.path.join(
-            os.sep, "media", "tcameronwaller", "primary", "data", "local",
-            "research_lex", "project_profondeur", "profondeur",
-            "metabolic_models", "homo-sapiens", "recon_2-m-2"
-            )
+        os.sep, "media", "tcameronwaller", "primary", "data", "local", "work",
+        "project_metabolism", "metabolism_models", "homo_sapiens",
+        "recon_2-m-2"
+    )
     path_file = os.path.join(
         directory, "recon2m2_metanetx_reconciliation.xml"
     )
