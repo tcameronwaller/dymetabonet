@@ -58,10 +58,13 @@ class Model {
   * Evaluates the application's state and responds accordingly.
   */
   act(self) {
-    if (!Model.determineApplicationControls(self.state)) {
-      Action.initializeApplicationControls(self.state);
-    } else if (!Model.determineMetabolismBaseInformation(self.state)) {
+    if (!Model.determineMetabolismBaseInformation(self.state)) {
       Action.loadMetabolismBaseInformation(self.state);
+    } else if (!Model.determineMetabolismSupplementInformation(self.state)) {
+      console.log("call supplement...")
+      Action.loadMetabolismSupplementInformation(self.state);
+    } else if (!Model.determineApplicationControls(self.state)) {
+      Action.initializeApplicationControls(self.state);
     } else if (!Model.determineMetabolismDerivationInformation(self.state)) {
       Action.deriveTotalMetabolismInformation(self.state);
     }
@@ -95,8 +98,9 @@ class Model {
     // Pass these instances a reference to the application's state.
     // Pass these instances references to instances of other relevant views.
     if (
-      Model.determineApplicationControls(self.state) &&
       Model.determineMetabolismBaseInformation(self.state) &&
+      Model.determineMetabolismSupplementInformation(self.state) &&
+      Model.determineApplicationControls(self.state) &&
       Model.determineMetabolismDerivationInformation(self.state)
     ) {
       // Interface view.
@@ -164,6 +168,27 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
+  static determineMetabolismBaseInformation(state) {
+    return (
+      !(state.compartments === null) &&
+      !(state.processes === null) &&
+      !(state.metabolites === null) &&
+      !(state.reactions === null)
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineMetabolismSupplementInformation(state) {
+    return !(state.defaultSimplificationsMetabolites === null);
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
   static determineApplicationControls(state) {
     return (
       !(state.source === null) &&
@@ -191,20 +216,6 @@ class Model {
       !(state.traversalPathCount === null) &&
       !(state.entitySelection === null) &&
       !(state.simulation === null)
-    );
-  }
-  /**
-  * Determines whether the application's state has specific information.
-  * @param {Object} state Application's state.
-  * @returns {boolean} Whether the application's state matches criteria.
-  */
-  static determineMetabolismBaseInformation(state) {
-    return (
-      !(state.metabolites === null) &&
-      !(state.reactions === null) &&
-      !(state.compartments === null) &&
-      !(state.genes === null) &&
-      !(state.processes === null)
     );
   }
   /**

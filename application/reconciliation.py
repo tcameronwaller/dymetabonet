@@ -150,7 +150,7 @@ def remove_model_identifier_prefix(content=None):
     """
 
     # Copy and interpret content
-    reference = utility.copy_interpret_model_content(content=content)
+    reference = utility.copy_interpret_content_recon2m2(content=content)
     # Remove prefixes from identifiers for metabolites
     for metabolite in reference["metabolites"].findall(
     "version:species", reference["space"]
@@ -208,7 +208,7 @@ def change_model_boundary(content=None):
     """
 
     # Copy and interpret content
-    reference = utility.copy_interpret_model_content(content=content)
+    reference = utility.copy_interpret_content_recon2m2(content=content)
     # Correct compartment for model's boundary
     for compartment in reference["compartments"].findall(
     "version:compartment", reference["space"]
@@ -265,7 +265,7 @@ def change_model_compartment(content=None):
     """
 
     # Copy and interpret content
-    reference = utility.copy_interpret_model_content(content=content)
+    reference = utility.copy_interpret_content_recon2m2(content=content)
     # Correct compartment for model's boundary
     for compartment in reference["compartments"].findall(
     "version:compartment", reference["space"]
@@ -300,7 +300,7 @@ def change_model_metabolites_identifiers(
     """
 
     # Copy and interpret content
-    reference = utility.copy_interpret_model_content(content=content)
+    reference = utility.copy_interpret_content_recon2m2(content=content)
     # Change content for each combination of original and novel identifiers
     for row in metabolites_identifiers:
         # Construct targets to recognize original and novel identifiers

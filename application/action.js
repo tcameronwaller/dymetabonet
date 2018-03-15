@@ -118,6 +118,36 @@ class Action {
     });
   }
   /**
+  * Loads from file basic information about metabolic entities and sets.
+  * @param {Object} state Application's state.
+  */
+  static loadMetabolismBaseInformation(state) {
+    d3.json("metabolism_sets_entities_recon2m2.json", function (data) {
+      Action.restoreMetabolismBaseInformation({
+        data: data,
+        state: state
+      });
+    });
+  }
+  /**
+  * Loads from file supplemental information about metabolic entities and sets.
+  * @param {Object} state Application's state.
+  */
+  static loadMetabolismSupplementInformation(state) {
+    console.log("called load supplement")
+    d3.tsv("simplifications_default_metabolites.csv", function (data) {
+      Action.restoreMetabolismSupplementInformation({
+        data: data,
+        state: state
+      });
+    });
+  }
+
+
+
+
+
+  /**
   * Initializes values of variables of application's controls.
   * @param {Object} state Application's state.
   */
@@ -162,18 +192,6 @@ class Action {
     Action.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
-    });
-  }
-  /**
-  * Loads from file basic information about metabolic entities and sets.
-  * @param {Object} state Application's state.
-  */
-  static loadMetabolismBaseInformation(state) {
-    d3.json("metabolic_entities_sets.json", function (data) {
-      Action.restoreMetabolismBaseInformation({
-        data: data,
-        state: state
-      });
     });
   }
   /**
@@ -1968,6 +1986,54 @@ class Action {
   // Indirect actions.
 
   /**
+  * Restores basic information about metabolic entities and sets.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.data Information about metabolic entities and
+  * sets.
+  * @param {Object} parameters.state Application's state.
+  */
+  static restoreMetabolismBaseInformation({data, state} = {}) {
+    console.log(data);
+    // Compile variables' values.
+    var novelVariablesValues = {
+      metabolites: data.metabolites,
+      reactions: data.reactions,
+      compartments: data.compartments,
+      processes: data.processes
+    };
+    var variablesValues = novelVariablesValues;
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Restores supplemental information about metabolic entities and sets.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.data Information about metabolic entities and
+  * sets.
+  * @param {Object} parameters.state Application's state.
+  */
+  static restoreMetabolismSupplementInformation({data, state} = {}) {
+    console.log(data);
+    // Derive default metabolites for simplification.
+    var defaultSimplificationsMetabolites = General.collectValueFromObjects(
+      "identifier", data
+    );
+    // Compile variables' values.
+    var novelVariablesValues = {
+      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites
+    };
+    var variablesValues = novelVariablesValues;
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+
+  /**
   * Initializes values of variables of application's controls for prompt view.
   * @returns {Object} Information about prompt view.
   */
@@ -2044,22 +2110,12 @@ class Action {
     // Initialize controls.
     var compartmentalization = false;
     var defaultSimplifications = true;
-    // Create list of identifiers of metabolites for default simplification.
-    var defaultSimplificationsMetabolites = [
-      "h", "h2o", "coa", "o2", "atp", "nadp", "nadph", "nad", "nadh", "pi",
-      "adp", "accoa", "h2o2", "ppi", "fad", "co2", "fadh2", "amp", "so4",
-      "nh4", "na1", "hco3", "udp", "cmp", "gdp", "gtp", "ctp", "utp", "dadp",
-      "o2s", "datp", "cdp", "ump", "dcdp", "dcmp", "dgdp", "dgtp", "imp", "gmp",
-      "itp", "idp", "dtdp", "so3", "Ser_Gly_Ala_X_Gly", "dctp", "dttp", "dtmp",
-      "dudp", "dutp", "dgmp"
-    ];
     var candidatesSearches = Candidacy.createInitialCandidatesSearches();
     var candidatesSorts = Candidacy.createInitialCandidatesSorts();
     // Compile information.
     var variablesValues = {
       compartmentalization: compartmentalization,
       defaultSimplifications: defaultSimplifications,
-      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
       candidatesSearches: candidatesSearches,
       candidatesSorts: candidatesSorts
     };
@@ -2123,29 +2179,6 @@ class Action {
     };
     // Return information.
     return variablesValues;
-  }
-  /**
-  * Restores basic information about metabolic entities and sets.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Information about metabolic entities and
-  * sets.
-  * @param {Object} parameters.state Application's state.
-  */
-  static restoreMetabolismBaseInformation({data, state} = {}) {
-    // Compile variables' values.
-    var novelVariablesValues = {
-      metabolites: data.metabolites,
-      reactions: data.reactions,
-      compartments: data.compartments,
-      processes: data.processes,
-      genes: data.genes
-    };
-    var variablesValues = novelVariablesValues;
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
   }
   /**
   * Creates persistent representation of the application's state.

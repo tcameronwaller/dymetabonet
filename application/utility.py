@@ -169,17 +169,151 @@ def find(match=None, sequence=None):
     return None
 
 
-def copy_interpret_model_content(content=None):
+def find_index(match=None, sequence=None):
     """
-    Copies and interprets content in Systems Biology Markup Language (SBML)
+    Finds index of first element in sequence to match a condition, otherwise -1
 
-    This function copies and interprets content describing a metabolic model in
+    arguments:
+        match (function): condition for elements to match
+        sequence (list): sequence of elements
+
+    returns:
+        (int): index of element if it exists or -1 if it does not exist
+
+    raises:
+
+    """
+
+    for index, element in enumerate(sequence):
+        if match(element):
+            # Element matches condition
+            # Return element's index
+            return index
+    # Not any elements match condition
+    # Return -1
+    return -1
+
+
+def collect_unique_elements(elements_original=None):
+    """
+    Collects unique elements
+
+    arguments:
+        elements_original (list): sequence of elements
+
+    returns:
+        (list): unique elements
+
+    raises:
+
+    """
+
+    elements_novel = []
+    for element in elements_original:
+        if element not in elements_novel:
+            elements_novel.append(element)
+    return elements_novel
+
+
+def collect_value_from_records(key=None, records=None):
+    """
+    Collects a single value from multiple records
+
+    arguments:
+        key (str): key of value in each record
+        records (list<dict>): sequence of records
+
+    returns:
+        (list): values from records
+
+    raises:
+
+    """
+
+    def access(record):
+        return record[key]
+    return list(map(access, records))
+
+
+def compare_lists_by_inclusion(list_one=None, list_two=None):
+    """
+    Compares lists by inclusion
+
+    arguments:
+        list_one (list): list of elements
+        list_two (list): list of elements
+
+    returns:
+        (bool): whether first list includes all elements from second
+
+    raises:
+
+    """
+
+    def match(element_two=None):
+        return element_two in list_one
+    matches = list(map(match, list_two))
+    return all(matches)
+
+
+def compare_lists_by_mutual_inclusion(list_one=None, list_two=None):
+    """
+    Compares lists by mutual inclusion
+
+    arguments:
+        list_one (list): list of elements
+        list_two (list): list of elements
+
+    returns:
+        (bool): whether each list includes all elements from the other
+
+    raises:
+
+    """
+
+    forward = compare_lists_by_inclusion(
+        list_one=list_one,
+        list_two=list_two
+    )
+    reverse = compare_lists_by_inclusion(
+        list_one=list_two,
+        list_two=list_one
+    )
+    return forward and reverse
+
+
+def filter_common_elements(list_one=None, list_two=None):
+    """
+    Filters elements by whether both of two lists include them
+
+    arguments:
+        list_one (list): list of elements
+        list_two (list): list of elements
+
+    returns:
+        (list): elements that both of two lists include
+
+    raises:
+
+    """
+
+    def match(element_two=None):
+        return element_two in list_one
+    return list(filter(match, list_two))
+
+
+
+
+def copy_interpret_content_recon2m2(content=None):
+    """
+    Copies and interprets content from Recon 2M.2
+
+    This function copies and interprets content from a metabolic model in
     Systems Biology Markup Language (SBML), a form of Extensible Markup
     Language (XML).
 
     arguments:
-        content (object): content from file in Systems Biology Markup Language
-            (XML)
+        content (object): content from Recon 2M.2 in SBML
 
     returns:
         (object): references to definition of name space and sections within
@@ -210,6 +344,40 @@ def copy_interpret_model_content(content=None):
         "compartments": compartments,
         "metabolites": metabolites,
         "reactions": reactions
+    }
+
+
+def interpret_content_hmdb(content=None):
+    """
+    Copies and interprets content from Human Metabolome Database (HMDB)
+
+    This function copies and interprets content from the Human Metabolome
+    Database in Extensible Markup Language (XML).
+
+    arguments:
+        content (object): content from HMDB in XML
+
+    returns:
+        (object): references to definition of name space and sections within
+            content
+
+    raises:
+
+    """
+
+    # Define name space
+    space = {
+        "base": "http://www.hmdb.ca"
+    }
+    # Set references to sections within content
+    metabolites = content.getroot()
+    #for child in metabolites[0]:
+    #    print(child.tag)
+    # Compile information
+    return {
+        "space": space,
+        "content": content,
+        "metabolites": metabolites
     }
 
 
