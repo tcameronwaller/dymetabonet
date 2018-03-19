@@ -61,7 +61,6 @@ class Model {
     if (!Model.determineMetabolismBaseInformation(self.state)) {
       Action.loadMetabolismBaseInformation(self.state);
     } else if (!Model.determineMetabolismSupplementInformation(self.state)) {
-      console.log("call supplement...")
       Action.loadMetabolismSupplementInformation(self.state);
     } else if (!Model.determineApplicationControls(self.state)) {
       Action.initializeApplicationControls(self.state);
@@ -109,12 +108,6 @@ class Model {
         state: self.state,
         documentReference: self.document
       });
-      // Panel view.
-      var panelView = new PanelView({
-        interfaceView: interfaceView,
-        state: self.state,
-        documentReference: self.document
-      });
       // Tip view.
       // Tip view always exists but is only visible when active.
       var tipView = new TipView({
@@ -131,7 +124,17 @@ class Model {
         documentReference: self.document,
         windowReference: self.window
       });
-      // Detail view.
+
+      // Panel view.
+      var panelView = new PanelView({
+        interfaceView: interfaceView,
+        state: self.state,
+        documentReference: self.document
+      });
+
+      // TODO: rename Detail View to Summary View
+
+      // Summary view.
       var detailView = new DetailView({
         interfaceView: interfaceView,
         panelView: panelView,
@@ -141,6 +144,7 @@ class Model {
         documentReference: self.document
       });
       // Control view.
+      // Control view has several subordinate views.
       var controlView = new ControlView({
         interfaceView: interfaceView,
         panelView: panelView,
@@ -300,8 +304,8 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineControlDetail(state) {
-    return state.controlViews.detail;
+  static determineControlData(state) {
+    return state.controlViews.data;
   }
   /**
   * Determines whether the application's state has specific information.

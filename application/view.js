@@ -1045,48 +1045,6 @@ class InterfaceView {
 }
 
 /**
-* Interface to contain and organize interfaces on left side of window.
-*/
-class PanelView {
-  /**
-  * Initializes an instance of a class.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
-  * @param {Object} parameters.state Application's state.
-  * @param {Object} parameters.documentReference Reference to document object
-  * model.
-  */
-  constructor ({interfaceView, state, documentReference} = {}) {
-    // Set common references.
-    // Set reference to class' current instance to persist across scopes.
-    var self = this;
-    // Set reference to application's state.
-    self.state = state;
-    // Set reference to document object model (DOM).
-    self.document = documentReference;
-    // Set reference to other views.
-    self.interfaceView = interfaceView;
-    // Control view's composition and behavior.
-    // Initialize view.
-    self.initializeView(self);
-  }
-  /**
-  * Initializes, creates and activates, view's content and behavior that does
-  * not vary with changes to the application's state.
-  * @param {Object} self Instance of a class.
-  */
-  initializeView(self) {
-    // Create or set reference to container.
-    self.container = View.createReferenceContainer({
-      identifier: "panel",
-      target: self.interfaceView.container,
-      position: "beforeend",
-      documentReference: self.document
-    });
-  }
-}
-
-/**
 * Interface to communicate transient, concise, supplemental information about
 * other elements in interface's views.
 * This interface is independent of application's persistent state.
@@ -1592,6 +1550,49 @@ class PromptView {
   }
 }
 
+/**
+* Interface to contain and organize interfaces on left side of window.
+*/
+class PanelView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
+  * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  */
+  constructor ({interfaceView, state, documentReference} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+  }
+  /**
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "panel",
+      target: self.interfaceView.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
+  }
+}
+
+// TODO: rename DetailView to SummaryView
 // TODO: DetailView might change and move...
 // TODO: Maybe move information to a summary view...
 
@@ -2054,6 +2055,18 @@ class ControlView {
     } else {
       View.removeExistElement("traversal", self.document);
     }
+    if (Model.determineControlData(self.state)) {
+      new DataView({
+        interfaceView: self.interfaceView,
+        tipView: self.tipView,
+        promptView: self.promptView,
+        controlView: self,
+        state: self.state,
+        documentReference: self.document
+      });
+    } else {
+      View.removeExistElement("data", self.document);
+    }
   }
   /**
   * Creates identifier for a tab.
@@ -2170,6 +2183,10 @@ class StateView {
       self.restore.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
+
+        // TODO: This action should only load state from file... no more clean or extraction
+
+
         Action.evaluateSourceLoadRestoreState(self.state);
       });
       self.execute = View.createButton({
@@ -3617,6 +3634,8 @@ class SimplificationMenuView {
   }
 }
 
+// TODO: rename TraversalView to QueryView
+
 /**
 * Interface to control selections by traversal of network.
 */
@@ -4793,6 +4812,133 @@ class TraversalView {
       var name = candidate.name;
     }
     return name;
+  }
+}
+
+// TODO: create new DataView
+
+/**
+* Interface to control import of custom data.
+*/
+class DataView {
+  /**
+  * Initializes an instance of a class.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.interfaceView Instance of InterfaceView's class.
+  * @param {Object} parameters.tipView Instance of TipView's class.
+  * @param {Object} parameters.promptView Instance of PromptView's class.
+  * @param {Object} parameters.controlView Instance of ControlView's class.
+  * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  */
+  constructor ({interfaceView, tipView, promptView, controlView, state, documentReference} = {}) {
+    // Set common references.
+    // Set reference to class' current instance to persist across scopes.
+    var self = this;
+    // Set reference to application's state.
+    self.state = state;
+    // Set reference to document object model (DOM).
+    self.document = documentReference;
+    // Set reference to other views.
+    self.interfaceView = interfaceView;
+    self.tipView = tipView;
+    self.promptView = promptView;
+    self.controlView = controlView;
+    // Control view's composition and behavior.
+    // Initialize view.
+    self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
+  }
+  /**
+  * Initializes, creates and activates, view's content and behavior that does
+  * not vary with changes to the application's state.
+  * @param {Object} self Instance of a class.
+  */
+  initializeView(self) {
+    // Create or set reference to container.
+    self.container = View.createReferenceContainer({
+      identifier: "data",
+      target: self.controlView.dataTab,
+      position: "afterend",
+      documentReference: self.document
+    });
+    // Determine whether to create and activate behavior of content.
+    if (self.container.children.length === 0) {
+      // Container is empty.
+      // Create and activate behavior of content.
+      // Create text.
+      self.sourceLabel = self.document.createElement("span");
+      self.container.appendChild(self.sourceLabel);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create and activate file selector.
+      self.fileSelector = self.document.createElement("input");
+      self.container.appendChild(self.fileSelector);
+      self.fileSelector.setAttribute("type", "file");
+      self.fileSelector.setAttribute("accept", ".tsv");
+      self.fileSelector.addEventListener("change", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        Action.submitSource(event.currentTarget.files[0], self.state);
+      });
+      self.restore = View.createButton({
+        text: "restore",
+        parent: self.container,
+        documentReference: self.document
+      });
+      self.restore.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        // TODO: This button in Data View should only restore to empty data...
+        Action.evaluateSourceLoadRestoreState(self.state);
+      });
+      // Load button is a facade for the file selector.
+      self.load = View.createButton({
+        text: "load",
+        parent: self.container,
+        documentReference: self.document
+      });
+      self.load.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        self.fileSelector.click();
+      });
+      self.import = View.createButton({
+        text: "import",
+        parent: self.container,
+        documentReference: self.document
+      });
+      self.import.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        // TODO: call appropriate load action...
+      });
+
+    } else {
+      // Container is not empty.
+      // Set references to content.
+      self.sourceLabel = self.container.getElementsByTagName("span").item(0);
+    }
+  }
+  /**
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // Create view's variant elements.
+    // Activate variant behavior of view's elements.
+    // Determine whether the application's state includes a source file.
+    if (Model.determineSource(self.state)) {
+      // Application's state includes a source file.
+      self.fileName = self.state.source.name;
+    } else {
+      // Application's state does not include a source file.
+      self.fileName = "select source file...";
+    }
+    self.sourceLabel.textContent = self.fileName;
   }
 }
 

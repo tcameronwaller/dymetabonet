@@ -38,20 +38,19 @@ United States of America
 * These methods also call external methods as necessary.
 */
 class Action {
-  // Methods herein intend to comprise discrete actions that impart changes to
-  // the application's state.
+  // Methods herein comprise discrete actions that impart changes to the
+  // application's state.
   // Some actions necessitate changes to multiple aspects of the application
   // that coordinate together.
-  // For efficiency, these actions impart these multiple changes
-  // simultaneously.
+  // For efficiency, these actions impart these multiple changes simultaneously.
   // Knowledge of the event that triggered the action informs which changes to
   // make to the application's state.
   //
-  // To call the restore method of the model, it is necessary to pass the
-  // method a reference to the current instance of the model.
-  // Methods for general functionality relevant to application actions.
+  // To call the restore method of the application's state, it is necessary to
+  // pass the method a reference to the current instance of the state.
 
-  // Submission to application's state.
+  //////////////////////////////////////////////////////////////////////////////
+  // General
 
   /**
   * Submits a novel value of a variable to the application's state.
@@ -97,9 +96,6 @@ class Action {
       state: state
     });
   }
-
-  // Direct actions.
-
   /**
   * Initializes the application's state by submitting null values of all
   * variables.
@@ -134,7 +130,6 @@ class Action {
   * @param {Object} state Application's state.
   */
   static loadMetabolismSupplementInformation(state) {
-    console.log("called load supplement")
     d3.tsv(
       "data/curation_simplification_default_metabolites.tsv", function (data) {
       Action.restoreMetabolismSupplementInformation({
@@ -143,11 +138,6 @@ class Action {
       });
     });
   }
-
-
-
-
-
   /**
   * Initializes values of variables of application's controls.
   * @param {Object} state Application's state.
@@ -158,7 +148,8 @@ class Action {
       state: false,
       filter: false,
       simplification: false,
-      traversal: false
+      traversal: false,
+      data: false
     };
     // Initialize controls for pompt view.
     var prompt = Action.initializePromptViewControls();
@@ -281,6 +272,277 @@ class Action {
     });
   }
   /**
+  * Restores basic information about metabolic entities and sets.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.data Information about metabolic entities and
+  * sets.
+  * @param {Object} parameters.state Application's state.
+  */
+  static restoreMetabolismBaseInformation({data, state} = {}) {
+    // Compile variables' values.
+    var novelVariablesValues = {
+      metabolites: data.metabolites,
+      reactions: data.reactions,
+      compartments: data.compartments,
+      processes: data.processes
+    };
+    var variablesValues = novelVariablesValues;
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Restores supplemental information about metabolic entities and sets.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.data Information about metabolic entities and
+  * sets.
+  * @param {Object} parameters.state Application's state.
+  */
+  static restoreMetabolismSupplementInformation({data, state} = {}) {
+    // Derive default metabolites for simplification.
+    var defaultSimplificationsMetabolites = General.collectValueFromObjects(
+      "identifier", data
+    );
+    // Compile variables' values.
+    var novelVariablesValues = {
+      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites
+    };
+    var variablesValues = novelVariablesValues;
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Prompt view
+
+  /**
+  * Initializes values of variables of application's controls for prompt view.
+  * @returns {Object} Information about prompt view.
+  */
+  static initializePromptViewControls() {
+    // Initialize controls.
+    var type = "none";
+    var reference = {};
+    var horizontalPosition = 0;
+    var verticalPosition = 0;
+    var horizontalShift = 0;
+    var verticalShift = 0;
+    var permanence = false;
+    // Compile information.
+    var variablesValues = {
+      type: type,
+      reference: reference,
+      horizontalPosition: horizontalPosition,
+      verticalPosition: verticalPosition,
+      horizontalShift: horizontalShift,
+      verticalShift: verticalShift,
+      permanence: permanence
+    };
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Changes the type and position of the prompt view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of prompt view.
+  * @param {Object} parameters.reference Reference information for the specific
+  * type of prompt.
+  * @param {number} parameters.horizontalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.verticalPosition Horizontal position in pixels
+  * relative to the browser's view window of reference point.
+  * @param {number} parameters.horizontalShift Horizontal shift in pixels
+  * relative to reference point.
+  * @param {number} parameters.verticalShift Horizontal shift in pixels relative
+  * to reference point.
+  * @param {boolean} parameters.permanence Whether prompt is permanent.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Information about prompt view.
+  */
+  static changePromptInformation({type, reference, horizontalPosition, verticalPosition, horizontalShift, verticalShift, permanence, state} = {}) {
+    // Determine prompt's type and positions.
+    if (state.prompt.type === type) {
+      // Remove any prompt view.
+      var prompt = Action.initializePromptViewControls();
+    } else {
+      // Compile information.
+      var prompt = {
+        type: type,
+        reference: reference,
+        horizontalPosition: horizontalPosition,
+        verticalPosition: verticalPosition,
+        horizontalShift: horizontalShift,
+        verticalShift: verticalShift,
+        permanence: permanence
+      };
+    }
+    // Return information.
+    return prompt;
+  }
+  /**
+  * Changes the type of the prompt view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of prompt view.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changePromptType({type, state} = {}) {
+    // Compile information.
+    var prompt = {
+      type: type,
+      reference: state.prompt.reference,
+      horizontalPosition: state.prompt.horizontalPosition,
+      verticalPosition: state.prompt.verticalPosition,
+      horizontalShift: state.prompt.horizontalShift,
+      verticalShift: state.prompt.verticalShift,
+      permanence: true
+    };
+    // Compile variables' values.
+    var novelVariablesValues = {
+      prompt: prompt
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Removes the prompt view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.permanence Whether to remove only transient
+  * prompt view.
+  * @param {Object} parameters.state Application's state.
+  */
+  static removePromptView({permanence, state} = {}) {
+    if (permanence) {
+      if (!state.prompt.permanence) {
+        // Remove any prompt view.
+        var prompt = Action.initializePromptViewControls();
+      } else {
+        var prompt = state.prompt;
+      }
+    } else {
+      // Remove any prompt view.
+      var prompt = Action.initializePromptViewControls();
+    }
+    // Compile variables' values.
+    var novelVariablesValues = {
+      prompt: prompt
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Summary view
+
+  // TODO: export information about all entities in subnetwork or current selection
+  // TODO: Consolidate export behavior... I don't think I need to handle differently...
+  
+  /**
+  * Prepares and exports information about entities, reactions and metabolites,
+  * that pass current filters by sets.
+  * @param {Object} state Application's state.
+  */
+  static exportFilterEntitiesSummary(state) {
+    // Prepare information.
+    // Save information.
+    // Reactions.
+    var reactionsSummary = Evaluation.createEntitiesSummary({
+      type: "reaction",
+      identifiers: Object.keys(state.filterSetsReactions),
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalSetsReactions,
+      metabolitesSets: state.totalSetsMetabolites,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    var reactionsSummaryString = General
+    .convertRecordsStringTabSeparateTable(reactionsSummary);
+    General.saveString("reactions_summary.txt", reactionsSummaryString);
+    // Metabolites.
+    var metabolitesSummary = Evaluation.createEntitiesSummary({
+      type: "metabolite",
+      identifiers: Object.keys(state.filterSetsMetabolites),
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalSetsReactions,
+      metabolitesSets: state.totalSetsMetabolites,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    var metabolitesSummaryString = General
+    .convertRecordsStringTabSeparateTable(metabolitesSummary);
+    General.saveString("metabolites_summary.txt", metabolitesSummaryString);
+  }
+  /**
+  * Prepares and exports information about entities, reactions and metabolites,
+  * that merit representation in the subnetwork.
+  * @param {Object} state Application's state.
+  */
+  static exportNetworkEntitiesSummary(state) {
+    // Prepare information.
+    // Save information.
+    // Reactions.
+    var nodesReactions = state.subnetworkNodesRecords.filter(function (record) {
+      return record.type === "reaction";
+    });
+    var nodesReactionsIdentifiers = General
+    .collectValueFromObjects("identifier", nodesReactions);
+    var reactionsSummary = Evaluation.createEntitiesSummary({
+      type: "reaction",
+      identifiers: nodesReactionsIdentifiers,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalSetsReactions,
+      metabolitesSets: state.totalSetsMetabolites,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    var reactionsSummaryString = General
+    .convertRecordsStringTabSeparateTable(reactionsSummary);
+    General.saveString("reactions_summary.txt", reactionsSummaryString);
+    // Metabolites.
+    var nodesMetabolites = state
+    .subnetworkNodesRecords.filter(function (record) {
+      return record.type === "metabolite";
+    });
+    var nodesMetabolitesIdentifiers = General
+    .collectValueFromObjects("identifier", nodesMetabolites);
+    var metabolitesSummary = Evaluation.createEntitiesSummary({
+      type: "metabolite",
+      identifiers: nodesMetabolitesIdentifiers,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalSetsReactions,
+      metabolitesSets: state.totalSetsMetabolites,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    var metabolitesSummaryString = General
+    .convertRecordsStringTabSeparateTable(metabolitesSummary);
+    General.saveString("metabolites_summary.txt", metabolitesSummaryString);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Control view
+
+  /**
   * Changes the selections of active panels within the control view.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.category Category of panel.
@@ -311,6 +573,10 @@ class Action {
       state: state
     });
   }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // State view
+
   /**
   * Saves to file on client's system a persistent representation of the
   * application's state.
@@ -321,6 +587,30 @@ class Action {
     console.log("application's persistent state...");
     console.log(persistence);
     General.saveObject("state.json", persistence);
+  }
+  /**
+  * Restores the application to a state from a persistent source.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.data Persistent source of information about
+  * application's state.
+  * @param {Object} parameters.state Application's state.
+  */
+  static restoreState({data, state} = {}) {
+    // Remove any information about source from the application's state.
+    var source = {};
+    // Compile variables' values.
+    var novelVariablesValues = {
+      source: source
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      data
+    );
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
   }
   /**
   * Submits a novel source to the application's state.
@@ -356,6 +646,49 @@ class Action {
     }
   }
   /**
+  * Creates persistent representation of the application's state.
+  * @param {Object} state Application's state.
+  * @returns {Object} Persistent representation of the application's state.
+  */
+  static createPersistentState(state) {
+    return state.variablesNames.reduce(function (collection, variableName) {
+      var entry = {
+        [variableName]: state[variableName]
+      };
+      return Object.assign({}, collection, entry);
+    }, {});
+  }
+  /**
+  * Evaluates information from a persistent source to restore the application's
+  * state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.data Persistent source of information about
+  * application's state.
+  * @param {Object} parameters.state Application's state.
+  */
+  static evaluateSourceRestoreState({data, state} = {}) {
+    // Determine appropriate procedure for source information.
+    if (data.hasOwnProperty("id") && (data.id === "MODEL1603150001")) {
+      if (data.hasOwnProperty("clean")) {
+        Action.extractMetabolicEntitiesSets({
+          data: data,
+          state: state
+        });
+      } else {
+        var cleanData = Clean.checkCleanMetabolicEntitiesSetsRecon2(data);
+        Action.extractMetabolicEntitiesSets({
+          data: cleanData,
+          state: state
+        });
+      }
+    } else {
+      Action.restoreState({
+        data: data,
+        state: state
+      });
+    }
+  }
+  /**
   * Executes a temporary procedure.
   * @param {Object} state Application's state.
   */
@@ -383,6 +716,32 @@ class Action {
     var endTime = window.performance.now();
     var duration = Math.round(endTime - startTime);
     console.log("process duration: " + duration + " milliseconds");
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Filter view
+
+  /**
+  * Initializes values of variables of application's controls for set view.
+  * @param {Object} state Application's state.
+  */
+  static initializeFilterViewControls() {
+    // Initialize controls.
+    var setsFilters = Attribution.createInitialSetsFilters();
+    var setsEntities = "metabolites";
+    var setsFilter = false;
+    var setsSearches = Cardinality.createInitialSetsSearches();
+    var setsSorts = Cardinality.createInitialSetsSorts();
+    // Compile information.
+    var variablesValues = {
+      setsFilters: setsFilters,
+      setsEntities: setsEntities,
+      setsFilter: setsFilter,
+      setsSearches: setsSearches,
+      setsSorts: setsSorts
+    };
+    // Return information.
+    return variablesValues;
   }
   /**
   * Restores values of variables of application's controls for set view.
@@ -475,216 +834,6 @@ class Action {
       networkElements,
       subnetworkElements
     );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Restores values of variables of application's controls for candidacy view.
-  * @param {Object} state Application's state.
-  */
-  static restoreSimplificationViewControls(state) {
-    // Initialize controls for candidacy view.
-    var candidacyViewControls = Action.initializeCandidacyViewControls();
-    // Determine candidate entities and prepare their summaries.
-    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
-      reactionsSets: state.filterSetsReactions,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: candidacyViewControls.compartmentalization,
-      candidatesSearches: candidacyViewControls.candidatesSearches,
-      candidatesSorts: candidacyViewControls.candidatesSorts,
-      compartments: state.compartments
-    });
-    // Determine simplifications of candidate entities.
-    // Create simplifications for default entities and include with other
-    // simplifications.
-    var simplifications = Candidacy.createIncludeDefaultSimplifications({
-      defaultSimplificationsMetabolites: candidacyViewControls
-      .defaultSimplificationsMetabolites,
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      reactionsSets: state.filterSetsReactions,
-      reactions: state.reactions,
-      compartmentalization: candidacyViewControls.compartmentalization,
-      reactionsSimplifications: {},
-      metabolitesSimplifications: {}
-    });
-    // Create network's elements.
-    var networkElements = Network.createNetworkElements({
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      reactionsSimplifications: simplifications.reactionsSimplifications,
-      metabolitesSimplifications: simplifications.metabolitesSimplifications,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: candidacyViewControls.compartmentalization
-    });
-    // Create subnetwork's elements.
-    var subnetworkElements = Network.copyNetworkElementsRecords({
-      networkNodesRecords: networkElements.networkNodesRecords,
-      networkLinksRecords: networkElements.networkLinksRecords
-    });
-    // Initialize whether to force representation of topology for networks of
-    // excessive scale.
-    var forceTopology = false;
-    // Compile variables' values.
-    var novelVariablesValues = {
-      forceTopology: forceTopology
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      candidacyViewControls,
-      candidatesSummaries,
-      simplifications,
-      networkElements,
-      subnetworkElements,
-    );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-
-  // TODO: Consolidate export behavior... I don't think I need to handle differently...
-
-  /**
-  * Prepares and exports information about entities, reactions and metabolites,
-  * that pass current filters by sets.
-  * @param {Object} state Application's state.
-  */
-  static exportFilterEntitiesSummary(state) {
-    // Prepare information.
-    // Save information.
-    // Reactions.
-    var reactionsSummary = Evaluation.createEntitiesSummary({
-      type: "reaction",
-      identifiers: Object.keys(state.filterSetsReactions),
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      reactionsSets: state.totalSetsReactions,
-      metabolitesSets: state.totalSetsMetabolites,
-      compartments: state.compartments,
-      processes: state.processes
-    });
-    var reactionsSummaryString = General
-    .convertRecordsStringTabSeparateTable(reactionsSummary);
-    General.saveString("reactions_summary.txt", reactionsSummaryString);
-    // Metabolites.
-    var metabolitesSummary = Evaluation.createEntitiesSummary({
-      type: "metabolite",
-      identifiers: Object.keys(state.filterSetsMetabolites),
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      reactionsSets: state.totalSetsReactions,
-      metabolitesSets: state.totalSetsMetabolites,
-      compartments: state.compartments,
-      processes: state.processes
-    });
-    var metabolitesSummaryString = General
-    .convertRecordsStringTabSeparateTable(metabolitesSummary);
-    General.saveString("metabolites_summary.txt", metabolitesSummaryString);
-  }
-  /**
-  * Prepares and exports information about entities, reactions and metabolites,
-  * that merit representation in the subnetwork.
-  * @param {Object} state Application's state.
-  */
-  static exportNetworkEntitiesSummary(state) {
-    // Prepare information.
-    // Save information.
-    // Reactions.
-    var nodesReactions = state.subnetworkNodesRecords.filter(function (record) {
-      return record.type === "reaction";
-    });
-    var nodesReactionsIdentifiers = General
-    .collectValueFromObjects("identifier", nodesReactions);
-    var reactionsSummary = Evaluation.createEntitiesSummary({
-      type: "reaction",
-      identifiers: nodesReactionsIdentifiers,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      reactionsSets: state.totalSetsReactions,
-      metabolitesSets: state.totalSetsMetabolites,
-      compartments: state.compartments,
-      processes: state.processes
-    });
-    var reactionsSummaryString = General
-    .convertRecordsStringTabSeparateTable(reactionsSummary);
-    General.saveString("reactions_summary.txt", reactionsSummaryString);
-    // Metabolites.
-    var nodesMetabolites = state
-    .subnetworkNodesRecords.filter(function (record) {
-      return record.type === "metabolite";
-    });
-    var nodesMetabolitesIdentifiers = General
-    .collectValueFromObjects("identifier", nodesMetabolites);
-    var metabolitesSummary = Evaluation.createEntitiesSummary({
-      type: "metabolite",
-      identifiers: nodesMetabolitesIdentifiers,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      reactionsSets: state.totalSetsReactions,
-      metabolitesSets: state.totalSetsMetabolites,
-      compartments: state.compartments,
-      processes: state.processes
-    });
-    var metabolitesSummaryString = General
-    .convertRecordsStringTabSeparateTable(metabolitesSummary);
-    General.saveString("metabolites_summary.txt", metabolitesSummaryString);
-  }
-
-
-  /**
-  * Changes the searches to filter summaries.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.type Type of summaries.
-  * @param {string} parameters.category Name of category.
-  * @param {string} parameters.string Search string by which to filter
-  * records' names.
-  * @param {Object} state Application's state.
-  */
-  static changeSearches({type, category, string, state} = {}) {
-    // Determine searches.
-    if (type === "sets") {
-      var searchesName = "setsSearches";
-    } else if (type === "candidates") {
-      var searchesName = "candidatesSearches";
-    }
-    // Change the search's specifications.
-    var searches = Action.changeCategoriesSearchString({
-      category: category,
-      string: string,
-      searches: state[searchesName]
-    });
-    // Prepare summaries.
-    if (type === "sets") {
-      var summariesName = "setsSummaries";
-      var summaries = Cardinality.prepareSetsSummaries({
-        setsCardinalities: state.setsCardinalities,
-        setsSearches: searches,
-        setsSorts: state.setsSorts,
-        compartments: state.compartments,
-        processes: state.processes
-      });
-    } else if (type === "candidates") {
-      var summariesName = "candidatesSummaries";
-      var summaries = Candidacy.prepareCandidatesSummaries({
-        candidatesReactions: state.candidatesReactions,
-        candidatesMetabolites: state.candidatesMetabolites,
-        candidatesSearches: searches,
-        candidatesSorts: state.candidatesSorts
-      });
-    }
-    // Compile variables' values.
-    var novelVariablesValues = {
-      [searchesName]: searches,
-      [summariesName]: summaries
-    };
-    var variablesValues = novelVariablesValues;
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -872,51 +1021,92 @@ class Action {
       state: state
     });
   }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Simplification view
+
   /**
-  * Changes the specifications to sort summaries.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.type Type of summaries.
-  * @param {string} parameters.category Name of category.
-  * @param {string} parameters.criterion Criterion for sort.
-  * @param {Object} parameters.state Application's state.
+  * Initializes values of variables of application's controls for candidacy
+  * view.
+  * @param {Object} state Application's state.
   */
-  static changeSorts({type, category, criterion, state} = {}) {
-    // Determine sorts.
-    if (type === "sets") {
-      var sortsName = "setsSorts";
-    } else if (type === "candidates") {
-      var sortsName = "candidatesSorts";
-    }
-    // Change the sorts' specifications.
-    var sorts = Action.changeCategoriesSortCriterionOrder({
-      category: category,
-      criterion: criterion,
-      sorts: state[sortsName]
+  static initializeSimplificationViewControls() {
+    // Initialize controls.
+    var compartmentalization = false;
+    var defaultSimplifications = true;
+    var candidatesSearches = Candidacy.createInitialCandidatesSearches();
+    var candidatesSorts = Candidacy.createInitialCandidatesSorts();
+    // Compile information.
+    var variablesValues = {
+      compartmentalization: compartmentalization,
+      defaultSimplifications: defaultSimplifications,
+      candidatesSearches: candidatesSearches,
+      candidatesSorts: candidatesSorts
+    };
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Restores values of variables of application's controls for candidacy view.
+  * @param {Object} state Application's state.
+  */
+  static restoreSimplificationViewControls(state) {
+    // Initialize controls for candidacy view.
+    var candidacyViewControls = Action.initializeCandidacyViewControls();
+    // Determine candidate entities and prepare their summaries.
+    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
+      reactionsSets: state.filterSetsReactions,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      compartmentalization: candidacyViewControls.compartmentalization,
+      candidatesSearches: candidacyViewControls.candidatesSearches,
+      candidatesSorts: candidacyViewControls.candidatesSorts,
+      compartments: state.compartments
     });
-    // Sort summaries.
-    if (type === "sets") {
-      var summariesName = "setsSummaries";
-      var summaries = Cardinality.sortSetsSummaries({
-        setsSummaries: state.setsSummaries,
-        setsSorts: sorts,
-        compartments: state.compartments,
-        processes: state.processes
-      });
-    } else if (type === "candidates") {
-      var summariesName = "candidatesSummaries";
-      var summaries = Candidacy.sortCandidatesSummaries({
-        candidatesSummaries: state.candidatesSummaries,
-        candidatesSorts: sorts,
-        candidatesReactions: state.candidatesReactions,
-        candidatesMetabolites: state.candidatesMetabolites
-      });
-    }
+    // Determine simplifications of candidate entities.
+    // Create simplifications for default entities and include with other
+    // simplifications.
+    var simplifications = Candidacy.createIncludeDefaultSimplifications({
+      defaultSimplificationsMetabolites: candidacyViewControls
+      .defaultSimplificationsMetabolites,
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSets: state.filterSetsReactions,
+      reactions: state.reactions,
+      compartmentalization: candidacyViewControls.compartmentalization,
+      reactionsSimplifications: {},
+      metabolitesSimplifications: {}
+    });
+    // Create network's elements.
+    var networkElements = Network.createNetworkElements({
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSimplifications: simplifications.reactionsSimplifications,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      compartmentalization: candidacyViewControls.compartmentalization
+    });
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copyNetworkElementsRecords({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
+    // Initialize whether to force representation of topology for networks of
+    // excessive scale.
+    var forceTopology = false;
     // Compile variables' values.
     var novelVariablesValues = {
-      [sortsName]: sorts,
-      [summariesName]: summaries
+      forceTopology: forceTopology
     };
-    var variablesValues = novelVariablesValues;
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      candidacyViewControls,
+      candidatesSummaries,
+      simplifications,
+      networkElements,
+      subnetworkElements,
+    );
     // Submit variables' values to the application's state.
     Action.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -1138,7 +1328,190 @@ class Action {
     });
   }
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Query view
+
+  /**
+  * Initializes values of variables of application's controls for traversal
+  * view.
+  * @param {Object} state Application's state.
+  */
+  static initializeTraversalViewControls() {
+    // Initialize controls.
+    var traversalCombination = "union";
+    var subordinateControls = Action
+    .initializeTraversalViewSubordinateControls();
+    // Compile information.
+    var novelVariablesValues = {
+      traversalCombination: traversalCombination
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      subordinateControls
+    );
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Initializes values of variables of application's controls for traversal
+  * view.
+  * @param {Object} state Application's state.
+  */
+  static initializeTraversalViewSubordinateControls() {
+    // Initialize controls.
+    var traversalType = "rogue";
+    var traversalRogueFocus = {identifier: "", type: ""};
+    var traversalProximityFocus = {identifier: "", type: ""};
+    var traversalProximityDirection = "successors";
+    var traversalProximityDepth = 1;
+    var traversalPathSource = {identifier: "", type: ""};
+    var traversalPathTarget = {identifier: "", type: ""};
+    var traversalPathDirection = "forward";
+    var traversalPathCount = 1;
+    var traversalConnectionTarget = {identifier: "", type: ""};
+    var traversalConnectionTargets = [];
+    var traversalConnectionCount = 1;
+    // Compile information.
+    var variablesValues = {
+      traversalType: traversalType,
+      traversalRogueFocus: traversalRogueFocus,
+      traversalProximityFocus: traversalProximityFocus,
+      traversalProximityDirection: traversalProximityDirection,
+      traversalProximityDepth: traversalProximityDepth,
+      traversalPathSource: traversalPathSource,
+      traversalPathTarget: traversalPathTarget,
+      traversalPathDirection: traversalPathDirection,
+      traversalPathCount: traversalPathCount,
+      traversalConnectionTarget: traversalConnectionTarget,
+      traversalConnectionTargets: traversalConnectionTargets,
+      traversalConnectionCount: traversalConnectionCount
+    };
+    // Return information.
+    return variablesValues;
+  }
+
+  // Data view
+
+  // TODO: Follow the pattern of evaluateSourceLoadRestoreState for the procedure to load data
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Exploration view
+
+
+  // TODO: Figure out where to put everything below here...
+
+
+
+
+  /**
+  * Changes the searches to filter summaries.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of summaries.
+  * @param {string} parameters.category Name of category.
+  * @param {string} parameters.string Search string by which to filter
+  * records' names.
+  * @param {Object} state Application's state.
+  */
+  static changeSearches({type, category, string, state} = {}) {
+    // Determine searches.
+    if (type === "sets") {
+      var searchesName = "setsSearches";
+    } else if (type === "candidates") {
+      var searchesName = "candidatesSearches";
+    }
+    // Change the search's specifications.
+    var searches = Action.changeCategoriesSearchString({
+      category: category,
+      string: string,
+      searches: state[searchesName]
+    });
+    // Prepare summaries.
+    if (type === "sets") {
+      var summariesName = "setsSummaries";
+      var summaries = Cardinality.prepareSetsSummaries({
+        setsCardinalities: state.setsCardinalities,
+        setsSearches: searches,
+        setsSorts: state.setsSorts,
+        compartments: state.compartments,
+        processes: state.processes
+      });
+    } else if (type === "candidates") {
+      var summariesName = "candidatesSummaries";
+      var summaries = Candidacy.prepareCandidatesSummaries({
+        candidatesReactions: state.candidatesReactions,
+        candidatesMetabolites: state.candidatesMetabolites,
+        candidatesSearches: searches,
+        candidatesSorts: state.candidatesSorts
+      });
+    }
+    // Compile variables' values.
+    var novelVariablesValues = {
+      [searchesName]: searches,
+      [summariesName]: summaries
+    };
+    var variablesValues = novelVariablesValues;
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Changes the specifications to sort summaries.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of summaries.
+  * @param {string} parameters.category Name of category.
+  * @param {string} parameters.criterion Criterion for sort.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeSorts({type, category, criterion, state} = {}) {
+    // Determine sorts.
+    if (type === "sets") {
+      var sortsName = "setsSorts";
+    } else if (type === "candidates") {
+      var sortsName = "candidatesSorts";
+    }
+    // Change the sorts' specifications.
+    var sorts = Action.changeCategoriesSortCriterionOrder({
+      category: category,
+      criterion: criterion,
+      sorts: state[sortsName]
+    });
+    // Sort summaries.
+    if (type === "sets") {
+      var summariesName = "setsSummaries";
+      var summaries = Cardinality.sortSetsSummaries({
+        setsSummaries: state.setsSummaries,
+        setsSorts: sorts,
+        compartments: state.compartments,
+        processes: state.processes
+      });
+    } else if (type === "candidates") {
+      var summariesName = "candidatesSummaries";
+      var summaries = Candidacy.sortCandidatesSummaries({
+        candidatesSummaries: state.candidatesSummaries,
+        candidatesSorts: sorts,
+        candidatesReactions: state.candidatesReactions,
+        candidatesMetabolites: state.candidatesMetabolites
+      });
+    }
+    // Compile variables' values.
+    var novelVariablesValues = {
+      [sortsName]: sorts,
+      [summariesName]: summaries
+    };
+    var variablesValues = novelVariablesValues;
+    // Submit variables' values to the application's state.
+    Action.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+
+
+
   // Query.
+
 
   /**
   * Copies the subnetwork from the network and restores values of variables of
@@ -1891,68 +2264,6 @@ class Action {
       state: state
     });
   }
-  /**
-  * Changes the type of the prompt view.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.type Type of prompt view.
-  * @param {Object} parameters.state Application's state.
-  */
-  static changePromptType({type, state} = {}) {
-    // Compile information.
-    var prompt = {
-      type: type,
-      reference: state.prompt.reference,
-      horizontalPosition: state.prompt.horizontalPosition,
-      verticalPosition: state.prompt.verticalPosition,
-      horizontalShift: state.prompt.horizontalShift,
-      verticalShift: state.prompt.verticalShift,
-      permanence: true
-    };
-    // Compile variables' values.
-    var novelVariablesValues = {
-      prompt: prompt
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues
-    );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Removes the prompt view.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} parameters.permanence Whether to remove only transient
-  * prompt view.
-  * @param {Object} parameters.state Application's state.
-  */
-  static removePromptView({permanence, state} = {}) {
-    if (permanence) {
-      if (!state.prompt.permanence) {
-        // Remove any prompt view.
-        var prompt = Action.initializePromptViewControls();
-      } else {
-        var prompt = state.prompt;
-      }
-    } else {
-      // Remove any prompt view.
-      var prompt = Action.initializePromptViewControls();
-    }
-    // Compile variables' values.
-    var novelVariablesValues = {
-      prompt: prompt
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues
-    );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
 
   static lockAllNodesPositions() {
     // probably more efficient to just call same function on all nodes?
@@ -1982,84 +2293,8 @@ class Action {
 
   static removePromptNode() {}
 
-
-
   // Indirect actions.
 
-  /**
-  * Restores basic information about metabolic entities and sets.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Information about metabolic entities and
-  * sets.
-  * @param {Object} parameters.state Application's state.
-  */
-  static restoreMetabolismBaseInformation({data, state} = {}) {
-    console.log(data);
-    // Compile variables' values.
-    var novelVariablesValues = {
-      metabolites: data.metabolites,
-      reactions: data.reactions,
-      compartments: data.compartments,
-      processes: data.processes
-    };
-    var variablesValues = novelVariablesValues;
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Restores supplemental information about metabolic entities and sets.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Information about metabolic entities and
-  * sets.
-  * @param {Object} parameters.state Application's state.
-  */
-  static restoreMetabolismSupplementInformation({data, state} = {}) {
-    console.log(data);
-    // Derive default metabolites for simplification.
-    var defaultSimplificationsMetabolites = General.collectValueFromObjects(
-      "identifier", data
-    );
-    // Compile variables' values.
-    var novelVariablesValues = {
-      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites
-    };
-    var variablesValues = novelVariablesValues;
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-
-  /**
-  * Initializes values of variables of application's controls for prompt view.
-  * @returns {Object} Information about prompt view.
-  */
-  static initializePromptViewControls() {
-    // Initialize controls.
-    var type = "none";
-    var reference = {};
-    var horizontalPosition = 0;
-    var verticalPosition = 0;
-    var horizontalShift = 0;
-    var verticalShift = 0;
-    var permanence = false;
-    // Compile information.
-    var variablesValues = {
-      type: type,
-      reference: reference,
-      horizontalPosition: horizontalPosition,
-      verticalPosition: verticalPosition,
-      horizontalShift: horizontalShift,
-      verticalShift: verticalShift,
-      permanence: permanence
-    };
-    // Return information.
-    return variablesValues;
-  }
   /**
   * Initializes information about selection of an entity.
   * @returns {Object} Information about an entity selection.
@@ -2079,174 +2314,6 @@ class Action {
     };
     // Return information.
     return variablesValues;
-  }
-  /**
-  * Initializes values of variables of application's controls for set view.
-  * @param {Object} state Application's state.
-  */
-  static initializeFilterViewControls() {
-    // Initialize controls.
-    var setsFilters = Attribution.createInitialSetsFilters();
-    var setsEntities = "metabolites";
-    var setsFilter = false;
-    var setsSearches = Cardinality.createInitialSetsSearches();
-    var setsSorts = Cardinality.createInitialSetsSorts();
-    // Compile information.
-    var variablesValues = {
-      setsFilters: setsFilters,
-      setsEntities: setsEntities,
-      setsFilter: setsFilter,
-      setsSearches: setsSearches,
-      setsSorts: setsSorts
-    };
-    // Return information.
-    return variablesValues;
-  }
-  /**
-  * Initializes values of variables of application's controls for candidacy
-  * view.
-  * @param {Object} state Application's state.
-  */
-  static initializeSimplificationViewControls() {
-    // Initialize controls.
-    var compartmentalization = false;
-    var defaultSimplifications = true;
-    var candidatesSearches = Candidacy.createInitialCandidatesSearches();
-    var candidatesSorts = Candidacy.createInitialCandidatesSorts();
-    // Compile information.
-    var variablesValues = {
-      compartmentalization: compartmentalization,
-      defaultSimplifications: defaultSimplifications,
-      candidatesSearches: candidatesSearches,
-      candidatesSorts: candidatesSorts
-    };
-    // Return information.
-    return variablesValues;
-  }
-  /**
-  * Initializes values of variables of application's controls for traversal
-  * view.
-  * @param {Object} state Application's state.
-  */
-  static initializeTraversalViewControls() {
-    // Initialize controls.
-    var traversalCombination = "union";
-    var subordinateControls = Action
-    .initializeTraversalViewSubordinateControls();
-    // Compile information.
-    var novelVariablesValues = {
-      traversalCombination: traversalCombination
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      subordinateControls
-    );
-    // Return information.
-    return variablesValues;
-  }
-  /**
-  * Initializes values of variables of application's controls for traversal
-  * view.
-  * @param {Object} state Application's state.
-  */
-  static initializeTraversalViewSubordinateControls() {
-    // Initialize controls.
-    var traversalType = "rogue";
-    var traversalRogueFocus = {identifier: "", type: ""};
-    var traversalProximityFocus = {identifier: "", type: ""};
-    var traversalProximityDirection = "successors";
-    var traversalProximityDepth = 1;
-    var traversalPathSource = {identifier: "", type: ""};
-    var traversalPathTarget = {identifier: "", type: ""};
-    var traversalPathDirection = "forward";
-    var traversalPathCount = 1;
-    var traversalConnectionTarget = {identifier: "", type: ""};
-    var traversalConnectionTargets = [];
-    var traversalConnectionCount = 1;
-    // Compile information.
-    var variablesValues = {
-      traversalType: traversalType,
-      traversalRogueFocus: traversalRogueFocus,
-      traversalProximityFocus: traversalProximityFocus,
-      traversalProximityDirection: traversalProximityDirection,
-      traversalProximityDepth: traversalProximityDepth,
-      traversalPathSource: traversalPathSource,
-      traversalPathTarget: traversalPathTarget,
-      traversalPathDirection: traversalPathDirection,
-      traversalPathCount: traversalPathCount,
-      traversalConnectionTarget: traversalConnectionTarget,
-      traversalConnectionTargets: traversalConnectionTargets,
-      traversalConnectionCount: traversalConnectionCount
-    };
-    // Return information.
-    return variablesValues;
-  }
-  /**
-  * Creates persistent representation of the application's state.
-  * @param {Object} state Application's state.
-  * @returns {Object} Persistent representation of the application's state.
-  */
-  static createPersistentState(state) {
-    return state.variablesNames.reduce(function (collection, variableName) {
-      var entry = {
-        [variableName]: state[variableName]
-      };
-      return Object.assign({}, collection, entry);
-    }, {});
-  }
-  /**
-  * Evaluates information from a persistent source to restore the application's
-  * state.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Persistent source of information about
-  * application's state.
-  * @param {Object} parameters.state Application's state.
-  */
-  static evaluateSourceRestoreState({data, state} = {}) {
-    // Determine appropriate procedure for source information.
-    if (data.hasOwnProperty("id") && (data.id === "MODEL1603150001")) {
-      if (data.hasOwnProperty("clean")) {
-        Action.extractMetabolicEntitiesSets({
-          data: data,
-          state: state
-        });
-      } else {
-        var cleanData = Clean.checkCleanMetabolicEntitiesSetsRecon2(data);
-        Action.extractMetabolicEntitiesSets({
-          data: cleanData,
-          state: state
-        });
-      }
-    } else {
-      Action.restoreState({
-        data: data,
-        state: state
-      });
-    }
-  }
-  /**
-  * Restores the application to a state from a persistent source.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Persistent source of information about
-  * application's state.
-  * @param {Object} parameters.state Application's state.
-  */
-  static restoreState({data, state} = {}) {
-    // Remove any information about source from the application's state.
-    var source = {};
-    // Compile variables' values.
-    var novelVariablesValues = {
-      source: source
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      data
-    );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
   }
   /**
   * Extracts information about metabolic entities and sets from a clean model
@@ -2323,44 +2390,6 @@ class Action {
     // Include entry.
     var novelSearches = Object.assign(copySearches, entry);
     return novelSearches;
-  }
-  /**
-  * Changes the type and position of the prompt view.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.type Type of prompt view.
-  * @param {Object} parameters.reference Reference information for the specific
-  * type of prompt.
-  * @param {number} parameters.horizontalPosition Horizontal position in pixels
-  * relative to the browser's view window of reference point.
-  * @param {number} parameters.verticalPosition Horizontal position in pixels
-  * relative to the browser's view window of reference point.
-  * @param {number} parameters.horizontalShift Horizontal shift in pixels
-  * relative to reference point.
-  * @param {number} parameters.verticalShift Horizontal shift in pixels relative
-  * to reference point.
-  * @param {boolean} parameters.permanence Whether prompt is permanent.
-  * @param {Object} parameters.state Application's state.
-  * @returns {Object} Information about prompt view.
-  */
-  static changePromptInformation({type, reference, horizontalPosition, verticalPosition, horizontalShift, verticalShift, permanence, state} = {}) {
-    // Determine prompt's type and positions.
-    if (state.prompt.type === type) {
-      // Remove any prompt view.
-      var prompt = Action.initializePromptViewControls();
-    } else {
-      // Compile information.
-      var prompt = {
-        type: type,
-        reference: reference,
-        horizontalPosition: horizontalPosition,
-        verticalPosition: verticalPosition,
-        horizontalShift: horizontalShift,
-        verticalShift: verticalShift,
-        permanence: permanence
-      };
-    }
-    // Return information.
-    return prompt;
   }
   /**
   * Changes the selection of a node's entity.
