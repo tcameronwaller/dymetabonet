@@ -120,6 +120,9 @@ class ActionState {
       return Object.assign({}, collection, entry);
     }, {});
   }
+
+  // TODO: rewrite evaluateSourceRestoreState to not even support extraction
+    
   /**
   * Evaluates information from a persistent source to restore the application's
   * state.

@@ -1333,7 +1333,7 @@ class PromptView {
     self.remove.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.clearSubnetworkRestoreTraversalViewControls(self.state);
+      ActionQuery.clearSubnetworkInitializeControls(self.state);
     });
     self.lock.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
@@ -1348,7 +1348,7 @@ class PromptView {
     self.add.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.executeRogueTraversalUnion(self.state);
+      ActionQuery.executeRogueUnion(self.state);
     });
     // Search.
     TraversalView.activateTraversalSearch({
@@ -1413,7 +1413,7 @@ class PromptView {
       span.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        Action.changePromptType({type: "network-node", state: self.state});
+        ActionPrompt.changeType({type: "network-node", state: self.state});
       });
     } else {
       // Container's current content matches view's novel type.
@@ -1508,7 +1508,7 @@ class PromptView {
     self.expand.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.executeNodeProximityTraversalExpansion(self.state)
+      ActionQuery.executeProximityExpansion(self.state)
     });
   }
   /**
@@ -1980,7 +1980,7 @@ class ControlView {
     self[reference].addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.changeControlViews({
+      ActionControl.changeView({
         category: event.currentTarget.getAttribute("name"),
         state: self.state
       });
@@ -2334,7 +2334,7 @@ class FilterView {
     restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.restoreFilterViewControls(self.state);
+      ActionFilter.restoreControls(self.state);
     });
   }
   /**
@@ -2376,7 +2376,7 @@ class FilterView {
     self[entities].addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.changeSetsEntities(self.state);
+      ActionFilter.changeSetsEntities(self.state);
     });
   }
   /**
@@ -2398,7 +2398,7 @@ class FilterView {
     self.filter.addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.changeSetsFilter(self.state);
+      ActionFilter.changeSetsFilter(self.state);
     });
   }
   /**
@@ -2687,7 +2687,7 @@ class FilterMenuView {
     // Activate behavior.
     self.rows.on("click", function (element, index, nodes) {
       // Call action.
-      Action.changeSetsFilters({
+      ActionFilter.changeSetsFilters({
         value: element.value,
         attribute: element.attribute,
         state: self.state
@@ -3002,7 +3002,7 @@ class SimplificationView {
     self.compartmentalization.addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.changeCompartmentalization(self.state);
+      ActionContext.changeCompartmentalization(self.state);
     });
   }
   /**
@@ -3024,7 +3024,7 @@ class SimplificationView {
     self.simplifications.addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.changeDefaultSimplifications(self.state);
+      ActionContext.changeDefaultSimplifications(self.state);
     });
   }
   /**
@@ -3042,7 +3042,7 @@ class SimplificationView {
     restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.restoreSimplificationViewControls(self.state);
+      ActionContext.restoreControls(self.state);
     });
   }
   /**
@@ -3524,7 +3524,7 @@ class SimplificationMenuView {
     // Activate behavior.
     checks.on("change", function (element, index, nodes) {
       // Call action.
-      Action.changeSimplification({
+      ActionContext.changeSimplification({
         identifier: element.identifier,
         method: element.type,
         category: element.entity,
@@ -3746,7 +3746,7 @@ class TraversalView {
     restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.copySubnetworkRestoreTraversalViewControls(self.state);
+      ActionQuery.copySubnetworkInitializeControls(self.state);
     });
   }
   /**
@@ -3765,7 +3765,7 @@ class TraversalView {
     clear.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.clearSubnetworkRestoreTraversalViewControls(self.state);
+      ActionQuery.clearSubnetworkInitializeControls(self.state);
     });
   }
   /**
@@ -3791,7 +3791,7 @@ class TraversalView {
       // Determine method of combination.
       var combination = event.currentTarget.value;
       // Call action.
-      Action.changeTraversalCombination(combination, self.state);
+      ActionQuery.changeCombination(combination, self.state);
     });
   }
   /**
@@ -3817,7 +3817,7 @@ class TraversalView {
       // Determine type.
       var type = event.currentTarget.value;
       // Call action.
-      Action.changeTraversalType(type, self.state);
+      ActionQuery.changeType(type, self.state);
     });
   }
   /**
@@ -3943,7 +3943,7 @@ class TraversalView {
     self.execute.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.executeRogueTraversalCombination(self.state);
+      ActionQuery.executeRogueCombination(self.state);
     });
   }
   /**
@@ -4064,7 +4064,7 @@ class TraversalView {
     .traversalProximityDirection.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.changeTraversalProximityDirection(self.state);
+      ActionQuery.changeProximityDirection(self.state);
     });
     // Activate depth.
     self
@@ -4073,13 +4073,13 @@ class TraversalView {
       // Determine value.
       var value = Number(event.currentTarget.value);
       // Call action.
-      Action.changeTraversalProximityDepth(value, self.state);
+      ActionQuery.changeProximityDepth(value, self.state);
     });
     // Activate execute.
     self.execute.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.executeProximityTraversalCombination(self.state);
+      ActionQuery.executeProximityCombination(self.state);
     });
   }
   /**
@@ -4236,7 +4236,7 @@ class TraversalView {
     .traversalPathDirection.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.changeTraversalPathDirection(self.state);
+      ActionQuery.changePathDirection(self.state);
     });
     // Activate count.
     self
@@ -4245,7 +4245,7 @@ class TraversalView {
       // Determine value.
       var value = Number(event.currentTarget.value);
       // Call action.
-      Action.changeTraversalTypeCount({
+      ActionQuery.changeTypeCount({
         count: value,
         type: "path",
         state: self.state
@@ -4262,7 +4262,7 @@ class TraversalView {
     self.execute.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.executePathTraversalCombination(self.state);
+      ActionQuery.executePathCombination(self.state);
     });
   }
   /**
@@ -4433,7 +4433,7 @@ class TraversalView {
     self.includeTarget.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.includeTraversalConnectionTarget(self.state);
+      ActionQuery.includeConnectionTarget(self.state);
     });
     // Activate search.
     if (self.state.traversalCombination === "union") {
@@ -4454,7 +4454,7 @@ class TraversalView {
       // Determine value.
       var value = Number(event.currentTarget.value);
       // Call action.
-      Action.changeTraversalTypeCount({
+      ActionQuery.changeTypeCount({
         count: value,
         type: "connection",
         state: self.state
@@ -4464,7 +4464,7 @@ class TraversalView {
     self.execute.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      Action.executeConnectionTraversalCombination(self.state);
+      ActionQuery.executeConnectionCombination(self.state);
     });
   }
   /**
@@ -4637,7 +4637,7 @@ class TraversalView {
     // Activate behavior.
     buttons.on("click", function (element, index, nodes) {
       // Call action.
-      Action.excludeTraversalConnectionTarget({
+      ActionQuery.excludeConnectionTarget({
         identifier: element.identifier,
         type: element.entity,
         state: self.state
@@ -4696,31 +4696,31 @@ class TraversalView {
         });
         // Call action.
         if (variableName === "traversalRogueFocus") {
-          Action.changeTraversalRogueFocus({
+          ActionQuery.changeRogueFocus({
             identifier: identifier,
             type: node.type,
             state: state
           });
         } else if (variableName === "traversalProximityFocus") {
-          Action.changeTraversalProximityFocus({
+          ActionQuery.changeProximityFocus({
             identifier: identifier,
             type: node.type,
             state: state
           });
         } else if (variableName === "traversalPathSource") {
-          Action.changeTraversalPathSource({
+          ActionQuery.changePathSource({
             identifier: identifier,
             type: node.type,
             state: state
           });
         } else if (variableName === "traversalPathTarget") {
-          Action.changeTraversalPathTarget({
+          ActionQuery.changePathTarget({
             identifier: identifier,
             type: node.type,
             state: state
           });
         } else if (variableName === "traversalConnectionTarget") {
-          Action.changeTraversalConnectionTarget({
+          ActionQuery.changeConnectionTarget({
             identifier: identifier,
             type: node.type,
             state: state
@@ -5226,7 +5226,7 @@ class GateView {
       self.force.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        Action.changeForceTopology(self.state);
+        ActionExploration.changeForceTopology(self.state);
       });
     } else {
       // Container is not empty.
@@ -5387,7 +5387,7 @@ class TopologyView {
       var horizontalPosition = event.clientX;
       var verticalPosition = event.clientY;
       // Call action.
-      Action.selectNetworkDiagram({
+      ActionExploration.selectNetworkDiagram({
         horizontalPosition: horizontalPosition,
         verticalPosition: verticalPosition,
         state: self.state
@@ -5429,6 +5429,13 @@ class TopologyView {
     self.nodesGroup.classList.add("nodes");
     self.nodesGroupSelection = d3.select(self.nodesGroup);
   }
+
+  // TODO: Maybe I could initialize the simulation in an ActionExploration
+  // TODO: I'd store the simulation in a state variable
+  // TODO: I'd have the simulation restore TopologyView when appropriate (such as on ticks...)
+  // TODO: That might be a good way to separate the layout simulation from other
+  // TODO: updates to the application's state.
+
   /**
   * Restores view's content and behavior that varies with changes to the
   * application's state.
@@ -6028,7 +6035,7 @@ class TopologyView {
       // proportionally to the node's dimensions.
       var positionDimensions = View.determineElementPositionDimensions(node);
       // Call action.
-      Action.selectNetworkNode({
+      ActionExploration.selectNetworkNode({
         identifier: element.identifier,
         type: element.type,
         horizontalPosition: positionDimensions.horizontalPosition,
@@ -6066,7 +6073,7 @@ class TopologyView {
         // proportionally to the node's dimensions.
         var positionDimensions = View.determineElementPositionDimensions(node);
         // Call action.
-        Action.hoverSelectNetworkNode({
+        ActionExploration.hoverSelectNetworkNode({
           identifier: element.identifier,
           type: element.type,
           horizontalPosition: positionDimensions.horizontalPosition,
@@ -6127,7 +6134,7 @@ class TopologyView {
       if (selection) {
         // Remove prompt view.
         self.window.setTimeout(function () {
-          Action.removePromptView({permanence: true, state: self.state});
+          ActionPrompt.removeView({permanence: true, state: self.state});
         }, 1000);
       } else {
         // Remove tip view.

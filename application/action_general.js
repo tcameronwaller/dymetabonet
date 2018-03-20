@@ -149,18 +149,17 @@ class ActionGeneral {
       data: false
     };
     // Initialize controls for pompt view.
-    var prompt = Action.initializePromptViewControls();
+    var prompt = ActionPrompt.initializeControls();
     // Initialize whether to force representation of topology for networks of
     // excessive scale.
     var forceTopology = false;
     var entitySelection = {type: "", node: "", candidate: "", entity: ""};
     // Initialize controls for set view.
-    var filterViewControls = Action.initializeFilterViewControls();
+    var filterViewControls = ActionFilter.initializeControls();
     // Initialize controls for candidacy view.
-    var simplificationViewControls = Action
-    .initializeSimplificationViewControls();
+    var simplificationViewControls = ActionContext.initializeControls();
     // Initialize controls for traversal view.
-    var traversalViewControls = Action.initializeTraversalViewControls();
+    var traversalViewControls = ActionQuery.initializeControls();
     var simulation = {};
     // Compile variables' values.
     var novelVariablesValues = {
@@ -330,7 +329,7 @@ class ActionGeneral {
       var searchesName = "candidatesSearches";
     }
     // Change the search's specifications.
-    var searches = Action.changeCategoriesSearchString({
+    var searches = ActionGeneral.changeCategoriesSearchString({
       category: category,
       string: string,
       searches: state[searchesName]
@@ -382,7 +381,7 @@ class ActionGeneral {
       var sortsName = "candidatesSorts";
     }
     // Change the sorts' specifications.
-    var sorts = Action.changeCategoriesSortCriterionOrder({
+    var sorts = ActionGeneral.changeCategoriesSortCriterionOrder({
       category: category,
       criterion: criterion,
       sorts: state[sortsName]
@@ -416,6 +415,66 @@ class ActionGeneral {
       variablesValues: variablesValues,
       state: state
     });
+  }
+  /**
+  * Changes the specifications to sort records in multiple categories.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Name of category.
+  * @param {string} parameters.criterion Criterion for sort.
+  * @param {Object<Object<string>>} parameters.sorts Specifications to sort
+  * records in multiple categories.
+  * @returns {Object<Object<string>>} Specifications to sort records in multiple
+  * categories.
+  */
+  static changeCategoriesSortCriterionOrder({category, criterion, sorts} = {}) {
+    // Change the specification only for the specific category.
+    // Determine whether current criterion matches previous criterion.
+    if (criterion === sorts[category].criterion) {
+      // Current criterion matches previous criterion.
+      // Change the specification's order.
+      if (sorts[category].order === "descend") {
+        var order = "ascend";
+      } else if (sorts[category].order === "ascend") {
+        var order = "descend";
+      }
+    } else {
+      // Current criterion does not match previous criterion.
+      // Change the specification to the current criterion with default order.
+      var order = "descend";
+    }
+    // Create entry.
+    var entry = {
+      [category]: {
+        criterion: criterion,
+        order: order
+      }
+    };
+    // Copy specifications.
+    var copySorts = General.copyValue(sorts, true);
+    // Include entry.
+    var novelSorts = Object.assign(copySorts, entry);
+    return novelSorts;
+  }
+  /**
+  * Changes the searches to filter records in multiple categories.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Name of category.
+  * @param {string} parameters.string String by which to filter records' names.
+  * @param {Object<string>} parameters.searches Searches to filter records in
+  * multiple categories.
+  * @returns {Object<string>} Searches to filter sets' summaries.
+  */
+  static changeCategoriesSearchString({category, string, searches} = {}) {
+    // Change the specification only for the specific category.
+    // Create entry.
+    var entry = {
+      [category]: string.toLowerCase()
+    };
+    // Copy specifications.
+    var copySearches = General.copyValue(searches, true);
+    // Include entry.
+    var novelSearches = Object.assign(copySearches, entry);
+    return novelSearches;
   }
 
 }
