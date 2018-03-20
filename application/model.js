@@ -59,13 +59,13 @@ class Model {
   */
   act(self) {
     if (!Model.determineMetabolismBaseInformation(self.state)) {
-      Action.loadMetabolismBaseInformation(self.state);
+      ActionGeneral.loadMetabolismBaseInformation(self.state);
     } else if (!Model.determineMetabolismSupplementInformation(self.state)) {
-      Action.loadMetabolismSupplementInformation(self.state);
+      ActionGeneral.loadMetabolismSupplementInformation(self.state);
     } else if (!Model.determineApplicationControls(self.state)) {
-      Action.initializeApplicationControls(self.state);
+      ActionGeneral.initializeApplicationControls(self.state);
     } else if (!Model.determineMetabolismDerivationInformation(self.state)) {
-      Action.deriveTotalMetabolismInformation(self.state);
+      ActionGeneral.deriveCompleteMetabolismInformation(self.state);
     }
   }
 

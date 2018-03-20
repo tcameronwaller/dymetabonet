@@ -547,7 +547,7 @@ class View {
       // Determine the search's value.
       var value = event.currentTarget.value;
       // Call action.
-      Action.changeSearches({
+      ActionGeneral.changeSearches({
         type: type,
         category: category,
         string: value,
@@ -594,7 +594,7 @@ class View {
       cell.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        Action.changeSorts({
+        ActionGeneral.changeSorts({
           type: type,
           category: category,
           criterion: attribute,
@@ -2151,7 +2151,7 @@ class StateView {
       self.fileSelector.addEventListener("change", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        Action.submitSource(event.currentTarget.files[0], self.state);
+        ActionState.submitSource(event.currentTarget.files[0], self.state);
       });
       // Create and activate buttons.
       self.save = View.createButton({
@@ -2162,7 +2162,7 @@ class StateView {
       self.save.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        Action.saveState(self.state);
+        ActionState.saveState(self.state);
       });
       // Load button is a facade for the file selector.
       self.load = View.createButton({
@@ -2187,7 +2187,7 @@ class StateView {
         // TODO: This action should only load state from file... no more clean or extraction
 
 
-        Action.evaluateSourceLoadRestoreState(self.state);
+        ActionState.evaluateSourceLoadRestoreState(self.state);
       });
       self.execute = View.createButton({
         text: "execute",
@@ -2197,7 +2197,7 @@ class StateView {
       self.execute.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        Action.executeTemporaryProcedure(self.state);
+        ActionState.executeTemporaryProcedure(self.state);
       });
     } else {
       // Container is not empty.
@@ -4881,7 +4881,7 @@ class DataView {
       self.fileSelector.addEventListener("change", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        Action.submitSource(event.currentTarget.files[0], self.state);
+        ActionState.submitSource(event.currentTarget.files[0], self.state);
       });
       self.restore = View.createButton({
         text: "restore",
@@ -4892,7 +4892,7 @@ class DataView {
         // Element on which the event originated is event.currentTarget.
         // Call action.
         // TODO: This button in Data View should only restore to empty data...
-        Action.evaluateSourceLoadRestoreState(self.state);
+        ActionState.evaluateSourceLoadRestoreState(self.state);
       });
       // Load button is a facade for the file selector.
       self.load = View.createButton({

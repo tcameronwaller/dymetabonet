@@ -38,5 +38,5 @@ United States of America
 (function () {
   // Initialize application.
   var state = new State();
-  Action.initializeApplication(state);
+  ActionGeneral.initializeApplicationStateVariables(state);
 })();

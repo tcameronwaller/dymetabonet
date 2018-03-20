@@ -1,6 +1,9 @@
 /*
+This file is part of project Profondeur
+(https://github.com/tcameronwaller/profondeur/).
+
 Profondeur supports visual exploration and analysis of metabolic networks.
-Copyright (C) 2017 Thomas Cameron Waller
+Copyright (C) 2018 Thomas Cameron Waller
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -16,14 +19,12 @@ You should have received a copy of the GNU General Public License along with
 this program.
 If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of project Profondeur.
-Project repository's address: https://github.com/tcameronwaller/profondeur/
-Author's electronic address: tcameronwaller@gmail.com
-Author's physical address:
-T Cameron Waller
-Scientific Computing and Imaging Institute
+Thomas Cameron Waller
+tcameronwaller@gmail.com
+Department of Biochemistry
 University of Utah
-72 South Central Campus Drive Room 3750
+Room 5520C, Emma Eccles Jones Medical Research Building
+15 North Medical Drive East
 Salt Lake City, Utah 84112
 United States of America
 */
@@ -38,286 +39,9 @@ United States of America
 * These methods also call external methods as necessary.
 */
 class Action {
-  // Methods herein comprise discrete actions that impart changes to the
-  // application's state.
-  // Some actions necessitate changes to multiple aspects of the application
-  // that coordinate together.
-  // For efficiency, these actions impart these multiple changes simultaneously.
-  // Knowledge of the event that triggered the action informs which changes to
-  // make to the application's state.
-  //
-  // To call the restore method of the application's state, it is necessary to
-  // pass the method a reference to the current instance of the state.
 
   //////////////////////////////////////////////////////////////////////////////
-  // General
 
-  /**
-  * Submits a novel value of a variable to the application's state.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.value Value of the variable.
-  * @param {string} parameters.variable Name of the variable.
-  * @param {Object} parameters.state Application's state.
-  */
-  static submitStateVariableValue({value, variable, state} = {}) {
-    var novelVariableValue = [{
-      variable: variable,
-      value: value
-    }];
-    state.restore(novelVariableValue, state);
-  }
-  /**
-  * Submits novel values of variables to the application's state.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.variablesValues Names and values of variables.
-  * @param {Object} parameters.state Application's state.
-  */
-  static submitStateVariablesValues({variablesValues, state} = {}) {
-    var novelVariablesValues = Object
-    .keys(variablesValues).map(function (variable) {
-      return {
-        variable: variable,
-        value: variablesValues[variable]
-      };
-    });
-    state.restore(novelVariablesValues, state);
-  }
-  /**
-  * Removes a variable's value from the application's state by submitting a
-  * null value.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.variable Name of the variable.
-  * @param {Object} parameters.state Application's state.
-  */
-  static removeStateVariableValue({variable, state} = {}) {
-    Action.submitStateVariableValue({
-      value: null,
-      variable: variable,
-      state: state
-    });
-  }
-  /**
-  * Initializes the application's state by submitting null values of all
-  * variables.
-  * @param {Object} state Application's state.
-  */
-  static initializeApplication(state) {
-    var variablesValues = state
-    .variablesNames.reduce(function (collection, variableName) {
-      var entry = {[variableName]: null};
-      return Object.assign(collection, entry);
-    }, {});
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Loads from file basic information about metabolic entities and sets.
-  * @param {Object} state Application's state.
-  */
-  static loadMetabolismBaseInformation(state) {
-    d3.json("data/metabolism_sets_entities_recon2m2.json", function (data) {
-      Action.restoreMetabolismBaseInformation({
-        data: data,
-        state: state
-      });
-    });
-  }
-  /**
-  * Loads from file supplemental information about metabolic entities and sets.
-  * @param {Object} state Application's state.
-  */
-  static loadMetabolismSupplementInformation(state) {
-    d3.tsv(
-      "data/curation_simplification_default_metabolites.tsv", function (data) {
-      Action.restoreMetabolismSupplementInformation({
-        data: data,
-        state: state
-      });
-    });
-  }
-  /**
-  * Initializes values of variables of application's controls.
-  * @param {Object} state Application's state.
-  */
-  static initializeApplicationControls(state) {
-    var source = {};
-    var controlViews = {
-      state: false,
-      filter: false,
-      simplification: false,
-      traversal: false,
-      data: false
-    };
-    // Initialize controls for pompt view.
-    var prompt = Action.initializePromptViewControls();
-    // Initialize whether to force representation of topology for networks of
-    // excessive scale.
-    var forceTopology = false;
-    var entitySelection = {type: "", node: "", candidate: "", entity: ""};
-    // Initialize controls for set view.
-    var filterViewControls = Action.initializeFilterViewControls();
-    // Initialize controls for candidacy view.
-    var simplificationViewControls = Action
-    .initializeSimplificationViewControls();
-    // Initialize controls for traversal view.
-    var traversalViewControls = Action.initializeTraversalViewControls();
-    var simulation = {};
-    // Compile variables' values.
-    var novelVariablesValues = {
-      source: source,
-      controlViews: controlViews,
-      prompt: prompt,
-      forceTopology: forceTopology,
-      entitySelection: entitySelection,
-      simulation: simulation
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      filterViewControls,
-      simplificationViewControls,
-      traversalViewControls
-    );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Derives information from basic information about metabolic entities and
-  * sets.
-  * @param {Object} state Application's state.
-  */
-  static deriveTotalMetabolismInformation(state) {
-    // Determine total entities' attribution to sets.
-    var totalEntitiesSets = Attribution
-    .determineTotalEntitiesSets(state.reactions);
-    // Determine current entities' attribution to sets.
-    var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
-      setsFilters: state.setsFilters,
-      totalSetsReactions: totalEntitiesSets.totalSetsReactions,
-      totalSetsMetabolites: totalEntitiesSets.totalSetsMetabolites,
-      reactions: state.reactions
-    });
-    // Determine sets' cardinalities and prepare sets' summaries.
-    var setsCardinalitiesSummaries = Cardinality
-    .determineSetsCardinalitiesSummaries({
-      setsEntities: state.setsEntities,
-      setsFilter: state.setsFilter,
-      accessSetsReactions: currentEntitiesSets.accessSetsReactions,
-      accessSetsMetabolites: currentEntitiesSets.accessSetsMetabolites,
-      filterSetsReactions: currentEntitiesSets.filterSetsReactions,
-      filterSetsMetabolites: currentEntitiesSets.filterSetsMetabolites,
-      setsSearches: state.setsSearches,
-      setsSorts: state.setsSorts,
-      compartments: state.compartments,
-      processes: state.processes
-    });
-    // Determine candidate entities and prepare their summaries.
-    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
-      reactionsSets: currentEntitiesSets.filterSetsReactions,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: state.compartmentalization,
-      candidatesSearches: state.candidatesSearches,
-      candidatesSorts: state.candidatesSorts,
-      compartments: state.compartments
-    });
-    // Determine simplifications of candidate entities.
-    // Create simplifications for default entities and include with other
-    // simplifications.
-    var simplifications = Candidacy.createIncludeDefaultSimplifications({
-      defaultSimplificationsMetabolites: state
-      .defaultSimplificationsMetabolites,
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      reactionsSets: currentEntitiesSets.filterSetsReactions,
-      reactions: state.reactions,
-      compartmentalization: state.compartmentalization,
-      reactionsSimplifications: {},
-      metabolitesSimplifications: {}
-    });
-    // Create network's elements.
-    var networkElements = Network.createNetworkElements({
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      reactionsSimplifications: simplifications.reactionsSimplifications,
-      metabolitesSimplifications: simplifications.metabolitesSimplifications,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: state.compartmentalization
-    });
-    // Create subnetwork's elements.
-    var subnetworkElements = Network.copyNetworkElementsRecords({
-      networkNodesRecords: networkElements.networkNodesRecords,
-      networkLinksRecords: networkElements.networkLinksRecords
-    });
-    // Compile variables' values.
-    var variablesValues = Object.assign(
-      totalEntitiesSets,
-      currentEntitiesSets,
-      setsCardinalitiesSummaries,
-      candidatesSummaries,
-      simplifications,
-      networkElements,
-      subnetworkElements
-    );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Restores basic information about metabolic entities and sets.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Information about metabolic entities and
-  * sets.
-  * @param {Object} parameters.state Application's state.
-  */
-  static restoreMetabolismBaseInformation({data, state} = {}) {
-    // Compile variables' values.
-    var novelVariablesValues = {
-      metabolites: data.metabolites,
-      reactions: data.reactions,
-      compartments: data.compartments,
-      processes: data.processes
-    };
-    var variablesValues = novelVariablesValues;
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Restores supplemental information about metabolic entities and sets.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Information about metabolic entities and
-  * sets.
-  * @param {Object} parameters.state Application's state.
-  */
-  static restoreMetabolismSupplementInformation({data, state} = {}) {
-    // Derive default metabolites for simplification.
-    var defaultSimplificationsMetabolites = General.collectValueFromObjects(
-      "identifier", data
-    );
-    // Compile variables' values.
-    var novelVariablesValues = {
-      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites
-    };
-    var variablesValues = novelVariablesValues;
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-
-  //////////////////////////////////////////////////////////////////////////////
   // Prompt view
 
   /**
@@ -409,7 +133,7 @@ class Action {
       novelVariablesValues
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -441,18 +165,19 @@ class Action {
       novelVariablesValues
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
   }
 
   //////////////////////////////////////////////////////////////////////////////
+
   // Summary view
 
   // TODO: export information about all entities in subnetwork or current selection
   // TODO: Consolidate export behavior... I don't think I need to handle differently...
-  
+
   /**
   * Prepares and exports information about entities, reactions and metabolites,
   * that pass current filters by sets.
@@ -540,6 +265,7 @@ class Action {
   }
 
   //////////////////////////////////////////////////////////////////////////////
+
   // Control view
 
   /**
@@ -568,157 +294,14 @@ class Action {
     };
     var variablesValues = novelVariablesValues;
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
   }
 
   //////////////////////////////////////////////////////////////////////////////
-  // State view
 
-  /**
-  * Saves to file on client's system a persistent representation of the
-  * application's state.
-  * @param {Object} state Application's state.
-  */
-  static saveState(state) {
-    var persistence = Action.createPersistentState(state);
-    console.log("application's persistent state...");
-    console.log(persistence);
-    General.saveObject("state.json", persistence);
-  }
-  /**
-  * Restores the application to a state from a persistent source.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Persistent source of information about
-  * application's state.
-  * @param {Object} parameters.state Application's state.
-  */
-  static restoreState({data, state} = {}) {
-    // Remove any information about source from the application's state.
-    var source = {};
-    // Compile variables' values.
-    var novelVariablesValues = {
-      source: source
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      data
-    );
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Submits a novel source to the application's state.
-  * @param {Object} source Reference to file object.
-  * @param {Object} state Application's state.
-  */
-  static submitSource(source, state) {
-    Action.submitStateVariableValue({
-      value: source,
-      variable: "source",
-      state: state
-    });
-  }
-  /**
-  * Evaluates and loads from file a source of information about the
-  * application's state, passing this information to another procedure to
-  * restore the application's state.
-  * @param {Object} state Application's state.
-  */
-  static evaluateSourceLoadRestoreState(state) {
-    // Determine whether the application's state includes a source file.
-    if (Model.determineSource(state)) {
-      // Application's state includes a source file.
-      General.loadPassObject({
-        file: state.source,
-        call: Action.evaluateSourceRestoreState,
-        parameters: {state: state}
-      });
-    } else {
-      // Application's state does not include a source file.
-      // Restore application to initial state.
-      Action.initializeApplication(state);
-    }
-  }
-  /**
-  * Creates persistent representation of the application's state.
-  * @param {Object} state Application's state.
-  * @returns {Object} Persistent representation of the application's state.
-  */
-  static createPersistentState(state) {
-    return state.variablesNames.reduce(function (collection, variableName) {
-      var entry = {
-        [variableName]: state[variableName]
-      };
-      return Object.assign({}, collection, entry);
-    }, {});
-  }
-  /**
-  * Evaluates information from a persistent source to restore the application's
-  * state.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Persistent source of information about
-  * application's state.
-  * @param {Object} parameters.state Application's state.
-  */
-  static evaluateSourceRestoreState({data, state} = {}) {
-    // Determine appropriate procedure for source information.
-    if (data.hasOwnProperty("id") && (data.id === "MODEL1603150001")) {
-      if (data.hasOwnProperty("clean")) {
-        Action.extractMetabolicEntitiesSets({
-          data: data,
-          state: state
-        });
-      } else {
-        var cleanData = Clean.checkCleanMetabolicEntitiesSetsRecon2(data);
-        Action.extractMetabolicEntitiesSets({
-          data: cleanData,
-          state: state
-        });
-      }
-    } else {
-      Action.restoreState({
-        data: data,
-        state: state
-      });
-    }
-  }
-  /**
-  * Executes a temporary procedure.
-  * @param {Object} state Application's state.
-  */
-  static executeTemporaryProcedure(state) {
-    // Initiate process timer.
-    //console.time("timer");
-    var startTime = window.performance.now();
-    // Execute process.
-
-    var elements = ["a", "b", "c", "d", "e", "f", "g"];
-    console.log("elements");
-    console.log(elements);
-    var pairs = General.combineElementsPairwise(elements);
-    console.log("pairs");
-    console.log(pairs);
-
-    // For pairwise combinations...
-    // I need an array of nodes' identifiers.
-    // Determine pairwise combinations.
-    // For each pair, find nodes in path(s) and add to unique list.
-    // Collect records for all nodes and links between them.
-
-    // Terminate process timer.
-    //console.timeEnd("timer");
-    var endTime = window.performance.now();
-    var duration = Math.round(endTime - startTime);
-    console.log("process duration: " + duration + " milliseconds");
-  }
-
-  //////////////////////////////////////////////////////////////////////////////
   // Filter view
 
   /**
@@ -835,7 +418,7 @@ class Action {
       subnetworkElements
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -938,7 +521,7 @@ class Action {
       subnetworkElements
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -977,7 +560,7 @@ class Action {
       setsCardinalitiesSummaries
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1016,13 +599,14 @@ class Action {
       setsCardinalitiesSummaries
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
   }
 
   //////////////////////////////////////////////////////////////////////////////
+
   // Simplification view
 
   /**
@@ -1108,7 +692,7 @@ class Action {
       subnetworkElements,
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1182,7 +766,7 @@ class Action {
       subnetworkElements
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1256,7 +840,7 @@ class Action {
       subnetworkElements
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1322,13 +906,14 @@ class Action {
       subnetworkElements
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
   }
 
   //////////////////////////////////////////////////////////////////////////////
+
   // Query view
 
   /**
@@ -1389,130 +974,6 @@ class Action {
     // Return information.
     return variablesValues;
   }
-
-  // Data view
-
-  // TODO: Follow the pattern of evaluateSourceLoadRestoreState for the procedure to load data
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Exploration view
-
-
-  // TODO: Figure out where to put everything below here...
-
-
-
-
-  /**
-  * Changes the searches to filter summaries.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.type Type of summaries.
-  * @param {string} parameters.category Name of category.
-  * @param {string} parameters.string Search string by which to filter
-  * records' names.
-  * @param {Object} state Application's state.
-  */
-  static changeSearches({type, category, string, state} = {}) {
-    // Determine searches.
-    if (type === "sets") {
-      var searchesName = "setsSearches";
-    } else if (type === "candidates") {
-      var searchesName = "candidatesSearches";
-    }
-    // Change the search's specifications.
-    var searches = Action.changeCategoriesSearchString({
-      category: category,
-      string: string,
-      searches: state[searchesName]
-    });
-    // Prepare summaries.
-    if (type === "sets") {
-      var summariesName = "setsSummaries";
-      var summaries = Cardinality.prepareSetsSummaries({
-        setsCardinalities: state.setsCardinalities,
-        setsSearches: searches,
-        setsSorts: state.setsSorts,
-        compartments: state.compartments,
-        processes: state.processes
-      });
-    } else if (type === "candidates") {
-      var summariesName = "candidatesSummaries";
-      var summaries = Candidacy.prepareCandidatesSummaries({
-        candidatesReactions: state.candidatesReactions,
-        candidatesMetabolites: state.candidatesMetabolites,
-        candidatesSearches: searches,
-        candidatesSorts: state.candidatesSorts
-      });
-    }
-    // Compile variables' values.
-    var novelVariablesValues = {
-      [searchesName]: searches,
-      [summariesName]: summaries
-    };
-    var variablesValues = novelVariablesValues;
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Changes the specifications to sort summaries.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.type Type of summaries.
-  * @param {string} parameters.category Name of category.
-  * @param {string} parameters.criterion Criterion for sort.
-  * @param {Object} parameters.state Application's state.
-  */
-  static changeSorts({type, category, criterion, state} = {}) {
-    // Determine sorts.
-    if (type === "sets") {
-      var sortsName = "setsSorts";
-    } else if (type === "candidates") {
-      var sortsName = "candidatesSorts";
-    }
-    // Change the sorts' specifications.
-    var sorts = Action.changeCategoriesSortCriterionOrder({
-      category: category,
-      criterion: criterion,
-      sorts: state[sortsName]
-    });
-    // Sort summaries.
-    if (type === "sets") {
-      var summariesName = "setsSummaries";
-      var summaries = Cardinality.sortSetsSummaries({
-        setsSummaries: state.setsSummaries,
-        setsSorts: sorts,
-        compartments: state.compartments,
-        processes: state.processes
-      });
-    } else if (type === "candidates") {
-      var summariesName = "candidatesSummaries";
-      var summaries = Candidacy.sortCandidatesSummaries({
-        candidatesSummaries: state.candidatesSummaries,
-        candidatesSorts: sorts,
-        candidatesReactions: state.candidatesReactions,
-        candidatesMetabolites: state.candidatesMetabolites
-      });
-    }
-    // Compile variables' values.
-    var novelVariablesValues = {
-      [sortsName]: sorts,
-      [summariesName]: summaries
-    };
-    var variablesValues = novelVariablesValues;
-    // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-
-
-
-  // Query.
-
-
   /**
   * Copies the subnetwork from the network and restores values of variables of
   * application's controls for traversal view.
@@ -1539,7 +1000,7 @@ class Action {
       subnetworkElements
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1570,7 +1031,7 @@ class Action {
       subnetworkElements
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1593,7 +1054,7 @@ class Action {
       traversalViewControls
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1610,7 +1071,7 @@ class Action {
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1634,7 +1095,7 @@ class Action {
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1663,7 +1124,7 @@ class Action {
         traversalViewControls
       );
       // Submit variables' values to the application's state.
-      Action.submitStateVariablesValues({
+      ActionGeneral.submitStateVariablesValues({
         variablesValues: variablesValues,
         state: state
       });
@@ -1699,7 +1160,7 @@ class Action {
         traversalViewControls
       );
       // Submit variables' values to the application's state.
-      Action.submitStateVariablesValues({
+      ActionGeneral.submitStateVariablesValues({
         variablesValues: variablesValues,
         state: state
       });
@@ -1724,7 +1185,7 @@ class Action {
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1748,7 +1209,7 @@ class Action {
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1765,7 +1226,7 @@ class Action {
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1796,7 +1257,7 @@ class Action {
         traversalViewControls
       );
       // Submit variables' values to the application's state.
-      Action.submitStateVariablesValues({
+      ActionGeneral.submitStateVariablesValues({
         variablesValues: variablesValues,
         state: state
       });
@@ -1835,7 +1296,7 @@ class Action {
         traversalViewControls
       );
       // Submit variables' values to the application's state.
-      Action.submitStateVariablesValues({
+      ActionGeneral.submitStateVariablesValues({
         variablesValues: variablesValues,
         state: state
       });
@@ -1860,7 +1321,7 @@ class Action {
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1884,7 +1345,7 @@ class Action {
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1908,7 +1369,7 @@ class Action {
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1935,7 +1396,7 @@ class Action {
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -1967,7 +1428,7 @@ class Action {
         traversalViewControls
       );
       // Submit variables' values to the application's state.
-      Action.submitStateVariablesValues({
+      ActionGeneral.submitStateVariablesValues({
         variablesValues: variablesValues,
         state: state
       });
@@ -1992,7 +1453,7 @@ class Action {
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -2032,7 +1493,7 @@ class Action {
       };
       var variablesValues = Object.assign(novelVariablesValues);
       // Submit variables' values to the application's state.
-      Action.submitStateVariablesValues({
+      ActionGeneral.submitStateVariablesValues({
         variablesValues: variablesValues,
         state: state
       });
@@ -2056,7 +1517,7 @@ class Action {
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -2089,12 +1550,52 @@ class Action {
         traversalViewControls
       );
       // Submit variables' values to the application's state.
-      Action.submitStateVariablesValues({
+      ActionGeneral.submitStateVariablesValues({
         variablesValues: variablesValues,
         state: state
       });
     }
   }
+
+
+  // Data view
+
+  // TODO: Follow the pattern of evaluateSourceLoadRestoreState for the procedure to load data
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Exploration view
+
+  /**
+  * Initializes information about selection of an entity.
+  * @returns {Object} Information about an entity selection.
+  */
+  static initializeEntitySelection() {
+    // Initialize controls.
+    var type = "";
+    var node = "";
+    var candidate = "";
+    var entity = "";
+    // Compile information.
+    var variablesValues = {
+      type: type,
+      node: node,
+      candidate: candidate,
+      entity: entity
+    };
+    // Return information.
+    return variablesValues;
+  }
+
+
+
+  // TODO: Figure out where to put everything below here...
+
+
+
+
+
+  // Query.
+
 
   /**
   * Changes the selection of whether to force representation of subnetwork's
@@ -2114,7 +1615,7 @@ class Action {
     };
     var variablesValues = novelVariablesValues;
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -2151,7 +1652,7 @@ class Action {
       novelVariablesValues
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -2215,7 +1716,7 @@ class Action {
       novelVariablesValues
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -2259,7 +1760,7 @@ class Action {
       novelVariablesValues
     );
     // Submit variables' values to the application's state.
-    Action.submitStateVariablesValues({
+    ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
@@ -2295,26 +1796,6 @@ class Action {
 
   // Indirect actions.
 
-  /**
-  * Initializes information about selection of an entity.
-  * @returns {Object} Information about an entity selection.
-  */
-  static initializeEntitySelection() {
-    // Initialize controls.
-    var type = "";
-    var node = "";
-    var candidate = "";
-    var entity = "";
-    // Compile information.
-    var variablesValues = {
-      type: type,
-      node: node,
-      candidate: candidate,
-      entity: entity
-    };
-    // Return information.
-    return variablesValues;
-  }
   /**
   * Extracts information about metabolic entities and sets from a clean model
   * of metabolism.

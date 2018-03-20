@@ -23,17 +23,6 @@ Exceptions:
 Functions:
     ...
 
-Author:
-    Thomas Cameron Waller
-    tcameronwaller@gmail.com
-    Department of Biochemistry
-    Scientific Computing and Imaging Institute
-    University Of Utah
-    Room 4720 Warnock Engineering Building
-    72 South Central Campus Drive
-    Salt Lake City, Utah 84112
-    United States of America
-
 License:
 
     This file is part of project Profondeur
@@ -56,6 +45,17 @@ License:
     You should have received a copy of the GNU General Public License along
     with this program.
     If not, see <http://www.gnu.org/licenses/>.
+
+Author:
+    Thomas Cameron Waller
+    tcameronwaller@gmail.com
+    Department of Biochemistry
+    University of Utah
+    Room 5520C, Emma Eccles Jones Medical Research Building
+    15 North Medical Drive East
+    Salt Lake City, Utah 84112
+    United States of America
+
 """
 
 
