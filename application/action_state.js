@@ -58,11 +58,58 @@ class ActionState {
   * application's state.
   * @param {Object} state Application's state.
   */
-  static saveState(state) {
-    var persistence = ActionState.createPersistentState(state);
-    console.log("application's persistent state...");
+  static save(state) {
+    var persistence = ActionState.createPersistence(state);
+    console.log("application's state...");
     console.log(persistence);
     General.saveObject("state.json", persistence);
+  }
+  /**
+  * Creates persistent representation of the application's state.
+  * @param {Object} state Application's state.
+  * @returns {Object} Persistent representation of the application's state.
+  */
+  static createPersistence(state) {
+    return state.variablesNames.reduce(function (collection, variableName) {
+      var entry = {
+        [variableName]: state[variableName]
+      };
+      return Object.assign({}, collection, entry);
+    }, {});
+  }
+  /**
+  * Changes the source of information from file.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.source Reference to file object.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeSource({source, state} = {}) {
+    ActionGeneral.submitStateVariableValue({
+      value: source,
+      variable: "sourceState",
+      state: state
+    });
+  }
+  /**
+  * Loads from file a source of information about the application's state,
+  * passing this information to another procedure to restore the application's
+  * state.
+  * @param {Object} state Application's state.
+  */
+  static loadRestoreState(state) {
+    // Determine whether the application's state includes a source file.
+    if (Model.determineSourceState(state)) {
+      // Application's state includes a source file.
+      General.loadPassObject({
+        file: state.sourceState,
+        call: ActionState.restoreState,
+        parameters: {state: state}
+      });
+    } else {
+      // Application's state does not include a source file.
+      // Restore application to initial state.
+      Action.initializeApplicationStateVariables(state);
+    }
   }
   /**
   * Restores the application to a state from a persistent source.
@@ -88,93 +135,11 @@ class ActionState {
       state: state
     });
   }
-
-  // TODO: change to changeSource or something
-
-  /**
-  * Submits a novel source to the application's state.
-  * @param {Object} source Reference to file object.
-  * @param {Object} state Application's state.
-  */
-  static submitSource(source, state) {
-    ActionGeneral.submitStateVariableValue({
-      value: source,
-      variable: "source",
-      state: state
-    });
-  }
-  /**
-  * Evaluates and loads from file a source of information about the
-  * application's state, passing this information to another procedure to
-  * restore the application's state.
-  * @param {Object} state Application's state.
-  */
-  static evaluateSourceLoadRestoreState(state) {
-    // Determine whether the application's state includes a source file.
-    if (Model.determineSourceState(state)) {
-      // Application's state includes a source file.
-      General.loadPassObject({
-        file: state.sourceState,
-        call: ActionState.evaluateSourceRestoreState,
-        parameters: {state: state}
-      });
-    } else {
-      // Application's state does not include a source file.
-      // Restore application to initial state.
-      Action.initializeApplication(state);
-    }
-  }
-  /**
-  * Creates persistent representation of the application's state.
-  * @param {Object} state Application's state.
-  * @returns {Object} Persistent representation of the application's state.
-  */
-  static createPersistentState(state) {
-    return state.variablesNames.reduce(function (collection, variableName) {
-      var entry = {
-        [variableName]: state[variableName]
-      };
-      return Object.assign({}, collection, entry);
-    }, {});
-  }
-
-  // TODO: rewrite evaluateSourceRestoreState to not even support extraction
-
-  /**
-  * Evaluates information from a persistent source to restore the application's
-  * state.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Persistent source of information about
-  * application's state.
-  * @param {Object} parameters.state Application's state.
-  */
-  static evaluateSourceRestoreState({data, state} = {}) {
-    // Determine appropriate procedure for source information.
-    if (data.hasOwnProperty("id") && (data.id === "MODEL1603150001")) {
-      if (data.hasOwnProperty("clean")) {
-        Action.extractMetabolicEntitiesSets({
-          data: data,
-          state: state
-        });
-      } else {
-        var cleanData = Clean.checkCleanMetabolicEntitiesSetsRecon2(data);
-        Action.extractMetabolicEntitiesSets({
-          data: cleanData,
-          state: state
-        });
-      }
-    } else {
-      ActionState.restoreState({
-        data: data,
-        state: state
-      });
-    }
-  }
   /**
   * Executes a temporary procedure.
   * @param {Object} state Application's state.
   */
-  static executeTemporaryProcedure(state) {
+  static executeProcedure(state) {
     // Initiate process timer.
     //console.time("timer");
     var startTime = window.performance.now();

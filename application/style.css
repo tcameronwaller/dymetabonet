@@ -166,10 +166,6 @@ flex-direction: column;
   width: 100%;
 }
 
-#state input {
-  display: none;
-}
-
 #state button {
   width: 2cm;
 }

@@ -53,6 +53,20 @@ class ActionData {
     // Return information.
     return variablesValues;
   }
+  /**
+  * Changes the source of information from file.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.source Reference to file object.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeSource({source, state} = {}) {
+    ActionGeneral.submitStateVariableValue({
+      value: source,
+      variable: "sourceData",
+      state: state
+    });
+  }
+
 
 
   // TODO: Follow the pattern of evaluateSourceLoadRestoreState for the procedure to load data

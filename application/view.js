@@ -1013,6 +1013,7 @@ class View {
     parent.appendChild(fileSelector);
     fileSelector.setAttribute("type", "file");
     fileSelector.setAttribute("accept", ".json");
+    fileSelector.classList.add("hide");
     // Load button is a facade for the file selector.
     var load = View.createButton({
       text: "load",
@@ -1966,6 +1967,7 @@ class ControlView {
       self.simplificationTab = self
       .document.getElementById("simplification-tab");
       self.traversalTab = self.document.getElementById("traversal-tab");
+      self.dataTab = self.document.getElementById("data-tab");
     }
   }
   /**
@@ -2170,54 +2172,52 @@ class StateView {
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create and activate buttons.
-      self.save = View.createButton({
+      // Save
+      var save = View.createButton({
         text: "save",
         parent: self.container,
         documentReference: self.document
       });
-      self.save.addEventListener("click", function (event) {
+      save.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        ActionState.saveState(self.state);
+        ActionState.save(self.state);
       });
-
+      // Load
       // Create and activate file selector.
-      self.fileSelector = View.createFileLoadFacade({
+      var load = View.createFileLoadFacade({
         parent: self.container,
         documentReference: self.document
       });
-      self.fileSelector.addEventListener("change", function (event) {
+      load.addEventListener("change", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        console.log("event on load");
-        ActionState.submitSource(event.currentTarget.files[0], self.state);
+        ActionState.changeSource({
+          source: event.currentTarget.files[0],
+          state: self.state
+        });
       });
-
-
-
-      self.restore = View.createButton({
+      // Restore
+      var restore = View.createButton({
         text: "restore",
         parent: self.container,
         documentReference: self.document
       });
-      self.restore.addEventListener("click", function (event) {
+      restore.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-
-        // TODO: This action should only load state from file... no more clean or extraction
-
-
-        ActionState.evaluateSourceLoadRestoreState(self.state);
+        ActionState.loadRestoreState(self.state);
       });
-      self.execute = View.createButton({
+      // Execute
+      var execute = View.createButton({
         text: "execute",
         parent: self.container,
         documentReference: self.document
       });
-      self.execute.addEventListener("click", function (event) {
+      execute.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        ActionState.executeTemporaryProcedure(self.state);
+        ActionState.executeProcedure(self.state);
       });
     } else {
       // Container is not empty.
@@ -2233,15 +2233,22 @@ class StateView {
   restoreView(self) {
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
+    self.restoreSourceLabel(self);
+  }
+  /**
+  * Restores source's label.
+  * @param {Object} self Instance of a class.
+  */
+  restoreSourceLabel(self) {
     // Determine whether the application's state includes a source file.
     if (Model.determineSourceState(self.state)) {
       // Application's state includes a source file.
-      self.fileName = self.state.source.name;
+      var text = self.state.source.name;
     } else {
       // Application's state does not include a source file.
-      self.fileName = "select source file...";
+      var text = "select file...";
     }
-    self.sourceLabel.textContent = self.fileName;
+    self.sourceLabel.textContent = text;
   }
 }
 
@@ -4893,49 +4900,32 @@ class DataView {
       self.container.appendChild(self.sourceLabel);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
+      // Create and activate buttons.
+      // Load
       // Create and activate file selector.
-      self.fileSelector = self.document.createElement("input");
-      self.container.appendChild(self.fileSelector);
-      self.fileSelector.setAttribute("type", "file");
-      self.fileSelector.setAttribute("accept", ".tsv");
-      self.fileSelector.addEventListener("change", function (event) {
+      var load = View.createFileLoadFacade({
+        parent: self.container,
+        documentReference: self.document
+      });
+      load.addEventListener("change", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        ActionData.changeSource(event.currentTarget.files[0], self.state);
+        ActionData.changeSource({
+          source: event.currentTarget.files[0],
+          state: self.state
+        });
       });
-      self.restore = View.createButton({
+      // Import
+      var importButton = View.createButton({
         text: "restore",
         parent: self.container,
         documentReference: self.document
       });
-      self.restore.addEventListener("click", function (event) {
+      importButton.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        // TODO: This button in Data View should only restore to empty data...
-        ActionState.evaluateSourceLoadRestoreState(self.state);
+        ActionData.loadData(self.state);
       });
-      // Load button is a facade for the file selector.
-      self.load = View.createButton({
-        text: "load",
-        parent: self.container,
-        documentReference: self.document
-      });
-      self.load.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        self.fileSelector.click();
-      });
-      self.import = View.createButton({
-        text: "import",
-        parent: self.container,
-        documentReference: self.document
-      });
-      self.import.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        // TODO: call appropriate load action...
-      });
-
     } else {
       // Container is not empty.
       // Set references to content.
@@ -4950,15 +4940,22 @@ class DataView {
   restoreView(self) {
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
+    self.restoreSourceLabel(self);
+  }
+  /**
+  * Restores source's label.
+  * @param {Object} self Instance of a class.
+  */
+  restoreSourceLabel(self) {
     // Determine whether the application's state includes a source file.
-    if (Model.determineSourceState(self.state)) {
+    if (Model.determineSourceData(self.state)) {
       // Application's state includes a source file.
-      self.fileName = self.state.source.name;
+      var text = self.state.sourceData.name;
     } else {
       // Application's state does not include a source file.
-      self.fileName = "select source file...";
+      var text = "select file...";
     }
-    self.sourceLabel.textContent = self.fileName;
+    self.sourceLabel.textContent = text;
   }
 }
 
