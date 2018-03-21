@@ -1003,16 +1003,17 @@ class View {
   /**
   * Creates file selector with a facade.
   * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.suffix Suffix for file type.
   * @param {Object} parameters.parent Reference to parent element.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
   * @returns {Object} Reference to element.
   */
-  static createFileLoadFacade({parent, documentReference} = {}) {
+  static createFileLoadFacade({suffix, parent, documentReference} = {}) {
     var fileSelector = documentReference.createElement("input");
     parent.appendChild(fileSelector);
     fileSelector.setAttribute("type", "file");
-    fileSelector.setAttribute("accept", ".json");
+    fileSelector.setAttribute("accept", suffix);
     fileSelector.classList.add("hide");
     // Load button is a facade for the file selector.
     var load = View.createButton({
@@ -2186,6 +2187,7 @@ class StateView {
       // Load
       // Create and activate file selector.
       var load = View.createFileLoadFacade({
+        suffix: ".json",
         parent: self.container,
         documentReference: self.document
       });
@@ -4904,6 +4906,7 @@ class DataView {
       // Load
       // Create and activate file selector.
       var load = View.createFileLoadFacade({
+        suffix: ".tsv",
         parent: self.container,
         documentReference: self.document
       });
@@ -4924,7 +4927,7 @@ class DataView {
       importButton.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        ActionData.loadData(self.state);
+        ActionData.loadImportData(self.state);
       });
     } else {
       // Container is not empty.

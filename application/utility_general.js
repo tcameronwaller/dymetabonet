@@ -70,18 +70,23 @@ class General {
       request.send(null);
     }
   }
+
+  // TODO: loadPassObject -> loadParseTextPassObject JSON or TSV
+
   /**
-  * Loads from file a version of an object in JavaScript Object Notation
-  * (JSON) and passes this object to another function along with appropriate
+  * Loads and reads textual information from file, parses this text either as
+  * JavaScript Object Notation (JSON) or as a table with tab delimiters, and
+  * passes this information to another function along with appropriate
   * parameters.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.file File with object to load.
+  * @param {Object} parameters.format File with object to load.
   * @param {Object} parameters.call Function to call upon completion of file
   * read.
   * @param {Object} parameters.parameters Parameters for the function to call
   * upon completion of file read.
   */
-  static loadPassObject({file, call, parameters} = {}) {
+  static loadParseTextPassObject({file, format, call, parameters} = {}) {
     // Create a file reader object.
     var reader = new FileReader();
     // Specify operation to perform after file loads.
@@ -89,12 +94,24 @@ class General {
       // Element on which the event originated is event.currentTarget.
       // After load, the file reader's result attribute contains the
       // file's contents, according to the read method.
-      var data = JSON.parse(event.currentTarget.result);
-      // Include the data in the parameters to pass to the call function.
-      var dataParameter = {data: data};
-      var newParameters = Object.assign({}, parameters, dataParameter);
-      // Call function with new parameters.
-      call(newParameters);
+      var text = event.currentTarget.result;
+      // Parse textual information from file.
+      if (format === "json") {
+        var data = JSON.parse(text);
+
+        // TODO: temporary... eventually move the call out of if block for both...
+
+        // Include the data in the parameters to pass to the call function.
+        var dataParameter = {data: data};
+        var newParameters = Object.assign({}, parameters, dataParameter);
+        // Call function with new parameters.
+        call(newParameters);
+
+      } else if (format === "tsv") {
+        //var data =
+        // TODO: write a parser for TSV...
+        var data = General.parseTabTable(text);
+      }
     };
     // Read file as text.
     reader.readAsText(file);
@@ -139,7 +156,7 @@ class General {
   static convertRecordsStringTabSeparateTable(records) {
     // Specify delimiter or separator and line ending.
     var separator = "\t";
-    var end = "\r\n";
+    var end = "\n";
     // Prepare head row.
     // Assume that all records have same keys.
     // Assume that these keys are strings.
@@ -183,7 +200,35 @@ class General {
     var rows = [].concat([headRow], bodyRows);
     var string = rows.join(end);
     return string;
-  };
+  }
+  /**
+  * Parses information from a textual representation of tabular information with
+  * tab delimiters.
+  * @param {string} text Textual representation of tabular information with tab
+  * delimiters.
+  * @returns Tabular records.
+  */
+  static parseTabTable(text) {
+    // Specify delimiter or separator and line ending.
+    var separator = "\t";
+    var end = "\n";
+    // Separate table's rows.
+    var rows = text.split(end);
+    // Separate head row from body rows.
+    var rowHead = rows[0];
+    var rowsBody = rows.slice(1);
+    // Parse head row.
+    var keys = rowHead.split(separator);
+    console.log(keys);
+    // Parse body rows.
+    // TODO: maybe use a map operation?
+    return rowsBody.map(function (row) {
+      var values = row.split(separator);
+      // TODO: manage typing of the values?
+      console.log("-----");
+      console.log(values);
+    });
+  }
 
   // Methods for document object model (DOM).
 

@@ -66,6 +66,64 @@ class ActionData {
       state: state
     });
   }
+  /**
+  * Loads from file a source of information about measurements of metabolites,
+  * passing this information to another procedure to import this data.
+  * @param {Object} state Application's state.
+  */
+  static loadImportData(state) {
+    // Determine whether the application's state includes a source file.
+    if (Model.determineSourceData(state)) {
+      // Application's state includes a source file.
+
+      General.loadParseTextPassObject({
+        file: state.sourceData,
+        format: "tsv",
+        call: ActionData.importData,
+        parameters: {state: state}
+      });
+
+      // TODO: I don't think I'll be able to use d3.tsv... instead use file reader and parse the tsv explicitly
+
+      if (false) {
+        d3.tsv(
+          "data/curation_simplification_default_metabolites.tsv", function (data) {
+          ActionData.importData({
+            data: data,
+            state: state
+          });
+        });
+      }
+    }
+  }
+  /**
+  * Imports data.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.data Persistent source of information about
+  * measurements of metabolites.
+  * @param {Object} parameters.state Application's state.
+  */
+  static importData({data, state} = {}) {
+    // Remove any information about source from the application's state.
+    var sourceData = {};
+    // Import information from data.
+    // TODO: ...
+
+
+    // Compile variables' values.
+    var novelVariablesValues = {
+      sourceData: sourceData
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+
 
 
 

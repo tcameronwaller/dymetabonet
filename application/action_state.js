@@ -100,8 +100,9 @@ class ActionState {
     // Determine whether the application's state includes a source file.
     if (Model.determineSourceState(state)) {
       // Application's state includes a source file.
-      General.loadPassObject({
+      General.loadParseTextPassObject({
         file: state.sourceState,
+        format: "json",
         call: ActionState.restoreState,
         parameters: {state: state}
       });
