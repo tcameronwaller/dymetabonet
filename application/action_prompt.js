@@ -40,11 +40,24 @@ United States of America
 class ActionPrompt {
 
   /**
-  * Initializes values of variables of application's controls for prompt view.
-  * @returns {Object} Information about prompt view.
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
   */
   static initializeControls() {
     // Initialize controls.
+    var prompt = ActionPrompt.createInitialPrompt();
+    // Compile information.
+    var variablesValues = {
+      prompt: prompt
+    };
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Creates initial prompt.
+  * @returns {Object} Information about prompt.
+  */
+  static createInitialPrompt() {
     var type = "none";
     var reference = {};
     var horizontalPosition = 0;
@@ -53,7 +66,7 @@ class ActionPrompt {
     var verticalShift = 0;
     var permanence = false;
     // Compile information.
-    var variablesValues = {
+    var information = {
       type: type,
       reference: reference,
       horizontalPosition: horizontalPosition,
@@ -63,7 +76,7 @@ class ActionPrompt {
       permanence: permanence
     };
     // Return information.
-    return variablesValues;
+    return information;
   }
   /**
   * Changes the type and position of the prompt view.
@@ -87,7 +100,7 @@ class ActionPrompt {
     // Determine prompt's type and positions.
     if (state.prompt.type === type) {
       // Remove any prompt view.
-      var prompt = ActionPrompt.initializeControls();
+      var prompt = ActionPrompt.createInitialPrompt();
     } else {
       // Compile information.
       var prompt = {
@@ -144,13 +157,13 @@ class ActionPrompt {
     if (permanence) {
       if (!state.prompt.permanence) {
         // Remove any prompt view.
-        var prompt = ActionPrompt.initializeControls();
+        var prompt = ActionPrompt.createInitialPrompt();
       } else {
         var prompt = state.prompt;
       }
     } else {
       // Remove any prompt view.
-      var prompt = ActionPrompt.initializeControls();
+      var prompt = ActionPrompt.createInitialPrompt();
     }
     // Compile variables' values.
     var novelVariablesValues = {

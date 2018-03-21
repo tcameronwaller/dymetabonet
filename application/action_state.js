@@ -40,6 +40,20 @@ United States of America
 class ActionState {
 
   /**
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
+  */
+  static initializeControls() {
+    // Initialize controls.
+    var sourceState = {};
+    // Compile information.
+    var variablesValues = {
+      sourceState: sourceState
+    };
+    // Return information.
+    return variablesValues;
+  }
+  /**
   * Saves to file on client's system a persistent representation of the
   * application's state.
   * @param {Object} state Application's state.
@@ -59,10 +73,10 @@ class ActionState {
   */
   static restoreState({data, state} = {}) {
     // Remove any information about source from the application's state.
-    var source = {};
+    var sourceState = {};
     // Compile variables' values.
     var novelVariablesValues = {
-      source: source
+      sourceState: sourceState
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -74,6 +88,9 @@ class ActionState {
       state: state
     });
   }
+
+  // TODO: change to changeSource or something
+
   /**
   * Submits a novel source to the application's state.
   * @param {Object} source Reference to file object.
@@ -94,10 +111,10 @@ class ActionState {
   */
   static evaluateSourceLoadRestoreState(state) {
     // Determine whether the application's state includes a source file.
-    if (Model.determineSource(state)) {
+    if (Model.determineSourceState(state)) {
       // Application's state includes a source file.
       General.loadPassObject({
-        file: state.source,
+        file: state.sourceState,
         call: ActionState.evaluateSourceRestoreState,
         parameters: {state: state}
       });
@@ -122,7 +139,7 @@ class ActionState {
   }
 
   // TODO: rewrite evaluateSourceRestoreState to not even support extraction
-    
+
   /**
   * Evaluates information from a persistent source to restore the application's
   * state.

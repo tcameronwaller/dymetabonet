@@ -39,6 +39,22 @@ United States of America
 */
 class ActionData {
 
+  /**
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
+  */
+  static initializeControls() {
+    // Initialize controls.
+    var sourceData = {};
+    // Compile information.
+    var variablesValues = {
+      sourceData: sourceData
+    };
+    // Return information.
+    return variablesValues;
+  }
+
+
   // TODO: Follow the pattern of evaluateSourceLoadRestoreState for the procedure to load data
 
 }

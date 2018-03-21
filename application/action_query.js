@@ -40,18 +40,28 @@ United States of America
 class ActionQuery {
 
   /**
-  * Initializes values of variables of application's controls for traversal
-  * view.
-  * @param {Object} state Application's state.
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
   */
   static initializeControls() {
     // Initialize controls.
     var traversalCombination = "union";
-    var subordinateControls = ActionQuery
-    .initializeSubordinateControls();
+    var traversalType = "rogue";
+    var traversalProximityDirection = "successors";
+    var traversalProximityDepth = 1;
+    var traversalPathDirection = "forward";
+    var traversalPathCount = 1;
+    var traversalConnectionCount = 1;
+    var subordinateControls = ActionQuery.initializeSubordinateControls();
     // Compile information.
     var novelVariablesValues = {
-      traversalCombination: traversalCombination
+      traversalCombination: traversalCombination,
+      traversalType: traversalType,
+      traversalProximityDirection: traversalProximityDirection,
+      traversalProximityDepth: traversalProximityDepth,
+      traversalPathDirection: traversalPathDirection,
+      traversalPathCount: traversalPathCount,
+      traversalConnectionCount: traversalConnectionCount
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -61,38 +71,27 @@ class ActionQuery {
     return variablesValues;
   }
   /**
-  * Initializes values of variables of application's controls for traversal
-  * view.
-  * @param {Object} state Application's state.
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
   */
   static initializeSubordinateControls() {
+    // Subordinate controls depend on query's combination and require
+    // initialization upon change of query's combination.
     // Initialize controls.
-    var traversalType = "rogue";
     var traversalRogueFocus = {identifier: "", type: ""};
     var traversalProximityFocus = {identifier: "", type: ""};
-    var traversalProximityDirection = "successors";
-    var traversalProximityDepth = 1;
     var traversalPathSource = {identifier: "", type: ""};
     var traversalPathTarget = {identifier: "", type: ""};
-    var traversalPathDirection = "forward";
-    var traversalPathCount = 1;
     var traversalConnectionTarget = {identifier: "", type: ""};
     var traversalConnectionTargets = [];
-    var traversalConnectionCount = 1;
     // Compile information.
     var variablesValues = {
-      traversalType: traversalType,
       traversalRogueFocus: traversalRogueFocus,
       traversalProximityFocus: traversalProximityFocus,
-      traversalProximityDirection: traversalProximityDirection,
-      traversalProximityDepth: traversalProximityDepth,
       traversalPathSource: traversalPathSource,
       traversalPathTarget: traversalPathTarget,
-      traversalPathDirection: traversalPathDirection,
-      traversalPathCount: traversalPathCount,
       traversalConnectionTarget: traversalConnectionTarget,
-      traversalConnectionTargets: traversalConnectionTargets,
-      traversalConnectionCount: traversalConnectionCount
+      traversalConnectionTargets: traversalConnectionTargets
     };
     // Return information.
     return variablesValues;
@@ -166,8 +165,7 @@ class ActionQuery {
   */
   static changeCombination(combination, state) {
     // Initialize controls for traversal view.
-    var traversalViewControls = ActionQuery
-    .initializeSubordinateControls();
+    var traversalViewControls = ActionQuery.initializeSubordinateControls();
     // Compile variables' values.
     var novelVariablesValues = {
       traversalCombination: combination

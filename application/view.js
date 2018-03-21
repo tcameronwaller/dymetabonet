@@ -1000,6 +1000,33 @@ class View {
       height: height
     };
   }
+  /**
+  * Creates file selector with a facade.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createFileLoadFacade({parent, documentReference} = {}) {
+    var fileSelector = documentReference.createElement("input");
+    parent.appendChild(fileSelector);
+    fileSelector.setAttribute("type", "file");
+    fileSelector.setAttribute("accept", ".json");
+    // Load button is a facade for the file selector.
+    var load = View.createButton({
+      text: "load",
+      parent: parent,
+      documentReference: documentReference
+    });
+    load.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      fileSelector.click();
+    });
+    // Return reference to element.
+    return fileSelector;
+  }
 }
 
 /**
@@ -2142,17 +2169,6 @@ class StateView {
       self.container.appendChild(self.sourceLabel);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
-      // Create and activate file selector.
-      //if (!self.container.querySelector("input")) {}
-      self.fileSelector = self.document.createElement("input");
-      self.container.appendChild(self.fileSelector);
-      self.fileSelector.setAttribute("type", "file");
-      self.fileSelector.setAttribute("accept", ".json");
-      self.fileSelector.addEventListener("change", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        ActionState.submitSource(event.currentTarget.files[0], self.state);
-      });
       // Create and activate buttons.
       self.save = View.createButton({
         text: "save",
@@ -2164,17 +2180,21 @@ class StateView {
         // Call action.
         ActionState.saveState(self.state);
       });
-      // Load button is a facade for the file selector.
-      self.load = View.createButton({
-        text: "load",
+
+      // Create and activate file selector.
+      self.fileSelector = View.createFileLoadFacade({
         parent: self.container,
         documentReference: self.document
       });
-      self.load.addEventListener("click", function (event) {
+      self.fileSelector.addEventListener("change", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        self.fileSelector.click();
+        console.log("event on load");
+        ActionState.submitSource(event.currentTarget.files[0], self.state);
       });
+
+
+
       self.restore = View.createButton({
         text: "restore",
         parent: self.container,
@@ -2214,7 +2234,7 @@ class StateView {
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
     // Determine whether the application's state includes a source file.
-    if (Model.determineSource(self.state)) {
+    if (Model.determineSourceState(self.state)) {
       // Application's state includes a source file.
       self.fileName = self.state.source.name;
     } else {
@@ -4881,7 +4901,7 @@ class DataView {
       self.fileSelector.addEventListener("change", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        ActionState.submitSource(event.currentTarget.files[0], self.state);
+        ActionData.changeSource(event.currentTarget.files[0], self.state);
       });
       self.restore = View.createButton({
         text: "restore",
@@ -4931,7 +4951,7 @@ class DataView {
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
     // Determine whether the application's state includes a source file.
-    if (Model.determineSource(self.state)) {
+    if (Model.determineSourceState(self.state)) {
       // Application's state includes a source file.
       self.fileName = self.state.source.name;
     } else {

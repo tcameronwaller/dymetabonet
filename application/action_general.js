@@ -140,41 +140,29 @@ class ActionGeneral {
   * @param {Object} state Application's state.
   */
   static initializeApplicationControls(state) {
-    var source = {};
-    var controlViews = {
-      state: false,
-      filter: false,
-      simplification: false,
-      traversal: false,
-      data: false
-    };
-    // Initialize controls for pompt view.
+    // Call procedures to initialize controls for each view.
     var prompt = ActionPrompt.initializeControls();
-    // Initialize whether to force representation of topology for networks of
-    // excessive scale.
-    var forceTopology = false;
-    var entitySelection = {type: "", node: "", candidate: "", entity: ""};
-    // Initialize controls for set view.
-    var filterViewControls = ActionFilter.initializeControls();
-    // Initialize controls for candidacy view.
-    var simplificationViewControls = ActionContext.initializeControls();
-    // Initialize controls for traversal view.
-    var traversalViewControls = ActionQuery.initializeControls();
-    var simulation = {};
+    var summary = ActionSummary.initializeControls();
+    var control = ActionControl.initializeControls();
+    var stateControls = ActionState.initializeControls();
+    var filter = ActionFilter.initializeControls();
+    var context = ActionContext.initializeControls();
+    var query = ActionQuery.initializeControls();
+    var data = ActionData.initializeControls();
+    var exploration = ActionExploration.initializeControls();
     // Compile variables' values.
-    var novelVariablesValues = {
-      source: source,
-      controlViews: controlViews,
-      prompt: prompt,
-      forceTopology: forceTopology,
-      entitySelection: entitySelection,
-      simulation: simulation
-    };
+    var novelVariablesValues = {};
     var variablesValues = Object.assign(
       novelVariablesValues,
-      filterViewControls,
-      simplificationViewControls,
-      traversalViewControls
+      prompt,
+      summary,
+      control,
+      stateControls,
+      filter,
+      context,
+      query,
+      data,
+      exploration
     );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({

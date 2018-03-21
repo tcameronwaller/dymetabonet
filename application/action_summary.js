@@ -43,6 +43,17 @@ class ActionSummary {
   // TODO: Consolidate export behavior... I don't think I need to handle differently...
 
   /**
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
+  */
+  static initializeControls() {
+    // Initialize controls.
+    // Compile information.
+    var variablesValues = {};
+    // Return information.
+    return variablesValues;
+  }
+  /**
   * Prepares and exports information about entities, reactions and metabolites,
   * that pass current filters by sets.
   * @param {Object} state Application's state.

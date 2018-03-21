@@ -40,8 +40,8 @@ United States of America
 class ActionFilter {
 
   /**
-  * Initializes values of variables of application's controls for set view.
-  * @param {Object} state Application's state.
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
   */
   static initializeControls() {
     // Initialize controls.

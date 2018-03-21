@@ -194,33 +194,16 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineApplicationControls(state) {
-    return (
-      !(state.source === null) &&
-      !(state.controlViews === null) &&
-      !(state.prompt === null) &&
-      !(state.forceTopology === null) &&
-      !(state.setsFilters === null) &&
-      !(state.setsEntities === null) &&
-      !(state.setsFilter === null) &&
-      !(state.setsSearches === null) &&
-      !(state.setsSorts === null) &&
-      !(state.compartmentalization === null) &&
-      !(state.defaultSimplifications === null) &&
-      !(state.candidatesSearches === null) &&
-      !(state.candidatesSorts === null) &&
-      !(state.traversalCombination === null) &&
-      !(state.traversalType === null) &&
-      !(state.traversalRogueFocus === null) &&
-      !(state.traversalProximityFocus === null) &&
-      !(state.traversalProximityDirection === null) &&
-      !(state.traversalProximityDepth === null) &&
-      !(state.traversalPathSource === null) &&
-      !(state.traversalPathTarget === null) &&
-      !(state.traversalPathDirection === null) &&
-      !(state.traversalPathCount === null) &&
-      !(state.entitySelection === null) &&
-      !(state.simulation === null)
-    );
+    if (false) {
+      state.variablesNamesControls.forEach(function (variable) {
+        if (state[variable] === null) {
+          console.log("problem with state's variable, " + variable);
+        }
+      });
+    }
+    return state.variablesNamesControls.every(function (variable) {
+      return !(state[variable] === null);
+    });
   }
   /**
   * Determines whether the application's state has specific information.
@@ -256,8 +239,16 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineSource(state) {
-    return (Boolean(state.source.name));
+  static determineSourceState(state) {
+    return (Boolean(state.sourceState.name));
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSourceData(state) {
+    return (Boolean(state.sourceData.name));
   }
   /**
   * Determines tabs within control view.

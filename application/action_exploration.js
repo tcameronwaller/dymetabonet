@@ -43,24 +43,42 @@ class ActionExploration {
   // TODO: That would simplify handling of whether or not to re-initialize with every restore to TopologyView
 
   /**
-  * Initializes information about selection of an entity.
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
+  */
+  static initializeControls() {
+    // Initialize controls.
+    var forceTopology = false;
+    var entitySelection = ActionExploration.createInitialEntitySelection();
+    var simulation = {};
+    // Compile information.
+    var variablesValues = {
+      forceTopology: forceTopology,
+      entitySelection: entitySelection,
+      simulation: simulation
+    };
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Creates initial entity selection.
   * @returns {Object} Information about an entity selection.
   */
-  static initializeEntitySelection() {
+  static createInitialEntitySelection() {
     // Initialize controls.
     var type = "";
     var node = "";
     var candidate = "";
     var entity = "";
     // Compile information.
-    var variablesValues = {
+    var information = {
       type: type,
       node: node,
       candidate: candidate,
       entity: entity
     };
     // Return information.
-    return variablesValues;
+    return information;
   }
   /**
   * Changes the selection of whether to force representation of subnetwork's
@@ -107,7 +125,7 @@ class ActionExploration {
       state: state
     });
     // Remove any entity selection.
-    var entitySelection = ActionExploration.initializeEntitySelection();
+    var entitySelection = ActionExploration.createInitialEntitySelection();
     // Compile variables' values.
     var novelVariablesValues = {
       prompt: prompt,
@@ -208,7 +226,7 @@ class ActionExploration {
         var entity = state.reactions[candidate.reaction];
       }
       if (candidate.identifier === state.entitySelection.candidate) {
-        var entitySelection = ActionExploration.initializeEntitySelection();
+        var entitySelection = ActionExploration.createInitialEntitySelection();
       } else {
         var entitySelection = {
           type: type,
@@ -218,7 +236,7 @@ class ActionExploration {
         };
       }
     } else {
-      var entitySelection = ActionExploration.initializeEntitySelection();
+      var entitySelection = ActionExploration.createInitialEntitySelection();
     }
     // Return information.
     return entitySelection;
