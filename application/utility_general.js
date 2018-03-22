@@ -70,9 +70,6 @@ class General {
       request.send(null);
     }
   }
-
-  // TODO: loadPassObject -> loadParseTextPassObject JSON or TSV
-
   /**
   * Loads and reads textual information from file, parses this text either as
   * JavaScript Object Notation (JSON) or as a table with tab delimiters, and
@@ -98,20 +95,14 @@ class General {
       // Parse textual information from file.
       if (format === "json") {
         var data = JSON.parse(text);
-
-        // TODO: temporary... eventually move the call out of if block for both...
-
-        // Include the data in the parameters to pass to the call function.
-        var dataParameter = {data: data};
-        var newParameters = Object.assign({}, parameters, dataParameter);
-        // Call function with new parameters.
-        call(newParameters);
-
       } else if (format === "tsv") {
-        //var data =
-        // TODO: write a parser for TSV...
         var data = General.parseTabTable(text);
       }
+      // Include the data in the parameters to pass to the call function.
+      var dataParameter = {data: data};
+      var novelParameters = Object.assign({}, parameters, dataParameter);
+      // Call function with new parameters.
+      call(novelParameters);
     };
     // Read file as text.
     reader.readAsText(file);
@@ -209,6 +200,7 @@ class General {
   * @returns Tabular records.
   */
   static parseTabTable(text) {
+    // This function does not attempt to convert string values to numbers.
     // Specify delimiter or separator and line ending.
     var separator = "\t";
     var end = "\n";
@@ -219,14 +211,17 @@ class General {
     var rowsBody = rows.slice(1);
     // Parse head row.
     var keys = rowHead.split(separator);
-    console.log(keys);
     // Parse body rows.
-    // TODO: maybe use a map operation?
     return rowsBody.map(function (row) {
       var values = row.split(separator);
-      // TODO: manage typing of the values?
-      console.log("-----");
-      console.log(values);
+      // Compile record.
+      return values.reduce(function (record, value, index) {
+        // Create entry.
+        var entry = {
+          [keys[index]]: value
+        };
+        return Object.assign(record, entry);
+      }, {});
     });
   }
 

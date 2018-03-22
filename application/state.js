@@ -334,6 +334,12 @@ class State {
       // "candidatesMetabolites", and "candidatesSorts".
       "candidatesSummaries"
     ];
+    var measurement = [
+      // Variable "metabolitesMeasurements" stores information about
+      // experimental measurements of metabolites.
+      // Information includes references to variables "metabolites".
+      "metabolitesMeasurements"
+    ];
     var network = [
       // Variable "networkNodesReactions" stores information about
       // representations of reactions in the network.
@@ -385,6 +391,7 @@ class State {
       metabolicSets,
       entitiesSets,
       context,
+      measurement,
       network,
       subnetwork
     );

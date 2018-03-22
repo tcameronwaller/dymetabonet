@@ -66,6 +66,10 @@ class ActionData {
       state: state
     });
   }
+
+  // TODO: Introduce state variable for reference... hmdb, pubmed, metanetx...
+  // TODO: Introduce action to change reference...
+
   /**
   * Loads from file a source of information about measurements of metabolites,
   * passing this information to another procedure to import this data.
@@ -75,44 +79,35 @@ class ActionData {
     // Determine whether the application's state includes a source file.
     if (Model.determineSourceData(state)) {
       // Application's state includes a source file.
-
       General.loadParseTextPassObject({
         file: state.sourceData,
         format: "tsv",
         call: ActionData.importData,
         parameters: {state: state}
       });
-
-      // TODO: I don't think I'll be able to use d3.tsv... instead use file reader and parse the tsv explicitly
-
-      if (false) {
-        d3.tsv(
-          "data/curation_simplification_default_metabolites.tsv", function (data) {
-          ActionData.importData({
-            data: data,
-            state: state
-          });
-        });
-      }
     }
   }
   /**
   * Imports data.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Persistent source of information about
-  * measurements of metabolites.
+  * @param {Array<Object>} parameters.data Information about measurements of
+  * metabolites.
   * @param {Object} parameters.state Application's state.
   */
   static importData({data, state} = {}) {
     // Remove any information about source from the application's state.
     var sourceData = {};
     // Import information from data.
-    // TODO: ...
-
-
+    // Map measurements to metabolites.
+    var metabolitesMeasurements = ActionData.determineMetabolitesMeasurements({
+      measurements: data,
+      reference: "pubchem",
+      metabolites: state.metabolites
+    });
     // Compile variables' values.
     var novelVariablesValues = {
-      sourceData: sourceData
+      sourceData: sourceData,
+      metabolitesMeasurements: metabolitesMeasurements
     };
     var variablesValues = Object.assign(
       novelVariablesValues
@@ -123,8 +118,57 @@ class ActionData {
       state: state
     });
   }
-
-
+  /**
+  * Determines measurements that match metabolites.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.measurements Information about
+  * measurements of metabolites.
+  * @param {string} parameters.reference Name of a specific reference.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
+  * @returns {Object<Object>} Information about measurements of metabolites.
+  */
+  static determineMetabolitesMeasurements({measurements, reference, metabolites} = {}) {
+    return measurements.reduce(function (collectionMeasurements, record) {
+      // Access information.
+      var identifier = record[reference];
+      var value = record.value;
+      // Match measurement to metabolites.
+      var metabolitesIdentifiers = ActionData.filterMetabolitesReference({
+        identifier: identifier,
+        reference: reference,
+        metabolites: metabolites
+      });
+      // Create records that match measurement to metabolites.
+      return metabolitesIdentifiers
+      .reduce(function (collectionMetabolites, metaboliteIdentifier) {
+        var record = {
+          metabolite: metaboliteIdentifier,
+          value: value
+        };
+        var entry = {
+          [metaboliteIdentifier]: record
+        }
+        return Object.assign(collectionMetabolites, entry);
+      }, collectionMeasurements);
+    }, {});
+  }
+  /**
+  * Filters metabolites by an identifier for a specific reference.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier for a specific reference.
+  * @param {string} parameters.reference Name of a specific reference.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
+  * @returns {Array<string>} Identifiers of metabolites.
+  */
+  static filterMetabolitesReference({identifier, reference, metabolites} = {}) {
+    var metabolitesIdentifiers = Object.keys(metabolites);
+    return metabolitesIdentifiers.filter(function (metaboliteIdentifier) {
+      return metabolites
+      [metaboliteIdentifier].references[reference].includes(identifier);
+    });
+  }
 
 
   // TODO: Follow the pattern of evaluateSourceLoadRestoreState for the procedure to load data
