@@ -1968,7 +1968,7 @@ class ControlView {
       self.simplificationTab = self
       .document.getElementById("simplification-tab");
       self.traversalTab = self.document.getElementById("traversal-tab");
-      self.dataTab = self.document.getElementById("data-tab");
+      self.measurementTab = self.document.getElementById("measurement-tab");
     }
   }
   /**
@@ -2085,8 +2085,8 @@ class ControlView {
     } else {
       View.removeExistElement("traversal", self.document);
     }
-    if (Model.determineControlData(self.state)) {
-      new DataView({
+    if (Model.determineControlMeasurement(self.state)) {
+      new MeasurementView({
         interfaceView: self.interfaceView,
         tipView: self.tipView,
         promptView: self.promptView,
@@ -2095,7 +2095,7 @@ class ControlView {
         documentReference: self.document
       });
     } else {
-      View.removeExistElement("data", self.document);
+      View.removeExistElement("measurement", self.document);
     }
   }
   /**
@@ -2919,6 +2919,8 @@ class FilterMenuView {
     });
   }
 }
+
+// TODO: rename SimplificationView to ContextView
 
 /**
 * Interface to summarize candidate entities and control simplifications.
@@ -4844,12 +4846,10 @@ class TraversalView {
   }
 }
 
-// TODO: create new DataView
-
 /**
 * Interface to control import of custom data.
 */
-class DataView {
+class MeasurementView {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
@@ -4888,8 +4888,8 @@ class DataView {
   initializeView(self) {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
-      identifier: "data",
-      target: self.controlView.dataTab,
+      identifier: "measurement",
+      target: self.controlView.measurementTab,
       position: "afterend",
       documentReference: self.document
     });
@@ -4897,43 +4897,131 @@ class DataView {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
-      // Create text.
-      self.sourceLabel = self.document.createElement("span");
-      self.container.appendChild(self.sourceLabel);
+      // Restoration
+      self.createActivateRestoration(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
-      // Create and activate buttons.
       // Load
-      // Create and activate file selector.
-      var load = View.createFileLoadFacade({
-        suffix: ".tsv",
-        parent: self.container,
+      self.createActivateLoad(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create container.
+      self.measurementContainer = View.createInsertContainer({
+        identifier: "measurement-container",
+        target: self.container,
+        position: "beforeend",
         documentReference: self.document
       });
-      load.addEventListener("change", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        ActionData.changeSource({
-          source: event.currentTarget.files[0],
-          state: self.state
-        });
-      });
+      self.measurementContainer.classList.add("menu");
+
+      // TODO: Only create import controls if there is a valid file loaded...
+
+      // Create and activate controls for type of reference.
+      self.createActivateReferenceTypeControl("pubchem", self);
+      self.createActivateReferenceTypeControl("hmdb", self);
+      self.createActivateReferenceTypeControl("metanetx", self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
       // Import
       var importButton = View.createButton({
-        text: "restore",
+        text: "import",
         parent: self.container,
         documentReference: self.document
       });
       importButton.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        ActionData.loadImportData(self.state);
+        ActionMeasurement.loadImportMeasurements(self.state);
       });
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+
     } else {
       // Container is not empty.
       // Set references to content.
       self.sourceLabel = self.container.getElementsByTagName("span").item(0);
+      // Container for measurements.
+      self.measurementContainer = self
+      .document.getElementById("measurement-container");
+
+
+      // TODO: how do I handle these references for controls that don't always exist...
+      // TODO: I think just handle them within the restoration procedure...
+      // Control for type of reference.
+      self.pubchem = self
+      .document.getElementById("measurement-reference-pubchem");
+      self.hmdb = self
+      .document.getElementById("measurement-reference-hmdb");
+      self.metanetx = self
+      .document.getElementById("measurement-reference-metanetx");
     }
+  }
+  /**
+  * Creates and activates a control for restoration of view's controls.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestoration(self) {
+    // Create button.
+    var restore = View.createButton({
+      text: "restore",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    restore.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      ActionMeasurement.restoreControls(self.state);
+    });
+  }
+  /**
+  * Creates and activates a control for load from file.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateLoad(self) {
+    // Create and activate file selector.
+    var load = View.createFileLoadFacade({
+      suffix: ".tsv",
+      parent: self.container,
+      documentReference: self.document
+    });
+    load.addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      ActionMeasurement.changeSource({
+        source: event.currentTarget.files[0],
+        state: self.state
+      });
+    });
+    // Create text.
+    self.sourceLabel = self.document.createElement("span");
+    self.container.appendChild(self.sourceLabel);
+  }
+  /**
+  * Creates and activates a control for the type of reference.
+  * @param {string} type Type of reference, pubchem, hmdb, or metanetx.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateReferenceTypeControl(type, self) {
+    // Create control for type of traversal.
+    var identifier = "measurement-reference-" + type;
+    self[type] = View.createRadioButtonLabel({
+      identifier: identifier,
+      value: type,
+      name: "measurement-reference",
+      className: "reference",
+      text: type,
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    self[type].addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine type.
+      var type = event.currentTarget.value;
+      // Call action.
+      ActionMeasurement.changeReferenceType(type, self.state);
+    });
   }
   /**
   * Restores view's content and behavior that varies with changes to the
@@ -4944,6 +5032,16 @@ class DataView {
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
     self.restoreSourceLabel(self);
+    self.pubchem.checked = MeasurementView
+    .determineReferenceTypeMatch("pubchem", self.state);
+    self.hmdb.checked = MeasurementView
+    .determineReferenceTypeMatch("hmdb", self.state);
+    self.metanetx.checked = MeasurementView
+    .determineReferenceTypeMatch("metanetx", self.state);
+    // Create, activate, and restore controls or representations of
+    // measurements.
+    self.createActivateRestoreMeasurements(self);
+    // TODO: Follow pattern in TraversalView...
   }
   /**
   * Restores source's label.
@@ -4956,9 +5054,21 @@ class DataView {
       var text = self.state.sourceData.name;
     } else {
       // Application's state does not include a source file.
-      var text = "select file...";
+      var text = "... select file...";
     }
     self.sourceLabel.textContent = text;
+  }
+  /**
+  * Determines whether a type of reference matches the value in the
+  * application's state.
+  * @param {string} type Type of reference, pubchem, hmdb, or metanetx.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether type of reference matches the value in the
+  * application's state.
+  */
+  static determineReferenceTypeMatch(type, state) {
+    var value = state.measurementReference;
+    return value === type;
   }
 }
 

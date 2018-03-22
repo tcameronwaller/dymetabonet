@@ -148,7 +148,7 @@ class ActionGeneral {
     var filter = ActionFilter.initializeControls();
     var context = ActionContext.initializeControls();
     var query = ActionQuery.initializeControls();
-    var data = ActionData.initializeControls();
+    var measurement = ActionMeasurement.initializeControls();
     var exploration = ActionExploration.initializeControls();
     // Compile variables' values.
     var novelVariablesValues = {};
@@ -161,7 +161,7 @@ class ActionGeneral {
       filter,
       context,
       query,
-      data,
+      measurement,
       exploration
     );
     // Submit variables' values to the application's state.
@@ -170,6 +170,9 @@ class ActionGeneral {
       state: state
     });
   }
+
+  // TODO: I need to include metabolitesMeasurements in all restorations of information...
+  
   /**
   * Derives information from basic information about metabolic entities and
   * sets.

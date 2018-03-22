@@ -162,10 +162,13 @@ class State {
       // of targets.
       "traversalConnectionCount"
     ];
-    var dataControls = [
+    var measurementControls = [
       // Variable "sourceData" stores a reference to a file on client's system
       // that is a source of data for measurements of metabolites.
-      "sourceData"
+      "sourceData",
+      // Variable "measurementReference" stores information about the reference
+      // to use for association of measurements to metabolites.
+      "measurementReference"
     ];
     var explorationControls = [
       // Variable "forceTopology" stores information about whether to force the
@@ -191,7 +194,7 @@ class State {
       filterControls,
       contextControls,
       queryControls,
-      dataControls,
+      measurementControls,
       explorationControls,
     );
     // Metabolic entities and sets

@@ -295,8 +295,8 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineControlData(state) {
-    return state.controlViews.data;
+  static determineControlMeasurement(state) {
+    return state.controlViews.measurement;
   }
   /**
   * Determines whether the application's state has specific information.

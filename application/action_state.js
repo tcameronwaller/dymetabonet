@@ -53,6 +53,17 @@ class ActionState {
     // Return information.
     return variablesValues;
   }
+
+  /**
+  * Restores values of application's variables for controls relevant to view.
+  * @param {Object} state Application's state.
+  */
+
+  // TODO: figure out how to handle the restore to initial or import state stuff...
+
+
+
+
   /**
   * Saves to file on client's system a persistent representation of the
   * application's state.

@@ -37,7 +37,7 @@ United States of America
 * The methods require a reference to the instance of the state.
 * These methods also call external methods as necessary.
 */
-class ActionData {
+class ActionMeasurement {
 
   /**
   * Initializes values of application's variables for controls relevant to view.
@@ -46,12 +46,37 @@ class ActionData {
   static initializeControls() {
     // Initialize controls.
     var sourceData = {};
+    var measurementReference = "pubchem";
     // Compile information.
     var variablesValues = {
-      sourceData: sourceData
+      sourceData: sourceData,
+      measurementReference: measurementReference
     };
     // Return information.
     return variablesValues;
+  }
+  /**
+  * Restores values of application's variables for controls relevant to view.
+  * @param {Object} state Application's state.
+  */
+  static restoreControls(state) {
+    // Initialize controls.
+    var controls = ActionMeasurement.initializeControls();
+    // Restore information.
+    var metabolitesMeasurements = {};
+    // Compile variables' values.
+    var novelVariablesValues = {
+      metabolitesMeasurements: metabolitesMeasurements
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      controls
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
   }
   /**
   * Changes the source of information from file.
@@ -66,23 +91,37 @@ class ActionData {
       state: state
     });
   }
-
-  // TODO: Introduce state variable for reference... hmdb, pubmed, metanetx...
-  // TODO: Introduce action to change reference...
-
+  /**
+  * Changes the selection of type of reference to associate measurements to
+  * metabolites.
+  * @param {string} type Type of reference, pubchem, hmdb, or metanetx.
+  * @param {Object} state Application's state.
+  */
+  static changeReferenceType(type, state) {
+    // Compile variables' values.
+    var novelVariablesValues = {
+      measurementReference: type
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
   /**
   * Loads from file a source of information about measurements of metabolites,
   * passing this information to another procedure to import this data.
   * @param {Object} state Application's state.
   */
-  static loadImportData(state) {
+  static loadImportMeasurements(state) {
     // Determine whether the application's state includes a source file.
     if (Model.determineSourceData(state)) {
       // Application's state includes a source file.
       General.loadParseTextPassObject({
         file: state.sourceData,
         format: "tsv",
-        call: ActionData.importData,
+        call: ActionMeasurement.importMeasurements,
         parameters: {state: state}
       });
     }
@@ -94,14 +133,15 @@ class ActionData {
   * metabolites.
   * @param {Object} parameters.state Application's state.
   */
-  static importData({data, state} = {}) {
+  static importMeasurements({data, state} = {}) {
     // Remove any information about source from the application's state.
     var sourceData = {};
     // Import information from data.
     // Map measurements to metabolites.
-    var metabolitesMeasurements = ActionData.determineMetabolitesMeasurements({
+    var metabolitesMeasurements = ActionMeasurement
+    .determineMetabolitesMeasurements({
       measurements: data,
-      reference: "pubchem",
+      reference: state.measurementReference,
       metabolites: state.metabolites
     });
     // Compile variables' values.
@@ -134,7 +174,8 @@ class ActionData {
       var identifier = record[reference];
       var value = record.value;
       // Match measurement to metabolites.
-      var metabolitesIdentifiers = ActionData.filterMetabolitesReference({
+      var metabolitesIdentifiers = ActionMeasurement
+      .filterMetabolitesReference({
         identifier: identifier,
         reference: reference,
         metabolites: metabolites
@@ -169,8 +210,5 @@ class ActionData {
       [metaboliteIdentifier].references[reference].includes(identifier);
     });
   }
-
-
-  // TODO: Follow the pattern of evaluateSourceLoadRestoreState for the procedure to load data
 
 }

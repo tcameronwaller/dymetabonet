@@ -52,7 +52,7 @@ class ActionControl {
       filter: false,
       simplification: false,
       traversal: false,
-      data: false
+      measurement: false
     };
     // Compile information.
     var variablesValues = {

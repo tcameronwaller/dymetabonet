@@ -62,7 +62,7 @@ class ActionContext {
 
   // TODO: I think restoreControls need update and repair...
   /**
-  * Restores values of variables of application's controls for candidacy view.
+  * Restores values of application's variables for controls relevant to view.
   * @param {Object} state Application's state.
   */
   static restoreControls(state) {

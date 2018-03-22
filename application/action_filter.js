@@ -62,7 +62,7 @@ class ActionFilter {
     return variablesValues;
   }
   /**
-  * Restores values of variables of application's controls for set view.
+  * Restores values of application's variables for controls relevant to view.
   * @param {Object} state Application's state.
   */
   static restoreControls(state) {
