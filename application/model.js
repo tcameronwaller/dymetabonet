@@ -71,10 +71,10 @@ class Model {
 
   // TODO: Try to organize as much control of views as practical here within the Model.
   // TODO: I think the "controlContents" and "explorationContents" approach does work... so consider using it more.
-  // TODO: Within ControlView, create tabs and containers for all sub-views... I think
-  // TODO: Those sub-views should then establish themselves within approriate containers from ControlView.
+  // TODO: Within ViewControl, create tabs and containers for all sub-views... I think
+  // TODO: Those sub-views should then establish themselves within approriate containers from ViewControl.
   // TODO: Rendering is expensive, so don't use the display: none strategy
-  // TODO: Instead, only create the content for ControlView's sub-views that are active.
+  // TODO: Instead, only create the content for ViewControl's sub-views that are active.
   // TODO: I think I can create a new state variable to control which sub-view is active? Maybe?
 
   /**
@@ -103,14 +103,14 @@ class Model {
       Model.determineMetabolismDerivationInformation(self.state)
     ) {
       // Interface view.
-      var interfaceView = new InterfaceView({
+      var interfaceView = new ViewInterface({
         body: self.body,
         state: self.state,
         documentReference: self.document
       });
       // Tip view.
       // Tip view always exists but is only visible when active.
-      var tipView = new TipView({
+      var tipView = new ViewTip({
         interfaceView: interfaceView,
         state: self.state,
         documentReference: self.document,
@@ -118,7 +118,7 @@ class Model {
       });
       // Prompt view.
       // Prompt view always exists but is only visible when active.
-      var promptView = new PromptView({
+      var promptView = new ViewPrompt({
         interfaceView: interfaceView,
         state: self.state,
         documentReference: self.document,
@@ -126,7 +126,7 @@ class Model {
       });
 
       // Panel view.
-      var panelView = new PanelView({
+      var panelView = new ViewPanel({
         interfaceView: interfaceView,
         state: self.state,
         documentReference: self.document
@@ -135,7 +135,7 @@ class Model {
       // TODO: rename Detail View to Summary View
 
       // Summary view.
-      var detailView = new DetailView({
+      var detailView = new ViewSummary({
         interfaceView: interfaceView,
         panelView: panelView,
         tipView: tipView,
@@ -145,7 +145,7 @@ class Model {
       });
       // Control view.
       // Control view has several subordinate views.
-      var controlView = new ControlView({
+      var controlView = new ViewControl({
         interfaceView: interfaceView,
         panelView: panelView,
         tipView: tipView,
@@ -154,7 +154,7 @@ class Model {
         documentReference: self.document
       });
       // Exploration view.
-      var explorationView = new ExplorationView({
+      var explorationView = new ViewExploration({
         interfaceView: interfaceView,
         tipView: tipView,
         promptView: promptView,
