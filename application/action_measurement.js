@@ -47,10 +47,12 @@ class ActionMeasurement {
     // Initialize controls.
     var sourceData = {};
     var measurementReference = "pubchem";
+    var metabolitesMeasurements = {};
     // Compile information.
     var variablesValues = {
       sourceData: sourceData,
-      measurementReference: measurementReference
+      measurementReference: measurementReference,
+      metabolitesMeasurements: metabolitesMeasurements
     };
     // Return information.
     return variablesValues;
@@ -126,6 +128,10 @@ class ActionMeasurement {
       });
     }
   }
+
+  // TODO: I think I need a sortable summary version of metabolitesMeasurements...
+
+
   /**
   * Imports data.
   * @param {Object} parameters Destructured object of parameters.
@@ -139,7 +145,7 @@ class ActionMeasurement {
     // Import information from data.
     // Map measurements to metabolites.
     var metabolitesMeasurements = ActionMeasurement
-    .determineMetabolitesMeasurements({
+    .createMetabolitesMeasurements({
       measurements: data,
       reference: state.measurementReference,
       metabolites: state.metabolites
@@ -168,7 +174,7 @@ class ActionMeasurement {
   * metabolites.
   * @returns {Object<Object>} Information about measurements of metabolites.
   */
-  static determineMetabolitesMeasurements({measurements, reference, metabolites} = {}) {
+  static createMetabolitesMeasurements({measurements, reference, metabolites} = {}) {
     return measurements.reduce(function (collectionMeasurements, record) {
       // Access information.
       var identifier = record[reference];

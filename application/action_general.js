@@ -172,7 +172,7 @@ class ActionGeneral {
   }
 
   // TODO: I need to include metabolitesMeasurements in all restorations of information...
-  
+
   /**
   * Derives information from basic information about metabolic entities and
   * sets.
@@ -365,11 +365,17 @@ class ActionGeneral {
   * @param {Object} parameters.state Application's state.
   */
   static changeSorts({type, category, criterion, state} = {}) {
+
+    // TODO: Also accommodate sorts for the summary of metabolites' measurements
+
+
     // Determine sorts.
     if (type === "sets") {
       var sortsName = "setsSorts";
     } else if (type === "candidates") {
       var sortsName = "candidatesSorts";
+    } else if (type === "measurements") {
+      var sortsName = "measurementsSorts";
     }
     // Change the sorts' specifications.
     var sorts = ActionGeneral.changeCategoriesSortCriterionOrder({

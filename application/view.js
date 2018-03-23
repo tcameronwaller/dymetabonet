@@ -4912,30 +4912,6 @@ class MeasurementView {
         position: "beforeend",
         documentReference: self.document
       });
-      self.measurementContainer.classList.add("menu");
-
-      // TODO: Only create import controls if there is a valid file loaded...
-
-      // Create and activate controls for type of reference.
-      self.createActivateReferenceTypeControl("pubchem", self);
-      self.createActivateReferenceTypeControl("hmdb", self);
-      self.createActivateReferenceTypeControl("metanetx", self);
-      // Create break.
-      self.container.appendChild(self.document.createElement("br"));
-      // Import
-      var importButton = View.createButton({
-        text: "import",
-        parent: self.container,
-        documentReference: self.document
-      });
-      importButton.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        ActionMeasurement.loadImportMeasurements(self.state);
-      });
-      // Create break.
-      self.container.appendChild(self.document.createElement("br"));
-
     } else {
       // Container is not empty.
       // Set references to content.
@@ -4943,17 +4919,6 @@ class MeasurementView {
       // Container for measurements.
       self.measurementContainer = self
       .document.getElementById("measurement-container");
-
-
-      // TODO: how do I handle these references for controls that don't always exist...
-      // TODO: I think just handle them within the restoration procedure...
-      // Control for type of reference.
-      self.pubchem = self
-      .document.getElementById("measurement-reference-pubchem");
-      self.hmdb = self
-      .document.getElementById("measurement-reference-hmdb");
-      self.metanetx = self
-      .document.getElementById("measurement-reference-metanetx");
     }
   }
   /**
@@ -4998,32 +4963,6 @@ class MeasurementView {
     self.container.appendChild(self.sourceLabel);
   }
   /**
-  * Creates and activates a control for the type of reference.
-  * @param {string} type Type of reference, pubchem, hmdb, or metanetx.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateReferenceTypeControl(type, self) {
-    // Create control for type of traversal.
-    var identifier = "measurement-reference-" + type;
-    self[type] = View.createRadioButtonLabel({
-      identifier: identifier,
-      value: type,
-      name: "measurement-reference",
-      className: "reference",
-      text: type,
-      parent: self.container,
-      documentReference: self.document
-    });
-    // Activate behavior.
-    self[type].addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Determine type.
-      var type = event.currentTarget.value;
-      // Call action.
-      ActionMeasurement.changeReferenceType(type, self.state);
-    });
-  }
-  /**
   * Restores view's content and behavior that varies with changes to the
   * application's state.
   * @param {Object} self Instance of a class.
@@ -5032,16 +4971,9 @@ class MeasurementView {
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
     self.restoreSourceLabel(self);
-    self.pubchem.checked = MeasurementView
-    .determineReferenceTypeMatch("pubchem", self.state);
-    self.hmdb.checked = MeasurementView
-    .determineReferenceTypeMatch("hmdb", self.state);
-    self.metanetx.checked = MeasurementView
-    .determineReferenceTypeMatch("metanetx", self.state);
     // Create, activate, and restore controls or representations of
     // measurements.
-    self.createActivateRestoreMeasurements(self);
-    // TODO: Follow pattern in TraversalView...
+    self.createActivateRestoreImportMeasurements(self);
   }
   /**
   * Restores source's label.
@@ -5058,6 +4990,234 @@ class MeasurementView {
     }
     self.sourceLabel.textContent = text;
   }
+  /**
+  * Creates, activates, and restores controls for import or summary of
+  * measurements and their association to metabolites.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestoreImportMeasurements(self) {
+    // Determine relevant content.
+    if (Model.determineSourceData(self.state)) {
+      // Create, activate, and restore controls for import of information
+      // about measurements.
+      self.createActivateRestoreImportControl(self);
+    } else if (Model.determineMetabolitesMeasurements(self.state)) {
+      // Create activate, and restore summary of measurements and their
+      // association to metabolites.
+      self.createActivateRestoreMeasurementSummary(self);
+    } else {
+      // Container should be empty.
+      // TODO: empty measurementContainer...
+    }
+  }
+  /**
+  * Creates, activates, and restores controls for import of measurements.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestoreImportControl(self) {
+    self.createActivateImportControl(self);
+    self.restoreImportControl(self);
+  }
+  /**
+  * Creates and activates controls for import of measurements.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateImportControl(self) {
+    // Determine whether container's current content matches view's novel type.
+    // Container's class indicates type of content.
+    if (!self.measurementContainer.classList.contains("import")) {
+      // Container's current content does not match view's novel type.
+      // Remove container's previous contents and assign a class name to
+      // indicate view's novel type.
+      View.removeContainerContentSetClass({
+        container: self.measurementContainer,
+        className: "import"
+      });
+      // Create content.
+      // Activate behavior.
+      // Create and activate controls for type of reference.
+      self.createActivateReferenceTypeControl("pubchem", self);
+      self.createActivateReferenceTypeControl("hmdb", self);
+      self.createActivateReferenceTypeControl("metanetx", self);
+      // Create break.
+      self.measurementContainer.appendChild(self.document.createElement("br"));
+      // Import button.
+      self.createActivateImport(self);
+    } else {
+      // Container's current content matches view's novel type.
+      // Set references to content.
+      // Control for type of reference.
+      self.pubchem = self
+      .document.getElementById("measurement-reference-pubchem");
+      self.hmdb = self.document.getElementById("measurement-reference-hmdb");
+      self.metanetx = self
+      .document.getElementById("measurement-reference-metanetx");
+    }
+  }
+  /**
+  * Creates and activates a control for the type of reference.
+  * @param {string} type Type of reference, pubchem, hmdb, or metanetx.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateReferenceTypeControl(type, self) {
+    // Create control for type of traversal.
+    var identifier = "measurement-reference-" + type;
+    self[type] = View.createRadioButtonLabel({
+      identifier: identifier,
+      value: type,
+      name: "measurement-reference",
+      className: "reference",
+      text: type,
+      parent: self.measurementContainer,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    self[type].addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine type.
+      var type = event.currentTarget.value;
+      // Call action.
+      ActionMeasurement.changeReferenceType(type, self.state);
+    });
+  }
+  /**
+  * Creates and activates a control to import measurements.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateImport(self) {
+    // Create button.
+    var importButton = View.createButton({
+      text: "import",
+      parent: self.measurementContainer,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    importButton.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      ActionMeasurement.loadImportMeasurements(self.state);
+    });
+  }
+  /**
+  * Restores controls for import of measurements.
+  * @param {Object} self Instance of a class.
+  */
+  restoreImportControl(self) {
+    // Restore controls' settings.
+    self.pubchem.checked = MeasurementView
+    .determineReferenceTypeMatch("pubchem", self.state);
+    self.hmdb.checked = MeasurementView
+    .determineReferenceTypeMatch("hmdb", self.state);
+    self.metanetx.checked = MeasurementView
+    .determineReferenceTypeMatch("metanetx", self.state);
+  }
+  /**
+  * Creates, activates, and restores a summary of measurements and their
+  * association to metabolites.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestoreMeasurementSummary(self) {
+    self.initializeMeasurementSummary(self);
+    self.restoreMeasurementSummary(self);
+  }
+  /**
+  * Creates and activates summary of measurements.
+  * @param {Object} self Instance of a class.
+  */
+  initializeMeasurementSummary(self) {
+    // Determine whether container's current content matches view's novel type.
+    // Container's class indicates type of content.
+    if (!self.measurementContainer.classList.contains("summary")) {
+      // Container's current content does not match view's novel type.
+      // Remove container's previous contents and assign a class name to
+      // indicate view's novel type.
+      View.removeContainerContentSetClass({
+        container: self.measurementContainer,
+        className: "summary"
+      });
+      // Create content.
+      // Activate behavior.
+      self.createActivateMeasurementSummary(self);
+
+      // TODO: create a table that's sortable and all that jazz...
+      // TODO: sorts are the main behavior to activate, I think...
+
+    } else {
+      // Container's current content matches view's novel type.
+      // Set references to content.
+
+      // column sorts
+      // bar chart graph width and height (for scale)
+      // column scale
+      // table body
+
+      // TODO: probably need a reference to the table's body...
+    }
+  }
+  /**
+  * Creates and activates a table to summarize measurements.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateMeasurementSummary(self) {
+    // Create separate tables for head and body to support stationary head and
+    // scrollable body.
+    // Create head table.
+    self.createActivateMeasurementSummaryTableHead(self);
+    // Create body table.
+    self.body = View.createScrollTableBody({
+      className: "measurement",
+      parent: self.measurementContainer,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Creates and activates the head of a table to summarize measurements.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateMeasurementSummaryTableHead(self) {
+    // Create head table.
+    var tableHeadRow = View.createTableHeadRow({
+      className: "measurement",
+      parent: self.measurementContainer,
+      documentReference: self.document
+    });
+    // Create titles, sorts, and scale in table's header.
+    // Create head for names.
+    var referencesName = View.createActivateTableColumnHead({
+      attribute: "name",
+      text: "Name",
+      type: "measurement",
+      category: "measurement",
+      sort: true,
+      scale: false,
+      parent: tableHeadRow,
+      documentReference: self.document,
+      state: self.state
+    });
+    self.sortGraphName = referencesName.sortGraph;
+    // Create head for counts.
+    var referencesValue = View.createActivateTableColumnHead({
+      attribute: "value",
+      text: "Value",
+      type: "measurement",
+      category: "measurement",
+      sort: true,
+      scale: true,
+      parent: tableHeadRow,
+      documentReference: self.document,
+      state: self.state
+    });
+    self.sortGraphValue = referencesValue.sortGraph;
+    self.scaleGraph = referencesValue.scaleGraph;
+    self.graphWidth = referencesValue.graphWidth;
+    self.graphHeight = referencesValue.graphHeight;
+  }
+  /**
+  * Restores summary of measurements.
+  * @param {Object} self Instance of a class.
+  */
+  restoreMeasurementSummary(self) {}
+
   /**
   * Determines whether a type of reference matches the value in the
   * application's state.

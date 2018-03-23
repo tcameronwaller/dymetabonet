@@ -303,6 +303,14 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
+  static determineMetabolitesMeasurements(state) {
+    return Object.keys(state.metabolitesMeasurements).length > 0;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
   static determineRogueTraversal(state) {
     return (state.traversalRogueFocus.identifier.length > 0);
   }
