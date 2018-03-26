@@ -135,8 +135,6 @@ class ActionMeasurement {
   // TODO: Each record needs to have reference to metabolite's identifier, measurement's value, maximum measurement's value, and minimal measurement's value...
   // TODO: I'll need to determine the scale from maximum - minimum...
 
-  // TODO: I can use the general action for sorting the summary...
-
   /**
   * Imports data.
   * @param {Object} parameters Destructured object of parameters.
@@ -148,16 +146,23 @@ class ActionMeasurement {
     // Remove any information about source from the application's state.
     var sourceData = {};
     // Import information from data.
-    // Map measurements to metabolites.
+    // Associate measurements to metabolites.
     var metabolitesMeasurements = Measurement.createMetabolitesMeasurements({
       measurements: data,
       reference: state.measurementReference,
       metabolites: state.metabolites
     });
+    // Prepare measurements' summaries.
+    var measurementsSummaries = Measurement.prepareMeasurementsSummaries({
+      metabolitesMeasurements: metabolitesMeasurements,
+      measurementsSort: state.measurementsSort,
+      metabolites: state.metabolites
+    });
     // Compile variables' values.
     var novelVariablesValues = {
       sourceData: sourceData,
-      metabolitesMeasurements: metabolitesMeasurements
+      metabolitesMeasurements: metabolitesMeasurements,
+      measurementsSummaries: measurementsSummaries
     };
     var variablesValues = Object.assign(
       novelVariablesValues

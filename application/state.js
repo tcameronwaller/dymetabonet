@@ -348,14 +348,14 @@ class State {
       // experimental measurements of metabolites.
       // Information includes references to variables "metabolites".
       "metabolitesMeasurements",
-      // Variable "measurementsSummary" stores information about measurements
+      // Variable "measurementsSummaries" stores information about measurements
       // and their associations to metabolites.
       // Information includes additional details for representation in menus.
       // Information includes references to variables "metabolitesMeasurements"
       // and "metabolites".
       // Information derives from variables "metabolitesMeasurements" and
       // "measurementsSort".
-      "measurementsSummary"
+      "measurementsSummaries"
     ];
     var network = [
       // Variable "networkNodesReactions" stores information about

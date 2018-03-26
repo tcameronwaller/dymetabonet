@@ -1392,29 +1392,62 @@ class General {
     });
   }
   /**
-  * Sorts records in arrray by a numeric value.
+  * Sorts records in array by a numeric value.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object>} parameters.array Array of records.
-  * @param {string} parameters.key Key of value in records by which to sort.
   * @param {string} parameters.order Direction, ascend or descend, in which to
   * sort records.
-  * @param {Object} parameters.reference Information about values' names.
-  * @returns {Array<string>} Shallow copy of array with records in sort order.
+  * @param {Array<Object>} parameters.records Array of records.
+  * @param {string} parameters.key Record's key to value.
+  * @returns {Array<Object>} Deep copy of array with records in sort order.
   */
-  static sortArrayRecordsNumber() {}
+  static sortArrayRecordsByNumber({order, records, key} = {}) {
+    // Copy records.
+    var novelRecords = General.copyDeepArrayElements(records);
+    // Sort records.
+    return novelRecords.sort(function (firstRecord, secondRecord) {
+      // Determine values.
+      var firstValue = firstRecord[key];
+      var secondValue = secondRecord[key];
+      // Compare values.
+      return General.compareValuesOrder({
+        firstValue: firstValue,
+        secondValue: secondValue,
+        order: order
+      })
+    });
+  }
   /**
-  * Sorts records in arrray by a character value.
+  * Sorts records in array by a character value from a reference.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object>} parameters.array Array of records.
-  * @param {string} parameters.key Key of value in records by which to sort.
   * @param {string} parameters.order Direction, ascend or descend, in which to
   * sort records.
+  * @param {Array<Object>} parameters.records Array of records.
+  * @param {string} parameters.referenceKey Record's key to entry in reference.
+  * @param {string} parameters.valueKey Reference's key to value.
   * @param {Object} parameters.reference Information about values' names.
-  * @returns {Array<string>} Shallow copy of array with records in sort order.
+  * @returns {Array<Object>} Deep copy of array with records in sort order.
   */
-  static sortArrayRecordsCharacter() {}
+  static sortArrayRecordsByCharacterReference({order, records, referenceKey, valueKey, reference} = {}) {
+    // Copy records.
+    var novelRecords = General.copyDeepArrayElements(records);
+    // Sort records.
+    return novelRecords.sort(function (firstRecord, secondRecord) {
+      // Determine values.
+      // Convert values to lower case for comparison.
+      var firstValue = reference[firstRecord[referenceKey]][valueKey]
+      .toLowerCase();
+      var secondValue = reference[secondRecord[referenceKey]][valueKey]
+      .toLowerCase();
+      // Compare values.
+      return General.compareValuesOrder({
+        firstValue: firstValue,
+        secondValue: secondValue,
+        order: order
+      })
+    });
+  }
   /**
-  * Sorts records in arrray.
+  * Sorts records in array.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<Object>} parameters.array Array of records.
   * @param {string} parameters.key Key of value in records by which to sort.
@@ -1445,27 +1478,44 @@ class General {
         var secondValue = secondRecord[key];
       }
       // Compare values.
-      if (firstValue < secondValue) {
-        if (order === "ascend") {
-          // Place first element before second element.
-          return -1;
-        } else if (order === "descend") {
-          // Place first element after second element.
-          return 1;
-        }
-      } else if (firstValue > secondValue) {
-        if (order === "ascend") {
-          // Place first element after second element.
-          return 1;
-        } else if (order === "descend") {
-          // Place first element before second element.
-          return -1;
-        }
-      } else {
-        // Preserve current relative placements of elements.
-        return 0;
-      }
+      return General.compareValuesOrder({
+        firstValue: firstValue,
+        secondValue: secondValue,
+        order: order
+      })
     });
+  }
+  /**
+  * Compare values for sort.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string | number} parameters.firstValue First value.
+  * @param {string | number} parameters.secondValue Second value.
+  * @param {string} parameters.order Direction, ascend or descend, in which to
+  * sort records.
+  * @returns {number} Numerical code for placement of values in order.
+  */
+  static compareValuesOrder({firstValue, secondValue, order} = {}) {
+    // Compare values.
+    if (firstValue < secondValue) {
+      if (order === "ascend") {
+        // Place first element before second element.
+        return -1;
+      } else if (order === "descend") {
+        // Place first element after second element.
+        return 1;
+      }
+    } else if (firstValue > secondValue) {
+      if (order === "ascend") {
+        // Place first element after second element.
+        return 1;
+      } else if (order === "descend") {
+        // Place first element before second element.
+        return -1;
+      }
+    } else {
+      // Preserve current relative placements of elements.
+      return 0;
+    }
   }
   /**
   * Sorts arrays by lengths within an arrray.

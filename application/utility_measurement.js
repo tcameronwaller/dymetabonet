@@ -61,6 +61,10 @@ class Measurement {
       // Access information.
       var identifier = record[reference];
       var value = record.value;
+      // Value is a ratio.
+      // Convert value to logarithmic scale for comparability bewteen fold
+      // increase and decrease.
+      var novelValue = Measurement.transformMeasurementValue(value);
       // Match measurement to metabolites.
       var metabolitesIdentifiers = Measurement.filterMetabolitesReference({
         identifier: identifier,
@@ -72,7 +76,7 @@ class Measurement {
       .reduce(function (collectionMetabolites, metaboliteIdentifier) {
         var record = {
           metabolite: metaboliteIdentifier,
-          value: value
+          value: novelValue
         };
         var entry = {
           [metaboliteIdentifier]: record
@@ -80,6 +84,14 @@ class Measurement {
         return Object.assign(collectionMetabolites, entry);
       }, collectionMeasurements);
     }, {});
+  }
+  /**
+  * Transforms measurement's value to logarithmic, base-two scale.
+  * @param {number} value Value of measurement.
+  * @returns {number} Value of measurement on logarithmic, base-two scale.
+  */
+  static transformMeasurementValue(value) {
+    return Math.log2(value);
   }
   /**
   * Filters metabolites by an identifier for a specific reference.
@@ -113,12 +125,6 @@ class Measurement {
     var measurementsSummaries = Measurement.createMeasurementsSummaries(
       metabolitesMeasurements
     );
-
-    // TODO: Something isn't right with the sort procedure.
-    // TODO: Simplify the sort procedure in utility_general...
-    // TODO: avoid having to change the sorts for the other menus...
-
-
     // Sort measurements' summaries.
     var sortMeasurementsSummaries = Measurement.sortMeasurementsSummaries({
       measurementsSort: measurementsSort,
@@ -127,7 +133,6 @@ class Measurement {
     });
     return sortMeasurementsSummaries;
   }
-
   /**
   * Creates summaries of measurements and their associations to metabolites.
   * @param {Object<Object>} metabolitesMeasurements Information about
@@ -189,22 +194,27 @@ class Measurement {
   * @returns {Array<Object>} Summary about measurements of metabolites.
   */
   static sortMeasurementsSummaries({measurementsSort, measurementsSummaries, metabolites} = {}) {
-    // Determine appropriate value by which to sort records.
-    if (measurementsSort.criterion === "value") {
-      var key = measurementsSort.criterion;
-    } else if (measurementsSort.criterion === "name") {
-      var key = "metabolite";
-    }
     // Determine whether records exist.
     if (measurementsSummaries.length > 0) {
       // Records exist.
       // Sort records.
-      var sortMeasurementsSummaries = General.sortArrayRecords({
-        array: measurementsSummaries,
-        key: key,
-        order: measurementsSort.order,
-        reference: metabolites,
-      });
+      // Determine appropriate value by which to sort records.
+      if (measurementsSort.criterion === "value") {
+        var sortMeasurementsSummaries = General.sortArrayRecordsByNumber({
+          order: measurementsSort.order,
+          records: measurementsSummaries,
+          key: "value",
+        });
+      } else if (measurementsSort.criterion === "name") {
+        var sortMeasurementsSummaries = General
+        .sortArrayRecordsByCharacterReference({
+          order: measurementsSort.order,
+          records: measurementsSummaries,
+          referenceKey: "metabolite",
+          valueKey: "name",
+          reference: metabolites
+        });
+      }
     } else {
       // Records do not exist.
       var sortMeasurementsSummaries = measurementsSummaries;
