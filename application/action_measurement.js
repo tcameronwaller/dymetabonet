@@ -48,11 +48,13 @@ class ActionMeasurement {
     var sourceData = {};
     var measurementReference = "pubchem";
     var metabolitesMeasurements = {};
+    var measurementsSort = Measurement.createInitialMeasurementsSort();
     // Compile information.
     var variablesValues = {
       sourceData: sourceData,
       measurementReference: measurementReference,
-      metabolitesMeasurements: metabolitesMeasurements
+      metabolitesMeasurements: metabolitesMeasurements,
+      measurementsSort: measurementsSort
     };
     // Return information.
     return variablesValues;
@@ -130,7 +132,10 @@ class ActionMeasurement {
   }
 
   // TODO: I think I need a sortable summary version of metabolitesMeasurements...
+  // TODO: Each record needs to have reference to metabolite's identifier, measurement's value, maximum measurement's value, and minimal measurement's value...
+  // TODO: I'll need to determine the scale from maximum - minimum...
 
+  // TODO: I can use the general action for sorting the summary...
 
   /**
   * Imports data.
@@ -144,8 +149,7 @@ class ActionMeasurement {
     var sourceData = {};
     // Import information from data.
     // Map measurements to metabolites.
-    var metabolitesMeasurements = ActionMeasurement
-    .createMetabolitesMeasurements({
+    var metabolitesMeasurements = Measurement.createMetabolitesMeasurements({
       measurements: data,
       reference: state.measurementReference,
       metabolites: state.metabolites
@@ -162,58 +166,6 @@ class ActionMeasurement {
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
-    });
-  }
-  /**
-  * Determines measurements that match metabolites.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object>} parameters.measurements Information about
-  * measurements of metabolites.
-  * @param {string} parameters.reference Name of a specific reference.
-  * @param {Object<Object>} parameters.metabolites Information about
-  * metabolites.
-  * @returns {Object<Object>} Information about measurements of metabolites.
-  */
-  static createMetabolitesMeasurements({measurements, reference, metabolites} = {}) {
-    return measurements.reduce(function (collectionMeasurements, record) {
-      // Access information.
-      var identifier = record[reference];
-      var value = record.value;
-      // Match measurement to metabolites.
-      var metabolitesIdentifiers = ActionMeasurement
-      .filterMetabolitesReference({
-        identifier: identifier,
-        reference: reference,
-        metabolites: metabolites
-      });
-      // Create records that match measurement to metabolites.
-      return metabolitesIdentifiers
-      .reduce(function (collectionMetabolites, metaboliteIdentifier) {
-        var record = {
-          metabolite: metaboliteIdentifier,
-          value: value
-        };
-        var entry = {
-          [metaboliteIdentifier]: record
-        }
-        return Object.assign(collectionMetabolites, entry);
-      }, collectionMeasurements);
-    }, {});
-  }
-  /**
-  * Filters metabolites by an identifier for a specific reference.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.identifier Identifier for a specific reference.
-  * @param {string} parameters.reference Name of a specific reference.
-  * @param {Object<Object>} parameters.metabolites Information about
-  * metabolites.
-  * @returns {Array<string>} Identifiers of metabolites.
-  */
-  static filterMetabolitesReference({identifier, reference, metabolites} = {}) {
-    var metabolitesIdentifiers = Object.keys(metabolites);
-    return metabolitesIdentifiers.filter(function (metaboliteIdentifier) {
-      return metabolites
-      [metaboliteIdentifier].references[reference].includes(identifier);
     });
   }
 

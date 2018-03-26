@@ -61,9 +61,6 @@ class ActionState {
 
   // TODO: figure out how to handle the restore to initial or import state stuff...
 
-
-
-
   /**
   * Saves to file on client's system a persistent representation of the
   * application's state.
@@ -157,18 +154,21 @@ class ActionState {
     var startTime = window.performance.now();
     // Execute process.
 
-    var elements = ["a", "b", "c", "d", "e", "f", "g"];
-    console.log("elements");
-    console.log(elements);
-    var pairs = General.combineElementsPairwise(elements);
-    console.log("pairs");
-    console.log(pairs);
+    console.log("sets");
+    console.log(state.setsSummaries);
+    console.log("candidates");
+    console.log(state.candidatesSummaries);
+    console.log("measurements");
+    console.log(state.metabolitesMeasurements);
 
-    // For pairwise combinations...
-    // I need an array of nodes' identifiers.
-    // Determine pairwise combinations.
-    // For each pair, find nodes in path(s) and add to unique list.
-    // Collect records for all nodes and links between them.
+    var measurementsSummaries = Measurement.prepareMeasurementsSummaries({
+      metabolitesMeasurements: state.metabolitesMeasurements,
+      measurementsSort: state.measurementsSort,
+      metabolites: state.metabolites
+    });
+    console.log("measurements Summary");
+    console.log(measurementsSummaries);
+
 
     // Terminate process timer.
     //console.timeEnd("timer");

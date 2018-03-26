@@ -399,7 +399,34 @@ class ViewMeasurement {
   * Restores summary of measurements.
   * @param {Object} self Instance of a class.
   */
-  restoreMeasurementSummary(self) {}
+  restoreMeasurementSummary(self) {
+    // TODO: represent sorts...
+    //self.representSorts(self);
+
+    // TODO: create rows for measurements in tbody...
+
+  }
+  /**
+  * Represents specifications to sort summaries.
+  * @param {Object} self Instance of a class.
+  */
+  representSorts(self) {
+    View.representSort({
+      category: self.category,
+      attribute: "name",
+      sorts: self.state.setsSorts,
+      parent: self.sortGraphName,
+      documentReference: self.document
+    });
+    View.representSort({
+      category: self.category,
+      attribute: "value",
+      sorts: self.state.setsSorts,
+      parent: self.sortGraphCount,
+      documentReference: self.document
+    });
+  }
+
 
   /**
   * Determines whether a type of reference matches the value in the

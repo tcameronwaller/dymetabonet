@@ -168,7 +168,13 @@ class State {
       "sourceData",
       // Variable "measurementReference" stores information about the reference
       // to use for association of measurements to metabolites.
-      "measurementReference"
+      "measurementReference",
+      // Variable "measurementsSort" stores information about the sort criterion
+      // and order for the summary of measurements and their associations to
+      // metabolites.
+      // Information includes references to variables "metabolites" and
+      // "metabolitesMeasurements".
+      "measurementsSort"
     ];
     var explorationControls = [
       // Variable "forceTopology" stores information about whether to force the
@@ -341,7 +347,15 @@ class State {
       // Variable "metabolitesMeasurements" stores information about
       // experimental measurements of metabolites.
       // Information includes references to variables "metabolites".
-      "metabolitesMeasurements"
+      "metabolitesMeasurements",
+      // Variable "measurementsSummary" stores information about measurements
+      // and their associations to metabolites.
+      // Information includes additional details for representation in menus.
+      // Information includes references to variables "metabolitesMeasurements"
+      // and "metabolites".
+      // Information derives from variables "metabolitesMeasurements" and
+      // "measurementsSort".
+      "measurementsSummary"
     ];
     var network = [
       // Variable "networkNodesReactions" stores information about

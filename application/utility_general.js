@@ -1392,6 +1392,28 @@ class General {
     });
   }
   /**
+  * Sorts records in arrray by a numeric value.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.array Array of records.
+  * @param {string} parameters.key Key of value in records by which to sort.
+  * @param {string} parameters.order Direction, ascend or descend, in which to
+  * sort records.
+  * @param {Object} parameters.reference Information about values' names.
+  * @returns {Array<string>} Shallow copy of array with records in sort order.
+  */
+  static sortArrayRecordsNumber() {}
+  /**
+  * Sorts records in arrray by a character value.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.array Array of records.
+  * @param {string} parameters.key Key of value in records by which to sort.
+  * @param {string} parameters.order Direction, ascend or descend, in which to
+  * sort records.
+  * @param {Object} parameters.reference Information about values' names.
+  * @returns {Array<string>} Shallow copy of array with records in sort order.
+  */
+  static sortArrayRecordsCharacter() {}
+  /**
   * Sorts records in arrray.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<Object>} parameters.array Array of records.
