@@ -185,6 +185,12 @@ class State {
       // determine the positions of the subnetwork's elements in the network's
       // diagram.
       "simulation",
+      // Variable "simulationProgress" stores information about progress of an
+      // iterative simulation relative to an estimate of total iterations.
+      "simulationProgress",
+      // Variable "drawTopology" stores information about whether to draw a
+      // visual diagram to represent a network's topology.
+      "drawTopology",
       // Variable "entitySelection" stores information about selection of an
       // entity of interest.
       // Information includes references to variables "metabolites",

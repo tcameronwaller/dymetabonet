@@ -39,8 +39,17 @@ United States of America
 */
 class ActionExploration {
 
-  // TODO: Maybe include an action for initialization of force simulation...
-  // TODO: That would simplify handling of whether or not to re-initialize with every restore to TopologyView
+  // TODO: New actions...
+  // TODO: initialize simulation
+  // TODO: initialize simulation's progress
+  // TODO: restore simulation's progress... always relative to TOTAL, not % before draw
+  // TODO: determine whether to draw the network's diagram on basis of simulation's progress
+  // TODO: restore ExplorationView (just create new to update as usual)... call this when necessary
+
+  // TODO: Re-initialize the simulation whenever the subnetwork changes
+  // TODO: but not with other, irrelevant changes to state
+  // TODO: Application should always be working on simulation for the current subnetwork
+  // TODO: no more requirement to force draw for large networks.
 
   /**
   * Initializes values of application's variables for controls relevant to view.
@@ -60,6 +69,8 @@ class ActionExploration {
     // Return information.
     return variablesValues;
   }
+
+  static initializeSimulation() {}
   /**
   * Creates initial entity selection.
   * @returns {Object} Information about an entity selection.
