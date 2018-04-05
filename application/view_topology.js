@@ -224,11 +224,15 @@ class ViewTopology {
     self.nodesGroupSelection = d3.select(self.nodesGroup);
   }
 
-  // TODO: Maybe I could initialize the simulation in an ActionExploration
-  // TODO: I'd store the simulation in a state variable
-  // TODO: I'd have the simulation restore ViewTopology when appropriate (such as on ticks...)
-  // TODO: That might be a good way to separate the layout simulation from other
-  // TODO: updates to the application's state.
+  // TODO: New version will manage simulation in ActionExploration
+  // TODO: New restoreView needs to...
+  // TODO: 1. create view's references to nodes and links
+  // TODO: 2. determine whether view's dimensions differ from those in state's variables
+  // TODO: 2. call a method in Model to do this neatly...
+  // TODO: 3. if view's dimensions differ, then pass these to ActionExploration.restoreSimulationDimensions()
+  // TODO: 4. if view's dimensions match, then proceed
+  // TODO: 5. determine whether to display progress or network's diagram
+  // TODO: 6. proceed as usual-ish
 
   /**
   * Restores view's content and behavior that varies with changes to the

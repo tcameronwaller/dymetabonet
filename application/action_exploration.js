@@ -70,7 +70,25 @@ class ActionExploration {
     return variablesValues;
   }
 
+  // TODO: 2. determine whether view's dimensions differ from those in state's variables
+  // TODO: 3. if view's dimensions differ from state's variables, then it's necessary to re-initialize
+  // TODO: ... force simulation...
+
+  static restoreSimulationDimensions() {}
+
+  // TODO: simulation needs to call appropriate actions on ticks and end events
+  // TODO: these include restoreSimulationProgress and restoreExplorationView
+
   static initializeSimulation() {}
+
+  static initializeSimulationProgress() {}
+
+  static restoreSimulationProgress() {}
+
+  static determineDrawTopology() {}
+
+  static restoreExplorationView() {}
+
   /**
   * Creates initial entity selection.
   * @returns {Object} Information about an entity selection.
@@ -91,6 +109,9 @@ class ActionExploration {
     // Return information.
     return information;
   }
+
+  // TODO: State's variable to force draw topology will no longer be necessary...
+
   /**
   * Changes the selection of whether to force representation of subnetwork's
   * topology.
@@ -114,6 +135,8 @@ class ActionExploration {
       state: state
     });
   }
+
+
   /**
   * Responds to a selection on the network's diagram.
   * @param {Object} parameters Destructured object of parameters.
