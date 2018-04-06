@@ -366,6 +366,17 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
+  static determineSubnetworkNodes(state) {
+    return (state.subnetworkNodesRecords.length > 0);
+  }
+
+
+
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
   static determineEntitySelection(state) {
     return (
       (state.entitySelection.type.length > 0) &&
@@ -376,19 +387,19 @@ class Model {
   }
   /**
   * Determines whether the application's state has specific information.
-  * @param {Object} state Application's state.
-  * @returns {boolean} Whether the application's state matches criteria.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.length Length factor in pixels.
+  * @param {number} parameters.width Width of container in pixels.
+  * @param {number} parameters.height Height of container in pixels.
+  * @param {Object} parameters.state Application's state.
+  * @returns {boolean} Whether the node's entity has a selection.
   */
-  static determineForceTopology(state) {
-    return state.forceTopology;
-  }
-  /**
-  * Determines whether the application's state has specific information.
-  * @param {Object} state Application's state.
-  * @returns {boolean} Whether the application's state matches criteria.
-  */
-  static determineSubnetworkScale(state) {
-    return state.subnetworkNodesRecords.length < 3000;
+  static determineViewSimulationDimensions({length, width, height, state} = {}) {
+    return (
+      (length === state.simulationDimensions.length) &&
+      (width === state.simulationDimensions.width) &&
+      (height === state.simulationDimensions.height)
+    );
   }
   /**
   * Determines whether the application's state has specific information.

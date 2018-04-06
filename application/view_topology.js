@@ -223,29 +223,71 @@ class ViewTopology {
     self.nodesGroup.classList.add("nodes");
     self.nodesGroupSelection = d3.select(self.nodesGroup);
   }
-
-  // TODO: New version will manage simulation in ActionExploration
-  // TODO: New restoreView needs to...
-  // TODO: 1. create view's references to nodes and links
-  // TODO: 2. determine whether view's dimensions differ from those in state's variables
-  // TODO: 2. call a method in Model to do this neatly...
-  // TODO: 3. if view's dimensions differ, then pass these to ActionExploration.restoreSimulationDimensions()
-  // TODO: 4. if view's dimensions match, then proceed
-  // TODO: 5. determine whether to display progress or network's diagram
-  // TODO: 6. proceed as usual-ish
-
   /**
   * Restores view's content and behavior that varies with changes to the
   * application's state.
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
+
+    // TODO: New version will manage simulation in ActionExploration
+    // TODO: New restoreView needs to...
+    // TODO: 1. create view's references to nodes and links
+    // TODO: 2. determine whether view's dimensions differ from those in state's variables
+    // TODO: 2. call a method in Model to do this neatly...
+    // TODO: 3. if view's dimensions differ, then pass these to ActionExploration.restoreSimulationDimensions()
+    // TODO: 4. if view's dimensions match, then proceed
+    // TODO: 5. determine whether to display progress or network's diagram
+    // TODO: 6. proceed as usual-ish
+
+    // TODO: Determine whether simulation is complete and refine representations if so...
+
+
+    // TODO: Move the simulation monitor to the NoticeView...
+
     // Prepare information about network's elements.
     self.prepareNetworkElementsRecords(self);
+    // Determine whether there are any nodes to represent in the network's
+    // diagram.
     if (self.nodesRecords.length > 0) {
       // Create scales for the visual representation of network's elements.
       // These scales also inform the simulation.
       self.createDimensionScales(self);
+      // Determine whether view's current dimensions match state's variable for
+      // simulation's dimensions.
+      var match = Model.determineViewSimulationDimensions({
+        length: self.scaleNodeDimension,
+        width: self.graphWidth,
+        height: self.graphHeight,
+        state: self.state
+      });
+      if (match) {
+        // View's current dimensions match state's variable for simulation's
+        // dimensions.
+        // Restore view as appropriate.
+        console.log("dimensions match!!!");
+
+      } else {
+        console.log("dimensions don't match...");
+        // View's current dimensions do not match state's variable for
+        // simulation's dimensions.
+        // Change state's variable for simulation's dimensions.
+        ActionExploration.changeSimulationDimensions({
+          length: self.scaleNodeDimension,
+          width: self.graphWidth,
+          height: self.graphHeight,
+          state: self.state
+        });
+      }
+    } else {
+      // Remove any visual representations.
+      General.removeDocumentChildren(self.linksGroup);
+      General.removeDocumentChildren(self.nodesGroup);
+    }
+
+
+
+    if (false) {
       // Determine whether the network's diagram requires mostly novel positions.
       var novelPositions = ViewTopology
       .determineNovelNetworkDiagramPositions(self.nodesRecords);
@@ -264,10 +306,6 @@ class ViewTopology {
         // Initialize positions in network's diagram.
         self.restoreNetworkDiagramPositions(self);
       }
-    } else {
-      // Remove any visual representations.
-      General.removeDocumentChildren(self.linksGroup);
-      General.removeDocumentChildren(self.nodesGroup);
     }
   }
   /**
@@ -365,6 +403,8 @@ class ViewTopology {
     // Compute font size from scale.
     self.scaleFont = fontScale(self.scaleRatio);
   }
+
+
   /**
   * Initializes positions of network's elements in network's diagram.
   * @param {Object} self Instance of a class.
@@ -512,74 +552,11 @@ class ViewTopology {
     // Compute efficient behavior rules from scales.
     self.scaleInterval = intervalScale(self.nodesRecords.length);
   }
-  /**
-  * Initializes a force simulation's progress.
-  * @param {number} parameters.alpha Value of alpha, 0-1.
-  * @param {number} parameters.alphaDecay Value of alpha's decay rate, 0-1.
-  * @param {number} parameters.alphaMinimum Value of minimal alpha, 0-1.
-  * @param {Object} parameters.self Instance of a class.
-  */
-  initializeSimulationProgress({alpha, alphaDecay, alphaMinimum, self} = {}) {
-    // Initiate counter for simulation's iterations.
-    self.simulationCounter = 0;
-    // Assume that alpha's target is less than alpha's minimum.
-    // Compute an estimate of the simulation's total iterations.
-    var totalIterations = ViewTopology.computeSimulationTotalIterations({
-      alpha: alpha,
-      alphaDecay: alphaDecay,
-      alphaMinimum: alphaMinimum
-    });
-    // Compute iterations to complete before creating visual representations.
-    self.preliminaryIterations = (totalIterations * self.scaleInterval);
-  }
-  /**
-  * Responds to simulation's progress and completion.
-  * @param {Object} self Instance of a class.
-  */
-  progressSimulationInitializePositions(self) {
-    self.simulation
-    .on("tick", function () {
-      // Execute behavior during simulation's progress.
-      if (self.simulationCounter < self.preliminaryIterations) {
-        // Confine record's positions within graphical container.
-        ViewTopology.confineRecordsPositions({
-          records: self.nodesRecords,
-          graphWidth: self.graphWidth,
-          graphHeight: self.graphHeight
-        });
-        // Report simulation's progress.
-        self.restoreReportSimulationProgress(self);
-      } else {
-        // Represent network's elements visually.
-        // Determine whether visual representations of network's elements exist.
-        if (
-          (self.nodesGroup.children.length === 0) &&
-          (self.linksGroup.children.length === 0)
-        ) {
-          // Remove message about simulation's progress.
-          self.removeSimulationProgressReport(self);
-          // Create, activate, and restore visual representations of network's
-          // elements.
-          self.createActivateNetworkRepresentation(self);
-        }
-        // Restore and refine positions in network's diagram.
-        self.restoreNodesPositions(self);
-        self.restoreLinksPositions(self);
-      }
-    })
-    .on("end", function () {
-      // Execute behavior upon simulation's completion.
-      // Restore and refine positions in network's diagram.
-      self.restoreNodesPositions(self);
-      self.restoreLinksPositions(self);
-      self.refineNodesLinksRepresentations(self);
-      // Prepare for subsequent restorations to positions in network's diagram.
-      // Respond to simulation's progress and completion.
-      // To restore positions in network's diagrams, respond to simulation in a
-      // way to promote interactivity.
-      self.progressSimulationRestorePositions(self);
-    });
-  }
+
+
+
+
+
   /**
   * Reports progress of iterative force simulation.
   * @param {Object} self Instance of a class.
@@ -597,6 +574,9 @@ class ViewTopology {
     }
     self.simulationProgress = progress;
   }
+
+
+
   /**
   * Creates and restores a report of simulation's progress.
   * @param {number} progress Instance of a class.
@@ -1349,126 +1329,6 @@ class ViewTopology {
   // TODO: methods with utility to ViewTopology...
 
   /**
-  * Computes an estimate of a simulation's total iterations.
-  * @param {number} parameters.alpha Value of alpha, 0-1.
-  * @param {number} parameters.alphaDecay Value of alpha's decay rate, 0-1.
-  * @param {number} parameters.alphaMinimum Value of minimal alpha, 0-1.
-  * @returns {Object} Estimate of simulation's total iterations.
-  */
-  static computeSimulationTotalIterations({alpha, alphaDecay, alphaMinimum} = {}) {
-    return ((Math.log10(alphaMinimum)) / (Math.log10(alpha - alphaDecay)));
-  }
-  /**
-  * Terminates any previous simulation in the application's state.
-  * @param {Object} state Application's state.
-  */
-  static terminatePreviousSimulation(state) {
-    // The simulation that creates the positions of nodes and links in the
-    // network's diagram is an important and persistent part of the
-    // application's state.
-    // It is important to manage a single relevant simulation to avoid
-    // continuations of previous simulations after changes to the application's
-    // state.
-    // This force simulation depends both on the subnetwork's elements and on
-    // the dimensions of the view within the document object model.
-    // Determine whether the application's state has a previous simulation.
-    if (Model.determineSimulation(state)) {
-      // Stop the previous simulation.
-      // Replace the simulation in the application's state.
-      state.simulation.on("tick", null).on("end", null);
-      state.simulation.stop();
-      state.simulation = {};
-    }
-  }
-  /**
-  * Creates and initiates a simulation of forces to determine positions of
-  * network's nodes and links in a node-link diagram.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.alpha Value of alpha, 0-1.
-  * @param {number} parameters.alphaDecay Value of alpha's decay rate, 0-1.
-  * @param {number} parameters.velocityDecay Value of velocity's decay rate,
-  * 0-1.
-  * @param {number} parameters.alphaTarget Value of alpha's target, 0-1.
-  * @param {number} parameters.alphaMinimum Value of minimal alpha, 0-1.
-  * @param {number} parameters.lengthFactor Length in pixels by which to
-  * scale dimensions of representations of nodes and links.
-  * @param {number} parameters.graphWidth Width in pixels of graphical
-  * container.
-  * @param {number} parameters.graphHeight Height in pixels of graphical
-  * container.
-  * @param {Array<Object>} parameters.nodesRecords Information about network's
-  * nodes.
-  * @param {Array<Object>} parameters.linksRecords Information about network's
-  * links.
-  * @param {Object} parameters.state Application's state.
-  * @returns {Object} Reference to simulation.
-  */
-  static createInitiateSimulation({alpha, alphaDecay, velocityDecay, alphaTarget, alphaMinimum, lengthFactor, graphWidth, graphHeight, nodesRecords, linksRecords, state} = {}) {
-    // Initiate the force simulation.
-    // The force method assigns a specific force simulation to the name.
-    // Collision force prevents overlap and occlusion of nodes.
-    // The center force causes nodes to behave strangely when user repositions
-    // them manually.
-    // The force simulation assigns positions to the nodes, recording
-    // coordinates of these positions in novel attributes within nodes' records.
-    // These coordinates are accessible in the original data that associates
-    // with node elements.
-    // Any elements with access to the nodes' data, such as nodes' marks and
-    // labels, also have access to the coordinates of these positions.
-    // The visual representation of the subnetwork's elements in the network's
-    // diagram constitutes an important and persistent part of the application's
-    // state.
-    var simulation = d3.forceSimulation()
-    .alpha(alpha)
-    .alphaDecay(alphaDecay)
-    .velocityDecay(velocityDecay)
-    .alphaTarget(alphaTarget)
-    .alphaMin(alphaMinimum)
-    .nodes(nodesRecords)
-    .force("center", d3.forceCenter()
-      .x(graphWidth / 2)
-      .y(graphHeight / 2)
-    )
-    .force("collision", d3.forceCollide()
-      .radius(function (element, index, nodes) {
-        if (element.type === "metabolite") {
-          return lengthFactor;
-        } else if (element.type === "reaction") {
-          return (lengthFactor * 3);
-        }
-      })
-      .strength(0.7)
-      .iterations(1)
-    )
-    .force("charge", d3.forceManyBody()
-      .theta(0.3)
-      .strength(-500)
-      .distanceMin(1)
-      .distanceMax(lengthFactor * 10)
-    )
-    .force("link", d3.forceLink()
-      .links(linksRecords)
-      .id(function (element, index, nodes) {
-        return element.identifier;
-      })
-      .distance(4 * lengthFactor)
-      //.strength()
-      //.iterations()
-    )
-    .force("positionX", d3.forceX()
-      .x(graphWidth / 2)
-      .strength(0.00007)
-    )
-    .force("positionY", d3.forceY()
-      .y(graphHeight / 2)
-      .strength(0.025)
-    );
-    // Preserve a reference to the simulation in the application's state.
-    state.simulation = simulation;
-    // Return simulation.
-    return simulation;
-  }
-  /**
   * Confines positions of records for network's entities within dimensions of
   * graphical container.
   * @param {Object} parameters Destructured object of parameters.
@@ -1507,6 +1367,9 @@ class ViewTopology {
   static confinePosition({position, radius, boundary} = {}) {
     return Math.max(radius, Math.min(boundary - radius, position));
   }
+
+  // TODO: I think that determineNovelNetworkDiagramPositions is no longer necessary...
+
   /**
   * Determines whether the network's diagram requires mostly novel positions.
   * @param {Array<Object>} nodesRecords Information about network's nodes.
@@ -1528,6 +1391,7 @@ class ViewTopology {
     // Determine whether more than half of records have positions at origin.
     return (originCount > (nodesRecords.length / 3));
   }
+
   /**
   * Accesses a link.
   * @param {Object} parameters Destructured object of parameters.

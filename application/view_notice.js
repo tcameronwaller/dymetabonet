@@ -70,7 +70,7 @@ class ViewNotice {
   initializeView(self) {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
-      identifier: "gate",
+      identifier: "notice",
       target: self.explorationView.container,
       position: "beforeend",
       documentReference: self.document
@@ -83,7 +83,7 @@ class ViewNotice {
       var textContainer = self.document.createElement("span");
       self.container.appendChild(textContainer);
       var message = (
-        "There are a lot of elements in the current subnetwork. Force draw?"
+        "There are not any elements in subnetwork. Get some!"
       );
       textContainer.textContent = message;
       // Create break.

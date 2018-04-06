@@ -177,20 +177,17 @@ class State {
       "measurementsSort"
     ];
     var explorationControls = [
-      // Variable "forceTopology" stores information about whether to force the
-      // application to draw a visual representation of the network's topology
-      // even when this network is excessively large.
-      "forceTopology",
+      // Variable "simulationDimensions" stores information about dimensions for
+      // the simulation.
+      "simulationDimensions",
+      // Variable "simulationProgress" stores information about progress of an
+      // iterative simulation relative to an estimate of total iterations.
+      //"simulationProgress",
+      "simulationProgress",
       // Variable "simulation" stores references to iterative functions that
       // determine the positions of the subnetwork's elements in the network's
       // diagram.
       "simulation",
-      // Variable "simulationProgress" stores information about progress of an
-      // iterative simulation relative to an estimate of total iterations.
-      "simulationProgress",
-      // Variable "drawTopology" stores information about whether to draw a
-      // visual diagram to represent a network's topology.
-      "drawTopology",
       // Variable "entitySelection" stores information about selection of an
       // entity of interest.
       // Information includes references to variables "metabolites",

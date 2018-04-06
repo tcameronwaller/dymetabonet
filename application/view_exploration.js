@@ -87,14 +87,14 @@ class ViewExploration {
     // Terminate any previous simulations from topology view.
     ViewTopology.terminatePreviousSimulation(self.state);
     // Determine which subordinate views to create, activate, and restore.
-    // Determine whether to represent subnetwork's elements in a visual diagram.
-    // Represent if counts of subnetwork's elements are not excessive or if user
-    // specified to force representation.
-    if (
-      Model.determineForceTopology(self.state) ||
-      Model.determineSubnetworkScale(self.state)
-    ) {
-      View.removeExistElement("gate", self.document);
+    // Determine whether subnetwork has any elements to represent in a visual
+    // diagram.
+
+    // TODO: ... also create ViewNotice if the simulation is still in progress...
+
+    
+    if (Model.determineSubnetworkNodes(self.state)) {
+      View.removeExistElement("notice", self.document);
       new ViewTopology({
         interfaceView: self.interfaceView,
         tipView: self.tipView,
