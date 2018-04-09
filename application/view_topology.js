@@ -237,7 +237,7 @@ class ViewTopology {
     // TODO: 2. call a method in Model to do this neatly...
     // TODO: 3. if view's dimensions differ, then pass these to ActionExploration.restoreSimulationDimensions()
     // TODO: 4. if view's dimensions match, then proceed
-    // TODO: 5. determine whether to display progress or network's diagram
+    // TODO: 5. determine whether to display progress or network's diagram (maybe do that in ExplorationView, actually...)
     // TODO: 6. proceed as usual-ish
 
     // TODO: Determine whether simulation is complete and refine representations if so...
@@ -1111,6 +1111,9 @@ class ViewTopology {
       nodesLabels.attr("font-size", self.scaleFont + "px");
     }
   }
+
+
+  
 
   /**
   * Restores positions of nodes' visual representations according to results of

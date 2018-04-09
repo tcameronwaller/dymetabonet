@@ -138,7 +138,7 @@ class ActionExploration {
   * @param {number} parameters.length Length factor in pixels.
   * @param {number} parameters.width Container's width in pixels.
   * @param {number} parameters.height Container's height in pixels.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters.state Application's state.
   */
   static changeSimulationDimensions({length, width, height, state} = {}) {
     // Determine novel simulation's dimensions.
@@ -148,32 +148,20 @@ class ActionExploration {
       height: height
     };
     // Initiate novel simulation.
-    // TODO: There are a lot of steps below... simplify into a function...
-    //var simulationControls = ActionExploration.initiateNovelSimulation({});
-
-    // Initialize simulation's progress.
-    var simulationProgress = ActionExploration.initializeSimulationProgress({
-      alpha: 1,
-      alphaDecay: 0.013,
-      alphaMinimum: 0.001,
-      factor: 0.9
-    });
-    // Initiate simulation.
-    var simulation = ActionExploration.createInitiateSimulation({
-      alpha: 1,
-      alphaDecay: 0.013,
-      velocityDecay: 0.15,
-      alphaTarget: 0,
-      alphaMinimum: 0.001,
+    var simulationControls = ActionExploration
+    .createInitiateMonitorNovelPositionSimulation({
       length: length,
       width: width,
       height: height,
       nodesRecords: state.subnetworkNodesRecords,
       linksRecords: state.subnetworkLinksRecords,
+      previousSimulation: state.simulation,
       state: state
     });
-    // Restore simulation's progress.
-    ActionExploration.monitorSimulationProgress(simulation, state);
+
+
+
+
 
     // TODO: This is the part where I need to initialize "tick" and "end" events for the simulation...
 
@@ -191,26 +179,10 @@ class ActionExploration {
     });
   }
 
-  static initiateNovelSimulation()
-
-  // TODO: 2. determine whether view's dimensions differ from those in state's variables
-  // TODO: 3. if view's dimensions differ from state's variables, then it's necessary to re-initialize
-  // TODO: ... force simulation...
-
-
-  // TODO: simulation needs to call appropriate actions on ticks and end events
-  // TODO: these include restoreSimulationProgress and restoreExplorationView
-
   /**
-  * Creates and initiates a simulation of forces to determine positions of
-  * network's nodes and links in a node-link diagram.
+  * Creates a novel simulation to determine the optimal positions of nodes and
+  * links in network's diagram.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.alpha Value of alpha, 0-1.
-  * @param {number} parameters.alphaDecay Value of alpha's decay rate, 0-1.
-  * @param {number} parameters.velocityDecay Value of velocity's decay rate,
-  * 0-1.
-  * @param {number} parameters.alphaTarget Value of alpha's target, 0-1.
-  * @param {number} parameters.alphaMinimum Value of minimal alpha, 0-1.
   * @param {number} parameters.length Length factor in pixels.
   * @param {number} parameters.width Container's width in pixels.
   * @param {number} parameters.height Container's height in pixels.
@@ -218,153 +190,60 @@ class ActionExploration {
   * nodes.
   * @param {Array<Object>} parameters.linksRecords Information about network's
   * links.
+  * @param {Object} parameters.previousSimulation Reference to simulation.
   * @param {Object} parameters.state Application's state.
-  * @returns {Object} Reference to simulation.
+  * @returns {Object} References to novel simulation and its controls.
   */
-  static createInitiateSimulation({alpha, alphaDecay, velocityDecay, alphaTarget, alphaMinimum, length, width, height, nodesRecords, linksRecords, state} = {}) {
+  static createInitiateMonitorNovelPositionSimulation({length, width, height, nodesRecords, linksRecords, previousSimulation, state} = {}) {
     // Terminate any previous simulation.
-    ActionExploration.terminateSimulation(state);
-    // Create and initiate novel simulation.
-    // Initiate the force simulation.
-    // The force method assigns a specific force simulation to the name.
-    // Collision force prevents overlap and occlusion of nodes.
-    // The center force causes nodes to behave strangely when user repositions
-    // them manually.
-    // The force simulation assigns positions to the nodes, recording
-    // coordinates of these positions in novel attributes within nodes' records.
-    // These coordinates are accessible in the original data that associates
-    // with node elements.
-    // Any elements with access to the nodes' data, such as nodes' marks and
-    // labels, also have access to the coordinates of these positions.
-    // The visual representation of the subnetwork's elements in the network's
-    // diagram constitutes an important and persistent part of the application's
-    // state.
-    var simulation = d3.forceSimulation()
-    .alpha(alpha)
-    .alphaDecay(alphaDecay)
-    .velocityDecay(velocityDecay)
-    .alphaTarget(alphaTarget)
-    .alphaMin(alphaMinimum)
-    .nodes(nodesRecords)
-    .force("center", d3.forceCenter()
-      .x(width / 2)
-      .y(height / 2)
-    )
-    .force("collision", d3.forceCollide()
-      .radius(function (element, index, nodes) {
-        if (element.type === "metabolite") {
-          return length;
-        } else if (element.type === "reaction") {
-          return (length * 3);
-        }
-      })
-      .strength(0.7)
-      .iterations(1)
-    )
-    .force("charge", d3.forceManyBody()
-      .theta(0.3)
-      .strength(-500)
-      .distanceMin(1)
-      .distanceMax(length * 10)
-    )
-    .force("link", d3.forceLink()
-      .links(linksRecords)
-      .id(function (element, index, nodes) {
-        return element.identifier;
-      })
-      .distance(4 * length)
-      //.strength()
-      //.iterations()
-    )
-    .force("positionX", d3.forceX()
-      .x(width / 2)
-      .strength(0.00007)
-    )
-    .force("positionY", d3.forceY()
-      .y(height / 2)
-      .strength(0.025)
-    );
-    // Return simulation.
-    return simulation;
-  }
-  /**
-  * Terminates any previous simulation in the application's state.
-  * @param {Object} state Application's state.
-  */
-  static terminateSimulation(state) {
-    // The simulation that creates the positions of nodes and links in the
-    // network's diagram is an important and persistent part of the
-    // application's state.
-    // It is important to manage a single relevant simulation to avoid
-    // continuations of previous simulations after changes to the application's
-    // state.
-    // This force simulation depends both on the subnetwork's elements and on
-    // the dimensions of the view within the document object model.
-    // Determine whether the application's state has a previous simulation.
-    if (Model.determineSimulation(state)) {
-      // Stop the previous simulation.
-      // Replace the simulation in the application's state.
-      state.simulation.on("tick", null).on("end", null);
-      state.simulation.stop();
-    }
-  }
-  /**
-  * Initializes a force simulation's progress.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.alpha Value of alpha, 0-1.
-  * @param {number} parameters.alphaDecay Value of alpha's decay rate, 0-1.
-  * @param {number} parameters.alphaMinimum Value of minimal alpha, 0-1.
-  * @param {number} parameters.factor Preparatory proportion of total'
-  * iterations.
-  * @returns {Object} Information about simulation's progress.
-  */
-  static initializeSimulationProgress({alpha, alphaDecay, alphaMinimum, factor} = {}) {
-    // Initiate counter for simulation's iterations.
-    var count = 0;
-    // Assume that alpha's target is less than alpha's minimum.
-    // Compute an estimate of the simulation's total iterations.
-    var total = ActionExploration.determineSimulationTotalIterations({
-      alpha: alpha,
-      alphaDecay: alphaDecay,
-      alphaMinimum: alphaMinimum
+    Simulation.terminateSimulation(previousSimulation);
+    // Create novel simulation and its controls.
+    var simulationControls = Simulation.createNovelPositionSimulation({
+      length: length,
+      width: width,
+      height: height,
+      nodesRecords: nodesRecords,
+      linksRecords: linksRecords
     });
-    // Compute iterations to complete before creating visual representations.
-    var preparation = (total * factor);
+    // Monitor simulation's progress.
+    ActionExploration.monitorSimulationProgress({
+      width: width,
+      height: height,
+      simulation: simulationControls.simulation,
+      state: state
+    });
+    // Initiate simulation.
+    simulationControls.simulation.restart();
+
     // Compile information.
-    var information = {
-      count: count,
-      total: total,
-      preparation: preparation,
-      completion: false
-    };
-    // Return information.
-    return information;
+
+    // TODO: do this...
+
   }
-  /**
-  * Determines total iterations for a simulation.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.alpha Value of alpha, 0-1.
-  * @param {number} parameters.alphaDecay Value of alpha's decay rate, 0-1.
-  * @param {number} parameters.alphaMinimum Value of minimal alpha, 0-1.
-  * @returns {number} Count of simulation's total iterations.
-  */
-  static determineSimulationTotalIterations({alpha, alphaDecay, alphaMinimum} = {}) {
-    return ((Math.log10(alphaMinimum)) / (Math.log10(alpha - alphaDecay)));
-  }
+
+  // TODO: simulation needs to call appropriate actions on ticks and end events
+  // TODO: these include restoreSimulationProgress and restoreExplorationView
+
   /**
   * Monitors the simulation's progress.
-  * @param {Object} simulation Reference to simulation.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.width Container's width in pixels.
+  * @param {number} parameters.height Container's height in pixels.
+  * @param {Object} parameters.simulation Reference to simulation.
+  * @param {Object} parameters.state Application's state.
   */
-  static monitorSimulationProgress(simulation, state) {
+  static monitorSimulationProgress({width, height, simulation, state} = {}) {
     simulation
     .on("tick", function () {
+      // TODO: update references to variables such as graph dimensions...
+
       // Execute behavior during simulation's progress.
       // Confine positions within container.
+      // TODO: Should I return new nodesRecords from this function?
       ActionExploration.confinePositions({
-        records: self.nodesRecords,
-        graphWidth: self.graphWidth,
-        graphHeight: self.graphHeight
+        records: state.subnetworkNodesRecords,
+        width: width,
+        height: height
       });
       // Restore simulation's progress.
     })
@@ -373,15 +252,15 @@ class ActionExploration {
       // Execute behavior upon simulation's completion.
       // Confine positions within container.
       ActionExploration.confinePositions({
-        records: self.nodesRecords,
-        graphWidth: self.graphWidth,
-        graphHeight: self.graphHeight
+        records: state.subnetworkNodesRecords,
+        width: width,
+        height: height
       });
       // Restore simulation's progress.
 
       // TODO: Designate simulation as complete so that TopologyView will know to refine representations of directionality on reactions' nodes and such.
       // TODO: within simulationProgress set completion to true
-      // TODO: 
+      // TODO:
 
 
 

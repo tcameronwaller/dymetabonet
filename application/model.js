@@ -403,27 +403,6 @@ class Model {
   }
   /**
   * Determines whether the application's state has specific information.
-  * @param {Object} state Application's state.
-  * @returns {boolean} Whether the application's state matches criteria.
-  */
-  static determineSimulation(state) {
-    return (
-      state.simulation.hasOwnProperty("alpha") &&
-      state.simulation.hasOwnProperty("alphaDecay") &&
-      state.simulation.hasOwnProperty("alphaMin") &&
-      state.simulation.hasOwnProperty("alphaTarget") &&
-      state.simulation.hasOwnProperty("find") &&
-      state.simulation.hasOwnProperty("force") &&
-      state.simulation.hasOwnProperty("nodes") &&
-      state.simulation.hasOwnProperty("on") &&
-      state.simulation.hasOwnProperty("restart") &&
-      state.simulation.hasOwnProperty("stop") &&
-      state.simulation.hasOwnProperty("tick") &&
-      state.simulation.hasOwnProperty("velocityDecay")
-    );
-  }
-  /**
-  * Determines whether the application's state has specific information.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
   * @param {string} parameters.type Type of entity, metabolite or reaction.
