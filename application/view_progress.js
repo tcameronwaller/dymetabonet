@@ -30,9 +30,9 @@ United States of America
 */
 
 /**
-* Interface to communicate notice message.
+* Interface to represent simulation's progress.
 */
-class ViewNotice {
+class ViewProgress {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
@@ -61,6 +61,8 @@ class ViewNotice {
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
   }
   /**
   * Initializes, creates and activates, view's content and behavior that does
@@ -85,6 +87,7 @@ class ViewNotice {
     } else {
       // Container is not empty.
       // Set references to content.
+      self.textContainer = self.container.getElementsByTagName("text").item(0);
     }
   }
   /**
@@ -101,8 +104,20 @@ class ViewNotice {
     .setAttribute("x", (String(self.explorationView.graphWidth / 2) + "px"));
     self.textContainer
     .setAttribute("y", (String(self.explorationView.graphHeight / 2) + "px"));
+  }
+  /**
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // Estimate simulation's progress.
+    var progress = Simulation.determineSimulationProgressProportion({
+      count: self.state.simulationProgress.count,
+      target: self.state.simulationProgress.preparation
+    });
     // Restore message.
-    var message = ("There aren't any elements in the subnetwork. Get some!");
+    var message = ("progress: " + (progress * 100).toFixed() + "%");
     self.textContainer.textContent = message;
   }
 }

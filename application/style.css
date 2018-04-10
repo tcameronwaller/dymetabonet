@@ -330,6 +330,13 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   height: 100%;
 }
 
+#exploration svg {
+  height: 100%;
+  width: 100%;
+  fill: rgba(200, 50, 0, 1);
+}
+
+
 /******************************************************************************/
 /* Topology View */
 /******************************************************************************/
@@ -339,12 +346,6 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   /*float: left;*/
   flex: 1;
   height: 100%;
-}
-
-#topology svg {
-  height: 100%;
-  width: 100%;
-  fill: rgba(200, 50, 0, 1);
 }
 
 #topology svg rect.base {

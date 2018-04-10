@@ -369,9 +369,24 @@ class Model {
   static determineSubnetworkNodes(state) {
     return (state.subnetworkNodesRecords.length > 0);
   }
-
-
-
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSimulationPreparation(state) {
+    return (
+      state.simulationProgress.count > state.simulationProgress.preparation
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSimulationCompletion(state) {
+    return (state.simulationProgress.completion);
+  }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.

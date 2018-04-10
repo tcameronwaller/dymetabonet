@@ -70,6 +70,7 @@ class ViewPrompt {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "prompt",
+      type: "standard",
       target: self.interfaceView.container,
       position: "beforeend",
       documentReference: self.document

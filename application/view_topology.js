@@ -76,6 +76,7 @@ class ViewTopology {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "topology",
+      type: "graph",
       target: self.explorationView.container,
       position: "beforeend",
       documentReference: self.document
@@ -105,20 +106,6 @@ class ViewTopology {
       self.linksGroup = self.container.querySelector("svg g.links");
       self.nodesGroup = self.container.querySelector("svg g.nodes");
     }
-  }
-  /**
-  * Creates a graphical container.
-  * @param {Object} self Instance of a class.
-  */
-  createGraph(self) {
-    // Create graphical container.
-    self.graph = View.createGraph({
-      parent: self.container,
-      documentReference: self.document
-    });
-    // Determine graphs' dimensions.
-    self.graphWidth = General.determineElementDimension(self.graph, "width");
-    self.graphHeight = General.determineElementDimension(self.graph, "height");
   }
   /**
   * Defines link's directional marker.
@@ -160,6 +147,8 @@ class ViewTopology {
       .attr("d", "M 0 0 L 10 5 L 0 10 z");
     }
   }
+
+
   /**
   * Creates and activates a base within a graphical container.
   * @param {Object} self Instance of a class.
@@ -250,17 +239,6 @@ class ViewTopology {
     // Determine whether there are any nodes to represent in the network's
     // diagram.
     if (self.nodesRecords.length > 0) {
-      // Create scales for the visual representation of network's elements.
-      // These scales also inform the simulation.
-      self.createDimensionScales(self);
-      // Determine whether view's current dimensions match state's variable for
-      // simulation's dimensions.
-      var match = Model.determineViewSimulationDimensions({
-        length: self.scaleNodeDimension,
-        width: self.graphWidth,
-        height: self.graphHeight,
-        state: self.state
-      });
       if (match) {
         // View's current dimensions match state's variable for simulation's
         // dimensions.
@@ -271,13 +249,6 @@ class ViewTopology {
         console.log("dimensions don't match...");
         // View's current dimensions do not match state's variable for
         // simulation's dimensions.
-        // Change state's variable for simulation's dimensions.
-        ActionExploration.changeSimulationDimensions({
-          length: self.scaleNodeDimension,
-          width: self.graphWidth,
-          height: self.graphHeight,
-          state: self.state
-        });
       }
     } else {
       // Remove any visual representations.
@@ -323,6 +294,7 @@ class ViewTopology {
     self.linksRecords = General
     .copyDeepArrayElements(self.state.subnetworkLinksRecords, true);
   }
+
   /**
   * Creates scales for visual representation of network's elements.
   * @param {Object} self Instance of a class.
@@ -334,25 +306,6 @@ class ViewTopology {
     // Define scales' domain on the basis of the ratio of the graphical
     // container's width to the count of nodes.
     var domainRatios = [0.3, 1, 5, 10, 15, 25, 50, 100, 150];
-    // Define scale for lengths of visual marks.
-    // Domain's unit is pixel for ratio of graphical container's width to count
-    // of nodes.
-    // Range's unit is pixel for dimension of graphical elements.
-    //domain: range
-    //0-0.3: 1
-    //0.3-1: 3
-    //1-5: 5
-    //5-10: 7
-    //10-15: 10
-    //15-25: 15
-    //25-50: 25
-    //50-100: 30
-    //100-150: 35
-    //150-10000: 50
-    var nodeDimensionScale = d3
-    .scaleThreshold()
-    .domain(domainRatios)
-    .range([1, 2, 3, 5, 7, 10, 15, 20, 30, 40]);
     // Define scale for dimensions of links' representations.
     // Domain's unit is pixel for ratio of graphical container's width to count
     // of nodes.
@@ -391,11 +344,11 @@ class ViewTopology {
     .scaleThreshold()
     .domain(domainRatios)
     .range([1, 2, 3, 4, 5, 7, 10, 11, 13, 15]);
-    // Compute ratio for scales' domain.
-    self.scaleRatio = self.graphWidth / self.nodesRecords.length;
     // Compute dimensions from scale.
-    self.scaleNodeDimension = nodeDimensionScale(self.scaleRatio);
-    self.scaleLinkDimension = linkDimensionScale(self.scaleRatio);
+    self.scaleNodeDimension = self.explorationView.scaleLength;
+    self.scaleLinkDimension = linkDimensionScale(
+      self.explorationView.scaleDimensionRatio
+    );
     self.metaboliteNodeWidth = self.scaleNodeDimension * 1;
     self.metaboliteNodeHeight = self.scaleNodeDimension * 0.5;
     self.reactionNodeWidth = self.scaleNodeDimension * 2.5;
@@ -403,6 +356,12 @@ class ViewTopology {
     // Compute font size from scale.
     self.scaleFont = fontScale(self.scaleRatio);
   }
+
+
+
+
+
+
 
 
   /**
@@ -503,78 +462,6 @@ class ViewTopology {
     View.removeElements(reactionsDirectionalMarks);
   }
 
-  /**
-  * Creates scales for simulations of forces between network's elements.
-  * @param {Object} self Instance of a class.
-  */
-  createSimulationScales(self) {
-    // Simulations of forces between network's elements are computationally
-    // expensive.
-    // The computational cost varies with the counts of network's elements.
-    // To maintain efficiency, vary the rigor of these simulations by the counts
-    // of network's elements.
-    // Graphical rendering of visual elements for network's elements is
-    // computationally expensive
-    // The maintenance of efficient interactivity in the application requires
-    // restriction on behavior.
-    // Greater scale of the network requires more stringent restriction for
-    // computational efficiency.
-    // Define scale's domain on the basis of the count of nodes.
-    // Define scales' domain on the basis of the count of nodes.
-    var domainCounts = [250, 1000, 2500, 5000];
-    // Define scale for alpha decay rate in force simulation.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.05, iterations = 134.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.03, iterations = 227.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.02, iterations = 300.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.015, iterations = 458.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.013, iterations = 528.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.01, iterations = 688.
-    // alpha = 1, alphaMinimum = 0.001, alphaDecay = 0.005, iterations = 1379.
-    // Domain's unit is count of nodes.
-    // Range's unit is arbitrary for decay rates.
-    // Define scale for velocity decay rate in force simulation.
-    // Domain's unit is count of nodes.
-    // Range's unit is arbitrary for decay rates.
-    // Define scale for intervals at which to restore positions of nodes and
-    // links during simulation's iterations.
-    // Domain's unit is count of nodes.
-    // Range's unit is arbitrary.
-    //domain: range
-    //0-250: 0.1
-    //250-1000: 0.25
-    //1000-2500: 0.5
-    //2500-5000: 0.75
-    //5000-1000000: 0.99
-    var intervalScale = d3
-    .scaleThreshold()
-    .domain(domainCounts)
-    .range([0.1, 0.25, 0.5, 0.75, 0.99]);
-    // Compute efficient behavior rules from scales.
-    self.scaleInterval = intervalScale(self.nodesRecords.length);
-  }
-
-
-
-
-
-  /**
-  * Reports progress of iterative force simulation.
-  * @param {Object} self Instance of a class.
-  */
-  restoreReportSimulationProgress(self) {
-    // Increment count of simulation's iterations.
-    self.simulationCounter += 1;
-    // Estimate simulation's progress to point of visual representation.
-    var progress = (
-      Math.round(
-        (self.simulationCounter / self.preliminaryIterations) * 100) / 100
-    );
-    if (progress > self.simulationProgress) {
-      self.createRestoreSimulationProgressReport(progress, self);
-    }
-    self.simulationProgress = progress;
-  }
-
 
 
   /**
@@ -609,19 +496,8 @@ class ViewTopology {
     );
     self.simulationProgressReport.textContent = message;
   }
-  /**
-  * Removes report of simulation's progress.
-  * @param {Object} self Instance of a class.
-  */
-  removeSimulationProgressReport(self) {
-    // Determine whether text container exists for message about simulation's
-    // progress.
-    self.simulationProgressReport = self.graph.querySelector("text.progress");
-    if (self.simulationProgressReport) {
-      View.removeElement(self.simulationProgressReport);
-    }
-    self.simulationProgress = 0;
-  }
+
+
   /**
   * Responds to simulation's progress and completion.
   * @param {Object} self Instance of a class.
@@ -1112,9 +988,6 @@ class ViewTopology {
     }
   }
 
-
-  
-
   /**
   * Restores positions of nodes' visual representations according to results of
   * force simulation.
@@ -1331,45 +1204,6 @@ class ViewTopology {
   // TODO: Consider creating a new class, ViewTopologyUtility to store the static
   // TODO: methods with utility to ViewTopology...
 
-  /**
-  * Confines positions of records for network's entities within dimensions of
-  * graphical container.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object>} parameters.records Information about network's
-  * entities.
-  * @param {number} parameters.graphWidth Width in pixels of graphical
-  * container.
-  * @param {number} parameters.graphHeight Height in pixels of graphical
-  * container.
-  */
-  static confineRecordsPositions({records, graphWidth, graphHeight} = {}) {
-    // Iterate on records for network's entities.
-    records.forEach(function (record) {
-      // Confine record's positions within graphical container.
-      record.x = ViewTopology.confinePosition({
-        position: record.x,
-        radius: 0,
-        boundary: graphWidth
-      });
-      record.y = ViewTopology.confinePosition({
-        position: record.y,
-        radius: 0,
-        boundary: graphHeight
-      });
-    });
-  }
-  /**
-  * Confines a position within a boundary.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.position A position to confine.
-  * @param {number} parameters.radius Radius around position.
-  * @param {number} parameters.boundary Boundary within which to confine
-  * position.
-  * @returns {number} Position within boundary.
-  */
-  static confinePosition({position, radius, boundary} = {}) {
-    return Math.max(radius, Math.min(boundary - radius, position));
-  }
 
   // TODO: I think that determineNovelNetworkDiagramPositions is no longer necessary...
 

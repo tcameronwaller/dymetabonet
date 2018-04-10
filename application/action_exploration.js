@@ -60,57 +60,23 @@ class ActionExploration {
   */
   static initializeControls() {
     // Initialize controls.
-    var simulationDimensions = ActionExploration
-    .createInitialSimulationDimensions();
-    var simulationProgress = ActionExploration
-    .createInitialSimulationProgress();
+    var simulationDimensions = Simulation.createInitialSimulationDimensions();
+    var simulationProgress = Simulation.createInitialSimulationProgress();
     var simulation = {};
+    var simulationNodesRecords = [];
+    var simulationLinksRecords = [];
     var entitySelection = ActionExploration.createInitialEntitySelection();
     // Compile information.
     var variablesValues = {
       simulationDimensions: simulationDimensions,
       simulationProgress: simulationProgress,
       simulation: simulation,
+      simulationNodesRecords: simulationNodesRecords,
+      simulationLinksRecords: simulationLinksRecords,
       entitySelection: entitySelection
     };
     // Return information.
     return variablesValues;
-  }
-  /**
-  * Creates initial simulation's dimensions.
-  * @returns {Object} Information about simulation's dimensions.
-  */
-  static createInitialSimulationDimensions() {
-    var length = 0;
-    var width = 0;
-    var height = 0;
-    // Compile information.
-    var information = {
-      length: length,
-      width: width,
-      height: height
-    };
-    // Return information.
-    return information;
-  }
-  /**
-  * Creates initial simulation's progress.
-  * @returns {Object} Information about simulation's progress.
-  */
-  static createInitialSimulationProgress() {
-    var count = 0;
-    var total = 0;
-    var preparation = 0;
-    var completion = false;
-    // Compile information.
-    var information = {
-      count: count,
-      total: total,
-      preparation: preparation,
-      completion: completion
-    };
-    // Return information.
-    return information;
   }
   /**
   * Creates initial entity selection.
@@ -148,7 +114,7 @@ class ActionExploration {
       height: height
     };
     // Initiate novel simulation.
-    var simulationControls = ActionExploration
+    var simulationControlsRecords = ActionExploration
     .createInitiateMonitorNovelPositionSimulation({
       length: length,
       width: width,
@@ -158,27 +124,20 @@ class ActionExploration {
       previousSimulation: state.simulation,
       state: state
     });
-
-
-
-
-
-    // TODO: This is the part where I need to initialize "tick" and "end" events for the simulation...
-
     // Compile variables' values.
     var novelVariablesValues = {
-      simulationDimensions: simulationDimensions,
-      simulationProgress: simulationProgress,
-      simulation: simulation
+      simulationDimensions: simulationDimensions
     };
-    var variablesValues = novelVariablesValues;
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      simulationControlsRecords
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
   }
-
   /**
   * Creates a novel simulation to determine the optimal positions of nodes and
   * links in network's diagram.
@@ -192,94 +151,107 @@ class ActionExploration {
   * links.
   * @param {Object} parameters.previousSimulation Reference to simulation.
   * @param {Object} parameters.state Application's state.
-  * @returns {Object} References to novel simulation and its controls.
+  * @returns {Object} References to novel simulation and its controls and
+  * records.
   */
   static createInitiateMonitorNovelPositionSimulation({length, width, height, nodesRecords, linksRecords, previousSimulation, state} = {}) {
     // Terminate any previous simulation.
     Simulation.terminateSimulation(previousSimulation);
+    // Copy records for simulation.
+    // These records will be mutable and will accept changes from the
+    // simulation.
+    var simulationNodesRecords = General
+    .copyDeepArrayElements(nodesRecords, true);
+    var simulationLinksRecords = General
+    .copyDeepArrayElements(linksRecords, true);
     // Create novel simulation and its controls.
     var simulationControls = Simulation.createNovelPositionSimulation({
       length: length,
       width: width,
       height: height,
-      nodesRecords: nodesRecords,
-      linksRecords: linksRecords
+      nodesRecords: simulationNodesRecords,
+      linksRecords: simulationLinksRecords
     });
     // Monitor simulation's progress.
     ActionExploration.monitorSimulationProgress({
-      width: width,
-      height: height,
       simulation: simulationControls.simulation,
       state: state
     });
     // Initiate simulation.
     simulationControls.simulation.restart();
-
     // Compile information.
-
-    // TODO: do this...
-
+    var novelVariablesValues = {
+      simulationNodesRecords: simulationNodesRecords,
+      simulationLinksRecords: simulationLinksRecords
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      simulationControls
+    );
+    // Return information.
+    return variablesValues;
   }
-
-  // TODO: simulation needs to call appropriate actions on ticks and end events
-  // TODO: these include restoreSimulationProgress and restoreExplorationView
-
   /**
   * Monitors the simulation's progress.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.width Container's width in pixels.
-  * @param {number} parameters.height Container's height in pixels.
   * @param {Object} parameters.simulation Reference to simulation.
   * @param {Object} parameters.state Application's state.
   */
-  static monitorSimulationProgress({width, height, simulation, state} = {}) {
+  static monitorSimulationProgress({simulation, state} = {}) {
     simulation
     .on("tick", function () {
-      // TODO: update references to variables such as graph dimensions...
-
       // Execute behavior during simulation's progress.
-      // Confine positions within container.
-      // TODO: Should I return new nodesRecords from this function?
-      ActionExploration.confinePositions({
-        records: state.subnetworkNodesRecords,
-        width: width,
-        height: height
-      });
       // Restore simulation's progress.
+      ActionExploration.restoreSimulationProgress({
+        completion: false,
+        state: state
+      });
     })
     .on("end", function () {
-      // Restore simulation's progress.
       // Execute behavior upon simulation's completion.
-      // Confine positions within container.
-      ActionExploration.confinePositions({
-        records: state.subnetworkNodesRecords,
-        width: width,
-        height: height
-      });
       // Restore simulation's progress.
-
-      // TODO: Designate simulation as complete so that TopologyView will know to refine representations of directionality on reactions' nodes and such.
-      // TODO: within simulationProgress set completion to true
-      // TODO:
-
-
-
-      // Prepare for subsequent restorations to positions in network's diagram.
-      // Respond to simulation's progress and completion.
-      // To restore positions in network's diagrams, respond to simulation in a
-      // way to promote interactivity.
-      self.progressSimulationRestorePositions(self);
+      ActionExploration.restoreSimulationProgress({
+        completion: true,
+        state: state
+      });
+    });
+  }
+  /**
+  * Restores information about simulation's progress.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.completion Whether simulation is complete.
+  * @param {Object} parameters.state Application's state.
+  */
+  static restoreSimulationProgress({completion, state} = {}) {
+    // Confine positions within container.
+    var simulationNodesRecords = Simulation.confineSimulationPositions({
+      nodesRecords: state.simulationNodesRecords,
+      width: state.simulationDimensions.width,
+      height: state.simulationDimensions.height
+    });
+    // Restore simulation's progress.
+    var novelCount = state.simulationProgress.count + 1;
+    var novelEntries = {
+      count: novelCount,
+      completion: completion
+    };
+    var novelProgress = Object.assign(state.simulationProgress, novelEntries);
+    // Compile variables' values.
+    var novelVariablesValues = {
+      simulationNodesRecords: simulationNodesRecords,
+      simulationProgress: novelProgress
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
     });
   }
 
-  static confinePositions({} = {}) {}
 
-
-  static restoreSimulationProgress() {}
-
-  static determineDrawTopology() {}
-
-  static restoreExplorationView() {}
 
 
   // TODO: State's variable to force draw topology will no longer be necessary...

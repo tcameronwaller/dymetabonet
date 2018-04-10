@@ -73,6 +73,7 @@ class ViewSummary {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "detail",
+      type: "standard",
       target: self.panelView.container,
       position: "beforeend",
       documentReference: self.document
@@ -84,6 +85,7 @@ class ViewSummary {
       // Create container.
       self.summaryContainer = View.createInsertContainer({
         identifier: "detail-summary-container",
+        type: "standard",
         target: self.container,
         position: "beforeend",
         documentReference: self.document
@@ -346,6 +348,7 @@ class SummaryViewScrap {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "summary",
+      type: "standard",
       target: self.exploration.container,
       position: "beforeend",
       documentReference: self.document

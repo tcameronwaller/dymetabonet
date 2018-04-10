@@ -64,6 +64,7 @@ class ViewPanel {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "panel",
+      type: "standard",
       target: self.interfaceView.container,
       position: "beforeend",
       documentReference: self.document

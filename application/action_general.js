@@ -242,6 +242,8 @@ class ActionGeneral {
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords
     });
+    // It is necessary to initialize the Exploration View before initiating the
+    // simulation.
     // Compile variables' values.
     var variablesValues = Object.assign(
       totalEntitiesSets,

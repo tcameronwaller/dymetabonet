@@ -188,6 +188,12 @@ class State {
       // determine the positions of the subnetwork's elements in the network's
       // diagram.
       "simulation",
+      // Variable "simulationNodesRecords" stores information about network's
+      // nodes with positions from simulation.
+      "simulationNodesRecords",
+      // Variable "simulation" stores information about network's links with
+      // positions from simulation.
+      "simulationLinksRecords",
       // Variable "entitySelection" stores information about selection of an
       // entity of interest.
       // Information includes references to variables "metabolites",

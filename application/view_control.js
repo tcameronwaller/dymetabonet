@@ -72,6 +72,7 @@ class ViewControl {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "control",
+      type: "standard",
       target: self.panelView.container,
       position: "beforeend",
       documentReference: self.document

@@ -72,6 +72,7 @@ class ViewState {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "state",
+      type: "standard",
       target: self.controlView.stateTab,
       position: "afterend",
       documentReference: self.document

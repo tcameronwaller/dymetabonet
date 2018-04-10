@@ -72,6 +72,7 @@ class ViewFilter {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "filter",
+      type: "standard",
       target: self.controlView.filterTab,
       position: "afterend",
       documentReference: self.document
@@ -308,6 +309,7 @@ class FilterMenuView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: ("filter-" + self.category + "-menu"),
+      type: "standard",
       target: self.filterView.container,
       position: "beforeend",
       documentReference: self.document

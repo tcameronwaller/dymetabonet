@@ -38,6 +38,42 @@ United States of America
 class Simulation {
 
   /**
+  * Creates initial simulation's dimensions.
+  * @returns {Object} Information about simulation's dimensions.
+  */
+  static createInitialSimulationDimensions() {
+    var length = 0;
+    var width = 0;
+    var height = 0;
+    // Compile information.
+    var information = {
+      length: length,
+      width: width,
+      height: height
+    };
+    // Return information.
+    return information;
+  }
+  /**
+  * Creates initial simulation's progress.
+  * @returns {Object} Information about simulation's progress.
+  */
+  static createInitialSimulationProgress() {
+    var count = 0;
+    var total = 0;
+    var preparation = 0;
+    var completion = false;
+    // Compile information.
+    var information = {
+      count: count,
+      total: total,
+      preparation: preparation,
+      completion: completion
+    };
+    // Return information.
+    return information;
+  }
+  /**
   * Creates a novel simulation to determine the optimal positions of nodes and
   * links in network's diagram.
   * @param {Object} parameters Destructured object of parameters.
@@ -59,7 +95,7 @@ class Simulation {
       factor: 0.9
     });
     // Initiate simulation.
-    var novelSimulation = Simulation.createInitiateSimulation({
+    var novelSimulation = Simulation.createSimulation({
       alpha: 1,
       alphaDecay: 0.013,
       velocityDecay: 0.15,
@@ -71,15 +107,10 @@ class Simulation {
       nodesRecords: nodesRecords,
       linksRecords: linksRecords
     });
-
-
-
-
-
     // Compile information.
     var variablesValues = {
       simulationProgress: simulationProgress,
-      simulation: simulation
+      simulation: novelSimulation
     };
     // Return information.
     return variablesValues;
@@ -140,13 +171,13 @@ class Simulation {
     var count = 0;
     // Assume that alpha's target is less than alpha's minimum.
     // Compute an estimate of the simulation's total iterations.
-    var total = Simulation.determineSimulationTotalIterations({
+    var total = Math.round(Simulation.determineSimulationTotalIterations({
       alpha: alpha,
       alphaDecay: alphaDecay,
       alphaMinimum: alphaMinimum
-    });
+    }));
     // Compute iterations to complete before creating visual representations.
-    var preparation = (total * factor);
+    var preparation = Math.round(total * factor);
     // Compile information.
     var information = {
       count: count,
@@ -252,6 +283,59 @@ class Simulation {
     // Return simulation.
     return simulation;
   }
+  /**
+  * Confines positions of network's nodes within boundaries of container.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.nodesRecords Information about network's
+  * nodes.
+  * @param {number} parameters.width Container's width in pixels.
+  * @param {number} parameters.height Container's height in pixels.
+  */
+  static confineSimulationPositions({nodesRecords, width, height} = {}) {
+    // Iterate on records for network's entities.
+    return nodesRecords.map(function (nodeRecord) {
+      // Confine record's positions within container.
+      var x = Simulation.confineSimulationPosition({
+        position: nodeRecord.x,
+        radius: 0,
+        boundary: width
+      });
+      var y = Simulation.confineSimulationPosition({
+        position: nodeRecord.y,
+        radius: 0,
+        boundary: height
+      });
+      var novelEntries = {
+        x: x,
+        y: y
+      };
+      var copy = General.copyValue(nodeRecord, true);
+      return Object.assign(copy, novelEntries);
+    });
+  }
+  /**
+  * Confines a position within a boundary.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.position A position to confine.
+  * @param {number} parameters.radius Radius around position.
+  * @param {number} parameters.boundary Boundary within which to confine
+  * position.
+  * @returns {number} Position within boundary.
+  */
+  static confineSimulationPosition({position, radius, boundary} = {}) {
+    return Math.max(radius, Math.min(boundary - radius, position));
+  }
+  /**
+  * Determines a simulation's progress as a proportion.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.count Count of simulation's iterations.
+  * @param {number} parameters.target Target count of simulation's iterations.
+  * @returns {number} Proportion of simulation's progress.
+  */
+  static determineSimulationProgressProportion({count, target} = {}) {
+    return (Math.round((count / target) * 100) / 100);
+  }
+
 
 
   /**

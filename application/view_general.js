@@ -55,6 +55,7 @@ class View {
   * Creates or sets reference to a view's container.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of element.
+  * @param {string} parameters.type Type of container, "standard" or "graph".
   * @param {Object} parameters.target Reference to element for relative
   * position of insertion.
   * @param {string} parameters.position Position of insertion relative to
@@ -63,13 +64,14 @@ class View {
   * model.
   * @returns {Object} Reference to element.
   */
-  static createReferenceContainer({identifier, target, position, documentReference} = {}) {
+  static createReferenceContainer({identifier, type, target, position, documentReference} = {}) {
     // Determine whether container's element exists in the document.
     if (!documentReference.getElementById(identifier)) {
       // Element does not exist in the document.
       // Create element.
       var container = View.createInsertContainer({
         identifier: identifier,
+        type: type,
         target: target,
         position: position,
         documentReference: documentReference
@@ -85,6 +87,7 @@ class View {
   * Creates a container and inserts it at a specific position in the document.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of element.
+  * @param {string} parameters.type Type of container, "standard" or "graph".
   * @param {Object} parameters.target Reference to element for relative
   * position of insertion.
   * @param {string} parameters.position Position of insertion relative to
@@ -93,8 +96,13 @@ class View {
   * model.
   * @returns {Object} Reference to element.
   */
-  static createInsertContainer({identifier, target, position, documentReference} = {}) {
-    var container = documentReference.createElement("div");
+  static createInsertContainer({identifier, type, target, position, documentReference} = {}) {
+    if (type === "standard") {
+      var container = documentReference.createElement("div");
+    } else if (type === "graph") {
+      var container = documentReference
+      .createElementNS("http://www.w3.org/2000/svg", "g");
+    }
     View.insertElement({
       element: container,
       target: target,

@@ -73,6 +73,7 @@ class ViewContext {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "simplification",
+      type: "standard",
       target: self.controlView.simplificationTab,
       position: "afterend",
       documentReference: self.document
@@ -286,6 +287,7 @@ class SimplificationMenuView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: ("simplification-" + self.category + "-menu"),
+      type: "standard",
       target: self.simplificationView.container,
       position: "beforeend",
       documentReference: self.document

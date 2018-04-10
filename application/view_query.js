@@ -72,6 +72,7 @@ class ViewQuery {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "traversal",
+      type: "standard",
       target: self.controlView.traversalTab,
       position: "afterend",
       documentReference: self.document

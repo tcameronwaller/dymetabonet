@@ -72,6 +72,7 @@ class ViewMeasurement {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "measurement",
+      type: "standard",
       target: self.controlView.measurementTab,
       position: "afterend",
       documentReference: self.document
