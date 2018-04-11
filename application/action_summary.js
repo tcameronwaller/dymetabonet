@@ -39,6 +39,10 @@ United States of America
 */
 class ActionSummary {
 
+  // Direct actions.
+
+  // Indirect actions.
+
   // TODO: export information about all entities in subnetwork or current selection
   // TODO: Consolidate export behavior... I don't think I need to handle differently...
 

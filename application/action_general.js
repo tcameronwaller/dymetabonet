@@ -50,6 +50,8 @@ class ActionGeneral {
   // To call the restore method of the application's state, it is necessary to
   // pass the method a reference to the current instance of the state.
 
+  // Direct actions.
+
   /**
   * Submits a novel value of a variable to the application's state.
   * @param {Object} parameters Destructured object of parameters.
@@ -111,31 +113,6 @@ class ActionGeneral {
     });
   }
   /**
-  * Loads from file basic information about metabolic entities and sets.
-  * @param {Object} state Application's state.
-  */
-  static loadMetabolismBaseInformation(state) {
-    d3.json("data/metabolism_sets_entities_recon2m2.json", function (data) {
-      ActionGeneral.restoreMetabolismBaseInformation({
-        data: data,
-        state: state
-      });
-    });
-  }
-  /**
-  * Loads from file supplemental information about metabolic entities and sets.
-  * @param {Object} state Application's state.
-  */
-  static loadMetabolismSupplementInformation(state) {
-    d3.tsv(
-      "data/curation_simplification_default_metabolites.tsv", function (data) {
-      ActionGeneral.restoreMetabolismSupplementInformation({
-        data: data,
-        state: state
-      });
-    });
-  }
-  /**
   * Initializes values of variables of application's controls.
   * @param {Object} state Application's state.
   */
@@ -165,96 +142,6 @@ class ActionGeneral {
       query,
       measurement,
       exploration
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-
-  // TODO: I need to include metabolitesMeasurements in all restorations of information...
-
-  /**
-  * Derives information from basic information about metabolic entities and
-  * sets.
-  * @param {Object} state Application's state.
-  */
-  static deriveCompleteMetabolismInformation(state) {
-    // Determine total entities' attribution to sets.
-    var totalEntitiesSets = Attribution
-    .determineTotalEntitiesSets(state.reactions);
-    // Determine current entities' attribution to sets.
-    var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
-      setsFilters: state.setsFilters,
-      totalSetsReactions: totalEntitiesSets.totalSetsReactions,
-      totalSetsMetabolites: totalEntitiesSets.totalSetsMetabolites,
-      reactions: state.reactions
-    });
-    // Determine sets' cardinalities and prepare sets' summaries.
-    var setsCardinalitiesSummaries = Cardinality
-    .determineSetsCardinalitiesSummaries({
-      setsEntities: state.setsEntities,
-      setsFilter: state.setsFilter,
-      accessSetsReactions: currentEntitiesSets.accessSetsReactions,
-      accessSetsMetabolites: currentEntitiesSets.accessSetsMetabolites,
-      filterSetsReactions: currentEntitiesSets.filterSetsReactions,
-      filterSetsMetabolites: currentEntitiesSets.filterSetsMetabolites,
-      setsSearches: state.setsSearches,
-      setsSorts: state.setsSorts,
-      compartments: state.compartments,
-      processes: state.processes
-    });
-    // Determine candidate entities and prepare their summaries.
-    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
-      reactionsSets: currentEntitiesSets.filterSetsReactions,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: state.compartmentalization,
-      candidatesSearches: state.candidatesSearches,
-      candidatesSorts: state.candidatesSorts,
-      compartments: state.compartments
-    });
-    // Determine simplifications of candidate entities.
-    // Create simplifications for default entities and include with other
-    // simplifications.
-    var simplifications = Candidacy.createIncludeDefaultSimplifications({
-      defaultSimplificationsMetabolites: state
-      .defaultSimplificationsMetabolites,
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      reactionsSets: currentEntitiesSets.filterSetsReactions,
-      reactions: state.reactions,
-      compartmentalization: state.compartmentalization,
-      reactionsSimplifications: {},
-      metabolitesSimplifications: {}
-    });
-    // Create network's elements.
-    var networkElements = Network.createNetworkElements({
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      reactionsSimplifications: simplifications.reactionsSimplifications,
-      metabolitesSimplifications: simplifications.metabolitesSimplifications,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: state.compartmentalization
-    });
-    // Create subnetwork's elements.
-    var subnetworkElements = Network.copyNetworkElementsRecords({
-      networkNodesRecords: networkElements.networkNodesRecords,
-      networkLinksRecords: networkElements.networkLinksRecords
-    });
-    // It is necessary to initialize the Exploration View before initiating the
-    // simulation.
-    // Compile variables' values.
-    var variablesValues = Object.assign(
-      totalEntitiesSets,
-      currentEntitiesSets,
-      setsCardinalitiesSummaries,
-      candidatesSummaries,
-      simplifications,
-      networkElements,
-      subnetworkElements
     );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
@@ -301,6 +188,100 @@ class ActionGeneral {
       defaultSimplificationsMetabolites: defaultSimplificationsMetabolites
     };
     var variablesValues = novelVariablesValues;
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+
+  // TODO: This is a great place to set precedent for hierarchical restoration structure...
+  // TODO: derive series...
+
+  static deriveCompleteState(state) {
+    // Derive dependent state.
+    var dependentState = ActionFilter.deriveState({});
+
+  }
+
+  static deriveContextState(state) {}
+
+  static deriveQueryState(state) {}
+
+  static deriveMeasurementState(state) {}
+
+  static deriveExplorationState(state) {}
+
+  /**
+  * Derives information from basic information about metabolic entities and
+  * sets.
+  * @param {Object} state Application's state.
+  */
+  static deriveCompleteMetabolismInformation(state) {
+
+    // Filter state...
+
+
+    // Context state...
+
+    // Determine candidate entities and prepare their summaries.
+    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
+      reactionsSets: currentEntitiesSets.filterSetsReactions,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      compartmentalization: state.compartmentalization,
+      candidatesSearches: state.candidatesSearches,
+      candidatesSorts: state.candidatesSorts,
+      compartments: state.compartments
+    });
+    // Determine simplifications of candidate entities.
+    // Create simplifications for default entities and include with other
+    // simplifications.
+    var simplifications = Candidacy.createIncludeDefaultSimplifications({
+      defaultSimplificationsMetabolites: state
+      .defaultSimplificationsMetabolites,
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSets: currentEntitiesSets.filterSetsReactions,
+      reactions: state.reactions,
+      compartmentalization: state.compartmentalization,
+      reactionsSimplifications: {},
+      metabolitesSimplifications: {}
+    });
+    // Create network's elements.
+    var networkElements = Network.createNetworkElements({
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSimplifications: simplifications.reactionsSimplifications,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      compartmentalization: state.compartmentalization
+    });
+
+    // Query state...
+
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copyNetworkElementsRecords({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords
+    });
+
+    // Exploration state...
+
+    // It is necessary to initialize the Exploration View before initiating the
+    // simulation.
+
+
+    // Compile variables' values.
+    var novelVariablesValues = {};
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      candidatesSummaries,
+      simplifications,
+      networkElements,
+      subnetworkElements
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -476,6 +457,34 @@ class ActionGeneral {
     // Include entry.
     var novelSearches = Object.assign(copySearches, entry);
     return novelSearches;
+  }
+
+  // Indirect actions.
+
+  /**
+  * Loads from file basic information about metabolic entities and sets.
+  * @param {Object} state Application's state.
+  */
+  static loadMetabolismBaseInformation(state) {
+    d3.json("data/metabolism_sets_entities_recon2m2.json", function (data) {
+      ActionGeneral.restoreMetabolismBaseInformation({
+        data: data,
+        state: state
+      });
+    });
+  }
+  /**
+  * Loads from file supplemental information about metabolic entities and sets.
+  * @param {Object} state Application's state.
+  */
+  static loadMetabolismSupplementInformation(state) {
+    d3.tsv(
+      "data/curation_simplification_default_metabolites.tsv", function (data) {
+      ActionGeneral.restoreMetabolismSupplementInformation({
+        data: data,
+        state: state
+      });
+    });
   }
 
 }

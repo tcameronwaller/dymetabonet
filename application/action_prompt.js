@@ -39,6 +39,73 @@ United States of America
 */
 class ActionPrompt {
 
+  // Direct actions.
+
+  /**
+  * Changes the type of the prompt view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of prompt view.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeType({type, state} = {}) {
+    // Compile information.
+    var prompt = {
+      type: type,
+      reference: state.prompt.reference,
+      horizontalPosition: state.prompt.horizontalPosition,
+      verticalPosition: state.prompt.verticalPosition,
+      horizontalShift: state.prompt.horizontalShift,
+      verticalShift: state.prompt.verticalShift,
+      permanence: true
+    };
+    // Compile variables' values.
+    var novelVariablesValues = {
+      prompt: prompt
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Removes the prompt view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.permanence Whether to remove only transient
+  * prompt view.
+  * @param {Object} parameters.state Application's state.
+  */
+  static removeView({permanence, state} = {}) {
+    if (permanence) {
+      if (!state.prompt.permanence) {
+        // Remove any prompt view.
+        var prompt = ActionPrompt.createInitialPrompt();
+      } else {
+        var prompt = state.prompt;
+      }
+    } else {
+      // Remove any prompt view.
+      var prompt = ActionPrompt.createInitialPrompt();
+    }
+    // Compile variables' values.
+    var novelVariablesValues = {
+      prompt: prompt
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+
+  // Indirect actions.
+
   /**
   * Initializes values of application's variables for controls relevant to view.
   * @returns {Object} Values of application's variables for view's controls.
@@ -115,68 +182,6 @@ class ActionPrompt {
     }
     // Return information.
     return prompt;
-  }
-  /**
-  * Changes the type of the prompt view.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.type Type of prompt view.
-  * @param {Object} parameters.state Application's state.
-  */
-  static changeType({type, state} = {}) {
-    // Compile information.
-    var prompt = {
-      type: type,
-      reference: state.prompt.reference,
-      horizontalPosition: state.prompt.horizontalPosition,
-      verticalPosition: state.prompt.verticalPosition,
-      horizontalShift: state.prompt.horizontalShift,
-      verticalShift: state.prompt.verticalShift,
-      permanence: true
-    };
-    // Compile variables' values.
-    var novelVariablesValues = {
-      prompt: prompt
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Removes the prompt view.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} parameters.permanence Whether to remove only transient
-  * prompt view.
-  * @param {Object} parameters.state Application's state.
-  */
-  static removeView({permanence, state} = {}) {
-    if (permanence) {
-      if (!state.prompt.permanence) {
-        // Remove any prompt view.
-        var prompt = ActionPrompt.createInitialPrompt();
-      } else {
-        var prompt = state.prompt;
-      }
-    } else {
-      // Remove any prompt view.
-      var prompt = ActionPrompt.createInitialPrompt();
-    }
-    // Compile variables' values.
-    var novelVariablesValues = {
-      prompt: prompt
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
   }
 
 }

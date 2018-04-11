@@ -39,28 +39,8 @@ United States of America
 */
 class ActionControl {
 
-  // TODO: include an initialization function...
+  // Direct actions.
 
-  /**
-  * Initializes values of application's variables for controls relevant to view.
-  * @returns {Object} Values of application's variables for view's controls.
-  */
-  static initializeControls() {
-    // Initialize controls.
-    var controlViews = {
-      state: false,
-      filter: false,
-      simplification: false,
-      traversal: false,
-      measurement: false
-    };
-    // Compile information.
-    var variablesValues = {
-      controlViews: controlViews
-    };
-    // Return information.
-    return variablesValues;
-  }
   /**
   * Changes the selections of active panels within the control view.
   * @param {Object} parameters Destructured object of parameters.
@@ -93,6 +73,27 @@ class ActionControl {
     });
   }
 
+  // Indirect actions.
 
+  /**
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
+  */
+  static initializeControls() {
+    // Initialize controls.
+    var controlViews = {
+      state: false,
+      filter: false,
+      simplification: false,
+      traversal: false,
+      measurement: false
+    };
+    // Compile information.
+    var variablesValues = {
+      controlViews: controlViews
+    };
+    // Return information.
+    return variablesValues;
+  }
 
 }

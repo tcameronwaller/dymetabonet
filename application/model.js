@@ -58,12 +58,12 @@ class Model {
   * Evaluates the application's state and responds accordingly.
   */
   act(self) {
-    if (!Model.determineMetabolismBaseInformation(self.state)) {
+    if (!Model.determineApplicationControls(self.state)) {
+      ActionGeneral.initializeApplicationControls(self.state);
+    } else if (!Model.determineMetabolismBaseInformation(self.state)) {
       ActionGeneral.loadMetabolismBaseInformation(self.state);
     } else if (!Model.determineMetabolismSupplementInformation(self.state)) {
       ActionGeneral.loadMetabolismSupplementInformation(self.state);
-    } else if (!Model.determineApplicationControls(self.state)) {
-      ActionGeneral.initializeApplicationControls(self.state);
     } else if (!Model.determineMetabolismDerivationInformation(self.state)) {
       ActionGeneral.deriveCompleteMetabolismInformation(self.state);
     }

@@ -54,6 +54,125 @@ class ActionExploration {
   // TODO: Application should always be working on simulation for the current subnetwork
   // TODO: no more requirement to force draw for large networks.
 
+  // Direct actions.
+
+  /**
+  * Changes the simulation's dimensions.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.length Length factor in pixels.
+  * @param {number} parameters.width Container's width in pixels.
+  * @param {number} parameters.height Container's height in pixels.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeSimulationDimensions({length, width, height, state} = {}) {
+    // Determine novel simulation's dimensions.
+    var simulationDimensions = {
+      length: length,
+      width: width,
+      height: height
+    };
+    // Determine whether to create novel simulation.
+    var simulationControlsRecords = ActionExploration.determineNovelSimulation({
+      length: length,
+      width: width,
+      height: height,
+      nodesRecords: state.subnetworkNodesRecords,
+      linksRecords: state.subnetworkLinksRecords,
+      previousSimulation: state.simulation,
+      state: state
+    });
+    // Determine which views to restore.
+    var viewsRestoration = ActionInterface.changeViewsRestoration({
+      skips: ["interface", "panel", "tip", "prompt", "summary", "control"],
+      viewsRestoration: state.viewsRestoration
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {
+      simulationDimensions: simulationDimensions,
+      viewsRestoration: viewsRestoration
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      simulationControlsRecords
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Restores information about simulation's progress.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.completion Whether simulation is complete.
+  * @param {Object} parameters.state Application's state.
+  */
+  static restoreSimulationProgress({completion, state} = {}) {
+    // Confine positions within container.
+    var simulationNodesRecords = Simulation.confineSimulationPositions({
+      nodesRecords: state.simulationNodesRecords,
+      width: state.simulationDimensions.width,
+      height: state.simulationDimensions.height
+    });
+    // Restore simulation's progress.
+    var novelCount = state.simulationProgress.count + 1;
+    var novelEntries = {
+      count: novelCount,
+      completion: completion
+    };
+    var novelProgress = Object.assign(state.simulationProgress, novelEntries);
+    // Determine whether simulation is complete.
+    if (!completion) {
+      // Restore only the minimal portion of application's state and interface.
+      // Determine which views to restore.
+      var viewsRestoration = ActionInterface.changeViewsRestoration({
+        skips: ["interface", "panel", "tip", "prompt", "summary", "control"],
+        viewsRestoration: state.viewsRestoration
+      });
+    } else {
+      // Restore the entire application's state and interface.
+      // Determine which views to restore.
+      var viewsRestoration = ActionInterface.changeViewsRestoration({
+        skips: [],
+        viewsRestoration: state.viewsRestoration
+      });
+    }
+    // Compile variables' values.
+    var novelVariablesValues = {
+      simulationNodesRecords: simulationNodesRecords,
+      simulationProgress: novelProgress,
+      viewsRestoration: viewsRestoration
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Forces the representation of the network's diagram.
+  * @param {Object} state Application's state.
+  */
+  static forceNetworkDiagram(state) {
+    // Compile variables' values.
+    var novelVariablesValues = {
+      forceNetworkDiagram: true
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+
+  // Indirect actions.
+
   /**
   * Initializes values of application's variables for controls relevant to view.
   * @returns {Object} Values of application's variables for view's controls.
@@ -99,51 +218,6 @@ class ActionExploration {
     };
     // Return information.
     return information;
-  }
-  /**
-  * Changes the simulation's dimensions.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.length Length factor in pixels.
-  * @param {number} parameters.width Container's width in pixels.
-  * @param {number} parameters.height Container's height in pixels.
-  * @param {Object} parameters.state Application's state.
-  */
-  static changeSimulationDimensions({length, width, height, state} = {}) {
-    // Determine novel simulation's dimensions.
-    var simulationDimensions = {
-      length: length,
-      width: width,
-      height: height
-    };
-    // Determine whether to create novel simulation.
-    var simulationControlsRecords = ActionExploration.determineNovelSimulation({
-      length: length,
-      width: width,
-      height: height,
-      nodesRecords: state.subnetworkNodesRecords,
-      linksRecords: state.subnetworkLinksRecords,
-      previousSimulation: state.simulation,
-      state: state
-    });
-    // Determine which views to restore.
-    var viewsRestoration = ActionInterface.changeViewsRestoration({
-      skips: ["interface", "panel", "tip", "prompt", "summary", "control"],
-      viewsRestoration: state.viewsRestoration
-    });
-    // Compile variables' values.
-    var novelVariablesValues = {
-      simulationDimensions: simulationDimensions,
-      viewsRestoration: viewsRestoration
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      simulationControlsRecords
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
   }
   /**
   * Determines whether to create a novel simulation.
@@ -299,74 +373,8 @@ class ActionExploration {
       });
     });
   }
-  /**
-  * Restores information about simulation's progress.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} parameters.completion Whether simulation is complete.
-  * @param {Object} parameters.state Application's state.
-  */
-  static restoreSimulationProgress({completion, state} = {}) {
-    // Confine positions within container.
-    var simulationNodesRecords = Simulation.confineSimulationPositions({
-      nodesRecords: state.simulationNodesRecords,
-      width: state.simulationDimensions.width,
-      height: state.simulationDimensions.height
-    });
-    // Restore simulation's progress.
-    var novelCount = state.simulationProgress.count + 1;
-    var novelEntries = {
-      count: novelCount,
-      completion: completion
-    };
-    var novelProgress = Object.assign(state.simulationProgress, novelEntries);
-    // Determine whether simulation is complete.
-    if (!completion) {
-      // Restore only the minimal portion of application's state and interface.
-      // Determine which views to restore.
-      var viewsRestoration = ActionInterface.changeViewsRestoration({
-        skips: ["interface", "panel", "tip", "prompt", "summary", "control"],
-        viewsRestoration: state.viewsRestoration
-      });
-    } else {
-      // Restore the entire application's state and interface.
-      // Determine which views to restore.
-      var viewsRestoration = ActionInterface.changeViewsRestoration({
-        skips: [],
-        viewsRestoration: state.viewsRestoration
-      });
-    }
-    // Compile variables' values.
-    var novelVariablesValues = {
-      simulationNodesRecords: simulationNodesRecords,
-      simulationProgress: novelProgress,
-      viewsRestoration: viewsRestoration
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Forces the representation of the network's diagram.
-  * @param {Object} state Application's state.
-  */
-  static forceNetworkDiagram(state) {
-    // Compile variables' values.
-    var novelVariablesValues = {
-      forceNetworkDiagram: true
-    };
-    var variablesValues = novelVariablesValues;
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
 
+  // TODO: need updates...
 
   /**
   * Responds to a selection on the network's diagram.

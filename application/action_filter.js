@@ -39,28 +39,10 @@ United States of America
 */
 class ActionFilter {
 
-  /**
-  * Initializes values of application's variables for controls relevant to view.
-  * @returns {Object} Values of application's variables for view's controls.
-  */
-  static initializeControls() {
-    // Initialize controls.
-    var setsFilters = Attribution.createInitialSetsFilters();
-    var setsEntities = "metabolites";
-    var setsFilter = false;
-    var setsSearches = Cardinality.createInitialSetsSearches();
-    var setsSorts = Cardinality.createInitialSetsSorts();
-    // Compile information.
-    var variablesValues = {
-      setsFilters: setsFilters,
-      setsEntities: setsEntities,
-      setsFilter: setsFilter,
-      setsSearches: setsSearches,
-      setsSorts: setsSorts
-    };
-    // Return information.
-    return variablesValues;
-  }
+  // Direct actions.
+
+  // TODO: restoreControls should initialize view's controls and then call derive function to derive all down-stream state's variables
+
   /**
   * Restores values of application's variables for controls relevant to view.
   * @param {Object} state Application's state.
@@ -338,6 +320,80 @@ class ActionFilter {
       variablesValues: variablesValues,
       state: state
     });
+  }
+
+  // Indirect actions.
+
+  /**
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
+  */
+  static initializeControls() {
+    // Initialize controls.
+    var setsFilters = Attribution.createInitialSetsFilters();
+    var setsEntities = "metabolites";
+    var setsFilter = false;
+    var setsSearches = Cardinality.createInitialSetsSearches();
+    var setsSorts = Cardinality.createInitialSetsSorts();
+    // Compile information.
+    var variablesValues = {
+      setsFilters: setsFilters,
+      setsEntities: setsEntities,
+      setsFilter: setsFilter,
+      setsSearches: setsSearches,
+      setsSorts: setsSorts
+    };
+    // Return information.
+    return variablesValues;
+  }
+
+  // TODO: each derive function needs to accept not only the controls for the view, but also the metabolism variables necessary for downstream...
+
+  // TODO: I think I will need to pass down any measurements, so that they're preserved.
+
+  /**
+  * Derives application's dependent state from controls relevant to view.
+  * @param {Object} state Application's state.
+  * @returns {Object} Values of application's variables.
+  */
+  static deriveState({setsFilters, setsEntities, setsFilter, setsSearches, setsSorts, metabolites, reactions, compartments, processes} = {}) {
+    // Derive state relevant to view.
+    // Determine total entities' attribution to sets.
+    var totalEntitiesSets = Attribution.determineTotalEntitiesSets(reactions);
+    // Determine current entities' attribution to sets.
+    var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
+      setsFilters: setsFilters,
+      totalSetsReactions: totalEntitiesSets.totalSetsReactions,
+      totalSetsMetabolites: totalEntitiesSets.totalSetsMetabolites,
+      reactions: reactions
+    });
+    // Determine sets' cardinalities and prepare sets' summaries.
+    var setsCardinalitiesSummaries = Cardinality
+    .determineSetsCardinalitiesSummaries({
+      setsEntities: setsEntities,
+      setsFilter: setsFilter,
+      accessSetsReactions: currentEntitiesSets.accessSetsReactions,
+      accessSetsMetabolites: currentEntitiesSets.accessSetsMetabolites,
+      filterSetsReactions: currentEntitiesSets.filterSetsReactions,
+      filterSetsMetabolites: currentEntitiesSets.filterSetsMetabolites,
+      setsSearches: setsSearches,
+      setsSorts: setsSorts,
+      compartments: compartments,
+      processes: processes
+    });
+    // Derive dependent state.
+    var dependentState = ActionContext.deriveState({});
+
+    // Compile information.
+    var novelVariablesValues = {};
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      totalEntitiesSets,
+      currentEntitiesSets,
+      setsCardinalitiesSummaries
+    );
+    // Return information.
+    return variablesValues;
   }
 
 }

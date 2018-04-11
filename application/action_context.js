@@ -39,28 +39,8 @@ United States of America
 */
 class ActionContext {
 
-  /**
-  * Initializes values of application's variables for controls relevant to view.
-  * @returns {Object} Values of application's variables for view's controls.
-  */
-  static initializeControls() {
-    // Initialize controls.
-    var compartmentalization = false;
-    var defaultSimplifications = true;
-    var candidatesSearches = Candidacy.createInitialCandidatesSearches();
-    var candidatesSorts = Candidacy.createInitialCandidatesSorts();
-    // Compile information.
-    var variablesValues = {
-      compartmentalization: compartmentalization,
-      defaultSimplifications: defaultSimplifications,
-      candidatesSearches: candidatesSearches,
-      candidatesSorts: candidatesSorts
-    };
-    // Return information.
-    return variablesValues;
-  }
+  // Direct actions.
 
-  // TODO: I think restoreControls need update and repair...
   /**
   * Restores values of application's variables for controls relevant to view.
   * @param {Object} state Application's state.
@@ -342,5 +322,29 @@ class ActionContext {
       state: state
     });
   }
+
+  // Indirect actions.
+
+  /**
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
+  */
+  static initializeControls() {
+    // Initialize controls.
+    var compartmentalization = false;
+    var defaultSimplifications = true;
+    var candidatesSearches = Candidacy.createInitialCandidatesSearches();
+    var candidatesSorts = Candidacy.createInitialCandidatesSorts();
+    // Compile information.
+    var variablesValues = {
+      compartmentalization: compartmentalization,
+      defaultSimplifications: defaultSimplifications,
+      candidatesSearches: candidatesSearches,
+      candidatesSorts: candidatesSorts
+    };
+    // Return information.
+    return variablesValues;
+  }
+
 
 }

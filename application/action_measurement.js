@@ -39,26 +39,8 @@ United States of America
 */
 class ActionMeasurement {
 
-  /**
-  * Initializes values of application's variables for controls relevant to view.
-  * @returns {Object} Values of application's variables for view's controls.
-  */
-  static initializeControls() {
-    // Initialize controls.
-    var sourceData = {};
-    var measurementReference = "pubchem";
-    var metabolitesMeasurements = {};
-    var measurementsSort = Measurement.createInitialMeasurementsSort();
-    // Compile information.
-    var variablesValues = {
-      sourceData: sourceData,
-      measurementReference: measurementReference,
-      metabolitesMeasurements: metabolitesMeasurements,
-      measurementsSort: measurementsSort
-    };
-    // Return information.
-    return variablesValues;
-  }
+  // Direct actions.
+
   /**
   * Restores values of application's variables for controls relevant to view.
   * @param {Object} state Application's state.
@@ -94,6 +76,67 @@ class ActionMeasurement {
       variable: "sourceData",
       state: state
     });
+  }
+  /**
+  * Imports data.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.data Information about measurements of
+  * metabolites.
+  * @param {Object} parameters.state Application's state.
+  */
+  static importMeasurements({data, state} = {}) {
+    // Remove any information about source from the application's state.
+    var sourceData = {};
+    // Import information from data.
+    // Associate measurements to metabolites.
+    var metabolitesMeasurements = Measurement.createMetabolitesMeasurements({
+      measurements: data,
+      reference: state.measurementReference,
+      metabolites: state.metabolites
+    });
+    // Prepare measurements' summaries.
+    var measurementsSummaries = Measurement.prepareMeasurementsSummaries({
+      metabolitesMeasurements: metabolitesMeasurements,
+      measurementsSort: state.measurementsSort,
+      metabolites: state.metabolites
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {
+      sourceData: sourceData,
+      metabolitesMeasurements: metabolitesMeasurements,
+      measurementsSummaries: measurementsSummaries
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+
+  // Indirect actions.
+
+  /**
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
+  */
+  static initializeControls() {
+    // Initialize controls.
+    var sourceData = {};
+    var measurementReference = "pubchem";
+    var metabolitesMeasurements = {};
+    var measurementsSort = Measurement.createInitialMeasurementsSort();
+    // Compile information.
+    var variablesValues = {
+      sourceData: sourceData,
+      measurementReference: measurementReference,
+      metabolitesMeasurements: metabolitesMeasurements,
+      measurementsSort: measurementsSort
+    };
+    // Return information.
+    return variablesValues;
   }
   /**
   * Changes the selection of type of reference to associate measurements to
@@ -135,43 +178,5 @@ class ActionMeasurement {
   // TODO: Each record needs to have reference to metabolite's identifier, measurement's value, maximum measurement's value, and minimal measurement's value...
   // TODO: I'll need to determine the scale from maximum - minimum...
 
-  /**
-  * Imports data.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object>} parameters.data Information about measurements of
-  * metabolites.
-  * @param {Object} parameters.state Application's state.
-  */
-  static importMeasurements({data, state} = {}) {
-    // Remove any information about source from the application's state.
-    var sourceData = {};
-    // Import information from data.
-    // Associate measurements to metabolites.
-    var metabolitesMeasurements = Measurement.createMetabolitesMeasurements({
-      measurements: data,
-      reference: state.measurementReference,
-      metabolites: state.metabolites
-    });
-    // Prepare measurements' summaries.
-    var measurementsSummaries = Measurement.prepareMeasurementsSummaries({
-      metabolitesMeasurements: metabolitesMeasurements,
-      measurementsSort: state.measurementsSort,
-      metabolites: state.metabolites
-    });
-    // Compile variables' values.
-    var novelVariablesValues = {
-      sourceData: sourceData,
-      metabolitesMeasurements: metabolitesMeasurements,
-      measurementsSummaries: measurementsSummaries
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
 
 }

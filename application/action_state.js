@@ -39,52 +39,8 @@ United States of America
 */
 class ActionState {
 
-  /**
-  * Initializes values of application's variables for controls relevant to view.
-  * @returns {Object} Values of application's variables for view's controls.
-  */
-  static initializeControls() {
-    // Initialize controls.
-    var sourceState = {};
-    // Compile information.
-    var variablesValues = {
-      sourceState: sourceState
-    };
-    // Return information.
-    return variablesValues;
-  }
+  // Direct actions.
 
-  /**
-  * Restores values of application's variables for controls relevant to view.
-  * @param {Object} state Application's state.
-  */
-
-  // TODO: figure out how to handle the restore to initial or import state stuff...
-
-  /**
-  * Saves to file on client's system a persistent representation of the
-  * application's state.
-  * @param {Object} state Application's state.
-  */
-  static save(state) {
-    var persistence = ActionState.createPersistence(state);
-    console.log("application's state...");
-    console.log(persistence);
-    General.saveObject("state.json", persistence);
-  }
-  /**
-  * Creates persistent representation of the application's state.
-  * @param {Object} state Application's state.
-  * @returns {Object} Persistent representation of the application's state.
-  */
-  static createPersistence(state) {
-    return state.variablesNames.reduce(function (collection, variableName) {
-      var entry = {
-        [variableName]: state[variableName]
-      };
-      return Object.assign({}, collection, entry);
-    }, {});
-  }
   /**
   * Changes the source of information from file.
   * @param {Object} parameters Destructured object of parameters.
@@ -97,28 +53,6 @@ class ActionState {
       variable: "sourceState",
       state: state
     });
-  }
-  /**
-  * Loads from file a source of information about the application's state,
-  * passing this information to another procedure to restore the application's
-  * state.
-  * @param {Object} state Application's state.
-  */
-  static loadRestoreState(state) {
-    // Determine whether the application's state includes a source file.
-    if (Model.determineSourceState(state)) {
-      // Application's state includes a source file.
-      General.loadParseTextPassObject({
-        file: state.sourceState,
-        format: "json",
-        call: ActionState.restoreState,
-        parameters: {state: state}
-      });
-    } else {
-      // Application's state does not include a source file.
-      // Restore application to initial state.
-      Action.initializeApplicationStateVariables(state);
-    }
   }
   /**
   * Restores the application to a state from a persistent source.
@@ -143,6 +77,69 @@ class ActionState {
       variablesValues: variablesValues,
       state: state
     });
+  }
+
+  // Indirect actions.
+
+  /**
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
+  */
+  static initializeControls() {
+    // Initialize controls.
+    var sourceState = {};
+    // Compile information.
+    var variablesValues = {
+      sourceState: sourceState
+    };
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Creates persistent representation of the application's state.
+  * @param {Object} state Application's state.
+  * @returns {Object} Persistent representation of the application's state.
+  */
+  static createPersistence(state) {
+    return state.variablesNames.reduce(function (collection, variableName) {
+      var entry = {
+        [variableName]: state[variableName]
+      };
+      return Object.assign({}, collection, entry);
+    }, {});
+  }
+  /**
+  * Loads from file a source of information about the application's state,
+  * passing this information to another procedure to restore the application's
+  * state.
+  * @param {Object} state Application's state.
+  */
+  static loadRestoreState(state) {
+    // Determine whether the application's state includes a source file.
+    if (Model.determineSourceState(state)) {
+      // Application's state includes a source file.
+      General.loadParseTextPassObject({
+        file: state.sourceState,
+        format: "json",
+        call: ActionState.restoreState,
+        parameters: {state: state}
+      });
+    } else {
+      // Application's state does not include a source file.
+      // Restore application to initial state.
+      Action.initializeApplicationStateVariables(state);
+    }
+  }
+  /**
+  * Saves to file on client's system a persistent representation of the
+  * application's state.
+  * @param {Object} state Application's state.
+  */
+  static save(state) {
+    var persistence = ActionState.createPersistence(state);
+    console.log("application's state...");
+    console.log(persistence);
+    General.saveObject("state.json", persistence);
   }
   /**
   * Executes a temporary procedure.

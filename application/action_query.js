@@ -39,63 +39,8 @@ United States of America
 */
 class ActionQuery {
 
-  /**
-  * Initializes values of application's variables for controls relevant to view.
-  * @returns {Object} Values of application's variables for view's controls.
-  */
-  static initializeControls() {
-    // Initialize controls.
-    var traversalCombination = "union";
-    var traversalType = "rogue";
-    var traversalProximityDirection = "successors";
-    var traversalProximityDepth = 1;
-    var traversalPathDirection = "forward";
-    var traversalPathCount = 1;
-    var traversalConnectionCount = 1;
-    var subordinateControls = ActionQuery.initializeSubordinateControls();
-    // Compile information.
-    var novelVariablesValues = {
-      traversalCombination: traversalCombination,
-      traversalType: traversalType,
-      traversalProximityDirection: traversalProximityDirection,
-      traversalProximityDepth: traversalProximityDepth,
-      traversalPathDirection: traversalPathDirection,
-      traversalPathCount: traversalPathCount,
-      traversalConnectionCount: traversalConnectionCount
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      subordinateControls
-    );
-    // Return information.
-    return variablesValues;
-  }
-  /**
-  * Initializes values of application's variables for controls relevant to view.
-  * @returns {Object} Values of application's variables for view's controls.
-  */
-  static initializeSubordinateControls() {
-    // Subordinate controls depend on query's combination and require
-    // initialization upon change of query's combination.
-    // Initialize controls.
-    var traversalRogueFocus = {identifier: "", type: ""};
-    var traversalProximityFocus = {identifier: "", type: ""};
-    var traversalPathSource = {identifier: "", type: ""};
-    var traversalPathTarget = {identifier: "", type: ""};
-    var traversalConnectionTarget = {identifier: "", type: ""};
-    var traversalConnectionTargets = [];
-    // Compile information.
-    var variablesValues = {
-      traversalRogueFocus: traversalRogueFocus,
-      traversalProximityFocus: traversalProximityFocus,
-      traversalPathSource: traversalPathSource,
-      traversalPathTarget: traversalPathTarget,
-      traversalConnectionTarget: traversalConnectionTarget,
-      traversalConnectionTargets: traversalConnectionTargets
-    };
-    // Return information.
-    return variablesValues;
-  }
+  // Direct actions.
+
   /**
   * Copies the subnetwork from the network and restores values of variables of
   * application's controls for traversal view.
@@ -681,6 +626,66 @@ class ActionQuery {
         state: state
       });
     }
+  }
+
+  // Indirect actions.
+
+  /**
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
+  */
+  static initializeControls() {
+    // Initialize controls.
+    var traversalCombination = "union";
+    var traversalType = "rogue";
+    var traversalProximityDirection = "successors";
+    var traversalProximityDepth = 1;
+    var traversalPathDirection = "forward";
+    var traversalPathCount = 1;
+    var traversalConnectionCount = 1;
+    var subordinateControls = ActionQuery.initializeSubordinateControls();
+    // Compile information.
+    var novelVariablesValues = {
+      traversalCombination: traversalCombination,
+      traversalType: traversalType,
+      traversalProximityDirection: traversalProximityDirection,
+      traversalProximityDepth: traversalProximityDepth,
+      traversalPathDirection: traversalPathDirection,
+      traversalPathCount: traversalPathCount,
+      traversalConnectionCount: traversalConnectionCount
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      subordinateControls
+    );
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
+  */
+  static initializeSubordinateControls() {
+    // Subordinate controls depend on query's combination and require
+    // initialization upon change of query's combination.
+    // Initialize controls.
+    var traversalRogueFocus = {identifier: "", type: ""};
+    var traversalProximityFocus = {identifier: "", type: ""};
+    var traversalPathSource = {identifier: "", type: ""};
+    var traversalPathTarget = {identifier: "", type: ""};
+    var traversalConnectionTarget = {identifier: "", type: ""};
+    var traversalConnectionTargets = [];
+    // Compile information.
+    var variablesValues = {
+      traversalRogueFocus: traversalRogueFocus,
+      traversalProximityFocus: traversalProximityFocus,
+      traversalPathSource: traversalPathSource,
+      traversalPathTarget: traversalPathTarget,
+      traversalConnectionTarget: traversalConnectionTarget,
+      traversalConnectionTargets: traversalConnectionTargets
+    };
+    // Return information.
+    return variablesValues;
   }
 
 }

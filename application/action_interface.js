@@ -38,6 +38,11 @@ United States of America
 * These methods also call external methods as necessary.
 */
 class ActionInterface {
+
+  // Direct actions.
+
+  // Indirect actions.
+
   /**
   * Initializes values of application's variables for controls relevant to view.
   * @returns {Object} Values of application's variables for view's controls.
