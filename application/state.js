@@ -185,9 +185,9 @@ class State {
       "measurementsSort"
     ];
     var explorationControls = [
-      // Variable "forceDraw" stores information about whether to draw a network
-      // even if it is large.
-      "forceDraw",
+      // Variable "forceNetworkDiagram" stores information about whether to draw
+      // a network even if it is large.
+      "forceNetworkDiagram",
       // Variable "simulationDimensions" stores information about dimensions for
       // the simulation.
       "simulationDimensions",

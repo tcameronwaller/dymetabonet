@@ -114,15 +114,8 @@ class ViewExploration {
   */
   restoreView(self) {
     // Determine which subordinate views to create, activate, and restore.
-    // Determine whether subnetwork has any elements to represent and whether
-    // simulation is ready for positions in network's diagram.
-    if (
-      Model.determineSubnetworkNodesMinimum(self.state) &&
-      (
-        !Model.determineSubnetworkNodesMaximum(self.state) ||
-        Model.determineForceDraw(self.state)
-      )
-    ) {
+    // Determine whether to create network's diagram.
+    if (Model.determineNetworkDiagram(self.state)) {
       // Create scales for the visual representation of network's elements.
       // These scales also inform the simulation.
       self.createDimensionScales(self);
@@ -156,7 +149,6 @@ class ViewExploration {
           // Create notice view.
           View.removeExistElement("notice", self.document);
           View.removeExistElement("topology", self.document);
-          console.log("creating progress view");
           new ViewProgress({
             interfaceView: self.interfaceView,
             tipView: self.tipView,

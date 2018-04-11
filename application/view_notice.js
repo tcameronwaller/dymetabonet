@@ -120,9 +120,9 @@ class ViewNotice {
     self.messageContainer
     .setAttribute("y", (String(self.explorationView.graphHeight / 2) + "px"));
     // Determine which type of notice to display.
-    if (Model.determineSubnetworkNodesMinimum(self.state)) {
+    if (!Model.determineSubnetworkNodesMinimum(self.state)) {
       self.createMinimumNotice(self);
-    } else if (Model.determineSubnetworkNodesMaximum(self.state)) {
+    } else if (!Model.determineSubnetworkNodesMaximum(self.state)) {
       self.createActivateMaximumNotice(self);
     }
   }
@@ -178,7 +178,7 @@ class ViewNotice {
       text.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        ActionExploration.executeConnectionCombination(self.state);
+        ActionExploration.forceNetworkDiagram(self.state);
       });
     } else {
       // Container's current content matches view's novel type.

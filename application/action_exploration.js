@@ -60,7 +60,7 @@ class ActionExploration {
   */
   static initializeControls() {
     // Initialize controls.
-    var forceDraw = false;
+    var forceNetworkDiagram = false;
     var simulationDimensions = Simulation.createInitialSimulationDimensions();
     var simulationProgress = Simulation.createInitialSimulationProgress();
     var simulation = {};
@@ -69,7 +69,7 @@ class ActionExploration {
     var entitySelection = ActionExploration.createInitialEntitySelection();
     // Compile information.
     var variablesValues = {
-      forceDraw: forceDraw,
+      forceNetworkDiagram: forceNetworkDiagram,
       simulationDimensions: simulationDimensions,
       simulationProgress: simulationProgress,
       simulation: simulation,
@@ -115,9 +115,8 @@ class ActionExploration {
       width: width,
       height: height
     };
-    // Initiate novel simulation.
-    var simulationControlsRecords = ActionExploration
-    .createInitiateMonitorNovelPositionSimulation({
+    // Determine whether to create novel simulation.
+    var simulationControlsRecords = ActionExploration.determineNovelSimulation({
       length: length,
       width: width,
       height: height,
@@ -146,14 +145,46 @@ class ActionExploration {
       state: state
     });
   }
-
-
-  // TODO: Call ActionExploration.determineNovelSimulation whenever it might be appropriate to create a new simulation.
-  // TODO: ie whenever the subnetwork changes or the dimensions of the diagram's graph change.
-  // TODO: ActionExploration.determineNovelSimulation will be the front-line determiner of whether to create and initiate a new simulation
-
+  /**
+  * Determines whether to create a novel simulation.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.length Length factor in pixels.
+  * @param {number} parameters.width Container's width in pixels.
+  * @param {number} parameters.height Container's height in pixels.
+  * @param {Array<Object>} parameters.nodesRecords Information about network's
+  * nodes.
+  * @param {Array<Object>} parameters.linksRecords Information about network's
+  * links.
+  * @param {Object} parameters.previousSimulation Reference to simulation.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} References to novel simulation and its controls and
+  * records.
+  */
   static determineNovelSimulation({length, width, height, nodesRecords, linksRecords, previousSimulation, state} = {}) {
-    // TODO: create empty simulation and controls if network's scale exceeds threshold and if forceDraw isn't true...
+    // Determine whether to create a novel simulation for network's diagram.
+    if (Model.determineNetworkDiagram(state)) {
+      // Create novel simulation.
+      var simulationControlsRecords = ActionExploration
+      .createInitiateMonitorNovelPositionSimulation({
+        length: length,
+        width: width,
+        height: height,
+        nodesRecords: nodesRecords,
+        linksRecords: linksRecords,
+        previousSimulation: previousSimulation,
+        state: state
+      });
+    } else {
+      // Create empty simulation.
+      var simulationControlsRecords = ActionExploration
+      .initializeSimulationControlsRecords({
+        nodesRecords: nodesRecords,
+        linksRecords: linksRecords,
+        previousSimulation: previousSimulation,
+        state: state
+      });
+    }
+    return simulationControlsRecords;
   }
   /**
   * Initializes a simulation, its controls, and records.
@@ -288,7 +319,6 @@ class ActionExploration {
       completion: completion
     };
     var novelProgress = Object.assign(state.simulationProgress, novelEntries);
-
     // Determine whether simulation is complete.
     if (!completion) {
       // Restore only the minimal portion of application's state and interface.
@@ -320,27 +350,14 @@ class ActionExploration {
       state: state
     });
   }
-
-
-
-
-  // TODO: State's variable to force draw topology will no longer be necessary...
-
   /**
-  * Changes the selection of whether to force representation of subnetwork's
-  * topology.
+  * Forces the representation of the network's diagram.
   * @param {Object} state Application's state.
   */
-  static changeForceTopology(state) {
-    // Determine whether to force topology.
-    if (state.forceTopology) {
-      var forceTopology = false;
-    } else {
-      var forceTopology = true;
-    }
+  static forceNetworkDiagram(state) {
     // Compile variables' values.
     var novelVariablesValues = {
-      forceTopology: forceTopology
+      forceNetworkDiagram: true
     };
     var variablesValues = novelVariablesValues;
     // Submit variables' values to the application's state.

@@ -386,6 +386,20 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
+  static determineNetworkDiagram(state) {
+    return (
+      Model.determineSubnetworkNodesMinimum(state) &&
+      (
+        Model.determineSubnetworkNodesMaximum(state) ||
+        Model.determineForceNetworkDiagram(state)
+      )
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
   static determineSubnetworkNodesMinimum(state) {
     return (state.subnetworkNodesRecords.length > 0);
   }
@@ -402,8 +416,8 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineForceDraw(state) {
-    return (state.forceDraw);
+  static determineForceNetworkDiagram(state) {
+    return (state.forceNetworkDiagram);
   }
   /**
   * Determines whether the application's state has specific information.
