@@ -74,6 +74,23 @@ class Simulation {
     return information;
   }
   /**
+  * Creates an empty simulation.
+  * @returns {Object} References to novel simulation and its controls.
+  */
+  static createEmptySimulation() {
+    // Initialize simulation's progress.
+    var simulationProgress = Simulation.createInitialSimulationProgress();
+    // Initiate simulation.
+    var novelSimulation = {};
+    // Compile information.
+    var variablesValues = {
+      simulationProgress: simulationProgress,
+      simulation: novelSimulation
+    };
+    // Return information.
+    return variablesValues;
+  }
+  /**
   * Creates a novel simulation to determine the optimal positions of nodes and
   * links in network's diagram.
   * @param {Object} parameters Destructured object of parameters.

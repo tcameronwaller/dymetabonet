@@ -141,6 +141,7 @@ class ActionGeneral {
   */
   static initializeApplicationControls(state) {
     // Call procedures to initialize controls for each view.
+    var interfaceControls = ActionInterface.initializeControls();
     var prompt = ActionPrompt.initializeControls();
     var summary = ActionSummary.initializeControls();
     var control = ActionControl.initializeControls();
@@ -154,6 +155,7 @@ class ActionGeneral {
     var novelVariablesValues = {};
     var variablesValues = Object.assign(
       novelVariablesValues,
+      interfaceControls,
       prompt,
       summary,
       control,

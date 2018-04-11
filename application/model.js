@@ -102,66 +102,86 @@ class Model {
       Model.determineApplicationControls(self.state) &&
       Model.determineMetabolismDerivationInformation(self.state)
     ) {
+      // Determine which views to restore.
+      // Every change to application's state sets a parameter to control which
+      // views to restore.
       // Interface view.
-      var interfaceView = new ViewInterface({
-        body: self.body,
-        state: self.state,
-        documentReference: self.document
-      });
+      if (self.state.viewsRestoration.interface) {
+        // Restore views.
+        self.state.views.interface = new ViewInterface({
+          body: self.body,
+          state: self.state,
+          documentReference: self.document
+        });
+      }
+      // Panel view.
+      if (self.state.viewsRestoration.panel) {
+        // Restore views.
+        self.state.views.panel = new ViewPanel({
+          interfaceView: self.state.views.interface,
+          state: self.state,
+          documentReference: self.document
+        });
+      }
       // Tip view.
       // Tip view always exists but is only visible when active.
-      var tipView = new ViewTip({
-        interfaceView: interfaceView,
-        state: self.state,
-        documentReference: self.document,
-        windowReference: self.window
-      });
+      if (self.state.viewsRestoration.tip) {
+        // Restore views.
+        self.state.views.tip = new ViewTip({
+          interfaceView: self.state.views.interface,
+          state: self.state,
+          documentReference: self.document,
+          windowReference: self.window
+        });
+      }
       // Prompt view.
       // Prompt view always exists but is only visible when active.
-      var promptView = new ViewPrompt({
-        interfaceView: interfaceView,
-        state: self.state,
-        documentReference: self.document,
-        windowReference: self.window
-      });
-
-      // Panel view.
-      var panelView = new ViewPanel({
-        interfaceView: interfaceView,
-        state: self.state,
-        documentReference: self.document
-      });
-
-      // TODO: rename Detail View to Summary View
-
+      if (self.state.viewsRestoration.prompt) {
+        // Restore views.
+        self.state.views.prompt = new ViewPrompt({
+          interfaceView: self.state.views.interface,
+          state: self.state,
+          documentReference: self.document,
+          windowReference: self.window
+        });
+      }
       // Summary view.
-      var detailView = new ViewSummary({
-        interfaceView: interfaceView,
-        panelView: panelView,
-        tipView: tipView,
-        promptView: promptView,
-        state: self.state,
-        documentReference: self.document
-      });
+      if (self.state.viewsRestoration.summary) {
+        // Restore views.
+        self.state.views.summary = new ViewSummary({
+          interfaceView: self.state.views.interface,
+          panelView: self.state.views.panel,
+          tipView: self.state.views.tip,
+          promptView: self.state.views.prompt,
+          state: self.state,
+          documentReference: self.document
+        });
+      }
       // Control view.
       // Control view has several subordinate views.
-      var controlView = new ViewControl({
-        interfaceView: interfaceView,
-        panelView: panelView,
-        tipView: tipView,
-        promptView: promptView,
-        state: self.state,
-        documentReference: self.document
-      });
+      if (self.state.viewsRestoration.control) {
+        // Restore views.
+        self.state.views.control = new ViewControl({
+          interfaceView: self.state.views.interface,
+          panelView: self.state.views.panel,
+          tipView: self.state.views.tip,
+          promptView: self.state.views.prompt,
+          state: self.state,
+          documentReference: self.document
+        });
+      }
       // Exploration view.
-      var explorationView = new ViewExploration({
-        interfaceView: interfaceView,
-        tipView: tipView,
-        promptView: promptView,
-        state: self.state,
-        documentReference: self.document,
-        windowReference: self.window
-      });
+      if (self.state.viewsRestoration.exploration) {
+        // Restore views.
+        self.state.views.exploration = new ViewExploration({
+          interfaceView: self.state.views.interface,
+          tipView: self.state.views.tip,
+          promptView: self.state.views.prompt,
+          state: self.state,
+          documentReference: self.document,
+          windowReference: self.window
+        });
+      }
     }
   }
 
@@ -366,8 +386,24 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineSubnetworkNodes(state) {
+  static determineSubnetworkNodesMinimum(state) {
     return (state.subnetworkNodesRecords.length > 0);
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSubnetworkNodesMaximum(state) {
+    return (state.subnetworkNodesRecords.length < 500);
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineForceDraw(state) {
+    return (state.forceDraw);
   }
   /**
   * Determines whether the application's state has specific information.

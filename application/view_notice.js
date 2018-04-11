@@ -61,6 +61,8 @@ class ViewNotice {
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
+    // Restore view.
+    self.restoreView(self);
   }
   /**
   * Initializes, creates and activates, view's content and behavior that does
@@ -80,29 +82,107 @@ class ViewNotice {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
-      // Create message.
-      self.createMessage(self);
+      // Create message's container.
+      self.createMessageContainer(self);
     } else {
       // Container is not empty.
       // Set references to content.
+      self.messageContainer = self
+      .container.getElementsByTagName("text").item(0);
     }
+  }
+  /**
+  * Creates a message's container.
+  * @param {Object} self Instance of a class.
+  */
+  createMessageContainer(self) {
+    // Create text container.
+    self.messageContainer = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "g");
+    self.container.appendChild(self.messageContainer);
+  }
+  /**
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    self.restoreMessage(self);
   }
   /**
   * Creates a message.
   * @param {Object} self Instance of a class.
   */
-  createMessage(self) {
-    // Create text container.
-    self.textContainer = self
-    .document.createElementNS("http://www.w3.org/2000/svg", "text");
-    self.container.appendChild(self.textContainer);
+  restoreMessage(self) {
     // Restore position.
-    self.textContainer
+    self.messageContainer
     .setAttribute("x", (String(self.explorationView.graphWidth / 2) + "px"));
-    self.textContainer
+    self.messageContainer
     .setAttribute("y", (String(self.explorationView.graphHeight / 2) + "px"));
-    // Restore message.
-    var message = ("There aren't any elements in the subnetwork. Get some!");
-    self.textContainer.textContent = message;
+    // Determine which type of notice to display.
+    if (Model.determineSubnetworkNodesMinimum(self.state)) {
+      self.createMinimumNotice(self);
+    } else if (Model.determineSubnetworkNodesMaximum(self.state)) {
+      self.createActivateMaximumNotice(self);
+    }
+  }
+  /**
+  * Creates a notice about minimal scale of subnetwork.
+  * @param {Object} self Instance of a class.
+  */
+  createMinimumNotice(self) {
+    // Determine whether container's current content matches view's novel type.
+    // Container's class indicates type of content.
+    if (!self.messageContainer.classList.contains("minimum")) {
+      // Container's current content does not match view's novel type.
+      // Remove container's previous contents and assign a class name to
+      // indicate view's novel type.
+      View.removeContainerContentSetClass({
+        container: self.messageContainer,
+        className: "minimum"
+      });
+      // Create content.
+      var text = self
+      .document.createElementNS("http://www.w3.org/2000/svg", "text");
+      self.messageContainer.appendChild(text);
+      var message = ("There aren't any elements in the subnetwork. Get some!");
+      text.textContent = message;
+      // Activate behavior.
+    } else {
+      // Container's current content matches view's novel type.
+      // Set references to content.
+    }
+  }
+  /**
+  * Creates a notice about maximal scale of subnetwork.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateMaximumNotice(self) {
+    // Determine whether container's current content matches view's novel type.
+    // Container's class indicates type of content.
+    if (!self.messageContainer.classList.contains("maximum")) {
+      // Container's current content does not match view's novel type.
+      // Remove container's previous contents and assign a class name to
+      // indicate view's novel type.
+      View.removeContainerContentSetClass({
+        container: self.messageContainer,
+        className: "maximum"
+      });
+      // Create content.
+      var text = self
+      .document.createElementNS("http://www.w3.org/2000/svg", "text");
+      self.messageContainer.appendChild(text);
+      var message = ("Big subnetwork. Click here to draw...");
+      text.textContent = message;
+      // Activate behavior.
+      text.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        ActionExploration.executeConnectionCombination(self.state);
+      });
+    } else {
+      // Container's current content matches view's novel type.
+      // Set references to content.
+    }
   }
 }

@@ -82,13 +82,24 @@ class ViewProgress {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
-      // Create message.
-      self.createMessage(self);
+      // Create message's container.
+      self.createMessageContainer(self);
     } else {
       // Container is not empty.
       // Set references to content.
-      self.textContainer = self.container.getElementsByTagName("text").item(0);
+      self.messageContainer = self
+      .container.getElementsByTagName("text").item(0);
     }
+  }
+  /**
+  * Creates a message's container.
+  * @param {Object} self Instance of a class.
+  */
+  createMessageContainer(self) {
+    // Create text container.
+    self.messageContainer = self
+    .document.createElementNS("http://www.w3.org/2000/svg", "text");
+    self.container.appendChild(self.messageContainer);
   }
   /**
   * Creates a message.
@@ -111,6 +122,18 @@ class ViewProgress {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
+    self.restoreMessage(self);
+  }
+  /**
+  * Creates a message.
+  * @param {Object} self Instance of a class.
+  */
+  restoreMessage(self) {
+    // Restore position.
+    self.messageContainer
+    .setAttribute("x", (String(self.explorationView.graphWidth / 2) + "px"));
+    self.messageContainer
+    .setAttribute("y", (String(self.explorationView.graphHeight / 2) + "px"));
     // Estimate simulation's progress.
     var progress = Simulation.determineSimulationProgressProportion({
       count: self.state.simulationProgress.count,
@@ -118,6 +141,6 @@ class ViewProgress {
     });
     // Restore message.
     var message = ("progress: " + (progress * 100).toFixed() + "%");
-    self.textContainer.textContent = message;
+    self.messageContainer.textContent = message;
   }
 }

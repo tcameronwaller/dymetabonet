@@ -43,6 +43,14 @@ class State {
     var self = this;
     // Specify state's variables.
     // Controls
+
+    var interfaceControls = [
+      // Variable "views" stores references to instances of views in interface.
+      "views",
+      // Variable "viewsRestoration" stores information about whether to restore
+      // each view in interface.
+      "viewsRestoration"
+    ];
     var promptControls = [
       // Variable "prompt" stores information about the type and position of the
       // prompt view within the interface.
@@ -177,6 +185,9 @@ class State {
       "measurementsSort"
     ];
     var explorationControls = [
+      // Variable "forceDraw" stores information about whether to draw a network
+      // even if it is large.
+      "forceDraw",
       // Variable "simulationDimensions" stores information about dimensions for
       // the simulation.
       "simulationDimensions",
@@ -202,6 +213,7 @@ class State {
       "entitySelection"
     ];
     self.variablesNamesControls = [].concat(
+      interfaceControls,
       promptControls,
       summaryControls,
       controlControls,

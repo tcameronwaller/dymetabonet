@@ -63,7 +63,7 @@ class ViewInterface {
   initializeView(self) {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
-      identifier: "view",
+      identifier: "interface",
       type: "standard",
       target: self.body,
       position: "beforeend",

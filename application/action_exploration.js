@@ -60,6 +60,7 @@ class ActionExploration {
   */
   static initializeControls() {
     // Initialize controls.
+    var forceDraw = false;
     var simulationDimensions = Simulation.createInitialSimulationDimensions();
     var simulationProgress = Simulation.createInitialSimulationProgress();
     var simulation = {};
@@ -68,6 +69,7 @@ class ActionExploration {
     var entitySelection = ActionExploration.createInitialEntitySelection();
     // Compile information.
     var variablesValues = {
+      forceDraw: forceDraw,
       simulationDimensions: simulationDimensions,
       simulationProgress: simulationProgress,
       simulation: simulation,
@@ -124,9 +126,15 @@ class ActionExploration {
       previousSimulation: state.simulation,
       state: state
     });
+    // Determine which views to restore.
+    var viewsRestoration = ActionInterface.changeViewsRestoration({
+      skips: ["interface", "panel", "tip", "prompt", "summary", "control"],
+      viewsRestoration: state.viewsRestoration
+    });
     // Compile variables' values.
     var novelVariablesValues = {
-      simulationDimensions: simulationDimensions
+      simulationDimensions: simulationDimensions,
+      viewsRestoration: viewsRestoration
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -137,6 +145,50 @@ class ActionExploration {
       variablesValues: variablesValues,
       state: state
     });
+  }
+
+
+  // TODO: Call ActionExploration.determineNovelSimulation whenever it might be appropriate to create a new simulation.
+  // TODO: ie whenever the subnetwork changes or the dimensions of the diagram's graph change.
+  // TODO: ActionExploration.determineNovelSimulation will be the front-line determiner of whether to create and initiate a new simulation
+
+  static determineNovelSimulation({length, width, height, nodesRecords, linksRecords, previousSimulation, state} = {}) {
+    // TODO: create empty simulation and controls if network's scale exceeds threshold and if forceDraw isn't true...
+  }
+  /**
+  * Initializes a simulation, its controls, and records.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.nodesRecords Information about network's
+  * nodes.
+  * @param {Array<Object>} parameters.linksRecords Information about network's
+  * links.
+  * @param {Object} parameters.previousSimulation Reference to simulation.
+  * @returns {Object} References to novel simulation and its controls and
+  * records.
+  */
+  static initializeSimulationControlsRecords({nodesRecords, linksRecords, previousSimulation} = {}) {
+    // Terminate any previous simulation.
+    Simulation.terminateSimulation(previousSimulation);
+    // Copy records for simulation.
+    // These records will be mutable and will accept changes from the
+    // simulation.
+    var simulationNodesRecords = General
+    .copyDeepArrayElements(nodesRecords, true);
+    var simulationLinksRecords = General
+    .copyDeepArrayElements(linksRecords, true);
+    // Create novel simulation and its controls.
+    var simulationControls = Simulation.createEmptySimulation();
+    // Compile information.
+    var novelVariablesValues = {
+      simulationNodesRecords: simulationNodesRecords,
+      simulationLinksRecords: simulationLinksRecords
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      simulationControls
+    );
+    // Return information.
+    return variablesValues;
   }
   /**
   * Creates a novel simulation to determine the optimal positions of nodes and
@@ -236,10 +288,28 @@ class ActionExploration {
       completion: completion
     };
     var novelProgress = Object.assign(state.simulationProgress, novelEntries);
+
+    // Determine whether simulation is complete.
+    if (!completion) {
+      // Restore only the minimal portion of application's state and interface.
+      // Determine which views to restore.
+      var viewsRestoration = ActionInterface.changeViewsRestoration({
+        skips: ["interface", "panel", "tip", "prompt", "summary", "control"],
+        viewsRestoration: state.viewsRestoration
+      });
+    } else {
+      // Restore the entire application's state and interface.
+      // Determine which views to restore.
+      var viewsRestoration = ActionInterface.changeViewsRestoration({
+        skips: [],
+        viewsRestoration: state.viewsRestoration
+      });
+    }
     // Compile variables' values.
     var novelVariablesValues = {
       simulationNodesRecords: simulationNodesRecords,
-      simulationProgress: novelProgress
+      simulationProgress: novelProgress,
+      viewsRestoration: viewsRestoration
     };
     var variablesValues = Object.assign(
       novelVariablesValues
