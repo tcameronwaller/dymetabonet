@@ -65,7 +65,7 @@ class Model {
     } else if (!Model.determineMetabolismSupplementInformation(self.state)) {
       ActionGeneral.loadMetabolismSupplementInformation(self.state);
     } else if (!Model.determineMetabolismDerivationInformation(self.state)) {
-      ActionGeneral.deriveCompleteMetabolismInformation(self.state);
+      ActionGeneral.deriveCompleteState(self.state);
     }
   }
 

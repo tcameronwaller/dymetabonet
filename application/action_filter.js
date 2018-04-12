@@ -145,7 +145,7 @@ class ActionFilter {
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.value Value of attribute in current selection.
   * @param {string} parameters.attribute Attribute in current selection.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters.state Application's state.
   */
   static changeSetsFilters({value, attribute, state} = {}) {
     // Record set's selection for filters.
@@ -346,20 +346,31 @@ class ActionFilter {
     // Return information.
     return variablesValues;
   }
-
-  // TODO: each derive function needs to accept not only the controls for the view, but also the metabolism variables necessary for downstream...
-
-  // TODO: I think I will need to pass down any measurements, so that they're preserved.
-
   /**
   * Derives application's dependent state from controls relevant to view.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Array<string>>} parameters.setsFilters Sets' filters by
+  * attributes' values.
+  * @param {boolean} parameters.setsFilter Whether to filter sets' entities for
+  * summary.
+  * @param {string} parameters.setsEntities Type of entities, metabolites or
+  * reactions for sets' cardinalities.
+  * @param {Object<string>} parameters.setsSearches Searches to filter sets'
+  * summaries.
+  * @param {Object<Object<string>>} parameters.setsSorts Specifications to sort
+  * sets' summaries.
+  * @param {Object} parameters.metabolites Information about metabolites.
+  * @param {Object} parameters.reactions Information about reactions.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
+  * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState({setsFilters, setsEntities, setsFilter, setsSearches, setsSorts, metabolites, reactions, compartments, processes} = {}) {
+  static deriveState({setsFilters, setsFilter, setsEntities, setsSearches, setsSorts, metabolites, reactions, compartments, processes, state} = {}) {
     // Derive state relevant to view.
     // Determine total entities' attribution to sets.
-    var totalEntitiesSets = Attribution.determineTotalEntitiesSets(reactions);
+    var totalEntitiesSets = Attribution
+    .determineTotalEntitiesSets(reactions);
     // Determine current entities' attribution to sets.
     var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
       setsFilters: setsFilters,
@@ -382,15 +393,27 @@ class ActionFilter {
       processes: processes
     });
     // Derive dependent state.
-    var dependentState = ActionContext.deriveState({});
-
+    var dependentStateVariables = ActionContext.deriveState({
+      compartmentalization: state.compartmentalization,
+      candidatesSearches: state.candidatesSearches,
+      candidatesSorts: state.candidatesSorts,
+      defaultSimplificationsMetabolites: state
+      .defaultSimplificationsMetabolites,
+      filterSetsReactions: currentEntitiesSets.filterSetsReactions,
+      reactions: reactions,
+      metabolites: metabolites,
+      compartments: compartments,
+      processes: processes,
+      state: state
+    });
     // Compile information.
     var novelVariablesValues = {};
     var variablesValues = Object.assign(
       novelVariablesValues,
       totalEntitiesSets,
       currentEntitiesSets,
-      setsCardinalitiesSummaries
+      setsCardinalitiesSummaries,
+      dependentStateVariables
     );
     // Return information.
     return variablesValues;

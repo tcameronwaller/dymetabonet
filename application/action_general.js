@@ -194,93 +194,39 @@ class ActionGeneral {
       state: state
     });
   }
-
-  // TODO: This is a great place to set precedent for hierarchical restoration structure...
-  // TODO: derive series...
-
-  static deriveCompleteState(state) {
-    // Derive dependent state.
-    var dependentState = ActionFilter.deriveState({});
-
-  }
-
-  static deriveContextState(state) {}
-
-  static deriveQueryState(state) {}
-
-  static deriveMeasurementState(state) {}
-
-  static deriveExplorationState(state) {}
-
   /**
   * Derives information from basic information about metabolic entities and
   * sets.
   * @param {Object} state Application's state.
   */
-  static deriveCompleteMetabolismInformation(state) {
-
-    // Filter state...
-
-
-    // Context state...
-
-    // Determine candidate entities and prepare their summaries.
-    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
-      reactionsSets: currentEntitiesSets.filterSetsReactions,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: state.compartmentalization,
-      candidatesSearches: state.candidatesSearches,
-      candidatesSorts: state.candidatesSorts,
-      compartments: state.compartments
+  static deriveCompleteState(state) {
+    // Some aspects of the application's state have a hierarchy.
+    // State
+    //  Filter
+    //   Context
+    //    Query
+    //     Measurement
+    //     Exploration
+    // The derivation cascade proceeds through all major modules of the
+    // application's actions.
+    // Any change to a module's controls calls the module's own derive function
+    // if those controls influence any of the modules other state variables.
+    // Any change to a module's controls calls the derive function of
+    // subordinate (downstream) (perhaps via the module's own derive function).
+    // Derive dependent state.
+    var dependentStateVariables = ActionState.deriveState(state);
+    // Determine which views to restore.
+    var viewsRestoration = ActionInterface.changeViewsRestoration({
+      skips: [],
+      viewsRestoration: state.viewsRestoration
     });
-    // Determine simplifications of candidate entities.
-    // Create simplifications for default entities and include with other
-    // simplifications.
-    var simplifications = Candidacy.createIncludeDefaultSimplifications({
-      defaultSimplificationsMetabolites: state
-      .defaultSimplificationsMetabolites,
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      reactionsSets: currentEntitiesSets.filterSetsReactions,
-      reactions: state.reactions,
-      compartmentalization: state.compartmentalization,
-      reactionsSimplifications: {},
-      metabolitesSimplifications: {}
-    });
-    // Create network's elements.
-    var networkElements = Network.createNetworkElements({
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      reactionsSimplifications: simplifications.reactionsSimplifications,
-      metabolitesSimplifications: simplifications.metabolitesSimplifications,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: state.compartmentalization
-    });
-
-    // Query state...
-
-    // Create subnetwork's elements.
-    var subnetworkElements = Network.copyNetworkElementsRecords({
-      networkNodesRecords: networkElements.networkNodesRecords,
-      networkLinksRecords: networkElements.networkLinksRecords
-    });
-
-    // Exploration state...
-
-    // It is necessary to initialize the Exploration View before initiating the
-    // simulation.
-
-
     // Compile variables' values.
-    var novelVariablesValues = {};
+    var novelVariablesValues = {
+      viewsRestoration
+    };
     var variablesValues = Object.assign(
       novelVariablesValues,
-      candidatesSummaries,
-      simplifications,
-      networkElements,
-      subnetworkElements
+      dependentStateVariables
     );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({

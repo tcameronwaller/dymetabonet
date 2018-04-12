@@ -41,6 +41,9 @@ class ActionQuery {
 
   // Direct actions.
 
+
+  // TODO: copy/clearSubnetworkInitializeControls should call ActionExploration.deriveState()...
+
   /**
   * Copies the subnetwork from the network and restores values of variables of
   * application's controls for traversal view.
@@ -297,6 +300,9 @@ class ActionQuery {
       state: state
     });
   }
+
+  // TODO: All query executions should call ActionExploration.deriveState()...
+
   /**
   * Executes proximity traversal and combination on the network.
   * @param {Object} state Application's state.
@@ -684,6 +690,44 @@ class ActionQuery {
       traversalConnectionTarget: traversalConnectionTarget,
       traversalConnectionTargets: traversalConnectionTargets
     };
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Derives application's dependent state from controls relevant to view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.networkNodesRecords Information about
+  * network's nodes.
+  * @param {Array<Object>} parameters.networkLinksRecords Information about
+  * network's links.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Values of application's variables.
+  */
+  static deriveState({networkNodesRecords, networkLinksRecords, state} = {}) {
+    // Derive state relevant to view.
+    // Initialize controls for query view.
+    var subordinateControls = ActionQuery.initializeSubordinateControls();
+    // Create subnetwork's elements.
+    var subnetworkElements = Network.copyNetworkElementsRecords({
+      networkNodesRecords: networkNodesRecords,
+      networkLinksRecords: networkLinksRecords
+    });
+    // Derive dependent state.
+    var dependentStateVariables = ActionExploration.deriveState({
+      simulationDimensions: state.simulationDimensions,
+      previousSimulation: state.simulation,
+      subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
+      subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords,
+      state: state
+    });
+    // Compile information.
+    var novelVariablesValues = {};
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      subordinateControls,
+      subnetworkElements,
+      dependentStateVariables
+    );
     // Return information.
     return variablesValues;
   }

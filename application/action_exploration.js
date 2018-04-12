@@ -73,9 +73,8 @@ class ActionExploration {
     };
     // Determine whether to create novel simulation.
     var simulationControlsRecords = ActionExploration.determineNovelSimulation({
-      length: length,
-      width: width,
-      height: height,
+      forceNetworkDiagram: state.forceNetworkDiagram,
+      simulationDimensions: simulationDimensions,
       nodesRecords: state.subnetworkNodesRecords,
       linksRecords: state.subnetworkLinksRecords,
       previousSimulation: state.simulation,
@@ -179,8 +178,25 @@ class ActionExploration {
   */
   static initializeControls() {
     // Initialize controls.
-    var forceNetworkDiagram = false;
     var simulationDimensions = Simulation.createInitialSimulationDimensions();
+    var subordinateControls = ActionExploration.initializeSubordinateControls();
+    // Compile information.
+    var novelVariablesValues = {
+      simulationDimensions: simulationDimensions,
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      subordinateControls
+    );
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Initializes values of application's variables for controls relevant to view.
+  * @returns {Object} Values of application's variables for view's controls.
+  */
+  static initializeSubordinateControls() {
+    var forceNetworkDiagram = false;
     var simulationProgress = Simulation.createInitialSimulationProgress();
     var simulation = {};
     var simulationNodesRecords = [];
@@ -189,13 +205,52 @@ class ActionExploration {
     // Compile information.
     var variablesValues = {
       forceNetworkDiagram: forceNetworkDiagram,
-      simulationDimensions: simulationDimensions,
       simulationProgress: simulationProgress,
       simulation: simulation,
       simulationNodesRecords: simulationNodesRecords,
       simulationLinksRecords: simulationLinksRecords,
       entitySelection: entitySelection
     };
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Derives application's dependent state from controls relevant to view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.simulationDimensions Dimensions of elements and
+  * container for simulation.
+  * @param {Object} parameters.previousSimulation Reference to simulation.
+  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
+  * subnetwork's nodes.
+  * @param {Array<Object>} parameters.subnetworkLinksRecords Information about
+  * subnetwork's links.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Values of application's variables.
+  */
+  static deriveState({simulationDimensions, previousSimulation, subnetworkNodesRecords, subnetworkLinksRecords, state} = {}) {
+    // Derive state relevant to view.
+    // Initialize controls for query view.
+    var subordinateControls = ActionExploration.initializeSubordinateControls();
+    // Determine whether to create novel simulation.
+    var simulationControlsRecords = ActionExploration.determineNovelSimulation({
+      forceNetworkDiagram: state.forceNetworkDiagram,
+      simulationDimensions: simulationDimensions,
+      nodesRecords: subnetworkNodesRecords,
+      linksRecords: subnetworkLinksRecords,
+      previousSimulation: previousSimulation,
+      state: state
+    });
+    // Derive dependent state.
+    // TODO: Maybe tipView and promptView are dependent on ExplorationView?
+    var dependentStateVariables = {};
+    // Compile information.
+    var novelVariablesValues = {};
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      subordinateControls,
+      simulationControlsRecords,
+      dependentStateVariables
+    );
     // Return information.
     return variablesValues;
   }
@@ -222,9 +277,10 @@ class ActionExploration {
   /**
   * Determines whether to create a novel simulation.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.length Length factor in pixels.
-  * @param {number} parameters.width Container's width in pixels.
-  * @param {number} parameters.height Container's height in pixels.
+  * @param {boolean} parameters.forceNetworkDiagram Whether to represent a
+  * diagram even for a large network.
+  * @param {Object} parameters.simulationDimensions Dimensions of elements and
+  * container for simulation.
   * @param {Array<Object>} parameters.nodesRecords Information about network's
   * nodes.
   * @param {Array<Object>} parameters.linksRecords Information about network's
@@ -234,15 +290,17 @@ class ActionExploration {
   * @returns {Object} References to novel simulation and its controls and
   * records.
   */
-  static determineNovelSimulation({length, width, height, nodesRecords, linksRecords, previousSimulation, state} = {}) {
+  static determineNovelSimulation({forceNetworkDiagram, simulationDimensions, nodesRecords, linksRecords, previousSimulation, state} = {}) {
     // Determine whether to create a novel simulation for network's diagram.
-    if (Model.determineNetworkDiagram(state)) {
+    var temporaryState = {
+      forceNetworkDiagram: forceNetworkDiagram,
+      subnetworkNodesRecords: nodesRecords
+    };
+    if (Model.determineNetworkDiagram(temporaryState)) {
       // Create novel simulation.
       var simulationControlsRecords = ActionExploration
       .createInitiateMonitorNovelPositionSimulation({
-        length: length,
-        width: width,
-        height: height,
+        simulationDimensions: simulationDimensions,
         nodesRecords: nodesRecords,
         linksRecords: linksRecords,
         previousSimulation: previousSimulation,
@@ -299,9 +357,8 @@ class ActionExploration {
   * Creates a novel simulation to determine the optimal positions of nodes and
   * links in network's diagram.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.length Length factor in pixels.
-  * @param {number} parameters.width Container's width in pixels.
-  * @param {number} parameters.height Container's height in pixels.
+  * @param {Object} parameters.simulationDimensions Dimensions of elements and
+  * container for simulation.
   * @param {Array<Object>} parameters.nodesRecords Information about network's
   * nodes.
   * @param {Array<Object>} parameters.linksRecords Information about network's
@@ -311,7 +368,7 @@ class ActionExploration {
   * @returns {Object} References to novel simulation and its controls and
   * records.
   */
-  static createInitiateMonitorNovelPositionSimulation({length, width, height, nodesRecords, linksRecords, previousSimulation, state} = {}) {
+  static createInitiateMonitorNovelPositionSimulation({simulationDimensions, nodesRecords, linksRecords, previousSimulation, state} = {}) {
     // Terminate any previous simulation.
     Simulation.terminateSimulation(previousSimulation);
     // Copy records for simulation.
@@ -323,9 +380,9 @@ class ActionExploration {
     .copyDeepArrayElements(linksRecords, true);
     // Create novel simulation and its controls.
     var simulationControls = Simulation.createNovelPositionSimulation({
-      length: length,
-      width: width,
-      height: height,
+      length: simulationDimensions.length,
+      width: simulationDimensions.width,
+      height: simulationDimensions.height,
       nodesRecords: simulationNodesRecords,
       linksRecords: simulationLinksRecords
     });

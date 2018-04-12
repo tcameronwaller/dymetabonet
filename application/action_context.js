@@ -345,6 +345,78 @@ class ActionContext {
     // Return information.
     return variablesValues;
   }
-
+  /**
+  * Derives application's dependent state from controls relevant to view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
+  * @param {Object<string>} parameters.candidatesSearches Searches to filter
+  * candidates' summaries.
+  * @param {Object<Object<string>>} parameters.candidatesSorts Specifications to
+  * sort candidates' summaries.
+  * @param {Array<string>} parameters.defaultSimplificationsMetabolites
+  * Identifiers of metabolites for which to create default simplifications.
+  * @param {Object<Object>} parameters.filterSetsReactions Information about
+  * reactions' metabolites and sets that pass filtration by filter method.
+  * @param {Object} parameters.metabolites Information about metabolites.
+  * @param {Object} parameters.reactions Information about reactions.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Values of application's variables.
+  */
+  static deriveState({compartmentalization, candidatesSearches, candidatesSorts, defaultSimplificationsMetabolites, filterSetsReactions, metabolites, reactions, compartments, processes, state} = {}) {
+    // Derive state relevant to view.
+    // Determine candidate entities and prepare their summaries.
+    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
+      reactionsSets: filterSetsReactions,
+      reactions: reactions,
+      metabolites: metabolites,
+      compartmentalization: compartmentalization,
+      candidatesSearches: candidatesSearches,
+      candidatesSorts: candidatesSorts,
+      compartments: compartments
+    });
+    // Determine simplifications of candidate entities.
+    // Create simplifications for default entities and include with other
+    // simplifications.
+    var simplifications = Candidacy.createIncludeDefaultSimplifications({
+      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSets: filterSetsReactions,
+      reactions: reactions,
+      compartmentalization: compartmentalization,
+      reactionsSimplifications: {},
+      metabolitesSimplifications: {}
+    });
+    // Create network's elements.
+    var networkElements = Network.createNetworkElements({
+      candidatesReactions: candidatesSummaries.candidatesReactions,
+      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      reactionsSimplifications: simplifications.reactionsSimplifications,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications,
+      reactions: reactions,
+      metabolites: metabolites,
+      compartmentalization: compartmentalization
+    });
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveState({
+      networkNodesRecords: networkElements.networkNodesRecords,
+      networkLinksRecords: networkElements.networkLinksRecords,
+      state: state
+    });
+    // Compile information.
+    var novelVariablesValues = {};
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      candidatesSummaries,
+      simplifications,
+      networkElements,
+      dependentStateVariables
+    );
+    // Return information.
+    return variablesValues;
+  }
 
 }

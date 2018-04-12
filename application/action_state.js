@@ -81,6 +81,8 @@ class ActionState {
 
   // Indirect actions.
 
+  // TODO: Derive cascade... I think I will need to pass down any measurements, so that they're preserved.
+
   /**
   * Initializes values of application's variables for controls relevant to view.
   * @returns {Object} Values of application's variables for view's controls.
@@ -92,6 +94,34 @@ class ActionState {
     var variablesValues = {
       sourceState: sourceState
     };
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Derives application's dependent state from controls relevant to view.
+  * @param {Object} state Application's state.
+  * @returns {Object} Values of application's variables.
+  */
+  static deriveState(state) {
+    // Derive dependent state.
+    var dependentStateVariables = ActionFilter.deriveState({
+      setsFilters: state.setsFilters,
+      setsFilter: state.setsFilter,
+      setsEntities: state.setsEntities,
+      setsSearches: state.setsSearches,
+      setsSorts: state.setsSorts,
+      metabolites: state.metabolites,
+      reactions: state.reactions,
+      compartments: state.compartments,
+      processes: state.processes,
+      state: state
+    });
+    // Compile information.
+    var novelVariablesValues = {};
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
     // Return information.
     return variablesValues;
   }
