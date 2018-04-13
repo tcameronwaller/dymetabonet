@@ -326,8 +326,7 @@ class Simulation {
         x: x,
         y: y
       };
-      var copy = General.copyValue(nodeRecord, true);
-      return Object.assign(copy, novelEntries);
+      return Object.assign(nodeRecord, novelEntries);
     });
   }
   /**

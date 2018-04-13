@@ -77,7 +77,7 @@ class ViewTopology {
     self.container = View.createReferenceContainer({
       identifier: "topology",
       type: "graph",
-      target: self.explorationView.container,
+      target: self.explorationView.graph,
       position: "beforeend",
       documentReference: self.document
     });
@@ -85,8 +85,6 @@ class ViewTopology {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
-      // Create graphical container.
-      self.createGraph(self);
       // Define links' directional marker.
       self.defineLinkDirectionalMarker(self);
       // Create graph's base.
@@ -98,13 +96,9 @@ class ViewTopology {
     } else {
       // Container is not empty.
       // Set references to content.
-      self.graph = self.container.getElementsByTagName("svg").item(0);
-      self.graphWidth = General.determineElementDimension(self.graph, "width");
-      self.graphHeight = General
-      .determineElementDimension(self.graph, "height");
-      self.base = self.graph.querySelector("rect.base")
-      self.linksGroup = self.container.querySelector("svg g.links");
-      self.nodesGroup = self.container.querySelector("svg g.nodes");
+      self.base = self.container.querySelector("rect.base")
+      self.linksGroup = self.container.querySelector("g.links");
+      self.nodesGroup = self.container.querySelector("g.nodes");
     }
   }
   /**
@@ -115,7 +109,7 @@ class ViewTopology {
     // Define links' directional marker.
     var definition = self
     .document.createElementNS("http://www.w3.org/2000/svg", "defs");
-    self.graph.appendChild(definition);
+    self.container.appendChild(definition);
     var marker = self
     .document.createElementNS("http://www.w3.org/2000/svg", "marker");
     definition.appendChild(marker);
@@ -147,37 +141,39 @@ class ViewTopology {
       .attr("d", "M 0 0 L 10 5 L 0 10 z");
     }
   }
-
-
   /**
   * Creates and activates a base within a graphical container.
   * @param {Object} self Instance of a class.
   */
   createActivateBase(self) {
     // Create base.
-    var base = self
+    self.base = self
     .document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    self.graph.appendChild(base);
-    base.classList.add("base");
-    base.setAttribute("x", "0px");
-    base.setAttribute("y", "0px");
-    base.setAttribute("width", self.graphWidth);
-    base.setAttribute("height", self.graphHeight);
+    self.container.appendChild(self.base);
+    self.base.classList.add("base");
+    self.base.setAttribute("x", "0px");
+    self.base.setAttribute("y", "0px");
     // Activate behavior.
-    base.addEventListener("click", function (event) {
+    self.base.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Determine event's positions.
       var horizontalPosition = event.clientX;
       var verticalPosition = event.clientY;
       // Call action.
-      ActionExploration.selectNetworkDiagram({
-        horizontalPosition: horizontalPosition,
-        verticalPosition: verticalPosition,
-        state: self.state
-      });
+
+      console.log("well hi there. you clicked the base!");
+
+      // TODO: Temporary...
+      if (false) {
+        ActionExploration.selectNetworkDiagram({
+          horizontalPosition: horizontalPosition,
+          verticalPosition: verticalPosition,
+          state: self.state
+        });
+      }
     });
     // Zoom and pan behavior.
-    var baseSelection = d3.select(base);
+    var baseSelection = d3.select(self.base);
     baseSelection.call(
       d3.zoom()
       .scaleExtent([0, 5])
@@ -196,7 +192,7 @@ class ViewTopology {
     // Create group.
     self.linksGroup = self
     .document.createElementNS("http://www.w3.org/2000/svg", "g");
-    self.graph.appendChild(self.linksGroup);
+    self.container.appendChild(self.linksGroup);
     self.linksGroup.classList.add("links");
     self.linksGroupSelection = d3.select(self.linksGroup);
   }
@@ -208,7 +204,7 @@ class ViewTopology {
     // Create group.
     self.nodesGroup = self
     .document.createElementNS("http://www.w3.org/2000/svg", "g");
-    self.graph.appendChild(self.nodesGroup);
+    self.container.appendChild(self.nodesGroup);
     self.nodesGroup.classList.add("nodes");
     self.nodesGroupSelection = d3.select(self.nodesGroup);
   }
@@ -218,305 +214,52 @@ class ViewTopology {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
-
-    // TODO: New version will manage simulation in ActionExploration
-    // TODO: New restoreView needs to...
-    // TODO: 1. create view's references to nodes and links
-    // TODO: 2. determine whether view's dimensions differ from those in state's variables
-    // TODO: 2. call a method in Model to do this neatly...
-    // TODO: 3. if view's dimensions differ, then pass these to ActionExploration.restoreSimulationDimensions()
-    // TODO: 4. if view's dimensions match, then proceed
-    // TODO: 5. determine whether to display progress or network's diagram (maybe do that in ExplorationView, actually...)
-    // TODO: 6. proceed as usual-ish
-
-    // TODO: Determine whether simulation is complete and refine representations if so...
-
-
-    // TODO: Move the simulation monitor to the NoticeView...
-
+    // Restore positions.
+    self.restoreBaseDimensions(self);
     // Prepare information about network's elements.
     self.prepareNetworkElementsRecords(self);
-    // Determine whether there are any nodes to represent in the network's
-    // diagram.
-    if (self.nodesRecords.length > 0) {
-      if (match) {
-        // View's current dimensions match state's variable for simulation's
-        // dimensions.
-        // Restore view as appropriate.
-        console.log("dimensions match!!!");
-
-      } else {
-        console.log("dimensions don't match...");
-        // View's current dimensions do not match state's variable for
-        // simulation's dimensions.
-      }
-    } else {
-      // Remove any visual representations.
-      General.removeDocumentChildren(self.linksGroup);
-      General.removeDocumentChildren(self.nodesGroup);
-    }
-
-
-
-    if (false) {
-      // Determine whether the network's diagram requires mostly novel positions.
-      var novelPositions = ViewTopology
-      .determineNovelNetworkDiagramPositions(self.nodesRecords);
-      if (novelPositions) {
-        // For efficiency, determine positions of network's elements before
-        // creating visual representations of these elements.
-        // Remove any visual representations.
-        General.removeDocumentChildren(self.linksGroup);
-        General.removeDocumentChildren(self.nodesGroup);
-        // Initialize positions in network's diagram.
-        self.initializeNetworkDiagramPositions(self);
-      } else {
-        // Create, activate, and restore visual representations of network's
-        // elements.
-        self.createActivateNetworkRepresentation(self);
-        // Initialize positions in network's diagram.
-        self.restoreNetworkDiagramPositions(self);
-      }
-    }
+    // Determine dimensions.
+    self.determineDimensions(self);
+    // Create and activate network's representation.
+    self.createActivateNetworkRepresentation(self);
+  }
+  /**
+  * Restores dimensions of diagram's base.
+  * @param {Object} self Instance of a class.
+  */
+  restoreBaseDimensions(self) {
+    self.base.setAttribute("width", self.explorationView.graphWidth);
+    self.base.setAttribute("height", self.explorationView.graphHeight);
   }
   /**
   * Prepares local records of information about network's elements.
   * @param {Object} self Instance of a class.
   */
   prepareNetworkElementsRecords(self) {
-    // Records for subnetwork's elements contain mutable information, especially
-    // about positions of elements within network's diagram.
-    // Allow network's diagram to modify nodes' records in order to preserve
-    // information about elements' positions.
-    self.nodesRecords = self.state.subnetworkNodesRecords;
-    // Do not allow network's diagram to modify links' records.
-    // Network's diagram replaces entries for links' source and target.
+    // Simulation's records for nodes include information about positions.
+    //self.nodesRecords = self.state.simulationNodesRecords;
+    self.nodesRecords = General
+    .copyDeepArrayElements(self.state.simulationNodesRecords, true);
+    // Simulation's records for links include references to nodes.
+    //self.linksRecords = self.state.simulationLinksRecords;
     self.linksRecords = General
-    .copyDeepArrayElements(self.state.subnetworkLinksRecords, true);
+    .copyDeepArrayElements(self.state.simulationLinksRecords, true);
   }
-
   /**
-  * Creates scales for visual representation of network's elements.
+  * Determines dimensions for network's visual representations.
   * @param {Object} self Instance of a class.
   */
-  createDimensionScales(self) {
-    // The optimal dimensions for visual marks that represent network's elements
-    // depend on the dimensions of the graphical container and on the count of
-    // elements.
-    // Define scales' domain on the basis of the ratio of the graphical
-    // container's width to the count of nodes.
-    var domainRatios = [0.3, 1, 5, 10, 15, 25, 50, 100, 150];
-    // Define scale for dimensions of links' representations.
-    // Domain's unit is pixel for ratio of graphical container's width to count
-    // of nodes.
-    // Range's unit is pixel for dimension of graphical elements.
-    //domain: range
-    //0-0.3: 0.03
-    //0.3-1: 0.05
-    //1-5: 0.1
-    //5-10: 0.3
-    //10-15: 0.5
-    //15-25: 0.7
-    //25-50: 1
-    //50-100: 2
-    //100-150: 3
-    //150-10000: 5
-    var linkDimensionScale = d3
-    .scaleThreshold()
-    .domain(domainRatios)
-    .range([0.03, 0.05, 0.1, 0.3, 0.5, 0.7, 1, 2, 3, 5]);
-    // Define scale for size of font in annotations.
-    // Domain's unit is pixel for ratio of graphical container's width to count
-    // of nodes.
-    // Range's unit is pixel for dimension of font characters.
-    //domain: range
-    //0-0.3: 1
-    //0.3-1: 2
-    //1-5: 3
-    //5-10: 4
-    //10-15: 5
-    //15-25: 7
-    //25-50: 12
-    //50-100: 15
-    //100-150: 17
-    //150-10000: 20
-    var fontScale = d3
-    .scaleThreshold()
-    .domain(domainRatios)
-    .range([1, 2, 3, 4, 5, 7, 10, 11, 13, 15]);
+  determineDimensions(self) {
     // Compute dimensions from scale.
-    self.scaleNodeDimension = self.explorationView.scaleLength;
-    self.scaleLinkDimension = linkDimensionScale(
-      self.explorationView.scaleDimensionRatio
-    );
-    self.metaboliteNodeWidth = self.scaleNodeDimension * 1;
-    self.metaboliteNodeHeight = self.scaleNodeDimension * 0.5;
-    self.reactionNodeWidth = self.scaleNodeDimension * 2.5;
-    self.reactionNodeHeight = self.scaleNodeDimension * 0.75;
+    // Node dimensions.
+    self.metaboliteNodeWidth = self.explorationView.scaleLength * 1;
+    self.metaboliteNodeHeight = self.explorationView.scaleLength * 0.5;
+    self.reactionNodeWidth = self.explorationView.scaleLength * 2.5;
+    self.reactionNodeHeight = self.explorationView.scaleLength * 0.75;
+    // Link dimensions.
+    self.linkThickness = self.explorationView.scaleThickness;
     // Compute font size from scale.
-    self.scaleFont = fontScale(self.scaleRatio);
-  }
-
-
-
-
-
-
-
-
-  /**
-  * Initializes positions of network's elements in network's diagram.
-  * @param {Object} self Instance of a class.
-  */
-  initializeNetworkDiagramPositions(self) {
-    // Create scales for simulation of forces between network's elements.
-    self.createSimulationScales(self);
-    // Initialize simulation's progress.
-    self.initializeSimulationProgress({
-      alpha: 1,
-      alphaDecay: 0.01,
-      alphaMinimum: 0.001,
-      self: self
-    });
-    // Create and initiate force simulation.
-    self.simulation = ViewTopology.createInitiateSimulation({
-      alpha: 1,
-      alphaDecay: 0.013,
-      velocityDecay: 0.15,
-      alphaTarget: 0,
-      alphaMinimum: 0.001,
-      lengthFactor: self.scaleNodeDimension,
-      graphWidth: self.graphWidth,
-      graphHeight: self.graphHeight,
-      nodesRecords: self.nodesRecords,
-      linksRecords: self.linksRecords,
-      state: self.state
-    });
-    // Respond to simulation's progress and completion.
-    // To initialize positions in network's diagrams, respond to simulation in a
-    // way to optimize efficiency and report progress.
-    self.progressSimulationInitializePositions(self);
-  }
-  /**
-  * Restores positions of network's elements in network's diagram.
-  * @param {Object} self Instance of a class.
-  */
-  restoreNetworkDiagramPositions(self) {
-    // Remove message about simulation's progress.
-    self.removeSimulationProgressReport(self);
-    // Remove any previous directions of reactions' nodes.
-    self.removeReactionsNodesDirections(self);
-    // Create scales for simulation of forces between network's elements.
-    self.createSimulationScales(self);
-    // Create and initiate force simulation.
-    // Initiate simulation with little energy to maintain stability.
-    self.simulation = ViewTopology.createInitiateSimulation({
-      alpha: 0.1,
-      alphaDecay: 0.03,
-      velocityDecay: 0.5,
-      alphaTarget: 0,
-      alphaMinimum: 0.001,
-      lengthFactor: self.scaleNodeDimension,
-      graphWidth: self.graphWidth,
-      graphHeight: self.graphHeight,
-      nodesRecords: self.nodesRecords,
-      linksRecords: self.linksRecords,
-      state: self.state
-    });
-    // Respond to simulation's progress and completion.
-    // To restore positions in network's diagrams, respond to simulation in a
-    // way to promote interactivity.
-    self.progressSimulationRestorePositions(self);
-  }
-  /**
-  * Removes directionality of reaction's nodes.
-  * @param {Object} self Instance of a class.
-  */
-  removeReactionsNodesDirections(self) {
-    // Remove any previous information about directionality of reaction's nodes.
-    self.removeReactionsNodesDirectionalInformation(self);
-    // Remove any previous directional marks on reactions' nodes.
-    self.removeReactionsNodesDirectionalMarks(self);
-  }
-  /**
-  * Removes directional information from nodes' records for reactions.
-  * @param {Object} self Instance of a class.
-  */
-  removeReactionsNodesDirectionalInformation(self) {
-    // Iterate on nodes' records.
-    self.nodesRecords.forEach(function (nodeRecord) {
-      // Determine whether node's record is for a reaction.
-      if (nodeRecord.type === "reaction") {
-        delete nodeRecord.left;
-        delete nodeRecord.right;
-      }
-    });
-  }
-  /**
-  * Removes directional marks from nodes for reactions.
-  * @param {Object} self Instance of a class.
-  */
-  removeReactionsNodesDirectionalMarks(self) {
-    var reactionsDirectionalMarks = self
-    .nodesGroup.querySelectorAll("polygon.direction, rect.direction");
-    View.removeElements(reactionsDirectionalMarks);
-  }
-
-
-
-  /**
-  * Creates and restores a report of simulation's progress.
-  * @param {number} progress Instance of a class.
-  * @param {Object} self Instance of a class.
-  */
-  createRestoreSimulationProgressReport(progress, self) {
-    // Determine whether text container exists for message about simulation's
-    // progress.
-    self.simulationProgressReport = self.graph.querySelector("text.progress");
-    if (self.simulationProgressReport) {
-      // Text container exists.
-      // Restore position.
-      self.simulationProgressReport
-      .setAttribute("x", (String(self.graphWidth / 2) + "px"));
-      self.simulationProgressReport
-      .setAttribute("y", (String(self.graphHeight / 2) + "px"));
-    } else {
-      // Create text container.
-      self.simulationProgressReport = self
-      .document.createElementNS("http://www.w3.org/2000/svg", "text");
-      self.graph.appendChild(self.simulationProgressReport);
-      self.simulationProgressReport.classList.add("progress");
-      // Restore position.
-      self.simulationProgressReport.setAttribute("x", "0px");
-      self.simulationProgressReport.setAttribute("y", "0px");
-    }
-    // Restore message.
-    var message = (
-      "progress: " + (progress * 100).toFixed() + "%"
-    );
-    self.simulationProgressReport.textContent = message;
-  }
-
-
-  /**
-  * Responds to simulation's progress and completion.
-  * @param {Object} self Instance of a class.
-  */
-  progressSimulationRestorePositions(self) {
-    self.simulation
-    .on("tick", function () {
-      // Execute behavior during simulation's progress.
-      // Restore positions in network's diagram.
-      self.restoreNodesPositions(self);
-      self.restoreLinksPositions(self);
-    })
-    .on("end", function () {
-      // Execute behavior upon simulation's completion.
-      // Restore and refine positions in network's diagram.
-      self.restoreNodesPositions(self);
-      self.restoreLinksPositions(self);
-      self.refineNodesLinksRepresentations(self);
-    });
+    self.fontSize = self.explorationView.scaleFont;
   }
   /**
   * Creates and activates a visual representation of a network.
@@ -533,12 +276,63 @@ class ViewTopology {
     // ---- nodesMarks (ellipses, rectangles)
     // ---- nodesDirectionalMarks (rectangles, polygons)
     // ---- nodesLabels (text)
-    // Create links.
-    // Create links before nodes so that nodes will appear over the links.
-    self.createLinks(self);
+    // Determine whether to create a temporary or complete representation.
+    // Complete representation includes reactions' directionalities.
+    if (Model.determineSimulationCompletion(self.state)) {
+      // Create and activate complete representation for network.
+      // TODO: Temporary... just stick with temporary
+      self.createActivateTemporaryNetworkRepresentation(self);
+    } else {
+      // Create and activate temporary representation for network.
+      self.createActivateTemporaryNetworkRepresentation(self);
+    }
+  }
+  /**
+  * Creates and activates a complete visual representation of a network.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateCompleteNetworkRepresentation(self) {
+    // Determine whether the network has any links.
+    if (self.linksRecords.length > 0) {
+      // Create links.
+      // Create links before nodes so that nodes will appear over the links.
+      self.createLinks(self);
+      // Determine information for directional representations of reactions.
+      // TODO: Probably change the way I handle this determination of directionalities
+      // TODO: I'll also need to figure this out for nodes...
+      self.refineNodesLinksRepresentations(self);
+      // Restore links' positions.
+      self.restoreLinksPositions(self);
+    }
     // Create nodes.
     self.createActivateNodes(self);
+    // Restore nodes' positions.
+    self.restoreNodesPositions(self);
   }
+  /**
+  * Creates and activates a temporary visual representation of a network.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateTemporaryNetworkRepresentation(self) {
+    // Determine whether the network has any links.
+    if (self.linksRecords.length > 0) {
+      // Create links.
+      // Create links before nodes so that nodes will appear over the links.
+      self.createLinks(self);
+      // Restore links' positions.
+      self.restoreLinksPositions(self);
+    }
+    // Create nodes.
+    self.createActivateNodes(self);
+    // Restore nodes' positions.
+    self.restoreNodesPositions(self);
+
+    // Remove any previous directions of reactions' nodes.
+    //self.removeReactionsNodesDirections(self);
+
+    //      self.refineNodesLinksRepresentations(self);
+  }
+
   /**
   * Creates links.
   * @param {Object} self Instance of a class.
@@ -576,9 +370,8 @@ class ViewTopology {
     self.linksMarks.attr("marker-mid", "url(#link-marker)");
     // Determine dimensions for representations of network's elements.
     // Set dimensions of links.
-    self.linksMarks.attr("stroke-width", (self.scaleLinkDimension * 1));
+    self.linksMarks.attr("stroke-width", (self.linkThickness));
   }
-
   /**
   * Creates and activates nodes.
   * @param {Object} self Instance of a class.
@@ -984,9 +777,11 @@ class ViewTopology {
         return (name.slice(0, 5) + "...");
       });
       // Determine size of font for annotations of network's elements.
-      nodesLabels.attr("font-size", self.scaleFont + "px");
+      nodesLabels.attr("font-size", self.fontSize + "px");
     }
   }
+
+  // TODO: Figure out where to include this part...
 
   /**
   * Restores positions of nodes' visual representations according to results of
@@ -998,24 +793,11 @@ class ViewTopology {
     // Impose constraints on node positions according to dimensions of graphical
     // container.
     self.nodesGroups.attr("transform", function (element, index, nodes) {
-      // Confine nodes' positions within graphical container.
-      element.x = ViewTopology.confinePosition({
-        position: element.x,
-        radius: self.reactionNodeWidth,
-        boundary: self.graphWidth
-      });
-      element.y = ViewTopology.confinePosition({
-        position: element.y,
-        radius: self.reactionNodeWidth,
-        boundary: self.graphHeight
-      });
       // Determine coordinates for nodes' marks from results of simulation in
       // nodes' records.
       return "translate(" + element.x + "," + element.y + ")";
     });
   }
-
-
   /**
   * Restores links' positions according to results of force simulation.
   * @param {Object} self Instance of a class.
@@ -1047,6 +829,27 @@ class ViewTopology {
     }
   }
   /**
+  * Removes directionality of reaction's nodes.
+  * @param {Object} self Instance of a class.
+  */
+  removeReactionsNodesDirections(self) {
+    // Simulation's records for links have renewal with each initiation of a
+    // novel simulation.
+    // Hence simulation's records for links only have directional information
+    // after the simulation completes.
+    // Remove any previous directional marks on reactions' nodes.
+    self.removeReactionsNodesDirectionalMarks(self);
+  }
+  /**
+  * Removes directional marks from nodes for reactions.
+  * @param {Object} self Instance of a class.
+  */
+  removeReactionsNodesDirectionalMarks(self) {
+    var reactionsDirectionalMarks = self
+    .nodesGroup.querySelectorAll("polygon.direction, rect.direction");
+    View.removeElements(reactionsDirectionalMarks);
+  }
+  /**
   * Refines the representations of nodes and links.
   * @param {Object} self Instance of a class.
   */
@@ -1055,8 +858,6 @@ class ViewTopology {
     self.determineReactionsNodesOrientations(self);
     // Represent reactions' directionalities on their nodes.
     self.createReactionsNodesDirectionalMarks(self);
-    // Represent reactions' directionalities in links.
-    self.restoreLinksPositions(self);
   }
   /**
   * Determines the orientations of reactions' nodes relative to sides for
@@ -1546,7 +1347,7 @@ class ViewTopology {
     if (terminus.type === "reaction") {
       // Link's terminus connects to a reaction's node.
       // Determine whether reaction's node has an orientation.
-      if (terminus.left && terminus.right) {
+      if (terminus.hasOwnProperty("left") && terminus.hasOwnProperty("right")) {
         // Reaction's node has an orientation.
         // Determine which side matches the link's role.
         if (terminus.left === role) {

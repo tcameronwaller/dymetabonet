@@ -134,17 +134,15 @@ class ViewExploration {
           // Create topology view.
           View.removeExistElement("progress", self.document);
           View.removeExistElement("notice", self.document);
-          if (false) {
-            new ViewTopology({
-              interfaceView: self.interfaceView,
-              tipView: self.tipView,
-              promptView: self.promptView,
-              explorationView: self,
-              state: self.state,
-              documentReference: self.document,
-              windowReference: self.window
-            });
-          }
+          new ViewTopology({
+            interfaceView: self.interfaceView,
+            tipView: self.tipView,
+            promptView: self.promptView,
+            explorationView: self,
+            state: self.state,
+            documentReference: self.document,
+            windowReference: self.window
+          });
         } else {
           // Create notice view.
           View.removeExistElement("notice", self.document);
@@ -198,24 +196,62 @@ class ViewExploration {
     // Range's unit is pixel for dimension of graphical elements.
     //domain: range
     //0-0.3: 1
-    //0.3-1: 3
-    //1-5: 5
-    //5-10: 7
-    //10-15: 10
-    //15-25: 15
-    //25-50: 25
-    //50-100: 30
-    //100-150: 35
-    //150-10000: 50
+    //0.3-1: 2
+    //1-5: 3
+    //5-10: 5
+    //10-15: 7
+    //15-25: 10
+    //25-50: 15
+    //50-100: 20
+    //100-150: 30
+    //150-10000: 40
     var lengthScale = d3
     .scaleThreshold()
     .domain(domainRatios)
     .range([1, 2, 3, 5, 7, 10, 15, 20, 30, 40]);
+    // Define scale for thickness of visual marks.
+    // Domain's unit is pixel for ratio of graphical container's width to count
+    // of nodes.
+    // Range's unit is pixel for dimension of graphical elements.
+    //domain: range
+    //0-0.3: 0.03
+    //0.3-1: 0.05
+    //1-5: 0.1
+    //5-10: 0.3
+    //10-15: 0.5
+    //15-25: 0.7
+    //25-50: 1
+    //50-100: 2
+    //100-150: 3
+    //150-10000: 5
+    var thicknessScale = d3
+    .scaleThreshold()
+    .domain(domainRatios)
+    .range([0.03, 0.05, 0.1, 0.3, 0.5, 0.7, 1, 2, 3, 5]);
+    // Define scale for size of font in annotations.
+    // Domain's unit is pixel for ratio of graphical container's width to count
+    // of nodes.
+    // Range's unit is pixel for dimension of font characters.
+    //domain: range
+    //0-0.3: 1
+    //0.3-1: 2
+    //1-5: 3
+    //5-10: 4
+    //10-15: 5
+    //15-25: 7
+    //25-50: 10
+    //50-100: 11
+    //100-150: 13
+    //150-10000: 15
+    var fontScale = d3
+    .scaleThreshold()
+    .domain(domainRatios)
+    .range([1, 2, 3, 4, 5, 7, 10, 11, 13, 15]);
     // Compute ratio for scales' domain.
-    self.scaleDimensionRatio = (
-      self.graphWidth / self.state.subnetworkNodesRecords.length
-    );
+    var ratio = (self.graphWidth / self.state.subnetworkNodesRecords.length);
     // Compute dimensions from scale.
-    self.scaleLength = lengthScale(self.scaleDimensionRatio);
+    self.scaleLength = lengthScale(ratio);
+    self.scaleThickness = thicknessScale(ratio);
+    self.scaleFont = fontScale(ratio);
   }
 }

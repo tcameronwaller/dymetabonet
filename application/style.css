@@ -125,7 +125,6 @@ flex-direction: column;
 /******************************************************************************/
 /* Control View */
 /******************************************************************************/
-/* needs work still... obviously... I need to figure out the display property for children...*/
 
 #control {
   background-color: rgba(200, 200, 200, 1);
@@ -344,43 +343,41 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 #topology {
   /*display:inline;*/
   /*float: left;*/
-  flex: 1;
-  height: 100%;
 }
 
-#topology svg rect.base {
+#topology rect.base {
   fill: rgba(255, 255, 255, 1);
 }
 
-#topology svg .node.emphasis .mark {
+#topology .node.emphasis .mark {
   fill: rgba(200, 200, 0, 1);
 }
 
-#topology svg .node.normal.metabolite .mark {
+#topology .node.normal.metabolite .mark {
   fill: rgba(0, 100, 255, 1);
 }
 
-#topology svg .node.normal.reaction .mark {
+#topology .node.normal.reaction .mark {
   fill: rgba(255, 0, 100, 1);
 }
 
-#topology svg .node.reaction .mark.supplement {
+#topology .node.reaction .mark.supplement {
   fill: rgba(255, 255, 100, 1);
 }
 
-#topology svg .node.reaction polygon.direction, rect.direction {
+#topology .node.reaction polygon.direction, rect.direction {
   /*dark*/
   fill: rgba(50, 0, 200, 1);
 }
 
-#topology svg .node.metabolite.replication .mark {
+#topology .node.metabolite.replication .mark {
   fill: rgba(0, 50, 150, 1);
 }
 
-#topology svg .node.reaction.replication .mark {
+#topology .node.reaction.replication .mark {
 }
 
-#topology svg .node text.label {
+#topology .node text.label {
   font-family: sans-serif;
   font-style: normal;
   font-weight: bold;
@@ -388,29 +385,28 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   text-anchor: middle;
 }
 
-#topology svg .node.metabolite text.label {
+#topology .node.metabolite text.label {
   fill: rgba(0, 0, 0, 1);
 }
 
-#topology svg .node.reaction text.label {
+#topology .node.reaction text.label {
   fill: rgba(0, 0, 0, 1);
 }
 
-#topology svg .link {
+#topology .link {
   stroke: rgba(0, 0, 0, 1);
 }
 
-#topology svg .link.reactant {
+#topology .link.reactant {
   stroke-dasharray: 5,7;
 }
 
-#topology svg .link.product {
+#topology .link.product {
   stroke-dasharray: 5, 0;
 }
 
-#topology svg .link.replication {
+#topology .link.replication {
 }
-
 
 /******************************************************************************/
 /* Old stuff for scrap (re-use much of it) */
