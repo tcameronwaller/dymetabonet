@@ -114,7 +114,6 @@ class ActionExploration {
       width: state.simulationDimensions.width,
       height: state.simulationDimensions.height
     });
-    //var simulationNodesRecords = state.simulationNodesRecords;
     // Restore simulation's progress.
     var novelCount = state.simulationProgress.count + 1;
     var novelEntries = {

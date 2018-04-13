@@ -237,13 +237,12 @@ class ViewTopology {
   */
   prepareNetworkElementsRecords(self) {
     // Simulation's records for nodes include information about positions.
-    //self.nodesRecords = self.state.simulationNodesRecords;
-    self.nodesRecords = General
-    .copyDeepArrayElements(self.state.simulationNodesRecords, true);
+    // Set references to these records rather than copying them for the sake of
+    // convenience, especially to preserve references between links and records
+    // for their source and target nodes.
+    self.nodesRecords = self.state.simulationNodesRecords;
     // Simulation's records for links include references to nodes.
-    //self.linksRecords = self.state.simulationLinksRecords;
-    self.linksRecords = General
-    .copyDeepArrayElements(self.state.simulationLinksRecords, true);
+    self.linksRecords = self.state.simulationLinksRecords
   }
   /**
   * Determines dimensions for network's visual representations.
@@ -280,8 +279,7 @@ class ViewTopology {
     // Complete representation includes reactions' directionalities.
     if (Model.determineSimulationCompletion(self.state)) {
       // Create and activate complete representation for network.
-      // TODO: Temporary... just stick with temporary
-      self.createActivateTemporaryNetworkRepresentation(self);
+      self.createActivateCompleteNetworkRepresentation(self);
     } else {
       // Create and activate temporary representation for network.
       self.createActivateTemporaryNetworkRepresentation(self);
@@ -292,20 +290,21 @@ class ViewTopology {
   * @param {Object} self Instance of a class.
   */
   createActivateCompleteNetworkRepresentation(self) {
+    // Determine information for directional representations of reactions.
+    // Determine orientations of reaction's nodes.
+    self.determineReactionsNodesOrientations(self);
     // Determine whether the network has any links.
     if (self.linksRecords.length > 0) {
       // Create links.
       // Create links before nodes so that nodes will appear over the links.
       self.createLinks(self);
-      // Determine information for directional representations of reactions.
-      // TODO: Probably change the way I handle this determination of directionalities
-      // TODO: I'll also need to figure this out for nodes...
-      self.refineNodesLinksRepresentations(self);
       // Restore links' positions.
       self.restoreLinksPositions(self);
     }
     // Create nodes.
     self.createActivateNodes(self);
+    // Represent reactions' directionalities on their nodes.
+    self.createReactionsNodesDirectionalMarks(self);
     // Restore nodes' positions.
     self.restoreNodesPositions(self);
   }
@@ -324,15 +323,11 @@ class ViewTopology {
     }
     // Create nodes.
     self.createActivateNodes(self);
+    // Remove any previous directions of reactions' nodes.
+    self.removeReactionsNodesDirections(self);
     // Restore nodes' positions.
     self.restoreNodesPositions(self);
-
-    // Remove any previous directions of reactions' nodes.
-    //self.removeReactionsNodesDirections(self);
-
-    //      self.refineNodesLinksRepresentations(self);
   }
-
   /**
   * Creates links.
   * @param {Object} self Instance of a class.
@@ -780,9 +775,6 @@ class ViewTopology {
       nodesLabels.attr("font-size", self.fontSize + "px");
     }
   }
-
-  // TODO: Figure out where to include this part...
-
   /**
   * Restores positions of nodes' visual representations according to results of
   * force simulation.
@@ -848,16 +840,6 @@ class ViewTopology {
     var reactionsDirectionalMarks = self
     .nodesGroup.querySelectorAll("polygon.direction, rect.direction");
     View.removeElements(reactionsDirectionalMarks);
-  }
-  /**
-  * Refines the representations of nodes and links.
-  * @param {Object} self Instance of a class.
-  */
-  refineNodesLinksRepresentations(self) {
-    // Determine orientations of reaction's nodes.
-    self.determineReactionsNodesOrientations(self);
-    // Represent reactions' directionalities on their nodes.
-    self.createReactionsNodesDirectionalMarks(self);
   }
   /**
   * Determines the orientations of reactions' nodes relative to sides for
