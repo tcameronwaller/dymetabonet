@@ -139,72 +139,6 @@ class ActionQuery {
     });
   }
   /**
-  * Executes rogue traversal and combination on the network.
-  * @param {Object} state Application's state.
-  */
-  static executeRogueCombination(state) {
-    // Determine whether application's state includes valid variables for
-    // procedure.
-    if (Model.determineRogueTraversal(state)) {
-      var subnetworkElements = Traversal.combineRogueNodeNetwork({
-        focus: state.traversalRogueFocus.identifier,
-        combination: state.traversalCombination,
-        subnetworkNodesRecords: state.subnetworkNodesRecords,
-        subnetworkLinksRecords: state.subnetworkLinksRecords,
-        networkNodesRecords: state.networkNodesRecords,
-        networkLinksRecords: state.networkLinksRecords
-      });
-      // Initialize controls for traversal view.
-      var traversalViewControls = ActionQuery.initializeControls();
-      // Compile variables' values.
-      var variablesValues = Object.assign(
-        subnetworkElements,
-        traversalViewControls
-      );
-      // Submit variables' values to the application's state.
-      ActionGeneral.submitStateVariablesValues({
-        variablesValues: variablesValues,
-        state: state
-      });
-    }
-  }
-  /**
-  * Executes rogue traversal and union on the network.
-  * @param {Object} state Application's state.
-  */
-  static executeRogueUnion(state) {
-    // Determine whether application's state includes valid variables for
-    // procedure.
-    if (Model.determineRogueTraversal(state)) {
-      var subnetworkElements = Traversal.combineRogueNodeNetwork({
-        focus: state.traversalRogueFocus.identifier,
-        combination: "union",
-        subnetworkNodesRecords: state.subnetworkNodesRecords,
-        subnetworkLinksRecords: state.subnetworkLinksRecords,
-        networkNodesRecords: state.networkNodesRecords,
-        networkLinksRecords: state.networkLinksRecords
-      });
-      // Initialize controls for traversal view.
-      var traversalViewControls = ActionQuery.initializeControls();
-      // Initialize controls for pompt view.
-      var prompt = ActionPrompt.initializeControls();
-      // Compile variables' values.
-      var novelVariablesValues = {
-        prompt: prompt
-      };
-      var variablesValues = Object.assign(
-        novelVariablesValues,
-        subnetworkElements,
-        traversalViewControls
-      );
-      // Submit variables' values to the application's state.
-      ActionGeneral.submitStateVariablesValues({
-        variablesValues: variablesValues,
-        state: state
-      });
-    }
-  }
-  /**
   * Changes the selection of focus for proximity traversal.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
@@ -268,80 +202,6 @@ class ActionQuery {
       variablesValues: variablesValues,
       state: state
     });
-  }
-
-  // TODO: All query executions should call ActionExploration.deriveState()...
-
-  /**
-  * Executes proximity traversal and combination on the network.
-  * @param {Object} state Application's state.
-  */
-  static executeProximityCombination(state) {
-    // Determine whether application's state includes valid variables for
-    // procedure.
-    if (Model.determineProximityTraversal(state)) {
-      var subnetworkElements = Traversal.combineProximityNetwork({
-        focus: state.traversalProximityFocus.identifier,
-        direction: state.traversalProximityDirection,
-        depth: state.traversalProximityDepth,
-        combination: state.traversalCombination,
-        subnetworkNodesRecords: state.subnetworkNodesRecords,
-        subnetworkLinksRecords: state.subnetworkLinksRecords,
-        networkNodesRecords: state.networkNodesRecords,
-        networkLinksRecords: state.networkLinksRecords
-      });
-      // Initialize controls for traversal view.
-      var traversalViewControls = ActionQuery.initializeControls();
-      // Compile variables' values.
-      var variablesValues = Object.assign(
-        subnetworkElements,
-        traversalViewControls
-      );
-      // Submit variables' values to the application's state.
-      ActionGeneral.submitStateVariablesValues({
-        variablesValues: variablesValues,
-        state: state
-      });
-    }
-  }
-  /**
-  * Executes proximity traversal expansion to depth of one and combination by
-  * union.
-  * @param {Object} state Application's state.
-  */
-  static executeProximityExpansion(state) {
-    // Determine whether application's state includes valid variables for
-    // procedure.
-    if (Model.determineProximityTraversal(state)) {
-      var subnetworkElements = Traversal.combineProximityNetwork({
-        focus: state.prompt.reference.identifier,
-        direction: "neighbors",
-        depth: 1,
-        combination: "union",
-        subnetworkNodesRecords: state.subnetworkNodesRecords,
-        subnetworkLinksRecords: state.subnetworkLinksRecords,
-        networkNodesRecords: state.networkNodesRecords,
-        networkLinksRecords: state.networkLinksRecords
-      });
-      // Initialize controls for traversal view.
-      var traversalViewControls = ActionQuery.initializeControls();
-      // Remove any prompt view.
-      var prompt = ActionPrompt.initializeControls();
-      // Compile variables' values.
-      var novelVariablesValues = {
-        prompt: prompt
-      };
-      var variablesValues = Object.assign(
-        novelVariablesValues,
-        subnetworkElements,
-        traversalViewControls
-      );
-      // Submit variables' values to the application's state.
-      ActionGeneral.submitStateVariablesValues({
-        variablesValues: variablesValues,
-        state: state
-      });
-    }
   }
   /**
   * Changes the selection of source for path traversal.
@@ -443,39 +303,6 @@ class ActionQuery {
     });
   }
   /**
-  * Executes path traversal and combination on the network.
-  * @param {Object} state Application's state.
-  */
-  static executePathCombination(state) {
-    // Determine whether application's state includes valid variables for
-    // procedure.
-    if (Model.determinePathTraversal(state)) {
-      var subnetworkElements = Traversal.combinePathNetwork({
-        source: state.traversalPathSource.identifier,
-        target: state.traversalPathTarget.identifier,
-        direction: state.traversalPathDirection,
-        count: state.traversalPathCount,
-        combination: state.traversalCombination,
-        subnetworkNodesRecords: state.subnetworkNodesRecords,
-        subnetworkLinksRecords: state.subnetworkLinksRecords,
-        networkNodesRecords: state.networkNodesRecords,
-        networkLinksRecords: state.networkLinksRecords
-      });
-      // Initialize controls for traversal view.
-      var traversalViewControls = ActionQuery.initializeControls();
-      // Compile variables' values.
-      var variablesValues = Object.assign(
-        subnetworkElements,
-        traversalViewControls
-      );
-      // Submit variables' values to the application's state.
-      ActionGeneral.submitStateVariablesValues({
-        variablesValues: variablesValues,
-        state: state
-      });
-    }
-  }
-  /**
   * Changes the selection of target for connection traversal.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
@@ -545,6 +372,182 @@ class ActionQuery {
       });
     }
   }
+
+  // TODO: Executions of queries do influence dependent variables of state...
+  // TODO: Call appropriate derivation function in execution functions.
+
+  // TODO: All query executions should call ActionExploration.deriveState()...
+
+  /**
+  * Executes rogue traversal and combination on the network.
+  * @param {Object} state Application's state.
+  */
+  static executeRogueCombination(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineRogueTraversal(state)) {
+      var subnetworkElements = Traversal.combineRogueNodeNetwork({
+        focus: state.traversalRogueFocus.identifier,
+        combination: state.traversalCombination,
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for traversal view.
+      var traversalViewControls = ActionQuery.initializeControls();
+      // Compile variables' values.
+      var variablesValues = Object.assign(
+        subnetworkElements,
+        traversalViewControls
+      );
+      // Submit variables' values to the application's state.
+      ActionGeneral.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+  /**
+  * Executes rogue traversal and union on the network.
+  * @param {Object} state Application's state.
+  */
+  static executeRogueUnion(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineRogueTraversal(state)) {
+      var subnetworkElements = Traversal.combineRogueNodeNetwork({
+        focus: state.traversalRogueFocus.identifier,
+        combination: "union",
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for traversal view.
+      var traversalViewControls = ActionQuery.initializeControls();
+      // Initialize controls for pompt view.
+      var prompt = ActionPrompt.initializeControls();
+      // Compile variables' values.
+      var novelVariablesValues = {
+        prompt: prompt
+      };
+      var variablesValues = Object.assign(
+        novelVariablesValues,
+        subnetworkElements,
+        traversalViewControls
+      );
+      // Submit variables' values to the application's state.
+      ActionGeneral.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+  /**
+  * Executes proximity traversal and combination on the network.
+  * @param {Object} state Application's state.
+  */
+  static executeProximityCombination(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineProximityTraversal(state)) {
+      var subnetworkElements = Traversal.combineProximityNetwork({
+        focus: state.traversalProximityFocus.identifier,
+        direction: state.traversalProximityDirection,
+        depth: state.traversalProximityDepth,
+        combination: state.traversalCombination,
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for traversal view.
+      var traversalViewControls = ActionQuery.initializeControls();
+      // Compile variables' values.
+      var variablesValues = Object.assign(
+        subnetworkElements,
+        traversalViewControls
+      );
+      // Submit variables' values to the application's state.
+      ActionGeneral.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+  /**
+  * Executes proximity traversal expansion to depth of one and combination by
+  * union.
+  * @param {Object} state Application's state.
+  */
+  static executeProximityExpansion(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineProximityTraversal(state)) {
+      var subnetworkElements = Traversal.combineProximityNetwork({
+        focus: state.prompt.reference.identifier,
+        direction: "neighbors",
+        depth: 1,
+        combination: "union",
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for traversal view.
+      var traversalViewControls = ActionQuery.initializeControls();
+      // Remove any prompt view.
+      var prompt = ActionPrompt.initializeControls();
+      // Compile variables' values.
+      var novelVariablesValues = {
+        prompt: prompt
+      };
+      var variablesValues = Object.assign(
+        novelVariablesValues,
+        subnetworkElements,
+        traversalViewControls
+      );
+      // Submit variables' values to the application's state.
+      ActionGeneral.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+  /**
+  * Executes path traversal and combination on the network.
+  * @param {Object} state Application's state.
+  */
+  static executePathCombination(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determinePathTraversal(state)) {
+      var subnetworkElements = Traversal.combinePathNetwork({
+        source: state.traversalPathSource.identifier,
+        target: state.traversalPathTarget.identifier,
+        direction: state.traversalPathDirection,
+        count: state.traversalPathCount,
+        combination: state.traversalCombination,
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for traversal view.
+      var traversalViewControls = ActionQuery.initializeControls();
+      // Compile variables' values.
+      var variablesValues = Object.assign(
+        subnetworkElements,
+        traversalViewControls
+      );
+      // Submit variables' values to the application's state.
+      ActionGeneral.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
   /**
   * Excludes a node from targets for connection traversal.
   * @param {Object} parameters Destructured object of parameters.
@@ -602,6 +605,7 @@ class ActionQuery {
       });
     }
   }
+
 
   // Indirect actions.
 
