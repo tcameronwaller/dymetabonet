@@ -956,7 +956,10 @@ class View {
     // Remove container's content.
     General.removeDocumentChildren(container);
     // Change container's class.
-    container.classList = "";
+    Array.from(container.classList).forEach(function (name) {
+      container.classList.remove(name);
+    });
+    //container.classList = "";
     container.classList.add(className);
   }
   /**

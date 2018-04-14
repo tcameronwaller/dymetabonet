@@ -87,8 +87,7 @@ class ViewNotice {
     } else {
       // Container is not empty.
       // Set references to content.
-      self.messageContainer = self
-      .container.getElementsByTagName("text").item(0);
+      self.messageContainer = self.container.getElementsByTagName("g").item(0);
     }
   }
   /**
@@ -115,10 +114,10 @@ class ViewNotice {
   */
   restoreMessage(self) {
     // Restore position.
-    self.messageContainer
-    .setAttribute("x", (String(self.explorationView.graphWidth / 2) + "px"));
-    self.messageContainer
-    .setAttribute("y", (String(self.explorationView.graphHeight / 2) + "px"));
+    var x = String(self.explorationView.graphWidth / 2);
+    var y = String(self.explorationView.graphHeight / 2);
+    var translate = String("translate(" + x + "," + y + ")");
+    self.messageContainer.setAttribute("transform", translate);
     // Determine which type of notice to display.
     if (!Model.determineSubnetworkNodesMinimum(self.state)) {
       self.createMinimumNotice(self);

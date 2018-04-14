@@ -42,6 +42,35 @@ class ActionState {
   // Direct actions.
 
   /**
+  * Restores values of application's variables for controls relevant to view.
+  * @param {Object} state Application's state.
+  */
+  static restoreControls(state) {
+    // Initialize view's controls.
+    var controls = ActionState.initializeControls();
+    // Derive dependent state.
+    var dependentStateVariables = ActionState.deriveState(state);
+    // Determine which views to restore.
+    var viewsRestoration = ActionInterface.changeViewsRestoration({
+      skips: [],
+      viewsRestoration: state.viewsRestoration
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {
+      viewsRestoration
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      controls,
+      dependentStateVariables
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
   * Changes the source of information from file.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.source Reference to file object.
@@ -61,7 +90,7 @@ class ActionState {
   * application's state.
   * @param {Object} parameters.state Application's state.
   */
-  static restoreState({data, state} = {}) {
+  static restoreSourceState({data, state} = {}) {
     // Remove any information about source from the application's state.
     var sourceState = {};
     // Compile variables' values.
@@ -80,8 +109,6 @@ class ActionState {
   }
 
   // Indirect actions.
-
-  // TODO: Derive cascade... I think I will need to pass down any measurements, so that they're preserved.
 
   /**
   * Initializes values of application's variables for controls relevant to view.
@@ -139,25 +166,24 @@ class ActionState {
     }, {});
   }
   /**
-  * Loads from file a source of information about the application's state,
-  * passing this information to another procedure to restore the application's
-  * state.
+  * Determines whether to restore view's controls or to load information from
+  * source and restore application's state from this information.
   * @param {Object} state Application's state.
   */
-  static loadRestoreState(state) {
+  static restoreControlsLoadRestoreSourceState(state) {
     // Determine whether the application's state includes a source file.
     if (Model.determineSourceState(state)) {
       // Application's state includes a source file.
       General.loadParseTextPassObject({
         file: state.sourceState,
         format: "json",
-        call: ActionState.restoreState,
+        call: ActionState.restoreSourceState,
         parameters: {state: state}
       });
     } else {
       // Application's state does not include a source file.
       // Restore application to initial state.
-      Action.initializeApplicationStateVariables(state);
+      ActionState.restoreControls(state);
     }
   }
   /**
@@ -165,7 +191,7 @@ class ActionState {
   * application's state.
   * @param {Object} state Application's state.
   */
-  static save(state) {
+  static saveState(state) {
     var persistence = ActionState.createPersistence(state);
     console.log("application's state...");
     console.log(persistence);

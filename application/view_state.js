@@ -81,65 +81,98 @@ class ViewState {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
-      // Create text.
-      self.sourceLabel = self.document.createElement("span");
-      self.container.appendChild(self.sourceLabel);
+      // Create and activate button to restore view.
+      self.createActivateRestorationButton(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
-      // Create and activate buttons.
-      // Save
-      var save = View.createButton({
-        text: "save",
-        parent: self.container,
-        documentReference: self.document
-      });
-      save.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        ActionState.save(self.state);
-      });
-      // Load
-      // Create and activate file selector.
-      var load = View.createFileLoadFacade({
-        suffix: ".json",
-        parent: self.container,
-        documentReference: self.document
-      });
-      load.addEventListener("change", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        ActionState.changeSource({
-          source: event.currentTarget.files[0],
-          state: self.state
-        });
-      });
-      // Restore
-      var restore = View.createButton({
-        text: "restore",
-        parent: self.container,
-        documentReference: self.document
-      });
-      restore.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        ActionState.loadRestoreState(self.state);
-      });
-      // Execute
-      var execute = View.createButton({
-        text: "execute",
-        parent: self.container,
-        documentReference: self.document
-      });
-      execute.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        ActionState.executeProcedure(self.state);
-      });
+      // Create and activate button and label to select source file.
+      self.createActivateLoadButton(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create and activate button to save application's state.
+      self.createActivateSaveButton(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create and activate button to execute temporary procedure, for
+      // convenience in development.
+      self.createActivateExecutionButton(self);
     } else {
       // Container is not empty.
       // Set references to content.
       self.sourceLabel = self.container.getElementsByTagName("span").item(0);
     }
+  }
+  /**
+  * Creates and activates button to restore view's controls.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestorationButton(self) {
+    var restore = View.createButton({
+      text: "restore",
+      parent: self.container,
+      documentReference: self.document
+    });
+    restore.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      ActionState.restoreControlsLoadRestoreState(self.state);
+    });
+  }
+  /**
+  * Creates and activates button to select file to load.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateLoadButton(self) {
+    // Load
+    // Create and activate file selector.
+    var load = View.createFileLoadFacade({
+      suffix: ".json",
+      parent: self.container,
+      documentReference: self.document
+    });
+    load.addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      ActionState.changeSource({
+        source: event.currentTarget.files[0],
+        state: self.state
+      });
+    });
+    // Create text.
+    self.sourceLabel = self.document.createElement("span");
+    self.container.appendChild(self.sourceLabel);
+  }
+  /**
+  * Creates and activates button to save application's state.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateSaveButton(self) {
+    var save = View.createButton({
+      text: "save",
+      parent: self.container,
+      documentReference: self.document
+    });
+    save.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      ActionState.saveState(self.state);
+    });
+  }
+  /**
+  * Creates and activates button to execute temporary procedure.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateExecutionButton(self) {
+    var execute = View.createButton({
+      text: "execute",
+      parent: self.container,
+      documentReference: self.document
+    });
+    execute.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      ActionState.executeProcedure(self.state);
+    });
   }
   /**
   * Restores view's content and behavior that varies with changes to the

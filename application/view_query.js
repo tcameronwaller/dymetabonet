@@ -81,11 +81,8 @@ class ViewQuery {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
-      // TODO: Add informative tips on hover over each button...
-      // Create and activate restore.
-      self.createActivateRestore(self);
-      // Create and activate clear.
-      self.createActivateClear(self);
+      // Create and activate button to restore view.
+      self.createActivateRestorationButton(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create and activate controls for combination.
@@ -103,6 +100,7 @@ class ViewQuery {
       // Create container.
       self.controlContainer = View.createInsertContainer({
         identifier: "traversal-control-container",
+        type: "standard",
         target: self.container,
         position: "beforeend",
         documentReference: self.document
@@ -125,41 +123,19 @@ class ViewQuery {
     }
   }
   /**
-  * Creates and activates a button to copy subnetwork from network and restore
-  * the view's controls.
+  * Creates and activates button to restore view's controls.
   * @param {Object} self Instance of a class.
   */
-  createActivateRestore(self) {
-    // Create button for restoration.
+  createActivateRestorationButton(self) {
     var restore = View.createButton({
       text: "restore",
       parent: self.container,
       documentReference: self.document
     });
-    // Activate behavior.
     restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      ActionQuery.copySubnetworkInitializeControls(self.state);
-    });
-  }
-  /**
-  * Creates and activates a button to clear the subnetwork and restore the
-  * view's controls.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateClear(self) {
-    // Create button for clear.
-    var clear = View.createButton({
-      text: "clear",
-      parent: self.container,
-      documentReference: self.document
-    });
-    // Activate behavior.
-    clear.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      ActionQuery.clearSubnetworkInitializeControls(self.state);
+      ActionQuery.restoreControls(self.state);
     });
   }
   /**

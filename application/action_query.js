@@ -41,64 +41,33 @@ class ActionQuery {
 
   // Direct actions.
 
-
-  // TODO: copy/clearSubnetworkInitializeControls should call ActionExploration.deriveState()...
-
   /**
-  * Copies the subnetwork from the network and restores values of variables of
-  * application's controls for traversal view.
+  * Restores values of application's variables for controls relevant to view.
   * @param {Object} state Application's state.
   */
-  static copySubnetworkInitializeControls(state) {
-    // Initialize controls for traversal view.
-    var traversalViewControls = ActionQuery.initializeControls();
-    // Create subnetwork's elements.
-    var subnetworkElements = Network.copyNetworkElementsRecords({
+  static restoreControls(state) {
+    // Initialize view's controls.
+    var controls = ActionQuery.initializeSubordinateControls();
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveState({
+      combination: state.traversalCombination,
       networkNodesRecords: state.networkNodesRecords,
-      networkLinksRecords: state.networkLinksRecords
-    });
-    // Initialize whether to force representation of topology for networks of
-    // excessive scale.
-    var forceTopology = false;
-    // Compile variables' values.
-    var novelVariablesValues = {
-      forceTopology: forceTopology
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      traversalViewControls,
-      subnetworkElements
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
+      networkLinksRecords: state.networkLinksRecords,
       state: state
     });
-  }
-  /**
-  * Clears the subnetwork and restores values of variables of application's
-  * controls for traversal view.
-  * @param {Object} state Application's state.
-  */
-  static clearSubnetworkInitializeControls(state) {
-    // Initialize controls for traversal view.
-    var traversalViewControls = ActionQuery.initializeControls();
-    // Create subnetwork's elements.
-    var subnetworkElements = {
-      subnetworkNodesRecords: [],
-      subnetworkLinksRecords: []
-    };
-    // Initialize whether to force representation of topology for networks of
-    // excessive scale.
-    var forceTopology = false;
+    // Determine which views to restore.
+    var viewsRestoration = ActionInterface.changeViewsRestoration({
+      skips: [],
+      viewsRestoration: state.viewsRestoration
+    });
     // Compile variables' values.
     var novelVariablesValues = {
-      forceTopology: forceTopology
+      viewsRestoration: viewsRestoration
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
-      traversalViewControls,
-      subnetworkElements
+      controls,
+      dependentStateVariables
     );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
@@ -642,7 +611,7 @@ class ActionQuery {
   */
   static initializeControls() {
     // Initialize controls.
-    var traversalCombination = "union";
+    var traversalCombination = "difference";
     var traversalType = "rogue";
     var traversalProximityDirection = "successors";
     var traversalProximityDepth = 1;
@@ -696,6 +665,8 @@ class ActionQuery {
   /**
   * Derives application's dependent state from controls relevant to view.
   * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.combination Method of combination, union or
+  * difference.
   * @param {Array<Object>} parameters.networkNodesRecords Information about
   * network's nodes.
   * @param {Array<Object>} parameters.networkLinksRecords Information about
@@ -703,15 +674,22 @@ class ActionQuery {
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState({networkNodesRecords, networkLinksRecords, state} = {}) {
+  static deriveState({combination, networkNodesRecords, networkLinksRecords, state} = {}) {
     // Derive state relevant to view.
     // Initialize controls for query view.
     var subordinateControls = ActionQuery.initializeSubordinateControls();
     // Create subnetwork's elements.
-    var subnetworkElements = Network.copyNetworkElementsRecords({
-      networkNodesRecords: networkNodesRecords,
-      networkLinksRecords: networkLinksRecords
-    });
+    if (combination === "union") {
+      var subnetworkElements = {
+        subnetworkNodesRecords: [],
+        subnetworkLinksRecords: []
+      };
+    } else if (combination === "difference") {
+      var subnetworkElements = Network.copyNetworkElementsRecords({
+        networkNodesRecords: networkNodesRecords,
+        networkLinksRecords: networkLinksRecords
+      });
+    }
     // Derive dependent state.
     var dependentStateVariables = ActionExploration.deriveState({
       simulationDimensions: state.simulationDimensions,

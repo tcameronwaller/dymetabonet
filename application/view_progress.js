@@ -102,21 +102,6 @@ class ViewProgress {
     self.container.appendChild(self.messageContainer);
   }
   /**
-  * Creates a message.
-  * @param {Object} self Instance of a class.
-  */
-  createMessage(self) {
-    // Create text container.
-    self.textContainer = self
-    .document.createElementNS("http://www.w3.org/2000/svg", "text");
-    self.container.appendChild(self.textContainer);
-    // Restore position.
-    self.textContainer
-    .setAttribute("x", (String(self.explorationView.graphWidth / 2) + "px"));
-    self.textContainer
-    .setAttribute("y", (String(self.explorationView.graphHeight / 2) + "px"));
-  }
-  /**
   * Restores view's content and behavior that varies with changes to the
   * application's state.
   * @param {Object} self Instance of a class.

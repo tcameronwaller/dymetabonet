@@ -82,8 +82,8 @@ class ViewContext {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
-      // Create and activate restore.
-      self.createActivateRestore(self);
+      // Create and activate button to restore view.
+      self.createActivateRestorationButton(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create and activate control for compartmentalization.
@@ -122,6 +122,22 @@ class ViewContext {
       self.simplifications = self
       .document.getElementById("candidacy-simplifications");
     }
+  }
+  /**
+  * Creates and activates button to restore view's controls.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestorationButton(self) {
+    var restore = View.createButton({
+      text: "restore",
+      parent: self.container,
+      documentReference: self.document
+    });
+    restore.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      ActionContext.restoreControls(self.state);
+    });
   }
   /**
   * Creates and activates a control for compartmentalization.
@@ -165,24 +181,6 @@ class ViewContext {
       // Element on which the event originated is event.currentTarget.
       // Call action.
       ActionContext.changeDefaultSimplifications(self.state);
-    });
-  }
-  /**
-  * Creates and activates a button to restore the menu.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateRestore(self) {
-    // Create button for restoration.
-    var restore = View.createButton({
-      text: "restore",
-      parent: self.container,
-      documentReference: self.document
-    });
-    // Activate behavior.
-    restore.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      ActionContext.restoreControls(self.state);
     });
   }
   /**

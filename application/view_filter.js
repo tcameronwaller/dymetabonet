@@ -81,10 +81,8 @@ class ViewFilter {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
-      // Create and activate restore.
-      self.createActivateRestore(self);
-      // Create and activate export.
-      self.createActivateExport(self);
+      // Create and activate button to restore view.
+      self.createActivateRestorationButton(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create and activate controls for type of entities.
@@ -125,39 +123,19 @@ class ViewFilter {
     }
   }
   /**
-  * Creates and activates a button to restore the menu.
+  * Creates and activates button to restore view's controls.
   * @param {Object} self Instance of a class.
   */
-  createActivateRestore(self) {
-    // Create button for restoration.
+  createActivateRestorationButton(self) {
     var restore = View.createButton({
       text: "restore",
       parent: self.container,
       documentReference: self.document
     });
-    // Activate behavior.
     restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
       ActionFilter.restoreControls(self.state);
-    });
-  }
-  /**
-  * Creates and activates a button to export information.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateExport(self) {
-    // Create button for export.
-    var exporter = View.createButton({
-      text: "export",
-      parent: self.container,
-      documentReference: self.document
-    });
-    // Activate behavior.
-    exporter.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      Action.exportFilterEntitiesSummary(self.state);
     });
   }
   /**

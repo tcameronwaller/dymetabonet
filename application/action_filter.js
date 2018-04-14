@@ -41,98 +41,39 @@ class ActionFilter {
 
   // Direct actions.
 
-  // TODO: restoreControls should initialize view's controls and then call derive function to derive all down-stream state's variables
-
   /**
   * Restores values of application's variables for controls relevant to view.
   * @param {Object} state Application's state.
   */
   static restoreControls(state) {
-    // Initialize controls for set view.
-    var setViewControls = ActionFilter.initializeControls();
-    // Determine current entities' attribution to sets.
-    var currentEntitiesSets = Attribution.determineCurrentEntitiesSets({
-      setsFilters: setViewControls.setsFilters,
-      totalSetsReactions: state.totalSetsReactions,
-      totalSetsMetabolites: state.totalSetsMetabolites,
-      reactions: state.reactions
-    });
-    // Determine sets' cardinalities and prepare sets' summaries.
-    var setsCardinalitiesSummaries = Cardinality
-    .determineSetsCardinalitiesSummaries({
-      setsEntities: setViewControls.setsEntities,
-      setsFilter: setViewControls.setsFilter,
-      accessSetsReactions: currentEntitiesSets.accessSetsReactions,
-      accessSetsMetabolites: currentEntitiesSets.accessSetsMetabolites,
-      filterSetsReactions: currentEntitiesSets.filterSetsReactions,
-      filterSetsMetabolites: currentEntitiesSets.filterSetsMetabolites,
-      setsSearches: setViewControls.setsSearches,
-      setsSorts: setViewControls.setsSorts,
+    // Initialize view's controls.
+    var controls = ActionFilter.initializeControls();
+    // Derive dependent state.
+    var dependentStateVariables = ActionFilter.deriveState({
+      setsFilters: controls.setsFilters,
+      setsFilter: controls.setsFilter,
+      setsEntities: controls.setsEntities,
+      setsSearches: controls.setsSearches,
+      setsSorts: controls.setsSorts,
+      metabolites: state.metabolites,
+      reactions: state.reactions,
       compartments: state.compartments,
-      processes: state.processes
+      processes: state.processes,
+      state: state
     });
-    // Determine candidate entities and prepare their summaries.
-    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
-      reactionsSets: currentEntitiesSets.filterSetsReactions,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: state.compartmentalization,
-      candidatesSearches: state.candidatesSearches,
-      candidatesSorts: state.candidatesSorts,
-      compartments: state.compartments
+    // Determine which views to restore.
+    var viewsRestoration = ActionInterface.changeViewsRestoration({
+      skips: [],
+      viewsRestoration: state.viewsRestoration
     });
-    // Determine simplifications of candidate entities.
-    // Restore simplifications.
-    var simplifications = Candidacy.restoreSimplifications({
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      reactionsSets: currentEntitiesSets.filterSetsReactions,
-      reactions: state.reactions,
-      compartmentalization: state.compartmentalization,
-      reactionsSimplifications: state.reactionsSimplifications,
-      metabolitesSimplifications: state.metabolitesSimplifications
-    });
-    // Determine default simplifications.
-    // Determine whether simplifications exist for all default entities.
-    var defaultSimplifications = Candidacy.determineDefaultSimplifications({
-      defaultSimplificationsMetabolites: state
-      .defaultSimplificationsMetabolites,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      metabolitesSimplifications: simplifications.metabolitesSimplifications
-    });
-    // Create network's elements.
-    var networkElements = Network.createNetworkElements({
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      reactionsSimplifications: simplifications.reactionsSimplifications,
-      metabolitesSimplifications: simplifications.metabolitesSimplifications,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartmentalization: state.compartmentalization
-    });
-    // Create subnetwork's elements.
-    var subnetworkElements = Network.copyNetworkElementsRecords({
-      networkNodesRecords: networkElements.networkNodesRecords,
-      networkLinksRecords: networkElements.networkLinksRecords
-    });
-    // Initialize whether to force representation of topology for networks of
-    // excessive scale.
-    var forceTopology = false;
     // Compile variables' values.
     var novelVariablesValues = {
-      defaultSimplifications: defaultSimplifications,
-      forceTopology: forceTopology
+      viewsRestoration: viewsRestoration
     };
-    // Compile variables' values.
     var variablesValues = Object.assign(
       novelVariablesValues,
-      setViewControls,
-      currentEntitiesSets,
-      setsCardinalitiesSummaries,
-      candidatesSummaries,
-      simplifications,
-      networkElements,
-      subnetworkElements
+      controls,
+      dependentStateVariables
     );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
