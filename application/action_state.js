@@ -207,20 +207,11 @@ class ActionState {
     var startTime = window.performance.now();
     // Execute process.
 
-    console.log("sets");
-    console.log(state.setsSummaries);
-    console.log("candidates");
-    console.log(state.candidatesSummaries);
-    console.log("measurements");
-    console.log(state.metabolitesMeasurements);
+    console.log(Object.keys(state.metabolites).length);
+    console.log(Object.keys(state.reactions).length);
+    console.log(Object.keys(state.compartments).length);
+    console.log(Object.keys(state.processes).length);
 
-    var measurementsSummaries = Measurement.prepareMeasurementsSummaries({
-      metabolitesMeasurements: state.metabolitesMeasurements,
-      measurementsSort: state.measurementsSort,
-      metabolites: state.metabolites
-    });
-    console.log("measurements Summary");
-    console.log(measurementsSummaries);
 
 
     // Terminate process timer.

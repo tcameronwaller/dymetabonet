@@ -462,12 +462,27 @@ class ActionQuery {
         networkNodesRecords: state.networkNodesRecords,
         networkLinksRecords: state.networkLinksRecords
       });
-      // Initialize controls for traversal view.
-      var traversalViewControls = ActionQuery.initializeControls();
+      // Derive dependent state.
+      var dependentStateVariables = ActionExploration.deriveState({
+        simulationDimensions: state.simulationDimensions,
+        previousSimulation: state.simulation,
+        subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
+        subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords,
+        state: state
+      });
+      // Determine which views to restore.
+      var viewsRestoration = ActionInterface.changeViewsRestoration({
+        skips: [],
+        viewsRestoration: state.viewsRestoration
+      });
       // Compile variables' values.
+      var novelVariablesValues = {
+        viewsRestoration: viewsRestoration
+      };
       var variablesValues = Object.assign(
+        novelVariablesValues,
         subnetworkElements,
-        traversalViewControls
+        dependentStateVariables
       );
       // Submit variables' values to the application's state.
       ActionGeneral.submitStateVariablesValues({
@@ -534,12 +549,27 @@ class ActionQuery {
         networkNodesRecords: state.networkNodesRecords,
         networkLinksRecords: state.networkLinksRecords
       });
-      // Initialize controls for traversal view.
-      var traversalViewControls = ActionQuery.initializeControls();
+      // Derive dependent state.
+      var dependentStateVariables = ActionExploration.deriveState({
+        simulationDimensions: state.simulationDimensions,
+        previousSimulation: state.simulation,
+        subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
+        subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords,
+        state: state
+      });
+      // Determine which views to restore.
+      var viewsRestoration = ActionInterface.changeViewsRestoration({
+        skips: [],
+        viewsRestoration: state.viewsRestoration
+      });
       // Compile variables' values.
+      var novelVariablesValues = {
+        viewsRestoration: viewsRestoration
+      };
       var variablesValues = Object.assign(
+        novelVariablesValues,
         subnetworkElements,
-        traversalViewControls
+        dependentStateVariables
       );
       // Submit variables' values to the application's state.
       ActionGeneral.submitStateVariablesValues({
@@ -591,12 +621,27 @@ class ActionQuery {
         networkNodesRecords: state.networkNodesRecords,
         networkLinksRecords: state.networkLinksRecords
       });
-      // Initialize controls for traversal view.
-      var traversalViewControls = ActionQuery.initializeControls();
+      // Derive dependent state.
+      var dependentStateVariables = ActionExploration.deriveState({
+        simulationDimensions: state.simulationDimensions,
+        previousSimulation: state.simulation,
+        subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
+        subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords,
+        state: state
+      });
+      // Determine which views to restore.
+      var viewsRestoration = ActionInterface.changeViewsRestoration({
+        skips: [],
+        viewsRestoration: state.viewsRestoration
+      });
       // Compile variables' values.
+      var novelVariablesValues = {
+        viewsRestoration: viewsRestoration
+      };
       var variablesValues = Object.assign(
+        novelVariablesValues,
         subnetworkElements,
-        traversalViewControls
+        dependentStateVariables
       );
       // Submit variables' values to the application's state.
       ActionGeneral.submitStateVariablesValues({

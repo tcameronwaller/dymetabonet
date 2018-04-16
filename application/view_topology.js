@@ -176,7 +176,7 @@ class ViewTopology {
     var baseSelection = d3.select(self.base);
     baseSelection.call(
       d3.zoom()
-      .scaleExtent([0, 5])
+      .scaleExtent([0, 25])
       .on("zoom", zoomPan)
     );
     function zoomPan(element, index, nodes) {
@@ -365,7 +365,7 @@ class ViewTopology {
     self.linksMarks.attr("marker-mid", "url(#link-marker)");
     // Determine dimensions for representations of network's elements.
     // Set dimensions of links.
-    self.linksMarks.attr("stroke-width", (self.linkThickness));
+    //self.linksMarks.attr("stroke-width", (self.linkThickness));
   }
   /**
   * Creates and activates nodes.
