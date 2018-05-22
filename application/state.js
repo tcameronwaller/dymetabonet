@@ -44,6 +44,9 @@ class State {
     // Specify state's variables.
     // Controls
 
+    // TODO: organize view controls according to hierarchy...
+    // TODO: Name the controls after their respective views...
+
     var interfaceControls = [
       // Variable "views" stores references to instances of views in interface.
       "views",
@@ -224,6 +227,9 @@ class State {
       measurementControls,
       explorationControls,
     );
+
+    // TODO: Make it clear that these state variables have to do with the data itself...
+    
     // Metabolic entities and sets
     var metabolicEntities = [
       // Metabolic entities and sets.
