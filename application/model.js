@@ -1,6 +1,9 @@
 /*
+This file is part of project Profondeur
+(https://github.com/tcameronwaller/profondeur/).
+
 Profondeur supports visual exploration and analysis of metabolic networks.
-Copyright (C) 2017 Thomas Cameron Waller
+Copyright (C) 2018 Thomas Cameron Waller
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -16,14 +19,12 @@ You should have received a copy of the GNU General Public License along with
 this program.
 If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of project Profondeur.
-Project repository's address: https://github.com/tcameronwaller/profondeur/
-Author's electronic address: tcameronwaller@gmail.com
-Author's physical address:
-T Cameron Waller
-Scientific Computing and Imaging Institute
+Thomas Cameron Waller
+tcameronwaller@gmail.com
+Department of Biochemistry
 University of Utah
-72 South Central Campus Drive Room 3750
+Room 5520C, Emma Eccles Jones Medical Research Building
+15 North Medical Drive East
 Salt Lake City, Utah 84112
 United States of America
 */
@@ -114,15 +115,6 @@ class Model {
           documentReference: self.document
         });
       }
-      // Panel view.
-      if (self.state.viewsRestoration.panel) {
-        // Restore views.
-        self.state.views.panel = new ViewPanel({
-          interfaceView: self.state.views.interface,
-          state: self.state,
-          documentReference: self.document
-        });
-      }
       // Tip view.
       // Tip view always exists but is only visible when active.
       if (self.state.viewsRestoration.tip) {
@@ -145,31 +137,73 @@ class Model {
           windowReference: self.window
         });
       }
-      // Summary view.
-      if (self.state.viewsRestoration.summary) {
+      // Panel view.
+      if (self.state.viewsRestoration.panel) {
         // Restore views.
-        self.state.views.summary = new ViewSummary({
+        self.state.views.panel = new ViewPanel({
           interfaceView: self.state.views.interface,
-          panelView: self.state.views.panel,
-          tipView: self.state.views.tip,
-          promptView: self.state.views.prompt,
           state: self.state,
           documentReference: self.document
         });
       }
-      // Control view.
-      // Control view has several subordinate views.
-      if (self.state.viewsRestoration.control) {
+      // Network view.
+      // View has subordinate views.
+      if (self.state.viewsRestoration.network) {
         // Restore views.
-        self.state.views.control = new ViewControl({
+        self.state.views.network = new ViewNetwork({
           interfaceView: self.state.views.interface,
-          panelView: self.state.views.panel,
           tipView: self.state.views.tip,
           promptView: self.state.views.prompt,
+          panelView: self.state.views.panel,
           state: self.state,
           documentReference: self.document
         });
       }
+      // Subnetwork view.
+      // View has subordinate views.
+      if (self.state.viewsRestoration.subnetwork) {
+        // Restore views.
+        self.state.views.subnetwork = new ViewSubnetwork({
+          interfaceView: self.state.views.interface,
+          tipView: self.state.views.tip,
+          promptView: self.state.views.prompt,
+          panelView: self.state.views.panel,
+          state: self.state,
+          documentReference: self.document
+        });
+      }
+
+      // TODO: Create measurement view...
+
+      // TODO: Summary view will go at the very bottom of the panel view...
+      if (false) {
+        // Summary view.
+        if (self.state.viewsRestoration.summary) {
+          // Restore views.
+          self.state.views.summary = new ViewSummary({
+            interfaceView: self.state.views.interface,
+            tipView: self.state.views.tip,
+            promptView: self.state.views.prompt,
+            panelView: self.state.views.panel,
+            state: self.state,
+            documentReference: self.document
+          });
+        }
+        // Control view.
+        // Control view has several subordinate views.
+        if (self.state.viewsRestoration.control) {
+          // Restore views.
+          self.state.views.control = new ViewControl({
+            interfaceView: self.state.views.interface,
+            panelView: self.state.views.panel,
+            tipView: self.state.views.tip,
+            promptView: self.state.views.prompt,
+            state: self.state,
+            documentReference: self.document
+          });
+        }
+      }
+
       // Exploration view.
       if (self.state.viewsRestoration.exploration) {
         // Restore views.
