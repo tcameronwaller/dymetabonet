@@ -59,6 +59,7 @@ class Model {
   * Evaluates the application's state and responds accordingly.
   */
   act(self) {
+    // TODO: I'll need to update Model.determineApplicationControls...
     if (!Model.determineApplicationControls(self.state)) {
       ActionGeneral.initializeApplicationControls(self.state);
     } else if (!Model.determineMetabolismBaseInformation(self.state)) {
@@ -66,7 +67,10 @@ class Model {
     } else if (!Model.determineMetabolismSupplementInformation(self.state)) {
       ActionGeneral.loadMetabolismSupplementInformation(self.state);
     } else if (!Model.determineMetabolismDerivationInformation(self.state)) {
-      ActionGeneral.deriveCompleteState(self.state);
+      // TODO: for now, get the controls initialized...
+      //ActionGeneral.deriveCompleteState(self.state);
+
+      ActionState.saveState(self.state);
     }
   }
 
@@ -145,6 +149,8 @@ class Model {
           state: self.state,
           documentReference: self.document
         });
+
+        // TODO: I might need to create subordinate views within PanelView...
       }
       // Network view.
       // View has subordinate views.
@@ -189,6 +195,7 @@ class Model {
             documentReference: self.document
           });
         }
+        // TODO: no more control view...
         // Control view.
         // Control view has several subordinate views.
         if (self.state.viewsRestoration.control) {
@@ -205,16 +212,18 @@ class Model {
       }
 
       // Exploration view.
-      if (self.state.viewsRestoration.exploration) {
-        // Restore views.
-        self.state.views.exploration = new ViewExploration({
-          interfaceView: self.state.views.interface,
-          tipView: self.state.views.tip,
-          promptView: self.state.views.prompt,
-          state: self.state,
-          documentReference: self.document,
-          windowReference: self.window
-        });
+      if (false) {
+        if (self.state.viewsRestoration.exploration) {
+          // Restore views.
+          self.state.views.exploration = new ViewExploration({
+            interfaceView: self.state.views.interface,
+            tipView: self.state.views.tip,
+            promptView: self.state.views.prompt,
+            state: self.state,
+            documentReference: self.document,
+            windowReference: self.window
+          });
+        }
       }
     }
   }

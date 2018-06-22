@@ -37,41 +37,13 @@ United States of America
 * The methods require a reference to the instance of the state.
 * These methods also call external methods as necessary.
 */
-class ActionControl {
+class ActionSubnetwork {
 
   // Direct actions.
 
-  /**
-  * Changes the selections of active panels within the control view.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.category Category of panel.
-  * @param {Object} parameters.state Application's state.
-  */
-  static changeView({category, state}) {
-    // Multiple subordinate views within control view can be active
-    // simultaneously.
-    // Change the view's selection.
-    if (state.controlViews[category]) {
-      var selection = false;
-    } else {
-      var selection = true;
-    }
-    // Create entry.
-    var entry = {
-      [category]: selection
-    };
-    var controlViews = Object.assign(state.controlViews, entry);
-    // Compile variables' values.
-    var novelVariablesValues = {
-      controlViews: controlViews
-    };
-    var variablesValues = novelVariablesValues;
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
+  // TODO: ActionSubnetwork.restoreControls should also restore all subordinate controls and state variables
+
+  // TODO: ActionSubnetwork.export...
 
   // Indirect actions.
 
@@ -81,19 +53,17 @@ class ActionControl {
   */
   static initializeControls() {
     // Initialize controls.
-    var controlViews = {
-      state: false,
-      filter: false,
-      simplification: false,
-      traversal: false,
-      measurement: false
+    var subnetworkViews = {
+      query: false
     };
     // Compile information.
     var variablesValues = {
-      controlViews: controlViews
+      subnetworkViews: subnetworkViews
     };
     // Return information.
     return variablesValues;
   }
+
+  // TODO: ActionSubnetwork.deriveState should call ActionQuery.deriveState
 
 }

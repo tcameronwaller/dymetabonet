@@ -107,6 +107,40 @@ class ActionState {
       state: state
     });
   }
+  /**
+  * Saves to file on client's system a persistent representation of the
+  * application's state.
+  * @param {Object} state Application's state.
+  */
+  static saveState(state) {
+    var persistence = ActionState.createPersistence(state);
+    console.log("application's state...");
+    console.log(persistence);
+    General.saveObject("state.json", persistence);
+  }
+  /**
+  * Executes a temporary procedure.
+  * @param {Object} state Application's state.
+  */
+  static executeProcedure(state) {
+    // Initiate process timer.
+    //console.time("timer");
+    var startTime = window.performance.now();
+    // Execute process.
+
+    console.log(Object.keys(state.metabolites).length);
+    console.log(Object.keys(state.reactions).length);
+    console.log(Object.keys(state.compartments).length);
+    console.log(Object.keys(state.processes).length);
+
+
+
+    // Terminate process timer.
+    //console.timeEnd("timer");
+    var endTime = window.performance.now();
+    var duration = Math.round(endTime - startTime);
+    console.log("process duration: " + duration + " milliseconds");
+  }
 
   // Indirect actions.
 
@@ -131,6 +165,10 @@ class ActionState {
   */
   static deriveState(state) {
     // Derive dependent state.
+
+    // TODO: ActionState.deriveState should call ActionNetwork.deriveState...
+
+
     var dependentStateVariables = ActionFilter.deriveState({
       setsFilters: state.setsFilters,
       setsFilter: state.setsFilter,
@@ -185,40 +223,6 @@ class ActionState {
       // Restore application to initial state.
       ActionState.restoreControls(state);
     }
-  }
-  /**
-  * Saves to file on client's system a persistent representation of the
-  * application's state.
-  * @param {Object} state Application's state.
-  */
-  static saveState(state) {
-    var persistence = ActionState.createPersistence(state);
-    console.log("application's state...");
-    console.log(persistence);
-    General.saveObject("state.json", persistence);
-  }
-  /**
-  * Executes a temporary procedure.
-  * @param {Object} state Application's state.
-  */
-  static executeProcedure(state) {
-    // Initiate process timer.
-    //console.time("timer");
-    var startTime = window.performance.now();
-    // Execute process.
-
-    console.log(Object.keys(state.metabolites).length);
-    console.log(Object.keys(state.reactions).length);
-    console.log(Object.keys(state.compartments).length);
-    console.log(Object.keys(state.processes).length);
-
-
-
-    // Terminate process timer.
-    //console.timeEnd("timer");
-    var endTime = window.performance.now();
-    var duration = Math.round(endTime - startTime);
-    console.log("process duration: " + duration + " milliseconds");
   }
 
 }

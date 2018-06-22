@@ -44,10 +44,6 @@ class State {
     var self = this;
     // Specify state's variables.
     // Controls
-
-    // TODO: organize view controls according to hierarchy...
-    // TODO: Name the controls after their respective views...
-
     var interfaceControls = [
       // Variable "views" stores references to instances of views in interface.
       "views",
@@ -60,16 +56,20 @@ class State {
       // prompt view within the interface.
       "prompt"
     ];
-    var summaryControls = [];
-    var controlControls = [
-      // Variable "controlViews" stores information about whether each view
-      // within the control view is active.
-      "controlViews"
+    var panelControls = [
+      // Variable "panelViews" stores information about whether each subordinate
+      // view within the panel view is active.
+      "panelViews"
     ];
     var stateControls = [
       // Variable "sourceState" stores a reference to a file on client's system
       // that is a source of information.
       "sourceState"
+    ];
+    var networkControls = [
+      // Variable "networkViews" stores information about whether each
+      // subordinate view within the network view is active.
+      "networkViews"
     ];
     var filterControls = [
       // Variable "setsFilters" stores information about selections of sets
@@ -110,6 +110,11 @@ class State {
       // Information includes references to variables "candidatesReactions" and
       // "candidatesMetabolites".
       "candidatesSorts"
+    ];
+    var subnetworkControls = [
+      // Variable "subnetworkViews" stores information about whether each
+      // subordinate view within the subnetwork view is active.
+      "subnetworkViews"
     ];
     var queryControls = [
       // Variable "traversalCombination" stores information about the strategy,
@@ -188,6 +193,7 @@ class State {
       // "metabolitesMeasurements".
       "measurementsSort"
     ];
+    var summaryControls = [];
     var explorationControls = [
       // Variable "forceNetworkDiagram" stores information about whether to draw
       // a network even if it is large.
@@ -219,14 +225,16 @@ class State {
     self.variablesNamesControls = [].concat(
       interfaceControls,
       promptControls,
-      summaryControls,
-      controlControls,
+      panelControls,
       stateControls,
+      networkControls,
       filterControls,
       contextControls,
+      subnetworkControls,
       queryControls,
       measurementControls,
-      explorationControls,
+      summaryControls,
+      explorationControls
     );
 
     // TODO: Make it clear that these state variables have to do with the data itself...

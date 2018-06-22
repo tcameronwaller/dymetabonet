@@ -86,18 +86,24 @@ class ViewNetwork {
       // Container is empty.
       // Create and activate behavior of content.
 
-
       // TODO: create representations of nodes and links in network...
+      // TODO: create temporary place-holder text
+      var spanNodes = self.document.createElement("span");
+      self.container.appendChild(span);
+      span.textContent = "coming soon! summary of nodes...";
+      var spanLinks = self.document.createElement("span");
+      self.container.appendChild(span);
+      span.textContent = "coming soon! summary of links...";
 
       // Create and activate tabs.
       self.createActivateTabs(self);
-
 
     } else {
       // Container is not empty.
       // Set references to content.
 
       // Summary.
+      //self.nodesSummary = self.document.getElementById("");
 
 
       // Tabs.

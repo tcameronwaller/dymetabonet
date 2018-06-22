@@ -67,11 +67,16 @@ class ActionInterface {
     // Compile information.
     var information = {
       interface: {},
-      panel: {},
       tip: {},
       prompt: {},
+      panel: {},
+      network: {},
+      filter: {},
+      context: {},
+      subnetwork: {},
+      query: {},
+      measurement: {},
       summary: {},
-      control: {},
       exploration: {}
     };
     // Return information.
@@ -85,16 +90,23 @@ class ActionInterface {
     // Compile information.
     var information = {
       interface: true,
-      panel: true,
       tip: true,
       prompt: true,
+      panel: true,
+      network: true,
+      filter: true,
+      context: true,
+      subnetwork: true,
+      query: true,
       summary: true,
-      control: true,
       exploration: true
     };
     // Return information.
     return information;
   }
+
+  // TODO: I might need to re-work this...
+  
   /**
   * Changes controls of whether to restore views.
   * @param {Object} parameters Destructured object of parameters.

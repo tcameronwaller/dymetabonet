@@ -740,13 +740,16 @@ class ActionQuery {
       });
     }
     // Derive dependent state.
-    var dependentStateVariables = ActionExploration.deriveState({
-      simulationDimensions: state.simulationDimensions,
-      previousSimulation: state.simulation,
-      subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
-      subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords,
-      state: state
-    });
+    if (false) {
+      var dependentStateVariables = ActionExploration.deriveState({
+        simulationDimensions: state.simulationDimensions,
+        previousSimulation: state.simulation,
+        subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
+        subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords,
+        state: state
+      });
+    }
+    var dependentStateVariables = ActionExploration.initializeControls();
     // Compile information.
     var novelVariablesValues = {};
     var variablesValues = Object.assign(

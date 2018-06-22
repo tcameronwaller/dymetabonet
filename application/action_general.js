@@ -120,13 +120,17 @@ class ActionGeneral {
     // Call procedures to initialize controls for each view.
     var interfaceControls = ActionInterface.initializeControls();
     var prompt = ActionPrompt.initializeControls();
-    var summary = ActionSummary.initializeControls();
-    var control = ActionControl.initializeControls();
+    var panel = ActionPanel.initializeControls();
     var stateControls = ActionState.initializeControls();
+    var network = ActionNetwork.initializeControls();
     var filter = ActionFilter.initializeControls();
     var context = ActionContext.initializeControls();
+    var subnetwork = ActionSubnetwork.initializeControls();
     var query = ActionQuery.initializeControls();
+    // TODO: update measurement view and its controls
     var measurement = ActionMeasurement.initializeControls();
+    // TODO: update summary view and its controls
+    var summary = ActionSummary.initializeControls();
     var exploration = ActionExploration.initializeControls();
     // Compile variables' values.
     var novelVariablesValues = {};
@@ -134,13 +138,15 @@ class ActionGeneral {
       novelVariablesValues,
       interfaceControls,
       prompt,
-      summary,
-      control,
+      panel,
       stateControls,
+      network,
       filter,
       context,
+      subnetwork,
       query,
       measurement,
+      summary,
       exploration
     );
     // Submit variables' values to the application's state.
