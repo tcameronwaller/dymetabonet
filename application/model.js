@@ -53,7 +53,8 @@ class Model {
     self.body = self.document.getElementsByTagName("body").item(0);
     // Evaluate application's state, respond, and represent accordingly.
     self.act(self);
-    self.represent(self);
+    // TODO: Temporarily off to simplify...
+    //self.represent(self);
   }
   /**
   * Evaluates the application's state and responds accordingly.
@@ -67,9 +68,9 @@ class Model {
     } else if (!Model.determineMetabolismSupplementInformation(self.state)) {
       ActionGeneral.loadMetabolismSupplementInformation(self.state);
     } else if (!Model.determineMetabolismDerivationInformation(self.state)) {
-      // TODO: for now, get the controls initialized...
-      //ActionGeneral.deriveCompleteState(self.state);
-
+      ActionGeneral.deriveState(self.state);
+    } else {
+      console.log("passed all act steps");
       ActionState.saveState(self.state);
     }
   }
@@ -102,9 +103,9 @@ class Model {
     // Pass these instances a reference to the application's state.
     // Pass these instances references to instances of other relevant views.
     if (
+      Model.determineApplicationControls(self.state) &&
       Model.determineMetabolismBaseInformation(self.state) &&
       Model.determineMetabolismSupplementInformation(self.state) &&
-      Model.determineApplicationControls(self.state) &&
       Model.determineMetabolismDerivationInformation(self.state)
     ) {
       // Determine which views to restore.
@@ -141,6 +142,12 @@ class Model {
           windowReference: self.window
         });
       }
+
+      // TODO: Panel View has subordinate views...
+      // TODO: maybe I don't want to create the subordinate views within panel view... it's messy
+      // TODO: instead create those here within the Model...
+
+
       // Panel view.
       if (self.state.viewsRestoration.panel) {
         // Restore views.
@@ -151,7 +158,12 @@ class Model {
         });
 
         // TODO: I might need to create subordinate views within PanelView...
+        // TODO: yep... I think so... like state, network, subnetwork, and measurement
       }
+
+      // TODO: Keep new summary view separate from the panel view...
+
+
       // Network view.
       // View has subordinate views.
       if (self.state.viewsRestoration.network) {
@@ -235,6 +247,23 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
+  static determineApplicationControls(state) {
+    if (false) {
+      state.variablesNamesControls.forEach(function (variable) {
+        if (state[variable] === null) {
+          console.log("problem with state's variable, " + variable);
+        }
+      });
+    }
+    return state.variablesNamesControls.every(function (variable) {
+      return !(state[variable] === null);
+    });
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
   static determineMetabolismBaseInformation(state) {
     return (
       !(state.compartments === null) &&
@@ -250,23 +279,6 @@ class Model {
   */
   static determineMetabolismSupplementInformation(state) {
     return !(state.defaultSimplificationsMetabolites === null);
-  }
-  /**
-  * Determines whether the application's state has specific information.
-  * @param {Object} state Application's state.
-  * @returns {boolean} Whether the application's state matches criteria.
-  */
-  static determineApplicationControls(state) {
-    if (false) {
-      state.variablesNamesControls.forEach(function (variable) {
-        if (state[variable] === null) {
-          console.log("problem with state's variable, " + variable);
-        }
-      });
-    }
-    return state.variablesNamesControls.every(function (variable) {
-      return !(state[variable] === null);
-    });
   }
   /**
   * Determines whether the application's state has specific information.

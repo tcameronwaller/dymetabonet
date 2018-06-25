@@ -336,10 +336,12 @@ class ActionContext {
   * @param {Object} parameters.reactions Information about reactions.
   * @param {Object} parameters.compartments Information about compartments.
   * @param {Object} parameters.processes Information about processes.
+  * @param {Object<boolean>} parameters.viewsRestoration Information about
+  * whether to restore each view.
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState({compartmentalization, candidatesSearches, candidatesSorts, defaultSimplificationsMetabolites, filterSetsReactions, metabolites, reactions, compartments, processes, state} = {}) {
+  static deriveState({compartmentalization, candidatesSearches, candidatesSorts, defaultSimplificationsMetabolites, filterSetsReactions, metabolites, reactions, compartments, processes, viewsRestoration, state} = {}) {
     // Derive state relevant to view.
     // Determine candidate entities and prepare their summaries.
     var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
@@ -374,11 +376,24 @@ class ActionContext {
       metabolites: metabolites,
       compartmentalization: compartmentalization
     });
+    // Determine which views to restore.
+    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [
+        "context",
+        "subnetwork",
+        "query",
+        "measurement",
+        "summary",
+        "exploration"
+      ],
+      type: true,
+      viewsRestoration: viewsRestoration
+    });
     // Derive dependent state.
-    var dependentStateVariables = ActionQuery.deriveState({
-      combination: state.traversalCombination,
+    var dependentStateVariables = ActionSubnetwork.deriveState({
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords,
+      viewsRestoration: novelViewsRestoration,
       state: state
     });
     // Compile information.

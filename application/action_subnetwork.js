@@ -66,4 +66,48 @@ class ActionSubnetwork {
 
   // TODO: ActionSubnetwork.deriveState should call ActionQuery.deriveState
 
+  /**
+  * Derives application's dependent state from controls relevant to view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.networkNodesRecords Information about
+  * network's nodes.
+  * @param {Array<Object>} parameters.networkLinksRecords Information about
+  * network's links.
+  * @param {Object<boolean>} parameters.viewsRestoration Information about
+  * whether to restore each view.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Values of application's variables.
+  */
+  static deriveState({networkNodesRecords, networkLinksRecords, viewsRestoration, state} = {}) {
+    // Derive state relevant to view.
+    // Determine which views to restore.
+    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [
+        "subnetwork",
+        "query",
+        "measurement",
+        "summary",
+        "exploration"
+      ],
+      type: true,
+      viewsRestoration: viewsRestoration
+    });
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveState({
+      combination: state.traversalCombination,
+      networkNodesRecords: networkNodesRecords,
+      networkLinksRecords: networkLinksRecords,
+      viewsRestoration: novelViewsRestoration,
+      state: state
+    });
+    // Compile information.
+    var novelVariablesValues = {};
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
+    // Return information.
+    return variablesValues;
+  }
+
 }

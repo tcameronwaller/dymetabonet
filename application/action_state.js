@@ -160,25 +160,37 @@ class ActionState {
   }
   /**
   * Derives application's dependent state from controls relevant to view.
-  * @param {Object} state Application's state.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<boolean>} parameters.viewsRestoration Information about
+  * whether to restore each view.
+  * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState(state) {
+  static deriveState({viewsRestoration, state} = {}) {
+    // Derive state relevant to view.
+    // Determine which views to restore.
+    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [
+        "state",
+        "network",
+        "filter",
+        "context",
+        "subnetwork",
+        "query",
+        "measurement",
+        "summary",
+        "exploration"
+      ],
+      type: true,
+      viewsRestoration: viewsRestoration
+    });
     // Derive dependent state.
-
-    // TODO: ActionState.deriveState should call ActionNetwork.deriveState...
-
-
-    var dependentStateVariables = ActionFilter.deriveState({
-      setsFilters: state.setsFilters,
-      setsFilter: state.setsFilter,
-      setsEntities: state.setsEntities,
-      setsSearches: state.setsSearches,
-      setsSorts: state.setsSorts,
+    var dependentStateVariables = ActionNetwork.deriveState({
       metabolites: state.metabolites,
       reactions: state.reactions,
       compartments: state.compartments,
       processes: state.processes,
+      viewsRestoration: novelViewsRestoration,
       state: state
     });
     // Compile information.

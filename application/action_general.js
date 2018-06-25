@@ -205,7 +205,7 @@ class ActionGeneral {
   * sets.
   * @param {Object} state Application's state.
   */
-  static deriveCompleteState(state) {
+  static deriveState(state) {
     // Some aspects of the application's state have a hierarchy.
     // State
     //  Filter
@@ -220,16 +220,12 @@ class ActionGeneral {
     // Any change to a module's controls calls the derive function of
     // subordinate (downstream) (perhaps via the module's own derive function).
     // Derive dependent state.
-    var dependentStateVariables = ActionState.deriveState(state);
-    // Determine which views to restore.
-    var viewsRestoration = ActionInterface.changeViewsRestoration({
-      skips: [],
-      viewsRestoration: state.viewsRestoration
+    var dependentStateVariables = ActionState.deriveState({
+      viewsRestoration: state.viewsRestoration,
+      state: state
     });
     // Compile variables' values.
-    var novelVariablesValues = {
-      viewsRestoration
-    };
+    var novelVariablesValues = {};
     var variablesValues = Object.assign(
       novelVariablesValues,
       dependentStateVariables

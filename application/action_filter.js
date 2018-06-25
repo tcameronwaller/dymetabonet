@@ -304,10 +304,12 @@ class ActionFilter {
   * @param {Object} parameters.reactions Information about reactions.
   * @param {Object} parameters.compartments Information about compartments.
   * @param {Object} parameters.processes Information about processes.
+  * @param {Object<boolean>} parameters.viewsRestoration Information about
+  * whether to restore each view.
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState({setsFilters, setsFilter, setsEntities, setsSearches, setsSorts, metabolites, reactions, compartments, processes, state} = {}) {
+  static deriveState({setsFilters, setsFilter, setsEntities, setsSearches, setsSorts, metabolites, reactions, compartments, processes, viewsRestoration, state} = {}) {
     // Derive state relevant to view.
     // Determine total entities' attribution to sets.
     var totalEntitiesSets = Attribution
@@ -333,6 +335,20 @@ class ActionFilter {
       compartments: compartments,
       processes: processes
     });
+    // Determine which views to restore.
+    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [
+        "filter",
+        "context",
+        "subnetwork",
+        "query",
+        "measurement",
+        "summary",
+        "exploration"
+      ],
+      type: true,
+      viewsRestoration: viewsRestoration
+    });
     // Derive dependent state.
     var dependentStateVariables = ActionContext.deriveState({
       compartmentalization: state.compartmentalization,
@@ -345,6 +361,7 @@ class ActionFilter {
       metabolites: metabolites,
       compartments: compartments,
       processes: processes,
+      viewsRestoration: novelViewsRestoration,
       state: state
     });
     // Compile information.

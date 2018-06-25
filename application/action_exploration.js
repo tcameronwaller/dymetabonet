@@ -225,10 +225,12 @@ class ActionExploration {
   * subnetwork's nodes.
   * @param {Array<Object>} parameters.subnetworkLinksRecords Information about
   * subnetwork's links.
+  * @param {Object<boolean>} parameters.viewsRestoration Information about
+  * whether to restore each view.
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState({simulationDimensions, previousSimulation, subnetworkNodesRecords, subnetworkLinksRecords, state} = {}) {
+  static deriveState({simulationDimensions, previousSimulation, subnetworkNodesRecords, subnetworkLinksRecords, viewsRestoration, state} = {}) {
     // Derive state relevant to view.
     // Initialize controls for query view.
     var subordinateControls = ActionExploration.initializeSubordinateControls();
@@ -241,11 +243,21 @@ class ActionExploration {
       previousSimulation: previousSimulation,
       state: state
     });
+    // Determine which views to restore.
+    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [
+        "exploration"
+      ],
+      type: true,
+      viewsRestoration: viewsRestoration
+    });
     // Derive dependent state.
     // TODO: Maybe tipView and promptView are dependent on ExplorationView?
     var dependentStateVariables = {};
     // Compile information.
-    var novelVariablesValues = {};
+    var novelVariablesValues = {
+      novelViewsRestoration
+    };
     var variablesValues = Object.assign(
       novelVariablesValues,
       subordinateControls,

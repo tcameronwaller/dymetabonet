@@ -720,10 +720,12 @@ class ActionQuery {
   * network's nodes.
   * @param {Array<Object>} parameters.networkLinksRecords Information about
   * network's links.
+  * @param {Object<boolean>} parameters.viewsRestoration Information about
+  * whether to restore each view.
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState({combination, networkNodesRecords, networkLinksRecords, state} = {}) {
+  static deriveState({combination, networkNodesRecords, networkLinksRecords, viewsRestoration, state} = {}) {
     // Derive state relevant to view.
     // Initialize controls for query view.
     var subordinateControls = ActionQuery.initializeSubordinateControls();
@@ -739,17 +741,26 @@ class ActionQuery {
         networkLinksRecords: networkLinksRecords
       });
     }
+    // Determine which views to restore.
+    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [
+        "query",
+        "measurement",
+        "summary",
+        "exploration"
+      ],
+      type: true,
+      viewsRestoration: viewsRestoration
+    });
     // Derive dependent state.
-    if (false) {
-      var dependentStateVariables = ActionExploration.deriveState({
-        simulationDimensions: state.simulationDimensions,
-        previousSimulation: state.simulation,
-        subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
-        subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords,
-        state: state
-      });
-    }
-    var dependentStateVariables = ActionExploration.initializeControls();
+    var dependentStateVariables = ActionExploration.deriveState({
+      simulationDimensions: state.simulationDimensions,
+      previousSimulation: state.simulation,
+      subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
+      subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords,
+      viewsRestoration: novelViewsRestoration,
+      state: state
+    });
     // Compile information.
     var novelVariablesValues = {};
     var variablesValues = Object.assign(

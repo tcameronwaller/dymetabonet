@@ -70,6 +70,7 @@ class ActionInterface {
       tip: {},
       prompt: {},
       panel: {},
+      state: {},
       network: {},
       filter: {},
       context: {},
@@ -84,7 +85,7 @@ class ActionInterface {
   }
   /**
   * Creates initial control of whether to restore views.
-  * @returns {Object} Information about whether to restore views.
+  * @returns {Object} Information about restoration of views.
   */
   static createInitialViewsRestoration() {
     // Compile information.
@@ -93,36 +94,37 @@ class ActionInterface {
       tip: true,
       prompt: true,
       panel: true,
+      state: true,
       network: true,
       filter: true,
       context: true,
       subnetwork: true,
       query: true,
+      measurement: true,
       summary: true,
       exploration: true
     };
     // Return information.
     return information;
   }
-
-  // TODO: I might need to re-work this...
-  
   /**
   * Changes controls of whether to restore views.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<string>} parameters.skips Identifiers of views to skip from
-  * restoration.
-  * @param {Object} parameters.viewsRestoration Value of the variable.
+  * @param {Array<string>} parameters.views Identifiers of views for which to
+  * change restoration.
+  * @param {boolean} parameters.type Whether or not to restore specific views.
+  * @param {Object<boolean>} parameters.viewsRestoration Information about
+  * whether to restore each view.
   * @returns {Object} Information about whether to restore views.
   */
-  static changeViewsRestoration({skips, viewsRestoration} = {}) {
-    var views = Object.keys(viewsRestoration);
-    return views.reduce(function (collection, view) {
-      if (!skips.includes(view)) {
-        var entry = {[view]: true};
+  static changeViewsRestoration({views, type, viewsRestoration} = {}) {
+    var keys = Object.keys(viewsRestoration);
+    return keys.reduce(function (collection, key) {
+      if (views.includes(key)) {
+        var entry = {[key]: type};
         return Object.assign(collection, entry);
       } else {
-        var entry = {[view]: false};
+        var entry = {[key]: viewsRestoration[key]};
         return Object.assign(collection, entry);
       }
     }, {});

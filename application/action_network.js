@@ -67,4 +67,57 @@ class ActionNetwork {
 
   // TODO: ActionNetwork.deriveState should call ActionFilter.deriveState
 
+  /**
+  * Derives application's dependent state from controls relevant to view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.metabolites Information about metabolites.
+  * @param {Object} parameters.reactions Information about reactions.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
+  * @param {Object<boolean>} parameters.viewsRestoration Information about
+  * whether to restore each view.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Values of application's variables.
+  */
+  static deriveState({metabolites, reactions, compartments, processes, viewsRestoration, state} = {}) {
+    // Derive state relevant to view.
+    // Determine which views to restore.
+    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [
+        "network",
+        "filter",
+        "context",
+        "subnetwork",
+        "query",
+        "measurement",
+        "summary",
+        "exploration"
+      ],
+      type: true,
+      viewsRestoration: viewsRestoration
+    });
+    // Derive dependent state.
+    var dependentStateVariables = ActionFilter.deriveState({
+      setsFilters: state.setsFilters,
+      setsFilter: state.setsFilter,
+      setsEntities: state.setsEntities,
+      setsSearches: state.setsSearches,
+      setsSorts: state.setsSorts,
+      metabolites: metabolites,
+      reactions: reactions,
+      compartments: compartments,
+      processes: processes,
+      viewsRestoration: novelViewsRestoration,
+      state: state
+    });
+    // Compile information.
+    var novelVariablesValues = {};
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
+    // Return information.
+    return variablesValues;
+  }
+
 }
