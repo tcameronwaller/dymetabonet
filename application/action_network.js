@@ -41,6 +41,45 @@ class ActionNetwork {
 
   // Direct actions.
 
+  /**
+  * Changes the selections of active panels within the panel view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Category of panel.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeView({category, state}) {
+    // Multiple subordinate views within control view can be active
+    // simultaneously.
+    // Change the view's selection.
+    if (state.networkViews[category]) {
+      var selection = false;
+    } else {
+      var selection = true;
+    }
+    // Create entry.
+    var entry = {
+      [category]: selection
+    };
+    var networkViews = Object.assign(state.networkViews, entry);
+    // Determine which views to restore.
+    var viewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [category],
+      type: true,
+      viewsRestoration: state.viewsRestoration
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {
+      networkViews: networkViews,
+      viewsRestoration: viewsRestoration
+    };
+    var variablesValues = novelVariablesValues;
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+
   // TODO: ActionNetwork.restoreControls should also restore all subordinate controls and state variables
 
   // TODO: ActionNetwork.export...

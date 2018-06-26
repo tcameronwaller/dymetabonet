@@ -120,7 +120,7 @@ class ActionGeneral {
     // Call procedures to initialize controls for each view.
     var interfaceControls = ActionInterface.initializeControls();
     var prompt = ActionPrompt.initializeControls();
-    var panel = ActionPanel.initializeControls();
+    var control = ActionControl.initializeControls();
     var stateControls = ActionState.initializeControls();
     var network = ActionNetwork.initializeControls();
     var filter = ActionFilter.initializeControls();
@@ -138,7 +138,7 @@ class ActionGeneral {
       novelVariablesValues,
       interfaceControls,
       prompt,
-      panel,
+      control,
       stateControls,
       network,
       filter,

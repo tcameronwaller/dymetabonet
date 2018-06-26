@@ -36,12 +36,11 @@ class ViewPanel {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.interfaceView Instance of ViewInterface's class.
-  * @param {Object} parameters.state Application's state.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor ({interfaceView, state, documentReference} = {}) {
+  constructor ({documentReference, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -50,7 +49,7 @@ class ViewPanel {
     // Set reference to document object model (DOM).
     self.document = documentReference;
     // Set reference to other views.
-    self.interfaceView = interfaceView;
+    self.interfaceView = self.state.views.interface;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);

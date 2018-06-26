@@ -40,15 +40,11 @@ class ViewNetwork {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.interfaceView Instance of ViewInterface's class.
-  * @param {Object} parameters.tipView Instance of ViewTip's class.
-  * @param {Object} parameters.promptView Instance of ViewPrompt's class.
-  * @param {Object} parameters.panelView Instance of ViewPanel's class.
-  * @param {Object} parameters.state Application's state.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor ({interfaceView, tipView, promptView, panelView, state, documentReference} = {}) {
+  constructor ({documentReference, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -57,10 +53,10 @@ class ViewNetwork {
     // Set reference to document object model (DOM).
     self.document = documentReference;
     // Set reference to other views.
-    self.interfaceView = interfaceView;
-    self.tipView = tipView;
-    self.promptView = promptView;
-    self.panelView = panelView;
+    self.interfaceView = self.state.views.interface;
+    self.tipView = self.state.views.tip;
+    self.promptView = self.state.views.prompt;
+    self.controlView = self.state.views.control;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -77,8 +73,8 @@ class ViewNetwork {
     self.container = View.createReferenceContainer({
       identifier: "network",
       type: "standard",
-      target: self.panelView.container,
-      position: "beforeend",
+      target: self.controlView.networkTab,
+      position: "afterend",
       documentReference: self.document
     });
     // Determine whether to create and activate behavior of content.
@@ -89,11 +85,13 @@ class ViewNetwork {
       // TODO: create representations of nodes and links in network...
       // TODO: create temporary place-holder text
       var spanNodes = self.document.createElement("span");
-      self.container.appendChild(span);
-      span.textContent = "coming soon! summary of nodes...";
+      self.container.appendChild(spanNodes);
+      spanNodes.textContent = "coming soon! summary of nodes...";
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
       var spanLinks = self.document.createElement("span");
-      self.container.appendChild(span);
-      span.textContent = "coming soon! summary of links...";
+      self.container.appendChild(spanLinks);
+      spanLinks.textContent = "coming soon! summary of links...";
 
       // Create and activate tabs.
       self.createActivateTabs(self);
@@ -102,17 +100,27 @@ class ViewNetwork {
       // Container is not empty.
       // Set references to content.
 
+      // TODO: References to summaries in order to restore...
       // Summary.
       //self.nodesSummary = self.document.getElementById("");
 
-
       // Tabs.
-      self.filterTab = self.document.getElementById("filter-tab");
-      self.contextTab = self.document.getElementById("context-tab");
+      self.filterTab = self.document.getElementById("tab-filter");
+      self.contextTab = self.document.getElementById("tab-context");
     }
   }
-
-  // TODO: In restoreView... create filterView and contextView if they're active AND if they need to be restored
-  // TODO: If you create them, assign them to the matching state.views variables
-
+  /**
+  * Creates and activates tabs.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateTabs(self) {
+    var tabs = Model.determineNetworkTabs(self.state);
+    tabs.forEach(function (category) {
+      View.createActivateTab({
+        type: "network",
+        category: category,
+        self: self
+      });
+    });
+  }
 }

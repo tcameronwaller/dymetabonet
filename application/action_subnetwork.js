@@ -94,7 +94,7 @@ class ActionSubnetwork {
     });
     // Derive dependent state.
     var dependentStateVariables = ActionQuery.deriveState({
-      combination: state.traversalCombination,
+      combination: state.queryCombination,
       networkNodesRecords: networkNodesRecords,
       networkLinksRecords: networkLinksRecords,
       viewsRestoration: novelViewsRestoration,

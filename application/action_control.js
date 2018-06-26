@@ -37,7 +37,7 @@ United States of America
 * The methods require a reference to the instance of the state.
 * These methods also call external methods as necessary.
 */
-class ActionPanel {
+class ActionControl {
 
   // Direct actions.
 
@@ -61,9 +61,16 @@ class ActionPanel {
       [category]: selection
     };
     var controlViews = Object.assign(state.controlViews, entry);
+    // Determine which views to restore.
+    var viewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [category],
+      type: true,
+      viewsRestoration: state.viewsRestoration
+    });
     // Compile variables' values.
     var novelVariablesValues = {
-      controlViews: controlViews
+      controlViews: controlViews,
+      viewsRestoration: viewsRestoration
     };
     var variablesValues = novelVariablesValues;
     // Submit variables' values to the application's state.
@@ -81,16 +88,15 @@ class ActionPanel {
   */
   static initializeControls() {
     // Initialize controls.
-    var panelViews = {
+    var controlViews = {
       state: false,
       network: true,
       subnetwork: true,
-      measurement: false,
-      summary: true
+      measurement: false
     };
     // Compile information.
     var variablesValues = {
-      panelViews: panelViews
+      controlViews: controlViews
     };
     // Return information.
     return variablesValues;

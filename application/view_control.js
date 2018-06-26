@@ -36,15 +36,11 @@ class ViewControl {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.interfaceView Instance of ViewInterface's class.
-  * @param {Object} parameters.panelView Instance of ViewPanel's class.
-  * @param {Object} parameters.tipView Instance of ViewTip's class.
-  * @param {Object} parameters.promptView Instance of ViewPrompt's class.
-  * @param {Object} parameters.state Application's state.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor ({interfaceView, panelView, tipView, promptView, state, documentReference} = {}) {
+  constructor ({documentReference, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -53,15 +49,15 @@ class ViewControl {
     // Set reference to document object model (DOM).
     self.document = documentReference;
     // Set reference to other views.
-    self.interfaceView = interfaceView;
-    self.panelView = panelView;
-    self.tipView = tipView;
-    self.promptView = promptView;
+    self.interfaceView = self.state.views.interface;
+    self.tipView = self.state.views.tip;
+    self.promptView = self.state.views.prompt;
+    self.panelView = self.state.views.panel;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
     // Restore view.
-    self.restoreView(self);
+    //self.restoreView(self);
   }
   /**
   * Initializes, creates and activates, view's content and behavior that does
@@ -87,12 +83,10 @@ class ViewControl {
       // Container is not empty.
       // Set references to content.
       // Tabs.
-      self.stateTab = self.document.getElementById("state-tab");
-      self.filterTab = self.document.getElementById("filter-tab");
-      self.simplificationTab = self
-      .document.getElementById("simplification-tab");
-      self.traversalTab = self.document.getElementById("traversal-tab");
-      self.measurementTab = self.document.getElementById("measurement-tab");
+      self.stateTab = self.document.getElementById("tab-state");
+      self.networkTab = self.document.getElementById("tab-network");
+      self.subnetworkTab = self.document.getElementById("tab-subnetwork");
+      self.measurementTab = self.document.getElementById("tab-measurement");
     }
   }
   /**
@@ -102,54 +96,11 @@ class ViewControl {
   createActivateTabs(self) {
     var tabs = Model.determineControlTabs(self.state);
     tabs.forEach(function (category) {
-      self.createActivateTab({
+      View.createActivateTab({
+        type: "control",
         category: category,
         self: self
       });
-    });
-  }
-  /**
-  * Creates and activates a tab.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.category Category of tab.
-  * @param {Object} parameters.self Instance of a class.
-  */
-  createActivateTab({category, self} = {}) {
-    // Create container.
-    var identifier = ViewControl.createTabIdentifier(category);
-    var reference = ViewControl.createTabReference(category);
-    self[reference] = self.document.createElement("div");
-    self.container.appendChild(self[reference]);
-    var label = View.createAppendSpanText({
-      text: category,
-      parent: self[reference],
-      documentReference: self.document
-    });
-    // Assign attributes.
-    self[reference].setAttribute("id", identifier);
-    self[reference].setAttribute("name", category);
-    self[reference].classList.add("tab");
-    self[reference].classList.add("normal");
-    // Activate behavior.
-    self[reference].addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      ActionControl.changeView({
-        category: event.currentTarget.getAttribute("name"),
-        state: self.state
-      });
-    });
-    self[reference].addEventListener("mouseenter", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      event.currentTarget.classList.remove("normal");
-      event.currentTarget.classList.add("emphasis");
-    });
-    self[reference].addEventListener("mouseleave", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      event.currentTarget.classList.remove("emphasis");
-      event.currentTarget.classList.add("normal");
     });
   }
   /**
@@ -161,18 +112,6 @@ class ViewControl {
     // Determine which subordinate views to create, activate, and restore.
     // Multiple subordinate views within control view can be active
     // simultaneously.
-    if (Model.determineControlState(self.state)) {
-      new ViewState({
-        interfaceView: self.interfaceView,
-        tipView: self.tipView,
-        promptView: self.promptView,
-        controlView: self,
-        state: self.state,
-        documentReference: self.document
-      });
-    } else {
-      View.removeExistElement("state", self.document);
-    }
     if (Model.determineControlFilter(self.state)) {
       new ViewFilter({
         interfaceView: self.interfaceView,
@@ -221,21 +160,5 @@ class ViewControl {
     } else {
       View.removeExistElement("measurement", self.document);
     }
-  }
-  /**
-  * Creates identifier for a tab.
-  * @param {string} category Category for a tab.
-  * @returns {string} Identifier for a tab.
-  */
-  static createTabIdentifier(category) {
-    return (category + "-tab");
-  }
-  /**
-  * Creates reference for a tab.
-  * @param {string} category Category for a tab.
-  * @returns {string} Reference for a tab.
-  */
-  static createTabReference(category) {
-    return (category + "Tab");
   }
 }

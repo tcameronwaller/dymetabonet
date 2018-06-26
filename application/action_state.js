@@ -171,7 +171,6 @@ class ActionState {
     // Determine which views to restore.
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
       views: [
-        "state",
         "network",
         "filter",
         "context",

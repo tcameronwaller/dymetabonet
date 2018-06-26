@@ -50,7 +50,7 @@ class ActionQuery {
     var controls = ActionQuery.initializeSubordinateControls();
     // Derive dependent state.
     var dependentStateVariables = ActionQuery.deriveState({
-      combination: state.traversalCombination,
+      combination: state.queryCombination,
       networkNodesRecords: state.networkNodesRecords,
       networkLinksRecords: state.networkLinksRecords,
       state: state
@@ -76,20 +76,20 @@ class ActionQuery {
     });
   }
   /**
-  * Changes the selection of combination in traversal view.
+  * Changes the selection of combination in query view.
   * @param {string} combination Method of combination, union or difference.
   * @param {Object} state Application's state.
   */
   static changeCombination(combination, state) {
-    // Initialize controls for traversal view.
-    var traversalViewControls = ActionQuery.initializeSubordinateControls();
+    // Initialize controls for query view.
+    var queryViewControls = ActionQuery.initializeSubordinateControls();
     // Compile variables' values.
     var novelVariablesValues = {
-      traversalCombination: combination
+      queryCombination: combination
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
-      traversalViewControls
+      queryViewControls
     );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
@@ -98,14 +98,14 @@ class ActionQuery {
     });
   }
   /**
-  * Changes the selection of type of controls in traversal view.
-  * @param {string} type Type of traversal, rogue, proximity, or path.
+  * Changes the selection of type of controls in query view.
+  * @param {string} type Type of query, rogue, proximity, or path.
   * @param {Object} state Application's state.
   */
   static changeType(type, state) {
     // Compile variables' values.
     var novelVariablesValues = {
-      traversalType: type
+      queryType: type
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
@@ -115,7 +115,7 @@ class ActionQuery {
     });
   }
   /**
-  * Changes the selection of focus for rogue traversal.
+  * Changes the selection of focus for rogue query.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
   * @param {string} parameters.type Type of a node, metabolite or reaction.
@@ -129,7 +129,7 @@ class ActionQuery {
     };
     // Compile variables' values.
     var novelVariablesValues = {
-      traversalRogueFocus: record
+      queryRogueFocus: record
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
@@ -139,7 +139,7 @@ class ActionQuery {
     });
   }
   /**
-  * Changes the selection of focus for proximity traversal.
+  * Changes the selection of focus for proximity query.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
   * @param {string} parameters.type Type of a node, metabolite or reaction.
@@ -153,7 +153,7 @@ class ActionQuery {
     };
     // Compile variables' values.
     var novelVariablesValues = {
-      traversalProximityFocus: record
+      queryProximityFocus: record
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
@@ -163,21 +163,21 @@ class ActionQuery {
     });
   }
   /**
-  * Changes the selection of direction for proximity traversal.
+  * Changes the selection of direction for proximity query.
   * @param {Object} state Application's state.
   */
   static changeProximityDirection(state) {
     // Determine direction.
-    if (state.traversalProximityDirection === "successors") {
+    if (state.queryProximityDirection === "successors") {
       var direction = "neighbors";
-    } else if (state.traversalProximityDirection === "neighbors") {
+    } else if (state.queryProximityDirection === "neighbors") {
       var direction = "predecessors";
-    } else if (state.traversalProximityDirection === "predecessors") {
+    } else if (state.queryProximityDirection === "predecessors") {
       var direction = "successors";
     }
     // Compile variables' values.
     var novelVariablesValues = {
-      traversalProximityDirection: direction
+      queryProximityDirection: direction
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
@@ -187,14 +187,14 @@ class ActionQuery {
     });
   }
   /**
-  * Changes the selection of depth for proximity traversal.
+  * Changes the selection of depth for proximity query.
   * @param {number} depth Depth in links to which to traverse.
   * @param {Object} state Application's state.
   */
   static changeProximityDepth(depth, state) {
     // Compile variables' values.
     var novelVariablesValues = {
-      traversalProximityDepth: depth
+      queryProximityDepth: depth
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
@@ -204,7 +204,7 @@ class ActionQuery {
     });
   }
   /**
-  * Changes the selection of source for path traversal.
+  * Changes the selection of source for path query.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
   * @param {string} parameters.type Type of a node, metabolite or reaction.
@@ -218,7 +218,7 @@ class ActionQuery {
     };
     // Compile variables' values.
     var novelVariablesValues = {
-      traversalPathSource: record
+      queryPathSource: record
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
@@ -228,7 +228,7 @@ class ActionQuery {
     });
   }
   /**
-  * Changes the selection of target for path traversal.
+  * Changes the selection of target for path query.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
   * @param {string} parameters.type Type of a node, metabolite or reaction.
@@ -242,7 +242,7 @@ class ActionQuery {
     };
     // Compile variables' values.
     var novelVariablesValues = {
-      traversalPathTarget: record
+      queryPathTarget: record
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
@@ -252,21 +252,21 @@ class ActionQuery {
     });
   }
   /**
-  * Changes the selection of direction for path traversal.
+  * Changes the selection of direction for path query.
   * @param {Object} state Application's state.
   */
   static changePathDirection(state) {
     // Determine direction.
-    if (state.traversalPathDirection === "forward") {
+    if (state.queryPathDirection === "forward") {
       var direction = "both";
-    } else if (state.traversalPathDirection === "both") {
+    } else if (state.queryPathDirection === "both") {
       var direction = "reverse";
-    } else if (state.traversalPathDirection === "reverse") {
+    } else if (state.queryPathDirection === "reverse") {
       var direction = "forward";
     }
     // Compile variables' values.
     var novelVariablesValues = {
-      traversalPathDirection: direction
+      queryPathDirection: direction
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
@@ -276,20 +276,20 @@ class ActionQuery {
     });
   }
   /**
-  * Changes the selection of count for a traversal's method.
+  * Changes the selection of count for a query's method.
   * @param {Object} parameters Destructured object of parameters.
   * @param {number} parameters.count Count of paths to collect between each pair
   * of targets.
-  * @param {string} parameters.type Type of method for traversal, path or
+  * @param {string} parameters.type Type of method for query, path or
   * connection.
   * @param {Object} parameters.state Application's state.
   */
   static changeTypeCount({count, type, state} = {}) {
-    // Determine type of traversal.
+    // Determine type of query.
     if (type === "path") {
-      var variableName = "traversalPathCount";
+      var variableName = "queryPathCount";
     } else if (type === "connection") {
-      var variableName = "traversalConnectionCount";
+      var variableName = "queryConnectionCount";
     }
     // Compile variables' values.
     var novelVariablesValues = {
@@ -303,7 +303,7 @@ class ActionQuery {
     });
   }
   /**
-  * Changes the selection of target for connection traversal.
+  * Changes the selection of target for connection query.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
   * @param {string} parameters.type Type of a node, metabolite or reaction.
@@ -317,7 +317,7 @@ class ActionQuery {
     };
     // Compile variables' values.
     var novelVariablesValues = {
-      traversalConnectionTarget: record
+      queryConnectionTarget: record
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
@@ -327,42 +327,42 @@ class ActionQuery {
     });
   }
   /**
-  * Includes a node in the targets for connection traversal.
+  * Includes a node in the targets for connection query.
   * @param {Object} state Application's state.
   */
   static includeConnectionTarget(state) {
     // Determine whether there is a valid candidate for inclusion.
-    if (state.traversalConnectionTarget.identifier.length > 0) {
+    if (state.queryConnectionTarget.identifier.length > 0) {
       // Determine whether collection of targets includes the node.
       var match = state
-      .traversalConnectionTargets.find(function (record) {
+      .queryConnectionTargets.find(function (record) {
         return (
           (
             record.identifier === state
-            .traversalConnectionTarget.identifier
+            .queryConnectionTarget.identifier
           ) &&
-          (record.type === state.traversalConnectionTarget.type)
+          (record.type === state.queryConnectionTarget.type)
         );
       });
       if (!match) {
         // Create record.
         var record = {
-          identifier: state.traversalConnectionTarget.identifier,
-          type: state.traversalConnectionTarget.type
+          identifier: state.queryConnectionTarget.identifier,
+          type: state.queryConnectionTarget.type
         };
         // Include record in collection.
-        var traversalConnectionTargets = state
-        .traversalConnectionTargets.concat(record);
+        var queryConnectionTargets = state
+        .queryConnectionTargets.concat(record);
       } else {
         var tranversalConnectionTargets = state
-        .traversalConnectionTargets;
+        .queryConnectionTargets;
       }
       // Restore candidate.
-      var traversalConnectionTarget = {identifier: "", type: ""};
+      var queryConnectionTarget = {identifier: "", type: ""};
       // Compile variables' values.
       var novelVariablesValues = {
-        traversalConnectionTargets: traversalConnectionTargets,
-        traversalConnectionTarget: traversalConnectionTarget
+        queryConnectionTargets: queryConnectionTargets,
+        queryConnectionTarget: queryConnectionTarget
       };
       var variablesValues = Object.assign(novelVariablesValues);
       // Submit variables' values to the application's state.
@@ -379,27 +379,27 @@ class ActionQuery {
   // TODO: All query executions should call ActionExploration.deriveState()...
 
   /**
-  * Executes rogue traversal and combination on the network.
+  * Executes rogue query and combination on the network.
   * @param {Object} state Application's state.
   */
   static executeRogueCombination(state) {
     // Determine whether application's state includes valid variables for
     // procedure.
-    if (Model.determineRogueTraversal(state)) {
+    if (Model.determineRogueQuery(state)) {
       var subnetworkElements = Traversal.combineRogueNodeNetwork({
-        focus: state.traversalRogueFocus.identifier,
-        combination: state.traversalCombination,
+        focus: state.queryRogueFocus.identifier,
+        combination: state.queryCombination,
         subnetworkNodesRecords: state.subnetworkNodesRecords,
         subnetworkLinksRecords: state.subnetworkLinksRecords,
         networkNodesRecords: state.networkNodesRecords,
         networkLinksRecords: state.networkLinksRecords
       });
-      // Initialize controls for traversal view.
-      var traversalViewControls = ActionQuery.initializeControls();
+      // Initialize controls for query view.
+      var queryViewControls = ActionQuery.initializeControls();
       // Compile variables' values.
       var variablesValues = Object.assign(
         subnetworkElements,
-        traversalViewControls
+        queryViewControls
       );
       // Submit variables' values to the application's state.
       ActionGeneral.submitStateVariablesValues({
@@ -409,23 +409,23 @@ class ActionQuery {
     }
   }
   /**
-  * Executes rogue traversal and union on the network.
+  * Executes rogue query and union on the network.
   * @param {Object} state Application's state.
   */
   static executeRogueUnion(state) {
     // Determine whether application's state includes valid variables for
     // procedure.
-    if (Model.determineRogueTraversal(state)) {
+    if (Model.determineRogueQuery(state)) {
       var subnetworkElements = Traversal.combineRogueNodeNetwork({
-        focus: state.traversalRogueFocus.identifier,
+        focus: state.queryRogueFocus.identifier,
         combination: "union",
         subnetworkNodesRecords: state.subnetworkNodesRecords,
         subnetworkLinksRecords: state.subnetworkLinksRecords,
         networkNodesRecords: state.networkNodesRecords,
         networkLinksRecords: state.networkLinksRecords
       });
-      // Initialize controls for traversal view.
-      var traversalViewControls = ActionQuery.initializeControls();
+      // Initialize controls for query view.
+      var queryViewControls = ActionQuery.initializeControls();
       // Initialize controls for pompt view.
       var prompt = ActionPrompt.initializeControls();
       // Compile variables' values.
@@ -435,7 +435,7 @@ class ActionQuery {
       var variablesValues = Object.assign(
         novelVariablesValues,
         subnetworkElements,
-        traversalViewControls
+        queryViewControls
       );
       // Submit variables' values to the application's state.
       ActionGeneral.submitStateVariablesValues({
@@ -445,18 +445,18 @@ class ActionQuery {
     }
   }
   /**
-  * Executes proximity traversal and combination on the network.
+  * Executes proximity query and combination on the network.
   * @param {Object} state Application's state.
   */
   static executeProximityCombination(state) {
     // Determine whether application's state includes valid variables for
     // procedure.
-    if (Model.determineProximityTraversal(state)) {
+    if (Model.determineProximityQuery(state)) {
       var subnetworkElements = Traversal.combineProximityNetwork({
-        focus: state.traversalProximityFocus.identifier,
-        direction: state.traversalProximityDirection,
-        depth: state.traversalProximityDepth,
-        combination: state.traversalCombination,
+        focus: state.queryProximityFocus.identifier,
+        direction: state.queryProximityDirection,
+        depth: state.queryProximityDepth,
+        combination: state.queryCombination,
         subnetworkNodesRecords: state.subnetworkNodesRecords,
         subnetworkLinksRecords: state.subnetworkLinksRecords,
         networkNodesRecords: state.networkNodesRecords,
@@ -492,14 +492,14 @@ class ActionQuery {
     }
   }
   /**
-  * Executes proximity traversal expansion to depth of one and combination by
+  * Executes proximity query expansion to depth of one and combination by
   * union.
   * @param {Object} state Application's state.
   */
   static executeProximityExpansion(state) {
     // Determine whether application's state includes valid variables for
     // procedure.
-    if (Model.determineProximityTraversal(state)) {
+    if (Model.determineProximityQuery(state)) {
       var subnetworkElements = Traversal.combineProximityNetwork({
         focus: state.prompt.reference.identifier,
         direction: "neighbors",
@@ -510,8 +510,8 @@ class ActionQuery {
         networkNodesRecords: state.networkNodesRecords,
         networkLinksRecords: state.networkLinksRecords
       });
-      // Initialize controls for traversal view.
-      var traversalViewControls = ActionQuery.initializeControls();
+      // Initialize controls for query view.
+      var queryViewControls = ActionQuery.initializeControls();
       // Remove any prompt view.
       var prompt = ActionPrompt.initializeControls();
       // Compile variables' values.
@@ -521,7 +521,7 @@ class ActionQuery {
       var variablesValues = Object.assign(
         novelVariablesValues,
         subnetworkElements,
-        traversalViewControls
+        queryViewControls
       );
       // Submit variables' values to the application's state.
       ActionGeneral.submitStateVariablesValues({
@@ -531,19 +531,19 @@ class ActionQuery {
     }
   }
   /**
-  * Executes path traversal and combination on the network.
+  * Executes path query and combination on the network.
   * @param {Object} state Application's state.
   */
   static executePathCombination(state) {
     // Determine whether application's state includes valid variables for
     // procedure.
-    if (Model.determinePathTraversal(state)) {
+    if (Model.determinePathQuery(state)) {
       var subnetworkElements = Traversal.combinePathNetwork({
-        source: state.traversalPathSource.identifier,
-        target: state.traversalPathTarget.identifier,
-        direction: state.traversalPathDirection,
-        count: state.traversalPathCount,
-        combination: state.traversalCombination,
+        source: state.queryPathSource.identifier,
+        target: state.queryPathTarget.identifier,
+        direction: state.queryPathDirection,
+        count: state.queryPathCount,
+        combination: state.queryCombination,
         subnetworkNodesRecords: state.subnetworkNodesRecords,
         subnetworkLinksRecords: state.subnetworkLinksRecords,
         networkNodesRecords: state.networkNodesRecords,
@@ -579,20 +579,20 @@ class ActionQuery {
     }
   }
   /**
-  * Excludes a node from targets for connection traversal.
+  * Excludes a node from targets for connection query.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of a node.
   * @param {string} parameters.type Type of a node, metabolite or reaction.
   * @param {Object} parameters.state Application's state.
   */
   static excludeConnectionTarget({identifier, type, state} = {}) {
-    var traversalConnectionTargets = state
-    .traversalConnectionTargets.filter(function (record) {
+    var queryConnectionTargets = state
+    .queryConnectionTargets.filter(function (record) {
       return !((record.identifier === identifier) && (record.type === type));
     });
     // Compile variables' values.
     var novelVariablesValues = {
-      traversalConnectionTargets: traversalConnectionTargets
+      queryConnectionTargets: queryConnectionTargets
     };
     var variablesValues = Object.assign(novelVariablesValues);
     // Submit variables' values to the application's state.
@@ -602,20 +602,20 @@ class ActionQuery {
     });
   }
   /**
-  * Executes connection traversal and combination on the network.
+  * Executes connection query and combination on the network.
   * @param {Object} state Application's state.
   */
   static executeConnectionCombination(state) {
     // Determine whether application's state includes valid variables for
     // procedure.
-    if (Model.determineConnectionTraversal(state)) {
+    if (Model.determineConnectionQuery(state)) {
       // Extract targets.
       var targets = General
-      .collectValueFromObjects("identifier", state.traversalConnectionTargets);
+      .collectValueFromObjects("identifier", state.queryConnectionTargets);
       var subnetworkElements = Traversal.combineConnectionNetwork({
         targets: targets,
-        count: state.traversalConnectionCount,
-        combination: state.traversalCombination,
+        count: state.queryConnectionCount,
+        combination: state.queryCombination,
         subnetworkNodesRecords: state.subnetworkNodesRecords,
         subnetworkLinksRecords: state.subnetworkLinksRecords,
         networkNodesRecords: state.networkNodesRecords,
@@ -660,23 +660,23 @@ class ActionQuery {
   */
   static initializeControls() {
     // Initialize controls.
-    var traversalCombination = "difference";
-    var traversalType = "rogue";
-    var traversalProximityDirection = "successors";
-    var traversalProximityDepth = 1;
-    var traversalPathDirection = "forward";
-    var traversalPathCount = 1;
-    var traversalConnectionCount = 1;
+    var queryCombination = "difference";
+    var queryType = "rogue";
+    var queryProximityDirection = "successors";
+    var queryProximityDepth = 1;
+    var queryPathDirection = "forward";
+    var queryPathCount = 1;
+    var queryConnectionCount = 1;
     var subordinateControls = ActionQuery.initializeSubordinateControls();
     // Compile information.
     var novelVariablesValues = {
-      traversalCombination: traversalCombination,
-      traversalType: traversalType,
-      traversalProximityDirection: traversalProximityDirection,
-      traversalProximityDepth: traversalProximityDepth,
-      traversalPathDirection: traversalPathDirection,
-      traversalPathCount: traversalPathCount,
-      traversalConnectionCount: traversalConnectionCount
+      queryCombination: queryCombination,
+      queryType: queryType,
+      queryProximityDirection: queryProximityDirection,
+      queryProximityDepth: queryProximityDepth,
+      queryPathDirection: queryPathDirection,
+      queryPathCount: queryPathCount,
+      queryConnectionCount: queryConnectionCount
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -693,20 +693,20 @@ class ActionQuery {
     // Subordinate controls depend on query's combination and require
     // initialization upon change of query's combination.
     // Initialize controls.
-    var traversalRogueFocus = {identifier: "", type: ""};
-    var traversalProximityFocus = {identifier: "", type: ""};
-    var traversalPathSource = {identifier: "", type: ""};
-    var traversalPathTarget = {identifier: "", type: ""};
-    var traversalConnectionTarget = {identifier: "", type: ""};
-    var traversalConnectionTargets = [];
+    var queryRogueFocus = {identifier: "", type: ""};
+    var queryProximityFocus = {identifier: "", type: ""};
+    var queryPathSource = {identifier: "", type: ""};
+    var queryPathTarget = {identifier: "", type: ""};
+    var queryConnectionTarget = {identifier: "", type: ""};
+    var queryConnectionTargets = [];
     // Compile information.
     var variablesValues = {
-      traversalRogueFocus: traversalRogueFocus,
-      traversalProximityFocus: traversalProximityFocus,
-      traversalPathSource: traversalPathSource,
-      traversalPathTarget: traversalPathTarget,
-      traversalConnectionTarget: traversalConnectionTarget,
-      traversalConnectionTargets: traversalConnectionTargets
+      queryRogueFocus: queryRogueFocus,
+      queryProximityFocus: queryProximityFocus,
+      queryPathSource: queryPathSource,
+      queryPathTarget: queryPathTarget,
+      queryConnectionTarget: queryConnectionTarget,
+      queryConnectionTargets: queryConnectionTargets
     };
     // Return information.
     return variablesValues;

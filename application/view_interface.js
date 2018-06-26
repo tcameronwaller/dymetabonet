@@ -36,12 +36,12 @@ class ViewInterface {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.body Reference to document's body.
-  * @param {Object} parameters.state Application's state.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
+  * @param {Object} parameters.body Reference to document's body.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor ({body, state, documentReference} = {}) {
+  constructor ({documentReference, body, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;

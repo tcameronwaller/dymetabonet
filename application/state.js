@@ -56,10 +56,10 @@ class State {
       // prompt view within the interface.
       "prompt"
     ];
-    var panelControls = [
-      // Variable "panelViews" stores information about whether each subordinate
+    var controlControls = [
+      // Variable "controlViews" stores information about whether each subordinate
       // view within the panel view is active.
-      "panelViews"
+      "controlViews"
     ];
     var stateControls = [
       // Variable "sourceState" stores a reference to a file on client's system
@@ -117,67 +117,67 @@ class State {
       "subnetworkViews"
     ];
     var queryControls = [
-      // Variable "traversalCombination" stores information about the strategy,
-      // union or difference, for combination of sets of nodes from traversals
-      // in traversal view.
-      "traversalCombination",
-      // Variable "traversalType" stores information about the type of
-      // traversal, rogue, proximity, or path, for which to create controls in
-      // traversal view.
-      "traversalType",
-      // Variable "traversalRogueFocus" stores information about a network's
+      // Variable "queryCombination" stores information about the strategy,
+      // union or difference, for combination of sets of nodes from queries
+      // in query view.
+      "queryCombination",
+      // Variable "queryType" stores information about the type of
+      // query, rogue, proximity, or path, for which to create controls in
+      // query view.
+      "queryType",
+      // Variable "queryRogueFocus" stores information about a network's
       // single node to include or exclude from the subnetwork.
       // Information includes references to variables
       // "networkNodesMetabolites", "networkNodesReactions", and
       // "networkNodesRecords".
-      "traversalRogueFocus",
-      // Variable "traversalProximityFocus" stores information about a
-      // network's single focal node for proximity traversal.
+      "queryRogueFocus",
+      // Variable "queryProximityFocus" stores information about a
+      // network's single focal node for proximity query.
       // Information includes references to variables
       // "networkNodesMetabolites", "networkNodesReactions", and
       // "networkNodesRecords".
-      "traversalProximityFocus",
-      // Variable "traversalProximityDirection" stores information about the
-      // direction of proximity traversal, either following successors,
+      "queryProximityFocus",
+      // Variable "queryProximityDirection" stores information about the
+      // direction of proximity query, either following successors,
       // neighbors, or predecessors from the focal node.
-      "traversalProximityDirection",
-      // Variable "traversalProximityDepth" stores information about the depth
-      // of the proximity traversal in count of links from the focal node.
-      "traversalProximityDepth",
-      // Variable "traversalPathSource" stores information about a network's
-      // single node for the source of path traversal.
+      "queryProximityDirection",
+      // Variable "queryProximityDepth" stores information about the depth
+      // of the proximity query in count of links from the focal node.
+      "queryProximityDepth",
+      // Variable "queryPathSource" stores information about a network's
+      // single node for the source of path query.
       // Information includes references to variables
       // "networkNodesMetabolites", "networkNodesReactions", and
       //"networkNodesRecords".
-      "traversalPathSource",
-      // Variable "traversalPathTarget" stores information about a network's
-      // single node for the target of path traversal.
+      "queryPathSource",
+      // Variable "queryPathTarget" stores information about a network's
+      // single node for the target of path query.
       // Information includes references to variables
       // "networkNodesMetabolites", "networkNodesReactions", and
       //"networkNodesRecords".
-      "traversalPathTarget",
-      // Variable "traversalPathDirection" stores information about the
-      // direction of path traversal, either forward, reverse, or both.
-      "traversalPathDirection",
-      // Variable "traversalPathCount" stores information about the count of
-      // simple shortest paths to collect by path traversal.
-      "traversalPathCount",
-      // Variable "traversalConnectionTarget" stores information about a
+      "queryPathTarget",
+      // Variable "queryPathDirection" stores information about the
+      // direction of path query, either forward, reverse, or both.
+      "queryPathDirection",
+      // Variable "queryPathCount" stores information about the count of
+      // simple shortest paths to collect by path query.
+      "queryPathCount",
+      // Variable "queryConnectionTarget" stores information about a
       // network's node to include or exclude from targets.
       // Information includes references to variables
       // "networkNodesMetabolites", "networkNodesReactions", and
       //"networkNodesRecords".
-      "traversalConnectionTarget",
-      // Variable "traversalConnectionTargets" stores information about a
+      "queryConnectionTarget",
+      // Variable "queryConnectionTargets" stores information about a
       // network's nodes between which to traverse paths.
       // Information includes references to variables
       // "networkNodesMetabolites", "networkNodesReactions", and
       //"networkNodesRecords".
-      "traversalConnectionTargets",
-      // Variable "traversalConnectionCount" stores information about the count
-      // of simple shortest paths to collect by path traversal between each pair
+      "queryConnectionTargets",
+      // Variable "queryConnectionCount" stores information about the count
+      // of simple shortest paths to collect by path query between each pair
       // of targets.
-      "traversalConnectionCount"
+      "queryConnectionCount"
     ];
     var measurementControls = [
       // Variable "sourceData" stores a reference to a file on client's system
@@ -225,7 +225,7 @@ class State {
     self.variablesNamesControls = [].concat(
       interfaceControls,
       promptControls,
-      panelControls,
+      controlControls,
       stateControls,
       networkControls,
       filterControls,

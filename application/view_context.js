@@ -29,7 +29,6 @@ Salt Lake City, Utah 84112
 United States of America
 */
 
-
 /**
 * Interface to summarize candidate entities and control simplifications.
 */

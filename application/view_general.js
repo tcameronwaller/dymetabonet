@@ -1041,4 +1041,89 @@ class View {
     // Return reference to element.
     return fileSelector;
   }
+  /**
+  * Creates a tab.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of tab, control, network, or
+  * subnetwork.
+  * @param {string} parameters.category Category of tab.
+  * @param {Object} parameters.self Instance of a class.
+  */
+  static createActivateTab({type, category, self} = {}) {
+    // Create container.
+    var identifier = View.createTabIdentifier(category);
+    var reference = View.createTabReference(category);
+    self[reference] = self.document.createElement("div");
+    self.container.appendChild(self[reference]);
+    var label = View.createAppendSpanText({
+      text: category,
+      parent: self[reference],
+      documentReference: self.document
+    });
+    // Assign attributes.
+    self[reference].setAttribute("id", identifier);
+    self[reference].setAttribute("name", category);
+    self[reference].classList.add(type);
+    self[reference].classList.add("tab");
+    self[reference].classList.add("normal");
+    // Activate behavior.
+    self[reference].addEventListener("mouseenter", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      event.currentTarget.classList.remove("normal");
+      event.currentTarget.classList.add("emphasis");
+    });
+    self[reference].addEventListener("mouseleave", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      event.currentTarget.classList.remove("emphasis");
+      event.currentTarget.classList.add("normal");
+    });
+    self[reference].addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine tab's type.
+      if (event.currentTarget.classList.contains("control")) {
+        var type = "control";
+      } else if (event.currentTarget.classList.contains("network")) {
+        var type = "network";
+      } else if (event.currentTarget.classList.contains("subnetwork")) {
+        var type = "subnetwork";
+      }
+      // Determine tab's category.
+      var category = event.currentTarget.getAttribute("name");
+      // Call action.
+      if (type === "control") {
+        ActionControl.changeView({
+          category: category,
+          state: self.state
+        });
+      } else if (type === "network") {
+        ActionNetwork.changeView({
+          category: category,
+          state: self.state
+        });
+      } else if (type === "subnetwork") {
+        ActionSubnetwork.changeView({
+          category: category,
+          state: self.state
+        });
+      }
+    });
+  }
+  /**
+  * Creates identifier for a tab.
+  * @param {string} category Category for a tab.
+  * @returns {string} Identifier for a tab.
+  */
+  static createTabIdentifier(category) {
+    return ("tab-" + category);
+  }
+  /**
+  * Creates reference for a tab.
+  * @param {string} category Category for a tab.
+  * @returns {string} Reference for a tab.
+  */
+  static createTabReference(category) {
+    return (category + "Tab");
+  }
 }

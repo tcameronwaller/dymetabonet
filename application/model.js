@@ -53,14 +53,13 @@ class Model {
     self.body = self.document.getElementsByTagName("body").item(0);
     // Evaluate application's state, respond, and represent accordingly.
     self.act(self);
-    // TODO: Temporarily off to simplify...
-    //self.represent(self);
+    self.represent(self);
   }
   /**
   * Evaluates the application's state and responds accordingly.
+  * @param {Object} self Instance of a class.
   */
   act(self) {
-    // TODO: I'll need to update Model.determineApplicationControls...
     if (!Model.determineApplicationControls(self.state)) {
       ActionGeneral.initializeApplicationControls(self.state);
     } else if (!Model.determineMetabolismBaseInformation(self.state)) {
@@ -69,19 +68,10 @@ class Model {
       ActionGeneral.loadMetabolismSupplementInformation(self.state);
     } else if (!Model.determineMetabolismDerivationInformation(self.state)) {
       ActionGeneral.deriveState(self.state);
-    } else {
-      console.log("passed all act steps");
-      ActionState.saveState(self.state);
     }
   }
 
-  // TODO: Try to organize as much control of views as practical here within the Model.
-  // TODO: I think the "controlContents" and "explorationContents" approach does work... so consider using it more.
-  // TODO: Within ViewControl, create tabs and containers for all sub-views... I think
-  // TODO: Those sub-views should then establish themselves within approriate containers from ViewControl.
-  // TODO: Rendering is expensive, so don't use the display: none strategy
-  // TODO: Instead, only create the content for ViewControl's sub-views that are active.
-  // TODO: I think I can create a new state variable to control which sub-view is active? Maybe?
+  // TODO: maybe handle the dimensions for the exploration view here in the Model...
 
   /**
   * Evaluates the application's state and represents it accordingly in a visual
@@ -92,6 +82,7 @@ class Model {
   * interface.
   * Individual views' content and behavior depends further on application's
   * state.
+  * @param {Object} self Instance of a class.
   */
   represent(self) {
     // Evaluate the application's state and represent it appropriately in the
@@ -108,18 +99,36 @@ class Model {
       Model.determineMetabolismSupplementInformation(self.state) &&
       Model.determineMetabolismDerivationInformation(self.state)
     ) {
-      // Determine which views to restore.
-      // Every change to application's state sets a parameter to control which
-      // views to restore.
-      // Interface view.
-      if (self.state.viewsRestoration.interface) {
-        // Restore views.
-        self.state.views.interface = new ViewInterface({
-          body: self.body,
-          state: self.state,
-          documentReference: self.document
-        });
-      }
+      // Restore views.
+      self.restoreViews(self);
+    }
+  }
+  /**
+  * Restores views' content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreViews(self) {
+    // Determine which views to restore.
+    // Every change to application's state sets a parameter to control which
+    // views to restore.
+    // Interface view.
+    self.restoreInterfaceView(self);
+    // Panel view.
+    self.restorePanelView(self);
+    // Control view.
+    self.restoreControlView(self);
+    // State view.
+    self.restoreStateView(self);
+    // Network view.
+    self.restoreNetworkView(self);
+    // Filter view.
+    self.restoreFilterView(self);
+    // Context view.
+    //self.restoreContextView(self);
+
+
+
+    if (false) {
       // Tip view.
       // Tip view always exists but is only visible when active.
       if (self.state.viewsRestoration.tip) {
@@ -142,28 +151,6 @@ class Model {
           windowReference: self.window
         });
       }
-
-      // TODO: Panel View has subordinate views...
-      // TODO: maybe I don't want to create the subordinate views within panel view... it's messy
-      // TODO: instead create those here within the Model...
-
-
-      // Panel view.
-      if (self.state.viewsRestoration.panel) {
-        // Restore views.
-        self.state.views.panel = new ViewPanel({
-          interfaceView: self.state.views.interface,
-          state: self.state,
-          documentReference: self.document
-        });
-
-        // TODO: I might need to create subordinate views within PanelView...
-        // TODO: yep... I think so... like state, network, subnetwork, and measurement
-      }
-
-      // TODO: Keep new summary view separate from the panel view...
-
-
       // Network view.
       // View has subordinate views.
       if (self.state.viewsRestoration.network) {
@@ -190,55 +177,159 @@ class Model {
           documentReference: self.document
         });
       }
-
-      // TODO: Create measurement view...
-
-      // TODO: Summary view will go at the very bottom of the panel view...
-      if (false) {
-        // Summary view.
-        if (self.state.viewsRestoration.summary) {
-          // Restore views.
-          self.state.views.summary = new ViewSummary({
-            interfaceView: self.state.views.interface,
-            tipView: self.state.views.tip,
-            promptView: self.state.views.prompt,
-            panelView: self.state.views.panel,
-            state: self.state,
-            documentReference: self.document
-          });
-        }
-        // TODO: no more control view...
-        // Control view.
-        // Control view has several subordinate views.
-        if (self.state.viewsRestoration.control) {
-          // Restore views.
-          self.state.views.control = new ViewControl({
-            interfaceView: self.state.views.interface,
-            panelView: self.state.views.panel,
-            tipView: self.state.views.tip,
-            promptView: self.state.views.prompt,
-            state: self.state,
-            documentReference: self.document
-          });
-        }
+      // Summary view.
+      if (self.state.viewsRestoration.summary) {
+        // Restore views.
+        self.state.views.summary = new ViewSummary({
+          interfaceView: self.state.views.interface,
+          tipView: self.state.views.tip,
+          promptView: self.state.views.prompt,
+          panelView: self.state.views.panel,
+          state: self.state,
+          documentReference: self.document
+        });
+      }
+      // Exploration view.
+      if (self.state.viewsRestoration.exploration) {
+        // Restore views.
+        self.state.views.exploration = new ViewExploration({
+          interfaceView: self.state.views.interface,
+          tipView: self.state.views.tip,
+          promptView: self.state.views.prompt,
+          state: self.state,
+          documentReference: self.document,
+          windowReference: self.window
+        });
       }
 
-      // Exploration view.
-      if (false) {
-        if (self.state.viewsRestoration.exploration) {
-          // Restore views.
-          self.state.views.exploration = new ViewExploration({
-            interfaceView: self.state.views.interface,
-            tipView: self.state.views.tip,
-            promptView: self.state.views.prompt,
-            state: self.state,
-            documentReference: self.document,
-            windowReference: self.window
-          });
-        }
+      // TODO: scrap...
+      // Control view.
+      // Control view has several subordinate views.
+      if (self.state.viewsRestoration.control) {
+        // Restore views.
+        self.state.views.control = new ViewControl({
+          interfaceView: self.state.views.interface,
+          panelView: self.state.views.panel,
+          tipView: self.state.views.tip,
+          promptView: self.state.views.prompt,
+          state: self.state,
+          documentReference: self.document
+        });
       }
     }
   }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreInterfaceView(self) {
+    // Interface view.
+    if (self.state.viewsRestoration.interface) {
+      // Restore views.
+      self.state.views.interface = new ViewInterface({
+        documentReference: self.document,
+        body: self.body,
+        state: self.state
+      });
+      // Change restoration.
+      self.state.viewsRestoration.interface = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restorePanelView(self) {
+    // Panel view.
+    if (self.state.viewsRestoration.panel) {
+      // Restore views.
+      self.state.views.panel = new ViewPanel({
+        documentReference: self.document,
+        state: self.state
+      });
+      // Change restoration.
+      self.state.viewsRestoration.panel = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreControlView(self) {
+    // Control view.
+    if (self.state.viewsRestoration.control) {
+      // Restore views.
+      self.state.views.control = new ViewControl({
+        documentReference: self.document,
+        state: self.state
+      });
+      // Change restoration.
+      self.state.viewsRestoration.control = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreStateView(self) {
+    // State view.
+    if (self.state.viewsRestoration.state) {
+      // Restore views.
+      if (Model.determineControlState(self.state)) {
+        self.state.views.state = new ViewState({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("state", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.state = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreNetworkView(self) {
+    // Network view.
+    if (self.state.viewsRestoration.network) {
+      // Restore views.
+      if (Model.determineControlNetwork(self.state)) {
+        self.state.views.network = new ViewNetwork({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("network", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.network = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreFilterView(self) {
+    // Filter view.
+    if (self.state.viewsRestoration.filter) {
+      // Restore views.
+      if (Model.determineNetworkFilter(self.state)) {
+        self.state.views.filter = new ViewFilter({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("filter", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.filter = false;
+    }
+  }
+
+
+
 
   // Methods to evaluate application's state.
 
@@ -328,10 +419,26 @@ class Model {
   /**
   * Determines tabs within control view.
   * @param {Object} state Application's state.
-  * @returns {Array<string>} Names of tabs in control view.
+  * @returns {Array<string>} Names of tabs.
   */
   static determineControlTabs(state) {
     return Object.keys(state.controlViews);
+  }
+  /**
+  * Determines tabs within network view.
+  * @param {Object} state Application's state.
+  * @returns {Array<string>} Names of tabs.
+  */
+  static determineNetworkTabs(state) {
+    return Object.keys(state.networkViews);
+  }
+  /**
+  * Determines tabs within network view.
+  * @param {Object} state Application's state.
+  * @returns {Array<string>} Names of tabs.
+  */
+  static determineSubnetworkTabs(state) {
+    return Object.keys(state.subnetworkViews);
   }
   /**
   * Determines whether the application's state has specific information.
@@ -346,25 +453,45 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineControlFilter(state) {
-    return state.controlViews.filter;
+  static determineControlNetwork(state) {
+    return state.controlViews.network;
   }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineControlSimplification(state) {
-    return state.controlViews.simplification;
+  static determineNetworkFilter(state) {
+    return state.networkViews.filter;
   }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineControlTraversal(state) {
-    return state.controlViews.traversal;
+  static determineNetworkContext(state) {
+    return state.networkViews.context;
   }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineControlSubnetwork(state) {
+    return state.controlViews.subnetwork;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSubnetworkQuery(state) {
+    return state.subnetworkViews.query;
+  }
+
+  // TODO: update the methods to check control tabs
+
+
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
