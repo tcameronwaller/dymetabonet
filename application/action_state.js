@@ -46,6 +46,12 @@ class ActionState {
   * @param {Object} state Application's state.
   */
   static restoreControls(state) {
+
+    // TODO: re-load basic and supplemental information from source
+    // TODO: initialize controls for all parts of the application
+    // TODO: derive dependent state...
+
+
     // Initialize view's controls.
     var controls = ActionState.initializeControls();
     // Derive dependent state.

@@ -256,7 +256,7 @@ class ActionExploration {
     var dependentStateVariables = {};
     // Compile information.
     var novelVariablesValues = {
-      novelViewsRestoration
+      viewsRestoration: novelViewsRestoration
     };
     var variablesValues = Object.assign(
       novelVariablesValues,

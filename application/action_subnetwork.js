@@ -41,9 +41,66 @@ class ActionSubnetwork {
 
   // Direct actions.
 
-  // TODO: restore controls...
+  /**
+  * Restores values of application's variables for controls relevant to view.
+  * @param {Object} state Application's state.
+  */
+  static restoreControls(state) {
+    // Initialize relevant controls to default values.
+    var subnetwork = ActionSubnetwork.initializeControls();
+    var query = ActionQuery.initializeControls();
+    // Copy information about application's state.
+    var stateCopy = ActionState.createPersistence(state);
+    // Replace information about relevant controls.
+    var novelState = Object.assign(
+      stateCopy,
+      subnetwork,
+      query
+    );
+    // Determine which views to restore.
+    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [
+        "subnetwork",
+        "query",
+        "measurement",
+        "summary",
+        "exploration"
+      ],
+      type: true,
+      viewsRestoration: state.viewsRestoration
+    });
+    // Derive dependent state.
+    var dependentStateVariables = ActionSubnetwork.deriveState({
+      networkNodesRecords: state.networkNodesRecords,
+      networkLinksRecords: state.networkLinksRecords,
+      viewsRestoration: novelViewsRestoration,
+      state: novelState
+    });
+    // Compile information.
+    var novelVariablesValues = {};
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      subnetwork,
+      query,
+      dependentStateVariables
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
 
   // TODO: export info about subnetwork's elements
+
+  /**
+  * Exports information.
+  * @param {Object} state Application's state.
+  */
+  static export(state) {
+    console.log("export subnetwork");
+  }
+
 
   /**
   * Changes the selections of active panels within the panel view.

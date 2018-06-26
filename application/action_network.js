@@ -41,9 +41,74 @@ class ActionNetwork {
 
   // Direct actions.
 
-  // TODO: restore controls...
+  /**
+  * Restores values of application's variables for controls relevant to view.
+  * @param {Object} state Application's state.
+  */
+  static restoreControls(state) {
+    // Initialize relevant controls to default values.
+    var network = ActionNetwork.initializeControls();
+    var filter = ActionFilter.initializeControls();
+    var context = ActionContext.initializeControls();
+    // Copy information about application's state.
+    var stateCopy = ActionState.createPersistence(state);
+    // Replace information about relevant controls.
+    var novelState = Object.assign(
+      stateCopy,
+      network,
+      filter,
+      context
+    );
+    // Determine which views to restore.
+    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [
+        "network",
+        "filter",
+        "context",
+        "subnetwork",
+        "query",
+        "measurement",
+        "summary",
+        "exploration"
+      ],
+      type: true,
+      viewsRestoration: state.viewsRestoration
+    });
+    // Derive dependent state.
+    var dependentStateVariables = ActionNetwork.deriveState({
+      metabolites: state.metabolites,
+      reactions: state.reactions,
+      compartments: state.compartments,
+      processes: state.processes,
+      viewsRestoration: novelViewsRestoration,
+      state: novelState
+    });
+    // Compile information.
+    var novelVariablesValues = {};
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      network,
+      filter,
+      context,
+      dependentStateVariables
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
 
   // TODO: export info about subnetwork's elements
+
+  /**
+  * Exports information.
+  * @param {Object} state Application's state.
+  */
+  static export(state) {
+    console.log("export network");
+  }
+
 
   /**
   * Changes the selections of active panels within the panel view.

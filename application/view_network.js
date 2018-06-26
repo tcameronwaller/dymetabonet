@@ -81,6 +81,12 @@ class ViewNetwork {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
+      // Create and activate button to restore view.
+      self.createActivateRestorationButton(self);
+      // Create and activate button to export information about network.
+      self.createActivateExportButton(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
 
       // TODO: create representations of nodes and links in network...
       // TODO: create temporary place-holder text
@@ -108,6 +114,38 @@ class ViewNetwork {
       self.filterTab = self.document.getElementById("tab-filter");
       self.contextTab = self.document.getElementById("tab-context");
     }
+  }
+  /**
+  * Creates and activates button to restore view's controls.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateRestorationButton(self) {
+    var restore = View.createButton({
+      text: "restore",
+      parent: self.container,
+      documentReference: self.document
+    });
+    restore.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      ActionNetwork.restoreControls(self.state);
+    });
+  }
+  /**
+  * Creates and activates button to export information about network.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateExportButton(self) {
+    var exportButton = View.createButton({
+      text: "export",
+      parent: self.container,
+      documentReference: self.document
+    });
+    exportButton.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      ActionNetwork.export(self.state);
+    });
   }
   /**
   * Creates and activates tabs.
