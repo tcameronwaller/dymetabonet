@@ -41,9 +41,48 @@ class ActionSubnetwork {
 
   // Direct actions.
 
-  // TODO: ActionSubnetwork.restoreControls should also restore all subordinate controls and state variables
+  // TODO: restore controls...
 
-  // TODO: ActionSubnetwork.export...
+  // TODO: export info about subnetwork's elements
+
+  /**
+  * Changes the selections of active panels within the panel view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.category Category of panel.
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeView({category, state}) {
+    // Multiple subordinate views within control view can be active
+    // simultaneously.
+    // Change the view's selection.
+    if (state.subnetworkViews[category]) {
+      var selection = false;
+    } else {
+      var selection = true;
+    }
+    // Create entry.
+    var entry = {
+      [category]: selection
+    };
+    var subnetworkViews = Object.assign(state.subnetworkViews, entry);
+    // Determine which views to restore.
+    var viewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [category],
+      type: true,
+      viewsRestoration: state.viewsRestoration
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {
+      subnetworkViews: subnetworkViews,
+      viewsRestoration: viewsRestoration
+    };
+    var variablesValues = novelVariablesValues;
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
 
   // Indirect actions.
 
@@ -63,9 +102,6 @@ class ActionSubnetwork {
     // Return information.
     return variablesValues;
   }
-
-  // TODO: ActionSubnetwork.deriveState should call ActionQuery.deriveState
-
   /**
   * Derives application's dependent state from controls relevant to view.
   * @param {Object} parameters Destructured object of parameters.

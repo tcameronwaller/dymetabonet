@@ -36,15 +36,11 @@ class ViewContext {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.interfaceView Instance of ViewInterface's class.
-  * @param {Object} parameters.tipView Instance of ViewTip's class.
-  * @param {Object} parameters.promptView Instance of ViewPrompt's class.
-  * @param {Object} parameters.controlView Instance of ViewControl's class.
-  * @param {Object} parameters.state Application's state.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor ({interfaceView, tipView, promptView, controlView, state, documentReference} = {}) {
+  constructor ({documentReference, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -53,10 +49,10 @@ class ViewContext {
     // Set reference to document object model (DOM).
     self.document = documentReference;
     // Set reference to other views.
-    self.interfaceView = interfaceView;
-    self.tipView = tipView;
-    self.promptView = promptView;
-    self.controlView = controlView;
+    self.interfaceView = self.state.views.interface;
+    self.tipView = self.state.views.tip;
+    self.promptView = self.state.views.prompt;
+    self.networkView = self.state.views.network;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
@@ -71,9 +67,9 @@ class ViewContext {
   initializeView(self) {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
-      identifier: "simplification",
+      identifier: "context",
       type: "standard",
-      target: self.controlView.simplificationTab,
+      target: self.networkView.contextTab,
       position: "afterend",
       documentReference: self.document
     });

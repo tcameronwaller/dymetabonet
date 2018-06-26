@@ -124,9 +124,11 @@ class Model {
     // Filter view.
     self.restoreFilterView(self);
     // Context view.
-    //self.restoreContextView(self);
-
-
+    self.restoreContextView(self);
+    // Subnetwork view.
+    self.restoreSubnetworkView(self);
+    // Query view.
+    self.restoreQueryView(self);
 
     if (false) {
       // Tip view.
@@ -327,6 +329,68 @@ class Model {
       self.state.viewsRestoration.filter = false;
     }
   }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreContextView(self) {
+    // Context view.
+    if (self.state.viewsRestoration.context) {
+      // Restore views.
+      if (Model.determineNetworkContext(self.state)) {
+        self.state.views.context = new ViewContext({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("context", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.context = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreSubnetworkView(self) {
+    // Subnetwork view.
+    if (self.state.viewsRestoration.subnetwork) {
+      // Restore views.
+      if (Model.determineControlSubnetwork(self.state)) {
+        self.state.views.subnetwork = new ViewSubnetwork({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("subnetwork", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.subnetwork = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreQueryView(self) {
+    // Context view.
+    if (self.state.viewsRestoration.query) {
+      // Restore views.
+      if (Model.determineSubnetworkQuery(self.state)) {
+        self.state.views.query = new ViewQuery({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("query", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.query = false;
+    }
+  }
+
+
 
 
 

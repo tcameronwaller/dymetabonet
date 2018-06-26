@@ -41,6 +41,10 @@ class ActionNetwork {
 
   // Direct actions.
 
+  // TODO: restore controls...
+
+  // TODO: export info about subnetwork's elements
+
   /**
   * Changes the selections of active panels within the panel view.
   * @param {Object} parameters Destructured object of parameters.
@@ -80,10 +84,6 @@ class ActionNetwork {
     });
   }
 
-  // TODO: ActionNetwork.restoreControls should also restore all subordinate controls and state variables
-
-  // TODO: ActionNetwork.export...
-
   // Indirect actions.
 
   /**
@@ -103,9 +103,6 @@ class ActionNetwork {
     // Return information.
     return variablesValues;
   }
-
-  // TODO: ActionNetwork.deriveState should call ActionFilter.deriveState
-
   /**
   * Derives application's dependent state from controls relevant to view.
   * @param {Object} parameters Destructured object of parameters.
