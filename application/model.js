@@ -113,6 +113,8 @@ class Model {
     // views to restore.
     // Interface view.
     self.restoreInterfaceView(self);
+    // Tip view.
+    self.restoreTipView(self);
     // Panel view.
     self.restorePanelView(self);
     // Control view.
@@ -131,17 +133,6 @@ class Model {
     self.restoreQueryView(self);
 
     if (false) {
-      // Tip view.
-      // Tip view always exists but is only visible when active.
-      if (self.state.viewsRestoration.tip) {
-        // Restore views.
-        self.state.views.tip = new ViewTip({
-          interfaceView: self.state.views.interface,
-          state: self.state,
-          documentReference: self.document,
-          windowReference: self.window
-        });
-      }
       // Prompt view.
       // Prompt view always exists but is only visible when active.
       if (self.state.viewsRestoration.prompt) {
@@ -151,32 +142,6 @@ class Model {
           state: self.state,
           documentReference: self.document,
           windowReference: self.window
-        });
-      }
-      // Network view.
-      // View has subordinate views.
-      if (self.state.viewsRestoration.network) {
-        // Restore views.
-        self.state.views.network = new ViewNetwork({
-          interfaceView: self.state.views.interface,
-          tipView: self.state.views.tip,
-          promptView: self.state.views.prompt,
-          panelView: self.state.views.panel,
-          state: self.state,
-          documentReference: self.document
-        });
-      }
-      // Subnetwork view.
-      // View has subordinate views.
-      if (self.state.viewsRestoration.subnetwork) {
-        // Restore views.
-        self.state.views.subnetwork = new ViewSubnetwork({
-          interfaceView: self.state.views.interface,
-          tipView: self.state.views.tip,
-          promptView: self.state.views.prompt,
-          panelView: self.state.views.panel,
-          state: self.state,
-          documentReference: self.document
         });
       }
       // Summary view.
@@ -203,21 +168,6 @@ class Model {
           windowReference: self.window
         });
       }
-
-      // TODO: scrap...
-      // Control view.
-      // Control view has several subordinate views.
-      if (self.state.viewsRestoration.control) {
-        // Restore views.
-        self.state.views.control = new ViewControl({
-          interfaceView: self.state.views.interface,
-          panelView: self.state.views.panel,
-          tipView: self.state.views.tip,
-          promptView: self.state.views.prompt,
-          state: self.state,
-          documentReference: self.document
-        });
-      }
     }
   }
   /**
@@ -235,6 +185,23 @@ class Model {
       });
       // Change restoration.
       self.state.viewsRestoration.interface = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreTipView(self) {
+    // Panel view.
+    if (self.state.viewsRestoration.tip) {
+      // Restore views.
+      self.state.views.tip = new ViewTip({
+        documentReference: self.document,
+        windowReference: self.window,
+        state: self.state
+      });
+      // Change restoration.
+      self.state.viewsRestoration.tip = false;
     }
   }
   /**

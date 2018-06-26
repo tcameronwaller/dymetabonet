@@ -108,57 +108,5 @@ class ViewControl {
   * application's state.
   * @param {Object} self Instance of a class.
   */
-  restoreView(self) {
-    // Determine which subordinate views to create, activate, and restore.
-    // Multiple subordinate views within control view can be active
-    // simultaneously.
-    if (Model.determineControlFilter(self.state)) {
-      new ViewFilter({
-        interfaceView: self.interfaceView,
-        tipView: self.tipView,
-        promptView: self.promptView,
-        controlView: self,
-        state: self.state,
-        documentReference: self.document
-      });
-    } else {
-      View.removeExistElement("filter", self.document);
-    }
-    if (Model.determineControlSimplification(self.state)) {
-      new ViewContext({
-        interfaceView: self.interfaceView,
-        tipView: self.tipView,
-        promptView: self.promptView,
-        controlView: self,
-        state: self.state,
-        documentReference: self.document
-      });
-    } else {
-      View.removeExistElement("simplification", self.document);
-    }
-    if (Model.determineControlTraversal(self.state)) {
-      new ViewQuery({
-        interfaceView: self.interfaceView,
-        tipView: self.tipView,
-        promptView: self.promptView,
-        controlView: self,
-        state: self.state,
-        documentReference: self.document
-      });
-    } else {
-      View.removeExistElement("traversal", self.document);
-    }
-    if (Model.determineControlMeasurement(self.state)) {
-      new ViewMeasurement({
-        interfaceView: self.interfaceView,
-        tipView: self.tipView,
-        promptView: self.promptView,
-        controlView: self,
-        state: self.state,
-        documentReference: self.document
-      });
-    } else {
-      View.removeExistElement("measurement", self.document);
-    }
-  }
+  restoreView(self) {}
 }
