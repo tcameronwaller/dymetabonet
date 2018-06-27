@@ -376,6 +376,12 @@ class ActionContext {
       metabolites: metabolites,
       compartmentalization: compartmentalization
     });
+    // Determine summary information about network.
+    var networkSummary = Network.determineNetworkSummary({
+      networkNodesMetabolites: networkElements.networkNodesMetabolites,
+      networkNodesReactions: networkElements.networkNodesReactions,
+      networkLinks: networkElements.networkLinks
+    });
     // Determine which views to restore.
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
       views: [
@@ -397,7 +403,9 @@ class ActionContext {
       state: state
     });
     // Compile information.
-    var novelVariablesValues = {};
+    var novelVariablesValues = {
+      networkSummary: networkSummary
+    };
     var variablesValues = Object.assign(
       novelVariablesValues,
       candidatesSummaries,

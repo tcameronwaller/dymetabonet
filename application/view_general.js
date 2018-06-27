@@ -628,7 +628,7 @@ class View {
         documentReference: documentReference
       });
       scaleGraph.classList.add("scale");
-      // Determine graphs' dimensions.
+      // Determine graph's dimensions.
       var graphWidth = General.determineElementDimension(scaleGraph, "width");
       var graphHeight = General.determineElementDimension(scaleGraph, "height");
       // Compile references to elements.
@@ -1125,5 +1125,59 @@ class View {
   */
   static createTabReference(category) {
     return (category + "Tab");
+  }
+  /**
+  * Creates a scale chart.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * @returns {Object} Reference to element.
+  */
+  static createScaleChart({parent, documentReference} = {}) {
+    // Create graphical container for scale.
+    var graph = View.createGraph({
+      parent: parent,
+      documentReference: documentReference
+    });
+    graph.classList.add("scale");
+    // Create text labels for minimum and maximum.
+    var labelMinimum = documentReference
+    .createElementNS("http://www.w3.org/2000/svg", "text");
+    graph.appendChild(labelMinimum);
+    labelMinimum.classList.add("minimum");
+    var labelMaximum = documentReference
+    .createElementNS("http://www.w3.org/2000/svg", "text");
+    graph.appendChild(labelMaximum);
+    labelMaximum.classList.add("maximum");
+    // Create line.
+    // TODO: ...
+    return graph;
+  }
+  /**
+  * Restores a scale chart.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.minimum Minimal value of scale.
+  * @param {number} parameters.maximum Maximal value of scale.
+  * @param {Object} parameters.graph Reference to graphical container.
+  */
+  static restoreScaleChart({minimum, maximum, graph} = {}) {
+    // Restore text content of labels.
+    var labelMinimum = graph.querySelector("text.minimum");
+    labelMinimum.textContent = String(minimum);
+    var labelMaximum = graph.querySelector("text.maximum");
+    labelMaximum.textContent = String(maximum);
+    // Determine graph's dimensions.
+    var graphWidth = General.determineElementDimension(graph, "width");
+    var graphHeight = General.determineElementDimension(graph, "height");
+    // Restore positions of labels.
+    var pad = 5;
+    var labelHeight = labelMinimum.getBoundingClientRect().height;
+    var verticalPosition = (graphHeight / 2) + (labelHeight / 3);
+    labelMinimum.setAttribute("x", String(pad) + "px");
+    labelMinimum.setAttribute("y", String(verticalPosition) + "px");
+    labelMaximum.setAttribute("x", String(graphWidth - pad) + "px");
+    labelMaximum.setAttribute("y", String(verticalPosition) + "px");
+    // Restore positions of lines.
+
   }
 }

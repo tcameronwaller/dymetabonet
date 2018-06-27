@@ -357,6 +357,8 @@ class Model {
     }
   }
 
+  // TODO: Mange exploration, progress, and topology views here...
+
 
 
 

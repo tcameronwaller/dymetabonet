@@ -87,18 +87,8 @@ class ViewNetwork {
       self.createActivateExportButton(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
-
-      // TODO: create representations of nodes and links in network...
-      // TODO: create temporary place-holder text
-      var spanNodes = self.document.createElement("span");
-      self.container.appendChild(spanNodes);
-      spanNodes.textContent = "coming soon! summary of nodes...";
-      // Create break.
-      self.container.appendChild(self.document.createElement("br"));
-      var spanLinks = self.document.createElement("span");
-      self.container.appendChild(spanLinks);
-      spanLinks.textContent = "coming soon! summary of links...";
-
+      // Create summary of network's elements.
+      self.createActivateSummary(self);
       // Create and activate tabs.
       self.createActivateTabs(self);
 
@@ -146,6 +136,71 @@ class ViewNetwork {
       // Call action.
       ActionNetwork.export(self.state);
     });
+  }
+  /**
+  * Creates and activates a summary about network.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateSummary(self) {
+    console.log(self.state.networkSummary);
+    // TODO: create representations of nodes and links in network...
+    // TODO: create temporary place-holder text
+    if (false) {
+      var spanNodes = self.document.createElement("span");
+      self.container.appendChild(spanNodes);
+      spanNodes.textContent = "coming soon! summary of nodes...";
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      var spanLinks = self.document.createElement("span");
+      self.container.appendChild(spanLinks);
+      spanLinks.textContent = "coming soon! summary of links...";
+    }
+    // Create table body.
+    var tableBody = View.createTableBody({
+      className: "summary",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Create table body rows and cells.
+    var rowOne = View.createTableBodyRow({
+      body: tableBody,
+      documentReference: self.document
+    });
+    var rowOneCellOne = View.createTableBodyRowCell({
+      row: rowOne,
+      documentReference: self.document
+    });
+    rowOneCellOne.classList.add("label");
+    var rowOneCellTwo = View.createTableBodyRowCell({
+      row: rowOne,
+      documentReference: self.document
+    });
+    rowOneCellTwo.classList.add("chart");
+    var graphScaleNode = View.createScaleChart({
+      parent: rowOneCellTwo,
+      documentReference: self.document
+    });
+    View.restoreScaleChart({
+      minimum: 0,
+      maximum: 10000,
+      graph: graphScaleNode
+    });
+    var rowTwo = View.createTableBodyRow({
+      body: tableBody,
+      documentReference: self.document
+    });
+    var rowTwoCellOne = View.createTableBodyRowCell({
+      row: rowTwo,
+      documentReference: self.document
+    });
+    rowTwoCellOne.classList.add("label");
+    rowTwoCellOne.textContent = "nodes";
+    var rowTwoCellTwo = View.createTableBodyRowCell({
+      row: rowTwo,
+      documentReference: self.document
+    });
+    rowTwoCellTwo.classList.add("chart");
+    // TODO: ... create chart
   }
   /**
   * Creates and activates tabs.

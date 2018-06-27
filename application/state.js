@@ -424,7 +424,12 @@ class State {
       // network's links.
       // Information includes references to variables "networkNodesReactions",
       // and "networkNodesMetabolites".
-      "networkLinksRecords"
+      "networkLinksRecords",
+      // Variable "networkSummary" stores information about the counts of
+      // network's nodes and links.
+      // Information derives from variables "networkNodesMetabolites",
+      // "networkNodesReactions", and "networkLinks".
+      "networkSummary"
     ];
     var subnetwork = [
       // Variable "subnetworkNodesRecords" stores concise information about

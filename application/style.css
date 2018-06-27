@@ -87,6 +87,37 @@ div.tab.emphasis {
   background-color: rgba(0, 150, 150, 1);
 }
 
+table.summary {
+}
+
+table.summary tr {
+  height: 0.5cm;
+}
+
+table.summary td.label {
+}
+
+table.summary td.chart {
+}
+
+table.summary svg.scale text {
+  font-size: x-small;
+  font-weight: bold;
+}
+
+table.summary svg.scale text.minimum {
+  text-anchor: start;
+}
+
+table.summary svg.scale text.maximum {
+  text-anchor: end;
+}
+
+table.summary svg.scale {
+  background-color: rgba(255, 255, 255, 1);
+  width: 7.5cm;
+  height: 0.5cm;
+}
 
 /******************************************************************************/
 /* Interface View */

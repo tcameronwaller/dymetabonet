@@ -292,6 +292,7 @@ class General {
   */
   static determineElementDimension(element, attribute) {
     // Alternative is to use element.getBoundingClientRect().
+    // Alternative is to use element.getBBox().
     // Alternative may also be to use d3.style(node, name).
     return parseFloat(
       window.getComputedStyle(element)[attribute].replace("px", "")
