@@ -1158,26 +1158,217 @@ class View {
   * @param {Object} parameters Destructured object of parameters.
   * @param {number} parameters.minimum Minimal value of scale.
   * @param {number} parameters.maximum Maximal value of scale.
+  * @param {number} parameters.pad Space to leave on either end of graph.
   * @param {Object} parameters.graph Reference to graphical container.
   */
-  static restoreScaleChart({minimum, maximum, graph} = {}) {
+  static restoreScaleChart({minimum, maximum, pad, graph} = {}) {
     // Restore text content of labels.
     var labelMinimum = graph.querySelector("text.minimum");
-    labelMinimum.textContent = String(minimum);
+    labelMinimum.textContent = ("|- " + String(minimum) + " -----");
     var labelMaximum = graph.querySelector("text.maximum");
-    labelMaximum.textContent = String(maximum);
+    labelMaximum.textContent = ("----- " + String(maximum) + " -|");
     // Determine graph's dimensions.
     var graphWidth = General.determineElementDimension(graph, "width");
     var graphHeight = General.determineElementDimension(graph, "height");
     // Restore positions of labels.
-    var pad = 5;
     var labelHeight = labelMinimum.getBoundingClientRect().height;
     var verticalPosition = (graphHeight / 2) + (labelHeight / 3);
-    labelMinimum.setAttribute("x", String(pad) + "px");
-    labelMinimum.setAttribute("y", String(verticalPosition) + "px");
-    labelMaximum.setAttribute("x", String(graphWidth - pad) + "px");
-    labelMaximum.setAttribute("y", String(verticalPosition) + "px");
+    labelMinimum.setAttribute("x", pad);
+    labelMinimum.setAttribute("y", verticalPosition);
+    labelMaximum.setAttribute("x", (graphWidth - pad));
+    labelMaximum.setAttribute("y", verticalPosition);
+
     // Restore positions of lines.
 
   }
+  /**
+  * Creates a chart to summarize nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.selection Whether there is a selection of a
+  * subnetwork.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * @returns {Object} Reference to element.
+  */
+  static createNodesChart({selection, parent, documentReference} = {}) {
+    // Create graphical container for scale.
+    var graph = View.createGraph({
+      parent: parent,
+      documentReference: documentReference
+    });
+    graph.classList.add("count");
+    graph.classList.add("node");
+    // Create bars for visual representations of nodes.
+    var barMetabolite = documentReference
+    .createElementNS("http://www.w3.org/2000/svg", "rect");
+    graph.appendChild(barMetabolite);
+    barMetabolite.classList.add("whole");
+    barMetabolite.classList.add("metabolite");
+    barMetabolite.setAttribute("y", 0);
+    var barReaction = documentReference
+    .createElementNS("http://www.w3.org/2000/svg", "rect");
+    graph.appendChild(barReaction);
+    barReaction.classList.add("whole");
+    barReaction.classList.add("reaction");
+    barReaction.setAttribute("y", 0);
+    if (selection) {
+      var barMetaboliteSelection = documentReference
+      .createElementNS("http://www.w3.org/2000/svg", "rect");
+      graph.appendChild(barMetaboliteSelection);
+      barMetaboliteSelection.classList.add("selection");
+      barMetaboliteSelection.classList.add("metabolite");
+      barMetaboliteSelection.setAttribute("y", 0);
+      var barReactionSelection = documentReference
+      .createElementNS("http://www.w3.org/2000/svg", "rect");
+      graph.appendChild(barReactionSelection);
+      barReactionSelection.classList.add("selection");
+      barReactionSelection.classList.add("reaction");
+      barReactionSelection.setAttribute("y", 0);
+    }
+    // Create labels.
+    var labelMetabolite = documentReference
+    .createElementNS("http://www.w3.org/2000/svg", "text");
+    graph.appendChild(labelMetabolite);
+    labelMetabolite.classList.add("metabolite");
+    labelMetabolite.textContent = ("metabolites");
+    var labelReaction = documentReference
+    .createElementNS("http://www.w3.org/2000/svg", "text");
+    graph.appendChild(labelReaction);
+    labelReaction.classList.add("reaction");
+    labelReaction.textContent = ("reactions");
+    // Return reference to element.
+    return graph;
+  }
+  /**
+  * Restores a chart for nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.selection Whether there is a selection of a
+  * subnetwork.
+  * @param {number} parameters.nodes Count of nodes.
+  * @param {number} parameters.nodesMetabolites Count of nodes for metabolites.
+  * @param {number} parameters.nodesReactions Count of nodes for reactions.
+  * @param {number} parameters.nodesMetabolitesSelection Count of nodes for
+  * metabolites in selection.
+  * @param {number} parameters.nodesReactionsSelection Count of nodes for
+  * reactions in selection.
+  * @param {number} parameters.pad Space to leave on either end of graph.
+  * @param {Object} parameters.graph Reference to graphical container.
+  */
+  static restoreNodesChart({selection, nodes, nodesMetabolites, nodesReactions, nodesMetabolitesSelection, nodesReactionsSelection, pad, graph} = {}) {
+    // Select bars.
+    var barMetabolite = graph.querySelector("rect.metabolite");
+    var barReaction = graph.querySelector("rect.reaction");
+    if (selection) {
+      var barMetaboliteSelection = graph
+      .querySelector("rect.metabolite.selection");
+      var barReactionSelection = graph.querySelector("rect.reaction.selection");
+    }
+    // Select labels.
+    var labelMetabolite = graph.querySelector("text.metabolite");
+    var labelReaction = graph.querySelector("text.reaction");
+    // Determine graph's dimensions.
+    var graphWidth = General.determineElementDimension(graph, "width");
+    var graphHeight = General.determineElementDimension(graph, "height");
+    // Determine scale for bars' dimensions.
+    var scaleValue = d3
+    .scaleLinear()
+    .domain([0, nodes])
+    .range([0, (graphWidth - (pad * 2))]);
+    // Restore bars' dimensions.
+    barMetabolite.setAttribute("width", scaleValue(nodesMetabolites));
+    barMetabolite.setAttribute("height", graphHeight);
+    barReaction.setAttribute("width", scaleValue(nodesReactions));
+    barReaction.setAttribute("height", graphHeight);
+    if (selection) {
+      barMetaboliteSelection
+      .setAttribute("width", scaleValue(nodesMetabolitesSelection));
+      barReactionSelection
+      .setAttribute("width", scaleValue(nodesReactionsSelection));
+    }
+    // Restore bars' positions.
+    barMetabolite.setAttribute("x", pad);
+    barReaction.setAttribute("x", (pad + scaleValue(nodesMetabolites)));
+    if (selection) {
+      barMetaboliteSelection.setAttribute("x", pad);
+      barReactionSelection
+      .setAttribute("x", (pad + scaleValue(nodesReactionsSelection)));
+    }
+    // Restore positions of labels.
+    var labelHeight = labelMetabolite.getBoundingClientRect().height;
+    var verticalPosition = (graphHeight / 2) + (labelHeight / 3);
+    labelMetabolite.setAttribute("x", (pad * 2));
+    labelMetabolite.setAttribute("y", verticalPosition);
+    labelReaction.setAttribute("x", ((pad * 2) + scaleValue(nodesMetabolites)));
+    labelReaction.setAttribute("y", verticalPosition);
+  }
+  /**
+  * Creates a chart to summarize links.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.selection Whether there is a selection of a
+  * subnetwork.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * @returns {Object} Reference to element.
+  */
+  static createLinksChart({selection, parent, documentReference} = {}) {
+    // Create graphical container for scale.
+    var graph = View.createGraph({
+      parent: parent,
+      documentReference: documentReference
+    });
+    graph.classList.add("count");
+    graph.classList.add("link");
+    // Create bars for visual representations of nodes.
+    var barWhole = documentReference
+    .createElementNS("http://www.w3.org/2000/svg", "rect");
+    graph.appendChild(barWhole);
+    barWhole.classList.add("whole");
+    barWhole.setAttribute("y", 0);
+    if (selection) {
+      var barSelection = documentReference
+      .createElementNS("http://www.w3.org/2000/svg", "rect");
+      graph.appendChild(barSelection);
+      barSelection.classList.add("selection");
+      barSelection.setAttribute("y", 0);
+    }
+    // Return reference to element.
+    return graph;
+  }
+  /**
+  * Restores a chart for links.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.selection Whether there is a selection of a
+  * subnetwork.
+  * @param {number} parameters.links Count of links.
+  * @param {number} parameters.linksSelection Count of links in selection.
+  * @param {number} parameters.pad Space to leave on either end of graph.
+  * @param {Object} parameters.graph Reference to graphical container.
+  */
+  static restoreLinksChart({selection, links, linksSelection, pad, graph} = {}) {
+    // Select bars.
+    var barWhole = graph.querySelector("rect.whole");
+    if (selection) {
+      var barSelection = graph.querySelector("rect.selection");
+    }
+    // Determine graph's dimensions.
+    var graphWidth = General.determineElementDimension(graph, "width");
+    var graphHeight = General.determineElementDimension(graph, "height");
+    // Determine scale for bars' dimensions.
+    var scaleValue = d3
+    .scaleLinear()
+    .domain([0, links])
+    .range([0, (graphWidth - (pad * 2))]);
+    // Restore bars' dimensions.
+    barWhole.setAttribute("width", scaleValue(links));
+    barWhole.setAttribute("height", graphHeight);
+    if (selection) {
+      barSelection.setAttribute("width", scaleValue(links));
+    }
+    // Restore bars' positions.
+    barWhole.setAttribute("x", pad);
+    if (selection) {
+      barSelection.setAttribute("x", pad);
+    }
+  }
+
 }

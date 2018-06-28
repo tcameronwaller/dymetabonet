@@ -142,9 +142,8 @@ class ViewNetwork {
   * @param {Object} self Instance of a class.
   */
   createActivateSummary(self) {
+    // TODO: Maybe split the sub-procedures between nodes summary and links summary?
     console.log(self.state.networkSummary);
-    // TODO: create representations of nodes and links in network...
-    // TODO: create temporary place-holder text
     if (false) {
       var spanNodes = self.document.createElement("span");
       self.container.appendChild(spanNodes);
@@ -162,10 +161,14 @@ class ViewNetwork {
       documentReference: self.document
     });
     // Create table body rows and cells.
+
+    // Nodes.
+
     var rowOne = View.createTableBodyRow({
       body: tableBody,
       documentReference: self.document
     });
+    rowOne.classList.add("node");
     var rowOneCellOne = View.createTableBodyRowCell({
       row: rowOne,
       documentReference: self.document
@@ -176,31 +179,110 @@ class ViewNetwork {
       documentReference: self.document
     });
     rowOneCellTwo.classList.add("chart");
-    var graphScaleNode = View.createScaleChart({
+    var graphScaleNodes = View.createScaleChart({
       parent: rowOneCellTwo,
       documentReference: self.document
     });
+    // TODO: Eventually, restore in view's restore procedure, dependent on data...
     View.restoreScaleChart({
       minimum: 0,
-      maximum: 10000,
-      graph: graphScaleNode
+      maximum: self.state.networkSummary.nodes,
+      pad: 5,
+      graph: graphScaleNodes
     });
     var rowTwo = View.createTableBodyRow({
       body: tableBody,
       documentReference: self.document
     });
+    rowTwo.classList.add("node");
     var rowTwoCellOne = View.createTableBodyRowCell({
       row: rowTwo,
       documentReference: self.document
     });
     rowTwoCellOne.classList.add("label");
-    rowTwoCellOne.textContent = "nodes";
+    rowTwoCellOne.textContent = "nodes:";
     var rowTwoCellTwo = View.createTableBodyRowCell({
       row: rowTwo,
       documentReference: self.document
     });
     rowTwoCellTwo.classList.add("chart");
-    // TODO: ... create chart
+    var graphNodes = View.createNodesChart({
+      selection: false,
+      parent: rowTwoCellTwo,
+      documentReference: self.document
+    });
+    // TODO: Eventually, restore in view's restore procedure, dependent on data...
+    View.restoreNodesChart({
+      selection: false,
+      nodes: self.state.networkSummary.nodes,
+      nodesMetabolites: self.state.networkSummary.nodesMetabolites,
+      nodesReactions: self.state.networkSummary.nodesReactions,
+      nodesMetabolitesSelection: 0,
+      nodesReactionsSelection: 0,
+      pad: 5,
+      graph: graphNodes
+    });
+
+    // Links.
+
+    var rowThree = View.createTableBodyRow({
+      body: tableBody,
+      documentReference: self.document
+    });
+    rowThree.classList.add("link");
+    var rowThreeCellOne = View.createTableBodyRowCell({
+      row: rowThree,
+      documentReference: self.document
+    });
+    rowThreeCellOne.classList.add("label");
+    var rowThreeCellTwo = View.createTableBodyRowCell({
+      row: rowThree,
+      documentReference: self.document
+    });
+    rowThreeCellTwo.classList.add("chart");
+    var graphScaleLinks = View.createScaleChart({
+      parent: rowThreeCellTwo,
+      documentReference: self.document
+    });
+    // TODO: Eventually, restore in view's restore procedure, dependent on data...
+    View.restoreScaleChart({
+      minimum: 0,
+      maximum: self.state.networkSummary.links,
+      pad: 5,
+      graph: graphScaleLinks
+    });
+    var rowFour = View.createTableBodyRow({
+      body: tableBody,
+      documentReference: self.document
+    });
+    rowFour.classList.add("link");
+    var rowFourCellOne = View.createTableBodyRowCell({
+      row: rowFour,
+      documentReference: self.document
+    });
+    rowFourCellOne.classList.add("label");
+    rowFourCellOne.textContent = "links:";
+    var rowFourCellTwo = View.createTableBodyRowCell({
+      row: rowFour,
+      documentReference: self.document
+    });
+    rowFourCellTwo.classList.add("chart");
+
+    var graphLinks = View.createLinksChart({
+      selection: false,
+      parent: rowFourCellTwo,
+      documentReference: self.document
+    });
+    // TODO: Eventually, restore in view's restore procedure, dependent on data...
+    View.restoreLinksChart({
+      selection: false,
+      links: self.state.networkSummary.links,
+      linksSelection: 0,
+      pad: 5,
+      graph: graphLinks
+    });
+
+
   }
   /**
   * Creates and activates tabs.

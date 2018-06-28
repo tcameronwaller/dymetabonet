@@ -88,16 +88,36 @@ div.tab.emphasis {
 }
 
 table.summary {
+  font-family: sans-serif;
+  font-weight: bold;
+  table-layout: fixed;
+  border-collapse: collapse;
+  width: 100%;
+  padding: 0px;
+  background-color: rgba(225, 225, 225, 1);
 }
 
-table.summary tr {
+table.summary tbody tr {
+  padding: 0px;
+  border-collapse: collapse;
+  border: 0px;
   height: 0.5cm;
 }
 
-table.summary td.label {
+table.summary tbody td.label {
+  padding: 0px;
+  width: 1.5cm;
+  font-size: small;
 }
 
-table.summary td.chart {
+table.summary tbody td.chart {
+  padding: 0px;
+}
+
+table.summary svg {
+  background-color: rgba(255, 255, 255, 1);
+  width: 7cm;
+  height: 0.5cm;
 }
 
 table.summary svg.scale text {
@@ -113,10 +133,26 @@ table.summary svg.scale text.maximum {
   text-anchor: end;
 }
 
-table.summary svg.scale {
-  background-color: rgba(255, 255, 255, 1);
-  width: 7.5cm;
-  height: 0.5cm;
+table.summary tr.node svg.count.node rect.whole.metabolite {
+  fill: rgba(0, 100, 100, 1);
+}
+
+table.summary tr.node svg.count.node rect.whole.reaction {
+  fill: rgba(100, 0, 100, 1);
+}
+
+table.summary svg.count rect.selection {
+  fill: rgba(0, 0, 0, 0.25);
+}
+
+table.summary svg.count text {
+  font-size: x-small;
+  font-weight: bold;
+  fill: rgba(255, 255, 255, 1);
+}
+
+table.summary tr.link svg.count.link rect.whole {
+  fill: rgba(0, 100, 100, 1);
 }
 
 /******************************************************************************/
