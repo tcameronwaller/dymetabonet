@@ -1160,7 +1160,7 @@ class View {
     // Assign relative positions of scale and chart.
     groupScale.setAttribute("transform", "translate(" + pad + "," + pad + ")");
     groupCount.setAttribute(
-      "transform", "translate(" + pad + "," + (pad + (graphHeight / 2)) + ")"
+      "transform", "translate(" + pad + "," + (graphHeight / 2) + ")"
     );
     // Return reference to element.
     return graph;
@@ -1272,7 +1272,7 @@ class View {
     // Restore positions of line.
     line.setAttribute("points", "0,5 0,0 " + width + ",0 " + width + ",5");
     groupLine.setAttribute(
-      "transform", "translate(" + 0 + "," + (labelDimension + pad) + ")"
+      "transform", "translate(" + 0 + "," + (labelDimension + (pad / 2)) + ")"
     );
   }
   /**
@@ -1404,68 +1404,141 @@ class View {
   * @param {Object} parameters Destructured object of parameters.
   * @param {boolean} parameters.selection Whether there is a selection of a
   * subnetwork.
+  * @param {number} parameters.pad Dimension for pad space.
   * @param {Object} parameters.parent Reference to parent element.
   * @param {Object} parameters.documentReference Reference to document object
   * @returns {Object} Reference to element.
   */
-  static createLinksChart({selection, parent, documentReference} = {}) {
-    // Create graphical container for scale.
+  static createLinkChart({selection, pad, parent, documentReference} = {}) {
+    // Create graphical container.
     var graph = View.createGraph({
       parent: parent,
-      documentReference: documentReference
+      documentReference: self.document
     });
-    graph.classList.add("count");
-    graph.classList.add("link");
-    // Create bars for visual representations of nodes.
-    var barWhole = documentReference
-    .createElementNS("http://www.w3.org/2000/svg", "rect");
-    graph.appendChild(barWhole);
-    barWhole.classList.add("whole");
-    barWhole.setAttribute("y", 0);
-    if (selection) {
-      var barSelection = documentReference
-      .createElementNS("http://www.w3.org/2000/svg", "rect");
-      graph.appendChild(barSelection);
-      barSelection.classList.add("selection");
-      barSelection.setAttribute("y", 0);
-    }
+    // Determine graph's dimensions.
+    var graphHeight = General.determineElementDimension(graph, "height");
+    // Create chart's representation of scale.
+    var groupScale = View.createScaleChart({
+      pad: 5,
+      graph: graph,
+      documentReference: self.document
+    });
+    // Create chart's representation of count.
+    var groupCount = View.createLinkCountChart({
+      selection: false,
+      graph: graph,
+      documentReference: self.document
+    });
+    // Assign relative positions of scale and chart.
+    groupScale.setAttribute("transform", "translate(" + pad + "," + pad + ")");
+    groupCount.setAttribute(
+      "transform", "translate(" + pad + "," + (graphHeight / 2) + ")"
+    );
     // Return reference to element.
     return graph;
   }
   /**
-  * Restores a chart for links.
+  * Restores a chart for nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.links Count of links.
+  * @param {boolean} parameters.selection Whether there is a selection of a
+  * subnetwork.
+  * @param {number} parameters.linksSelection Count of links in selection.
+  * @param {number} parameters.pad Dimension for pad space.
+  * @param {Object} parameters.graph Reference to graphical container.
+  */
+  static restoreLinkChart({links, selection, linksSelection, pad, graph} = {}) {
+    // Determine graph's dimensions.
+    var graphWidth = General.determineElementDimension(graph, "width");
+    var graphHeight = General.determineElementDimension(graph, "height");
+    // Restore chart's representation of scale.
+    View.restoreScaleChart({
+      minimum: 0,
+      maximum: links,
+      width: (graphWidth - (pad * 2)),
+      height: (graphHeight - (pad * 2)),
+      pad: 5,
+      graph: graph
+    });
+    // Restore chart's representation of count.
+    View.restoreLinkCountChart({
+      links: links,
+      selection: selection,
+      linksSelection: linksSelection,
+      width: (graphWidth - (pad * 2)),
+      height: (graphHeight - (pad * 2)),
+      pad: 5,
+      graph: graph
+    });
+  }
+
+  /**
+  * Creates a chart to summarize links.
   * @param {Object} parameters Destructured object of parameters.
   * @param {boolean} parameters.selection Whether there is a selection of a
   * subnetwork.
+  * @param {Object} parameters.graph Reference to graphical container.
+  * @param {Object} parameters.documentReference Reference to document object
+  * @returns {Object} Reference to element.
+  */
+  static createLinkCountChart({selection, graph, documentReference} = {}) {
+    // Create group.
+    var group = documentReference
+    .createElementNS("http://www.w3.org/2000/svg", "g");
+    graph.appendChild(group);
+    group.classList.add("count");
+    // Create bars for visual representations of nodes.
+    var barWhole = documentReference
+    .createElementNS("http://www.w3.org/2000/svg", "rect");
+    group.appendChild(barWhole);
+    barWhole.classList.add("whole");
+    if (selection) {
+      var barSelection = documentReference
+      .createElementNS("http://www.w3.org/2000/svg", "rect");
+      group.appendChild(barSelection);
+      barSelection.classList.add("selection");
+    }
+    // Return reference to element.
+    return group;
+  }
+  /**
+  * Restores a chart for links.
+  * @param {Object} parameters Destructured object of parameters.
   * @param {number} parameters.links Count of links.
+  * @param {boolean} parameters.selection Whether there is a selection of a
+  * subnetwork.
   * @param {number} parameters.linksSelection Count of links in selection.
-  * @param {number} parameters.pad Space to leave on either end of graph.
+  * @param {number} parameters.width Dimension for width.
+  * @param {number} parameters.height Dimension for height.
+  * @param {number} parameters.pad Dimension for pad space.
   * @param {Object} parameters.graph Reference to graphical container.
   */
-  static restoreLinksChart({selection, links, linksSelection, pad, graph} = {}) {
+  static restoreLinkCountChart({links, selection, linksSelection, width, height, pad, graph} = {}) {
+    // Select group.
+    var group = graph.querySelector("g.count");
     // Select bars.
     var barWhole = graph.querySelector("rect.whole");
     if (selection) {
       var barSelection = graph.querySelector("rect.selection");
     }
-    // Determine graph's dimensions.
-    var graphWidth = General.determineElementDimension(graph, "width");
-    var graphHeight = General.determineElementDimension(graph, "height");
     // Determine scale for bars' dimensions.
     var scaleValue = d3
     .scaleLinear()
     .domain([0, links])
-    .range([0, (graphWidth - (pad * 2))]);
+    .range([0, (width)]);
     // Restore bars' dimensions.
+    var barHeight = 15;
     barWhole.setAttribute("width", scaleValue(links));
-    barWhole.setAttribute("height", graphHeight);
+    barWhole.setAttribute("height", barHeight);
     if (selection) {
-      barSelection.setAttribute("width", scaleValue(links));
+      barSelection.setAttribute("width", scaleValue(linksSelection));
     }
     // Restore bars' positions.
-    barWhole.setAttribute("x", pad);
+    barWhole.setAttribute("x", 0);
+    barWhole.setAttribute("y", 0);
     if (selection) {
-      barSelection.setAttribute("x", pad);
+      barSelection.setAttribute("x", 0);
+      barSelection.setAttribute("y", 0);
     }
   }
 
