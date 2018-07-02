@@ -47,7 +47,7 @@ class ActionQuery {
   */
   static restoreControls(state) {
     // Initialize view's controls.
-    var controls = ActionQuery.initializeSubordinateControls();
+    var controls = ActionQuery.initializeControls();
     // Derive dependent state.
     var dependentStateVariables = ActionQuery.deriveState({
       combination: state.queryCombination,
@@ -386,7 +386,7 @@ class ActionQuery {
     // Determine whether application's state includes valid variables for
     // procedure.
     if (Model.determineRogueQuery(state)) {
-      var subnetworkElements = Traversal.combineRogueNodeNetwork({
+      var subnetworkElements = Query.combineRogueNodeNetwork({
         focus: state.queryRogueFocus.identifier,
         combination: state.queryCombination,
         subnetworkNodesRecords: state.subnetworkNodesRecords,
@@ -416,7 +416,7 @@ class ActionQuery {
     // Determine whether application's state includes valid variables for
     // procedure.
     if (Model.determineRogueQuery(state)) {
-      var subnetworkElements = Traversal.combineRogueNodeNetwork({
+      var subnetworkElements = Query.combineRogueNodeNetwork({
         focus: state.queryRogueFocus.identifier,
         combination: "union",
         subnetworkNodesRecords: state.subnetworkNodesRecords,
@@ -452,7 +452,7 @@ class ActionQuery {
     // Determine whether application's state includes valid variables for
     // procedure.
     if (Model.determineProximityQuery(state)) {
-      var subnetworkElements = Traversal.combineProximityNetwork({
+      var subnetworkElements = Query.combineProximityNetwork({
         focus: state.queryProximityFocus.identifier,
         direction: state.queryProximityDirection,
         depth: state.queryProximityDepth,
@@ -500,7 +500,7 @@ class ActionQuery {
     // Determine whether application's state includes valid variables for
     // procedure.
     if (Model.determineProximityQuery(state)) {
-      var subnetworkElements = Traversal.combineProximityNetwork({
+      var subnetworkElements = Query.combineProximityNetwork({
         focus: state.prompt.reference.identifier,
         direction: "neighbors",
         depth: 1,
@@ -538,7 +538,7 @@ class ActionQuery {
     // Determine whether application's state includes valid variables for
     // procedure.
     if (Model.determinePathQuery(state)) {
-      var subnetworkElements = Traversal.combinePathNetwork({
+      var subnetworkElements = Query.combinePathNetwork({
         source: state.queryPathSource.identifier,
         target: state.queryPathTarget.identifier,
         direction: state.queryPathDirection,
@@ -612,7 +612,7 @@ class ActionQuery {
       // Extract targets.
       var targets = General
       .collectValueFromObjects("identifier", state.queryConnectionTargets);
-      var subnetworkElements = Traversal.combineConnectionNetwork({
+      var subnetworkElements = Query.combineConnectionNetwork({
         targets: targets,
         count: state.queryConnectionCount,
         combination: state.queryCombination,
@@ -711,36 +711,30 @@ class ActionQuery {
     // Return information.
     return variablesValues;
   }
+
+  // TODO: Make ActionQuery.deriveState() executable from the execution of the actual queries for the subnetwork...
+
   /**
   * Derives application's dependent state from controls relevant to view.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.combination Method of combination, union or
-  * difference.
-  * @param {Array<Object>} parameters.networkNodesRecords Information about
-  * network's nodes.
-  * @param {Array<Object>} parameters.networkLinksRecords Information about
-  * network's links.
+  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
+  * subnetwork's nodes.
+  * @param {Array<Object>} parameters.subnetworkLinksRecords Information about
+  * subnetwork's links.
   * @param {Object<boolean>} parameters.viewsRestoration Information about
   * whether to restore each view.
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState({combination, networkNodesRecords, networkLinksRecords, viewsRestoration, state} = {}) {
+  static deriveState({subnetworkNodesRecords, subnetworkLinksRecords, viewsRestoration, state} = {}) {
     // Derive state relevant to view.
     // Initialize controls for query view.
     var subordinateControls = ActionQuery.initializeSubordinateControls();
-    // Create subnetwork's elements.
-    if (combination === "union") {
-      var subnetworkElements = {
-        subnetworkNodesRecords: [],
-        subnetworkLinksRecords: []
-      };
-    } else if (combination === "difference") {
-      var subnetworkElements = Network.copyNetworkElementsRecords({
-        networkNodesRecords: networkNodesRecords,
-        networkLinksRecords: networkLinksRecords
-      });
-    }
+    // Determine summary information about subnetwork.
+    var subnetworkSummary = Network.determineSubnetworkSummary({
+      subnetworkNodesRecords: subnetworkNodesRecords,
+      subnetworkLinksRecords: subnetworkLinksRecords
+    });
     // Determine which views to restore.
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
       views: [
@@ -756,17 +750,18 @@ class ActionQuery {
     var dependentStateVariables = ActionExploration.deriveState({
       simulationDimensions: state.simulationDimensions,
       previousSimulation: state.simulation,
-      subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
-      subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords,
+      subnetworkNodesRecords: subnetworkNodesRecords,
+      subnetworkLinksRecords: subnetworkLinksRecords,
       viewsRestoration: novelViewsRestoration,
       state: state
     });
     // Compile information.
-    var novelVariablesValues = {};
+    var novelVariablesValues = {
+      subnetworkSummary: subnetworkSummary
+    };
     var variablesValues = Object.assign(
       novelVariablesValues,
       subordinateControls,
-      subnetworkElements,
       dependentStateVariables
     );
     // Return information.

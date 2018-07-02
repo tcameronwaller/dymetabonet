@@ -173,6 +173,18 @@ class ActionSubnetwork {
   */
   static deriveState({networkNodesRecords, networkLinksRecords, viewsRestoration, state} = {}) {
     // Derive state relevant to view.
+    // Create subnetwork's elements.
+    if (state.queryCombination === "union") {
+      var subnetworkElements = {
+        subnetworkNodesRecords: [],
+        subnetworkLinksRecords: []
+      };
+    } else if (state.queryCombination === "difference") {
+      var subnetworkElements = Network.copyNetworkElementsRecords({
+        networkNodesRecords: networkNodesRecords,
+        networkLinksRecords: networkLinksRecords
+      });
+    }
     // Determine which views to restore.
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
       views: [
@@ -187,9 +199,8 @@ class ActionSubnetwork {
     });
     // Derive dependent state.
     var dependentStateVariables = ActionQuery.deriveState({
-      combination: state.queryCombination,
-      networkNodesRecords: networkNodesRecords,
-      networkLinksRecords: networkLinksRecords,
+      subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
+      subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords,
       viewsRestoration: novelViewsRestoration,
       state: state
     });
@@ -197,6 +208,7 @@ class ActionSubnetwork {
     var novelVariablesValues = {};
     var variablesValues = Object.assign(
       novelVariablesValues,
+      subnetworkElements,
       dependentStateVariables
     );
     // Return information.

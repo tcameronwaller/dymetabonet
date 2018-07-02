@@ -61,7 +61,7 @@ class ViewNetwork {
     // Initialize view.
     self.initializeView(self);
     // Restore view.
-    //self.restoreView(self);
+    self.restoreView(self);
   }
   /**
   * Initializes, creates and activates, view's content and behavior that does
@@ -95,11 +95,9 @@ class ViewNetwork {
     } else {
       // Container is not empty.
       // Set references to content.
-
-      // TODO: References to summaries in order to restore...
       // Summary.
-      //self.nodesSummary = self.document.getElementById("");
-
+      self.graphNode = self.container.querySelector("table.summary svg.node");
+      self.graphLink = self.container.querySelector("table.summary svg.link");
       // Tabs.
       self.filterTab = self.document.getElementById("tab-filter");
       self.contextTab = self.document.getElementById("tab-context");
@@ -142,124 +140,73 @@ class ViewNetwork {
   * @param {Object} self Instance of a class.
   */
   createActivateSummary(self) {
-    // TODO: Maybe split the sub-procedures between nodes summary and links summary?
     console.log(self.state.networkSummary);
-    if (false) {
-      var spanNodes = self.document.createElement("span");
-      self.container.appendChild(spanNodes);
-      spanNodes.textContent = "coming soon! summary of nodes...";
-      // Create break.
-      self.container.appendChild(self.document.createElement("br"));
-      var spanLinks = self.document.createElement("span");
-      self.container.appendChild(spanLinks);
-      spanLinks.textContent = "coming soon! summary of links...";
-    }
     // Create table body.
-    var tableBody = View.createTableBody({
+    self.summaryTableBody = View.createTableBody({
       className: "summary",
       parent: self.container,
       documentReference: self.document
     });
-    // Create table body rows and cells.
-
-    // Nodes.
-
-    var rowOne = View.createTableBodyRow({
-      body: tableBody,
+    self.createActivateSummaryNodes(self);
+    self.createActivateSummaryLinks(self);
+  }
+  /**
+  * Creates and activates a summary about network's nodes.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateSummaryNodes(self) {
+    var row = View.createTableBodyRow({
+      body: self.summaryTableBody,
       documentReference: self.document
     });
-    rowOne.classList.add("node");
-    var rowOneCellOne = View.createTableBodyRowCell({
-      row: rowOne,
+    row.classList.add("node");
+    var cellLabel = View.createTableBodyRowCell({
+      row: row,
       documentReference: self.document
     });
-    rowOneCellOne.classList.add("label");
-    rowOneCellOne.textContent = "nodes:";
-    var rowOneCellTwo = View.createTableBodyRowCell({
-      row: rowOne,
+    cellLabel.classList.add("label");
+    cellLabel.textContent = "nodes:";
+    var cellChart = View.createTableBodyRowCell({
+      row: row,
       documentReference: self.document
     });
-    rowOneCellTwo.classList.add("chart");
+    cellChart.classList.add("chart");
     // Create chart for nodes.
-    var graphNode = View.createNodeChart({
+    self.graphNode = View.createNodeChart({
       selection: false,
       pad: 3,
-      parent: rowOneCellTwo,
+      parent: cellChart,
       documentReference: self.document
     });
-    // Restore chart for nodes.
-    View.restoreNodeChart({
-      nodes: self.state.networkSummary.nodes,
-      nodesMetabolites: self.state.networkSummary.nodesMetabolites,
-      nodesReactions: self.state.networkSummary.nodesReactions,
-      selection: false,
-      nodesMetabolitesSelection: 0,
-      nodesReactionsSelection: 0,
-      pad: 3,
-      graph: graphNode
-    });
-
-    // Links.
-
-    var rowTwo = View.createTableBodyRow({
-      body: tableBody,
+  }
+  /**
+  * Creates and activates a summary about network's links.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateSummaryLinks(self) {
+    var row = View.createTableBodyRow({
+      body: self.summaryTableBody,
       documentReference: self.document
     });
-    rowTwo.classList.add("link");
-    var rowTwoCellOne = View.createTableBodyRowCell({
-      row: rowTwo,
+    row.classList.add("link");
+    var cellLabel = View.createTableBodyRowCell({
+      row: row,
       documentReference: self.document
     });
-    rowTwoCellOne.classList.add("label");
-    rowTwoCellOne.textContent = "links:";
-    var rowTwoCellTwo = View.createTableBodyRowCell({
-      row: rowTwo,
+    cellLabel.classList.add("label");
+    cellLabel.textContent = "links:";
+    var cellChart = View.createTableBodyRowCell({
+      row: row,
       documentReference: self.document
     });
-    rowTwoCellTwo.classList.add("chart");
+    cellChart.classList.add("chart");
     // Create chart for links.
-    var graphLink = View.createLinkChart({
+    self.graphLink = View.createLinkChart({
       selection: false,
       pad: 3,
-      parent: rowTwoCellTwo,
+      parent: cellChart,
       documentReference: self.document
     });
-    // Restore chart for nodes.
-    View.restoreLinkChart({
-      links: self.state.networkSummary.links,
-      selection: false,
-      linksSelection: 0,
-      pad: 3,
-      graph: graphLink
-    });
-
-    if (false) {
-      var graphScaleLinks = View.createScaleChart({
-        parent: rowThreeCellTwo,
-        documentReference: self.document
-      });
-      // TODO: Eventually, restore in view's restore procedure, dependent on data...
-      View.restoreScaleChart({
-        minimum: 0,
-        maximum: self.state.networkSummary.links,
-        pad: 5,
-        graph: graphScaleLinks
-      });
-      var graphLinks = View.createLinksChart({
-        selection: false,
-        parent: rowFourCellTwo,
-        documentReference: self.document
-      });
-      // TODO: Eventually, restore in view's restore procedure, dependent on data...
-      View.restoreLinksChart({
-        selection: false,
-        links: self.state.networkSummary.links,
-        linksSelection: 0,
-        pad: 5,
-        graph: graphLinks
-      });
-    }
-
   }
   /**
   * Creates and activates tabs.
@@ -273,6 +220,34 @@ class ViewNetwork {
         category: category,
         self: self
       });
+    });
+  }
+  /**
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // Create view's variant elements.
+    // Activate variant behavior of view's elements.
+    // Restore chart for nodes.
+    View.restoreNodeChart({
+      nodes: self.state.networkSummary.nodes,
+      nodesMetabolites: self.state.networkSummary.nodesMetabolites,
+      nodesReactions: self.state.networkSummary.nodesReactions,
+      selection: false,
+      nodesMetabolitesSelection: 0,
+      nodesReactionsSelection: 0,
+      pad: 3,
+      graph: self.graphNode
+    });
+    // Restore chart for links.
+    View.restoreLinkChart({
+      links: self.state.networkSummary.links,
+      selection: false,
+      linksSelection: 0,
+      pad: 3,
+      graph: self.graphLink
     });
   }
 }

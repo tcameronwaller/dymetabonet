@@ -1126,7 +1126,6 @@ class View {
   static createTabReference(category) {
     return (category + "Tab");
   }
-
   /**
   * Creates a chart to summarize nodes.
   * @param {Object} parameters Destructured object of parameters.
@@ -1143,6 +1142,7 @@ class View {
       parent: parent,
       documentReference: self.document
     });
+    graph.classList.add("node");
     // Determine graph's dimensions.
     var graphHeight = General.determineElementDimension(graph, "height");
     // Create chart's representation of scale.
@@ -1153,7 +1153,7 @@ class View {
     });
     // Create chart's representation of count.
     var groupCount = View.createNodeCountChart({
-      selection: false,
+      selection: selection,
       graph: graph,
       documentReference: self.document
     });
@@ -1371,10 +1371,14 @@ class View {
     barReaction.setAttribute("height", barHeight);
     if (selection) {
       barMetaboliteSelection
-      .setAttribute("width", scaleValue(nodesMetabolitesSelection));
+      .setAttribute(
+        "width", scaleValue(nodesMetabolites - nodesMetabolitesSelection)
+      );
       barMetaboliteSelection.setAttribute("height", barHeight);
       barReactionSelection
-      .setAttribute("width", scaleValue(nodesReactionsSelection));
+      .setAttribute(
+        "width", scaleValue(nodesReactions - nodesReactionsSelection)
+      );
       barReactionSelection.setAttribute("height", barHeight);
     }
     // Restore bars' positions.
@@ -1383,10 +1387,15 @@ class View {
     barReaction.setAttribute("x", scaleValue(nodesMetabolites));
     barReaction.setAttribute("y", 0);
     if (selection) {
-      barMetaboliteSelection.setAttribute("x", 0);
+      barMetaboliteSelection
+      .setAttribute(
+        "x", scaleValue(nodesMetabolitesSelection)
+      );
       barMetaboliteSelection.setAttribute("y", 0);
       barReactionSelection
-      .setAttribute("x", scaleValue(nodesReactionsSelection));
+      .setAttribute(
+        "x", scaleValue(nodesMetabolites +  nodesReactionsSelection)
+      );
       barReactionSelection.setAttribute("y", 0);
     }
     // Restore positions of labels.
@@ -1397,8 +1406,6 @@ class View {
     labelReaction.setAttribute("x", (pad + scaleValue(nodesMetabolites)));
     labelReaction.setAttribute("y", verticalPosition);
   }
-
-
   /**
   * Creates a chart to summarize links.
   * @param {Object} parameters Destructured object of parameters.
@@ -1415,6 +1422,7 @@ class View {
       parent: parent,
       documentReference: self.document
     });
+    graph.classList.add("link");
     // Determine graph's dimensions.
     var graphHeight = General.determineElementDimension(graph, "height");
     // Create chart's representation of scale.
@@ -1425,7 +1433,7 @@ class View {
     });
     // Create chart's representation of count.
     var groupCount = View.createLinkCountChart({
-      selection: false,
+      selection: selection,
       graph: graph,
       documentReference: self.document
     });
@@ -1471,7 +1479,6 @@ class View {
       graph: graph
     });
   }
-
   /**
   * Creates a chart to summarize links.
   * @param {Object} parameters Destructured object of parameters.
@@ -1531,15 +1538,15 @@ class View {
     barWhole.setAttribute("width", scaleValue(links));
     barWhole.setAttribute("height", barHeight);
     if (selection) {
-      barSelection.setAttribute("width", scaleValue(linksSelection));
+      barSelection.setAttribute("width", scaleValue(links - linksSelection));
+      barSelection.setAttribute("height", barHeight);
     }
     // Restore bars' positions.
     barWhole.setAttribute("x", 0);
     barWhole.setAttribute("y", 0);
     if (selection) {
-      barSelection.setAttribute("x", 0);
+      barSelection.setAttribute("x", scaleValue(linksSelection));
       barSelection.setAttribute("y", 0);
     }
   }
-
 }

@@ -116,7 +116,7 @@ table.summary tbody td.chart {
 
 table.summary svg {
   background-color: rgba(255, 255, 255, 1);
-  width: 7cm;
+  width: 7.25cm;
   height: 1cm;
 }
 
@@ -158,7 +158,7 @@ table.summary tr.node svg g.count rect.whole.reaction {
 }
 
 table.summary svg g.count rect.selection {
-  fill: rgba(0, 0, 0, 0.25);
+  fill: rgba(255, 255, 255, 0.75);
 }
 
 table.summary tr.link svg g.count rect.whole {

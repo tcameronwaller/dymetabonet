@@ -441,7 +441,12 @@ class State {
       // network's links of interest.
       // Information includes references to variables "networkNodesReactions",
       // and "networkNodesMetabolites".
-      "subnetworkLinksRecords"
+      "subnetworkLinksRecords",
+      // Variable "subnetworkSummary" stores information about the counts of
+      // subnetwork's nodes and links.
+      // Information derives from variables "subnetworkNodesRecords" and
+      // "subnetworkLinksRecords".
+      "subnetworkSummary"
     ];
     self.variablesNames = [].concat(
       self.variablesNamesControls,

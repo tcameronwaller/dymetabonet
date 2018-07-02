@@ -57,7 +57,7 @@ class ViewSubnetwork {
     // Initialize view.
     self.initializeView(self);
     // Restore view.
-    //self.restoreView(self);
+    self.restoreView(self);
   }
   /**
   * Initializes, creates and activates, view's content and behavior that does
@@ -83,30 +83,16 @@ class ViewSubnetwork {
       self.createActivateExportButton(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
-
-
-      // TODO: create representations of nodes and links in network...
-      // TODO: create temporary place-holder text
-      var spanNodes = self.document.createElement("span");
-      self.container.appendChild(spanNodes);
-      spanNodes.textContent = "coming soon! summary of nodes...";
-      // Create break.
-      self.container.appendChild(self.document.createElement("br"));
-      var spanLinks = self.document.createElement("span");
-      self.container.appendChild(spanLinks);
-      spanLinks.textContent = "coming soon! summary of links...";
-
+      // Create summary of network's elements.
+      self.createActivateSummary(self);
       // Create and activate tabs.
       self.createActivateTabs(self);
-
     } else {
       // Container is not empty.
       // Set references to content.
-
-      // TODO: References to summaries in order to restore...
       // Summary.
-      //self.nodesSummary = self.document.getElementById("");
-
+      self.graphNode = self.container.querySelector("table.summary svg.node");
+      self.graphLink = self.container.querySelector("table.summary svg.link");
       // Tabs.
       self.queryTab = self.document.getElementById("tab-query");
     }
@@ -144,6 +130,79 @@ class ViewSubnetwork {
     });
   }
   /**
+  * Creates and activates a summary about subnetwork.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateSummary(self) {
+    console.log(self.state.subnetworkSummary);
+    // Create table body.
+    self.summaryTableBody = View.createTableBody({
+      className: "summary",
+      parent: self.container,
+      documentReference: self.document
+    });
+    self.createActivateSummaryNodes(self);
+    self.createActivateSummaryLinks(self);
+  }
+  /**
+  * Creates and activates a summary about subnetwork's nodes.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateSummaryNodes(self) {
+    var row = View.createTableBodyRow({
+      body: self.summaryTableBody,
+      documentReference: self.document
+    });
+    row.classList.add("node");
+    var cellLabel = View.createTableBodyRowCell({
+      row: row,
+      documentReference: self.document
+    });
+    cellLabel.classList.add("label");
+    cellLabel.textContent = "nodes:";
+    var cellChart = View.createTableBodyRowCell({
+      row: row,
+      documentReference: self.document
+    });
+    cellChart.classList.add("chart");
+    // Create chart for nodes.
+    self.graphNode = View.createNodeChart({
+      selection: true,
+      pad: 3,
+      parent: cellChart,
+      documentReference: self.document
+    });
+  }
+  /**
+  * Creates and activates a summary about subnetwork's links.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateSummaryLinks(self) {
+    var row = View.createTableBodyRow({
+      body: self.summaryTableBody,
+      documentReference: self.document
+    });
+    row.classList.add("link");
+    var cellLabel = View.createTableBodyRowCell({
+      row: row,
+      documentReference: self.document
+    });
+    cellLabel.classList.add("label");
+    cellLabel.textContent = "links:";
+    var cellChart = View.createTableBodyRowCell({
+      row: row,
+      documentReference: self.document
+    });
+    cellChart.classList.add("chart");
+    // Create chart for links.
+    self.graphLink = View.createLinkChart({
+      selection: true,
+      pad: 3,
+      parent: cellChart,
+      documentReference: self.document
+    });
+  }
+  /**
   * Creates and activates tabs.
   * @param {Object} self Instance of a class.
   */
@@ -155,6 +214,34 @@ class ViewSubnetwork {
         category: category,
         self: self
       });
+    });
+  }
+  /**
+  * Restores view's content and behavior that varies with changes to the
+  * application's state.
+  * @param {Object} self Instance of a class.
+  */
+  restoreView(self) {
+    // Create view's variant elements.
+    // Activate variant behavior of view's elements.
+    // Restore chart for nodes.
+    View.restoreNodeChart({
+      nodes: self.state.networkSummary.nodes,
+      nodesMetabolites: self.state.networkSummary.nodesMetabolites,
+      nodesReactions: self.state.networkSummary.nodesReactions,
+      selection: true,
+      nodesMetabolitesSelection: 500,//self.state.subnetworkSummary.nodesMetabolites,
+      nodesReactionsSelection: 450,//self.state.subnetworkSummary.nodesReactions,
+      pad: 3,
+      graph: self.graphNode
+    });
+    // Restore chart for links.
+    View.restoreLinkChart({
+      links: self.state.networkSummary.links,
+      selection: true,
+      linksSelection: 700,//self.state.subnetworkSummary.links,
+      pad: 3,
+      graph: self.graphLink
     });
   }
 }

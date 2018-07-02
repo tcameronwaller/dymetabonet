@@ -33,7 +33,7 @@ United States of America
 * This class stores methods for external utility.
 * This class does not store any attributes and does not require instantiation.
 */
-class Traversal {
+class Query {
   /**
   * Combines a single rogue focal node to a collection of nodes and collects
   * links between nodes.
@@ -231,8 +231,6 @@ class Traversal {
       networkLinksRecords: networkLinksRecords
     });
   }
-
-
 
   /**
   * Combines candidate nodes and links to a subnetwork.

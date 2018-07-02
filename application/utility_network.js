@@ -663,6 +663,36 @@ class Network {
     // Return information.
     return networkSummary;
   }
+  /**
+  * Determines descriptive information about subnetwork's elements for summary.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
+  * subnetwork's nodes.
+  * @param {Array<Object>} parameters.subnetworkLinksRecords Information about
+  * subnetwork's links.
+  * @returns {Object} Information about subnetwork's elements.
+  */
+  static determineSubnetworkSummary({subnetworkNodesRecords, subnetworkLinksRecords} = {}) {
+    // Determine counts of network's elements.
+    var nodes = subnetworkNodesRecords.length;
+    var nodesReactions = subnetworkNodesRecords.filter(function (record) {
+      return record.type === "reaction";
+    }).length;
+    var nodesMetabolites = subnetworkNodesRecords.filter(function (record) {
+      return record.type === "metabolite";
+    }).length;
+    var links = subnetworkLinksRecords.length;
+    // Compile information.
+    var subnetworkSummary = {
+      nodesReactions: nodesReactions,
+      nodesMetabolites: nodesMetabolites,
+      nodes: nodes,
+      links: links
+    };
+    // Return information.
+    return subnetworkSummary;
+  }
+
 
   //////////////////////////////////////////////////////////////////////////////
 

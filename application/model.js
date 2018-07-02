@@ -429,8 +429,10 @@ class Model {
       !(state.networkLinks === null) &&
       !(state.networkNodesRecords === null) &&
       !(state.networkLinksRecords === null) &&
+      !(state.networkSummary === null) &&
       !(state.subnetworkNodesRecords === null) &&
-      !(state.subnetworkLinksRecords === null)
+      !(state.subnetworkLinksRecords === null) &&
+      !(state.subnetworkSummary === null)
     );
   }
   /**
