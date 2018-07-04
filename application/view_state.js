@@ -111,7 +111,7 @@ class ViewState {
     restore.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
-      ActionState.restoreControlsLoadRestoreState(self.state);
+      ActionState.restoreControlsLoadRestoreSourceState(self.state);
     });
   }
   /**

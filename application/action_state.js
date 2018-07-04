@@ -42,39 +42,25 @@ class ActionState {
   // Direct actions.
 
   /**
-  * Restores values of application's variables for controls relevant to view.
+  * Determines whether to restore view's controls or to load information from
+  * source and restore application's state from this information.
   * @param {Object} state Application's state.
   */
-  static restoreControls(state) {
-
-    // TODO: re-load basic and supplemental information from source
-    // TODO: initialize controls for all parts of the application
-    // TODO: derive dependent state...
-
-
-    // Initialize view's controls.
-    var controls = ActionState.initializeControls();
-    // Derive dependent state.
-    var dependentStateVariables = ActionState.deriveState(state);
-    // Determine which views to restore.
-    var viewsRestoration = ActionInterface.changeViewsRestoration({
-      skips: [],
-      viewsRestoration: state.viewsRestoration
-    });
-    // Compile variables' values.
-    var novelVariablesValues = {
-      viewsRestoration
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      controls,
-      dependentStateVariables
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
+  static restoreControlsLoadRestoreSourceState(state) {
+    // Determine whether the application's state includes a source file.
+    if (Model.determineSourceState(state)) {
+      // Application's state includes a source file.
+      General.loadParseTextPassObject({
+        file: state.sourceState,
+        format: "json",
+        call: ActionState.restoreSourceState,
+        parameters: {state: state}
+      });
+    } else {
+      // Application's state does not include a source file.
+      // Restore application to initial state.
+      ActionState.restoreControls(state);
+    }
   }
   /**
   * Changes the source of information from file.
@@ -86,30 +72,6 @@ class ActionState {
     ActionGeneral.submitStateVariableValue({
       value: source,
       variable: "sourceState",
-      state: state
-    });
-  }
-  /**
-  * Restores the application to a state from a persistent source.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.data Persistent source of information about
-  * application's state.
-  * @param {Object} parameters.state Application's state.
-  */
-  static restoreSourceState({data, state} = {}) {
-    // Remove any information about source from the application's state.
-    var sourceState = {};
-    // Compile variables' values.
-    var novelVariablesValues = {
-      sourceState: sourceState
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      data
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
       state: state
     });
   }
@@ -168,6 +130,62 @@ class ActionState {
     return variablesValues;
   }
   /**
+  * Restores values of application's variables for controls relevant to view.
+  * @param {Object} state Application's state.
+  */
+  static restoreControls(state) {
+    // Initialize values of application's controls.
+    var controls = ActionGeneral.initializeApplicationControlsValues(state);
+    // Copy information about application's state.
+    var stateCopy = ActionState.createPersistence(state);
+    // Replace information about relevant controls.
+    var novelState = Object.assign(
+      stateCopy,
+      controls
+    );
+    // Derive dependent state.
+    var dependentStateVariables = ActionState.deriveState({
+      viewsRestoration: novelState.viewsRestoration,
+      state: novelState
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {};
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      controls,
+      dependentStateVariables
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Restores the application to a state from a persistent source.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.data Persistent source of information about
+  * application's state.
+  * @param {Object} parameters.state Application's state.
+  */
+  static restoreSourceState({data, state} = {}) {
+    // Remove any information about source from the application's state.
+    var sourceState = {};
+    // Compile variables' values.
+    var novelVariablesValues = {
+      sourceState: sourceState
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      data
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
   * Derives application's dependent state from controls relevant to view.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object<boolean>} parameters.viewsRestoration Information about
@@ -222,27 +240,6 @@ class ActionState {
       };
       return Object.assign({}, collection, entry);
     }, {});
-  }
-  /**
-  * Determines whether to restore view's controls or to load information from
-  * source and restore application's state from this information.
-  * @param {Object} state Application's state.
-  */
-  static restoreControlsLoadRestoreSourceState(state) {
-    // Determine whether the application's state includes a source file.
-    if (Model.determineSourceState(state)) {
-      // Application's state includes a source file.
-      General.loadParseTextPassObject({
-        file: state.sourceState,
-        format: "json",
-        call: ActionState.restoreSourceState,
-        parameters: {state: state}
-      });
-    } else {
-      // Application's state does not include a source file.
-      // Restore application to initial state.
-      ActionState.restoreControls(state);
-    }
   }
 
 }

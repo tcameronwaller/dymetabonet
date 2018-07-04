@@ -117,6 +117,26 @@ class ActionGeneral {
   * @param {Object} state Application's state.
   */
   static initializeApplicationControls(state) {
+    // Initialize values of application's controls.
+    var controls = ActionGeneral.initializeApplicationControlsValues(state);
+    // Compile variables' values.
+    var novelVariablesValues = {};
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      controls
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Initializes values of variables of application's controls.
+  * @param {Object} state Application's state.
+  * @returns {Object} Values of application's variables for controls.
+  */
+  static initializeApplicationControlsValues(state) {
     // Call procedures to initialize controls for each view.
     var interfaceControls = ActionInterface.initializeControls();
     var prompt = ActionPrompt.initializeControls();
@@ -132,7 +152,7 @@ class ActionGeneral {
     // TODO: update summary view and its controls
     var summary = ActionSummary.initializeControls();
     var exploration = ActionExploration.initializeControls();
-    // Compile variables' values.
+    // Compile information.
     var novelVariablesValues = {};
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -149,11 +169,8 @@ class ActionGeneral {
       summary,
       exploration
     );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
+    // Return information.
+    return variablesValues;
   }
   /**
   * Restores basic information about metabolic entities and sets.

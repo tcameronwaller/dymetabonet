@@ -359,11 +359,6 @@ class Model {
 
   // TODO: Mange exploration, progress, and topology views here...
 
-
-
-
-
-
   // Methods to evaluate application's state.
 
   /**
