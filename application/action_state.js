@@ -81,13 +81,24 @@ class ActionState {
   * @param {Object} state Application's state.
   */
   static saveState(state) {
-    // TODO: Exclude references to views from the persistent state...
-    // TODO: simulation, views, soureState need to be excluded... replace with default (initial) values.
-
     var persistence = ActionState.createPersistence(state);
     console.log("application's state...");
     console.log(persistence);
-    General.saveObject("state.json", persistence);
+    // Initialize values that do not persist properly.
+    var interfaceControls = ActionInterface.initializeControls();
+    var stateControls = ActionState.initializeControls();
+    var exploration = ActionExploration.initializeControls();
+    // Compile information.
+    var novelVariablesValues = {
+      views: interfaceControls.views,
+      sourceState: stateControls.sourceState,
+      simulation: exploration.simulation
+    };
+    var variablesValues = Object.assign(
+      persistence,
+      novelVariablesValues,
+    );
+    General.saveObject("state.json", variablesValues);
   }
   /**
   * Executes a temporary procedure.
