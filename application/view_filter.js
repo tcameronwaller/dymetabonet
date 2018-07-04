@@ -77,10 +77,6 @@ class ViewFilter {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
-      // Create and activate button to restore view.
-      self.createActivateRestorationButton(self);
-      // Create break.
-      self.container.appendChild(self.document.createElement("br"));
       // Create and activate controls for type of entities.
       self.createActivateEntitiesControl("metabolites", self);
       self.createActivateEntitiesControl("reactions", self);
@@ -117,22 +113,6 @@ class ViewFilter {
       // Control for filter.
       self.filter = self.document.getElementById("set-filter");
     }
-  }
-  /**
-  * Creates and activates button to restore view's controls.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateRestorationButton(self) {
-    var restore = View.createButton({
-      text: "restore",
-      parent: self.container,
-      documentReference: self.document
-    });
-    restore.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      ActionFilter.restoreControls(self.state);
-    });
   }
   /**
   * Creates and activates a control for the type of entities.

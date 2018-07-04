@@ -42,47 +42,6 @@ class ActionContext {
   // Direct actions.
 
   /**
-  * Restores values of application's variables for controls relevant to view.
-  * @param {Object} state Application's state.
-  */
-  static restoreControls(state) {
-    // Initialize view's controls.
-    var controls = ActionContext.initializeControls();
-    // Derive dependent state.
-    var dependentStateVariables = ActionContext.deriveState({
-      compartmentalization: controls.compartmentalization,
-      candidatesSearches: controls.candidatesSearches,
-      candidatesSorts: controls.candidatesSorts,
-      defaultSimplificationsMetabolites: state
-      .defaultSimplificationsMetabolites,
-      filterSetsReactions: state.filterSetsReactions,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      compartments: state.compartments,
-      processes: state.processes,
-      state: state
-    });
-    // Determine which views to restore.
-    var viewsRestoration = ActionInterface.changeViewsRestoration({
-      skips: [],
-      viewsRestoration: state.viewsRestoration
-    });
-    // Compile variables' values.
-    var novelVariablesValues = {
-      viewsRestoration: viewsRestoration
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      controls,
-      dependentStateVariables
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
   * Changes specification of compartmentalization's relevance.
   * @param {Object} state Application's state.
   */

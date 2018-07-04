@@ -42,46 +42,6 @@ class ActionFilter {
   // Direct actions.
 
   /**
-  * Restores values of application's variables for controls relevant to view.
-  * @param {Object} state Application's state.
-  */
-  static restoreControls(state) {
-    // Initialize view's controls.
-    var controls = ActionFilter.initializeControls();
-    // Derive dependent state.
-    var dependentStateVariables = ActionFilter.deriveState({
-      setsFilters: controls.setsFilters,
-      setsFilter: controls.setsFilter,
-      setsEntities: controls.setsEntities,
-      setsSearches: controls.setsSearches,
-      setsSorts: controls.setsSorts,
-      metabolites: state.metabolites,
-      reactions: state.reactions,
-      compartments: state.compartments,
-      processes: state.processes,
-      state: state
-    });
-    // Determine which views to restore.
-    var viewsRestoration = ActionInterface.changeViewsRestoration({
-      skips: [],
-      viewsRestoration: state.viewsRestoration
-    });
-    // Compile variables' values.
-    var novelVariablesValues = {
-      viewsRestoration: viewsRestoration
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      controls,
-      dependentStateVariables
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
   * Changes the values of attributes to apply as filters to sets.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.value Value of attribute in current selection.

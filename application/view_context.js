@@ -77,10 +77,6 @@ class ViewContext {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
-      // Create and activate button to restore view.
-      self.createActivateRestorationButton(self);
-      // Create break.
-      self.container.appendChild(self.document.createElement("br"));
       // Create and activate control for compartmentalization.
       self.createActivateCompartmentalizationControl(self);
       // Create break.
@@ -117,22 +113,6 @@ class ViewContext {
       self.simplifications = self
       .document.getElementById("candidacy-simplifications");
     }
-  }
-  /**
-  * Creates and activates button to restore view's controls.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateRestorationButton(self) {
-    var restore = View.createButton({
-      text: "restore",
-      parent: self.container,
-      documentReference: self.document
-    });
-    restore.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      ActionContext.restoreControls(self.state);
-    });
   }
   /**
   * Creates and activates a control for compartmentalization.

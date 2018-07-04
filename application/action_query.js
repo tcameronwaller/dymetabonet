@@ -42,40 +42,6 @@ class ActionQuery {
   // Direct actions.
 
   /**
-  * Restores values of application's variables for controls relevant to view.
-  * @param {Object} state Application's state.
-  */
-  static restoreControls(state) {
-    // Initialize view's controls.
-    var controls = ActionQuery.initializeControls();
-    // Derive dependent state.
-    var dependentStateVariables = ActionQuery.deriveState({
-      combination: state.queryCombination,
-      networkNodesRecords: state.networkNodesRecords,
-      networkLinksRecords: state.networkLinksRecords,
-      state: state
-    });
-    // Determine which views to restore.
-    var viewsRestoration = ActionInterface.changeViewsRestoration({
-      skips: [],
-      viewsRestoration: state.viewsRestoration
-    });
-    // Compile variables' values.
-    var novelVariablesValues = {
-      viewsRestoration: viewsRestoration
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      controls,
-      dependentStateVariables
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
   * Changes the selection of combination in query view.
   * @param {string} combination Method of combination, union or difference.
   * @param {Object} state Application's state.
