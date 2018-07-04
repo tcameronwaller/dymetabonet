@@ -119,6 +119,9 @@ class ActionState {
   * @param {Object} state Application's state.
   */
   static saveState(state) {
+    // TODO: Exclude references to views from the persistent state...
+    // TODO: simulation, views, soureState need to be excluded... replace with default (initial) values.
+
     var persistence = ActionState.createPersistence(state);
     console.log("application's state...");
     console.log(persistence);

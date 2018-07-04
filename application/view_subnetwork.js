@@ -134,7 +134,6 @@ class ViewSubnetwork {
   * @param {Object} self Instance of a class.
   */
   createActivateSummary(self) {
-    console.log(self.state.subnetworkSummary);
     // Create table body.
     self.summaryTableBody = View.createTableBody({
       className: "summary",
@@ -230,8 +229,8 @@ class ViewSubnetwork {
       nodesMetabolites: self.state.networkSummary.nodesMetabolites,
       nodesReactions: self.state.networkSummary.nodesReactions,
       selection: true,
-      nodesMetabolitesSelection: 500,//self.state.subnetworkSummary.nodesMetabolites,
-      nodesReactionsSelection: 450,//self.state.subnetworkSummary.nodesReactions,
+      nodesMetabolitesSelection: self.state.subnetworkSummary.nodesMetabolites,
+      nodesReactionsSelection: self.state.subnetworkSummary.nodesReactions,
       pad: 3,
       graph: self.graphNode
     });
@@ -239,7 +238,7 @@ class ViewSubnetwork {
     View.restoreLinkChart({
       links: self.state.networkSummary.links,
       selection: true,
-      linksSelection: 700,//self.state.subnetworkSummary.links,
+      linksSelection: self.state.subnetworkSummary.links,
       pad: 3,
       graph: self.graphLink
     });

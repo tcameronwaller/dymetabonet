@@ -35,6 +35,7 @@ United States of America
 * This class does not store any attributes and does not require instantiation.
 */
 class Evaluation {
+
   /**
   * Creates summary of information about metabolic entities.
   * @param {Object} parameters Destructured object of parameters.
@@ -53,10 +54,10 @@ class Evaluation {
   * @returns {Array<Object>} Information about metabolic entities.
   */
   static createEntitiesSummary({type, identifiers, reactions, metabolites, reactionsSets, metabolitesSets, compartments, processes} = {}) {
-    // Create summary according to entity's type.
-    if (type === "reaction") {
-      // Iterate on identifiers.
-      return identifiers.map(function (identifier) {
+    // Iterate on identifiers.
+    return identifiers.map(function (identifier) {
+      // Create export according to entity's type.
+      if (type === "reaction") {
         return Evaluation.createReactionSummary({
           identifier: identifier,
           reactions: reactions,
@@ -65,10 +66,7 @@ class Evaluation {
           compartments: compartments,
           processes: processes
         });
-      });
-    } else if (type === "metabolite") {
-      // Iterate on identifiers.
-      return identifiers.map(function (identifier) {
+      } else if (type === "metabolite") {
         return Evaluation.createMetaboliteSummary({
           identifier: identifier,
           reactions: reactions,
@@ -77,8 +75,8 @@ class Evaluation {
           compartments: compartments,
           processes: processes
         });
-      });
-    }
+      }
+    });
   }
   /**
   * Creates summary of information about a reaction.
@@ -130,6 +128,7 @@ class Evaluation {
     });
     // Compile information.
     return {
+      identifier: reaction.identifier,
       name: reaction.name,
       reversibility: reaction.reversibility,
       conversion: reaction.conversion,
@@ -179,6 +178,7 @@ class Evaluation {
     });
     // Compile information.
     return {
+      identifier: metabolite.identifier,
       name: metabolite.name,
       formula: metabolite.formula,
       charge: metabolite.charge,
@@ -187,6 +187,84 @@ class Evaluation {
       processes: processesNames
     };
   }
+  /**
+  * Creates export of information about network's nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.nodesRecords Information about network's
+  * nodes.
+  * @param {Object} parameters.networkNodesReactions Information about network's
+  * nodes for reactions.
+  * @param {Object} parameters.networkNodesMetabolites Information about
+  * network's nodes for metabolites.
+  * @param {Object<Object>} parameters.candidatesReactions Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.reactions Information about reactions.
+  * @param {Object<Object>} parameters.metabolites Information about
+  * metabolites.
+  * @returns {Array<Object>} Information about network's nodes.
+  */
+  static createNetworkNodesExport({nodesRecords, networkNodesReactions, networkNodesMetabolites, candidatesReactions, candidatesMetabolites, reactions, metabolites} = {}) {
+    return nodesRecords.map(function (record) {
+      if (record.type === "reaction") {
+        // Access information.
+        var identifier = record.identifier;
+        var type = record.type;
+        var node = networkNodesReactions[identifier];
+        var candidate = candidatesReactions[node.candidate];
+        var entity = reactions[candidate.reaction];
+        // Compile information.
+        return {
+          identifier: identifier,
+          type: type,
+          entity: entity.name,
+          name: candidate.name
+        };
+      } else if (record.type === "metabolite") {
+        // Access information.
+        var identifier = record.identifier;
+        var type = record.type;
+        var node = networkNodesMetabolites[identifier];
+        var candidate = candidatesMetabolites[node.candidate];
+        var entity = metabolites[candidate.metabolite];
+        // Compile information.
+        return {
+          identifier: identifier,
+          type: type,
+          entity: entity.name,
+          name: candidate.name
+        };
+      }
+    });
+  }
+  /**
+  * Creates export of information about network's links.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.linksRecords Information about network's
+  * links.
+  * @param {Object<Object>} parameters.networkLinks Information about network's
+  * links.
+  * @returns {Array<Object>} Information about network's links.
+  */
+  static createNetworkLinksExport({linksRecords, networkLinks} = {}) {
+    return linksRecords.map(function (record) {
+      // Access information.
+      var identifier = record.identifier;
+      var link = networkLinks[identifier];
+      // Compile information.
+      return {
+        identifier: identifier,
+        role: link.role,
+        source: record.source,
+        target: record.target
+      };
+    });
+  }
+
+
+
+
   /**
   * Collects information about consensus properties of redundant replicate
   * candidate reactions.
@@ -337,10 +415,6 @@ class Evaluation {
     });
   }
 
-
-
-
-
   /**
   * Summarizes replication of reactions.
   * @param {Object} reactions Information about all reactions.
@@ -485,8 +559,6 @@ class Evaluation {
     });
   }
 
-
-
   /**
   * Creates summary of metabolites' participation in reactions.
   * @param {Object<Object>} metabolites Records with information about
@@ -532,6 +604,4 @@ class Evaluation {
     });
     return summary;
   }
-
-
 }

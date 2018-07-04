@@ -29,10 +29,6 @@ Salt Lake City, Utah 84112
 United States of America
 */
 
-// TODO: Network View should always have tabs for it's subordinate views (create and activate these in a general method of ViewGeneral)
-// TODO: IF network view creates new instances of filter or context views, then it should assign these to the state variable state.views.filter and state.views.context
-// TODO: follow pattern from model for if (self.state.viewsRestoration.subnetwork) ... and ... self.state.views.subnetwork = new ViewSubnetwork({
-
 /**
 * Interface to represent and control network's definition.
 */
@@ -140,7 +136,6 @@ class ViewNetwork {
   * @param {Object} self Instance of a class.
   */
   createActivateSummary(self) {
-    console.log(self.state.networkSummary);
     // Create table body.
     self.summaryTableBody = View.createTableBody({
       className: "summary",

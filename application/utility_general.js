@@ -177,7 +177,7 @@ class General {
         } else if (type === "string" || type === "symbol") {
           var representation = String("\"" + value + "\"");
         } else if (type === "array") {
-          var representation = value.join(",");
+          var representation = value.join("; ");
         }
         // Combine to collection.
         if (string.length === 0) {

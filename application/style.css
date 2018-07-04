@@ -80,7 +80,7 @@ div.tab {
 }
 
 div.tab.normal {
-  background-color: rgba(0, 200, 150, 1);
+  background-color: rgba(0, 50, 100, 1);
 }
 
 div.tab.emphasis {
@@ -150,11 +150,11 @@ table.summary svg g.count text {
 }
 
 table.summary tr.node svg g.count rect.whole.metabolite {
-  fill: rgba(0, 100, 100, 1);
+  fill: rgba(0, 150, 150, 1);
 }
 
 table.summary tr.node svg g.count rect.whole.reaction {
-  fill: rgba(100, 0, 100, 1);
+  fill: rgba(150, 0, 150, 1);
 }
 
 table.summary svg g.count rect.selection {

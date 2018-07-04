@@ -63,36 +63,6 @@ class ActionSummary {
   * @param {Object} state Application's state.
   */
   static exportFilterEntitiesSummary(state) {
-    // Prepare information.
-    // Save information.
-    // Reactions.
-    var reactionsSummary = Evaluation.createEntitiesSummary({
-      type: "reaction",
-      identifiers: Object.keys(state.filterSetsReactions),
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      reactionsSets: state.totalSetsReactions,
-      metabolitesSets: state.totalSetsMetabolites,
-      compartments: state.compartments,
-      processes: state.processes
-    });
-    var reactionsSummaryString = General
-    .convertRecordsStringTabSeparateTable(reactionsSummary);
-    General.saveString("reactions_summary.txt", reactionsSummaryString);
-    // Metabolites.
-    var metabolitesSummary = Evaluation.createEntitiesSummary({
-      type: "metabolite",
-      identifiers: Object.keys(state.filterSetsMetabolites),
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      reactionsSets: state.totalSetsReactions,
-      metabolitesSets: state.totalSetsMetabolites,
-      compartments: state.compartments,
-      processes: state.processes
-    });
-    var metabolitesSummaryString = General
-    .convertRecordsStringTabSeparateTable(metabolitesSummary);
-    General.saveString("metabolites_summary.txt", metabolitesSummaryString);
   }
   /**
   * Prepares and exports information about entities, reactions and metabolites,
@@ -100,47 +70,6 @@ class ActionSummary {
   * @param {Object} state Application's state.
   */
   static exportNetworkEntitiesSummary(state) {
-    // Prepare information.
-    // Save information.
-    // Reactions.
-    var nodesReactions = state.subnetworkNodesRecords.filter(function (record) {
-      return record.type === "reaction";
-    });
-    var nodesReactionsIdentifiers = General
-    .collectValueFromObjects("identifier", nodesReactions);
-    var reactionsSummary = Evaluation.createEntitiesSummary({
-      type: "reaction",
-      identifiers: nodesReactionsIdentifiers,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      reactionsSets: state.totalSetsReactions,
-      metabolitesSets: state.totalSetsMetabolites,
-      compartments: state.compartments,
-      processes: state.processes
-    });
-    var reactionsSummaryString = General
-    .convertRecordsStringTabSeparateTable(reactionsSummary);
-    General.saveString("reactions_summary.txt", reactionsSummaryString);
-    // Metabolites.
-    var nodesMetabolites = state
-    .subnetworkNodesRecords.filter(function (record) {
-      return record.type === "metabolite";
-    });
-    var nodesMetabolitesIdentifiers = General
-    .collectValueFromObjects("identifier", nodesMetabolites);
-    var metabolitesSummary = Evaluation.createEntitiesSummary({
-      type: "metabolite",
-      identifiers: nodesMetabolitesIdentifiers,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
-      reactionsSets: state.totalSetsReactions,
-      metabolitesSets: state.totalSetsMetabolites,
-      compartments: state.compartments,
-      processes: state.processes
-    });
-    var metabolitesSummaryString = General
-    .convertRecordsStringTabSeparateTable(metabolitesSummary);
-    General.saveString("metabolites_summary.txt", metabolitesSummaryString);
   }
 
 }

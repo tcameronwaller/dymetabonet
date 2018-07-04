@@ -98,18 +98,82 @@ class ActionNetwork {
       state: state
     });
   }
-
-  // TODO: export info about subnetwork's elements
-
   /**
   * Exports information.
   * @param {Object} state Application's state.
   */
   static export(state) {
-    console.log("export network");
+    // Prepare, compile, and save information.
+    // Entities.
+    // Export information about entities that pass filters.
+    ActionNetwork.exportEntities(state);
+    // Network.
+    // Export information about network's elements.
+    ActionNetwork.exportNetworkElements(state);
   }
-
-
+  /**
+  * Exports information about metabolic entities.
+  * @param {Object} state Application's state.
+  */
+  static exportEntities(state) {
+    // Export information about entities that pass filters.
+    // Reactions.
+    var reactionsSummary = Evaluation.createEntitiesSummary({
+      type: "reaction",
+      identifiers: Object.keys(state.filterSetsReactions),
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalSetsReactions,
+      metabolitesSets: state.totalSetsMetabolites,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    var reactionsSummaryString = General
+    .convertRecordsStringTabSeparateTable(reactionsSummary);
+    General.saveString("network_reactions.txt", reactionsSummaryString);
+    // Metabolites.
+    var metabolitesSummary = Evaluation.createEntitiesSummary({
+      type: "metabolite",
+      identifiers: Object.keys(state.filterSetsMetabolites),
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      reactionsSets: state.totalSetsReactions,
+      metabolitesSets: state.totalSetsMetabolites,
+      compartments: state.compartments,
+      processes: state.processes
+    });
+    var metabolitesSummaryString = General
+    .convertRecordsStringTabSeparateTable(metabolitesSummary);
+    General.saveString("network_metabolites.txt", metabolitesSummaryString);
+  }
+  /**
+  * Exports information about network's elements.
+  * @param {Object} state Application's state.
+  */
+  static exportNetworkElements(state) {
+    // Export information about network's elements.
+    // Nodes.
+    var nodesExport = Evaluation.createNetworkNodesExport({
+      nodesRecords: state.networkNodesRecords,
+      networkNodesReactions: state.networkNodesReactions,
+      networkNodesMetabolites: state.networkNodesMetabolites,
+      candidatesReactions: state.candidatesReactions,
+      candidatesMetabolites: state.candidatesMetabolites,
+      reactions: state.reactions,
+      metabolites: state.metabolites
+    });
+    var nodesExportString = General
+    .convertRecordsStringTabSeparateTable(nodesExport);
+    General.saveString("network_nodes.txt", nodesExportString);
+    // Links.
+    var linksExport = Evaluation.createNetworkLinksExport({
+      linksRecords: state.networkLinksRecords,
+      networkLinks: state.networkLinks
+    });
+    var linksExportString = General
+    .convertRecordsStringTabSeparateTable(linksExport);
+    General.saveString("network_links.txt", linksExportString);
+  }
   /**
   * Changes the selections of active panels within the panel view.
   * @param {Object} parameters Destructured object of parameters.
