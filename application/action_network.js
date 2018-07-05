@@ -59,31 +59,16 @@ class ActionNetwork {
       filter,
       context
     );
-    // Determine which views to restore.
-    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
-      views: [
-        "network",
-        "filter",
-        "context",
-        "subnetwork",
-        "query",
-        "measurement",
-        "summary",
-        "exploration"
-      ],
-      type: true,
-      viewsRestoration: state.viewsRestoration
-    });
     // Derive dependent state.
     var dependentStateVariables = ActionNetwork.deriveState({
       metabolites: state.metabolites,
       reactions: state.reactions,
       compartments: state.compartments,
       processes: state.processes,
-      viewsRestoration: novelViewsRestoration,
+      viewsRestoration: state.viewsRestoration,
       state: novelState
     });
-    // Compile information.
+    // Compile variables' values.
     var novelVariablesValues = {};
     var variablesValues = Object.assign(
       novelVariablesValues,
