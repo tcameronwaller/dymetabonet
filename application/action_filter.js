@@ -252,6 +252,7 @@ class ActionFilter {
     // Derive dependent state.
     var dependentStateVariables = ActionContext.deriveState({
       compartmentalization: state.compartmentalization,
+      defaultSimplifications: state.defaultSimplifications,
       candidatesSearches: state.candidatesSearches,
       candidatesSorts: state.candidatesSorts,
       defaultSimplificationsMetabolites: state

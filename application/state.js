@@ -99,6 +99,9 @@ class State {
       // Variable "compartmentalization" stores information about whether to
       // represent compartmentalization of metabolites.
       "compartmentalization",
+      // Variable "simplificationPriority" stores information about whether to
+      // prioritize derivation of default or custom simplifications.
+      "simplificationPriority",
       // Variable "defaultSimplifications" stores information about whether to
       // simplify default entities.
       "defaultSimplifications",
