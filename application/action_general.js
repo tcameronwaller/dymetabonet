@@ -278,15 +278,25 @@ class ActionGeneral {
     // Prepare summaries.
     if (type === "sets") {
       var summariesName = "setsSummaries";
-      var summaries = Cardinality.prepareSetsSummaries({
-        setsCardinalities: state.setsCardinalities,
+      // Derive dependent state.
+      var dependentStateVariables = ActionFilter.deriveState({
+        setsFilters: state.setsFilters,
+        setsFilter: state.setsFilter,
+        setsEntities: state.setsEntities,
         setsSearches: searches,
         setsSorts: state.setsSorts,
+        metabolites: state.metabolites,
+        reactions: state.reactions,
         compartments: state.compartments,
-        processes: state.processes
+        processes: state.processes,
+        viewsRestoration: state.viewsRestoration,
+        state: state
       });
     } else if (type === "candidates") {
       var summariesName = "candidatesSummaries";
+
+      // TODO: derive appropriate dependent state...
+
       var summaries = Candidacy.prepareCandidatesSummaries({
         candidatesReactions: state.candidatesReactions,
         candidatesMetabolites: state.candidatesMetabolites,
@@ -299,7 +309,10 @@ class ActionGeneral {
       [searchesName]: searches,
       [summariesName]: summaries
     };
-    var variablesValues = novelVariablesValues;
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
