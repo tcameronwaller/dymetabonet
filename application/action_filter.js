@@ -84,6 +84,45 @@ class ActionFilter {
     });
   }
   /**
+  * Changes the selection of filter for the sets' summary.
+  * @param {Object} state Application's state.
+  */
+  static changeSetsFilter(state) {
+    // Determine filter.
+    if (state.setsFilter) {
+      var setsFilter = false;
+    } else {
+      var setsFilter = true;
+    }
+    // Derive dependent state.
+    var dependentStateVariables = ActionFilter.deriveState({
+      setsFilters: state.setsFilters,
+      setsFilter: setsFilter,
+      setsEntities: state.setsEntities,
+      setsSearches: state.setsSearches,
+      setsSorts: state.setsSorts,
+      metabolites: state.metabolites,
+      reactions: state.reactions,
+      compartments: state.compartments,
+      processes: state.processes,
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {
+      setsFilter: setsFilter
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
   * Changes the selection of entities of interest for the sets' summary.
   * @param {Object} state Application's state.
   */
@@ -111,45 +150,6 @@ class ActionFilter {
     // Compile variables' values.
     var novelVariablesValues = {
       setsEntities: setsEntities
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      setsCardinalitiesSummaries
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
-  * Changes the selection of filter for the sets' summary.
-  * @param {Object} state Application's state.
-  */
-  static changeSetsFilter(state) {
-    // Determine filter.
-    if (state.setsFilter) {
-      var setsFilter = false;
-    } else {
-      var setsFilter = true;
-    }
-    // Determine sets' cardinalities and prepare sets' summaries.
-    var setsCardinalitiesSummaries = Cardinality
-    .determineSetsCardinalitiesSummaries({
-      setsEntities: state.setsEntities,
-      setsFilter: setsFilter,
-      accessSetsReactions: state.accessSetsReactions,
-      accessSetsMetabolites: state.accessSetsMetabolites,
-      filterSetsReactions: state.filterSetsReactions,
-      filterSetsMetabolites: state.filterSetsMetabolites,
-      setsSearches: state.setsSearches,
-      setsSorts: state.setsSorts,
-      compartments: state.compartments,
-      processes: state.processes
-    });
-    // Compile variables' values.
-    var novelVariablesValues = {
-      setsFilter: setsFilter
     };
     var variablesValues = Object.assign(
       novelVariablesValues,

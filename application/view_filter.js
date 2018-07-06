@@ -77,11 +77,13 @@ class ViewFilter {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
+      // Create and activate control for filter.
+      self.createActivateFilterControl(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
       // Create and activate controls for type of entities.
       self.createActivateEntitiesControl("metabolites", self);
       self.createActivateEntitiesControl("reactions", self);
-      // Create and activate control for filter.
-      self.createActivateFilterControl(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create menu for sets by processes.
@@ -115,6 +117,28 @@ class ViewFilter {
     }
   }
   /**
+  * Creates and activates a control for the filter.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateFilterControl(self) {
+    // Create control for filter.
+    var identifier = "set-filter";
+    self.filter = View.createCheckLabel({
+      identifier: identifier,
+      value: "filter",
+      className: "filter",
+      text: "filter",
+      parent: self.container,
+      documentReference: self.document
+    });
+    // Activate behavior.
+    self.filter.addEventListener("change", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      ActionFilter.changeSetsFilter(self.state);
+    });
+  }
+  /**
   * Creates and activates a control for the type of entities.
   * @param {string} entities Type of entities, metabolites or reactions.
   * @param {Object} self Instance of a class.
@@ -136,28 +160,6 @@ class ViewFilter {
       // Element on which the event originated is event.currentTarget.
       // Call action.
       ActionFilter.changeSetsEntities(self.state);
-    });
-  }
-  /**
-  * Creates and activates a control for the filter.
-  * @param {Object} self Instance of a class.
-  */
-  createActivateFilterControl(self) {
-    // Create control for filter.
-    var identifier = "set-filter";
-    self.filter = View.createCheckLabel({
-      identifier: identifier,
-      value: "filter",
-      className: "filter",
-      text: "filter",
-      parent: self.container,
-      documentReference: self.document
-    });
-    // Activate behavior.
-    self.filter.addEventListener("change", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      ActionFilter.changeSetsFilter(self.state);
     });
   }
   /**
