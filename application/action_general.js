@@ -277,7 +277,6 @@ class ActionGeneral {
     });
     // Prepare summaries.
     if (type === "sets") {
-      var summariesName = "setsSummaries";
       // Derive dependent state.
       var dependentStateVariables = ActionFilter.deriveState({
         setsFilters: state.setsFilters,
@@ -306,8 +305,7 @@ class ActionGeneral {
     }
     // Compile variables' values.
     var novelVariablesValues = {
-      [searchesName]: searches,
-      [summariesName]: summaries
+      [searchesName]: searches
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -331,7 +329,6 @@ class ActionGeneral {
 
     // TODO: Also accommodate sorts for the summary of metabolites' measurements
 
-
     // Determine sorts.
     if (type === "sets") {
       var sortsName = "setsSorts";
@@ -348,15 +345,25 @@ class ActionGeneral {
     });
     // Sort summaries.
     if (type === "sets") {
-      var summariesName = "setsSummaries";
-      var summaries = Cardinality.sortSetsSummaries({
-        setsSummaries: state.setsSummaries,
+      // Derive dependent state.
+      var dependentStateVariables = ActionFilter.deriveState({
+        setsFilters: state.setsFilters,
+        setsFilter: state.setsFilter,
+        setsEntities: state.setsEntities,
+        setsSearches: state.setsSearches,
         setsSorts: sorts,
+        metabolites: state.metabolites,
+        reactions: state.reactions,
         compartments: state.compartments,
-        processes: state.processes
+        processes: state.processes,
+        viewsRestoration: state.viewsRestoration,
+        state: state
       });
     } else if (type === "candidates") {
       var summariesName = "candidatesSummaries";
+
+      // TODO: Derive dependent state...
+
       var summaries = Candidacy.sortCandidatesSummaries({
         candidatesSummaries: state.candidatesSummaries,
         candidatesSorts: sorts,
@@ -366,10 +373,12 @@ class ActionGeneral {
     }
     // Compile variables' values.
     var novelVariablesValues = {
-      [sortsName]: sorts,
-      [summariesName]: summaries
+      [sortsName]: sorts
     };
-    var variablesValues = novelVariablesValues;
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
