@@ -52,62 +52,28 @@ class ActionContext {
     } else {
       var compartmentalization = true;
     }
-    // Determine candidate entities and prepare their summaries.
-    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
-      reactionsSets: state.filterSetsReactions,
-      reactions: state.reactions,
-      metabolites: state.metabolites,
+    // Derive dependent state.
+    var dependentStateVariables = ActionContext.deriveState({
       compartmentalization: compartmentalization,
       candidatesSearches: state.candidatesSearches,
       candidatesSorts: state.candidatesSorts,
-      compartments: state.compartments
-    });
-    // Determine simplifications of candidate entities.
-    // Create simplifications for default entities and include with other
-    // simplifications.
-    var simplifications = Candidacy.createIncludeDefaultSimplifications({
       defaultSimplificationsMetabolites: state
       .defaultSimplificationsMetabolites,
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      reactionsSets: state.filterSetsReactions,
-      reactions: state.reactions,
-      compartmentalization: state.compartmentalization,
-      reactionsSimplifications: state.reactionsSimplifications,
-      metabolitesSimplifications: state.metabolitesSimplifications
-    });
-    // Determine default simplifications.
-    var defaultSimplifications = true;
-    // Create network's elements.
-    var networkElements = Network.createNetworkElements({
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      reactionsSimplifications: simplifications.reactionsSimplifications,
-      metabolitesSimplifications: simplifications.metabolitesSimplifications,
+      filterSetsReactions: state.filterSetsReactions,
       reactions: state.reactions,
       metabolites: state.metabolites,
-      compartmentalization: compartmentalization
+      compartments: state.compartments,
+      processes: state.processes,
+      viewsRestoration: state.viewsRestoration,
+      state: state
     });
-    // Create subnetwork's elements.
-    var subnetworkElements = Network.copyNetworkElementsRecords({
-      networkNodesRecords: networkElements.networkNodesRecords,
-      networkLinksRecords: networkElements.networkLinksRecords
-    });
-    // Initialize whether to force representation of topology for networks of
-    // excessive scale.
-    var forceTopology = false;
     // Compile variables' values.
     var novelVariablesValues = {
-      compartmentalization: compartmentalization,
-      defaultSimplifications: defaultSimplifications,
-      forceTopology: forceTopology
+      compartmentalization: compartmentalization
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
-      candidatesSummaries,
-      simplifications,
-      networkElements,
-      subnetworkElements
+      dependentStateVariables
     );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
@@ -344,6 +310,7 @@ class ActionContext {
     // Determine which views to restore.
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
       views: [
+        "network",
         "context",
         "subnetwork",
         "query",

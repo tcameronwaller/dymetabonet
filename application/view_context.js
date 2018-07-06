@@ -213,6 +213,9 @@ class ViewContext {
   }
 }
 
+// TODO: Change order of columns in the context menus...
+// TODO: name, replicate, omit, count
+
 /**
 * Interface to organize menu of candidates for simplification.
 */
