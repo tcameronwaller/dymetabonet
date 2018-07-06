@@ -133,19 +133,19 @@ class ActionFilter {
     } else if (state.setsEntities === "reactions") {
       var setsEntities = "metabolites";
     }
-    // Determine sets' cardinalities and prepare sets' summaries.
-    var setsCardinalitiesSummaries = Cardinality
-    .determineSetsCardinalitiesSummaries({
-      setsEntities: setsEntities,
+    // Derive dependent state.
+    var dependentStateVariables = ActionFilter.deriveState({
+      setsFilters: state.setsFilters,
       setsFilter: state.setsFilter,
-      accessSetsReactions: state.accessSetsReactions,
-      accessSetsMetabolites: state.accessSetsMetabolites,
-      filterSetsReactions: state.filterSetsReactions,
-      filterSetsMetabolites: state.filterSetsMetabolites,
+      setsEntities: setsEntities,
       setsSearches: state.setsSearches,
       setsSorts: state.setsSorts,
+      metabolites: state.metabolites,
+      reactions: state.reactions,
       compartments: state.compartments,
-      processes: state.processes
+      processes: state.processes,
+      viewsRestoration: state.viewsRestoration,
+      state: state
     });
     // Compile variables' values.
     var novelVariablesValues = {
@@ -153,7 +153,7 @@ class ActionFilter {
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
-      setsCardinalitiesSummaries
+      dependentStateVariables
     );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
