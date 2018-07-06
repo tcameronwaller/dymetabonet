@@ -49,10 +49,6 @@ class ActionFilter {
   * @param {Object} parameters.state Application's state.
   */
   static changeSetsFilters({value, attribute, state} = {}) {
-    console.log("clicked on a filter menu row")
-    console.log("called ActionFilter.changeSetsFilters");
-    console.log(value);
-    console.log(attribute);
     // Record set's selection for filters.
     var setsFilters = Attribution.recordSetSelectionFilters({
       value: value,
@@ -241,6 +237,7 @@ class ActionFilter {
     // Determine which views to restore.
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
       views: [
+        "network",
         "filter",
         "context",
         "subnetwork",

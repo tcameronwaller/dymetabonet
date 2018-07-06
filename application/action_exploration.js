@@ -231,18 +231,28 @@ class ActionExploration {
   * @returns {Object} Values of application's variables.
   */
   static deriveState({simulationDimensions, previousSimulation, subnetworkNodesRecords, subnetworkLinksRecords, viewsRestoration, state} = {}) {
+
+    // TODO: I'll need to lace this all together when I finally implement the exploration view...
+
     // Derive state relevant to view.
-    // Initialize controls for query view.
-    var subordinateControls = ActionExploration.initializeSubordinateControls();
-    // Determine whether to create novel simulation.
-    var simulationControlsRecords = ActionExploration.determineNovelSimulation({
-      forceNetworkDiagram: state.forceNetworkDiagram,
-      simulationDimensions: simulationDimensions,
-      nodesRecords: subnetworkNodesRecords,
-      linksRecords: subnetworkLinksRecords,
-      previousSimulation: previousSimulation,
-      state: state
-    });
+    // Initialize controls for exploration view.
+
+    // TODO: Temporary work-around...
+
+    var controls = ActionExploration.initializeControls();
+
+    if (false) {
+      var subordinateControls = ActionExploration.initializeSubordinateControls();
+      // Determine whether to create novel simulation.
+      var simulationControlsRecords = ActionExploration.determineNovelSimulation({
+        forceNetworkDiagram: state.forceNetworkDiagram,
+        simulationDimensions: simulationDimensions,
+        nodesRecords: subnetworkNodesRecords,
+        linksRecords: subnetworkLinksRecords,
+        previousSimulation: previousSimulation,
+        state: state
+      });
+    }
     // Determine which views to restore.
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
       views: [
@@ -260,8 +270,9 @@ class ActionExploration {
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
-      subordinateControls,
-      simulationControlsRecords,
+      controls,
+      //subordinateControls,
+      //simulationControlsRecords,
       dependentStateVariables
     );
     // Return information.
