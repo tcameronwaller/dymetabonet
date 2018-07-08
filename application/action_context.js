@@ -55,11 +55,14 @@ class ActionContext {
     // Derive dependent state.
     var dependentStateVariables = ActionContext.deriveState({
       compartmentalization: compartmentalization,
+      simplificationPriority: state.simplificationPriority,
       defaultSimplifications: state.defaultSimplifications,
       candidatesSearches: state.candidatesSearches,
       candidatesSorts: state.candidatesSorts,
       defaultSimplificationsMetabolites: state
       .defaultSimplificationsMetabolites,
+      reactionsSimplifications: state.reactionsSimplifications,
+      metabolitesSimplifications: state.metabolitesSimplifications,
       filterSetsReactions: state.filterSetsReactions,
       reactions: state.reactions,
       metabolites: state.metabolites,
@@ -97,24 +100,40 @@ class ActionContext {
     } else {
       // Change default simplifications to true.
       var defaultSimplifications = true;
-      // Create simplifications for default entities and include with other
-      // simplifications.
-      var simplifications = Candidacy.createIncludeDefaultSimplifications({
-        defaultSimplificationsMetabolites: state
-        .defaultSimplificationsMetabolites,
-        candidatesReactions: state.candidatesReactions,
-        candidatesMetabolites: state.candidatesMetabolites,
-        reactionsSets: state.filterSetsReactions,
-        reactions: state.reactions,
-        compartmentalization: state.compartmentalization,
-        reactionsSimplifications: state.reactionsSimplifications,
-        metabolitesSimplifications: state.metabolitesSimplifications
-      });
     }
-
-
-    // TODO: include simplificationPriority in the submitted variables.
-
+    // Derive dependent state.
+    var dependentStateVariables = ActionContext.deriveState({
+      compartmentalization: state.compartmentalization,
+      simplificationPriority: simplificationPriority,
+      defaultSimplifications: defaultSimplifications,
+      candidatesSearches: state.candidatesSearches,
+      candidatesSorts: state.candidatesSorts,
+      defaultSimplificationsMetabolites: state
+      .defaultSimplificationsMetabolites,
+      reactionsSimplifications: state.reactionsSimplifications,
+      metabolitesSimplifications: state.metabolitesSimplifications,
+      filterSetsReactions: state.filterSetsReactions,
+      reactions: state.reactions,
+      metabolites: state.metabolites,
+      compartments: state.compartments,
+      processes: state.processes,
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {
+      simplificationPriority: simplificationPriority,
+      defaultSimplifications: defaultSimplifications
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
   }
   /**
   * Changes explicit and implicit simplifications.
@@ -129,8 +148,6 @@ class ActionContext {
   static changeSimplification({identifier, category, method, state} = {}) {
     // Change simplification priority.
     var simplificationPriority = "custom";
-
-
     // Change explicit and implicit designations of entities for simplification.
     var simplifications = Candidacy.changeSimplifications({
       identifier: identifier,
@@ -144,52 +161,39 @@ class ActionContext {
       reactionsSimplifications: state.reactionsSimplifications,
       metabolitesSimplifications: state.metabolitesSimplifications
     });
-    // Determine default simplifications.
-    // Determine whether simplifications exist for all default entities.
-    var defaultSimplifications = Candidacy.determineDefaultSimplifications({
-      defaultSimplificationsMetabolites: state.defaultSimplificationsMetabolites,
-      candidatesMetabolites: state.candidatesMetabolites,
-      metabolitesSimplifications: simplifications.metabolitesSimplifications
-    });
-    // Create network's elements.
-    var networkElements = Network.createNetworkElements({
-      candidatesReactions: state.candidatesReactions,
-      candidatesMetabolites: state.candidatesMetabolites,
+    // Derive dependent state.
+    var dependentStateVariables = ActionContext.deriveState({
+      compartmentalization: state.compartmentalization,
+      simplificationPriority: simplificationPriority,
+      defaultSimplifications: state.defaultSimplifications,
+      candidatesSearches: state.candidatesSearches,
+      candidatesSorts: state.candidatesSorts,
+      defaultSimplificationsMetabolites: state
+      .defaultSimplificationsMetabolites,
       reactionsSimplifications: simplifications.reactionsSimplifications,
       metabolitesSimplifications: simplifications.metabolitesSimplifications,
+      filterSetsReactions: state.filterSetsReactions,
       reactions: state.reactions,
       metabolites: state.metabolites,
-      compartmentalization: state.compartmentalization
+      compartments: state.compartments,
+      processes: state.processes,
+      viewsRestoration: state.viewsRestoration,
+      state: state
     });
-    // Create subnetwork's elements.
-    var subnetworkElements = Network.copyNetworkElementsRecords({
-      networkNodesRecords: networkElements.networkNodesRecords,
-      networkLinksRecords: networkElements.networkLinksRecords
-    });
-    // Initialize whether to force representation of topology for networks of
-    // excessive scale.
-    var forceTopology = false;
     // Compile variables' values.
     var novelVariablesValues = {
-      defaultSimplifications: defaultSimplifications,
-      forceTopology: forceTopology
+      simplificationPriority: simplificationPriority
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
       simplifications,
-      networkElements,
-      subnetworkElements
+      dependentStateVariables
     );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
-
-
-    // TODO: include simplificationPriority in the submitted variables.
-
-
   }
 
   // Indirect actions.
@@ -301,7 +305,7 @@ class ActionContext {
       // Compile simplifications.
       var simplifications = {
         metabolitesSimplifications: metabolitesSimplifications,
-        reactionsSimplifications: reactionsSimplificiations
+        reactionsSimplifications: reactionsSimplifications
       };
     }
     // Create network's elements.

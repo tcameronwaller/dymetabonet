@@ -258,6 +258,8 @@ class ActionFilter {
       candidatesSorts: state.candidatesSorts,
       defaultSimplificationsMetabolites: state
       .defaultSimplificationsMetabolites,
+      reactionsSimplifications: {},
+      metabolitesSimplifications: {},
       filterSetsReactions: currentEntitiesSets.filterSetsReactions,
       reactions: reactions,
       metabolites: metabolites,
