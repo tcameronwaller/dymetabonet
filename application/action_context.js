@@ -217,12 +217,6 @@ class ActionContext {
     return variablesValues;
   }
 
-  // TODO: ActionContext.deriveState needs to be more inclusive...
-  // TODO: Need to determine default simplifications...
-  // TODO: Need to acoommdate simplifications when defininig the network's elements...
-
-  // TODO: Wait... problem...
-
   /**
   * Derives application's dependent state from controls relevant to view.
   * @param {Object} parameters Destructured object of parameters.
@@ -270,7 +264,7 @@ class ActionContext {
       var novelDefaultSimplifications = defaultSimplifications;
       if (defaultSimplifications) {
         // Create default simplifications.
-        // TODO: the only simplifications should be the defaults...
+        // Discard any previous simplifications.
         var simplifications = Candidacy.createIncludeDefaultSimplifications({
           defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
           candidatesReactions: candidatesSummaries.candidatesReactions,
@@ -283,8 +277,7 @@ class ActionContext {
         });
       } else {
         // Remove default simplifications.
-        // TODO: At this point, there should not be any simplifications.
-        // Remove simplifications for default entities.
+        // Discard any previous simplifications.
         var simplifications = Candidacy.removeDefaultSimplifications({
           defaultSimplificationsMetabolites: state
           .defaultSimplificationsMetabolites,
@@ -293,8 +286,8 @@ class ActionContext {
           reactionsSets: state.filterSetsReactions,
           reactions: state.reactions,
           compartmentalization: state.compartmentalization,
-          reactionsSimplifications: state.reactionsSimplifications,
-          metabolitesSimplifications: state.metabolitesSimplifications
+          reactionsSimplifications: {},
+          metabolitesSimplifications: {}
         });
       }
     } else if (simplificationPriority === "custom") {
@@ -303,51 +296,14 @@ class ActionContext {
       .determineDefaultSimplifications({
         defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
         candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-        metabolitesSimplifications: simplifications.metabolitesSimplifications
+        metabolitesSimplifications: metabolitesSimplifications
       });
+      // Compile simplifications.
+      var simplifications = {
+        metabolitesSimplifications: metabolitesSimplifications,
+        reactionsSimplifications: reactionsSimplificiations
+      };
     }
-
-    // TODO: Need more than 2 conditions...
-    // TODO: procedure dependes on which control is dominant... default or custom.
-
-
-
-    if (defaultSimplifications) {
-      // Create simplifications for default entities and include with other
-      // simplifications.
-    } else {
-      // Remove simplifications for default entities.
-      var simplifications = Candidacy.removeDefaultSimplifications({
-        defaultSimplificationsMetabolites: state
-        .defaultSimplificationsMetabolites,
-        candidatesReactions: state.candidatesReactions,
-        candidatesMetabolites: state.candidatesMetabolites,
-        reactionsSets: state.filterSetsReactions,
-        reactions: state.reactions,
-        compartmentalization: state.compartmentalization,
-        reactionsSimplifications: state.reactionsSimplifications,
-        metabolitesSimplifications: state.metabolitesSimplifications
-      });
-    }
-
-    // Create simplifications for default entities and include with other
-    // simplifications.
-    var simplifications = Candidacy.createIncludeDefaultSimplifications({
-      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-      reactionsSets: filterSetsReactions,
-      reactions: reactions,
-      compartmentalization: compartmentalization,
-      reactionsSimplifications: {},
-      metabolitesSimplifications: {}
-    });
-
-
-
-
-
-
     // Create network's elements.
     var networkElements = Network.createNetworkElements({
       candidatesReactions: candidatesSummaries.candidatesReactions,
@@ -385,15 +341,9 @@ class ActionContext {
       viewsRestoration: novelViewsRestoration,
       state: state
     });
-
-
-    // TODO: include novelDefaultSimplifications
-
-
-
-
     // Compile information.
     var novelVariablesValues = {
+      defaultSimplifications: novelDefaultSimplifications,
       networkSummary: networkSummary
     };
     var variablesValues = Object.assign(
