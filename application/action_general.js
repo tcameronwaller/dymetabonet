@@ -292,15 +292,24 @@ class ActionGeneral {
         state: state
       });
     } else if (type === "candidates") {
-      var summariesName = "candidatesSummaries";
-
-      // TODO: derive appropriate dependent state...
-
-      var summaries = Candidacy.prepareCandidatesSummaries({
-        candidatesReactions: state.candidatesReactions,
-        candidatesMetabolites: state.candidatesMetabolites,
+      // Derive dependent state.
+      var dependentStateVariables = ActionContext.deriveState({
+        compartmentalization: state.compartmentalization,
+        simplificationPriority: state.simplificationPriority,
+        defaultSimplifications: state.defaultSimplifications,
         candidatesSearches: searches,
-        candidatesSorts: state.candidatesSorts
+        candidatesSorts: state.candidatesSorts,
+        defaultSimplificationsMetabolites: state
+        .defaultSimplificationsMetabolites,
+        reactionsSimplifications: state.reactionsSimplifications,
+        metabolitesSimplifications: state.metabolitesSimplifications,
+        filterSetsReactions: state.filterSetsReactions,
+        reactions: state.reactions,
+        metabolites: state.metabolites,
+        compartments: state.compartments,
+        processes: state.processes,
+        viewsRestoration: state.viewsRestoration,
+        state: state
       });
     }
     // Compile variables' values.
@@ -360,15 +369,24 @@ class ActionGeneral {
         state: state
       });
     } else if (type === "candidates") {
-      var summariesName = "candidatesSummaries";
-
-      // TODO: Derive dependent state...
-
-      var summaries = Candidacy.sortCandidatesSummaries({
-        candidatesSummaries: state.candidatesSummaries,
+      // Derive dependent state.
+      var dependentStateVariables = ActionContext.deriveState({
+        compartmentalization: state.compartmentalization,
+        simplificationPriority: state.simplificationPriority,
+        defaultSimplifications: state.defaultSimplifications,
+        candidatesSearches: state.candidatesSearches,
         candidatesSorts: sorts,
-        candidatesReactions: state.candidatesReactions,
-        candidatesMetabolites: state.candidatesMetabolites
+        defaultSimplificationsMetabolites: state
+        .defaultSimplificationsMetabolites,
+        reactionsSimplifications: state.reactionsSimplifications,
+        metabolitesSimplifications: state.metabolitesSimplifications,
+        filterSetsReactions: state.filterSetsReactions,
+        reactions: state.reactions,
+        metabolites: state.metabolites,
+        compartments: state.compartments,
+        processes: state.processes,
+        viewsRestoration: state.viewsRestoration,
+        state: state
       });
     }
     // Compile variables' values.

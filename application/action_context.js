@@ -46,21 +46,19 @@ class ActionContext {
   * @param {Object} state Application's state.
   */
   static changeCompartmentalization(state) {
-    // Change simplification priority.
-    var simplificationPriority = "default";
-    // Change default simplifications to true.
-    var defaultSimplifications = true;
     // Determine compartmentalization.
     if (state.compartmentalization) {
       var compartmentalization = false;
     } else {
       var compartmentalization = true;
     }
+    // Initialize relevant controls to default values.
+    var context = ActionContext.initializeControls();
     // Derive dependent state.
     var dependentStateVariables = ActionContext.deriveState({
       compartmentalization: compartmentalization,
-      simplificationPriority: simplificationPriority,
-      defaultSimplifications: defaultSimplifications,
+      simplificationPriority: context.simplificationPriority,
+      defaultSimplifications: context.defaultSimplifications,
       candidatesSearches: state.candidatesSearches,
       candidatesSorts: state.candidatesSorts,
       defaultSimplificationsMetabolites: state
@@ -77,8 +75,8 @@ class ActionContext {
     });
     // Compile variables' values.
     var novelVariablesValues = {
-      simplificationPriority: simplificationPriority,
-      defaultSimplifications: defaultSimplifications,
+      simplificationPriority: context.simplificationPriority,
+      defaultSimplifications: context.defaultSimplifications,
       compartmentalization: compartmentalization
     };
     var variablesValues = Object.assign(
