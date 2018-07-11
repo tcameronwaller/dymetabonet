@@ -201,9 +201,6 @@ class State {
     ];
     var summaryControls = [];
     var explorationControls = [
-      // Variable "forceNetworkDiagram" stores information about whether to draw
-      // a network even if it is large.
-      "forceNetworkDiagram",
       // Variable "simulationDimensions" stores information about dimensions for
       // the simulation.
       "simulationDimensions",
@@ -228,6 +225,11 @@ class State {
       // "networkNodesMetabolites", and "networkNodesReactions".
       "entitySelection"
     ];
+    var noticeControls = [
+      // Variable "forceNetworkDiagram" stores information about whether to draw
+      // a network even if it is large.
+      "forceNetworkDiagram",
+    ];
     self.variablesNamesControls = [].concat(
       interfaceControls,
       promptControls,
@@ -240,7 +242,8 @@ class State {
       queryControls,
       measurementControls,
       summaryControls,
-      explorationControls
+      explorationControls,
+      noticeControls
     );
 
     // TODO: Make it clear that these state variables have to do with the data itself...

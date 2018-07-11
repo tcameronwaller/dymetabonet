@@ -160,18 +160,6 @@ class ViewExploration {
           state: self.state
         });
       }
-    } else {
-      // Create notice view.
-      View.removeExistElement("progress", self.document);
-      View.removeExistElement("topology", self.document);
-      new ViewNotice({
-        interfaceView: self.interfaceView,
-        tipView: self.tipView,
-        promptView: self.promptView,
-        explorationView: self,
-        state: self.state,
-        documentReference: self.document
-      });
     }
   }
   /**

@@ -80,6 +80,7 @@ class ActionInterface {
       measurement: {},
       summary: {},
       exploration: {},
+      notice: {},
       progress: {},
       topology: {}
     };
@@ -107,6 +108,7 @@ class ActionInterface {
       measurement: true,
       summary: true,
       exploration: true,
+      notice: true,
       progress: true,
       topology: true
     };

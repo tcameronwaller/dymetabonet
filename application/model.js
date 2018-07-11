@@ -70,6 +70,8 @@ class Model {
       ActionGeneral.deriveState(self.state);
     }
 
+    // TODO: determine if
+
     // TODO: I need to automatically determine whether the simulation dimensions match those of the exploration view... and update if necessary
   }
 
@@ -133,10 +135,12 @@ class Model {
     self.restoreSubnetworkView(self);
     // Query view.
     self.restoreQueryView(self);
-
     // Measurement view.
     // Summary view.
     // Exploration view.
+    self.restoreExplorationView(self);
+    // Notice view.
+    self.restoreNoticeView(self);
     // Progress view.
     // Topology view.
 
@@ -364,13 +368,12 @@ class Model {
       self.state.viewsRestoration.query = false;
     }
   }
-
   /**
   * Restores view's content and behavior.
   * @param {Object} self Instance of a class.
   */
   restoreExplorationView(self) {
-    // Panel view.
+    // Exploration view.
     if (self.state.viewsRestoration.exploration) {
       // Restore views.
       self.state.views.exploration = new ViewExploration({
@@ -381,6 +384,27 @@ class Model {
       self.state.viewsRestoration.exploration = false;
     }
   }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreNoticeView(self) {
+    // Notice view.
+    if (self.state.viewsRestoration.notice) {
+      // Restore views.
+      if (Model.determineExplorationNotice(self.state)) {
+        self.state.views.notice = new ViewNotice({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("notice", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.notice = false;
+    }
+  }
+
 
   // TODO: Mange exploration, progress, and topology views here...
 
@@ -543,7 +567,6 @@ class Model {
   static determineSubnetworkQuery(state) {
     return state.subnetworkViews.query;
   }
-
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
@@ -552,6 +575,22 @@ class Model {
   static determineControlMeasurement(state) {
     return state.controlViews.measurement;
   }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineExplorationNotice(state) {
+    return !Model.determineNetworkDiagram(state);
+  }
+
+
+
+  // TODO: introduce methods to determine exploration views
+
+
+
+
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
@@ -615,6 +654,10 @@ class Model {
       (state.queryConnectionCount > 0)
     );
   }
+
+  // TODO: is "determineNetworkDiagram" still necessary?
+
+
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.

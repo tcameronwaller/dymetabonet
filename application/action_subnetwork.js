@@ -257,7 +257,10 @@ class ActionSubnetwork {
         "query",
         "measurement",
         "summary",
-        "exploration"
+        "exploration",
+        "notice",
+        "progress",
+        "topology"
       ],
       type: true,
       viewsRestoration: viewsRestoration

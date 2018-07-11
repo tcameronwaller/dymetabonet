@@ -202,6 +202,8 @@ class ActionExploration {
   * @returns {Object} Values of application's variables for view's controls.
   */
   static initializeSubordinateControls() {
+    // TODO: Initialize controls for notice view and topology view...
+    
     var forceNetworkDiagram = false;
     var simulationProgress = Simulation.createInitialSimulationProgress();
     var simulation = {};
@@ -261,7 +263,10 @@ class ActionExploration {
     // Determine which views to restore.
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
       views: [
-        "exploration"
+        "exploration",
+        "notice",
+        "progress",
+        "topology"
       ],
       type: true,
       viewsRestoration: viewsRestoration
