@@ -36,33 +36,28 @@ class ViewExploration {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.interfaceView Instance of ViewInterface's class.
-  * @param {Object} parameters.tipView Instance of ViewTip's class.
-  * @param {Object} parameters.promptView Instance of ViewPrompt's class.
-  * @param {Object} parameters.state Application's state.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
-  * @param {Object} parameters.windowReference Reference to browser's window.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor ({interfaceView, tipView, promptView, state, documentReference, windowReference} = {}) {
+  constructor ({documentReference, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Set reference to application's state.
     self.state = state;
-    // Set reference to browser's window.
-    self.window = windowReference;
     // Set reference to document object model (DOM).
     self.document = documentReference;
     // Set reference to other views.
-    self.interfaceView = interfaceView;
-    self.tipView = tipView;
-    self.promptView = promptView;
+    self.interfaceView = self.state.views.interface;
+    self.tipView = self.state.views.tip;
+    self.promptView = self.state.views.prompt;
+    self.panelView = self.state.views.panel;
     // Control view's composition and behavior.
     // Initialize view.
     self.initializeView(self);
     // Restore view.
-    self.restoreView(self);
+    //self.restoreView(self);
   }
   /**
   * Initializes, creates and activates, view's content and behavior that does

@@ -39,6 +39,11 @@ United States of America
 */
 class ActionExploration {
 
+  // TODO: I don't think I need to restore state with each iteration of the simulation...
+  // TODO: D3 handles updates to the associated data
+
+  // TODO: actually... I do need to restore state for the sake of the progress view, I think.
+
   // TODO: I DON'T KNOW HOW TO HANDLE THE SIMULATION FOR DRAG INTERACTIONS...
   // TODO: WILL THE D3 DRAG EVENT PROPAGATE WITH UPDATE'S TO THE STATE?
 

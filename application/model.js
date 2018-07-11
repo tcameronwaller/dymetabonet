@@ -69,6 +69,8 @@ class Model {
     } else if (!Model.determineMetabolismDerivationInformation(self.state)) {
       ActionGeneral.deriveState(self.state);
     }
+
+    // TODO: I need to automatically determine whether the simulation dimensions match those of the exploration view... and update if necessary
   }
 
   // TODO: maybe handle the dimensions for the exploration view here in the Model...
@@ -131,6 +133,12 @@ class Model {
     self.restoreSubnetworkView(self);
     // Query view.
     self.restoreQueryView(self);
+
+    // Measurement view.
+    // Summary view.
+    // Exploration view.
+    // Progress view.
+    // Topology view.
 
     if (false) {
       // Prompt view.
@@ -357,6 +365,23 @@ class Model {
     }
   }
 
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreExplorationView(self) {
+    // Panel view.
+    if (self.state.viewsRestoration.exploration) {
+      // Restore views.
+      self.state.views.exploration = new ViewExploration({
+        documentReference: self.document,
+        state: self.state
+      });
+      // Change restoration.
+      self.state.viewsRestoration.exploration = false;
+    }
+  }
+
   // TODO: Mange exploration, progress, and topology views here...
 
   // Methods to evaluate application's state.
@@ -519,9 +544,6 @@ class Model {
     return state.subnetworkViews.query;
   }
 
-  // TODO: update the methods to check control tabs
-
-
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
@@ -543,23 +565,23 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineRogueTraversal(state) {
-    return (state.traversalRogueFocus.identifier.length > 0);
+  static determineRogueQuery(state) {
+    return (state.queryRogueFocus.identifier.length > 0);
   }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineProximityTraversal(state) {
+  static determineProximityQuery(state) {
     return (
-      (state.traversalProximityFocus.identifier.length > 0) &&
+      (state.queryProximityFocus.identifier.length > 0) &&
       (
-        (state.traversalProximityDirection === "successors") ||
-        (state.traversalProximityDirection === "neighbors") ||
-        (state.traversalProximityDirection === "predecessors")
+        (state.queryProximityDirection === "successors") ||
+        (state.queryProximityDirection === "neighbors") ||
+        (state.queryProximityDirection === "predecessors")
       ) &&
-      (state.traversalProximityDepth > 0)
+      (state.queryProximityDepth > 0)
     );
   }
   /**
@@ -567,15 +589,15 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determinePathTraversal(state) {
+  static determinePathQuery(state) {
     return (
-      (state.traversalPathSource.identifier.length > 0) &&
-      (state.traversalPathTarget.identifier.length > 0) &&
+      (state.queryPathSource.identifier.length > 0) &&
+      (state.queryPathTarget.identifier.length > 0) &&
       (
-        (state.traversalPathDirection === "forward") ||
-        (state.traversalPathDirection === "reverse")
+        (state.queryPathDirection === "forward") ||
+        (state.queryPathDirection === "reverse")
       ) &&
-      (state.traversalPathCount > 0)
+      (state.queryPathCount > 0)
     );
   }
   /**
@@ -583,14 +605,14 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineConnectionTraversal(state) {
+  static determineConnectionQuery(state) {
     return (
       (
-        (state.traversalCombination === "union") ||
-        (state.traversalCombination === "difference")
+        (state.queryCombination === "union") ||
+        (state.queryCombination === "difference")
       ) &&
-      (state.traversalConnectionTargets.length > 1) &&
-      (state.traversalConnectionCount > 0)
+      (state.queryConnectionTargets.length > 1) &&
+      (state.queryConnectionCount > 0)
     );
   }
   /**

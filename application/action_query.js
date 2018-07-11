@@ -39,7 +39,25 @@ United States of America
 */
 class ActionQuery {
 
+  // TODO: ActionQuery is a bit special...
+  // TODO: Only actions that execute queries really need to re-derive dependent state variables...
+  // TODO: ... well, that isn't actually correct. As written, changeCombination might actually need to back up to call ActionSubnetwork.deriveState().
+  // TODO: It might be better to follow the pattern for all other view's deriveState procedures.
+
+// 1. application initiation...
+// ... initial controls, create subnetwork's initial elements accordingly
+// ... derive downstream dependent state (primarily exploration view)
+// 2. changeCombination...
+// ... create subnetwork's initial elements accordingly
+// ... derive downstream dependent state (primarily exploration view)
+// 3.
+
+// Maybe the a single execute procedure could call the derive State to execute the correct query and then derive state?
+
   // Direct actions.
+
+  // TODO: changeCombination needs to reset the variable to re-initialize subnetwork's elements.
+  // TODO: changeCombination needs to call deriveState to actually re-initialize subnetwork's elements and restore downstream variables.
 
   /**
   * Changes the selection of combination in query view.
@@ -339,10 +357,15 @@ class ActionQuery {
     }
   }
 
-  // TODO: Executions of queries do influence dependent variables of state...
-  // TODO: Call appropriate derivation function in execution functions.
+  // TODO: Execute all queries from the same root procedure...
+  // TODO: Determine query type from the queryType state variable.
+  // TODO: The subordinate, specific query procedures need to check (Model methods) that state is ready for each type of query
+  // TODO: these action procedures are the gate-keepers. they only execute query and deriveState if appropriate.
 
-  // TODO: All query executions should call ActionExploration.deriveState()...
+  // TODO: The query procedure needs to pass novel variables' values to the application's state.
+  // TODO: Then the query needs to call deriveState to actually execute the query and update the subnetwork.
+
+  // TODO: executeQuery(state) {}
 
   /**
   * Executes rogue query and combination on the network.
@@ -617,7 +640,6 @@ class ActionQuery {
     }
   }
 
-
   // Indirect actions.
 
   /**
@@ -626,6 +648,7 @@ class ActionQuery {
   */
   static initializeControls() {
     // Initialize controls.
+    var subnetworkRestoration = true;
     var queryCombination = "difference";
     var queryType = "rogue";
     var queryProximityDirection = "successors";
@@ -636,6 +659,7 @@ class ActionQuery {
     var subordinateControls = ActionQuery.initializeSubordinateControls();
     // Compile information.
     var novelVariablesValues = {
+      subnetworkRestoration: subnetworkRestoration,
       queryCombination: queryCombination,
       queryType: queryType,
       queryProximityDirection: queryProximityDirection,
@@ -678,28 +702,61 @@ class ActionQuery {
     return variablesValues;
   }
 
-  // TODO: Make ActionQuery.deriveState() executable from the execution of the actual queries for the subnetwork...
+
+  // subnetworkRestoration = true/false
+
+  // TODO: deriveState needs new state variable for whether to initialize the subnetwork's elements
+  // TODO: deriveState needs to restore the subnetwork's elements.
+  // TODO: ... 1. whether to initialize or preserve subnetwork's elements
+  // TODO: ... 2. execute appropriate query (if ready) and combine to subnetwork as appropriate
+  // TODO: deriveState needs to pass subnetwork information to downstream process, in particular exploration view
+
 
   /**
   * Derives application's dependent state from controls relevant to view.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
-  * subnetwork's nodes.
-  * @param {Array<Object>} parameters.subnetworkLinksRecords Information about
-  * subnetwork's links.
+  * @param {Array<Object>} parameters.networkNodesRecords Information about
+  * network's nodes.
+  * @param {Array<Object>} parameters.networkLinksRecords Information about
+  * network's links.
+  * @param {boolean} parameters.subnetworkRestoration Whether to restore the
+  * subnetwork to its initial elements.
+  * @param {string} queryCombination Method of combination, union or difference.
   * @param {Object<boolean>} parameters.viewsRestoration Information about
   * whether to restore each view.
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState({subnetworkNodesRecords, subnetworkLinksRecords, viewsRestoration, state} = {}) {
+  static deriveState({networkNodesRecords, networkLinksRecords, subnetworkRestoration, queryCombination, viewsRestoration, state} = {}) {
     // Derive state relevant to view.
+    // Restore subnetwork's elements.
+    if (subnetworkRestoration) {
+      // Restore subnetwork to initial elements.
+      // Consider combination strategy.
+      if (queryCombination === "union") {
+        var subnetworkElements = {
+          subnetworkNodesRecords: [],
+          subnetworkLinksRecords: []
+        };
+      } else if (queryCombination === "difference") {
+        var subnetworkElements = Network.copyNetworkElementsRecords({
+          networkNodesRecords: networkNodesRecords,
+          networkLinksRecords: networkLinksRecords
+        });
+      }
+    } else {
+      // Preserve any current elements in subnetwork.
+      // Execute query and combine elements to subnetwork.
+
+      // TODO: Call a separate procedure to manage...
+    }
     // Initialize controls for query view.
+    // TODO: only do this when appropriate... for example, maybe after query execution
     var subordinateControls = ActionQuery.initializeSubordinateControls();
     // Determine summary information about subnetwork.
     var subnetworkSummary = Network.determineSubnetworkSummary({
-      subnetworkNodesRecords: subnetworkNodesRecords,
-      subnetworkLinksRecords: subnetworkLinksRecords
+      subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
+      subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords
     });
     // Determine which views to restore.
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
@@ -716,8 +773,8 @@ class ActionQuery {
     var dependentStateVariables = ActionExploration.deriveState({
       simulationDimensions: state.simulationDimensions,
       previousSimulation: state.simulation,
-      subnetworkNodesRecords: subnetworkNodesRecords,
-      subnetworkLinksRecords: subnetworkLinksRecords,
+      subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
+      subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords,
       viewsRestoration: novelViewsRestoration,
       state: state
     });
@@ -727,11 +784,11 @@ class ActionQuery {
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
+      subnetworkElements,
       subordinateControls,
       dependentStateVariables
     );
     // Return information.
     return variablesValues;
   }
-
 }

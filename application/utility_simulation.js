@@ -352,8 +352,6 @@ class Simulation {
     return (Math.round((count / target) * 100) / 100);
   }
 
-
-
   /**
   * Creates and initiates a novel simulation to support interactivity with nodes
   * and links in network's diagram.
@@ -361,11 +359,5 @@ class Simulation {
   * @returns {Object} Reference to simulation.
   */
   static initiateNovelInteractionSimulation(state) {}
-
-
-
-
-
-
 
 }

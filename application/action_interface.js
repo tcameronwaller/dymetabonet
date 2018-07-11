@@ -79,7 +79,9 @@ class ActionInterface {
       query: {},
       measurement: {},
       summary: {},
-      exploration: {}
+      exploration: {},
+      progress: {},
+      topology: {}
     };
     // Return information.
     return information;
@@ -104,7 +106,9 @@ class ActionInterface {
       query: true,
       measurement: true,
       summary: true,
-      exploration: true
+      exploration: true,
+      progress: true,
+      topology: true
     };
     // Return information.
     return information;
