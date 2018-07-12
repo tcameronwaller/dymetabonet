@@ -57,7 +57,7 @@ class ViewExploration {
     // Initialize view.
     self.initializeView(self);
     // Restore view.
-    //self.restoreView(self);
+    self.restoreView(self);
   }
   /**
   * Initializes, creates and activates, view's content and behavior that does

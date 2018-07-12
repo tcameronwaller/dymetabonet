@@ -142,7 +142,9 @@ class Model {
     // Notice view.
     self.restoreNoticeView(self);
     // Progress view.
+    self.restoreProgressView(self);
     // Topology view.
+    self.restoreTopologyView(self);
 
     if (false) {
       // Prompt view.
@@ -393,6 +395,7 @@ class Model {
     if (self.state.viewsRestoration.notice) {
       // Restore views.
       if (Model.determineExplorationNotice(self.state)) {
+        console.log("notice");
         self.state.views.notice = new ViewNotice({
           documentReference: self.document,
           state: self.state
@@ -413,6 +416,7 @@ class Model {
     if (self.state.viewsRestoration.progress) {
       // Restore views.
       if (Model.determineExplorationProgress(self.state)) {
+        console.log("progress");
         self.state.views.progress = new ViewProgress({
           documentReference: self.document,
           state: self.state
@@ -433,8 +437,10 @@ class Model {
     if (self.state.viewsRestoration.topology) {
       // Restore views.
       if (Model.determineExplorationTopology(self.state)) {
+        console.log("topology");
         self.state.views.topology = new ViewTopology({
           documentReference: self.document,
+          windowReference: self.window,
           state: self.state
         });
       } else {
@@ -631,7 +637,10 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineExplorationProgress(state) {
-    return !Model.determineSimulationPreparation(state);
+    return (
+      Model.determineNetworkDiagram(state) &&
+      !Model.determineSimulationPreparation(state)
+    );
   }
   /**
   * Determines whether the application's state has specific information.
@@ -639,7 +648,10 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineExplorationTopology(state) {
-    return Model.determineSimulationPreparation(state);
+    return (
+      Model.determineNetworkDiagram(state) &&
+      Model.determineSimulationPreparation(state)
+    );
   }
 
 

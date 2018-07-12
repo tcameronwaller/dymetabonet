@@ -172,7 +172,7 @@ class ViewNotice {
       text.addEventListener("click", function (event) {
         // Element on which the event originated is event.currentTarget.
         // Call action.
-        ActionNotice.forceNetworkDiagram(self.state);
+        ActionExploration.forceNetworkDiagram(self.state);
       });
     } else {
       // Container's current content matches view's novel type.

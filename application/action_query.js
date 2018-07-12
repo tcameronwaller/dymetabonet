@@ -779,6 +779,7 @@ class ActionQuery {
     var dependentStateVariables = ActionExploration.deriveState({
       simulationDimensions: state.simulationDimensions,
       forceNetworkDiagram: explorationControls.forceNetworkDiagram,
+      simulationRestoration: true,
       subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
       subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords,
       viewsRestoration: novelViewsRestoration,

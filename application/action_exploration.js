@@ -63,6 +63,7 @@ class ActionExploration {
   * @param {Object} parameters.state Application's state.
   */
   static changeSimulationDimensions({length, width, height, state} = {}) {
+    console.log("changeSimulationDimensions");
     // Determine novel simulation's dimensions.
     var simulationDimensions = {
       length: length,
@@ -73,6 +74,7 @@ class ActionExploration {
     var dependentStateVariables = ActionExploration.deriveState({
       simulationDimensions: simulationDimensions,
       forceNetworkDiagram: state.forceNetworkDiagram,
+      simulationRestoration: true,
       subnetworkNodesRecords: state.subnetworkNodesRecords,
       subnetworkLinksRecords: state.subnetworkLinksRecords,
       viewsRestoration: state.viewsRestoration,
@@ -93,58 +95,6 @@ class ActionExploration {
     });
   }
   /**
-  * Restores information about simulation's progress.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} parameters.completion Whether simulation is complete.
-  * @param {Object} parameters.state Application's state.
-  */
-  static restoreSimulationProgress({completion, state} = {}) {
-    // Allow records for nodes and links to mutate with simulation's iterations.
-    // Confine positions within container.
-    var simulationNodesRecords = Simulation.confineSimulationPositions({
-      nodesRecords: state.simulationNodesRecords,
-      width: state.simulationDimensions.width,
-      height: state.simulationDimensions.height
-    });
-    // Restore simulation's progress.
-    var novelCount = state.simulationProgress.count + 1;
-    var novelEntries = {
-      count: novelCount,
-      completion: completion
-    };
-    var novelProgress = Object.assign(state.simulationProgress, novelEntries);
-    // Determine whether simulation is complete.
-    if (!completion) {
-      // Restore only the minimal portion of application's state and interface.
-      // Determine which views to restore.
-      var viewsRestoration = ActionInterface.changeViewsRestoration({
-        skips: ["interface", "panel", "tip", "prompt", "summary", "control"],
-        viewsRestoration: state.viewsRestoration
-      });
-    } else {
-      // Restore the entire application's state and interface.
-      // Determine which views to restore.
-      var viewsRestoration = ActionInterface.changeViewsRestoration({
-        skips: [],
-        viewsRestoration: state.viewsRestoration
-      });
-    }
-    // Compile variables' values.
-    var novelVariablesValues = {
-      simulationNodesRecords: simulationNodesRecords,
-      simulationProgress: novelProgress,
-      viewsRestoration: viewsRestoration
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-  /**
   * Forces the representation of the network's diagram.
   * @param {Object} state Application's state.
   */
@@ -155,6 +105,7 @@ class ActionExploration {
     var dependentStateVariables = ActionExploration.deriveState({
       simulationDimensions: state.simulationDimensions,
       forceNetworkDiagram: forceNetworkDiagram,
+      simulationRestoration: true,
       subnetworkNodesRecords: state.subnetworkNodesRecords,
       subnetworkLinksRecords: state.subnetworkLinksRecords,
       viewsRestoration: state.viewsRestoration,
@@ -162,7 +113,45 @@ class ActionExploration {
     });
     // Compile variables' values.
     var novelVariablesValues = {
-      simulationDimensions: simulationDimensions
+      forceNetworkDiagram: forceNetworkDiagram
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  /**
+  * Restores information about simulation's progress.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.completion Whether simulation is complete.
+  * @param {Object} parameters.state Application's state.
+  */
+  static restoreSimulationProgress({completion, state} = {}) {
+    // Restore simulation's progress.
+    var novelCount = state.simulationProgress.count + 1;
+    var novelEntries = {
+      count: novelCount,
+      completion: completion
+    };
+    var novelProgress = Object.assign(state.simulationProgress, novelEntries);
+    // Derive dependent state.
+    var dependentStateVariables = ActionExploration.deriveState({
+      simulationDimensions: state.simulationDimensions,
+      forceNetworkDiagram: state.forceNetworkDiagram,
+      simulationRestoration: state.simulationRestoration,
+      subnetworkNodesRecords: state.subnetworkNodesRecords,
+      subnetworkLinksRecords: state.subnetworkLinksRecords,
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {
+      simulationProgress: novelProgress
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -184,6 +173,7 @@ class ActionExploration {
   static initializeControls() {
     // Initialize controls.
     var simulationDimensions = Simulation.createInitialSimulationDimensions();
+    var simulationRestoration = true;
     // Create novel simulation and its controls.
     var simulation = Simulation.createEmptySimulation();
     var simulationProgress = Simulation.createInitialSimulationProgress();
@@ -194,6 +184,7 @@ class ActionExploration {
     // Compile information.
     var novelVariablesValues = {
       simulationDimensions: simulationDimensions,
+      simulationRestoration: simulationRestoration,
       simulation: simulation,
       simulationProgress: simulationProgress,
       simulationNodesRecords: simulationNodesRecords,
@@ -248,6 +239,9 @@ class ActionExploration {
   * container for simulation.
   * @param {boolean} parameters.forceNetworkDiagram Whether to represent a
   * diagram even for a large network.
+  * @param {boolean} parameters.simulationRestoration Whether to restore the
+  * simulation, creating a novel simulation along with relevant controls and
+  * records.
   * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
   * subnetwork's nodes.
   * @param {Array<Object>} parameters.subnetworkLinksRecords Information about
@@ -257,19 +251,34 @@ class ActionExploration {
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState({simulationDimensions, forceNetworkDiagram, subnetworkNodesRecords, subnetworkLinksRecords, viewsRestoration, state} = {}) {
+  static deriveState({simulationDimensions, forceNetworkDiagram, simulationRestoration, subnetworkNodesRecords, subnetworkLinksRecords, viewsRestoration, state} = {}) {
     // Derive state relevant to view.
     // Determine whether to create novel simulation.
-    // It is necessary to terminate any previous simulations when creating a
-    // novel simulation.
-    var simulationControlsRecords = ActionExploration.determineNovelSimulation({
-      forceNetworkDiagram: forceNetworkDiagram,
-      simulationDimensions: simulationDimensions,
-      nodesRecords: subnetworkNodesRecords,
-      linksRecords: subnetworkLinksRecords,
-      previousSimulation: state.simulation,
-      state: state
-    });
+    if (simulationRestoration) {
+      // It is necessary to terminate any previous simulations when creating a
+      // novel simulation.
+      var simulationControlsRecords = ActionExploration.determineNovelSimulation({
+        forceNetworkDiagram: forceNetworkDiagram,
+        simulationDimensions: simulationDimensions,
+        nodesRecords: subnetworkNodesRecords,
+        linksRecords: subnetworkLinksRecords,
+        previousSimulation: state.simulation,
+        state: state
+      });
+    } else {
+      // Allow records for nodes and links to mutate with simulation's iterations.
+      // Confine positions within container.
+      var simulationNodesRecords = Simulation.confineSimulationPositions({
+        nodesRecords: state.simulationNodesRecords,
+        width: state.simulationDimensions.width,
+        height: state.simulationDimensions.height
+      });
+      var simulationControlsRecords = {
+        simulationNodesRecords: simulationNodesRecords
+      };
+    }
+    // Restore control.
+    var novelSimulationRestoration = false;
     // Determine which views to restore.
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
       views: [
@@ -286,6 +295,7 @@ class ActionExploration {
     var dependentStateVariables = {};
     // Compile information.
     var novelVariablesValues = {
+      simulationRestoration: novelSimulationRestoration,
       viewsRestoration: novelViewsRestoration
     };
     var variablesValues = Object.assign(
