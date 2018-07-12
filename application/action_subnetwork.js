@@ -265,12 +265,14 @@ class ActionSubnetwork {
       type: true,
       viewsRestoration: viewsRestoration
     });
+    // Initialize subordinate controls relevant to dependent state.
+    var queryControls = ActionQuery.initializeControls();
     // Derive dependent state.
     var dependentStateVariables = ActionQuery.deriveState({
       networkNodesRecords: networkNodesRecords,
       networkLinksRecords: networkLinksRecords,
-      subnetworkRestoration: state.subnetworkRestoration,
-      queryCombination: state.queryCombination,
+      subnetworkRestoration: queryControls.subnetworkRestoration,
+      queryCombination: queryControls.queryCombination,
       viewsRestoration: novelViewsRestoration,
       state: state
     });
@@ -278,6 +280,7 @@ class ActionSubnetwork {
     var novelVariablesValues = {};
     var variablesValues = Object.assign(
       novelVariablesValues,
+      queryControls,
       dependentStateVariables
     );
     // Return information.

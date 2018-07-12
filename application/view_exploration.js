@@ -122,36 +122,7 @@ class ViewExploration {
         height: self.graphHeight,
         state: self.state
       });
-      if (match) {
-        // Determine whether simulation's preparation is complete to represent
-        // positions of network's elements.
-        if (Model.determineSimulationPreparation(self.state)) {
-          // Create topology view.
-          View.removeExistElement("progress", self.document);
-          View.removeExistElement("notice", self.document);
-          new ViewTopology({
-            interfaceView: self.interfaceView,
-            tipView: self.tipView,
-            promptView: self.promptView,
-            explorationView: self,
-            state: self.state,
-            documentReference: self.document,
-            windowReference: self.window
-          });
-        } else {
-          // Create notice view.
-          View.removeExistElement("notice", self.document);
-          View.removeExistElement("topology", self.document);
-          new ViewProgress({
-            interfaceView: self.interfaceView,
-            tipView: self.tipView,
-            promptView: self.promptView,
-            explorationView: self,
-            state: self.state,
-            documentReference: self.document
-          });
-        }
-      } else {
+      if (!match) {
         // Change state's variable for simulation's dimensions.
         ActionExploration.changeSimulationDimensions({
           length: self.scaleLength,

@@ -752,6 +752,7 @@ class ActionQuery {
     }
     // Initialize controls for query view.
     // TODO: only do this when appropriate... for example, maybe after query execution
+    // TODO: move this to the derive procedure upstream of this one...
     var subordinateControls = ActionQuery.initializeSubordinateControls();
     // Determine summary information about subnetwork.
     var subnetworkSummary = Network.determineSubnetworkSummary({
@@ -772,10 +773,12 @@ class ActionQuery {
       type: true,
       viewsRestoration: viewsRestoration
     });
+    // Initialize subordinate controls relevant to dependent state.
+    var explorationControls = ActionExploration.initializeSubordinateControls();
     // Derive dependent state.
     var dependentStateVariables = ActionExploration.deriveState({
       simulationDimensions: state.simulationDimensions,
-      previousSimulation: state.simulation,
+      forceNetworkDiagram: explorationControls.forceNetworkDiagram,
       subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
       subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords,
       viewsRestoration: novelViewsRestoration,
@@ -789,6 +792,7 @@ class ActionQuery {
       novelVariablesValues,
       subnetworkElements,
       subordinateControls,
+      explorationControls,
       dependentStateVariables
     );
     // Return information.

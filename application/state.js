@@ -204,9 +204,11 @@ class State {
       // Variable "simulationDimensions" stores information about dimensions for
       // the simulation.
       "simulationDimensions",
+      // Variable "forceNetworkDiagram" stores information about whether to draw
+      // a network even if it is large.
+      "forceNetworkDiagram",
       // Variable "simulationProgress" stores information about progress of an
       // iterative simulation relative to an estimate of total iterations.
-      //"simulationProgress",
       "simulationProgress",
       // Variable "simulation" stores references to iterative functions that
       // determine the positions of the subnetwork's elements in the network's
@@ -225,11 +227,6 @@ class State {
       // "networkNodesMetabolites", and "networkNodesReactions".
       "entitySelection"
     ];
-    var noticeControls = [
-      // Variable "forceNetworkDiagram" stores information about whether to draw
-      // a network even if it is large.
-      "forceNetworkDiagram",
-    ];
     self.variablesNamesControls = [].concat(
       interfaceControls,
       promptControls,
@@ -242,8 +239,7 @@ class State {
       queryControls,
       measurementControls,
       summaryControls,
-      explorationControls,
-      noticeControls
+      explorationControls
     );
 
     // TODO: Make it clear that these state variables have to do with the data itself...

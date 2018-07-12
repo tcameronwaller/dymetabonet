@@ -78,17 +78,10 @@ class Simulation {
   * @returns {Object} References to novel simulation and its controls.
   */
   static createEmptySimulation() {
-    // Initialize simulation's progress.
-    var simulationProgress = Simulation.createInitialSimulationProgress();
     // Initiate simulation.
-    var novelSimulation = {};
-    // Compile information.
-    var variablesValues = {
-      simulationProgress: simulationProgress,
-      simulation: novelSimulation
-    };
+    var simulation = {};
     // Return information.
-    return variablesValues;
+    return simulation;
   }
   /**
   * Creates a novel simulation to determine the optimal positions of nodes and

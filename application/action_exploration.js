@@ -47,13 +47,6 @@ class ActionExploration {
   // TODO: I DON'T KNOW HOW TO HANDLE THE SIMULATION FOR DRAG INTERACTIONS...
   // TODO: WILL THE D3 DRAG EVENT PROPAGATE WITH UPDATE'S TO THE STATE?
 
-  // TODO: New actions...
-  // TODO: initialize simulation
-  // TODO: initialize simulation's progress
-  // TODO: restore simulation's progress... always relative to TOTAL, not % before draw
-  // TODO: determine whether to draw the network's diagram on basis of simulation's progress
-  // TODO: restore ExplorationView (just create new to update as usual)... call this when necessary
-
   // TODO: Re-initialize the simulation whenever the subnetwork changes
   // TODO: but not with other, irrelevant changes to state
   // TODO: Application should always be working on simulation for the current subnetwork
@@ -76,28 +69,22 @@ class ActionExploration {
       width: width,
       height: height
     };
-    // Determine whether to create novel simulation.
-    var simulationControlsRecords = ActionExploration.determineNovelSimulation({
-      forceNetworkDiagram: state.forceNetworkDiagram,
+    // Derive dependent state.
+    var dependentStateVariables = ActionExploration.deriveState({
       simulationDimensions: simulationDimensions,
-      nodesRecords: state.subnetworkNodesRecords,
-      linksRecords: state.subnetworkLinksRecords,
-      previousSimulation: state.simulation,
+      forceNetworkDiagram: state.forceNetworkDiagram,
+      subnetworkNodesRecords: state.subnetworkNodesRecords,
+      subnetworkLinksRecords: state.subnetworkLinksRecords,
+      viewsRestoration: state.viewsRestoration,
       state: state
-    });
-    // Determine which views to restore.
-    var viewsRestoration = ActionInterface.changeViewsRestoration({
-      skips: ["interface", "panel", "tip", "prompt", "summary", "control"],
-      viewsRestoration: state.viewsRestoration
     });
     // Compile variables' values.
     var novelVariablesValues = {
-      simulationDimensions: simulationDimensions,
-      viewsRestoration: viewsRestoration
+      simulationDimensions: simulationDimensions
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
-      simulationControlsRecords
+      dependentStateVariables
     );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
@@ -162,12 +149,24 @@ class ActionExploration {
   * @param {Object} state Application's state.
   */
   static forceNetworkDiagram(state) {
+    // Change whether to force representation of network's diagram.
+    var forceNetworkDiagram = true;
+    // Derive dependent state.
+    var dependentStateVariables = ActionExploration.deriveState({
+      simulationDimensions: state.simulationDimensions,
+      forceNetworkDiagram: forceNetworkDiagram,
+      subnetworkNodesRecords: state.subnetworkNodesRecords,
+      subnetworkLinksRecords: state.subnetworkLinksRecords,
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
-      forceNetworkDiagram: true
+      simulationDimensions: simulationDimensions
     };
     var variablesValues = Object.assign(
-      novelVariablesValues
+      novelVariablesValues,
+      dependentStateVariables
     );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
@@ -185,10 +184,20 @@ class ActionExploration {
   static initializeControls() {
     // Initialize controls.
     var simulationDimensions = Simulation.createInitialSimulationDimensions();
+    // Create novel simulation and its controls.
+    var simulation = Simulation.createEmptySimulation();
+    var simulationProgress = Simulation.createInitialSimulationProgress();
+    var simulationNodesRecords = [];
+    var simulationLinksRecords = [];
+    // Initialize subordinate controls.
     var subordinateControls = ActionExploration.initializeSubordinateControls();
     // Compile information.
     var novelVariablesValues = {
       simulationDimensions: simulationDimensions,
+      simulation: simulation,
+      simulationProgress: simulationProgress,
+      simulationNodesRecords: simulationNodesRecords,
+      simulationLinksRecords: simulationLinksRecords
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
@@ -202,89 +211,13 @@ class ActionExploration {
   * @returns {Object} Values of application's variables for view's controls.
   */
   static initializeSubordinateControls() {
-    // TODO: Initialize controls for notice view and topology view...
-    
     var forceNetworkDiagram = false;
-    var simulationProgress = Simulation.createInitialSimulationProgress();
-    var simulation = {};
-    var simulationNodesRecords = [];
-    var simulationLinksRecords = [];
     var entitySelection = ActionExploration.createInitialEntitySelection();
     // Compile information.
     var variablesValues = {
       forceNetworkDiagram: forceNetworkDiagram,
-      simulationProgress: simulationProgress,
-      simulation: simulation,
-      simulationNodesRecords: simulationNodesRecords,
-      simulationLinksRecords: simulationLinksRecords,
       entitySelection: entitySelection
     };
-    // Return information.
-    return variablesValues;
-  }
-  /**
-  * Derives application's dependent state from controls relevant to view.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.simulationDimensions Dimensions of elements and
-  * container for simulation.
-  * @param {Object} parameters.previousSimulation Reference to simulation.
-  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
-  * subnetwork's nodes.
-  * @param {Array<Object>} parameters.subnetworkLinksRecords Information about
-  * subnetwork's links.
-  * @param {Object<boolean>} parameters.viewsRestoration Information about
-  * whether to restore each view.
-  * @param {Object} parameters.state Application's state.
-  * @returns {Object} Values of application's variables.
-  */
-  static deriveState({simulationDimensions, previousSimulation, subnetworkNodesRecords, subnetworkLinksRecords, viewsRestoration, state} = {}) {
-
-    // TODO: I'll need to lace this all together when I finally implement the exploration view...
-
-    // Derive state relevant to view.
-    // Initialize controls for exploration view.
-
-    // TODO: Temporary work-around...
-
-    var controls = ActionExploration.initializeControls();
-
-    if (false) {
-      var subordinateControls = ActionExploration.initializeSubordinateControls();
-      // Determine whether to create novel simulation.
-      var simulationControlsRecords = ActionExploration.determineNovelSimulation({
-        forceNetworkDiagram: state.forceNetworkDiagram,
-        simulationDimensions: simulationDimensions,
-        nodesRecords: subnetworkNodesRecords,
-        linksRecords: subnetworkLinksRecords,
-        previousSimulation: previousSimulation,
-        state: state
-      });
-    }
-    // Determine which views to restore.
-    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
-      views: [
-        "exploration",
-        "notice",
-        "progress",
-        "topology"
-      ],
-      type: true,
-      viewsRestoration: viewsRestoration
-    });
-    // Derive dependent state.
-    // TODO: Maybe tipView and promptView are dependent on ExplorationView?
-    var dependentStateVariables = {};
-    // Compile information.
-    var novelVariablesValues = {
-      viewsRestoration: novelViewsRestoration
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      controls,
-      //subordinateControls,
-      //simulationControlsRecords,
-      dependentStateVariables
-    );
     // Return information.
     return variablesValues;
   }
@@ -308,6 +241,64 @@ class ActionExploration {
     // Return information.
     return information;
   }
+  /**
+  * Derives application's dependent state from controls relevant to view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.simulationDimensions Dimensions of elements and
+  * container for simulation.
+  * @param {boolean} parameters.forceNetworkDiagram Whether to represent a
+  * diagram even for a large network.
+  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
+  * subnetwork's nodes.
+  * @param {Array<Object>} parameters.subnetworkLinksRecords Information about
+  * subnetwork's links.
+  * @param {Object<boolean>} parameters.viewsRestoration Information about
+  * whether to restore each view.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Values of application's variables.
+  */
+  static deriveState({simulationDimensions, forceNetworkDiagram, subnetworkNodesRecords, subnetworkLinksRecords, viewsRestoration, state} = {}) {
+    // Derive state relevant to view.
+    // Determine whether to create novel simulation.
+    // It is necessary to terminate any previous simulations when creating a
+    // novel simulation.
+    var simulationControlsRecords = ActionExploration.determineNovelSimulation({
+      forceNetworkDiagram: forceNetworkDiagram,
+      simulationDimensions: simulationDimensions,
+      nodesRecords: subnetworkNodesRecords,
+      linksRecords: subnetworkLinksRecords,
+      previousSimulation: state.simulation,
+      state: state
+    });
+    // Determine which views to restore.
+    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [
+        "exploration",
+        "notice",
+        "progress",
+        "topology"
+      ],
+      type: true,
+      viewsRestoration: viewsRestoration
+    });
+    // Derive dependent state.
+    // TODO: Maybe tipView and promptView are dependent on ExplorationView?
+    var dependentStateVariables = {};
+    // Compile information.
+    var novelVariablesValues = {
+      viewsRestoration: novelViewsRestoration
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      simulationControlsRecords,
+      dependentStateVariables
+    );
+    // Return information.
+    return variablesValues;
+  }
+
+
+
   /**
   * Determines whether to create a novel simulation.
   * @param {Object} parameters Destructured object of parameters.
@@ -374,15 +365,17 @@ class ActionExploration {
     var simulationLinksRecords = General
     .copyDeepArrayElements(linksRecords, true);
     // Create novel simulation and its controls.
-    var simulationControls = Simulation.createEmptySimulation();
+    var simulation = Simulation.createEmptySimulation();
+    var simulationProgress = Simulation.createInitialSimulationProgress();
     // Compile information.
     var novelVariablesValues = {
       simulationNodesRecords: simulationNodesRecords,
-      simulationLinksRecords: simulationLinksRecords
+      simulationLinksRecords: simulationLinksRecords,
+      simulation: simulation,
+      simulationProgress: simulationProgress
     };
     var variablesValues = Object.assign(
-      novelVariablesValues,
-      simulationControls
+      novelVariablesValues
     );
     // Return information.
     return variablesValues;
@@ -464,6 +457,8 @@ class ActionExploration {
       });
     });
   }
+
+
 
   // TODO: need updates...
 

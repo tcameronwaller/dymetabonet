@@ -252,15 +252,15 @@ class ActionFilter {
       type: true,
       viewsRestoration: viewsRestoration
     });
-    // Initialize relevant controls to default values.
-    var context = ActionContext.initializeControls();
+    // Initialize subordinate controls relevant to dependent state.
+    var contextControls = ActionContext.initializeControls();
     // Derive dependent state.
     var dependentStateVariables = ActionContext.deriveState({
-      compartmentalization: context.compartmentalization,
-      simplificationPriority: context.simplificationPriority,
-      defaultSimplifications: context.defaultSimplifications,
-      candidatesSearches: context.candidatesSearches,
-      candidatesSorts: context.candidatesSorts,
+      compartmentalization: contextControls.compartmentalization,
+      simplificationPriority: contextControls.simplificationPriority,
+      defaultSimplifications: contextControls.defaultSimplifications,
+      candidatesSearches: contextControls.candidatesSearches,
+      candidatesSorts: contextControls.candidatesSorts,
       defaultSimplificationsMetabolites: state
       .defaultSimplificationsMetabolites,
       reactionsSimplifications: {},
@@ -280,7 +280,7 @@ class ActionFilter {
       totalEntitiesSets,
       currentEntitiesSets,
       setsCardinalitiesSummaries,
-      context,
+      contextControls,
       dependentStateVariables
     );
     // Return information.

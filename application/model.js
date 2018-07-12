@@ -404,6 +404,48 @@ class Model {
       self.state.viewsRestoration.notice = false;
     }
   }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreProgressView(self) {
+    // Progress view.
+    if (self.state.viewsRestoration.progress) {
+      // Restore views.
+      if (Model.determineExplorationProgress(self.state)) {
+        self.state.views.progress = new ViewProgress({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("progress", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.progress = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreTopologyView(self) {
+    // Topology view.
+    if (self.state.viewsRestoration.topology) {
+      // Restore views.
+      if (Model.determineExplorationTopology(self.state)) {
+        self.state.views.topology = new ViewTopology({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("topology", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.topology = false;
+    }
+  }
+
+
 
 
   // TODO: Mange exploration, progress, and topology views here...
@@ -583,6 +625,24 @@ class Model {
   static determineExplorationNotice(state) {
     return !Model.determineNetworkDiagram(state);
   }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineExplorationProgress(state) {
+    return !Model.determineSimulationPreparation(state);
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineExplorationTopology(state) {
+    return Model.determineSimulationPreparation(state);
+  }
+
+
 
 
 
