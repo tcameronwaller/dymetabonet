@@ -474,7 +474,7 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 
 #topology .link {
   stroke: rgba(255, 255, 0, 1);
-  stroke-width: 0.7;
+  stroke-width: 0.1;
 }
 
 #topology .link.reactant {
