@@ -11,4 +11,5 @@ differences.
 DyMetaNet illustrates these differences by dynamically defining and visualizing
 networks from human metabolism.
 
-Check out the latest demo version at www.tcameronwaller.github.io/profondeur/
+Check out the latest demo version at
+https://tcameronwaller.github.io/profondeur/
