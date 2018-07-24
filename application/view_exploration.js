@@ -200,7 +200,7 @@ class ViewExploration {
     var fontScale = d3
     .scaleThreshold()
     .domain(domainRatios)
-    .range([1, 2, 3, 4, 5, 7, 10, 11, 13, 15]);
+    .range([0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]);
     // Compute ratio for scales' domain.
     var ratio = (self.graphWidth / self.state.subnetworkNodesRecords.length);
     // Compute dimensions from scale.

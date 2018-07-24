@@ -360,7 +360,7 @@ class ViewTopology {
     self.linksMarks.attr("marker-mid", "url(#link-marker)");
     // Determine dimensions for representations of network's elements.
     // Set dimensions of links.
-    //self.linksMarks.attr("stroke-width", (self.linkThickness));
+    self.linksMarks.attr("stroke-width", (self.linkThickness));
   }
   /**
   * Creates and activates nodes.
