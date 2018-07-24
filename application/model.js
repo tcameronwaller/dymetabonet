@@ -395,7 +395,6 @@ class Model {
     if (self.state.viewsRestoration.notice) {
       // Restore views.
       if (Model.determineExplorationNotice(self.state)) {
-        console.log("notice");
         self.state.views.notice = new ViewNotice({
           documentReference: self.document,
           state: self.state
@@ -416,7 +415,6 @@ class Model {
     if (self.state.viewsRestoration.progress) {
       // Restore views.
       if (Model.determineExplorationProgress(self.state)) {
-        console.log("progress");
         self.state.views.progress = new ViewProgress({
           documentReference: self.document,
           state: self.state
@@ -437,7 +435,6 @@ class Model {
     if (self.state.viewsRestoration.topology) {
       // Restore views.
       if (Model.determineExplorationTopology(self.state)) {
-        console.log("topology");
         self.state.views.topology = new ViewTopology({
           documentReference: self.document,
           windowReference: self.window,

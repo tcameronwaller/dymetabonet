@@ -50,7 +50,7 @@ class ActionInterface {
   static initializeControls() {
     // Initialize controls.
     var views = ActionInterface.createInitialViews();
-    var viewsRestoration = ActionInterface.createInitialViewsRestoration();
+    var viewsRestoration = ActionInterface.createInitialViewsRestorationTrue();
     // Compile information.
     var variablesValues = {
       views: views,
@@ -91,7 +91,7 @@ class ActionInterface {
   * Creates initial control of whether to restore views.
   * @returns {Object} Information about restoration of views.
   */
-  static createInitialViewsRestoration() {
+  static createInitialViewsRestorationTrue() {
     // Compile information.
     var information = {
       interface: true,
@@ -111,6 +111,34 @@ class ActionInterface {
       notice: true,
       progress: true,
       topology: true
+    };
+    // Return information.
+    return information;
+  }
+  /**
+  * Creates initial control of whether to restore views.
+  * @returns {Object} Information about restoration of views.
+  */
+  static createInitialViewsRestorationFalse() {
+    // Compile information.
+    var information = {
+      interface: false,
+      tip: false,
+      prompt: false,
+      panel: false,
+      control: false,
+      state: false,
+      network: false,
+      filter: false,
+      context: false,
+      subnetwork: false,
+      query: false,
+      measurement: false,
+      summary: false,
+      exploration: false,
+      notice: false,
+      progress: false,
+      topology: false
     };
     // Return information.
     return information;

@@ -186,6 +186,9 @@ class ActionFilter {
     // Return information.
     return variablesValues;
   }
+
+  // TODO: deriveLocalState
+
   /**
   * Derives application's dependent state from controls relevant to view.
   * @param {Object} parameters Destructured object of parameters.
@@ -199,17 +202,10 @@ class ActionFilter {
   * summaries.
   * @param {Object<Object<string>>} parameters.setsSorts Specifications to sort
   * sets' summaries.
-  * @param {Object} parameters.metabolites Information about metabolites.
-  * @param {Object} parameters.reactions Information about reactions.
-  * @param {Object} parameters.compartments Information about compartments.
-  * @param {Object} parameters.processes Information about processes.
-  * @param {Object<boolean>} parameters.viewsRestoration Information about
-  * whether to restore each view.
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState({setsFilters, setsFilter, setsEntities, setsSearches, setsSorts, metabolites, reactions, compartments, processes, viewsRestoration, state} = {}) {
-    // Derive state relevant to view.
+  static deriveSubordinateState({setsFilters, setsFilter, setsEntities, setsSearches, setsSorts, metabolites, reactions, compartments, processes, state} = {}) {
     // Determine total entities' attribution to sets.
     var totalEntitiesSets = Attribution
     .determineTotalEntitiesSets(reactions);
@@ -235,6 +231,64 @@ class ActionFilter {
       processes: processes
     });
     // Determine which views to restore.
+    var viewsRestoration = ActionInterface.createInitialViewsRestorationFalse();
+    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [
+        "filter",
+      ],
+      type: true,
+      viewsRestoration: viewsRestoration
+    });
+    // Compile information.
+    var novelVariablesValues = {
+      viewsRestoration: novelViewsRestoration
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      totalEntitiesSets,
+      currentEntitiesSets,
+      setsCardinalitiesSummaries
+    );
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Derives application's dependent state from controls relevant to view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<Array<string>>} parameters.setsFilters Sets' filters by
+  * attributes' values.
+  * @param {boolean} parameters.setsFilter Whether to filter sets' entities for
+  * summary.
+  * @param {string} parameters.setsEntities Type of entities, metabolites or
+  * reactions for sets' cardinalities.
+  * @param {Object<string>} parameters.setsSearches Searches to filter sets'
+  * summaries.
+  * @param {Object<Object<string>>} parameters.setsSorts Specifications to sort
+  * sets' summaries.
+  * @param {Object} parameters.metabolites Information about metabolites.
+  * @param {Object} parameters.reactions Information about reactions.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
+  * @param {Object<boolean>} parameters.viewsRestoration Information about
+  * whether to restore each view.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Values of application's variables.
+  */
+  static deriveState({setsFilters, setsFilter, setsEntities, setsSearches, setsSorts, metabolites, reactions, compartments, processes, viewsRestoration, state} = {}) {
+    // Derive state relevant to view.
+    var proximalVariables = ActionFilter.deriveSubordinateState({
+      setsFilters: setsFilters,
+      setsFilter: setsFilter,
+      setsEntities: setsEntities,
+      setsSearches: setsSearches,
+      setsSorts: setsSorts,
+      metabolites: metabolites,
+      reactions: reactions,
+      compartments: compartments,
+      processes: processes,
+      state: state
+    });
+    // Determine which views to restore.
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
       views: [
         "network",
@@ -255,7 +309,7 @@ class ActionFilter {
     // Initialize subordinate controls relevant to dependent state.
     var contextControls = ActionContext.initializeControls();
     // Derive dependent state.
-    var dependentStateVariables = ActionContext.deriveState({
+    var distalVariables = ActionContext.deriveState({
       compartmentalization: contextControls.compartmentalization,
       simplificationPriority: contextControls.simplificationPriority,
       defaultSimplifications: contextControls.defaultSimplifications,
@@ -265,7 +319,7 @@ class ActionFilter {
       .defaultSimplificationsMetabolites,
       reactionsSimplifications: {},
       metabolitesSimplifications: {},
-      filterSetsReactions: currentEntitiesSets.filterSetsReactions,
+      filterSetsReactions: proximalVariables.filterSetsReactions,
       reactions: reactions,
       metabolites: metabolites,
       compartments: compartments,
@@ -277,11 +331,9 @@ class ActionFilter {
     var novelVariablesValues = {};
     var variablesValues = Object.assign(
       novelVariablesValues,
-      totalEntitiesSets,
-      currentEntitiesSets,
-      setsCardinalitiesSummaries,
+      proximalVariables,
       contextControls,
-      dependentStateVariables
+      distalVariables
     );
     // Return information.
     return variablesValues;
