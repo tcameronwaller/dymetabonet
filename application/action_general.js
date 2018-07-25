@@ -278,7 +278,7 @@ class ActionGeneral {
     // Prepare summaries.
     if (type === "sets") {
       // Derive dependent state.
-      var dependentStateVariables = ActionFilter.deriveState({
+      var dependentStateVariables = ActionFilter.deriveSubordinateState({
         setsFilters: state.setsFilters,
         setsFilter: state.setsFilter,
         setsEntities: state.setsEntities,
@@ -293,7 +293,7 @@ class ActionGeneral {
       });
     } else if (type === "candidates") {
       // Derive dependent state.
-      var dependentStateVariables = ActionContext.deriveState({
+      var dependentStateVariables = ActionContext.deriveSubordinateState({
         compartmentalization: state.compartmentalization,
         simplificationPriority: state.simplificationPriority,
         defaultSimplifications: state.defaultSimplifications,
@@ -355,7 +355,7 @@ class ActionGeneral {
     // Sort summaries.
     if (type === "sets") {
       // Derive dependent state.
-      var dependentStateVariables = ActionFilter.deriveState({
+      var dependentStateVariables = ActionFilter.deriveSubordinateState({
         setsFilters: state.setsFilters,
         setsFilter: state.setsFilter,
         setsEntities: state.setsEntities,
@@ -370,7 +370,7 @@ class ActionGeneral {
       });
     } else if (type === "candidates") {
       // Derive dependent state.
-      var dependentStateVariables = ActionContext.deriveState({
+      var dependentStateVariables = ActionContext.deriveSubordinateState({
         compartmentalization: state.compartmentalization,
         simplificationPriority: state.simplificationPriority,
         defaultSimplifications: state.defaultSimplifications,

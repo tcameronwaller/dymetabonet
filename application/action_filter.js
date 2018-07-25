@@ -95,7 +95,7 @@ class ActionFilter {
       var setsFilter = true;
     }
     // Derive dependent state.
-    var dependentStateVariables = ActionFilter.deriveState({
+    var dependentStateVariables = ActionFilter.deriveSubordinateState({
       setsFilters: state.setsFilters,
       setsFilter: setsFilter,
       setsEntities: state.setsEntities,
@@ -134,7 +134,7 @@ class ActionFilter {
       var setsEntities = "metabolites";
     }
     // Derive dependent state.
-    var dependentStateVariables = ActionFilter.deriveState({
+    var dependentStateVariables = ActionFilter.deriveSubordinateState({
       setsFilters: state.setsFilters,
       setsFilter: state.setsFilter,
       setsEntities: setsEntities,
@@ -186,9 +186,6 @@ class ActionFilter {
     // Return information.
     return variablesValues;
   }
-
-  // TODO: deriveLocalState
-
   /**
   * Derives application's dependent state from controls relevant to view.
   * @param {Object} parameters Destructured object of parameters.
@@ -202,10 +199,16 @@ class ActionFilter {
   * summaries.
   * @param {Object<Object<string>>} parameters.setsSorts Specifications to sort
   * sets' summaries.
+  * @param {Object} parameters.metabolites Information about metabolites.
+  * @param {Object} parameters.reactions Information about reactions.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
+  * @param {Object<boolean>} parameters.viewsRestoration Information about
+  * whether to restore each view.
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveSubordinateState({setsFilters, setsFilter, setsEntities, setsSearches, setsSorts, metabolites, reactions, compartments, processes, state} = {}) {
+  static deriveSubordinateState({setsFilters, setsFilter, setsEntities, setsSearches, setsSorts, metabolites, reactions, compartments, processes, viewsRestoration, state} = {}) {
     // Determine total entities' attribution to sets.
     var totalEntitiesSets = Attribution
     .determineTotalEntitiesSets(reactions);
@@ -231,7 +234,6 @@ class ActionFilter {
       processes: processes
     });
     // Determine which views to restore.
-    var viewsRestoration = ActionInterface.createInitialViewsRestorationFalse();
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
       views: [
         "filter",
@@ -286,6 +288,7 @@ class ActionFilter {
       reactions: reactions,
       compartments: compartments,
       processes: processes,
+      viewsRestoration: viewsRestoration,
       state: state
     });
     // Determine which views to restore.

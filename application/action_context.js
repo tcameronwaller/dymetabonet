@@ -202,6 +202,9 @@ class ActionContext {
 
   // Indirect actions.
 
+  // TODO: I might want to support default simplifications for both metabolites and reactions
+  // TODO: as the procedure in utility_candidacy is written, it only considers default metabolite simplifications...
+
   /**
   * Initializes values of application's variables for controls relevant to view.
   * @returns {Object} Values of application's variables for view's controls.
@@ -224,7 +227,148 @@ class ActionContext {
     // Return information.
     return variablesValues;
   }
-
+  /**
+  * Derives application's dependent state from controls relevant to view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
+  * @param {string} parameters.simplificationPriority Whether to prioritize
+  * derivation of default or custom simplifications.
+  * @param {boolean} parameters.defaultSimplifications Whether to include
+  * simplifications for default entities.
+  * @param {Object<string>} parameters.candidatesSearches Searches to filter
+  * candidates' summaries.
+  * @param {Object<Object<string>>} parameters.candidatesSorts Specifications to
+  * sort candidates' summaries.
+  * @param {Array<string>} parameters.defaultSimplificationsMetabolites
+  * Identifiers of metabolites for which to create default simplifications.
+  * @param {Object<Object>} parameters.reactionsSimplifications Information
+  * about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
+  * @param {Object<Object>} parameters.filterSetsReactions Information about
+  * reactions' metabolites and sets that pass filtration by filter method.
+  * @param {Object} parameters.metabolites Information about metabolites.
+  * @param {Object} parameters.reactions Information about reactions.
+  * @param {Object} parameters.compartments Information about compartments.
+  * @param {Object} parameters.processes Information about processes.
+  * @param {Object<boolean>} parameters.viewsRestoration Information about
+  * whether to restore each view.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Values of application's variables.
+  */
+  static deriveSubordinateState({compartmentalization, simplificationPriority, defaultSimplifications, candidatesSearches, candidatesSorts, defaultSimplificationsMetabolites, reactionsSimplifications, metabolitesSimplifications, filterSetsReactions, metabolites, reactions, compartments, processes, viewsRestoration, state} = {}) {
+    // Determine candidate entities and prepare their summaries.
+    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
+      reactionsSets: filterSetsReactions,
+      reactions: reactions,
+      metabolites: metabolites,
+      compartmentalization: compartmentalization,
+      candidatesSearches: candidatesSearches,
+      candidatesSorts: candidatesSorts,
+      compartments: compartments
+    });
+    // Determine which views to restore.
+    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [
+        "context",
+      ],
+      type: true,
+      viewsRestoration: viewsRestoration
+    });
+    // Compile information.
+    var novelVariablesValues = {
+      viewsRestoration: novelViewsRestoration
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      candidatesSummaries
+    );
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Derives simplifications for metabolites and reactions according to context.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.compartmentalization Whether
+  * compartmentalization is relevant.
+  * @param {string} parameters.simplificationPriority Whether to prioritize
+  * derivation of default or custom simplifications.
+  * @param {boolean} parameters.defaultSimplifications Whether to include
+  * simplifications for default entities.
+  * @param {Array<string>} parameters.defaultSimplificationsMetabolites
+  * Identifiers of metabolites for which to create default simplifications.
+  * @param {Object<Object>} parameters.reactionsSimplifications Information
+  * about simplification of reactions.
+  * @param {Object<Object>} parameters.metabolitesSimplifications Information
+  * about simplification of metabolites.
+  * @param {Object<Object>} parameters.candidatesReactions Information about
+  * candidate reactions.
+  * @param {Object<Object>} parameters.candidatesMetabolites Information about
+  * candidate metabolites.
+  * @param {Object<Object>} parameters.filterSetsReactions Information about
+  * reactions' metabolites and sets that pass filtration by filter method.
+  * @param {Object} parameters.metabolites Information about metabolites.
+  * @param {Object} parameters.reactions Information about reactions.
+  * @returns {Object} Values of application's variables.
+  */
+  static deriveSimplifications({compartmentalization, simplificationPriority, defaultSimplifications, defaultSimplificationsMetabolites, reactionsSimplifications, metabolitesSimplifications, candidatesReactions, candidatesMetabolites, filterSetsReactions, metabolites, reactions} = {}) {
+    // Determine simplifications of candidate entities.
+    if (simplificationPriority === "default") {
+      var novelDefaultSimplifications = defaultSimplifications;
+      if (defaultSimplifications) {
+        // Create default simplifications.
+        // Discard any previous simplifications.
+        var simplifications = Candidacy.createIncludeDefaultSimplifications({
+          defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
+          candidatesReactions: candidatesReactions,
+          candidatesMetabolites: candidatesMetabolites,
+          reactionsSets: filterSetsReactions,
+          reactions: reactions,
+          compartmentalization: compartmentalization,
+          reactionsSimplifications: {},
+          metabolitesSimplifications: {}
+        });
+      } else {
+        // Remove default simplifications.
+        // Discard any previous simplifications.
+        var simplifications = Candidacy.removeDefaultSimplifications({
+          defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
+          candidatesReactions: candidatesReactions,
+          candidatesMetabolites: candidatesMetabolites,
+          reactionsSets: filterSetsReactions,
+          reactions: reactions,
+          compartmentalization: compartmentalization,
+          reactionsSimplifications: {},
+          metabolitesSimplifications: {}
+        });
+      }
+    } else if (simplificationPriority === "custom") {
+      // Determine whether simplifications match defaults.
+      var novelDefaultSimplifications = Candidacy
+      .determineDefaultSimplifications({
+        defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
+        candidatesMetabolites: candidatesMetabolites,
+        metabolitesSimplifications: metabolitesSimplifications
+      });
+      // Compile simplifications.
+      var simplifications = {
+        metabolitesSimplifications: metabolitesSimplifications,
+        reactionsSimplifications: reactionsSimplifications
+      };
+    }
+    // Compile information.
+    var novelVariablesValues = {
+      defaultSimplifications: novelDefaultSimplifications,
+      metabolitesSimplifications: simplifications.metabolitesSimplifications,
+      reactionsSimplifications: simplifications.reactionsSimplifications
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+    );
+    // Return information.
+    return variablesValues;
+  }
   /**
   * Derives application's dependent state from controls relevant to view.
   * @param {Object} parameters Destructured object of parameters.
@@ -257,65 +401,43 @@ class ActionContext {
   */
   static deriveState({compartmentalization, simplificationPriority, defaultSimplifications, candidatesSearches, candidatesSorts, defaultSimplificationsMetabolites, reactionsSimplifications, metabolitesSimplifications, filterSetsReactions, metabolites, reactions, compartments, processes, viewsRestoration, state} = {}) {
     // Derive state relevant to view.
-    // Determine candidate entities and prepare their summaries.
-    var candidatesSummaries = Candidacy.collectCandidatesPrepareSummaries({
-      reactionsSets: filterSetsReactions,
-      reactions: reactions,
-      metabolites: metabolites,
+    var proximalVariables = ActionContext.deriveSubordinateState({
       compartmentalization: compartmentalization,
+      simplificationPriority: simplificationPriority,
+      defaultSimplifications: defaultSimplifications,
       candidatesSearches: candidatesSearches,
       candidatesSorts: candidatesSorts,
-      compartments: compartments
+      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
+      reactionsSimplifications: reactionsSimplifications,
+      metabolitesSimplifications: metabolitesSimplifications,
+      filterSetsReactions: filterSetsReactions,
+      reactions: reactions,
+      metabolites: metabolites,
+      compartments: compartments,
+      processes: processes,
+      viewsRestoration: viewsRestoration,
+      state: state
     });
     // Determine simplifications of candidate entities.
-    if (simplificationPriority === "default") {
-      var novelDefaultSimplifications = defaultSimplifications;
-      if (defaultSimplifications) {
-        // Create default simplifications.
-        // Discard any previous simplifications.
-        var simplifications = Candidacy.createIncludeDefaultSimplifications({
-          defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
-          candidatesReactions: candidatesSummaries.candidatesReactions,
-          candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-          reactionsSets: filterSetsReactions,
-          reactions: reactions,
-          compartmentalization: compartmentalization,
-          reactionsSimplifications: {},
-          metabolitesSimplifications: {}
-        });
-      } else {
-        // Remove default simplifications.
-        // Discard any previous simplifications.
-        var simplifications = Candidacy.removeDefaultSimplifications({
-          defaultSimplificationsMetabolites: state
-          .defaultSimplificationsMetabolites,
-          candidatesReactions: state.candidatesReactions,
-          candidatesMetabolites: state.candidatesMetabolites,
-          reactionsSets: state.filterSetsReactions,
-          reactions: state.reactions,
-          compartmentalization: state.compartmentalization,
-          reactionsSimplifications: {},
-          metabolitesSimplifications: {}
-        });
-      }
-    } else if (simplificationPriority === "custom") {
-      // Determine whether simplifications match defaults.
-      var novelDefaultSimplifications = Candidacy
-      .determineDefaultSimplifications({
-        defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
-        candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
-        metabolitesSimplifications: metabolitesSimplifications
-      });
-      // Compile simplifications.
-      var simplifications = {
-        metabolitesSimplifications: metabolitesSimplifications,
-        reactionsSimplifications: reactionsSimplifications
-      };
-    }
+    var simplifications = ActionContext.deriveSimplifications({
+      compartmentalization: compartmentalization,
+      simplificationPriority: simplificationPriority,
+      defaultSimplifications: defaultSimplifications,
+      candidatesSearches: candidatesSearches,
+      candidatesSorts: candidatesSorts,
+      defaultSimplificationsMetabolites: defaultSimplificationsMetabolites,
+      reactionsSimplifications: reactionsSimplifications,
+      metabolitesSimplifications: metabolitesSimplifications,
+      candidatesReactions: proximalVariables.candidatesReactions,
+      candidatesMetabolites: proximalVariables.candidatesMetabolites,
+      filterSetsReactions: filterSetsReactions,
+      reactions: reactions,
+      metabolites: metabolites,
+    });
     // Create network's elements.
     var networkElements = Network.createNetworkElements({
-      candidatesReactions: candidatesSummaries.candidatesReactions,
-      candidatesMetabolites: candidatesSummaries.candidatesMetabolites,
+      candidatesReactions: proximalVariables.candidatesReactions,
+      candidatesMetabolites: proximalVariables.candidatesMetabolites,
       reactionsSimplifications: simplifications.reactionsSimplifications,
       metabolitesSimplifications: simplifications.metabolitesSimplifications,
       reactions: reactions,
@@ -346,7 +468,7 @@ class ActionContext {
       viewsRestoration: viewsRestoration
     });
     // Derive dependent state.
-    var dependentStateVariables = ActionSubnetwork.deriveState({
+    var distalVariables = ActionSubnetwork.deriveState({
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords,
       viewsRestoration: novelViewsRestoration,
@@ -354,15 +476,14 @@ class ActionContext {
     });
     // Compile information.
     var novelVariablesValues = {
-      defaultSimplifications: novelDefaultSimplifications,
       networkSummary: networkSummary
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
-      candidatesSummaries,
+      proximalVariables,
       simplifications,
       networkElements,
-      dependentStateVariables
+      distalVariables
     );
     // Return information.
     return variablesValues;
