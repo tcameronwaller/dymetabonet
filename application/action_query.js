@@ -707,8 +707,8 @@ class ActionQuery {
   * Derives subnetwork's elements.
   * @param {Object} parameters Destructured object of parameters.
   * @param {boolean} query Whether to derive subnetwork's elements by query.
-  * @param {string} queryCombination Method of combination, inclusion or
-  * exclusion.
+  * @param {string} queryCombination Method of combination, "inclusion" or
+  * "exclusion".
   * @param {Object<string>} parameters.queryRogueFocus Information about a node.
   * @param {Object<string>} parameters.queryProximityFocus Information about a
   * node.
@@ -736,19 +736,39 @@ class ActionQuery {
   * @returns {Object} Values of application's variables.
   */
   static deriveSubnetwork({query, queryCombination, queryType, queryRogueFocus, queryProximityFocus, queryProximityDirection, queryProximityDepth, queryPathSource, queryPathTarget, queryPathDirection, queryPathCount, queryConnectionTarget, queryConnectionTargets, queryConnectionCount, networkNodesRecords, networkLinksRecords} = {}) {
-
-      // TODO: procedure needs a variable to determine whether or not to execute query of type "queryType"...
-      // TODO: otherwise procedure should initialize the subnetwork according to "queryCombination"
-      // TODO: That variable is "query", and it's true/false ... for now at least
-
+    // Determine whether to derive subnetwork's elements by a query.
       if (!query) {
-        // TODO: initialize the subnetwork according to "queryCombination"
+        // Derive subnetwork's elements by initial combinations.
+        // Consider combination strategy.
+        if (queryCombination === "inclusion") {
+          var subnetworkElements = {
+            subnetworkNodesRecords: [],
+            subnetworkLinksRecords: []
+          };
+        } else if (queryCombination === "exclusion") {
+          var subnetworkElements = Network.copyNetworkElementsRecords({
+            networkNodesRecords: networkNodesRecords,
+            networkLinksRecords: networkLinksRecords
+          });
+        }
       } else {
-        // TODO: execute the query of type "queryType"
+        // Derive subnetwork's elements by execution of query.
+        // Preserve any current elements in subnetwork.
+        // Execute query and combine elements to subnetwork.
+
+        // TODO: call another procedure method to organize calling matching queries.
+
       }
-
+      // Compile information.
+      var novelVariablesValues = {
+      };
+      var variablesValues = Object.assign(
+        novelVariablesValues,
+        subnetworkElements
+      );
+      // Return information.
+      return variablesValues;
   }
-
   /**
   * Derives application's dependent state from controls relevant to view.
   * @param {Object} parameters Destructured object of parameters.
@@ -764,29 +784,29 @@ class ActionQuery {
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState({networkNodesRecords, networkLinksRecords, subnetworkRestoration, queryCombination, viewsRestoration, state} = {}) {
+  static deriveState({query, queryCombination, networkNodesRecords, networkLinksRecords, viewsRestoration, state} = {}) {
     // Derive state relevant to view.
     // Restore subnetwork's elements.
-    if (subnetworkRestoration) {
-      // Restore subnetwork to initial elements.
-      // Consider combination strategy.
-      if (queryCombination === "union") {
-        var subnetworkElements = {
-          subnetworkNodesRecords: [],
-          subnetworkLinksRecords: []
-        };
-      } else if (queryCombination === "difference") {
-        var subnetworkElements = Network.copyNetworkElementsRecords({
-          networkNodesRecords: networkNodesRecords,
-          networkLinksRecords: networkLinksRecords
-        });
-      }
-    } else {
-      // Preserve any current elements in subnetwork.
-      // Execute query and combine elements to subnetwork.
+    var subnetworkElements = ActionQuery.deriveSubnetwork({
+      query: query,
+      queryCombination: queryCombination,
+      queryType: state.queryType,
+      queryRogueFocus: state.queryRogueFocus,
+      queryProximityFocus: state.queryProximityFocus,
+      queryProximityDirection: state.queryProximityDirection,
+      queryProximityDepth: state.queryProximityDepth,
+      queryPathSource: state.queryPathSource,
+      queryPathTarget: state.queryPathTarget,
+      queryPathDirection: state.queryPathDirection,
+      queryPathCount: state.queryPathCount,
+      queryConnectionTarget: state.queryConnectionTarget,
+      queryConnectionTargets: state.queryConnectionTargets,
+      queryConnectionCount: state.queryConnectionCount,
+      networkNodesRecords: networkNodesRecords,
+      networkLinksRecords: networkLinksRecords
+    });
 
-      // TODO: Call a separate procedure to manage...
-    }
+
     // Initialize controls for query view.
     // TODO: only do this when appropriate... for example, maybe after query execution
     // TODO: move this to the derive procedure upstream of this one...

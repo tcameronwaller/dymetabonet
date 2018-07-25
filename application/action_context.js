@@ -467,8 +467,14 @@ class ActionContext {
       type: true,
       viewsRestoration: viewsRestoration
     });
+
+    // TODO: initialize query view's controls...
+
+
     // Derive dependent state.
     var distalVariables = ActionSubnetwork.deriveState({
+      query: false,
+      queryCombination: state.queryCombination, // TODO: replace with the default value for query view...
       networkNodesRecords: networkElements.networkNodesRecords,
       networkLinksRecords: networkElements.networkLinksRecords,
       viewsRestoration: novelViewsRestoration,
