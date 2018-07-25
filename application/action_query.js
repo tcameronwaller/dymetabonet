@@ -39,11 +39,6 @@ United States of America
 */
 class ActionQuery {
 
-  // TODO: ActionQuery is a bit special...
-  // TODO: Only actions that execute queries really need to re-derive dependent state variables...
-  // TODO: ... well, that isn't actually correct. As written, changeCombination might actually need to back up to call ActionSubnetwork.deriveState().
-  // TODO: It might be better to follow the pattern for all other view's deriveState procedures.
-
 // 1. application initiation...
 // ... initial controls, create subnetwork's initial elements accordingly
 // ... derive downstream dependent state (primarily exploration view)
@@ -702,15 +697,57 @@ class ActionQuery {
     return variablesValues;
   }
 
-
-  // subnetworkRestoration = true/false
-
   // TODO: deriveState needs new state variable for whether to initialize the subnetwork's elements
   // TODO: deriveState needs to restore the subnetwork's elements.
   // TODO: ... 1. whether to initialize or preserve subnetwork's elements
   // TODO: ... 2. execute appropriate query (if ready) and combine to subnetwork as appropriate
   // TODO: deriveState needs to pass subnetwork information to downstream process, in particular exploration view
 
+  /**
+  * Derives subnetwork's elements.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} query Whether to derive subnetwork's elements by query.
+  * @param {string} queryCombination Method of combination, inclusion or
+  * exclusion.
+  * @param {Object<string>} parameters.queryRogueFocus Information about a node.
+  * @param {Object<string>} parameters.queryProximityFocus Information about a
+  * node.
+  * @param {string} queryProximityDirection Direction in which to traverse
+  * links, "successors" for source to target, "predecessors" for target to
+  * source, or "neighbors" for either.
+  * @param {number} parameters.queryProximityDepth Depth in links to which to
+  * traverse.
+  * @param {Object<string>} parameters.queryPathSource Information about a node.
+  * @param {Object<string>} parameters.queryPathTarget Information about a node.
+  * @param {string} queryPathDirection Direction in which to traverse links,
+  * "forward" for source to target, "reverse" for target to source, or "both"
+  * for either.
+  * @param {number} parameters.queryPathCount Count of paths to collect.
+  * @param {Object<string>} parameters.queryConnectionTarget Information about a
+  * node.
+  * @param {Array<Object<string>>} parameters.queryConnectionTargets Information
+  * about nodes.
+  * @param {number} parameters.queryConnectionCount Count of paths to collect
+  * between each pair of targets.
+  * @param {Array<Object>} parameters.networkNodesRecords Information about
+  * network's nodes.
+  * @param {Array<Object>} parameters.networkLinksRecords Information about
+  * network's links.
+  * @returns {Object} Values of application's variables.
+  */
+  static deriveSubnetwork({query, queryCombination, queryType, queryRogueFocus, queryProximityFocus, queryProximityDirection, queryProximityDepth, queryPathSource, queryPathTarget, queryPathDirection, queryPathCount, queryConnectionTarget, queryConnectionTargets, queryConnectionCount, networkNodesRecords, networkLinksRecords} = {}) {
+
+      // TODO: procedure needs a variable to determine whether or not to execute query of type "queryType"...
+      // TODO: otherwise procedure should initialize the subnetwork according to "queryCombination"
+      // TODO: That variable is "query", and it's true/false ... for now at least
+
+      if (!query) {
+        // TODO: initialize the subnetwork according to "queryCombination"
+      } else {
+        // TODO: execute the query of type "queryType"
+      }
+
+  }
 
   /**
   * Derives application's dependent state from controls relevant to view.
