@@ -51,17 +51,20 @@ class ActionQuery {
 
   // Direct actions.
 
-  // TODO: changeCombination needs to reset the variable to re-initialize subnetwork's elements.
-  // TODO: changeCombination needs to call deriveState to actually re-initialize subnetwork's elements and restore downstream variables.
-
   /**
   * Changes the selection of combination in query view.
   * @param {string} combination Method of combination, union or difference.
   * @param {Object} state Application's state.
   */
   static changeCombination(combination, state) {
+
     // Initialize controls for query view.
     var queryViewControls = ActionQuery.initializeSubordinateControls();
+
+
+    // TODO: changeCombination needs to call the full deriveState procedure...
+
+
     // Compile variables' values.
     var novelVariablesValues = {
       queryCombination: combination
@@ -76,6 +79,11 @@ class ActionQuery {
       state: state
     });
   }
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  // TODO: This entire block of actions needs to call deriveSubordinateState()
+
   /**
   * Changes the selection of type of controls in query view.
   * @param {string} type Type of query, rogue, proximity, or path.
@@ -351,6 +359,30 @@ class ActionQuery {
       });
     }
   }
+  /**
+  * Excludes a node from targets for connection query.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier of a node.
+  * @param {string} parameters.type Type of a node, metabolite or reaction.
+  * @param {Object} parameters.state Application's state.
+  */
+  static excludeConnectionTarget({identifier, type, state} = {}) {
+    var queryConnectionTargets = state
+    .queryConnectionTargets.filter(function (record) {
+      return !((record.identifier === identifier) && (record.type === type));
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {
+      queryConnectionTargets: queryConnectionTargets
+    };
+    var variablesValues = Object.assign(novelVariablesValues);
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
+  //////////////////////////////////////////////////////////////////////////////
 
   // TODO: Execute all queries from the same root procedure...
   // TODO: Determine query type from the queryType state variable.
@@ -361,6 +393,40 @@ class ActionQuery {
   // TODO: Then the query needs to call deriveState to actually execute the query and update the subnetwork.
 
   // TODO: executeQuery(state) {}
+
+  /**
+  * Evaluates and executes query and combination on the network.
+  * @param {Object} state Application's state.
+  */
+  static executeQuery(state) {
+    // Detemine type of query.
+    if (state.queryType === "rogue") {
+      var pass = Model.determineRogueQuery(state);
+    } else if (state.queryType === "proximity") {
+      var pass = Model.determineProximityQuery(state);
+    } else if (state.queryType === "path") {
+      var pass = Model.determinePathQuery(state);
+    } else if (state.queryType === "connection") {
+      var pass = Model.determineConnectionQuery(state);
+    }
+    // Determine whether application's variables match query.
+    if (pass) {
+      // Derive dependent state.
+      var dependentStateVariables = ActionQuery.deriveState({
+        subnetworkRestoration: false,
+        queryCombination: state.queryCombination,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords,
+        viewsRestoration: state.viewsRestoration,
+        state: state
+      });
+
+      // TODO: now submit the new variables to the application's state...
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // TODO: this block is obsolete... once I use them for scrap...
 
   /**
   * Executes rogue query and combination on the network.
@@ -382,42 +448,6 @@ class ActionQuery {
       var queryViewControls = ActionQuery.initializeControls();
       // Compile variables' values.
       var variablesValues = Object.assign(
-        subnetworkElements,
-        queryViewControls
-      );
-      // Submit variables' values to the application's state.
-      ActionGeneral.submitStateVariablesValues({
-        variablesValues: variablesValues,
-        state: state
-      });
-    }
-  }
-  /**
-  * Executes rogue query and union on the network.
-  * @param {Object} state Application's state.
-  */
-  static executeRogueUnion(state) {
-    // Determine whether application's state includes valid variables for
-    // procedure.
-    if (Model.determineRogueQuery(state)) {
-      var subnetworkElements = Query.combineRogueNodeNetwork({
-        focus: state.queryRogueFocus.identifier,
-        combination: "union",
-        subnetworkNodesRecords: state.subnetworkNodesRecords,
-        subnetworkLinksRecords: state.subnetworkLinksRecords,
-        networkNodesRecords: state.networkNodesRecords,
-        networkLinksRecords: state.networkLinksRecords
-      });
-      // Initialize controls for query view.
-      var queryViewControls = ActionQuery.initializeControls();
-      // Initialize controls for pompt view.
-      var prompt = ActionPrompt.initializeControls();
-      // Compile variables' values.
-      var novelVariablesValues = {
-        prompt: prompt
-      };
-      var variablesValues = Object.assign(
-        novelVariablesValues,
         subnetworkElements,
         queryViewControls
       );
@@ -476,45 +506,6 @@ class ActionQuery {
     }
   }
   /**
-  * Executes proximity query expansion to depth of one and combination by
-  * union.
-  * @param {Object} state Application's state.
-  */
-  static executeProximityExpansion(state) {
-    // Determine whether application's state includes valid variables for
-    // procedure.
-    if (Model.determineProximityQuery(state)) {
-      var subnetworkElements = Query.combineProximityNetwork({
-        focus: state.prompt.reference.identifier,
-        direction: "neighbors",
-        depth: 1,
-        combination: "union",
-        subnetworkNodesRecords: state.subnetworkNodesRecords,
-        subnetworkLinksRecords: state.subnetworkLinksRecords,
-        networkNodesRecords: state.networkNodesRecords,
-        networkLinksRecords: state.networkLinksRecords
-      });
-      // Initialize controls for query view.
-      var queryViewControls = ActionQuery.initializeControls();
-      // Remove any prompt view.
-      var prompt = ActionPrompt.initializeControls();
-      // Compile variables' values.
-      var novelVariablesValues = {
-        prompt: prompt
-      };
-      var variablesValues = Object.assign(
-        novelVariablesValues,
-        subnetworkElements,
-        queryViewControls
-      );
-      // Submit variables' values to the application's state.
-      ActionGeneral.submitStateVariablesValues({
-        variablesValues: variablesValues,
-        state: state
-      });
-    }
-  }
-  /**
   * Executes path query and combination on the network.
   * @param {Object} state Application's state.
   */
@@ -561,29 +552,6 @@ class ActionQuery {
         state: state
       });
     }
-  }
-  /**
-  * Excludes a node from targets for connection query.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.identifier Identifier of a node.
-  * @param {string} parameters.type Type of a node, metabolite or reaction.
-  * @param {Object} parameters.state Application's state.
-  */
-  static excludeConnectionTarget({identifier, type, state} = {}) {
-    var queryConnectionTargets = state
-    .queryConnectionTargets.filter(function (record) {
-      return !((record.identifier === identifier) && (record.type === type));
-    });
-    // Compile variables' values.
-    var novelVariablesValues = {
-      queryConnectionTargets: queryConnectionTargets
-    };
-    var variablesValues = Object.assign(novelVariablesValues);
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
   }
   /**
   * Executes connection query and combination on the network.
@@ -634,6 +602,86 @@ class ActionQuery {
       });
     }
   }
+  //////////////////////////////////////////////////////////////////////////////
+
+  // TODO: this execute procedure might be an exception, since it's independent of queryType
+
+  /**
+  * Executes rogue query and union on the network.
+  * @param {Object} state Application's state.
+  */
+  static executeRogueUnion(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineRogueQuery(state)) {
+      var subnetworkElements = Query.combineRogueNodeNetwork({
+        focus: state.queryRogueFocus.identifier,
+        combination: "union",
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for query view.
+      var queryViewControls = ActionQuery.initializeControls();
+      // Initialize controls for pompt view.
+      var prompt = ActionPrompt.initializeControls();
+      // Compile variables' values.
+      var novelVariablesValues = {
+        prompt: prompt
+      };
+      var variablesValues = Object.assign(
+        novelVariablesValues,
+        subnetworkElements,
+        queryViewControls
+      );
+      // Submit variables' values to the application's state.
+      ActionGeneral.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+  /**
+  * Executes proximity query expansion to depth of one and combination by
+  * union.
+  * @param {Object} state Application's state.
+  */
+  static executeProximityExpansion(state) {
+    // Determine whether application's state includes valid variables for
+    // procedure.
+    if (Model.determineProximityQuery(state)) {
+      var subnetworkElements = Query.combineProximityNetwork({
+        focus: state.prompt.reference.identifier,
+        direction: "neighbors",
+        depth: 1,
+        combination: "union",
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
+        networkNodesRecords: state.networkNodesRecords,
+        networkLinksRecords: state.networkLinksRecords
+      });
+      // Initialize controls for query view.
+      var queryViewControls = ActionQuery.initializeControls();
+      // Remove any prompt view.
+      var prompt = ActionPrompt.initializeControls();
+      // Compile variables' values.
+      var novelVariablesValues = {
+        prompt: prompt
+      };
+      var variablesValues = Object.assign(
+        novelVariablesValues,
+        subnetworkElements,
+        queryViewControls
+      );
+      // Submit variables' values to the application's state.
+      ActionGeneral.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
+    }
+  }
+
 
   // Indirect actions.
 
@@ -643,8 +691,7 @@ class ActionQuery {
   */
   static initializeControls() {
     // Initialize controls.
-    var subnetworkRestoration = true;
-    var queryCombination = "difference";
+    var queryCombination = "exclusion";
     var queryType = "rogue";
     var queryProximityDirection = "successors";
     var queryProximityDepth = 1;
@@ -654,7 +701,6 @@ class ActionQuery {
     var subordinateControls = ActionQuery.initializeSubordinateControls();
     // Compile information.
     var novelVariablesValues = {
-      subnetworkRestoration: subnetworkRestoration,
       queryCombination: queryCombination,
       queryType: queryType,
       queryProximityDirection: queryProximityDirection,
@@ -697,16 +743,13 @@ class ActionQuery {
     return variablesValues;
   }
 
-  // TODO: deriveState needs new state variable for whether to initialize the subnetwork's elements
-  // TODO: deriveState needs to restore the subnetwork's elements.
-  // TODO: ... 1. whether to initialize or preserve subnetwork's elements
-  // TODO: ... 2. execute appropriate query (if ready) and combine to subnetwork as appropriate
-  // TODO: deriveState needs to pass subnetwork information to downstream process, in particular exploration view
+  // TODO: static deriveSubordinateState({} = {}) {}
 
   /**
   * Derives subnetwork's elements.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} query Whether to derive subnetwork's elements by query.
+  * @param {boolean} subnetworkRestoration Whether to restore subnetwork's
+  * elements.
   * @param {string} queryCombination Method of combination, "inclusion" or
   * "exclusion".
   * @param {Object<string>} parameters.queryRogueFocus Information about a node.
@@ -735,9 +778,9 @@ class ActionQuery {
   * network's links.
   * @returns {Object} Values of application's variables.
   */
-  static deriveSubnetwork({query, queryCombination, queryType, queryRogueFocus, queryProximityFocus, queryProximityDirection, queryProximityDepth, queryPathSource, queryPathTarget, queryPathDirection, queryPathCount, queryConnectionTarget, queryConnectionTargets, queryConnectionCount, networkNodesRecords, networkLinksRecords} = {}) {
+  static deriveSubnetwork({subnetworkRestoration, queryCombination, queryType, queryRogueFocus, queryProximityFocus, queryProximityDirection, queryProximityDepth, queryPathSource, queryPathTarget, queryPathDirection, queryPathCount, queryConnectionTarget, queryConnectionTargets, queryConnectionCount, networkNodesRecords, networkLinksRecords} = {}) {
     // Determine whether to derive subnetwork's elements by a query.
-      if (!query) {
+      if (subnetworkRestoration) {
         // Derive subnetwork's elements by initial combinations.
         // Consider combination strategy.
         if (queryCombination === "inclusion") {
@@ -758,6 +801,8 @@ class ActionQuery {
 
         // TODO: call another procedure method to organize calling matching queries.
 
+        console.log("this should not happen...");
+
       }
       // Compile information.
       var novelVariablesValues = {
@@ -772,23 +817,24 @@ class ActionQuery {
   /**
   * Derives application's dependent state from controls relevant to view.
   * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} subnetworkRestoration Whether to restore subnetwork's
+  * elements.
+  * @param {string} queryCombination Method of combination, "inclusion" or
+  * "exclusion".
   * @param {Array<Object>} parameters.networkNodesRecords Information about
   * network's nodes.
   * @param {Array<Object>} parameters.networkLinksRecords Information about
   * network's links.
-  * @param {boolean} parameters.subnetworkRestoration Whether to restore the
-  * subnetwork to its initial elements.
-  * @param {string} queryCombination Method of combination, union or difference.
   * @param {Object<boolean>} parameters.viewsRestoration Information about
   * whether to restore each view.
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState({query, queryCombination, networkNodesRecords, networkLinksRecords, viewsRestoration, state} = {}) {
+  static deriveState({subnetworkRestoration, queryCombination, networkNodesRecords, networkLinksRecords, viewsRestoration, state} = {}) {
     // Derive state relevant to view.
     // Restore subnetwork's elements.
     var subnetworkElements = ActionQuery.deriveSubnetwork({
-      query: query,
+      subnetworkRestoration: subnetworkRestoration,
       queryCombination: queryCombination,
       queryType: state.queryType,
       queryRogueFocus: state.queryRogueFocus,
@@ -805,17 +851,18 @@ class ActionQuery {
       networkNodesRecords: networkNodesRecords,
       networkLinksRecords: networkLinksRecords
     });
-
-
-    // Initialize controls for query view.
-    // TODO: only do this when appropriate... for example, maybe after query execution
-    // TODO: move this to the derive procedure upstream of this one...
-    var subordinateControls = ActionQuery.initializeSubordinateControls();
     // Determine summary information about subnetwork.
     var subnetworkSummary = Network.determineSubnetworkSummary({
       subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
       subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords
     });
+
+    // Initialize controls for query view.
+    // TODO: only do this when appropriate... for example, maybe after query execution
+    // TODO: move this to the derive procedure upstream of this one...
+    var subordinateControls = ActionQuery.initializeSubordinateControls();
+
+
     // Determine which views to restore.
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
       views: [

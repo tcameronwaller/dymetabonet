@@ -269,10 +269,10 @@ class ActionSubnetwork {
     var queryControls = ActionQuery.initializeControls();
     // Derive dependent state.
     var dependentStateVariables = ActionQuery.deriveState({
+      subnetworkRestoration: true,
+      queryCombination: queryControls.queryCombination,
       networkNodesRecords: networkNodesRecords,
       networkLinksRecords: networkLinksRecords,
-      subnetworkRestoration: queryControls.subnetworkRestoration,
-      queryCombination: queryControls.queryCombination,
       viewsRestoration: novelViewsRestoration,
       state: state
     });

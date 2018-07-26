@@ -266,7 +266,8 @@ class ActionExploration {
         state: state
       });
     } else {
-      // Allow records for nodes and links to mutate with simulation's iterations.
+      // Allow records for nodes and links to mutate with simulation's
+      // iterations.
       // Confine positions within container.
       var simulationNodesRecords = Simulation.confineSimulationPositions({
         nodesRecords: state.simulationNodesRecords,

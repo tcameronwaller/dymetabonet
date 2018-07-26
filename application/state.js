@@ -120,9 +120,6 @@ class State {
       "subnetworkViews"
     ];
     var queryControls = [
-      // Variable "subnetworkRestoration" stores information about whether to
-      // restore the subnetwork to its initial elements.
-      "subnetworkRestoration",
       // Variable "queryCombination" stores information about the strategy,
       // union or difference, for combination of sets of nodes from queries
       // in query view.

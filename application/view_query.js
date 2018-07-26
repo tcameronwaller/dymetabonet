@@ -195,6 +195,13 @@ class ViewQuery {
     // Create, activate, and restore controls for traversal.
     self.createActivateRestoreTraversalControl(self);
   }
+
+  // TODO: every version of query view needs an execute button...
+  // TODO: make the execute button an invariate part of the view.
+  // TODO: the variate portion should be within a div in the middle.
+  // TODO: the execute button should always call the same method in ActionQuery
+  // TODO: that action will figure out which type of query it is.
+
   /**
   * Creates, activates, and restores controls for traversal.
   * @param {Object} self Instance of a class.
