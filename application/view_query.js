@@ -484,8 +484,8 @@ class ViewQuery {
   * @param {Object} self Instance of a class.
   */
   createActivateRestorePathQueryControl(self) {
-    self.createActivatePathTraversalControl(self);
-    self.restorePathTraversalControl(self);
+    self.createActivatePathQueryControl(self);
+    self.restorePathQueryControl(self);
   }
   /**
   * Creates and activates controls for path traversal.
@@ -503,20 +503,18 @@ class ViewQuery {
         className: "path"
       });
       // Create content.
-      self.createPathTraversalControl(self);
+      self.createPathQueryControl(self);
       // Activate behavior.
-      self.activatePathTraversalControl(self);
+      self.activatePathQueryControl(self);
     } else {
       // Container's current content matches view's novel type.
       // Set references to content.
-      self.traversalPathSourceSearch = self
-      .document.getElementById("traversal-path-source-search");
-      self.traversalPathTargetSearch = self
-      .document.getElementById("traversal-path-target-search");
-      self.traversalPathDirection = self
-      .document.getElementById("traversal-path-direction");
-      self.traversalPathCount = self
-      .document.getElementById("traversal-path-count");
+      self.pathSourceSearch = self
+      .document.getElementById("query-path-source-search");
+      self.pathTargetSearch = self
+      .document.getElementById("query-path-target-search");
+      self.pathDirection = self.document.getElementById("query-path-direction");
+      self.pathCount = self.document.getElementById("query-path-count");
     }
   }
   /**
@@ -526,8 +524,8 @@ class ViewQuery {
   createPathQueryControl(self) {
     // Create and activate elements.
     // Create search menu.
-    self.traversalPathSourceSearch = View.createSearchOptionsList({
-      identifier: "traversal-path-source-search",
+    self.pathSourceSearch = View.createSearchOptionsList({
+      identifier: "query-path-source-search",
       prompt: "select node...",
       parent: self.controlContainer,
       documentReference: self.document
@@ -536,33 +534,24 @@ class ViewQuery {
     self.controlContainer.appendChild(self.document.createElement("br"));
     // Create direction.
     // Create control for direction.
-    self.traversalPathDirection = View.createButtonIdentifier({
-      identifier: "traversal-path-direction",
+    self.pathDirection = View.createButtonIdentifier({
+      identifier: "query-path-direction",
       text: "",
       parent: self.controlContainer,
       documentReference: self.document
     });
     // Create control for count.
-    self.traversalPathCount = View.createSelector({
-      identifier: "traversal-path-count",
+    self.pathCount = View.createSelector({
+      identifier: "query-path-count",
       parent: self.controlContainer,
       documentReference: self.document
     });
     // Create break.
     self.controlContainer.appendChild(self.document.createElement("br"));
     // Create search menu.
-    self.traversalPathTargetSearch = View.createSearchOptionsList({
-      identifier: "traversal-path-target-search",
+    self.pathTargetSearch = View.createSearchOptionsList({
+      identifier: "query-path-target-search",
       prompt: "select node...",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
-    // Create break.
-    self.controlContainer.appendChild(self.document.createElement("br"));
-    // Create execute.
-    // Create button for execution.
-    self.execute = View.createButton({
-      text: "execute",
       parent: self.controlContainer,
       documentReference: self.document
     });
@@ -573,27 +562,25 @@ class ViewQuery {
   */
   activatePathQueryControl(self) {
     // Activate search.
-    if (self.state.traversalCombination === "union") {
+    if (self.state.queryCombination === "inclusion") {
       var recordSource = "network";
-    } else if (self.state.traversalCombination === "difference") {
+    } else if (self.state.queryCombination === "exclusion") {
       var recordSource = "subnetwork";
     }
-    ViewQuery.activateTraversalSearch({
-      search: self.traversalPathSourceSearch,
-      variableName: "traversalPathSource",
+    ViewQuery.activateQuerySearch({
+      search: self.pathSourceSearch,
+      variableName: "queryPathSource",
       recordSource: recordSource,
       state: self.state
     });
     // Activate direction.
-    self
-    .traversalPathDirection.addEventListener("click", function (event) {
+    self.pathDirection.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
       ActionQuery.changePathDirection(self.state);
     });
     // Activate count.
-    self
-    .traversalPathCount.addEventListener("change", function (event) {
+    self.pathCount.addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Determine value.
       var value = Number(event.currentTarget.value);
@@ -605,17 +592,11 @@ class ViewQuery {
       });
     });
     // Activate search.
-    ViewQuery.activateTraversalSearch({
-      search: self.traversalPathTargetSearch,
-      variableName: "traversalPathTarget",
+    ViewQuery.activateQuerySearch({
+      search: self.pathTargetSearch,
+      variableName: "queryPathTarget",
       recordSource: recordSource,
       state: self.state
-    });
-    // Activate execute.
-    self.execute.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      ActionQuery.executePathCombination(self.state);
     });
   }
   /**
@@ -625,31 +606,31 @@ class ViewQuery {
   restorePathQueryControl(self) {
     // Restore controls' settings.
     // Restore search.
-    if (self.state.traversalCombination === "union") {
+    if (self.state.queryCombination === "inclusion") {
       var recordSource = "network";
-    } else if (self.state.traversalCombination === "difference") {
+    } else if (self.state.queryCombination === "exclusion") {
       var recordSource = "subnetwork";
     }
-    ViewQuery.restoreTraversalSearch({
-      search: self.traversalPathSourceSearch,
-      variableName: "traversalPathSource",
+    ViewQuery.restoreQuerySearch({
+      search: self.pathSourceSearch,
+      variableName: "queryPathSource",
       recordSource: recordSource,
       state: self.state
     });
     // Restore direction.
     // Represent direction.
-    if (self.state.traversalPathDirection === "forward") {
-      self.traversalPathDirection.textContent = "->";
-    } else if (self.state.traversalPathDirection === "both") {
-      self.traversalPathDirection.textContent = "<->";
-    } else if (self.state.traversalPathDirection === "reverse") {
-      self.traversalPathDirection.textContent = "<-";
+    if (self.state.queryPathDirection === "forward") {
+      self.pathDirection.textContent = "->";
+    } else if (self.state.queryPathDirection === "both") {
+      self.pathDirection.textContent = "<->";
+    } else if (self.state.queryPathDirection === "reverse") {
+      self.pathDirection.textContent = "<-";
     }
     // Restore count.
     // Create options.
     var options = [1, 2, 3, 4, 5].map(function (count) {
       // Determine whether depth matches state variable.
-      var match = (count === self.state.traversalPathCount);
+      var match = (count === self.state.queryPathCount);
       return {
         label: String(count) + " paths",
         value: count,
@@ -658,13 +639,13 @@ class ViewQuery {
     });
     View.createSelectorOptions({
       options: options,
-      selector: self.traversalPathCount,
+      selector: self.pathCount,
       documentReference: self.document
     });
     // Restore search.
-    ViewQuery.restoreTraversalSearch({
-      search: self.traversalPathTargetSearch,
-      variableName: "traversalPathTarget",
+    ViewQuery.restoreQuerySearch({
+      search: self.pathTargetSearch,
+      variableName: "queryPathTarget",
       recordSource: recordSource,
       state: self.state
     });
@@ -675,8 +656,8 @@ class ViewQuery {
   * @param {Object} self Instance of a class.
   */
   createActivateRestoreConnectionQueryControl(self) {
-    self.createActivateConnectionTraversalControl(self);
-    self.restoreActivateConnectionTraversalControl(self);
+    self.createActivateConnectionQueryControl(self);
+    self.restoreActivateConnectionQueryControl(self);
   }
   /**
   * Creates and activates controls for connection traversal.
@@ -694,18 +675,18 @@ class ViewQuery {
         className: "connection"
       });
       // Create content.
-      self.createConnectionTraversalControl(self);
+      self.createConnectionQueryControl(self);
       // Activate behavior.
-      self.activateConnectionTraversalControl(self);
+      self.activateConnectionQueryControl(self);
     } else {
       // Container's current content matches view's novel type.
       // Set references to content.
-      self.traversalConnectionTargetSearch = self
-      .document.getElementById("traversal-connection-target-search");
-      self.traversalConnectionTargetSummary = self
-      .document.getElementById("traversal-connection-target-summary");
-      self.traversalConnectionCount = self
-      .document.getElementById("traversal-connection-count");
+      self.connectionTargetSearch = self
+      .document.getElementById("query-connection-target-search");
+      self.connectionTargetSummary = self
+      .document.getElementById("query-connection-target-summary");
+      self.connectionCount = self
+      .document.getElementById("query-connection-count");
     }
   }
   /**
@@ -714,7 +695,7 @@ class ViewQuery {
   */
   createConnectionQueryControl(self) {
     // Create summary of targets.
-    self.createConnectionTraversalTargetSummary(self);
+    self.createConnectionQueryTargetSummary(self);
     // Create button for inclusion.
     self.includeTarget = View.createButton({
       text: "+",
@@ -722,8 +703,8 @@ class ViewQuery {
       documentReference: self.document
     });
     // Create search menu.
-    self.traversalConnectionTargetSearch = View.createSearchOptionsList({
-      identifier: "traversal-connection-target-search",
+    self.connectionTargetSearch = View.createSearchOptionsList({
+      identifier: "query-connection-target-search",
       prompt: "select node...",
       parent: self.controlContainer,
       documentReference: self.document
@@ -731,14 +712,8 @@ class ViewQuery {
     // Create break.
     self.controlContainer.appendChild(self.document.createElement("br"));
     // Create control for count.
-    self.traversalConnectionCount = View.createSelector({
-      identifier: "traversal-connection-count",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
-    // Create button for execution.
-    self.execute = View.createButton({
-      text: "execute",
+    self.connectionCount = View.createSelector({
+      identifier: "query-connection-count",
       parent: self.controlContainer,
       documentReference: self.document
     });
@@ -772,7 +747,7 @@ class ViewQuery {
       documentReference: self.document
     });
     // Create body table.
-    self.traversalConnectionTargetSummary = View.createScrollTableBody({
+    self.connectionTargetSummary = View.createScrollTableBody({
       className: "connection",
       parent: self.controlContainer,
       documentReference: self.document
@@ -790,20 +765,19 @@ class ViewQuery {
       ActionQuery.includeConnectionTarget(self.state);
     });
     // Activate search.
-    if (self.state.traversalCombination === "union") {
+    if (self.state.queryCombination === "inclusion") {
       var recordSource = "network";
-    } else if (self.state.traversalCombination === "difference") {
+    } else if (self.state.queryCombination === "exclusion") {
       var recordSource = "subnetwork";
     }
-    ViewQuery.activateTraversalSearch({
-      search: self.traversalConnectionTargetSearch,
-      variableName: "traversalConnectionTarget",
+    ViewQuery.activateQuerySearch({
+      search: self.connectionTargetSearch,
+      variableName: "queryConnectionTarget",
       recordSource: recordSource,
       state: self.state
     });
     // Activate count.
-    self
-    .traversalConnectionCount.addEventListener("change", function (event) {
+    self.connectionCount.addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Determine value.
       var value = Number(event.currentTarget.value);
@@ -814,12 +788,6 @@ class ViewQuery {
         state: self.state
       });
     });
-    // Activate execute.
-    self.execute.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      ActionQuery.executeConnectionCombination(self.state);
-    });
   }
   /**
   * Restores and activates controls for connection traversal.
@@ -828,16 +796,16 @@ class ViewQuery {
   restoreActivateConnectionQueryControl(self) {
     // Restore controls' settings.
     // Create and activate summary of targets.
-    self.createActivateConnectionTraversalTargetSummary(self);
+    self.createActivateConnectionQueryTargetSummary(self);
     // Restore search.
-    if (self.state.traversalCombination === "union") {
+    if (self.state.queryCombination === "inclusion") {
       var recordSource = "network";
-    } else if (self.state.traversalCombination === "difference") {
+    } else if (self.state.queryCombination === "exclusion") {
       var recordSource = "subnetwork";
     }
-    ViewQuery.restoreTraversalSearch({
-      search: self.traversalConnectionTargetSearch,
-      variableName: "traversalConnectionTarget",
+    ViewQuery.restoreQuerySearch({
+      search: self.connectionTargetSearch,
+      variableName: "queryConnectionTarget",
       recordSource: recordSource,
       state: self.state
     });
@@ -845,7 +813,7 @@ class ViewQuery {
     // Create options.
     var options = [1, 2, 3, 4, 5].map(function (count) {
       // Determine whether depth matches state variable.
-      var match = (count === self.state.traversalConnectionCount);
+      var match = (count === self.state.queryConnectionCount);
       return {
         label: String(count) + " paths",
         value: count,
@@ -854,7 +822,7 @@ class ViewQuery {
     });
     View.createSelectorOptions({
       options: options,
-      selector: self.traversalConnectionCount,
+      selector: self.connectionCount,
       documentReference: self.document
     });
   }
@@ -863,8 +831,8 @@ class ViewQuery {
   * @param {Object} self Instance of a class.
   */
   createActivateConnectionQueryTargetSummary(self) {
-    self.createActivateConnectionTraversalTargetSummaryRows(self);
-    self.createActivateConnectionTraversalTargetSummaryCells(self);
+    self.createActivateConnectionQueryTargetSummaryRows(self);
+    self.createActivateConnectionQueryTargetSummaryCells(self);
   }
   /**
   * Creates and activates rows.
@@ -873,10 +841,10 @@ class ViewQuery {
   createActivateConnectionQueryTargetSummaryRows(self) {
     // Create and activate rows.
     // Select parent.
-    var body = d3.select(self.traversalConnectionTargetSummary);
+    var body = d3.select(self.connectionTargetSummary);
     // Define function to access data.
     function access() {
-      return self.state.traversalConnectionTargets;
+      return self.state.queryConnectionTargets;
     };
     // Create children elements by association to data.
     self.rows = View.createElementsData({
@@ -938,9 +906,9 @@ class ViewQuery {
       accessor: access
     });
     // Create cells for names.
-    self.createConnectionTraversalTargetSummaryNames(self);
+    self.createConnectionQueryTargetSummaryNames(self);
     // Create and activate cells for removals.
-    self.createActivateConnectionTraversalTargetSummaryRemovals(self);
+    self.createActivateConnectionQueryTargetSummaryRemovals(self);
   }
   /**
   * Creates summary names.
