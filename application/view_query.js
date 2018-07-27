@@ -337,14 +337,14 @@ class ViewQuery {
   * @param {Object} self Instance of a class.
   */
   createActivateRestoreProximityQueryControl(self) {
-    self.createActivateProximityTraversalControl(self);
-    self.restoreProximityTraversalControl(self);
+    self.createActivateProximityQueryControl(self);
+    self.restoreProximityQueryControl(self);
   }
   /**
   * Creates and activates controls for proximity traversal.
   * @param {Object} self Instance of a class.
   */
-  createActivateProximityTraversalControl(self) {
+  createActivateProximityQueryControl(self) {
     // Determine whether container's current content matches view's novel type.
     // Container's class indicates type of content.
     if (!self.container.classList.contains("proximity")) {
@@ -356,29 +356,29 @@ class ViewQuery {
         className: "proximity"
       });
       // Create content.
-      self.createProximityTraversalControl(self);
+      self.createProximityQueryControl(self);
       // Activate behavior.
-      self.activateProximityTraversalControl(self);
+      self.activateProximityQueryControl(self);
     } else {
       // Container's current content matches view's novel type.
       // Set references to content.
-      self.traversalProximityFocusSearch = self
-      .document.getElementById("traversal-proximity-focus-search");
-      self.traversalProximityDirection = self
-      .document.getElementById("traversal-proximity-direction");
-      self.traversalProximityDepth = self
-      .document.getElementById("traversal-proximity-depth");
+      self.proximityFocusSearch = self
+      .document.getElementById("query-proximity-focus-search");
+      self.proximityDirection = self
+      .document.getElementById("query-proximity-direction");
+      self.proximityDepth = self
+      .document.getElementById("query-proximity-depth");
     }
   }
   /**
   * Creates controls for proximity traversal.
   * @param {Object} self Instance of a class.
   */
-  createProximityTraversalControl(self) {
+  createProximityQueryControl(self) {
     // Create and activate elements.
     // Create search menu.
-    self.traversalProximityFocusSearch = View.createSearchOptionsList({
-      identifier: "traversal-proximity-focus-search",
+    self.proximityFocusSearch = View.createSearchOptionsList({
+      identifier: "query-proximity-focus-search",
       prompt: "select node...",
       parent: self.controlContainer,
       documentReference: self.document
@@ -387,24 +387,15 @@ class ViewQuery {
     self.controlContainer.appendChild(self.document.createElement("br"));
     // Create direction.
     // Create control for direction.
-    self.traversalProximityDirection = View.createButtonIdentifier({
-      identifier: "traversal-proximity-direction",
+    self.proximityDirection = View.createButtonIdentifier({
+      identifier: "query-proximity-direction",
       text: "",
       parent: self.controlContainer,
       documentReference: self.document
     });
     // Create control for depth.
-    self.traversalProximityDepth = View.createSelector({
-      identifier: "traversal-proximity-depth",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
-    // Create break.
-    self.controlContainer.appendChild(self.document.createElement("br"));
-    // Create execute.
-    // Create button for execution.
-    self.execute = View.createButton({
-      text: "execute",
+    self.proximityDepth = View.createSelector({
+      identifier: "query-proximity-depth",
       parent: self.controlContainer,
       documentReference: self.document
     });
@@ -413,74 +404,66 @@ class ViewQuery {
   * Activates controls for proximity traversal.
   * @param {Object} self Instance of a class.
   */
-  activateProximityTraversalControl(self) {
+  activateProximityQueryControl(self) {
     // Activate search.
-    if (self.state.traversalCombination === "union") {
+    if (self.state.queryCombination === "inclusion") {
       var recordSource = "network";
-    } else if (self.state.traversalCombination === "difference") {
+    } else if (self.state.queryCombination === "exclusion") {
       var recordSource = "subnetwork";
     }
-    ViewQuery.activateTraversalSearch({
-      search: self.traversalProximityFocusSearch,
-      variableName: "traversalProximityFocus",
+    ViewQuery.activateQuerySearch({
+      search: self.proximityFocusSearch,
+      variableName: "queryProximityFocus",
       recordSource: recordSource,
       state: self.state
     });
     // Activate direction.
-    self
-    .traversalProximityDirection.addEventListener("click", function (event) {
+    self.proximityDirection.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
       ActionQuery.changeProximityDirection(self.state);
     });
     // Activate depth.
-    self
-    .traversalProximityDepth.addEventListener("change", function (event) {
+    self.proximityDepth.addEventListener("change", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Determine value.
       var value = Number(event.currentTarget.value);
       // Call action.
       ActionQuery.changeProximityDepth(value, self.state);
     });
-    // Activate execute.
-    self.execute.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      ActionQuery.executeProximityCombination(self.state);
-    });
   }
   /**
   * Restores controls for path traversal.
   * @param {Object} self Instance of a class.
   */
-  restoreProximityTraversalControl(self) {
+  restoreProximityQueryControl(self) {
     // Restore controls' settings.
     // Restore search.
-    if (self.state.traversalCombination === "union") {
+    if (self.state.queryCombination === "inclusion") {
       var recordSource = "network";
-    } else if (self.state.traversalCombination === "difference") {
+    } else if (self.state.queryCombination === "exclusion") {
       var recordSource = "subnetwork";
     }
-    ViewQuery.restoreTraversalSearch({
-      search: self.traversalProximityFocusSearch,
-      variableName: "traversalProximityFocus",
+    ViewQuery.restoreQuerySearch({
+      search: self.proximityFocusSearch,
+      variableName: "queryProximityFocus",
       recordSource: recordSource,
       state: self.state
     });
     // Restore direction.
     // Represent direction.
-    if (self.state.traversalProximityDirection === "successors") {
-      self.traversalProximityDirection.textContent = "->";
-    } else if (self.state.traversalProximityDirection === "neighbors") {
-      self.traversalProximityDirection.textContent = "<->";
-    } else if (self.state.traversalProximityDirection === "predecessors") {
-      self.traversalProximityDirection.textContent = "<-";
+    if (self.state.queryProximityDirection === "successors") {
+      self.proximityDirection.textContent = "->";
+    } else if (self.state.queryProximityDirection === "neighbors") {
+      self.proximityDirection.textContent = "<->";
+    } else if (self.state.queryProximityDirection === "predecessors") {
+      self.proximityDirection.textContent = "<-";
     }
     // Restore depth.
     // Create options.
     var options = [1, 2, 3, 4, 5].map(function (depth) {
       // Determine whether depth matches state variable.
-      var match = (depth === self.state.traversalProximityDepth);
+      var match = (depth === self.state.queryProximityDepth);
       return {
         label: String(depth) + " links",
         value: depth,
@@ -489,10 +472,12 @@ class ViewQuery {
     });
     View.createSelectorOptions({
       options: options,
-      selector: self.traversalProximityDepth,
+      selector: self.proximityDepth,
       documentReference: self.document
     });
   }
+
+
 
   /**
   * Creates, activates, and restores controls for path traversal.
@@ -506,7 +491,7 @@ class ViewQuery {
   * Creates and activates controls for path traversal.
   * @param {Object} self Instance of a class.
   */
-  createActivatePathTraversalControl(self) {
+  createActivatePathQueryControl(self) {
     // Determine whether container's current content matches view's novel type.
     // Container's class indicates type of content.
     if (!self.container.classList.contains("path")) {
@@ -538,7 +523,7 @@ class ViewQuery {
   * Creates controls for path traversal.
   * @param {Object} self Instance of a class.
   */
-  createPathTraversalControl(self) {
+  createPathQueryControl(self) {
     // Create and activate elements.
     // Create search menu.
     self.traversalPathSourceSearch = View.createSearchOptionsList({
@@ -586,7 +571,7 @@ class ViewQuery {
   * Activates controls for path traversal.
   * @param {Object} self Instance of a class.
   */
-  activatePathTraversalControl(self) {
+  activatePathQueryControl(self) {
     // Activate search.
     if (self.state.traversalCombination === "union") {
       var recordSource = "network";
@@ -637,7 +622,7 @@ class ViewQuery {
   * Restores controls for path traversal.
   * @param {Object} self Instance of a class.
   */
-  restorePathTraversalControl(self) {
+  restorePathQueryControl(self) {
     // Restore controls' settings.
     // Restore search.
     if (self.state.traversalCombination === "union") {
@@ -697,7 +682,7 @@ class ViewQuery {
   * Creates and activates controls for connection traversal.
   * @param {Object} self Instance of a class.
   */
-  createActivateConnectionTraversalControl(self) {
+  createActivateConnectionQueryControl(self) {
     // Determine whether container's current content matches view's novel type.
     // Container's class indicates type of content.
     if (!self.container.classList.contains("connection")) {
@@ -727,7 +712,7 @@ class ViewQuery {
   * Creates controls for connection traversal.
   * @param {Object} self Instance of a class.
   */
-  createConnectionTraversalControl(self) {
+  createConnectionQueryControl(self) {
     // Create summary of targets.
     self.createConnectionTraversalTargetSummary(self);
     // Create button for inclusion.
@@ -762,7 +747,7 @@ class ViewQuery {
   * Creates and activates summary of targets for connection traversal.
   * @param {Object} self Instance of a class.
   */
-  createConnectionTraversalTargetSummary(self) {
+  createConnectionQueryTargetSummary(self) {
     // Create separate tables for head and body to support stationary head and
     // scrollable body.
     // Create head table.
@@ -797,7 +782,7 @@ class ViewQuery {
   * Activates controls for connection traversal.
   * @param {Object} self Instance of a class.
   */
-  activateConnectionTraversalControl(self) {
+  activateConnectionQueryControl(self) {
     // Activate inclusion.
     self.includeTarget.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
@@ -840,7 +825,7 @@ class ViewQuery {
   * Restores and activates controls for connection traversal.
   * @param {Object} self Instance of a class.
   */
-  restoreActivateConnectionTraversalControl(self) {
+  restoreActivateConnectionQueryControl(self) {
     // Restore controls' settings.
     // Create and activate summary of targets.
     self.createActivateConnectionTraversalTargetSummary(self);
@@ -877,7 +862,7 @@ class ViewQuery {
   * Restores and activates summary of targets for connection traversal.
   * @param {Object} self Instance of a class.
   */
-  createActivateConnectionTraversalTargetSummary(self) {
+  createActivateConnectionQueryTargetSummary(self) {
     self.createActivateConnectionTraversalTargetSummaryRows(self);
     self.createActivateConnectionTraversalTargetSummaryCells(self);
   }
@@ -885,7 +870,7 @@ class ViewQuery {
   * Creates and activates rows.
   * @param {Object} self Instance of a class.
   */
-  createActivateConnectionTraversalTargetSummaryRows(self) {
+  createActivateConnectionQueryTargetSummaryRows(self) {
     // Create and activate rows.
     // Select parent.
     var body = d3.select(self.traversalConnectionTargetSummary);
@@ -923,7 +908,7 @@ class ViewQuery {
   * Creates cells.
   * @param {Object} self Instance of a class.
   */
-  createActivateConnectionTraversalTargetSummaryCells(self) {
+  createActivateConnectionQueryTargetSummaryCells(self) {
     // Create cells for names, counts, omissions, and replications.
     // Define function to access data.
     function access(element, index, nodes) {
@@ -961,7 +946,7 @@ class ViewQuery {
   * Creates summary names.
   * @param {Object} self Instance of a class.
   */
-  createConnectionTraversalTargetSummaryNames(self) {
+  createConnectionQueryTargetSummaryNames(self) {
     // Assign attributes to cells.
     // Assign attributes to elements.
     // Select cells for names.
@@ -982,7 +967,7 @@ class ViewQuery {
   * Creates summary removals.
   * @param {Object} self Instance of a class.
   */
-  createActivateConnectionTraversalTargetSummaryRemovals(self) {
+  createActivateConnectionQueryTargetSummaryRemovals(self) {
     // Assign attributes to cells.
     // Assign attributes to elements.
     // Select cells.
