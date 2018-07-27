@@ -114,6 +114,8 @@ class ActionQuery {
       state: state
     });
   }
+
+
   /**
   * Changes the selection of focus for rogue query.
   * @param {Object} parameters Destructured object of parameters.

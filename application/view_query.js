@@ -91,13 +91,17 @@ class ViewQuery {
       self.container.appendChild(self.document.createElement("br"));
       // Create container.
       self.controlContainer = View.createInsertContainer({
-        identifier: "traversal-control-container",
+        identifier: "query-control-container",
         type: "standard",
         target: self.container,
         position: "beforeend",
         documentReference: self.document
       });
       self.controlContainer.classList.add("menu");
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create button for execution of all queries.
+      self.createActivateExecuteButton(self);
     } else {
       // Container is not empty.
       // Set references to content.
@@ -109,9 +113,9 @@ class ViewQuery {
       self.proximity = self.document.getElementById("type-proximity");
       self.path = self.document.getElementById("type-path");
       self.connection = self.document.getElementById("type-connection");
-      // Container for traversal's controls.
+      // Container for query's controls.
       self.controlContainer = self
-      .document.getElementById("traversal-control-container");
+      .document.getElementById("query-control-container");
     }
   }
   /**
@@ -173,6 +177,24 @@ class ViewQuery {
     });
   }
   /**
+  * Creates and activates button to execute queries.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateExecuteButton(self) {
+    var button = View.createButton({
+      text: "execute",
+      parent: self.container,
+      documentReference: self.document
+    });
+    button.addEventListener("click", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Call action.
+      ActionQuery.executeQuery(self.state);
+    });
+  }
+
+
+  /**
   * Restores view's content and behavior that varies with changes to the
   * application's state.
   * @param {Object} self Instance of a class.
@@ -197,7 +219,7 @@ class ViewQuery {
     self.connection.checked = ViewQuery
     .determineTypeMatch("connection", self.state);
     // Create, activate, and restore controls for traversal.
-    self.createActivateRestoreTraversalControl(self);
+    self.createActivateRestoreQueryControl(self);
   }
 
   // TODO: every version of query view needs an execute button...
@@ -210,31 +232,32 @@ class ViewQuery {
   * Creates, activates, and restores controls for traversal.
   * @param {Object} self Instance of a class.
   */
-  createActivateRestoreTraversalControl(self) {
+  createActivateRestoreQueryControl(self) {
     // Determine which type of traversal for which to create controls.
-    if (self.state.traversalType === "rogue") {
-      self.createActivateRestoreRogueTraversalControl(self);
-    } else if (self.state.traversalType === "proximity") {
-      self.createActivateRestoreProximityTraversalControl(self);
-    } else if (self.state.traversalType === "path") {
-      self.createActivateRestorePathTraversalControl(self);
-    } else if (self.state.traversalType === "connection") {
-      self.createActivateRestoreConnectionTraversalControl(self);
+    if (self.state.queryType === "rogue") {
+      self.createActivateRestoreRogueQueryControl(self);
+    } else if (self.state.queryType === "proximity") {
+      self.createActivateRestoreProximityQueryControl(self);
+    } else if (self.state.queryType === "path") {
+      self.createActivateRestorePathQueryControl(self);
+    } else if (self.state.queryType === "connection") {
+      self.createActivateRestoreConnectionQueryControl(self);
     }
   }
+
   /**
   * Creates, activates, and restores controls for rogue traversal.
   * @param {Object} self Instance of a class.
   */
-  createActivateRestoreRogueTraversalControl(self) {
-    self.createActivateRogueTraversalControl(self);
-    self.restoreRogueTraversalControl(self);
+  createActivateRestoreRogueQueryControl(self) {
+    self.createActivateRogueQueryControl(self);
+    self.restoreRogueQueryControl(self);
   }
   /**
   * Creates and activates controls for rogue traversal.
   * @param {Object} self Instance of a class.
   */
-  createActivateRogueTraversalControl(self) {
+  createActivateRogueQueryControl(self) {
     // Determine whether container's current content matches view's novel type.
     // Container's class indicates type of content.
     if (!self.controlContainer.classList.contains("rogue")) {
@@ -246,35 +269,26 @@ class ViewQuery {
         className: "rogue"
       });
       // Create content.
-      self.createRogueTraversalControl(self);
+      self.createRogueQueryControl(self);
       // Activate behavior.
-      self.activateRogueTraversalControl(self);
+      self.activateRogueQueryControl(self);
     } else {
       // Container's current content matches view's novel type.
       // Set references to content.
-      self.traversalRogueFocusSearch = self
-      .document.getElementById("traversal-rogue-focus-search");
+      self.rogueFocusSearch = self
+      .document.getElementById("query-rogue-focus-search");
     }
   }
   /**
   * Creates controls for rogue traversal.
   * @param {Object} self Instance of a class.
   */
-  createRogueTraversalControl(self) {
+  createRogueQueryControl(self) {
     // Create and activate elements.
     // Create search menu.
-    self.traversalRogueFocusSearch = View.createSearchOptionsList({
-      identifier: "traversal-rogue-focus-search",
+    self.rogueFocusSearch = View.createSearchOptionsList({
+      identifier: "query-rogue-focus-search",
       prompt: "select node...",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
-    // Create break.
-    self.controlContainer.appendChild(self.document.createElement("br"));
-    // Create execute.
-    // Create button for execution.
-    self.execute = View.createButton({
-      text: "execute",
       parent: self.controlContainer,
       documentReference: self.document
     });
@@ -283,50 +297,46 @@ class ViewQuery {
   * Activates controls for rogue traversal.
   * @param {Object} self Instance of a class.
   */
-  activateRogueTraversalControl(self) {
+  activateRogueQueryControl(self) {
     // Activate search.
-    if (self.state.traversalCombination === "union") {
+    if (self.state.queryCombination === "inclusion") {
       var recordSource = "network";
-    } else if (self.state.traversalCombination === "difference") {
+    } else if (self.state.queryCombination === "exclusion") {
       var recordSource = "subnetwork";
     }
-    ViewQuery.activateTraversalSearch({
-      search: self.traversalRogueFocusSearch,
-      variableName: "traversalRogueFocus",
+    ViewQuery.activateQuerySearch({
+      search: self.rogueFocusSearch,
+      variableName: "queryRogueFocus",
       recordSource: recordSource,
       state: self.state
-    });
-    // Activate execute.
-    self.execute.addEventListener("click", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Call action.
-      ActionQuery.executeRogueCombination(self.state);
     });
   }
   /**
   * Restores controls for rogue traversal.
   * @param {Object} self Instance of a class.
   */
-  restoreRogueTraversalControl(self) {
+  restoreRogueQueryControl(self) {
     // Restore controls' settings.
     // Restore search.
-    if (self.state.traversalCombination === "union") {
+    if (self.state.queryCombination === "inclusion") {
       var recordSource = "network";
-    } else if (self.state.traversalCombination === "difference") {
+    } else if (self.state.queryCombination === "exclusion") {
       var recordSource = "subnetwork";
     }
-    ViewQuery.restoreTraversalSearch({
-      search: self.traversalRogueFocusSearch,
-      variableName: "traversalRogueFocus",
+    ViewQuery.restoreQuerySearch({
+      search: self.rogueFocusSearch,
+      variableName: "queryRogueFocus",
       recordSource: recordSource,
       state: self.state
     });
   }
+
+
   /**
   * Creates, activates, and restores controls for proximity traversal.
   * @param {Object} self Instance of a class.
   */
-  createActivateRestoreProximityTraversalControl(self) {
+  createActivateRestoreProximityQueryControl(self) {
     self.createActivateProximityTraversalControl(self);
     self.restoreProximityTraversalControl(self);
   }
@@ -483,11 +493,12 @@ class ViewQuery {
       documentReference: self.document
     });
   }
+
   /**
   * Creates, activates, and restores controls for path traversal.
   * @param {Object} self Instance of a class.
   */
-  createActivateRestorePathTraversalControl(self) {
+  createActivateRestorePathQueryControl(self) {
     self.createActivatePathTraversalControl(self);
     self.restorePathTraversalControl(self);
   }
@@ -673,11 +684,12 @@ class ViewQuery {
       state: self.state
     });
   }
+
   /**
   * Creates, activates, and restores controls for connection traversal.
   * @param {Object} self Instance of a class.
   */
-  createActivateRestoreConnectionTraversalControl(self) {
+  createActivateRestoreConnectionQueryControl(self) {
     self.createActivateConnectionTraversalControl(self);
     self.restoreActivateConnectionTraversalControl(self);
   }
@@ -1001,6 +1013,8 @@ class ViewQuery {
       });
     });
   }
+
+
   /**
   * Determines whether a combination strategy matches the value in the
   * application's state.
@@ -1033,7 +1047,7 @@ class ViewQuery {
   * "subnetwork" or "network".
   * @param {Object} parameters.state Application's state.
   */
-  static activateTraversalSearch({search, variableName, recordSource, state} = {}) {
+  static activateQuerySearch({search, variableName, recordSource, state} = {}) {
     // Determine source of nodes' records.
     if (recordSource === "subnetwork") {
       var nodesRecords = state.subnetworkNodesRecords;
@@ -1052,31 +1066,31 @@ class ViewQuery {
           return identifier === record.identifier;
         });
         // Call action.
-        if (variableName === "traversalRogueFocus") {
+        if (variableName === "queryRogueFocus") {
           ActionQuery.changeRogueFocus({
             identifier: identifier,
             type: node.type,
             state: state
           });
-        } else if (variableName === "traversalProximityFocus") {
+        } else if (variableName === "queryProximityFocus") {
           ActionQuery.changeProximityFocus({
             identifier: identifier,
             type: node.type,
             state: state
           });
-        } else if (variableName === "traversalPathSource") {
+        } else if (variableName === "queryPathSource") {
           ActionQuery.changePathSource({
             identifier: identifier,
             type: node.type,
             state: state
           });
-        } else if (variableName === "traversalPathTarget") {
+        } else if (variableName === "queryPathTarget") {
           ActionQuery.changePathTarget({
             identifier: identifier,
             type: node.type,
             state: state
           });
-        } else if (variableName === "traversalConnectionTarget") {
+        } else if (variableName === "queryConnectionTarget") {
           ActionQuery.changeConnectionTarget({
             identifier: identifier,
             type: node.type,
@@ -1103,7 +1117,7 @@ class ViewQuery {
   * "subnetwork" or "network".
   * @param {Object} parameters.state Application's state.
   */
-  static restoreTraversalSearch({search, variableName, recordSource, state} = {}) {
+  static restoreQuerySearch({search, variableName, recordSource, state} = {}) {
     // Determine source of nodes' records.
     if (recordSource === "subnetwork") {
       var nodesRecords = state.subnetworkNodesRecords;
