@@ -53,25 +53,27 @@ class ActionQuery {
 
   /**
   * Changes the selection of combination in query view.
-  * @param {string} combination Method of combination, union or difference.
-  * @param {Object} state Application's state.
+  * @param {string} queryCombination Method of combination, "inclusion" or
+  * "exclusion".
+  * @param {Object} parameters.state Application's state.
   */
-  static changeCombination(combination, state) {
-
-    // Initialize controls for query view.
-    var queryViewControls = ActionQuery.initializeSubordinateControls();
-
-
-    // TODO: changeCombination needs to call the full deriveState procedure...
-
-
+  static changeCombination({queryCombination, state} = {}) {
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveState({
+      subnetworkRestoration: true,
+      queryCombination: queryCombination,
+      networkNodesRecords: state.networkNodesRecords,
+      networkLinksRecords: state.networkLinksRecords,
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
-      queryCombination: combination
+      queryCombination: queryCombination
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
-      queryViewControls
+      dependentStateVariables
     );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
@@ -80,21 +82,32 @@ class ActionQuery {
     });
   }
 
-
   //////////////////////////////////////////////////////////////////////////////
   // TODO: This entire block of actions needs to call deriveSubordinateState()
 
   /**
   * Changes the selection of type of controls in query view.
-  * @param {string} type Type of query, rogue, proximity, or path.
-  * @param {Object} state Application's state.
+  * @param {string} parameters.queryType Type of query, "rogue", "proximity",
+  * "path", or "combination".
+  * @param {Object} parameters.state Application's state.
   */
-  static changeType(type, state) {
+  static changeType({queryType, state} = {}) {
+    // Initialize controls for query view.
+    var subordinateControls = ActionQuery.initializeSubordinateControls();
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveSubordinateState({
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
-      queryType: type
+      queryType: queryType
     };
-    var variablesValues = Object.assign(novelVariablesValues);
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      subordinateControls,
+      dependentStateVariables
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -385,14 +398,6 @@ class ActionQuery {
   //////////////////////////////////////////////////////////////////////////////
 
   // TODO: Execute all queries from the same root procedure...
-  // TODO: Determine query type from the queryType state variable.
-  // TODO: The subordinate, specific query procedures need to check (Model methods) that state is ready for each type of query
-  // TODO: these action procedures are the gate-keepers. they only execute query and deriveState if appropriate.
-
-  // TODO: The query procedure needs to pass novel variables' values to the application's state.
-  // TODO: Then the query needs to call deriveState to actually execute the query and update the subnetwork.
-
-  // TODO: executeQuery(state) {}
 
   /**
   * Evaluates and executes query and combination on the network.
@@ -420,8 +425,17 @@ class ActionQuery {
         viewsRestoration: state.viewsRestoration,
         state: state
       });
-
-      // TODO: now submit the new variables to the application's state...
+      // Compile variables' values.
+      var novelVariablesValues = {};
+      var variablesValues = Object.assign(
+        novelVariablesValues,
+        dependentStateVariables
+      );
+      // Submit variables' values to the application's state.
+      ActionGeneral.submitStateVariablesValues({
+        variablesValues: variablesValues,
+        state: state
+      });
     }
   }
 
@@ -604,7 +618,7 @@ class ActionQuery {
   }
   //////////////////////////////////////////////////////////////////////////////
 
-  // TODO: this execute procedure might be an exception, since it's independent of queryType
+  // TODO: these execute procedures might be an exception, since they're independent of queryType
 
   /**
   * Executes rogue query and union on the network.
@@ -682,7 +696,6 @@ class ActionQuery {
     }
   }
 
-
   // Indirect actions.
 
   /**
@@ -742,29 +755,58 @@ class ActionQuery {
     // Return information.
     return variablesValues;
   }
+  /**
+  * Derives application's dependent state from controls relevant to view.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object<boolean>} parameters.viewsRestoration Information about
+  * whether to restore each view.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Values of application's variables.
+  */
+  static deriveSubordinateState({viewsRestoration, state} = {}) {
+    // TODO: What exactly does this procedure need to do?
+    // TODO: set viewsRestoration to restore at least the query view
 
-  // TODO: static deriveSubordinateState({} = {}) {}
-
+    // Determine which views to restore.
+    var novelViewsRestoration = ActionInterface.changeViewsRestoration({
+      views: [
+        "query",
+      ],
+      type: true,
+      viewsRestoration: viewsRestoration
+    });
+    // Compile information.
+    var novelVariablesValues = {
+      viewsRestoration: novelViewsRestoration
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+    );
+    // Return information.
+    return variablesValues;
+  }
   /**
   * Derives subnetwork's elements.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} subnetworkRestoration Whether to restore subnetwork's
-  * elements.
-  * @param {string} queryCombination Method of combination, "inclusion" or
-  * "exclusion".
+  * @param {boolean} parameters.subnetworkRestoration Whether to restore
+  * subnetwork's elements.
+  * @param {string} parameters.queryCombination Method of combination,
+  * "inclusion" or "exclusion".
+  * @param {string} parameters.queryType Type of query, "rogue", "proximity",
+  * "path", or "combination".
   * @param {Object<string>} parameters.queryRogueFocus Information about a node.
   * @param {Object<string>} parameters.queryProximityFocus Information about a
   * node.
-  * @param {string} queryProximityDirection Direction in which to traverse
-  * links, "successors" for source to target, "predecessors" for target to
-  * source, or "neighbors" for either.
+  * @param {string} parameters.queryProximityDirection Direction in which to
+  * traverse links, "successors" for source to target, "predecessors" for target
+  * to source, or "neighbors" for either.
   * @param {number} parameters.queryProximityDepth Depth in links to which to
   * traverse.
   * @param {Object<string>} parameters.queryPathSource Information about a node.
   * @param {Object<string>} parameters.queryPathTarget Information about a node.
-  * @param {string} queryPathDirection Direction in which to traverse links,
-  * "forward" for source to target, "reverse" for target to source, or "both"
-  * for either.
+  * @param {string} parameters.queryPathDirection Direction in which to traverse
+  * links, "forward" for source to target, "reverse" for target to source, or
+  * "both" for either.
   * @param {number} parameters.queryPathCount Count of paths to collect.
   * @param {Object<string>} parameters.queryConnectionTarget Information about a
   * node.
@@ -801,7 +843,7 @@ class ActionQuery {
 
         // TODO: call another procedure method to organize calling matching queries.
 
-        console.log("this should not happen...");
+        console.log("called query procedure... still need to implement...");
 
       }
       // Compile information.
@@ -832,6 +874,10 @@ class ActionQuery {
   */
   static deriveState({subnetworkRestoration, queryCombination, networkNodesRecords, networkLinksRecords, viewsRestoration, state} = {}) {
     // Derive state relevant to view.
+
+    // Initialize controls for query view.
+    var subordinateControls = ActionQuery.initializeSubordinateControls();
+
     // Restore subnetwork's elements.
     var subnetworkElements = ActionQuery.deriveSubnetwork({
       subnetworkRestoration: subnetworkRestoration,
@@ -856,11 +902,6 @@ class ActionQuery {
       subnetworkNodesRecords: subnetworkElements.subnetworkNodesRecords,
       subnetworkLinksRecords: subnetworkElements.subnetworkLinksRecords
     });
-
-    // Initialize controls for query view.
-    // TODO: only do this when appropriate... for example, maybe after query execution
-    // TODO: move this to the derive procedure upstream of this one...
-    var subordinateControls = ActionQuery.initializeSubordinateControls();
 
 
     // Determine which views to restore.

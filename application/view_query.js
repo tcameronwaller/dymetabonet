@@ -78,15 +78,15 @@ class ViewQuery {
       // Container is empty.
       // Create and activate behavior of content.
       // Create and activate controls for combination.
-      self.createActivateCombinationControl("union", self);
-      self.createActivateCombinationControl("difference", self);
+      self.createActivateCombinationControl("inclusion", self);
+      self.createActivateCombinationControl("exclusion", self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create and activate controls for type of traversal.
-      self.createActivateTraversalTypeControl("rogue", self);
-      self.createActivateTraversalTypeControl("proximity", self);
-      self.createActivateTraversalTypeControl("path", self);
-      self.createActivateTraversalTypeControl("connection", self);
+      self.createActivateTypeControl("rogue", self);
+      self.createActivateTypeControl("proximity", self);
+      self.createActivateTypeControl("path", self);
+      self.createActivateTypeControl("connection", self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create container.
@@ -102,13 +102,13 @@ class ViewQuery {
       // Container is not empty.
       // Set references to content.
       // Control for combination.
-      self.union = self.document.getElementById("combination-union");
-      self.difference = self.document.getElementById("combination-difference");
+      self.inclusion = self.document.getElementById("combination-inclusion");
+      self.exclusion = self.document.getElementById("combination-exclusion");
       // Control for type of traversal.
-      self.rogue = self.document.getElementById("traversal-rogue");
-      self.proximity = self.document.getElementById("traversal-proximity");
-      self.path = self.document.getElementById("traversal-path");
-      self.connection = self.document.getElementById("traversal-connection");
+      self.rogue = self.document.getElementById("type-rogue");
+      self.proximity = self.document.getElementById("type-proximity");
+      self.path = self.document.getElementById("type-path");
+      self.connection = self.document.getElementById("type-connection");
       // Container for traversal's controls.
       self.controlContainer = self
       .document.getElementById("traversal-control-container");
@@ -137,7 +137,10 @@ class ViewQuery {
       // Determine method of combination.
       var combination = event.currentTarget.value;
       // Call action.
-      ActionQuery.changeCombination(combination, self.state);
+      ActionQuery.changeCombination({
+        queryCombination: combination,
+        state: self.state
+      });
     });
   }
   /**
@@ -145,14 +148,14 @@ class ViewQuery {
   * @param {string} type Type of traversal, rogue, proximity, or path.
   * @param {Object} self Instance of a class.
   */
-  createActivateTraversalTypeControl(type, self) {
+  createActivateTypeControl(type, self) {
     // Create control for type of traversal.
-    var identifier = "traversal-" + type;
+    var identifier = "type-" + type;
     self[type] = View.createRadioButtonLabel({
       identifier: identifier,
       value: type,
-      name: "traversal",
-      className: "traversal",
+      name: "type",
+      className: "type",
       text: type,
       parent: self.container,
       documentReference: self.document
@@ -163,7 +166,10 @@ class ViewQuery {
       // Determine type.
       var type = event.currentTarget.value;
       // Call action.
-      ActionQuery.changeType(type, self.state);
+      ActionQuery.changeType({
+        queryType: type,
+        state: self.state
+      });
     });
   }
   /**
@@ -180,18 +186,16 @@ class ViewQuery {
     // nodes in the subnetwork.
     // Create view's variant elements.
     // Activate variant behavior of view's elements.
-    self.union.checked = ViewQuery
-    .determineTraversalCombinationMatch("union", self.state);
-    self.difference.checked = ViewQuery
-    .determineTraversalCombinationMatch("difference", self.state);
-    self.rogue.checked = ViewQuery
-    .determineTraversalTypeMatch("rogue", self.state);
+    self.inclusion.checked = ViewQuery
+    .determineCombinationMatch("inclusion", self.state);
+    self.exclusion.checked = ViewQuery
+    .determineCombinationMatch("exclusion", self.state);
+    self.rogue.checked = ViewQuery.determineTypeMatch("rogue", self.state);
     self.proximity.checked = ViewQuery
-    .determineTraversalTypeMatch("proximity", self.state);
-    self.path.checked = ViewQuery
-    .determineTraversalTypeMatch("path", self.state);
+    .determineTypeMatch("proximity", self.state);
+    self.path.checked = ViewQuery.determineTypeMatch("path", self.state);
     self.connection.checked = ViewQuery
-    .determineTraversalTypeMatch("connection", self.state);
+    .determineTypeMatch("connection", self.state);
     // Create, activate, and restore controls for traversal.
     self.createActivateRestoreTraversalControl(self);
   }
@@ -1005,8 +1009,8 @@ class ViewQuery {
   * @returns {boolean} Whether combination strategy matches the value in the
   * application's state.
   */
-  static determineTraversalCombinationMatch(type, state) {
-    return type === state.traversalCombination;
+  static determineCombinationMatch(type, state) {
+    return type === state.queryCombination;
   }
   /**
   * Determines whether a type of traversal matches the value in the
@@ -1016,8 +1020,8 @@ class ViewQuery {
   * @returns {boolean} Whether type of traversal matches the value in the
   * application's state.
   */
-  static determineTraversalTypeMatch(type, state) {
-    var value = state.traversalType;
+  static determineTypeMatch(type, state) {
+    var value = state.queryType;
     return value === type;
   }
   /**

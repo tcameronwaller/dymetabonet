@@ -716,8 +716,8 @@ class Model {
   static determineConnectionQuery(state) {
     return (
       (
-        (state.queryCombination === "union") ||
-        (state.queryCombination === "difference")
+        (state.queryCombination === "inclusion") ||
+        (state.queryCombination === "exclusion")
       ) &&
       (state.queryConnectionTargets.length > 1) &&
       (state.queryConnectionCount > 0)
