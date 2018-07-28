@@ -51,39 +51,10 @@ class ActionQuery {
 
   // Direct actions.
 
-  /**
-  * Changes the selection of combination in query view.
-  * @param {string} queryCombination Method of combination, "inclusion" or
-  * "exclusion".
-  * @param {Object} parameters.state Application's state.
-  */
-  static changeCombination({queryCombination, state} = {}) {
-    // Derive dependent state.
-    var dependentStateVariables = ActionQuery.deriveState({
-      subnetworkRestoration: true,
-      queryCombination: queryCombination,
-      networkNodesRecords: state.networkNodesRecords,
-      networkLinksRecords: state.networkLinksRecords,
-      viewsRestoration: state.viewsRestoration,
-      state: state
-    });
-    // Compile variables' values.
-    var novelVariablesValues = {
-      queryCombination: queryCombination
-    };
-    var variablesValues = Object.assign(
-      novelVariablesValues,
-      dependentStateVariables
-    );
-    // Submit variables' values to the application's state.
-    ActionGeneral.submitStateVariablesValues({
-      variablesValues: variablesValues,
-      state: state
-    });
-  }
-
   //////////////////////////////////////////////////////////////////////////////
   // TODO: This entire block of actions needs to call deriveSubordinateState()
+
+  // Direct actions that modify only proximal variables.
 
   /**
   * Changes the selection of type of controls in query view.
@@ -465,8 +436,38 @@ class ActionQuery {
   }
   //////////////////////////////////////////////////////////////////////////////
 
-  // TODO: Execute all queries from the same root procedure...
+  // Direct actions that modify proximal and distal variables.
 
+  /**
+  * Changes the selection of combination in query view.
+  * @param {string} queryCombination Method of combination, "inclusion" or
+  * "exclusion".
+  * @param {Object} parameters.state Application's state.
+  */
+  static changeCombination({queryCombination, state} = {}) {
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveState({
+      subnetworkRestoration: true,
+      queryCombination: queryCombination,
+      networkNodesRecords: state.networkNodesRecords,
+      networkLinksRecords: state.networkLinksRecords,
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
+    // Compile variables' values.
+    var novelVariablesValues = {
+      queryCombination: queryCombination
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
+    // Submit variables' values to the application's state.
+    ActionGeneral.submitStateVariablesValues({
+      variablesValues: variablesValues,
+      state: state
+    });
+  }
   /**
   * Evaluates and executes query and combination on the network.
   * @param {Object} state Application's state.
@@ -890,39 +891,132 @@ class ActionQuery {
   */
   static deriveSubnetwork({subnetworkRestoration, queryCombination, queryType, queryRogueFocus, queryProximityFocus, queryProximityDirection, queryProximityDepth, queryPathSource, queryPathTarget, queryPathDirection, queryPathCount, queryConnectionTarget, queryConnectionTargets, queryConnectionCount, networkNodesRecords, networkLinksRecords} = {}) {
     // Determine whether to derive subnetwork's elements by a query.
-      if (subnetworkRestoration) {
-        // Derive subnetwork's elements by initial combinations.
-        // Consider combination strategy.
-        if (queryCombination === "inclusion") {
-          var subnetworkElements = {
-            subnetworkNodesRecords: [],
-            subnetworkLinksRecords: []
-          };
-        } else if (queryCombination === "exclusion") {
-          var subnetworkElements = Network.copyNetworkElementsRecords({
-            networkNodesRecords: networkNodesRecords,
-            networkLinksRecords: networkLinksRecords
-          });
-        }
-      } else {
-        // Derive subnetwork's elements by execution of query.
-        // Preserve any current elements in subnetwork.
-        // Execute query and combine elements to subnetwork.
-
-        // TODO: call another procedure method to organize calling matching queries.
-
-        console.log("called query procedure... still need to implement...");
-
+    if (subnetworkRestoration) {
+      // Derive subnetwork's elements by initial combinations.
+      // Consider combination strategy.
+      if (queryCombination === "inclusion") {
+        var subnetworkElements = {
+          subnetworkNodesRecords: [],
+          subnetworkLinksRecords: []
+        };
+      } else if (queryCombination === "exclusion") {
+        var subnetworkElements = Network.copyNetworkElementsRecords({
+          networkNodesRecords: networkNodesRecords,
+          networkLinksRecords: networkLinksRecords
+        });
       }
-      // Compile information.
-      var novelVariablesValues = {
-      };
-      var variablesValues = Object.assign(
-        novelVariablesValues,
-        subnetworkElements
-      );
-      // Return information.
-      return variablesValues;
+    } else {
+      // Derive subnetwork's elements by execution of query.
+      // Preserve any current elements in subnetwork.
+      // Execute query and combine elements to subnetwork.
+
+      // TODO: call another procedure method to organize calling matching queries.
+
+      var subnetworkElements = ActionQuery.executeQueryCombineNetwork({});
+
+      console.log("called query procedure... still need to implement...");
+    }
+    // Compile information.
+    var novelVariablesValues = {
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      subnetworkElements
+    );
+    // Return information.
+    return variablesValues;
+  }
+  /**
+  * Derives subnetwork's elements.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.subnetworkRestoration Whether to restore
+  * subnetwork's elements.
+  * @param {string} parameters.queryCombination Method of combination,
+  * "inclusion" or "exclusion".
+  * @param {string} parameters.queryType Type of query, "rogue", "proximity",
+  * "path", or "combination".
+  * @param {Object<string>} parameters.queryRogueFocus Information about a node.
+  * @param {Object<string>} parameters.queryProximityFocus Information about a
+  * node.
+  * @param {string} parameters.queryProximityDirection Direction in which to
+  * traverse links, "successors" for source to target, "predecessors" for target
+  * to source, or "neighbors" for either.
+  * @param {number} parameters.queryProximityDepth Depth in links to which to
+  * traverse.
+  * @param {Object<string>} parameters.queryPathSource Information about a node.
+  * @param {Object<string>} parameters.queryPathTarget Information about a node.
+  * @param {string} parameters.queryPathDirection Direction in which to traverse
+  * links, "forward" for source to target, "reverse" for target to source, or
+  * "both" for either.
+  * @param {number} parameters.queryPathCount Count of paths to collect.
+  * @param {Object<string>} parameters.queryConnectionTarget Information about a
+  * node.
+  * @param {Array<Object<string>>} parameters.queryConnectionTargets Information
+  * about nodes.
+  * @param {number} parameters.queryConnectionCount Count of paths to collect
+  * between each pair of targets.
+  * @param {Array<Object>} parameters.networkNodesRecords Information about
+  * network's nodes.
+  * @param {Array<Object>} parameters.networkLinksRecords Information about
+  * network's links.
+  * @returns {Object} Values of application's variables.
+  */
+  static executeQueryCombineNetwork({} = {}) {
+    // Determine query's type.
+    if (queryType === "rogue") {
+      var subnetworkElements = Query.combineRogueNodeNetwork({
+        focus: queryRogueFocus.identifier,
+        combination: queryCombination,
+        subnetworkNodesRecords: subnetworkNodesRecords,
+        subnetworkLinksRecords: subnetworkLinksRecords,
+        networkNodesRecords: networkNodesRecords,
+        networkLinksRecords: networkLinksRecords
+      });
+    } else if (queryType === "proximity") {
+      var subnetworkElements = Query.combineProximityNetwork({
+        focus: queryProximityFocus.identifier,
+        direction: queryProximityDirection,
+        depth: queryProximityDepth,
+        combination: queryCombination,
+        subnetworkNodesRecords: subnetworkNodesRecords,
+        subnetworkLinksRecords: subnetworkLinksRecords,
+        networkNodesRecords: networkNodesRecords,
+        networkLinksRecords: networkLinksRecords
+      });
+    } else if (queryType === "path") {
+      var subnetworkElements = Query.combinePathNetwork({
+        source: queryPathSource.identifier,
+        target: queryPathTarget.identifier,
+        direction: queryPathDirection,
+        count: queryPathCount,
+        combination: queryCombination,
+        subnetworkNodesRecords: subnetworkNodesRecords,
+        subnetworkLinksRecords: subnetworkLinksRecords,
+        networkNodesRecords: networkNodesRecords,
+        networkLinksRecords: networkLinksRecords
+      });
+    } else if (queryType === "connection") {
+      var targets = General
+      .collectValueFromObjects("identifier", queryConnectionTargets);
+      var subnetworkElements = Query.combineConnectionNetwork({
+        targets: targets,
+        count: queryConnectionCount,
+        combination: queryCombination,
+        subnetworkNodesRecords: subnetworkNodesRecords,
+        subnetworkLinksRecords: subnetworkLinksRecords,
+        networkNodesRecords: networkNodesRecords,
+        networkLinksRecords: networkLinksRecords
+      });
+    }
+
+    // Compile information.
+    var novelVariablesValues = {
+    };
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+    );
+    // Return information.
+    return variablesValues;
   }
   /**
   * Derives application's dependent state from controls relevant to view.
