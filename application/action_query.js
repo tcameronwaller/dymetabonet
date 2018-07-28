@@ -114,8 +114,6 @@ class ActionQuery {
       state: state
     });
   }
-
-
   /**
   * Changes the selection of focus for rogue query.
   * @param {Object} parameters Destructured object of parameters.
@@ -129,11 +127,19 @@ class ActionQuery {
       identifier: identifier,
       type: type
     };
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveSubordinateState({
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
       queryRogueFocus: record
     };
-    var variablesValues = Object.assign(novelVariablesValues);
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -153,11 +159,19 @@ class ActionQuery {
       identifier: identifier,
       type: type
     };
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveSubordinateState({
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
       queryProximityFocus: record
     };
-    var variablesValues = Object.assign(novelVariablesValues);
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -177,11 +191,19 @@ class ActionQuery {
     } else if (state.queryProximityDirection === "predecessors") {
       var direction = "successors";
     }
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveSubordinateState({
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
       queryProximityDirection: direction
     };
-    var variablesValues = Object.assign(novelVariablesValues);
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -194,11 +216,19 @@ class ActionQuery {
   * @param {Object} state Application's state.
   */
   static changeProximityDepth(depth, state) {
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveSubordinateState({
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
       queryProximityDepth: depth
     };
-    var variablesValues = Object.assign(novelVariablesValues);
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -218,11 +248,19 @@ class ActionQuery {
       identifier: identifier,
       type: type
     };
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveSubordinateState({
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
       queryPathSource: record
     };
-    var variablesValues = Object.assign(novelVariablesValues);
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -242,11 +280,19 @@ class ActionQuery {
       identifier: identifier,
       type: type
     };
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveSubordinateState({
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
       queryPathTarget: record
     };
-    var variablesValues = Object.assign(novelVariablesValues);
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -266,11 +312,19 @@ class ActionQuery {
     } else if (state.queryPathDirection === "reverse") {
       var direction = "forward";
     }
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveSubordinateState({
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
       queryPathDirection: direction
     };
-    var variablesValues = Object.assign(novelVariablesValues);
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -293,17 +347,29 @@ class ActionQuery {
     } else if (type === "connection") {
       var variableName = "queryConnectionCount";
     }
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveSubordinateState({
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
       [variableName]: count
     };
-    var variablesValues = Object.assign(novelVariablesValues);
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
   }
+
+  // TODO: still need to update stuff below here...
+
+
   /**
   * Changes the selection of target for connection query.
   * @param {Object} parameters Destructured object of parameters.
