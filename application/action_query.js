@@ -1094,6 +1094,7 @@ class ActionQuery {
     // Determine which views to restore.
     var novelViewsRestoration = ActionInterface.changeViewsRestoration({
       views: [
+        "subnetwork",
         "query",
         "measurement",
         "summary",
