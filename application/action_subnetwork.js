@@ -271,6 +271,8 @@ class ActionSubnetwork {
     var dependentStateVariables = ActionQuery.deriveState({
       subnetworkRestoration: true,
       queryCombination: queryControls.queryCombination,
+      subnetworkNodesRecords: state.subnetworkNodesRecords,
+      subnetworkLinksRecords: state.subnetworkLinksRecords,
       networkNodesRecords: networkNodesRecords,
       networkLinksRecords: networkLinksRecords,
       viewsRestoration: novelViewsRestoration,

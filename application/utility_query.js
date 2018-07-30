@@ -55,7 +55,7 @@ class Query {
     // Collect candidate nodes.
     var rogueNodeIdentifier = [focus];
     // Combine candidate nodes to subnetwork.
-    return Traversal.combineNodesLinksSubnetwork({
+    return Query.combineNodesLinksSubnetwork({
       candidateNodes: rogueNodeIdentifier,
       combination: combination,
       subnetworkNodesRecords: subnetworkNodesRecords,
@@ -87,14 +87,14 @@ class Query {
   */
   static combineProximityNetwork({focus, direction, depth, combination, subnetworkNodesRecords, subnetworkLinksRecords, networkNodesRecords, networkLinksRecords} = {}) {
     // Collect candidate nodes.
-    var proximityNodesIdentifiers = Traversal.collectNodesTraverseBreadth({
+    var proximityNodesIdentifiers = Query.collectNodesTraverseBreadth({
       focus: focus,
       direction: direction,
       depth: depth,
       links: networkLinksRecords
     });
     // Combine candidate nodes to subnetwork.
-    return Traversal.combineNodesLinksSubnetwork({
+    return Query.combineNodesLinksSubnetwork({
       candidateNodes: proximityNodesIdentifiers,
       combination: combination,
       subnetworkNodesRecords: subnetworkNodesRecords,
@@ -129,7 +129,7 @@ class Query {
     // Collect candidate nodes.
     // Determine appropriate source, target, and direction for traversal.
     if (direction === "forward") {
-      var paths = Traversal.collectShortestSimplePaths({
+      var paths = Query.collectShortestSimplePaths({
         source: source,
         target: target,
         direction: true,
@@ -138,7 +138,7 @@ class Query {
         links: networkLinksRecords
       });
     } else if (direction === "both") {
-      var paths = Traversal.collectBidirectionalShortestSimplePaths({
+      var paths = Query.collectBidirectionalShortestSimplePaths({
         source: source,
         target: target,
         direction: true,
@@ -147,7 +147,7 @@ class Query {
         links: networkLinksRecords
       });
     } else if (direction === "reverse") {
-      var paths = Traversal.collectShortestSimplePaths({
+      var paths = Query.collectShortestSimplePaths({
         source: target,
         target: source,
         direction: true,
@@ -157,13 +157,13 @@ class Query {
       });
     }
     // Combine identifiers of nodes in all paths.
-    var pathsNodesIdentifiers = Traversal.combinePathsNodes(paths);
+    var pathsNodesIdentifiers = Query.combinePathsNodes(paths);
     // Ensure that collection includes source and target nodes even if traversal
     // did not find any paths.
     var nodesIdentifiers = General
     .collectUniqueElements(pathsNodesIdentifiers.concat(source, target));
     // Combine candidate nodes to subnetwork.
-    return Traversal.combineNodesLinksSubnetwork({
+    return Query.combineNodesLinksSubnetwork({
       candidateNodes: nodesIdentifiers,
       combination: combination,
       subnetworkNodesRecords: subnetworkNodesRecords,
@@ -199,7 +199,7 @@ class Query {
     // Iterate on pairs, combining nodes from paths between each.
     var pathsNodesIdentifiers = pairs.reduce(function (pairsCollection, pair) {
       // Collect nodes in paths.
-      var paths = Traversal.collectBidirectionalShortestSimplePaths({
+      var paths = Query.collectBidirectionalShortestSimplePaths({
         source: pair[0],
         target: pair[1],
         direction: true,
@@ -208,7 +208,7 @@ class Query {
         links: networkLinksRecords
       });
       // Combine identifiers of nodes in all paths.
-      var nodesIdentifiers = Traversal.combinePathsNodes(paths);
+      var nodesIdentifiers = Query.combinePathsNodes(paths);
       return nodesIdentifiers.reduce(function (nodesCollection, node) {
         if (!nodesCollection.includes(node)) {
           return [].concat(nodesCollection, node);
@@ -222,7 +222,7 @@ class Query {
     var nodesIdentifiers = General
     .collectUniqueElements(pathsNodesIdentifiers.concat(targets));
     // Combine candidate nodes to subnetwork.
-    return Traversal.combineNodesLinksSubnetwork({
+    return Query.combineNodesLinksSubnetwork({
       candidateNodes: nodesIdentifiers,
       combination: combination,
       subnetworkNodesRecords: subnetworkNodesRecords,
@@ -254,7 +254,7 @@ class Query {
     var nodes = General
     .collectValueFromObjects("identifier", subnetworkNodesRecords);
     // Combine candidate nodes to those in subnetwork.
-    if (combination === "union") {
+    if (combination === "inclusion") {
       // Combine previous and current nodes by addition.
       var novelNodesIdentifiers = candidateNodes
       .reduce(function (collection, identifier) {
@@ -264,19 +264,19 @@ class Query {
           return collection;
         }
       }, nodes);
-    } else if (combination === "difference") {
+    } else if (combination === "exclusion") {
       // Combine previous and current nodes by subtraction.
       var novelNodesIdentifiers = nodes.filter(function (identifier) {
         return !(candidateNodes.includes(identifier));
       });
     }
     // Collect links between nodes.
-    var novelLinksIdentifiers = Traversal.collectLinksBetweenNodes({
+    var novelLinksIdentifiers = Query.collectLinksBetweenNodes({
       nodes: novelNodesIdentifiers,
       links: networkLinksRecords
     });
     // Collect records for nodes and links.
-    return Traversal.collectNodesLinksRecordsByIdentifiers({
+    return Query.collectNodesLinksRecordsByIdentifiers({
       nodesIdentifiers: novelNodesIdentifiers,
       linksIdentifiers: novelLinksIdentifiers,
       subnetworkNodesRecords: subnetworkNodesRecords,
@@ -329,12 +329,12 @@ class Query {
   static collectNodesLinksRecordsByIdentifiers({nodesIdentifiers, linksIdentifiers, subnetworkNodesRecords, subnetworkLinksRecords, networkNodesRecords, networkLinksRecords} = {}) {
     // Traversals collect identifiers of nodes and links.
     // Collect records from these identifiers.
-    var nodesRecords = Traversal.collectSubnetworkNetworkElements({
+    var nodesRecords = Query.collectSubnetworkNetworkElements({
       identifiers: nodesIdentifiers,
       subnetworkRecords: subnetworkNodesRecords,
       networkRecords: networkNodesRecords
     });
-    var linksRecords = Traversal.collectSubnetworkNetworkElements({
+    var linksRecords = Query.collectSubnetworkNetworkElements({
       identifiers: linksIdentifiers,
       subnetworkRecords: subnetworkLinksRecords,
       networkRecords: networkLinksRecords
@@ -438,6 +438,7 @@ class Query {
       }
     }, []);
   }
+
   /**
   * Collects identifiers of nodes that are proximal to a single, central, focal
   * node within a specific depth.
@@ -455,7 +456,7 @@ class Query {
     // Collect nodes in a breadth-first traversal from a central focal node.
     // This algorithm does not store paths from the traversal.
     // Create a map of nodes at each depth from focus.
-    var map = Traversal.collectNodesTraverseBreadthIterateDepths({
+    var map = Query.collectNodesTraverseBreadthIterateDepths({
       depth: 0,
       currentQueue: {[focus]: 0},
       direction: direction,
@@ -484,7 +485,7 @@ class Query {
   * node.
   */
   static collectNodesTraverseBreadthIterateDepths({depth, currentQueue, direction, limit, map, links} = {}) {
-    var collection = Traversal.collectNodesTraverseBreadthIterateNodes({
+    var collection = Query.collectNodesTraverseBreadthIterateNodes({
       depth: depth,
       currentQueue: currentQueue,
       nextQueue: {},
@@ -496,7 +497,7 @@ class Query {
     // Determine whether to traverse to next depth.
     if (depth < limit) {
       // Traverse to next depth.
-      return Traversal.collectNodesTraverseBreadthIterateDepths({
+      return Query.collectNodesTraverseBreadthIterateDepths({
         depth: depth + 1,
         currentQueue: collection.nextQueue,
         direction: direction,
@@ -546,7 +547,7 @@ class Query {
       var novelMap = map;
     }
     // Collect node's neighbors.
-    var neighbors = Traversal.collectNodeNeighbors({
+    var neighbors = Query.collectNodeNeighbors({
       focus: node,
       direction: direction,
       omissionNodes: [],
@@ -568,7 +569,7 @@ class Query {
     // Determine whether to continue to next node in queue.
     if (Object.keys(novelCurrentQueue).length > 0) {
       // Evaluate next node in queue.
-      return Traversal.collectNodesTraverseBreadthIterateNodes({
+      return Query.collectNodesTraverseBreadthIterateNodes({
         depth: depth,
         currentQueue: novelCurrentQueue,
         nextQueue: novelNextQueue,
@@ -585,6 +586,7 @@ class Query {
       };
     }
   }
+
   /**
   * Collects identifiers of nodes within multiple shortest, simple, weightless,
   * directional paths between a source and target node in both directions.
@@ -604,7 +606,7 @@ class Query {
     // A nondirectional traversal produces redundant paths.
     // Combine paths from directional traversals in both directions.
     // Keep the shortest of these paths.
-    var forwardPaths = Traversal.collectShortestSimplePaths({
+    var forwardPaths = Query.collectShortestSimplePaths({
       source: source,
       target: target,
       direction: direction,
@@ -612,7 +614,7 @@ class Query {
       count: count,
       links: links
     });
-    var reversePaths = Traversal.collectShortestSimplePaths({
+    var reversePaths = Query.collectShortestSimplePaths({
       source: target,
       target: source,
       direction: direction,
@@ -642,7 +644,7 @@ class Query {
     // Determine which algorithm to use.
     if (algorithm === "immutable") {
       // Immutable, recursive algorithm.
-      return Traversal.collectShortestSimplePathsImmutableRecursion({
+      return Query.collectShortestSimplePathsImmutableRecursion({
         source: source,
         target: target,
         direction: direction,
@@ -651,7 +653,7 @@ class Query {
       });
     } else if (algorithm === "mutable") {
       // Mutable, iterative algorithm.
-      return Traversal.collectShortestSimplePathsMutableIteration({
+      return Query.collectShortestSimplePathsMutableIteration({
         source: source,
         target: target,
         direction: direction,
@@ -681,7 +683,7 @@ class Query {
     // In some ways, the implementation in NetworkX was useful
     // (networkx.algorithms.simple_paths.shortest_simple_paths).
     // Determine initial definite path.
-    var initialDefinitePath = Traversal.collectShortestPathBidirectionalBreadth({
+    var initialDefinitePath = Query.collectShortestPathBidirectionalBreadth({
       source: source,
       target: target,
       direction: direction,
@@ -765,7 +767,7 @@ class Query {
           }
         }
         // Collect nodes in spur path.
-        var spurPath = Traversal.collectShortestPathBidirectionalBreadth({
+        var spurPath = Query.collectShortestPathBidirectionalBreadth({
           source: spurNode,
           target: target,
           direction: direction,
@@ -816,7 +818,7 @@ class Query {
     // In some ways, the implementation in NetworkX was useful
     // (networkx.algorithms.simple_paths.shortest_simple_paths).
     // Determine initial definite path.
-    var path = Traversal.collectShortestPathBidirectionalBreadth({
+    var path = Query.collectShortestPathBidirectionalBreadth({
       source: source,
       target: target,
       direction: direction,
@@ -831,7 +833,7 @@ class Query {
     // Initialize path index.
     var pathIndex = 0;
     // Iterate recursively on paths.
-    var paths = Traversal.collectShortestSimplePathsIteratePaths({
+    var paths = Query.collectShortestSimplePathsIteratePaths({
       pathIndex: pathIndex,
       definitePaths: definitePaths,
       tentativePaths: tentativePaths,
@@ -866,7 +868,7 @@ class Query {
     // Initialize spur index.
     var spurIndex = 0;
     // Iterate recursively on spur paths.
-    var spurTentativePaths = Traversal.collectShortestSimplePathsIterateSpurs({
+    var spurTentativePaths = Query.collectShortestSimplePathsIterateSpurs({
       spurIndex: spurIndex,
       pathIndex: pathIndex,
       definitePaths: definitePaths,
@@ -900,7 +902,7 @@ class Query {
     // Path index ranges from 0 to 1 less than the total count of definite
     // paths.
     if ((novelPathIndex < (count - 1)) && (novelPathIndex > pathIndex)) {
-      return Traversal.collectShortestSimplePathsIteratePaths({
+      return Query.collectShortestSimplePathsIteratePaths({
         pathIndex: novelPathIndex,
         definitePaths: novelDefinitePaths,
         tentativePaths: novelTentativePaths,
@@ -940,7 +942,7 @@ class Query {
     // Initialize root index.
     var rootIndex = 0;
     // Iterate recursively on definite paths.
-    var novelOmissionLinks = Traversal.collectShortestSimplePathsIterateRoots({
+    var novelOmissionLinks = Query.collectShortestSimplePathsIterateRoots({
       rootIndex: rootIndex,
       spurIndex: spurIndex,
       pathIndex: pathIndex,
@@ -975,7 +977,7 @@ class Query {
       var novelOmissionNodes = omissionNodes;
     }
     // Collect nodes in spur path.
-    var spurPath = Traversal.collectShortestPathBidirectionalBreadth({
+    var spurPath = Query.collectShortestPathBidirectionalBreadth({
       source: spurNode,
       target: target,
       direction: direction,
@@ -999,7 +1001,7 @@ class Query {
     var novelSpurIndex = spurIndex + 1;
     if (novelSpurIndex < (previousPath.length - 1)) {
       // Call self recursively.
-      return Traversal.collectShortestSimplePathsIterateSpurs({
+      return Query.collectShortestSimplePathsIterateSpurs({
         spurIndex: novelSpurIndex,
         pathIndex: pathIndex,
         definitePaths: definitePaths,
@@ -1075,7 +1077,7 @@ class Query {
     var novelRootIndex = rootIndex + 1;
     if (novelRootIndex < definitePaths.length) {
       // Call self recursively.
-      return Traversal.collectShortestSimplePathsIterateRoots({
+      return Query.collectShortestSimplePathsIterateRoots({
         rootIndex: novelRootIndex,
         spurIndex: spurIndex,
         pathIndex: pathIndex,
@@ -1134,14 +1136,14 @@ class Query {
       // Extract path from path's bridge, predecessors, and successors.
       // If a path exists, then both visits must include bridge.
       // Forward path, source to bridge.
-      var forwardPath = Traversal.extractPathNodes({
+      var forwardPath = Query.extractPathNodes({
         path: [],
         node: visitsCollection.bridge,
         visits: visitsCollection.successors,
         direction: "forward"
       });
       // Reverse path, bridge to target.
-      var reversePath = Traversal.extractPathNodes({
+      var reversePath = Query.extractPathNodes({
         path: [],
         node: visitsCollection.predecessors[visitsCollection.bridge],
         visits: visitsCollection.predecessors,
@@ -1198,7 +1200,7 @@ class Query {
         forwardFringe = [];
         for (var queueNode of queue) {
           // Collect node's neighbors.
-          var neighbors = Traversal.collectNodeNeighbors({
+          var neighbors = Query.collectNodeNeighbors({
             focus: queueNode,
             direction: neighborDirection,
             omissionNodes: omissionNodes,
@@ -1241,7 +1243,7 @@ class Query {
         reverseFringe = [];
         for (var queueNode of queue) {
           // Collect node's neighbors.
-          var neighbors = Traversal.collectNodeNeighbors({
+          var neighbors = Query.collectNodeNeighbors({
             focus: queueNode,
             direction: neighborDirection,
             omissionNodes: omissionNodes,
@@ -1311,7 +1313,7 @@ class Query {
     var reverseFringe = [target];
     // Iterate on network's nodes, collecting nodes in traversal by breadth from
     // both source and target.
-    var collection = Traversal.collectPredecessorsSuccessorsIterateFringesNodes({
+    var collection = Query.collectPredecessorsSuccessorsIterateFringesNodes({
       direction: direction,
       predecessors: predecessors,
       successors: successors,
@@ -1355,7 +1357,7 @@ class Query {
       } else {
         var neighborDirection = "neighbors";
       }
-      var collection = Traversal.collectPredecessorsSuccessorsIterateQueueNodes({
+      var collection = Query.collectPredecessorsSuccessorsIterateQueueNodes({
         queue: forwardFringe,
         fringe: [],
         direction: neighborDirection,
@@ -1377,7 +1379,7 @@ class Query {
       } else {
         var neighborDirection = "neighbors";
       }
-      var collection = Traversal.collectPredecessorsSuccessorsIterateQueueNodes({
+      var collection = Query.collectPredecessorsSuccessorsIterateQueueNodes({
         queue: reverseFringe,
         fringe: [],
         direction: neighborDirection,
@@ -1395,7 +1397,7 @@ class Query {
     // Determine whether to continue iteration.
     var fringe = ((forwardFringe.length > 0) && (reverseFringe.length > 0));
     if (fringe && !collection.path) {
-      return Traversal.collectPredecessorsSuccessorsIterateFringesNodes({
+      return Query.collectPredecessorsSuccessorsIterateFringesNodes({
         direction: direction,
         predecessors: novelPredecessors,
         successors: novelSuccessors,
@@ -1442,7 +1444,7 @@ class Query {
     var node = queue[0];
     var novelQueue = queue.slice(1);
     // Collect node's neighbors.
-    var neighbors = Traversal.collectNodeNeighbors({
+    var neighbors = Query.collectNodeNeighbors({
       focus: node,
       direction: direction,
       omissionNodes: omissionNodes,
@@ -1471,7 +1473,7 @@ class Query {
     }
     // Determine whether to continue iteration.
     if ((novelQueue.length > 0) && !path) {
-      return Traversal.collectPredecessorsSuccessorsIterateQueueNodes({
+      return Query.collectPredecessorsSuccessorsIterateQueueNodes({
         queue: novelQueue,
         fringe: novelFringe,
         direction: direction,
@@ -1530,7 +1532,7 @@ class Query {
     var path = distalVisits.hasOwnProperty(node);
     // Determine whether to continue iteration.
     if ((novelNeighbors.length > 0) && !path) {
-      return Traversal.collectPredecessorsSuccessorsIterateNeighborNodes({
+      return Query.collectPredecessorsSuccessorsIterateNeighborNodes({
         focus: focus,
         neighbors: novelNeighbors,
         fringe: novelFringe,
@@ -1569,7 +1571,7 @@ class Query {
     if (visits.hasOwnProperty(node)) {
       // Determine novel node.
       var novelNode = visits[node];
-      return Traversal.extractPathNodes({
+      return Query.extractPathNodes({
         path: novelPath,
         node: novelNode,
         visits: visits,

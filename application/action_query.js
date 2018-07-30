@@ -449,6 +449,8 @@ class ActionQuery {
     var dependentStateVariables = ActionQuery.deriveState({
       subnetworkRestoration: true,
       queryCombination: queryCombination,
+      subnetworkNodesRecords: state.subnetworkNodesRecords,
+      subnetworkLinksRecords: state.subnetworkLinksRecords,
       networkNodesRecords: state.networkNodesRecords,
       networkLinksRecords: state.networkLinksRecords,
       viewsRestoration: state.viewsRestoration,
@@ -489,6 +491,8 @@ class ActionQuery {
       var dependentStateVariables = ActionQuery.deriveState({
         subnetworkRestoration: false,
         queryCombination: state.queryCombination,
+        subnetworkNodesRecords: state.subnetworkNodesRecords,
+        subnetworkLinksRecords: state.subnetworkLinksRecords,
         networkNodesRecords: state.networkNodesRecords,
         networkLinksRecords: state.networkLinksRecords,
         viewsRestoration: state.viewsRestoration,
@@ -877,19 +881,21 @@ class ActionQuery {
   * links, "forward" for source to target, "reverse" for target to source, or
   * "both" for either.
   * @param {number} parameters.queryPathCount Count of paths to collect.
-  * @param {Object<string>} parameters.queryConnectionTarget Information about a
-  * node.
   * @param {Array<Object<string>>} parameters.queryConnectionTargets Information
   * about nodes.
   * @param {number} parameters.queryConnectionCount Count of paths to collect
   * between each pair of targets.
+  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
+  * subnetwork's nodes.
+  * @param {Array<Object>} parameters.subnetworkLinksRecords Information about
+  * subnetwork's links.
   * @param {Array<Object>} parameters.networkNodesRecords Information about
   * network's nodes.
   * @param {Array<Object>} parameters.networkLinksRecords Information about
   * network's links.
   * @returns {Object} Values of application's variables.
   */
-  static deriveSubnetwork({subnetworkRestoration, queryCombination, queryType, queryRogueFocus, queryProximityFocus, queryProximityDirection, queryProximityDepth, queryPathSource, queryPathTarget, queryPathDirection, queryPathCount, queryConnectionTarget, queryConnectionTargets, queryConnectionCount, networkNodesRecords, networkLinksRecords} = {}) {
+  static deriveSubnetwork({subnetworkRestoration, queryCombination, queryType, queryRogueFocus, queryProximityFocus, queryProximityDirection, queryProximityDepth, queryPathSource, queryPathTarget, queryPathDirection, queryPathCount, queryConnectionTargets, queryConnectionCount, subnetworkNodesRecords, subnetworkLinksRecords, networkNodesRecords, networkLinksRecords} = {}) {
     // Determine whether to derive subnetwork's elements by a query.
     if (subnetworkRestoration) {
       // Derive subnetwork's elements by initial combinations.
@@ -909,12 +915,24 @@ class ActionQuery {
       // Derive subnetwork's elements by execution of query.
       // Preserve any current elements in subnetwork.
       // Execute query and combine elements to subnetwork.
-
-      // TODO: call another procedure method to organize calling matching queries.
-
-      var subnetworkElements = ActionQuery.executeQueryCombineNetwork({});
-
-      console.log("called query procedure... still need to implement...");
+      var subnetworkElements = ActionQuery.executeQueryCombineNetwork({
+        queryCombination: queryCombination,
+        queryType: queryType,
+        queryRogueFocus: queryRogueFocus,
+        queryProximityFocus: queryProximityFocus,
+        queryProximityDirection: queryProximityDirection,
+        queryProximityDepth: queryProximityDepth,
+        queryPathSource: queryPathSource,
+        queryPathTarget: queryPathTarget,
+        queryPathDirection: queryPathDirection,
+        queryPathCount: queryPathCount,
+        queryConnectionTargets: queryConnectionTargets,
+        queryConnectionCount: queryConnectionCount,
+        subnetworkNodesRecords: subnetworkNodesRecords,
+        subnetworkLinksRecords: subnetworkLinksRecords,
+        networkNodesRecords: networkNodesRecords,
+        networkLinksRecords: networkLinksRecords
+      });
     }
     // Compile information.
     var novelVariablesValues = {
@@ -949,19 +967,21 @@ class ActionQuery {
   * links, "forward" for source to target, "reverse" for target to source, or
   * "both" for either.
   * @param {number} parameters.queryPathCount Count of paths to collect.
-  * @param {Object<string>} parameters.queryConnectionTarget Information about a
-  * node.
   * @param {Array<Object<string>>} parameters.queryConnectionTargets Information
   * about nodes.
   * @param {number} parameters.queryConnectionCount Count of paths to collect
   * between each pair of targets.
+  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
+  * subnetwork's nodes.
+  * @param {Array<Object>} parameters.subnetworkLinksRecords Information about
+  * subnetwork's links.
   * @param {Array<Object>} parameters.networkNodesRecords Information about
   * network's nodes.
   * @param {Array<Object>} parameters.networkLinksRecords Information about
   * network's links.
   * @returns {Object} Values of application's variables.
   */
-  static executeQueryCombineNetwork({} = {}) {
+  static executeQueryCombineNetwork({queryCombination, queryType, queryRogueFocus, queryProximityFocus, queryProximityDirection, queryProximityDepth, queryPathSource, queryPathTarget, queryPathDirection, queryPathCount, queryConnectionTargets, queryConnectionCount, subnetworkNodesRecords, subnetworkLinksRecords, networkNodesRecords, networkLinksRecords} = {}) {
     // Determine query's type.
     if (queryType === "rogue") {
       var subnetworkElements = Query.combineRogueNodeNetwork({
@@ -1008,12 +1028,12 @@ class ActionQuery {
         networkLinksRecords: networkLinksRecords
       });
     }
-
     // Compile information.
     var novelVariablesValues = {
     };
     var variablesValues = Object.assign(
       novelVariablesValues,
+      subnetworkElements
     );
     // Return information.
     return variablesValues;
@@ -1025,6 +1045,10 @@ class ActionQuery {
   * elements.
   * @param {string} queryCombination Method of combination, "inclusion" or
   * "exclusion".
+  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
+  * subnetwork's nodes.
+  * @param {Array<Object>} parameters.subnetworkLinksRecords Information about
+  * subnetwork's links.
   * @param {Array<Object>} parameters.networkNodesRecords Information about
   * network's nodes.
   * @param {Array<Object>} parameters.networkLinksRecords Information about
@@ -1034,7 +1058,7 @@ class ActionQuery {
   * @param {Object} parameters.state Application's state.
   * @returns {Object} Values of application's variables.
   */
-  static deriveState({subnetworkRestoration, queryCombination, networkNodesRecords, networkLinksRecords, viewsRestoration, state} = {}) {
+  static deriveState({subnetworkRestoration, queryCombination, subnetworkNodesRecords, subnetworkLinksRecords, networkNodesRecords, networkLinksRecords, viewsRestoration, state} = {}) {
     // Derive state relevant to view.
 
     // Initialize controls for query view.
@@ -1053,9 +1077,10 @@ class ActionQuery {
       queryPathTarget: state.queryPathTarget,
       queryPathDirection: state.queryPathDirection,
       queryPathCount: state.queryPathCount,
-      queryConnectionTarget: state.queryConnectionTarget,
       queryConnectionTargets: state.queryConnectionTargets,
       queryConnectionCount: state.queryConnectionCount,
+      subnetworkNodesRecords: subnetworkNodesRecords,
+      subnetworkLinksRecords: subnetworkLinksRecords,
       networkNodesRecords: networkNodesRecords,
       networkLinksRecords: networkLinksRecords
     });
