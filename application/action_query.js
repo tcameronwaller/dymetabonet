@@ -337,10 +337,6 @@ class ActionQuery {
       state: state
     });
   }
-
-  // TODO: still need to update stuff below here...
-
-
   /**
   * Changes the selection of target for connection query.
   * @param {Object} parameters Destructured object of parameters.
@@ -354,11 +350,19 @@ class ActionQuery {
       identifier: identifier,
       type: type
     };
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveSubordinateState({
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
       queryConnectionTarget: record
     };
-    var variablesValues = Object.assign(novelVariablesValues);
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
@@ -398,12 +402,20 @@ class ActionQuery {
       }
       // Restore candidate.
       var queryConnectionTarget = {identifier: "", type: ""};
+      // Derive dependent state.
+      var dependentStateVariables = ActionQuery.deriveSubordinateState({
+        viewsRestoration: state.viewsRestoration,
+        state: state
+      });
       // Compile variables' values.
       var novelVariablesValues = {
-        queryConnectionTargets: queryConnectionTargets,
-        queryConnectionTarget: queryConnectionTarget
+        queryConnectionTarget: queryConnectionTarget,
+        queryConnectionTargets: queryConnectionTargets
       };
-      var variablesValues = Object.assign(novelVariablesValues);
+      var variablesValues = Object.assign(
+        novelVariablesValues,
+        dependentStateVariables
+      );
       // Submit variables' values to the application's state.
       ActionGeneral.submitStateVariablesValues({
         variablesValues: variablesValues,
@@ -411,6 +423,10 @@ class ActionQuery {
       });
     }
   }
+
+  // TODO: still need to update stuff below here...
+
+
   /**
   * Excludes a node from targets for connection query.
   * @param {Object} parameters Destructured object of parameters.

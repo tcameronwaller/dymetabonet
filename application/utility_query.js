@@ -1110,7 +1110,7 @@ class Query {
     // Determine which algorithm to use.
     if (algorithm === "immutable") {
       // Immutable, recursive algorithm.
-      var visitsCollection = Traversal
+      var visitsCollection = Query
       .collectShortestPathPredecessorsSuccessorsImmutableRecursion({
         source: source,
         target: target,
@@ -1121,7 +1121,7 @@ class Query {
       });
     } else if (algorithm === "mutable") {
       // Mutable, iterative algorithm.
-      var visitsCollection = Traversal
+      var visitsCollection = Query
       .collectShortestPathPredecessorsSuccessorsMutableIteration({
         source: source,
         target: target,
@@ -1453,8 +1453,7 @@ class Query {
     });
     // Iterate on neighbor nodes.
     if (neighbors.length > 0) {
-      var collection = Traversal
-      .collectPredecessorsSuccessorsIterateNeighborNodes({
+      var collection = Query.collectPredecessorsSuccessorsIterateNeighborNodes({
         focus: node,
         neighbors: neighbors,
         fringe: fringe,

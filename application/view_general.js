@@ -364,26 +364,72 @@ class View {
     // Return reference to element.
     return search;
   }
+
   /**
-  * Creates a table, head, and head row.
+  * Creates a table and a head.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.className Class for element.
   * @param {Object} parameters.parent Reference to parent element.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
   * @returns {Object} Reference to element.
   */
-  static createTableHeadRow({className, parent, documentReference} = {}) {
+  static createTableHead({parent, documentReference} = {}) {
     // Create elements.
     var table = documentReference.createElement("table");
     parent.appendChild(table);
-    table.classList.add(className);
     var head = documentReference.createElement("thead");
     table.appendChild(head);
+    // Return reference to element.
+    return head;
+  }
+  /**
+  * Creates a row within a table.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createTableRow({parent, documentReference} = {}) {
+    // Create elements.
     var row = documentReference.createElement("tr");
-    head.appendChild(row);
+    parent.appendChild(row);
     // Return reference to element.
     return row;
+  }
+  /**
+  * Creates a cell within a row of a table's head.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {string} parameters.className Class for element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createTableHeadCell({parent, className, documentReference} = {}) {
+    // Create elements.
+    var cell = documentReference.createElement("th");
+    parent.appendChild(cell);
+    cell.classList.add(className);
+    // Return reference to element.
+    return cell;
+  }
+  /**
+  * Creates a cell within a row of a table's body.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {string} parameters.className Class for element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createTableBodyCell({parent, className, documentReference} = {}) {
+    // Create elements.
+    var cell = documentReference.createElement("td");
+    parent.appendChild(cell);
+    cell.classList.add(className);
+    // Return reference to element.
+    return cell;
   }
   /**
   * Creates a table head cell with label.
@@ -398,9 +444,11 @@ class View {
   static createTableHeadCellLabel({text, className, parent, documentReference} = {}) {
     // Create elements.
     // Create cell.
-    var cell = documentReference.createElement("th");
-    parent.appendChild(cell);
-    cell.classList.add(className);
+    var cell = View.createTableHeadCell({
+      parent: parent,
+      className: className,
+      documentReference: documentReference
+    });
     // Create label.
     var label = View.createAppendSpanText({
       text: text,
@@ -451,36 +499,7 @@ class View {
     // Return reference to element.
     return body;
   }
-  /**
-  * Creates a row within a table's body.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.body Reference to table's body.
-  * @param {Object} parameters.documentReference Reference to document object
-  * model.
-  * @returns {Object} Reference to element.
-  */
-  static createTableBodyRow({body, documentReference} = {}) {
-    // Create elements.
-    var row = documentReference.createElement("tr");
-    body.appendChild(row);
-    // Return reference to element.
-    return row;
-  }
-  /**
-  * Creates a cell within a row of a table's body.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.row Reference to row within table's body.
-  * @param {Object} parameters.documentReference Reference to document object
-  * model.
-  * @returns {Object} Reference to element.
-  */
-  static createTableBodyRowCell({row, documentReference} = {}) {
-    // Create elements.
-    var cell = documentReference.createElement("td");
-    row.appendChild(cell);
-    // Return reference to element.
-    return cell;
-  }
+
   /**
   * Represents specifications for sorts.
   * @param {Object} parameters Destructured object of parameters.
@@ -566,6 +585,7 @@ class View {
     // Return reference to element.
     return search;
   }
+
   /**
   * Creates and activates a table column's head.
   * @param {Object} parameters Destructured object of parameters.
@@ -575,14 +595,13 @@ class View {
   * @param {string} parameters.category Name of category.
   * @param {boolean} parameters.sort Whether column's attribute is a sort
   * criterion.
-  * @param {boolean} parameters.scale Whether column's attribute needs a scale.
   * @param {Object} parameters.parent Reference to parent element.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
   * @param {Object} parameters.state Application's state.
   * @returns {Object} References to elements.
   */
-  static createActivateTableColumnHead({attribute, text, type, category, sort, scale, parent, documentReference, state} = {}) {
+  static createActivateTableColumnTitle({attribute, text, type, category, sort, parent, documentReference, state} = {}) {
     // Create cell.
     var cell = View.createTableHeadCellLabel({
       text: text,
@@ -611,41 +630,63 @@ class View {
         });
       });
       // Compile references to elements.
-      var sortReferences = {
+      var references = {
         sortGraph: sortGraph
       };
     } else {
       // Compile references to elements.
-      var sortReferences = {};
+      var references = {};
     }
-    // Determine whether column's attribute needs a scale.
-    if (scale) {
-      // Create break.
-      cell.appendChild(documentReference.createElement("br"));
-      // Create graphical container for scale.
-      var scaleGraph = View.createGraph({
-        parent: cell,
-        documentReference: documentReference
-      });
-      scaleGraph.classList.add("scale");
-      // Determine graph's dimensions.
-      var graphWidth = General.determineElementDimension(scaleGraph, "width");
-      var graphHeight = General.determineElementDimension(scaleGraph, "height");
-      // Compile references to elements.
-      var scaleReferences = {
-        scaleGraph: scaleGraph,
-        graphWidth: graphWidth,
-        graphHeight: graphHeight
-      };
-    } else {
-      // Compile references to elements.
-      var scaleReferences = {};
-    }
-    // Compile references to elements.
-    var references = Object.assign(sortReferences, scaleReferences);
     // Return references to elements.
     return references;
   }
+  /**
+  * Creates a table column's scale.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.attribute Name of attribute.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} References to elements.
+  */
+  static createTableColumnScale({attribute, parent, documentReference} = {}) {
+    // Create cell.
+    var cell = View.createTableHeadCell({
+      parent: parent,
+      className: "attribute",
+      documentReference: documentReference
+    });
+    // Create graphical container.
+    var graph = View.createGraph({
+      parent: cell,
+      documentReference: documentReference
+    });
+    graph.classList.add("scale");
+    // Determine graph's dimensions.
+    var graphWidth = General.determineElementDimension(graph, "width");
+    var graphHeight = General.determineElementDimension(graph, "height");
+    // Create chart's representation of scale.
+    var groupScale = View.createScaleChart({
+      pad: 5,
+      graph: graph,
+      documentReference: self.document
+    });
+    // Assign relative positions of scale and chart.
+    groupScale.setAttribute("transform", "translate(" + pad + "," + pad + ")");
+    // Compile references.
+    var references = {
+      cell: cell,
+      scaleGraph: graph,
+      graphWidth: graphWidth,
+      graphHeight: graphHeight
+    };
+    // Return references.
+    return references;
+  }
+
+
+  // TODO: I think representScale is becoming obsolete...
+
   /**
   * Represents a scale.
   * @param {Object} parameters Destructured object of parameters.
@@ -664,11 +705,13 @@ class View {
     // Assign attributes.
     axisGroup.attr("transform", "translate(0," + (graphHeight - 1) + ")");
   }
+
+
   /**
   * Represents a summaries' counts.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.cells Selection of cells.
-  * @param {number} parameters.graphHeight Height of scale's graph.
+  * @param {number} parameters.graphHeight Height of graph.
   * @param {Object} parameters.determineScaleValue Function to determine scale
   * value.
   * @returns {Object} Selection of elements.
@@ -1126,96 +1169,17 @@ class View {
   static createTabReference(category) {
     return (category + "Tab");
   }
-  /**
-  * Creates a chart to summarize nodes.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {boolean} parameters.selection Whether there is a selection of a
-  * subnetwork.
-  * @param {number} parameters.pad Dimension for pad space.
-  * @param {Object} parameters.parent Reference to parent element.
-  * @param {Object} parameters.documentReference Reference to document object
-  * @returns {Object} Reference to element.
-  */
-  static createNodeChart({selection, pad, parent, documentReference} = {}) {
-    // Create graphical container.
-    var graph = View.createGraph({
-      parent: parent,
-      documentReference: self.document
-    });
-    graph.classList.add("node");
-    // Determine graph's dimensions.
-    var graphHeight = General.determineElementDimension(graph, "height");
-    // Create chart's representation of scale.
-    var groupScale = View.createScaleChart({
-      pad: 5,
-      graph: graph,
-      documentReference: self.document
-    });
-    // Create chart's representation of count.
-    var groupCount = View.createNodeCountChart({
-      selection: selection,
-      graph: graph,
-      documentReference: self.document
-    });
-    // Assign relative positions of scale and chart.
-    groupScale.setAttribute("transform", "translate(" + pad + "," + pad + ")");
-    groupCount.setAttribute(
-      "transform", "translate(" + pad + "," + (graphHeight / 2) + ")"
-    );
-    // Return reference to element.
-    return graph;
-  }
-  /**
-  * Restores a chart for nodes.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.nodes Count of nodes.
-  * @param {number} parameters.nodesMetabolites Count of nodes for metabolites.
-  * @param {number} parameters.nodesReactions Count of nodes for reactions.
-  * @param {boolean} parameters.selection Whether there is a selection of a
-  * subnetwork.
-  * @param {number} parameters.nodesMetabolitesSelection Count of nodes for
-  * metabolites in selection.
-  * @param {number} parameters.nodesReactionsSelection Count of nodes for
-  * reactions in selection.
-  * @param {number} parameters.pad Dimension for pad space.
-  * @param {Object} parameters.graph Reference to graphical container.
-  */
-  static restoreNodeChart({nodes, nodesMetabolites, nodesReactions, selection, nodesMetabolitesSelection, nodesReactionsSelection, pad, graph} = {}) {
-    // Determine graph's dimensions.
-    var graphWidth = General.determineElementDimension(graph, "width");
-    var graphHeight = General.determineElementDimension(graph, "height");
-    // Restore chart's representation of scale.
-    View.restoreScaleChart({
-      minimum: 0,
-      maximum: nodes,
-      width: (graphWidth - (pad * 2)),
-      height: (graphHeight - (pad * 2)),
-      pad: 5,
-      graph: graph
-    });
-    // Restore chart's representation of count.
-    View.restoreNodeCountChart({
-      nodes: nodes,
-      nodesMetabolites: nodesMetabolites,
-      nodesReactions: nodesReactions,
-      selection: selection,
-      nodesMetabolitesSelection: nodesMetabolitesSelection,
-      nodesReactionsSelection: nodesReactionsSelection,
-      width: (graphWidth - (pad * 2)),
-      height: (graphHeight - (pad * 2)),
-      pad: 5,
-      graph: graph
-    });
-  }
+
+  // Scale chart.
+
   /**
   * Creates a scale chart.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.pad Dimension for pad space.
   * @param {Object} parameters.graph Reference to graphical container.
   * @param {Object} parameters.documentReference Reference to document object
   * @returns {Object} Reference to element.
   */
-  static createScaleChart({pad, graph, documentReference} = {}) {
+  static createScaleChart({graph, documentReference} = {}) {
     // Create group.
     var group = documentReference
     .createElementNS("http://www.w3.org/2000/svg", "g");
@@ -1245,12 +1209,12 @@ class View {
   * @param {Object} parameters Destructured object of parameters.
   * @param {number} parameters.minimum Minimal value of scale.
   * @param {number} parameters.maximum Maximal value of scale.
-  * @param {number} parameters.width Dimension for width.
-  * @param {number} parameters.height Dimension for height.
+  * @param {number} parameters.graphWidth Width of graph.
+  * @param {number} parameters.graphHeight Height of graph.
   * @param {number} parameters.pad Dimension for pad space.
   * @param {Object} parameters.graph Reference to graphical container.
   */
-  static restoreScaleChart({minimum, maximum, width, height, pad, graph} = {}) {
+  static restoreScaleChart({minimum, maximum, graphWidth, graphHeight, pad, graph} = {}) {
     // Select group.
     var group = graph.querySelector("g.scale");
     // Select labels.
@@ -1262,6 +1226,9 @@ class View {
     // Restore text content of labels.
     labelMinimum.textContent = String(minimum);
     labelMaximum.textContent = String(maximum);
+    // Determine dimensions.
+    var width = (graphWidth - (pad * 2));
+    var height = (graphHeight - (pad * 2));
     // Restore positions of labels.
     var labelHeight = labelMinimum.getBoundingClientRect().height;
     var labelDimension = (labelHeight / 2);
@@ -1274,6 +1241,41 @@ class View {
     groupLine.setAttribute(
       "transform", "translate(" + 0 + "," + (labelDimension + (pad / 2)) + ")"
     );
+    // Restore positions of chart.
+    group.setAttribute("transform", "translate(" + pad + "," + pad + ")");
+  }
+
+  // Network summary.
+
+  /**
+  * Creates a chart to summarize nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {boolean} parameters.selection Whether there is a selection of a
+  * subnetwork.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * @returns {Object} Reference to element.
+  */
+  static createNodeChart({selection, parent, documentReference} = {}) {
+    // Create graphical container.
+    var graph = View.createGraph({
+      parent: parent,
+      documentReference: self.document
+    });
+    graph.classList.add("node");
+    // Create chart's representation of scale.
+    var groupScale = View.createScaleChart({
+      graph: graph,
+      documentReference: self.document
+    });
+    // Create chart's representation of count.
+    var groupCount = View.createNodeCountChart({
+      selection: selection,
+      graph: graph,
+      documentReference: self.document
+    });
+    // Return reference to element.
+    return graph;
   }
   /**
   * Creates a chart to summarize nodes.
@@ -1339,12 +1341,54 @@ class View {
   * metabolites in selection.
   * @param {number} parameters.nodesReactionsSelection Count of nodes for
   * reactions in selection.
-  * @param {number} parameters.width Dimension for width.
-  * @param {number} parameters.height Dimension for height.
   * @param {number} parameters.pad Dimension for pad space.
   * @param {Object} parameters.graph Reference to graphical container.
   */
-  static restoreNodeCountChart({nodes, nodesMetabolites, nodesReactions, selection, nodesMetabolitesSelection, nodesReactionsSelection, width, height, pad, graph} = {}) {
+  static restoreNodeChart({nodes, nodesMetabolites, nodesReactions, selection, nodesMetabolitesSelection, nodesReactionsSelection, pad, graph} = {}) {
+    // Determine graph's dimensions.
+    var graphWidth = General.determineElementDimension(graph, "width");
+    var graphHeight = General.determineElementDimension(graph, "height");
+    // Restore chart's representation of scale.
+    View.restoreScaleChart({
+      minimum: 0,
+      maximum: nodes,
+      graphWidth: graphWidth,
+      graphHeight: graphHeight,
+      pad: pad,
+      graph: graph
+    });
+    // Restore chart's representation of count.
+    View.restoreNodeCountChart({
+      nodes: nodes,
+      nodesMetabolites: nodesMetabolites,
+      nodesReactions: nodesReactions,
+      selection: selection,
+      nodesMetabolitesSelection: nodesMetabolitesSelection,
+      nodesReactionsSelection: nodesReactionsSelection,
+      graphWidth: graphWidth,
+      graphHeight: graphHeight,
+      pad: pad,
+      graph: graph
+    });
+  }
+  /**
+  * Restores a chart for nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.nodes Count of nodes.
+  * @param {number} parameters.nodesMetabolites Count of nodes for metabolites.
+  * @param {number} parameters.nodesReactions Count of nodes for reactions.
+  * @param {boolean} parameters.selection Whether there is a selection of a
+  * subnetwork.
+  * @param {number} parameters.nodesMetabolitesSelection Count of nodes for
+  * metabolites in selection.
+  * @param {number} parameters.nodesReactionsSelection Count of nodes for
+  * reactions in selection.
+  * @param {number} parameters.graphWidth Width of graph.
+  * @param {number} parameters.graphHeight Height of graph.
+  * @param {number} parameters.pad Dimension for pad space.
+  * @param {Object} parameters.graph Reference to graphical container.
+  */
+  static restoreNodeCountChart({nodes, nodesMetabolites, nodesReactions, selection, nodesMetabolitesSelection, nodesReactionsSelection, graphWidth, graphHeight, pad, graph} = {}) {
     // Select group.
     var group = graph.querySelector("g.count");
     // Select bars.
@@ -1358,6 +1402,9 @@ class View {
     // Select labels.
     var labelMetabolite = group.querySelector("text.metabolite");
     var labelReaction = group.querySelector("text.reaction");
+    // Determine dimensions.
+    var width = (graphWidth - (pad * 2));
+    var height = (graphHeight - (pad * 2));
     // Determine scale for bars' dimensions.
     var scaleValue = d3
     .scaleLinear()
@@ -1405,29 +1452,29 @@ class View {
     labelMetabolite.setAttribute("y", verticalPosition);
     labelReaction.setAttribute("x", (pad + scaleValue(nodesMetabolites)));
     labelReaction.setAttribute("y", verticalPosition);
+    // Restore positions of chart.
+    group.setAttribute(
+      "transform", "translate(" + pad + "," + (graphHeight / 2) + ")"
+    );
   }
   /**
   * Creates a chart to summarize links.
   * @param {Object} parameters Destructured object of parameters.
   * @param {boolean} parameters.selection Whether there is a selection of a
   * subnetwork.
-  * @param {number} parameters.pad Dimension for pad space.
   * @param {Object} parameters.parent Reference to parent element.
   * @param {Object} parameters.documentReference Reference to document object
   * @returns {Object} Reference to element.
   */
-  static createLinkChart({selection, pad, parent, documentReference} = {}) {
+  static createLinkChart({selection, parent, documentReference} = {}) {
     // Create graphical container.
     var graph = View.createGraph({
       parent: parent,
       documentReference: self.document
     });
     graph.classList.add("link");
-    // Determine graph's dimensions.
-    var graphHeight = General.determineElementDimension(graph, "height");
     // Create chart's representation of scale.
     var groupScale = View.createScaleChart({
-      pad: 5,
       graph: graph,
       documentReference: self.document
     });
@@ -1437,47 +1484,8 @@ class View {
       graph: graph,
       documentReference: self.document
     });
-    // Assign relative positions of scale and chart.
-    groupScale.setAttribute("transform", "translate(" + pad + "," + pad + ")");
-    groupCount.setAttribute(
-      "transform", "translate(" + pad + "," + (graphHeight / 2) + ")"
-    );
     // Return reference to element.
     return graph;
-  }
-  /**
-  * Restores a chart for nodes.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.links Count of links.
-  * @param {boolean} parameters.selection Whether there is a selection of a
-  * subnetwork.
-  * @param {number} parameters.linksSelection Count of links in selection.
-  * @param {number} parameters.pad Dimension for pad space.
-  * @param {Object} parameters.graph Reference to graphical container.
-  */
-  static restoreLinkChart({links, selection, linksSelection, pad, graph} = {}) {
-    // Determine graph's dimensions.
-    var graphWidth = General.determineElementDimension(graph, "width");
-    var graphHeight = General.determineElementDimension(graph, "height");
-    // Restore chart's representation of scale.
-    View.restoreScaleChart({
-      minimum: 0,
-      maximum: links,
-      width: (graphWidth - (pad * 2)),
-      height: (graphHeight - (pad * 2)),
-      pad: 5,
-      graph: graph
-    });
-    // Restore chart's representation of count.
-    View.restoreLinkCountChart({
-      links: links,
-      selection: selection,
-      linksSelection: linksSelection,
-      width: (graphWidth - (pad * 2)),
-      height: (graphHeight - (pad * 2)),
-      pad: 5,
-      graph: graph
-    });
   }
   /**
   * Creates a chart to summarize links.
@@ -1509,18 +1517,52 @@ class View {
     return group;
   }
   /**
+  * Restores a chart for nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.links Count of links.
+  * @param {boolean} parameters.selection Whether there is a selection of a
+  * subnetwork.
+  * @param {number} parameters.linksSelection Count of links in selection.
+  * @param {number} parameters.pad Dimension for pad space.
+  * @param {Object} parameters.graph Reference to graphical container.
+  */
+  static restoreLinkChart({links, selection, linksSelection, pad, graph} = {}) {
+    // Determine graph's dimensions.
+    var graphWidth = General.determineElementDimension(graph, "width");
+    var graphHeight = General.determineElementDimension(graph, "height");
+    // Restore chart's representation of scale.
+    View.restoreScaleChart({
+      minimum: 0,
+      maximum: links,
+      graphWidth: graphWidth,
+      graphHeight: graphHeight,
+      pad: pad,
+      graph: graph
+    });
+    // Restore chart's representation of count.
+    View.restoreLinkCountChart({
+      links: links,
+      selection: selection,
+      linksSelection: linksSelection,
+      graphWidth: graphWidth,
+      graphHeight: graphHeight,
+      pad: pad,
+      graph: graph
+    });
+  }
+  /**
   * Restores a chart for links.
   * @param {Object} parameters Destructured object of parameters.
   * @param {number} parameters.links Count of links.
   * @param {boolean} parameters.selection Whether there is a selection of a
   * subnetwork.
   * @param {number} parameters.linksSelection Count of links in selection.
-  * @param {number} parameters.width Dimension for width.
-  * @param {number} parameters.height Dimension for height.
+  * @param {number} parameters.graphWidth Width of graph.
+  * @param {number} parameters.graphHeight Height of graph.
   * @param {number} parameters.pad Dimension for pad space.
   * @param {Object} parameters.graph Reference to graphical container.
   */
-  static restoreLinkCountChart({links, selection, linksSelection, width, height, pad, graph} = {}) {
+  static restoreLinkCountChart({links, selection, linksSelection, graphWidth, graphHeight, pad, graph} = {}) {
     // Select group.
     var group = graph.querySelector("g.count");
     // Select bars.
@@ -1528,6 +1570,9 @@ class View {
     if (selection) {
       var barSelection = graph.querySelector("rect.selection");
     }
+    // Determine dimensions.
+    var width = (graphWidth - (pad * 2));
+    var height = (graphHeight - (pad * 2));
     // Determine scale for bars' dimensions.
     var scaleValue = d3
     .scaleLinear()
@@ -1548,5 +1593,9 @@ class View {
       barSelection.setAttribute("x", scaleValue(linksSelection));
       barSelection.setAttribute("y", 0);
     }
+    // Restore positions of chart.
+    group.setAttribute(
+      "transform", "translate(" + pad + "," + (graphHeight / 2) + ")"
+    );
   }
 }

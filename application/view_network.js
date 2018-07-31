@@ -131,6 +131,9 @@ class ViewNetwork {
       ActionNetwork.export(self.state);
     });
   }
+
+  // TODO: create and activate a tip for the summary...
+
   /**
   * Creates and activates a summary about network.
   * @param {Object} self Instance of a class.
@@ -150,26 +153,27 @@ class ViewNetwork {
   * @param {Object} self Instance of a class.
   */
   createActivateSummaryNodes(self) {
-    var row = View.createTableBodyRow({
-      body: self.summaryTableBody,
+    var row = View.createTableRow({
+      parent: self.summaryTableBody,
       documentReference: self.document
     });
     row.classList.add("node");
-    var cellLabel = View.createTableBodyRowCell({
-      row: row,
+    var cellLabel = View.createTableBodyCell({
+      parent: row,
+      className: "name",
       documentReference: self.document
     });
     cellLabel.classList.add("label");
     cellLabel.textContent = "nodes:";
-    var cellChart = View.createTableBodyRowCell({
-      row: row,
+    var cellChart = View.createTableBodyCell({
+      parent: row,
+      className: "count",
       documentReference: self.document
     });
     cellChart.classList.add("chart");
     // Create chart for nodes.
     self.graphNode = View.createNodeChart({
       selection: false,
-      pad: 3,
       parent: cellChart,
       documentReference: self.document
     });
@@ -179,26 +183,27 @@ class ViewNetwork {
   * @param {Object} self Instance of a class.
   */
   createActivateSummaryLinks(self) {
-    var row = View.createTableBodyRow({
-      body: self.summaryTableBody,
+    var row = View.createTableRow({
+      parent: self.summaryTableBody,
       documentReference: self.document
     });
     row.classList.add("link");
-    var cellLabel = View.createTableBodyRowCell({
-      row: row,
+    var cellLabel = View.createTableBodyCell({
+      parent: row,
+      className: "name",
       documentReference: self.document
     });
     cellLabel.classList.add("label");
     cellLabel.textContent = "links:";
-    var cellChart = View.createTableBodyRowCell({
-      row: row,
+    var cellChart = View.createTableBodyCell({
+      parent: row,
+      className: "count",
       documentReference: self.document
     });
     cellChart.classList.add("chart");
     // Create chart for links.
     self.graphLink = View.createLinkChart({
       selection: false,
-      pad: 3,
       parent: cellChart,
       documentReference: self.document
     });

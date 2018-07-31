@@ -703,7 +703,8 @@ class Model {
       (state.queryPathTarget.identifier.length > 0) &&
       (
         (state.queryPathDirection === "forward") ||
-        (state.queryPathDirection === "reverse")
+        (state.queryPathDirection === "reverse") ||
+        (state.queryPathDirection === "both")
       ) &&
       (state.queryPathCount > 0)
     );

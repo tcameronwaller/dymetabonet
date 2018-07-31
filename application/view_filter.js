@@ -316,42 +316,90 @@ class FilterMenuView {
     // Create separate tables for head and body to support stationary head and
     // scrollable body.
     // Create head table.
-    var tableHeadRow = View.createTableHeadRow({
-      className: self.category,
+    self.createActivateTableHead(self);
+    // Create body table.
+    self.createTableBody(self);
+  }
+  /**
+  * Creates and activates a table's head.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateTableHead(self) {
+    // Create head table.
+    self.head = View.createTableHead({
       parent: self.container,
       documentReference: self.document
     });
-    // Create titles, sorts, and scale in table's header.
+    // Create column titles.
+    self.createActivateTableHeadColumnTitles(self);
+    // Create column scale.
+    self.createTableHeadColumnScale(self);
+  }
+  /**
+  * Creates and activates a table's head.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateTableHeadColumnTitles(self) {
+    var row = View.createTableRow({
+      parent: self.head,
+      documentReference: self.document
+    });
+    // Create titles and sorts.
     // Create head for names.
-    var referencesOne = View.createActivateTableColumnHead({
+    var referencesOne = View.createActivateTableColumnTitle({
       attribute: "name",
       text: "Name",
       type: "sets",
       category: self.category,
       sort: true,
-      scale: false,
-      parent: tableHeadRow,
+      parent: row,
       documentReference: self.document,
       state: self.state
     });
     self.sortGraphName = referencesOne.sortGraph;
     // Create head for counts.
-    var referencesTwo = View.createActivateTableColumnHead({
+    var referencesTwo = View.createActivateTableColumnTitle({
       attribute: "count",
       text: "Count",
       type: "sets",
       category: self.category,
       sort: true,
-      scale: true,
-      parent: tableHeadRow,
+      parent: row,
       documentReference: self.document,
       state: self.state
     });
     self.sortGraphCount = referencesTwo.sortGraph;
-    self.scaleGraph = referencesTwo.scaleGraph;
-    self.graphWidth = referencesTwo.graphWidth;
-    self.graphHeight = referencesTwo.graphHeight;
-    // Create body table.
+  }
+  /**
+  * Creates and activates a table's head.
+  * @param {Object} self Instance of a class.
+  */
+  createTableHeadColumnScale(self) {
+    var row = View.createTableRow({
+      parent: self.head,
+      documentReference: self.document
+    });
+    // Create empty name cell.
+    var cellName = View.createTableHeadCell({
+      parent: row,
+      className: "name",
+      documentReference: documentReference
+    });
+    // Create scale cell.
+    var references = View.createTableColumnScale({
+      attribute: "count",
+      parent: row,
+      documentReference: self.document
+    });
+    self.scaleGraph = references.scaleGraph;
+    self.graphWidth = references.graphWidth;
+    self.graphHeight = references.graphHeight;
+  }
+  /**
+  * Creates and activates a table's body.
+  * @param {Object} self Instance of a class.
+  */
+  createTableBody(self) {
     self.body = View.createScrollTableBody({
       className: self.category,
       parent: self.container,
@@ -366,7 +414,25 @@ class FilterMenuView {
   restoreView(self) {
     self.representSearch(self);
     self.representSorts(self);
+
+    // TODO: follow pattern from network summary in network view.
+
     self.createScale(self);
+
+    View.restoreTableColumnScale({});
+    View.restoreTableColumnScale({
+      nodes: self.state.networkSummary.nodes,
+      nodesMetabolites: self.state.networkSummary.nodesMetabolites,
+      nodesReactions: self.state.networkSummary.nodesReactions,
+      selection: false,
+      nodesMetabolitesSelection: 0,
+      nodesReactionsSelection: 0,
+      pad: 3,
+      graph: self.scaleGraph
+    });
+
+
+
     View.representScale({
       scaleGraph: self.scaleGraph,
       graphHeight: self.graphHeight,
