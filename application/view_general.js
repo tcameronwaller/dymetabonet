@@ -36,6 +36,7 @@ United States of America
 * This class does not store any attributes and does not require instantiation.
 */
 class View {
+
   /**
   * Inserts or appends an element to a new position in the document.
   * @param {Object} parameters Destructured object of parameters.
@@ -51,10 +52,12 @@ class View {
     // target.insertAdjacentElement("beforeend", element).
     return target.insertAdjacentElement(position, element);
   }
+
   /**
   * Creates or sets reference to a view's container.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.identifier Identifier of element.
+  * @param {Array<string>} parameters.classNames Class names for elements.
   * @param {string} parameters.type Type of container, "standard" or "graph".
   * @param {Object} parameters.target Reference to element for relative
   * position of insertion.
@@ -64,7 +67,7 @@ class View {
   * model.
   * @returns {Object} Reference to element.
   */
-  static createReferenceContainer({identifier, type, target, position, documentReference} = {}) {
+  static createReferenceContainer({identifier, classNames, type, target, position, documentReference} = {}) {
     // Determine whether container's element exists in the document.
     if (!documentReference.getElementById(identifier)) {
       // Element does not exist in the document.
@@ -76,6 +79,8 @@ class View {
         position: position,
         documentReference: documentReference
       });
+      // Include class names.
+      container.classList.add(...classNames);
     } else {
       // Element exists in the document.
       // Set reference to element.
@@ -339,31 +344,48 @@ class View {
     // Return reference to element.
     return span;
   }
+
   /**
-  * Creates a search tool with label.
+  * Creates and appends division with text.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.text Text for element.
+  * @param {string} parameters.className Class for element.
   * @param {Object} parameters.parent Reference to parent element.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
   * @returns {Object} Reference to element.
   */
-  static createSearchLabel({text, parent, documentReference} = {}) {
-    // Create label.
-    var label = View.createAppendSpanText({
+  static createAppendDivisionText({text, className, parent, documentReference} = {}) {
+    // Create element.
+    var division = View.createDivisionText({
       text: text,
-      parent: parent,
       documentReference: documentReference
     });
-    // Create tool for search.
-    var search = documentReference.createElement("input");
-    parent.appendChild(search);
-    search.setAttribute("type", "text");
-    search.classList.add("search");
-    search.setAttribute("placeholder", "search...");
+    parent.appendChild(division);
+    division.classList.add(className);
     // Return reference to element.
-    return search;
+    return division;
   }
+  /**
+  * Creates division with text.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.text Text for element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createDivisionText({text, documentReference} = {}) {
+    // Create element.
+    var division = documentReference.createElement("div");
+    division.textContent = text;
+    // Return reference to element.
+    return division;
+  }
+
+
+  // TODO: new method to create a title DIV...
+  // TODO: it needs a className.
+
 
   /**
   * Creates a table and a head.
@@ -551,165 +573,6 @@ class View {
       General.removeDocumentChildren(parent);
     }
   }
-  /**
-  * Creates and activates a scroll container, table, and body.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.type Type of summaries.
-  * @param {string} parameters.category Name of category.
-  * @param {Object} parameters.parent Reference to parent element.
-  * @param {Object} parameters.documentReference Reference to document object
-  * model.
-  * @param {Object} parameters.state Application's state.
-  * @returns {Object} Reference to element.
-  */
-  static createActivateSearch({type, category, parent, documentReference, state} = {}) {
-    // Create elements.
-    var search = View.createSearchLabel({
-      text: (category + ": "),
-      parent: parent,
-      documentReference: documentReference
-    });
-    // Activate behavior.
-    search.addEventListener("input", function (event) {
-      // Element on which the event originated is event.currentTarget.
-      // Determine the search's value.
-      var value = event.currentTarget.value;
-      // Call action.
-      ActionGeneral.changeSearches({
-        type: type,
-        category: category,
-        string: value,
-        state: state
-      });
-    });
-    // Return reference to element.
-    return search;
-  }
-
-  /**
-  * Creates and activates a table column's head.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.attribute Name of attribute.
-  * @param {string} parameters.text Text for column head's label.
-  * @param {string} parameters.type Type of summaries.
-  * @param {string} parameters.category Name of category.
-  * @param {boolean} parameters.sort Whether column's attribute is a sort
-  * criterion.
-  * @param {Object} parameters.parent Reference to parent element.
-  * @param {Object} parameters.documentReference Reference to document object
-  * model.
-  * @param {Object} parameters.state Application's state.
-  * @returns {Object} References to elements.
-  */
-  static createActivateTableColumnTitle({attribute, text, type, category, sort, parent, documentReference, state} = {}) {
-    // Create cell.
-    var cell = View.createTableHeadCellLabel({
-      text: text,
-      className: attribute,
-      parent: parent,
-      documentReference: documentReference
-    });
-    // Determine whether column's attribute is a sort criterion.
-    if (sort) {
-      // Create elements.
-      var span = cell.getElementsByTagName("span").item(0);
-      var sortGraph = View.createGraph({
-        parent: span,
-        documentReference: documentReference
-      });
-      sortGraph.classList.add("sort");
-      // Activate behavior.
-      cell.addEventListener("click", function (event) {
-        // Element on which the event originated is event.currentTarget.
-        // Call action.
-        ActionGeneral.changeSorts({
-          type: type,
-          category: category,
-          criterion: attribute,
-          state: state
-        });
-      });
-      // Compile references to elements.
-      var references = {
-        sortGraph: sortGraph
-      };
-    } else {
-      // Compile references to elements.
-      var references = {};
-    }
-    // Return references to elements.
-    return references;
-  }
-  /**
-  * Creates a table column's scale.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.attribute Name of attribute.
-  * @param {Object} parameters.parent Reference to parent element.
-  * @param {Object} parameters.documentReference Reference to document object
-  * model.
-  * @returns {Object} References to elements.
-  */
-  static createTableColumnScale({attribute, parent, documentReference} = {}) {
-    // Create cell.
-    var cell = View.createTableHeadCell({
-      parent: parent,
-      className: attribute,
-      documentReference: documentReference
-    });
-    // Create graphical container.
-    var graph = View.createGraph({
-      parent: cell,
-      documentReference: documentReference
-    });
-    graph.classList.add("scale");
-    // Determine graph's dimensions.
-    var graphWidth = General.determineElementDimension(graph, "width");
-    var graphHeight = General.determineElementDimension(graph, "height");
-    // Create chart's representation of scale.
-    var groupScale = View.createScaleChart({
-      graph: graph,
-      documentReference: self.document
-    });
-    // Compile references.
-    var references = {
-      cell: cell,
-      scaleGraph: graph,
-      graphWidth: graphWidth,
-      graphHeight: graphHeight
-    };
-    // Return references.
-    return references;
-  }
-  /**
-  * Restores a chart for nodes.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {number} parameters.nodes Count of nodes.
-  * @param {number} parameters.nodesMetabolites Count of nodes for metabolites.
-  * @param {number} parameters.nodesReactions Count of nodes for reactions.
-  * @param {boolean} parameters.selection Whether there is a selection of a
-  * subnetwork.
-  * @param {number} parameters.nodesMetabolitesSelection Count of nodes for
-  * metabolites in selection.
-  * @param {number} parameters.nodesReactionsSelection Count of nodes for
-  * reactions in selection.
-  * @param {number} parameters.pad Dimension for pad space.
-  * @param {Object} parameters.graph Reference to graphical container.
-  */
-  static restoreTableColumnScale({count, pad, graph} = {}) {
-    // Determine graph's dimensions.
-    var graphWidth = General.determineElementDimension(graph, "width");
-    var graphHeight = General.determineElementDimension(graph, "height");
-    // Restore chart's representation of scale.
-    View.restoreScaleChart({
-      minimum: 0,
-      maximum: count,
-      graphWidth: graphWidth,
-      graphHeight: graphHeight,
-      pad: pad,
-      graph: graph
-    });
-  }
-
 
   // TODO: I think representScale is becoming obsolete...
 
@@ -731,7 +594,6 @@ class View {
     // Assign attributes.
     axisGroup.attr("transform", "translate(0," + (graphHeight - 1) + ")");
   }
-
 
   /**
   * Represents a summaries' counts.
@@ -799,99 +661,6 @@ class View {
     .attr("height", graphHeight);
     // Return references to elements.
     return barMarks;
-  }
-  /**
-  * Creates a search menu with a list for options for automatic completion.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.identifier Identifier for element.
-  * @param {string} parameters.prompt Prompt to display within element.
-  * @param {Object} parameters.parent Reference to parent element.
-  * @param {Object} parameters.documentReference Reference to document object
-  * model.
-  * @returns {Object} Reference to element.
-  */
-  static createSearchOptionsList({identifier, prompt, parent, documentReference} = {}) {
-    // Create container.
-    var container = documentReference.createElement("span");
-    parent.appendChild(container);
-    // Create list of options.
-    var listIdentifier = identifier + "-options-list";
-    var list = documentReference.createElement("datalist");
-    container.appendChild(list);
-    list.setAttribute("id", listIdentifier);
-    // Create search tool.
-    var search = documentReference.createElement("input");
-    container.appendChild(search);
-    search.setAttribute("id", identifier);
-    search.setAttribute("type", "search");
-    search.setAttribute("list", listIdentifier);
-    search.setAttribute("placeholder", prompt);
-    search.setAttribute("autocomplete", "off");
-    // Return reference to element.
-    return search;
-  }
-  /**
-  * Creates options for a search menu.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.list Reference to list of options.
-  * @param {Array<Object>} parameters.records Information about options.
-  */
-  static createSearchOptions({list, records} = {}) {
-    // Create options for search.
-    // Select parent.
-    var parent = d3.select(list);
-    // Define function to access data.
-    function access() {
-      return records;
-    };
-    // Create children elements by association to data.
-    var options = View.createElementsData({
-      parent: parent,
-      type: "option",
-      accessor: access
-    });
-    // Assign attributes to elements.
-    options
-    .attr("value", function (element, index, nodes) {
-      return element.name;
-    })
-    .attr("label", function (element, index, nodes) {
-      return element.name;
-    })
-    .attr("name", function (element, index, nodes) {
-      return element.identifier;
-    });
-  }
-  /**
-  * Determines the name of an option that matches a search's value.
-  * @param {Object} search Reference to search menu element.
-  * @returns {string} Name of matching option.
-  */
-  static determineSearchOptionName(search) {
-    // Options from datalist elements do not report events.
-    // Rather, search input elements report events.
-    // Respond to event on input search element and access relevant information
-    // that associates with the element.
-    // Determine the search's value.
-    var name = search.value;
-    // Determine the search's list.
-    var list = search.list;
-    // Determine the search's options.
-    var options = list.getElementsByTagName("option");
-    var names = General.extractValuesDocumentElements(options);
-    // Determine whether the search value matches a valid option.
-    if (names.includes(name)) {
-      // The search's value matches a valid option.
-      // Select matching option.
-      var option = Array.from(options).find(function (element) {
-        return element.value === name;
-      });
-      // Determine option's value.
-      var value = option.getAttribute("name");
-    } else {
-      var value = "";
-    }
-    return value;
   }
   /**
   * Creates a selector menu.
@@ -1110,45 +879,53 @@ class View {
     // Return reference to element.
     return fileSelector;
   }
+
+  // Tab.
+  // TODO: include more class hierarchy for the tabs.
+
   /**
   * Creates a tab.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.type Type of tab, control, network, or
   * subnetwork.
   * @param {string} parameters.category Category of tab.
-  * @param {Object} parameters.self Instance of a class.
+  * @param {Array<string>} parameters.classNames Class names for elements.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
   */
-  static createActivateTab({type, category, self} = {}) {
+  static createActivateTab({type, category, classNames, parent, documentReference, state} = {}) {
     // Create container.
     var identifier = View.createTabIdentifier(category);
-    var reference = View.createTabReference(category);
-    self[reference] = self.document.createElement("div");
-    self.container.appendChild(self[reference]);
+    var tab = self.document.createElement("div");
+    parent.appendChild(tab);
     var label = View.createAppendSpanText({
       text: category,
-      parent: self[reference],
-      documentReference: self.document
+      parent: tab,
+      documentReference: documentReference
     });
     // Assign attributes.
-    self[reference].setAttribute("id", identifier);
-    self[reference].setAttribute("name", category);
-    self[reference].classList.add(type);
-    self[reference].classList.add("tab");
-    self[reference].classList.add("normal");
+    tab.setAttribute("id", identifier);
+    tab.setAttribute("name", category);
+    tab.classList.add(type);
+    tab.classList.add("normal");
+    // Include class names.
+    tab.classList.add(...classNames);
     // Activate behavior.
-    self[reference].addEventListener("mouseenter", function (event) {
+    tab.addEventListener("mouseenter", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
       event.currentTarget.classList.remove("normal");
       event.currentTarget.classList.add("emphasis");
     });
-    self[reference].addEventListener("mouseleave", function (event) {
+    tab.addEventListener("mouseleave", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Call action.
       event.currentTarget.classList.remove("emphasis");
       event.currentTarget.classList.add("normal");
     });
-    self[reference].addEventListener("click", function (event) {
+    tab.addEventListener("click", function (event) {
       // Element on which the event originated is event.currentTarget.
       // Determine tab's type.
       if (event.currentTarget.classList.contains("control")) {
@@ -1164,20 +941,22 @@ class View {
       if (type === "control") {
         ActionControl.changeView({
           category: category,
-          state: self.state
+          state: state
         });
       } else if (type === "network") {
         ActionNetwork.changeView({
           category: category,
-          state: self.state
+          state: state
         });
       } else if (type === "subnetwork") {
         ActionSubnetwork.changeView({
           category: category,
-          state: self.state
+          state: state
         });
       }
     });
+    // Return reference to element.
+    return tab;
   }
   /**
   * Creates identifier for a tab.
@@ -1194,6 +973,316 @@ class View {
   */
   static createTabReference(category) {
     return (category + "Tab");
+  }
+
+  // Menu.
+
+  /**
+  * Creates and activates a table column's head.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.attribute Name of attribute.
+  * @param {string} parameters.text Text for column head's label.
+  * @param {string} parameters.type Type of summaries.
+  * @param {string} parameters.category Name of category.
+  * @param {boolean} parameters.sort Whether column's attribute is a sort
+  * criterion.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} References to elements.
+  */
+  static createActivateTableColumnTitle({attribute, text, type, category, sort, parent, documentReference, state} = {}) {
+    // Create cell.
+    var cell = View.createTableHeadCellLabel({
+      text: text,
+      className: attribute,
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Determine whether column's attribute is a sort criterion.
+    if (sort) {
+      // Create elements.
+      var span = cell.getElementsByTagName("span").item(0);
+      var sortGraph = View.createGraph({
+        parent: span,
+        documentReference: documentReference
+      });
+      sortGraph.classList.add("sort");
+      // Activate behavior.
+      cell.addEventListener("click", function (event) {
+        // Element on which the event originated is event.currentTarget.
+        // Call action.
+        ActionGeneral.changeSorts({
+          type: type,
+          category: category,
+          criterion: attribute,
+          state: state
+        });
+      });
+      // Compile references to elements.
+      var references = {
+        sortGraph: sortGraph
+      };
+    } else {
+      // Compile references to elements.
+      var references = {};
+    }
+    // Return references to elements.
+    return references;
+  }
+  /**
+  * Creates a table column's scale.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.attribute Name of attribute.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} References to elements.
+  */
+  static createTableColumnScale({attribute, parent, documentReference} = {}) {
+    // Create cell.
+    var cell = View.createTableHeadCell({
+      parent: parent,
+      className: attribute,
+      documentReference: documentReference
+    });
+    // Create graphical container.
+    var graph = View.createGraph({
+      parent: cell,
+      documentReference: documentReference
+    });
+    graph.classList.add("scale");
+    // Determine graph's dimensions.
+    var graphWidth = General.determineElementDimension(graph, "width");
+    var graphHeight = General.determineElementDimension(graph, "height");
+    // Create chart's representation of scale.
+    var groupScale = View.createScaleChart({
+      graph: graph,
+      documentReference: self.document
+    });
+    // Compile references.
+    var references = {
+      cell: cell,
+      scaleGraph: graph,
+      graphWidth: graphWidth,
+      graphHeight: graphHeight
+    };
+    // Return references.
+    return references;
+  }
+  /**
+  * Restores a chart for nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.nodes Count of nodes.
+  * @param {number} parameters.nodesMetabolites Count of nodes for metabolites.
+  * @param {number} parameters.nodesReactions Count of nodes for reactions.
+  * @param {boolean} parameters.selection Whether there is a selection of a
+  * subnetwork.
+  * @param {number} parameters.nodesMetabolitesSelection Count of nodes for
+  * metabolites in selection.
+  * @param {number} parameters.nodesReactionsSelection Count of nodes for
+  * reactions in selection.
+  * @param {number} parameters.pad Dimension for pad space.
+  * @param {Object} parameters.graph Reference to graphical container.
+  */
+  static restoreTableColumnScale({count, pad, graph} = {}) {
+    // Determine graph's dimensions.
+    var graphWidth = General.determineElementDimension(graph, "width");
+    var graphHeight = General.determineElementDimension(graph, "height");
+    // Restore chart's representation of scale.
+    View.restoreScaleChart({
+      minimum: 0,
+      maximum: count,
+      graphWidth: graphWidth,
+      graphHeight: graphHeight,
+      pad: pad,
+      graph: graph
+    });
+  }
+  /**
+  * Creates and activates a table column's search.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of summaries.
+  * @param {string} parameters.category Name of category.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {string} parameters.className Class for element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Reference to element.
+  */
+  static createTableColumnSearch({type, category, parent, className, documentReference, state} = {}) {
+    // Create cell.
+    var cell = View.createTableHeadCell({
+      parent: parent,
+      className: className,
+      documentReference: documentReference
+    });
+    // Create search.
+    var search = View.createActivateSearch({
+      type: type,
+      category: category,
+      parent: cell,
+      documentReference: documentReference,
+      state: state
+    });
+    // Compile references.
+    var references = {
+      cell: cell,
+      search: search
+    };
+    // Return references.
+    return references;
+  }
+
+  // Search.
+
+  /**
+  * Creates a search tool with label.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.text Text for element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createSearch({text, parent, documentReference} = {}) {
+    // Create tool for search.
+    var search = documentReference.createElement("input");
+    parent.appendChild(search);
+    search.setAttribute("type", "text");
+    search.classList.add("search");
+    search.setAttribute("placeholder", text);
+    // Return reference to element.
+    return search;
+  }
+  /**
+  * Creates and activates a scroll container, table, and body.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.type Type of summaries.
+  * @param {string} parameters.category Name of category.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @param {Object} parameters.state Application's state.
+  * @returns {Object} Reference to element.
+  */
+  static createActivateSearch({type, category, parent, documentReference, state} = {}) {
+    // Create elements.
+    var search = View.createSearch({
+      text: ("search " + category + "..."),
+      parent: parent,
+      documentReference: documentReference
+    });
+    // Activate behavior.
+    search.addEventListener("input", function (event) {
+      // Element on which the event originated is event.currentTarget.
+      // Determine the search's value.
+      var value = event.currentTarget.value;
+      // Call action.
+      ActionGeneral.changeSearches({
+        type: type,
+        category: category,
+        string: value,
+        state: state
+      });
+    });
+    // Return reference to element.
+    return search;
+  }
+  /**
+  * Creates a search menu with a list for options for automatic completion.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.identifier Identifier for element.
+  * @param {string} parameters.prompt Prompt to display within element.
+  * @param {Object} parameters.parent Reference to parent element.
+  * @param {Object} parameters.documentReference Reference to document object
+  * model.
+  * @returns {Object} Reference to element.
+  */
+  static createSearchOptionsList({identifier, prompt, parent, documentReference} = {}) {
+    // Create container.
+    var container = documentReference.createElement("span");
+    parent.appendChild(container);
+    // Create list of options.
+    var listIdentifier = identifier + "-options-list";
+    var list = documentReference.createElement("datalist");
+    container.appendChild(list);
+    list.setAttribute("id", listIdentifier);
+    // Create search tool.
+    var search = documentReference.createElement("input");
+    container.appendChild(search);
+    search.setAttribute("id", identifier);
+    search.setAttribute("type", "search");
+    search.setAttribute("list", listIdentifier);
+    search.setAttribute("placeholder", prompt);
+    search.setAttribute("autocomplete", "off");
+    // Return reference to element.
+    return search;
+  }
+  /**
+  * Creates options for a search menu.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.list Reference to list of options.
+  * @param {Array<Object>} parameters.records Information about options.
+  */
+  static createSearchOptions({list, records} = {}) {
+    // Create options for search.
+    // Select parent.
+    var parent = d3.select(list);
+    // Define function to access data.
+    function access() {
+      return records;
+    };
+    // Create children elements by association to data.
+    var options = View.createElementsData({
+      parent: parent,
+      type: "option",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    options
+    .attr("value", function (element, index, nodes) {
+      return element.name;
+    })
+    .attr("label", function (element, index, nodes) {
+      return element.name;
+    })
+    .attr("name", function (element, index, nodes) {
+      return element.identifier;
+    });
+  }
+  /**
+  * Determines the name of an option that matches a search's value.
+  * @param {Object} search Reference to search menu element.
+  * @returns {string} Name of matching option.
+  */
+  static determineSearchOptionName(search) {
+    // Options from datalist elements do not report events.
+    // Rather, search input elements report events.
+    // Respond to event on input search element and access relevant information
+    // that associates with the element.
+    // Determine the search's value.
+    var name = search.value;
+    // Determine the search's list.
+    var list = search.list;
+    // Determine the search's options.
+    var options = list.getElementsByTagName("option");
+    var names = General.extractValuesDocumentElements(options);
+    // Determine whether the search value matches a valid option.
+    if (names.includes(name)) {
+      // The search's value matches a valid option.
+      // Select matching option.
+      var option = Array.from(options).find(function (element) {
+        return element.value === name;
+      });
+      // Determine option's value.
+      var value = option.getAttribute("name");
+    } else {
+      var value = "";
+    }
+    return value;
   }
 
   // Scale chart.

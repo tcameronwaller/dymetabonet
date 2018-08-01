@@ -70,6 +70,7 @@ class ViewTip {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "tip",
+      classNames: ["container"],
       type: "standard",
       target: self.interfaceView.container,
       position: "beforeend",

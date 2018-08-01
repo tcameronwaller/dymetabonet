@@ -68,6 +68,7 @@ class ViewControl {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "control",
+      classNames: ["container", "panel", "control"],
       type: "standard",
       target: self.panelView.container,
       position: "beforeend",
@@ -96,10 +97,14 @@ class ViewControl {
   createActivateTabs(self) {
     var tabs = Model.determineControlTabs(self.state);
     tabs.forEach(function (category) {
-      View.createActivateTab({
+      var reference = View.createTabReference(category);
+      self[reference] = View.createActivateTab({
         type: "control",
         category: category,
-        self: self
+        classNames: ["tab", "tierOne"],
+        parent: self.container,
+        documentReference: self.document,
+        state: self.state
       });
     });
   }

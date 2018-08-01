@@ -71,6 +71,7 @@ class ViewTopology {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "topology",
+      classNames: ["container"],
       type: "graph",
       target: self.explorationView.graph,
       position: "beforeend",

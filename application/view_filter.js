@@ -68,6 +68,7 @@ class ViewFilter {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "filter",
+      classNames: ["container", "panel", "control", "tierTwo"],
       type: "standard",
       target: self.networkView.filterTab,
       position: "afterend",
@@ -79,8 +80,6 @@ class ViewFilter {
       // Create and activate behavior of content.
       // Create and activate control for filter.
       self.createActivateFilterControl(self);
-      // Create break.
-      self.container.appendChild(self.document.createElement("br"));
       // Create and activate controls for type of entities.
       self.createActivateEntitiesControl("metabolites", self);
       self.createActivateEntitiesControl("reactions", self);
@@ -96,6 +95,8 @@ class ViewFilter {
         state: self.state,
         documentReference: self.document
       });
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
       // Create menu for sets by compartments.
       new FilterMenuView({
         category: "compartments",
@@ -106,6 +107,8 @@ class ViewFilter {
         state: self.state,
         documentReference: self.document
       });
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
     } else {
       // Container is not empty.
       // Set references to content.
@@ -265,6 +268,7 @@ class FilterMenuView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: ("filter-" + self.category + "-menu"),
+      classNames: ["container", "panel", "control", "tierThree"],
       type: "standard",
       target: self.filterView.container,
       position: "beforeend",
@@ -275,16 +279,19 @@ class FilterMenuView {
       // Container is empty.
       // Create and activate behavior of content.
       self.container.classList.add("menu");
-      // Create search.
-      self.search = View.createActivateSearch({
-        type: "sets",
-        category: self.category,
+
+      // TODO: I need a title for the menu...
+      // Create title.
+      var title = View.createAppendDivisionText({
+        text: "Processes",
+        className: "title",
         parent: self.container,
-        documentReference: self.document,
-        state: self.state
+        documentReference: self.document
       });
-      // Create break.
-      self.container.appendChild(self.document.createElement("br"));
+
+      // TODO: change the procedure below to menu...
+
+
       // Create table.
       self.createActivateTable(self);
     } else {
@@ -380,20 +387,24 @@ class FilterMenuView {
       documentReference: self.document
     });
     // Create empty name cell.
-    var cellName = View.createTableHeadCell({
+    var referencesSearch = View.createTableColumnSearch({
+      type: "sets",
+      category: self.category,
       parent: row,
       className: "name",
-      documentReference: self.document
+      documentReference: self.document,
+      state: self.state
     });
+    self.search = referencesSearch.search;
     // Create scale cell.
-    var references = View.createTableColumnScale({
+    var referencesScale = View.createTableColumnScale({
       attribute: "count",
       parent: row,
       documentReference: self.document
     });
-    self.scaleGraph = references.scaleGraph;
-    self.graphWidth = references.graphWidth;
-    self.graphHeight = references.graphHeight;
+    self.scaleGraph = referencesScale.scaleGraph;
+    self.graphWidth = referencesScale.graphWidth;
+    self.graphHeight = referencesScale.graphHeight;
   }
   /**
   * Creates and activates a table's body.

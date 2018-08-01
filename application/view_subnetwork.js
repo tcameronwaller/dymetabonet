@@ -68,6 +68,7 @@ class ViewSubnetwork {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "subnetwork",
+      classNames: ["container", "panel", "control", "tierOne"],
       type: "standard",
       target: self.controlView.subnetworkTab,
       position: "afterend",
@@ -213,10 +214,14 @@ class ViewSubnetwork {
   createActivateTabs(self) {
     var tabs = Model.determineSubnetworkTabs(self.state);
     tabs.forEach(function (category) {
-      View.createActivateTab({
+      var reference = View.createTabReference(category);
+      self[reference] = View.createActivateTab({
         type: "subnetwork",
         category: category,
-        self: self
+        classNames: ["tab", "tierTwo"],
+        parent: self.container,
+        documentReference: self.document,
+        state: self.state
       });
     });
   }

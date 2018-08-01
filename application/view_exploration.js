@@ -68,6 +68,7 @@ class ViewExploration {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "exploration",
+      classNames: ["container"],
       type: "standard",
       target: self.interfaceView.container,
       position: "beforeend",

@@ -54,7 +54,8 @@ flex-direction: column;
 /******************************************************************************/
 
 /******************************************************************************/
-/* General */
+/* Tab */
+/* classes tab tierOne, tierTwo, tierThree, tierFour */
 /******************************************************************************/
 
 .show-inline {
@@ -70,12 +71,9 @@ div.tab {
   font-style: normal;
   font-weight: bold;
   text-align: left;
-  line-height: 1cm;
-  height: 1cm;
   border-style: solid;
   border-width: 0.5mm;
   border-color: rgba(100, 100, 100, 1);
-  font-size: large;
   color: rgba(255, 255, 255, 1);
 }
 
@@ -85,6 +83,49 @@ div.tab.normal {
 
 div.tab.emphasis {
   background-color: rgba(0, 150, 150, 1);
+}
+
+div.tab.tierOne {
+  font-size: large;
+  width: 9cm;
+  line-height: 1cm;
+  height: 1cm;
+}
+
+div.tab.tierTwo {
+  font-size: medium;
+  width: 8.75cm;
+  line-height: 0.5cm;
+  height: 0.5cm;
+}
+
+/******************************************************************************/
+/* Control Container */
+/******************************************************************************/
+
+/* TODO: I need a hierarchy of containers and titles... different widths, heights, colors... */
+
+div.container.panel.control {}
+
+div.container.panel.control.tierOne {
+  padding-left: 0.25cm;
+  width: 9cm;
+}
+
+div.container.panel.control.tierTwo {
+  padding-left: 0.25cm;
+  width: 8.75cm;
+  background-color: rgba(100, 0, 0, 1);
+}
+
+div.container.panel.control.tierThree {
+  padding-left: 0.25cm;
+  width: 8.5cm;
+}
+
+div.container.panel.control.tierFour {
+  padding-left: 0.25cm;
+  width: 8.25cm;
 }
 
 /******************************************************************************/
@@ -121,7 +162,6 @@ table.summary {
   font-style: normal;
   table-layout: fixed;
   border-collapse: collapse;
-  width: 100%;
   padding: 0px;
   background-color: rgba(225, 225, 225, 1);
 }
@@ -183,12 +223,15 @@ div.menu {
   font-family: sans-serif;
   font-style: normal;
   font-weight: bold;
-  width: 100%;
   background-color: rgba(225, 225, 225, 1);
 }
 
 div.menu input.search {
-  width: 5cm;
+  font-size: x-small;
+  width: 4.7cm;
+  line-height: 0.5cm;
+  padding: 0px;
+  border: 0px;
 }
 
 div.menu div.scroll {
@@ -210,10 +253,9 @@ div.menu table {
 
 div.menu table thead tr {
   vertical-align: middle;
-  padding: 0px;
   border-collapse: collapse;
   border: 0px;
-  height: 0.1cm;
+  padding: 0px;
 }
 
 div.menu table thead th {
@@ -221,6 +263,13 @@ div.menu table thead th {
   border-collapse: collapse;
   border-color: rgba(200, 200, 200, 1);
   border-style: solid;
+  border: 0px;
+  padding: 0px;
+}
+
+div.menu table tbody tr td {
+  /*line-height: 1cm;*/
+  height: 0.5cm;
   border: 0px;
   padding: 0px;
 }
@@ -362,7 +411,6 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   background-color: rgba(150, 150, 150, 1);
   display: block;
   height: 3cm;
-  width: 100%;
 }
 
 #state button {
@@ -376,7 +424,6 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 #filter {
   background-color: rgba(200, 200, 200, 1);
   display: block;
-  width: 100%;
 }
 
 #filter > div.title {
@@ -386,7 +433,6 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   font-family: sans-serif;
   font-style: normal;
   font-weight: bold;
-  width: 100%;
 }
 
 /******************************************************************************/
@@ -403,7 +449,6 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 #detail {
   background-color: rgba(255, 255, 255, 1);
   height: 5%;
-  width: 100%;
 }
 
 /******************************************************************************/
@@ -420,7 +465,6 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   width: 100%;
   fill: rgba(200, 50, 0, 1);
 }
-
 
 /******************************************************************************/
 /* Topology View */
@@ -498,7 +542,6 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 /******************************************************************************/
 /* Old stuff for scrap (re-use much of it) */
 /******************************************************************************/
-
 
 /******************************************************************************/
 /* Set View */
