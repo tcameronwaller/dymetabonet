@@ -653,7 +653,7 @@ class View {
     // Create cell.
     var cell = View.createTableHeadCell({
       parent: parent,
-      className: "attribute",
+      className: attribute,
       documentReference: documentReference
     });
     // Create graphical container.
@@ -667,12 +667,9 @@ class View {
     var graphHeight = General.determineElementDimension(graph, "height");
     // Create chart's representation of scale.
     var groupScale = View.createScaleChart({
-      pad: 5,
       graph: graph,
       documentReference: self.document
     });
-    // Assign relative positions of scale and chart.
-    groupScale.setAttribute("transform", "translate(" + pad + "," + pad + ")");
     // Compile references.
     var references = {
       cell: cell,
@@ -682,6 +679,35 @@ class View {
     };
     // Return references.
     return references;
+  }
+  /**
+  * Restores a chart for nodes.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.nodes Count of nodes.
+  * @param {number} parameters.nodesMetabolites Count of nodes for metabolites.
+  * @param {number} parameters.nodesReactions Count of nodes for reactions.
+  * @param {boolean} parameters.selection Whether there is a selection of a
+  * subnetwork.
+  * @param {number} parameters.nodesMetabolitesSelection Count of nodes for
+  * metabolites in selection.
+  * @param {number} parameters.nodesReactionsSelection Count of nodes for
+  * reactions in selection.
+  * @param {number} parameters.pad Dimension for pad space.
+  * @param {Object} parameters.graph Reference to graphical container.
+  */
+  static restoreTableColumnScale({count, pad, graph} = {}) {
+    // Determine graph's dimensions.
+    var graphWidth = General.determineElementDimension(graph, "width");
+    var graphHeight = General.determineElementDimension(graph, "height");
+    // Restore chart's representation of scale.
+    View.restoreScaleChart({
+      minimum: 0,
+      maximum: count,
+      graphWidth: graphWidth,
+      graphHeight: graphHeight,
+      pad: pad,
+      graph: graph
+    });
   }
 
 

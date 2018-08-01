@@ -383,7 +383,7 @@ class FilterMenuView {
     var cellName = View.createTableHeadCell({
       parent: row,
       className: "name",
-      documentReference: documentReference
+      documentReference: self.document
     });
     // Create scale cell.
     var references = View.createTableColumnScale({
@@ -414,30 +414,14 @@ class FilterMenuView {
   restoreView(self) {
     self.representSearch(self);
     self.representSorts(self);
-
-    // TODO: follow pattern from network summary in network view.
-
-    self.createScale(self);
-
-    View.restoreTableColumnScale({});
+    // Determine maximumal value.
+    var maximalValue = self.state.setsSummaries[self.category][0].maximum;
     View.restoreTableColumnScale({
-      nodes: self.state.networkSummary.nodes,
-      nodesMetabolites: self.state.networkSummary.nodesMetabolites,
-      nodesReactions: self.state.networkSummary.nodesReactions,
-      selection: false,
-      nodesMetabolitesSelection: 0,
-      nodesReactionsSelection: 0,
+      count: maximalValue,
       pad: 3,
       graph: self.scaleGraph
     });
-
-
-
-    View.representScale({
-      scaleGraph: self.scaleGraph,
-      graphHeight: self.graphHeight,
-      determineScaleValue: self.determineScaleValue
-    });
+    self.createScale(self);
     self.createActivateSummaries(self);
   }
   /**

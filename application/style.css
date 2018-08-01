@@ -87,9 +87,38 @@ div.tab.emphasis {
   background-color: rgba(0, 150, 150, 1);
 }
 
+/******************************************************************************/
+/* Linear scale */
+/******************************************************************************/
+
+svg g.scale text {
+  font-style: normal;
+  font-size: x-small;
+  font-weight: bold;
+}
+
+svg g.scale text.minimum {
+  text-anchor: start;
+}
+
+svg g.scale text.maximum {
+  text-anchor: end;
+}
+
+svg g.scale polyline {
+  fill: none;
+  stroke: rgba(0, 0, 0, 1);
+  stroke-width: 1;
+}
+
+/******************************************************************************/
+/* Network summaries */
+/******************************************************************************/
+
 table.summary {
   font-family: sans-serif;
   font-weight: bold;
+  font-style: normal;
   table-layout: fixed;
   border-collapse: collapse;
   width: 100%;
@@ -120,25 +149,6 @@ table.summary svg {
   height: 1cm;
 }
 
-table.summary svg g.scale text {
-  font-size: x-small;
-  font-weight: bold;
-}
-
-table.summary svg g.scale text.minimum {
-  text-anchor: start;
-}
-
-table.summary svg g.scale text.maximum {
-  text-anchor: end;
-}
-
-table.summary svg g.scale polyline {
-  fill: none;
-  stroke: rgba(0, 0, 0, 1);
-  stroke-width: 1;
-}
-
 table.summary svg g.count rect {
   height: 0.15cm;
 }
@@ -163,6 +173,129 @@ table.summary svg g.count rect.selection {
 
 table.summary tr.link svg g.count rect.whole {
   fill: rgba(0, 100, 100, 1);
+}
+
+/******************************************************************************/
+/* Menus */
+/******************************************************************************/
+
+div.menu {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  width: 100%;
+  background-color: rgba(225, 225, 225, 1);
+}
+
+div.menu input.search {
+  width: 5cm;
+}
+
+div.menu div.scroll {
+  display: block;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 3cm;
+}
+
+div.menu table {
+  table-layout: fixed;
+  text-align: left;
+  border-collapse: collapse;
+  border-style: solid;
+  border: 0px;
+  padding: 0px;
+  width: 100%;
+}
+
+div.menu table thead tr {
+  vertical-align: middle;
+  padding: 0px;
+  border-collapse: collapse;
+  border: 0px;
+  height: 0.1cm;
+}
+
+div.menu table thead th {
+  vertical-align: middle;
+  border-collapse: collapse;
+  border-color: rgba(200, 200, 200, 1);
+  border-style: solid;
+  border: 0px;
+  padding: 0px;
+}
+
+div.menu table thead tr th span {
+  color: rgba(0, 0, 0, 1);
+  font-size: small;
+}
+
+div.menu table thead th svg.sort {
+  height: 0.5cm;
+  width: 0.5cm;
+}
+
+div.menu table thead th svg.sort polygon {
+  fill: rgba(0, 0, 0, 1);
+}
+
+div.menu table thead th.count svg.scale {
+  background-color: rgba(255, 255, 255, 1);
+  width: 3cm;
+  height: 0.55cm;
+}
+
+div.menu table th.name, td.name {
+  width: 5cm;
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+
+div.menu table th.omission, td.omission, th.replication, td.replication {
+  width: 0.7cm;
+}
+
+div.menu table th.count, td.count {
+  width: auto;
+}
+
+div.menu table tbody tr {
+  vertical-align: middle;
+  padding: 0px;
+  border: 0px;
+}
+
+div.menu table tbody tr.normal:nth-child(odd) {
+  background-color: rgba(255, 255, 255, 1);
+}
+
+div.menu table tbody tr.normal:nth-child(even) {
+  background-color: rgba(225, 225, 225, 1);
+}
+
+div.menu table tbody tr.emphasis {
+  background-color: rgba(150, 150, 200, 1);
+}
+
+div.menu table tbody tr td.name {
+  color: rgba(0, 0, 0, 1);
+  font-size: x-small;
+}
+
+/* change to svg.chart */
+
+div.menu table tbody td.count svg.graph {
+  height: 0.25cm;
+  width: 3cm;
+}
+
+div.menu table tbody td.count svg.graph rect.mark.normal {
+  fill: rgba(0, 100, 255, 1);
+}
+
+div.menu table tbody td.count svg.graph rect.mark.emphasis {
+  fill: rgba(255, 100, 0, 1);
 }
 
 /******************************************************************************/
@@ -234,132 +367,6 @@ table.summary tr.link svg g.count rect.whole {
 
 #state button {
   width: 2cm;
-}
-
-/******************************************************************************/
-/* Menu */
-/******************************************************************************/
-
-div.menu {
-  width: 100%;
-}
-
-div.menu input.search {
-  width: 5cm;
-}
-
-div.menu div.scroll {
-  display: block;
-  overflow-y: auto;
-  overflow-x: hidden;
-  height: 5cm;
-}
-
-div.menu table {
-  table-layout: fixed;
-  text-align: left;
-  border-collapse: collapse;
-  border-style: solid;
-  width: 100%;
-}
-
-div.menu table thead {
-  background-color: rgba(75, 75, 75, 1);
-  color: rgba(255, 255, 255, 1);
-  font-size: medium;
-  font-weight: bold;
-}
-
-div.menu table tr {
-  vertical-align: middle;
-}
-
-div.menu table thead th {
-  vertical-align: middle;
-  border-color: rgba(200, 200, 200, 1);
-  border-style: solid;
-}
-
-div.menu table thead th span {
-  background-color: rgba(50, 50, 50, 1);
-  font-size: medium;
-  color: rgba(255, 255, 255, 1);
-  font-family: sans-serif;
-  font-style: normal;
-  font-weight: bold;
-}
-
-div.menu table thead th svg.sort {
-  height: 0.5cm;
-  width: 0.5cm;
-}
-
-div.menu table thead th svg.sort polygon {
-  fill: rgba(255, 255, 255, 1);
-}
-
-div.menu table thead th svg.scale {
-  height: 0.5cm;
-  width: 100%;
-}
-
-div.menu table thead th svg.scale g text {
-  fill: rgba(255, 255, 255, 1);
-}
-
-div.menu table thead th svg.scale g path,line {
-  stroke: rgba(255, 255, 255, 1);
-}
-
-div.menu table th,td {
-  padding: 1mm;
-}
-
-div.menu table th.name, td.name {
-  width: 2cm;
-  white-space: nowrap;
-  overflow-x: hidden;
-  text-overflow: ellipsis;
-}
-
-div.menu table th.omission, td.omission, th.replication, td.replication {
-  width: 0.7cm;
-}
-
-div.menu table th.count, td.count {
-  width: auto;
-}
-
-div.menu table tbody tr.normal:nth-child(odd) {
-  background-color: rgba(200, 200, 200, 1);
-}
-
-div.menu table tbody tr.normal:nth-child(even) {
-  background-color: rgba(175, 175, 175, 1);
-}
-
-div.menu table tbody tr.emphasis {
-  background-color: rgba(150, 150, 200, 1);
-}
-
-div.menu table tbody td.name {
-  font-family: sans-serif;
-  font-style: normal;
-  font-weight: bold;
-  font-size: 13px;
-}
-
-div.menu table tbody td.count svg.graph {
-  height: 0.5cm;
-  width: 100%;
-}
-
-div.menu table tbody td.count svg.graph rect.mark.normal {
-  fill: rgba(0, 100, 255, 1);
-}
-
-div.menu table tbody td.count svg.graph rect.mark.emphasis {
-  fill: rgba(255, 100, 0, 1);
 }
 
 /******************************************************************************/
