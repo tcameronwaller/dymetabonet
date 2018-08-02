@@ -68,7 +68,7 @@ class ViewNetwork {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "network",
-      classNames: ["container", "panel", "control", "tierOne"],
+      classNames: ["container", "panel", "control", "tierTwo"],
       type: "standard",
       target: self.controlView.networkTab,
       position: "afterend",
@@ -140,6 +140,8 @@ class ViewNetwork {
   * @param {Object} self Instance of a class.
   */
   createActivateSummary(self) {
+    // TODO: I need a container for the summary...
+    
     // Create table body.
     self.summaryTableBody = View.createTableBody({
       className: "summary",

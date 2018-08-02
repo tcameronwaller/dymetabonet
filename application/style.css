@@ -67,36 +67,44 @@ flex-direction: column;
 }
 
 div.tab {
-  font-family: sans-serif;
+  font-family: verdana, sans-serif;
   font-style: normal;
   font-weight: bold;
   text-align: left;
   border-style: solid;
-  border-width: 0.5mm;
-  border-color: rgba(100, 100, 100, 1);
+  border-color: rgba(0, 0, 0, 1);
+  border-top-width: 0.25mm;
+  border-left-width: 0mm;
+  border-right-width: 0mm;
+  border-bottom-width: 0.25mm;
+  padding-left: 0.1cm;
   color: rgba(255, 255, 255, 1);
-}
-
-div.tab.normal {
-  background-color: rgba(0, 50, 100, 1);
-}
-
-div.tab.emphasis {
-  background-color: rgba(0, 150, 150, 1);
 }
 
 div.tab.tierOne {
   font-size: large;
-  width: 9cm;
+  width: 10cm;
   line-height: 1cm;
   height: 1cm;
 }
 
 div.tab.tierTwo {
   font-size: medium;
-  width: 8.75cm;
+  width: 9.5cm;
   line-height: 0.5cm;
   height: 0.5cm;
+}
+
+div.tab.tierOne.normal {
+  background-color: rgba(50, 50, 50, 1);
+}
+
+div.tab.tierTwo.normal {
+  background-color: rgba(75, 75, 75, 1);
+}
+
+div.tab.emphasis {
+  background-color: rgba(255, 150, 50, 1);
 }
 
 /******************************************************************************/
@@ -105,27 +113,32 @@ div.tab.tierTwo {
 
 /* TODO: I need a hierarchy of containers and titles... different widths, heights, colors... */
 
+/* TODO: Control panel itself (control container) should be tierOne... to allow for styling of the container */
+
+/* TODO: decide whether to control left off-set with margin or padding */
+
 div.container.panel.control {}
 
 div.container.panel.control.tierOne {
-  padding-left: 0.25cm;
-  width: 9cm;
+  background-color: rgba(100, 100, 100, 1);
+  margin-left: 0cm;
+  width: 10cm;
 }
 
 div.container.panel.control.tierTwo {
-  padding-left: 0.25cm;
-  width: 8.75cm;
-  background-color: rgba(100, 0, 0, 1);
+  background-color: rgba(125, 125, 125, 1);
+  margin-left: 0.5cm;
+  width: 9.5cm;
 }
 
 div.container.panel.control.tierThree {
-  padding-left: 0.25cm;
-  width: 8.5cm;
+  margin-left: 0.5cm;
+  width: 9cm;
 }
 
 div.container.panel.control.tierFour {
-  padding-left: 0.25cm;
-  width: 8.25cm;
+  margin-left: 0.5cm;
+  width: 8.5cm;
 }
 
 /******************************************************************************/
@@ -388,7 +401,7 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 /******************************************************************************/
 
 #panel {
-  flex-basis: 9cm;
+  flex-basis: 10cm;
   height: 100%;
 }
 
@@ -397,10 +410,9 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 /******************************************************************************/
 
 #control {
-  background-color: rgba(200, 200, 200, 1);
-  height: 85%;
-  width: 100%;
-  overflow: auto;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /******************************************************************************/
@@ -463,7 +475,7 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 #exploration svg {
   height: 100%;
   width: 100%;
-  fill: rgba(200, 50, 0, 1);
+  fill: rgba(200, 200, 200, 1);
 }
 
 /******************************************************************************/
@@ -516,11 +528,11 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 }
 
 #topology .node.metabolite text.label {
-  fill: rgba(200, 50, 0, 1);
+  fill: rgba(200, 200, 200, 1);
 }
 
 #topology .node.reaction text.label {
-  fill: rgba(200, 50, 0, 1);
+  fill: rgba(200, 200, 200, 1);
 }
 
 #topology .link {

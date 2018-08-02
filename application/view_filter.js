@@ -68,7 +68,7 @@ class ViewFilter {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "filter",
-      classNames: ["container", "panel", "control", "tierTwo"],
+      classNames: ["container", "panel", "control", "tierThree"],
       type: "standard",
       target: self.networkView.filterTab,
       position: "afterend",
@@ -268,7 +268,7 @@ class FilterMenuView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: ("filter-" + self.category + "-menu"),
-      classNames: ["container", "panel", "control", "tierThree"],
+      classNames: ["container", "panel", "control", "tierFour"],
       type: "standard",
       target: self.filterView.container,
       position: "beforeend",

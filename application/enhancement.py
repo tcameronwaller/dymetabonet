@@ -1367,11 +1367,6 @@ def main():
     # Read source information from file
     source = read_source()
 
-
-
-
-
-
     # Extract metabolites' references from Human Metabolome Database
     hmdb_metabolites_references = extract_hmdb_metabolites_references(
         hmdb=source["hmdb"]

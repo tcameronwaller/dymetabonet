@@ -68,7 +68,7 @@ class ViewSubnetwork {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "subnetwork",
-      classNames: ["container", "panel", "control", "tierOne"],
+      classNames: ["container", "panel", "control", "tierTwo"],
       type: "standard",
       target: self.controlView.subnetworkTab,
       position: "afterend",

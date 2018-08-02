@@ -72,7 +72,7 @@ class ViewMeasurement {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "measurement",
-      classNames: ["container", "panel", "control", "tierOne"],
+      classNames: ["container", "panel", "control", "tierTwo"],
       type: "standard",
       target: self.controlView.measurementTab,
       position: "afterend",

@@ -68,7 +68,7 @@ class ViewContext {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "context",
-      classNames: ["container", "panel", "control", "tierTwo"],
+      classNames: ["container", "panel", "control", "tierThree"],
       type: "standard",
       target: self.networkView.contextTab,
       position: "afterend",
@@ -264,7 +264,7 @@ class SimplificationMenuView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: ("simplification-" + self.category + "-menu"),
-      classNames: ["container", "panel", "control", "tierThree"],
+      classNames: ["container", "panel", "control", "tierFour"],
       type: "standard",
       target: self.simplificationView.container,
       position: "beforeend",
