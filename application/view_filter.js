@@ -280,15 +280,6 @@ class FilterMenuView {
       // Create and activate behavior of content.
       self.container.classList.add("menu");
 
-      // TODO: I need a title for the menu...
-      // Create title.
-      var title = View.createAppendDivisionText({
-        text: "Processes",
-        className: "title",
-        parent: self.container,
-        documentReference: self.document
-      });
-
       // TODO: change the procedure below to menu...
 
 
@@ -355,7 +346,7 @@ class FilterMenuView {
     // Create head for names.
     var referencesOne = View.createActivateTableColumnTitle({
       attribute: "name",
-      text: "Name",
+      text: General.capitalizeString(self.category),
       type: "sets",
       category: self.category,
       sort: true,
@@ -463,6 +454,12 @@ class FilterMenuView {
       documentReference: self.document
     });
   }
+
+  // TODO: The scale here is different than for the column scale...
+  // TODO: Use the same scaling and padding method...
+  // TODO: follow pattern of View.restoreNodeCountChart
+
+
   /**
   * Creates scale.
   * @param {Object} self Instance of a class.

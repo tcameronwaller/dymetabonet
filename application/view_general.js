@@ -554,8 +554,8 @@ class View {
         var mark = parent.getElementsByTagName("polygon").item(0);
       }
       // Create points for polygon.
-      var base = 10;
-      var altitude = 10;
+      var base = 7;
+      var altitude = 7;
       var points = General.createIsoscelesTrianglePoints({
         base: base,
         altitude: altitude,
@@ -629,7 +629,7 @@ class View {
       accessor: access
     });
     // Assign attributes to elements.
-    graphs.classed("graph", true);
+    graphs.classed("chart", true);
     // Create groups.
     // Create children elements by association to data.
     var barGroups = View.createElementsData({

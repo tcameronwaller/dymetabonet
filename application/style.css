@@ -125,6 +125,7 @@ flex-direction: column;
   padding-left: 0.025cm;
   padding-right: 0.025cm;
   line-height: 0.15cm;
+  vertical-align: middle;
 }
 
 /******************************************************************************/
@@ -260,8 +261,10 @@ div.summary {
 }
 
 div.summary table {
+  width: 9.25cm;
   table-layout: fixed;
   border-collapse: collapse;
+  border-spacing: 0mm;
 }
 
 div.summary table tbody td.label {
@@ -280,6 +283,12 @@ div.summary table tbody svg g.chart text {
   font-size: xx-small;
   font-weight: bold;
   fill: rgba(255, 255, 255, 1);
+}
+
+div.summary table tbody tr.node {
+  border-bottom-style: solid;
+  border-bottom-color: rgba(0, 0, 0, 1);
+  border-bottom-width: 0.5mm;
 }
 
 div.summary table tbody tr.node svg g.chart rect.whole.metabolite {
@@ -307,12 +316,14 @@ div.summary table tbody tr.link svg g.chart rect.whole {
 
 
 div.menu {
-  width: 8.75cm;
+  width: 8.9cm;
   font-family: sans-serif;
   font-style: normal;
   font-weight: bold;
   background-color: rgba(255, 255, 255, 1);
 }
+
+/* Menu head. */
 
 div.menu input.search {
   font-size: x-small;
@@ -323,31 +334,19 @@ div.menu input.search {
   background-color: rgba(230, 230, 230, 1);
 }
 
-div.menu div.scroll {
-  width: 100%;
-  height: 3cm;
-  display: block;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
 div.menu table {
+  width: 8.75cm;
   table-layout: fixed;
   text-align: left;
   border-collapse: collapse;
-  border-style: solid;
-  border: 0px;
   padding: 0px;
 }
 
-div.menu table th.name, td.name {
-  width: 5cm;
+div.menu table thead {
+  border-bottom-style: solid;
+  border-bottom-color: rgba(0, 0, 0, 1);
+  border-bottom-width: 0.5mm;
 }
-
-div.menu table th.chart, td.chart {
-  width: 2cm;
-}
-
 
 div.menu table thead tr {
   vertical-align: middle;
@@ -359,16 +358,7 @@ div.menu table thead tr {
 div.menu table thead th {
   vertical-align: middle;
   border-collapse: collapse;
-  border-color: rgba(200, 200, 200, 1);
-  border-style: solid;
-  border: 0px;
-  padding: 0px;
-}
-
-div.menu table tbody tr td {
-  /*line-height: 1cm;*/
-  height: 0.5cm;
-  border: 0px;
+  border: 0.1cm;
   padding: 0px;
 }
 
@@ -378,8 +368,8 @@ div.menu table thead tr th span {
 }
 
 div.menu table thead th svg.sort {
-  height: 0.5cm;
-  width: 0.5cm;
+  height: 0.35cm;
+  width: 0.35cm;
 }
 
 div.menu table thead th svg.sort polygon {
@@ -388,27 +378,62 @@ div.menu table thead th svg.sort polygon {
 
 div.menu table thead th.count svg.scale {
   background-color: rgba(255, 255, 255, 1);
-  width: 3cm;
-  height: 0.5cm;
+  width: 3.25cm;
+  height: 0.35cm;
 }
 
-div.menu table th.name, td.name {
+div.menu table thead tr th.name {
   width: 5cm;
   white-space: nowrap;
   overflow-x: hidden;
   text-overflow: ellipsis;
+  border-right-style: solid;
+  border-right-color: rgba(0, 0, 0, 1);
+  border-right-width: 0.5mm;
   padding-top: 0cm;
   padding-bottom: 0cm;
   padding-left: 0.1cm;
   padding-right: 0cm;
 }
 
-div.menu table th.omission, td.omission, th.replication, td.replication {
-  width: 0.7cm;
+div.menu table thead tr th.count {
+  width: 3.5cm;
 }
 
-div.menu table th.count, td.count {
-  width: auto;
+/* Menu body. */
+
+div.menu div.scroll {
+  width: 8.9cm;
+  height: 3cm;
+  display: block;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+div.menu div.scroll table {
+  width: 8.75;
+  table-layout: fixed;
+  text-align: left;
+  border-collapse: collapse;
+  padding: 0px;
+}
+
+div.menu div.scroll table tbody tr td.name {
+  width: 5cm;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-right-style: solid;
+  border-right-color: rgba(0, 0, 0, 1);
+  border-right-width: 0.5mm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+}
+
+div.menu div.scroll table tbody tr td.count {
+  width: 3.5cm;
 }
 
 div.menu table tbody tr {
@@ -429,23 +454,32 @@ div.menu table tbody tr.emphasis {
   background-color: rgba(150, 150, 200, 1);
 }
 
+div.menu table tbody tr td {
+  /*line-height: 1cm;*/
+  height: 0.5cm;
+  border: 0px;
+  padding: 0px;
+}
+
+div.menu table th.omission, td.omission, th.replication, td.replication {
+  width: 0.7cm;
+}
+
 div.menu table tbody tr td.name {
   color: rgba(0, 0, 0, 1);
   font-size: x-small;
 }
 
-/* change to svg.chart */
-
-div.menu table tbody td.count svg.graph {
+div.menu table tbody td.count svg.chart {
   height: 0.25cm;
-  width: 3cm;
+  width: 3.25cm;
 }
 
-div.menu table tbody td.count svg.graph rect.mark.normal {
+div.menu table tbody td.count svg.chart rect.mark.normal {
   fill: rgba(0, 100, 255, 1);
 }
 
-div.menu table tbody td.count svg.graph rect.mark.emphasis {
+div.menu table tbody td.count svg.chart rect.mark.emphasis {
   fill: rgba(255, 100, 0, 1);
 }
 
