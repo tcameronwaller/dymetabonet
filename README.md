@@ -1,7 +1,5 @@
 # DyMetaNet
-
-## Why the silly name?
-## The project needed a title, and it stands for "Dynamic Metabolic Networks".
+## "Dynamic Metabolic Networks"
 
 Networks, or graphs, are abstract representations of relations between entities.
 Metabolic networks represent chemical reactions between molecular metabolites
