@@ -73,14 +73,13 @@ class View {
       // Element does not exist in the document.
       // Create element.
       var container = View.createInsertContainer({
-        identifier: identifier,
+        classNames: classNames,
         type: type,
         target: target,
         position: position,
         documentReference: documentReference
       });
-      // Include class names.
-      container.classList.add(...classNames);
+      container.setAttribute("id", identifier);
     } else {
       // Element exists in the document.
       // Set reference to element.
@@ -91,7 +90,7 @@ class View {
   /**
   * Creates a container and inserts it at a specific position in the document.
   * @param {Object} parameters Destructured object of parameters.
-  * @param {string} parameters.identifier Identifier of element.
+  * @param {Array<string>} parameters.classNames Class names for elements.
   * @param {string} parameters.type Type of container, "standard" or "graph".
   * @param {Object} parameters.target Reference to element for relative
   * position of insertion.
@@ -101,7 +100,7 @@ class View {
   * model.
   * @returns {Object} Reference to element.
   */
-  static createInsertContainer({identifier, type, target, position, documentReference} = {}) {
+  static createInsertContainer({classNames, type, target, position, documentReference} = {}) {
     if (type === "standard") {
       var container = documentReference.createElement("div");
     } else if (type === "graph") {
@@ -113,7 +112,8 @@ class View {
       target: target,
       position: position
     });
-    container.setAttribute("id", identifier);
+    // Include class names.
+    container.classList.add(...classNames);
     return container;
   }
   /**
@@ -1352,7 +1352,7 @@ class View {
     labelMaximum.setAttribute("x", width);
     labelMaximum.setAttribute("y", labelDimension);
     // Restore positions of line.
-    line.setAttribute("points", "0,5 0,0 " + width + ",0 " + width + ",5");
+    line.setAttribute("points", "0,3 0,0 " + width + ",0 " + width + ",3");
     groupLine.setAttribute(
       "transform", "translate(" + 0 + "," + (labelDimension + (pad / 2)) + ")"
     );
@@ -1406,7 +1406,7 @@ class View {
     var group = documentReference
     .createElementNS("http://www.w3.org/2000/svg", "g");
     graph.appendChild(group);
-    group.classList.add("count");
+    group.classList.add("chart");
     // Create bars for visual representations of nodes.
     var barMetabolite = documentReference
     .createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -1505,7 +1505,7 @@ class View {
   */
   static restoreNodeCountChart({nodes, nodesMetabolites, nodesReactions, selection, nodesMetabolitesSelection, nodesReactionsSelection, graphWidth, graphHeight, pad, graph} = {}) {
     // Select group.
-    var group = graph.querySelector("g.count");
+    var group = graph.querySelector("g.chart");
     // Select bars.
     var barMetabolite = group.querySelector("rect.metabolite");
     var barReaction = group.querySelector("rect.reaction");
@@ -1526,7 +1526,7 @@ class View {
     .domain([0, nodes])
     .range([0, (width)]);
     // Restore bars' dimensions.
-    var barHeight = 15;
+    var barHeight = 10;
     barMetabolite.setAttribute("width", scaleValue(nodesMetabolites));
     barMetabolite.setAttribute("height", barHeight);
     barReaction.setAttribute("width", scaleValue(nodesReactions));
@@ -1616,7 +1616,7 @@ class View {
     var group = documentReference
     .createElementNS("http://www.w3.org/2000/svg", "g");
     graph.appendChild(group);
-    group.classList.add("count");
+    group.classList.add("chart");
     // Create bars for visual representations of nodes.
     var barWhole = documentReference
     .createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -1679,7 +1679,7 @@ class View {
   */
   static restoreLinkCountChart({links, selection, linksSelection, graphWidth, graphHeight, pad, graph} = {}) {
     // Select group.
-    var group = graph.querySelector("g.count");
+    var group = graph.querySelector("g.chart");
     // Select bars.
     var barWhole = graph.querySelector("rect.whole");
     if (selection) {
@@ -1694,7 +1694,7 @@ class View {
     .domain([0, links])
     .range([0, (width)]);
     // Restore bars' dimensions.
-    var barHeight = 15;
+    var barHeight = 10;
     barWhole.setAttribute("width", scaleValue(links));
     barWhole.setAttribute("height", barHeight);
     if (selection) {

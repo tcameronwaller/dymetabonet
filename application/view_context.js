@@ -264,7 +264,7 @@ class SimplificationMenuView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: ("simplification-" + self.category + "-menu"),
-      classNames: ["container", "panel", "control", "tierFour"],
+      classNames: ["container", "menu"],
       type: "standard",
       target: self.simplificationView.container,
       position: "beforeend",

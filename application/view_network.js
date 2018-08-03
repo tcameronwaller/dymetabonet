@@ -88,13 +88,14 @@ class ViewNetwork {
       self.createActivateSummary(self);
       // Create and activate tabs.
       self.createActivateTabs(self);
-
     } else {
       // Container is not empty.
       // Set references to content.
       // Summary.
-      self.graphNode = self.container.querySelector("table.summary svg.node");
-      self.graphLink = self.container.querySelector("table.summary svg.link");
+      self.graphNode = self
+      .container.querySelector("div.summary table svg.node");
+      self.graphLink = self
+      .container.querySelector("div.summary table svg.link");
       // Tabs.
       self.filterTab = self.document.getElementById("tab-filter");
       self.contextTab = self.document.getElementById("tab-context");
@@ -140,12 +141,18 @@ class ViewNetwork {
   * @param {Object} self Instance of a class.
   */
   createActivateSummary(self) {
-    // TODO: I need a container for the summary...
-    
+    // Create or set reference to container.
+    var container = View.createInsertContainer({
+      classNames: ["container", "summary"],
+      type: "standard",
+      target: self.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
     // Create table body.
     self.summaryTableBody = View.createTableBody({
       className: "summary",
-      parent: self.container,
+      parent: container,
       documentReference: self.document
     });
     self.createActivateSummaryNodes(self);
@@ -245,7 +252,7 @@ class ViewNetwork {
       selection: false,
       nodesMetabolitesSelection: 0,
       nodesReactionsSelection: 0,
-      pad: 3,
+      pad: 1.5,
       graph: self.graphNode
     });
     // Restore chart for links.
@@ -253,7 +260,7 @@ class ViewNetwork {
       links: self.state.networkSummary.links,
       selection: false,
       linksSelection: 0,
-      pad: 3,
+      pad: 1.5,
       graph: self.graphLink
     });
   }

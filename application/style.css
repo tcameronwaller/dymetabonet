@@ -54,313 +54,6 @@ flex-direction: column;
 /******************************************************************************/
 
 /******************************************************************************/
-/* Tab */
-/* classes tab tierOne, tierTwo, tierThree, tierFour */
-/******************************************************************************/
-
-.show-inline {
-  display: inline;
-}
-
-.hide {
-  display: none;
-}
-
-div.tab {
-  font-family: verdana, sans-serif;
-  font-style: normal;
-  font-weight: bold;
-  text-align: left;
-  border-style: solid;
-  border-color: rgba(0, 0, 0, 1);
-  border-top-width: 0.25mm;
-  border-left-width: 0mm;
-  border-right-width: 0mm;
-  border-bottom-width: 0.25mm;
-  padding-left: 0.1cm;
-  color: rgba(255, 255, 255, 1);
-}
-
-div.tab.tierOne {
-  font-size: large;
-  width: 10cm;
-  line-height: 1cm;
-  height: 1cm;
-}
-
-div.tab.tierTwo {
-  font-size: medium;
-  width: 9.5cm;
-  line-height: 0.5cm;
-  height: 0.5cm;
-}
-
-div.tab.tierOne.normal {
-  background-color: rgba(50, 50, 50, 1);
-}
-
-div.tab.tierTwo.normal {
-  background-color: rgba(75, 75, 75, 1);
-}
-
-div.tab.emphasis {
-  background-color: rgba(255, 150, 50, 1);
-}
-
-/******************************************************************************/
-/* Control Container */
-/******************************************************************************/
-
-/* TODO: I need a hierarchy of containers and titles... different widths, heights, colors... */
-
-/* TODO: Control panel itself (control container) should be tierOne... to allow for styling of the container */
-
-/* TODO: decide whether to control left off-set with margin or padding */
-
-div.container.panel.control {}
-
-div.container.panel.control.tierOne {
-  background-color: rgba(100, 100, 100, 1);
-  margin-left: 0cm;
-  width: 10cm;
-}
-
-div.container.panel.control.tierTwo {
-  background-color: rgba(125, 125, 125, 1);
-  margin-left: 0.5cm;
-  width: 9.5cm;
-}
-
-div.container.panel.control.tierThree {
-  margin-left: 0.5cm;
-  width: 9cm;
-}
-
-div.container.panel.control.tierFour {
-  margin-left: 0.5cm;
-  width: 8.5cm;
-}
-
-/******************************************************************************/
-/* Linear scale */
-/******************************************************************************/
-
-svg g.scale text {
-  font-style: normal;
-  font-size: x-small;
-  font-weight: bold;
-}
-
-svg g.scale text.minimum {
-  text-anchor: start;
-}
-
-svg g.scale text.maximum {
-  text-anchor: end;
-}
-
-svg g.scale polyline {
-  fill: none;
-  stroke: rgba(0, 0, 0, 1);
-  stroke-width: 1;
-}
-
-/******************************************************************************/
-/* Network summaries */
-/******************************************************************************/
-
-table.summary {
-  font-family: sans-serif;
-  font-weight: bold;
-  font-style: normal;
-  table-layout: fixed;
-  border-collapse: collapse;
-  padding: 0px;
-  background-color: rgba(225, 225, 225, 1);
-}
-
-table.summary tbody tr {
-  padding: 0px;
-  border-collapse: collapse;
-  border: 0px;
-  height: 0.5cm;
-}
-
-table.summary tbody td.label {
-  padding: 0px;
-  width: 1.5cm;
-  font-size: small;
-}
-
-table.summary tbody td.chart {
-  padding: 0px;
-}
-
-table.summary svg {
-  background-color: rgba(255, 255, 255, 1);
-  width: 7.25cm;
-  height: 1cm;
-}
-
-table.summary svg g.count rect {
-  height: 0.15cm;
-}
-
-table.summary svg g.count text {
-  font-size: x-small;
-  font-weight: bold;
-  fill: rgba(255, 255, 255, 1);
-}
-
-table.summary tr.node svg g.count rect.whole.metabolite {
-  fill: rgba(0, 150, 150, 1);
-}
-
-table.summary tr.node svg g.count rect.whole.reaction {
-  fill: rgba(150, 0, 150, 1);
-}
-
-table.summary svg g.count rect.selection {
-  fill: rgba(255, 255, 255, 0.75);
-}
-
-table.summary tr.link svg g.count rect.whole {
-  fill: rgba(0, 100, 100, 1);
-}
-
-/******************************************************************************/
-/* Menus */
-/******************************************************************************/
-
-div.menu {
-  font-family: sans-serif;
-  font-style: normal;
-  font-weight: bold;
-  background-color: rgba(225, 225, 225, 1);
-}
-
-div.menu input.search {
-  font-size: x-small;
-  width: 4.7cm;
-  line-height: 0.5cm;
-  padding: 0px;
-  border: 0px;
-}
-
-div.menu div.scroll {
-  display: block;
-  overflow-y: auto;
-  overflow-x: hidden;
-  height: 3cm;
-}
-
-div.menu table {
-  table-layout: fixed;
-  text-align: left;
-  border-collapse: collapse;
-  border-style: solid;
-  border: 0px;
-  padding: 0px;
-  width: 100%;
-}
-
-div.menu table thead tr {
-  vertical-align: middle;
-  border-collapse: collapse;
-  border: 0px;
-  padding: 0px;
-}
-
-div.menu table thead th {
-  vertical-align: middle;
-  border-collapse: collapse;
-  border-color: rgba(200, 200, 200, 1);
-  border-style: solid;
-  border: 0px;
-  padding: 0px;
-}
-
-div.menu table tbody tr td {
-  /*line-height: 1cm;*/
-  height: 0.5cm;
-  border: 0px;
-  padding: 0px;
-}
-
-div.menu table thead tr th span {
-  color: rgba(0, 0, 0, 1);
-  font-size: small;
-}
-
-div.menu table thead th svg.sort {
-  height: 0.5cm;
-  width: 0.5cm;
-}
-
-div.menu table thead th svg.sort polygon {
-  fill: rgba(0, 0, 0, 1);
-}
-
-div.menu table thead th.count svg.scale {
-  background-color: rgba(255, 255, 255, 1);
-  width: 3cm;
-  height: 0.55cm;
-}
-
-div.menu table th.name, td.name {
-  width: 5cm;
-  white-space: nowrap;
-  overflow-x: hidden;
-  text-overflow: ellipsis;
-}
-
-div.menu table th.omission, td.omission, th.replication, td.replication {
-  width: 0.7cm;
-}
-
-div.menu table th.count, td.count {
-  width: auto;
-}
-
-div.menu table tbody tr {
-  vertical-align: middle;
-  padding: 0px;
-  border: 0px;
-}
-
-div.menu table tbody tr.normal:nth-child(odd) {
-  background-color: rgba(255, 255, 255, 1);
-}
-
-div.menu table tbody tr.normal:nth-child(even) {
-  background-color: rgba(225, 225, 225, 1);
-}
-
-div.menu table tbody tr.emphasis {
-  background-color: rgba(150, 150, 200, 1);
-}
-
-div.menu table tbody tr td.name {
-  color: rgba(0, 0, 0, 1);
-  font-size: x-small;
-}
-
-/* change to svg.chart */
-
-div.menu table tbody td.count svg.graph {
-  height: 0.25cm;
-  width: 3cm;
-}
-
-div.menu table tbody td.count svg.graph rect.mark.normal {
-  fill: rgba(0, 100, 255, 1);
-}
-
-div.menu table tbody td.count svg.graph rect.mark.emphasis {
-  fill: rgba(255, 100, 0, 1);
-}
-
-/******************************************************************************/
 /* Interface View */
 /******************************************************************************/
 
@@ -403,6 +96,12 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 #panel {
   flex-basis: 10cm;
   height: 100%;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 1);
+  border-top-width: 0mm;
+  border-left-width: 0.25mm;
+  border-right-width: 0.25mm;
+  border-bottom-width: 0mm;
 }
 
 /******************************************************************************/
@@ -415,13 +114,346 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   overflow-x: hidden;
 }
 
+#control button {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: xx-small;
+  margin: 0cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.025cm;
+  padding-right: 0.025cm;
+  line-height: 0.15cm;
+}
+
+/******************************************************************************/
+/* Tab */
+/* classes tab tierOne, tierTwo, tierThree, tierFour */
+/******************************************************************************/
+
+.show-inline {
+  display: inline;
+}
+
+.hide {
+  display: none;
+}
+
+div.tab {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  text-align: left;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 1);
+  border-top-width: 0.25mm;
+  border-left-width: 0.25mm;
+  border-right-width: 0mm;
+  border-bottom-width: 0.25mm;
+  padding-left: 0.1cm;
+  color: rgba(0, 0, 0, 1);
+}
+
+div.tab.tierOne {
+  font-size: large;
+  width: 10cm;
+  line-height: 1cm;
+  height: 1cm;
+}
+
+div.tab.tierTwo {
+  font-size: medium;
+  width: 9.5cm;
+  line-height: 0.5cm;
+  height: 0.5cm;
+}
+
+div.tab.tierOne.normal {
+  background-color: rgba(255, 255, 255, 1);
+}
+
+div.tab.tierTwo.normal {
+  background-color: rgba(240, 240, 240, 1);
+}
+
+div.tab.emphasis {
+  background-color: rgba(255, 150, 50, 1);
+}
+
+/******************************************************************************/
+/* Control Container */
+/******************************************************************************/
+
+/* I might need to use indentOne, and shadeOne categories? */
+
+div.container.panel.control {
+  display: block;
+}
+
+div.container.panel.control.tierOne {
+  width: 10cm;
+  margin-left: 0cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0cm;
+  padding-right: 0cm;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+div.container.panel.control.tierTwo {
+  width: 9.5cm;
+  margin-left: 0.25cm;
+  padding-top: 0.1cm;
+  padding-bottom: 0.1cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+  background-color: rgba(230, 230, 230, 1);
+}
+
+div.container.panel.control.tierThree {
+  width: 9.25cm;
+  margin-left: 0.25cm;
+  padding-top: 0.1cm;
+  padding-bottom: 0.1cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+  background-color: rgba(220, 220, 220, 1);
+}
+
+/******************************************************************************/
+/* Linear scale */
+/******************************************************************************/
+
+svg g.scale text {
+  font-family: sans-serif;
+  font-style: normal;
+  font-size: xx-small;
+  font-weight: bold;
+}
+
+svg g.scale text.minimum {
+  text-anchor: start;
+}
+
+svg g.scale text.maximum {
+  text-anchor: end;
+}
+
+svg g.scale polyline {
+  fill: none;
+  stroke: rgba(0, 0, 0, 1);
+  stroke-width: 1;
+}
+
+/******************************************************************************/
+/* Network summaries */
+/******************************************************************************/
+
+div.summary {
+  width: 9.25cm;
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: x-small;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+div.summary table {
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+div.summary table tbody td.label {
+  width: 1.1cm;
+  padding-right: 0.1cm;
+  text-align: right;
+}
+
+div.summary table tbody td.chart svg {
+  width: 8cm;
+  height: 0.75cm;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+div.summary table tbody svg g.chart text {
+  font-size: xx-small;
+  font-weight: bold;
+  fill: rgba(255, 255, 255, 1);
+}
+
+div.summary table tbody tr.node svg g.chart rect.whole.metabolite {
+  fill: rgba(0, 50, 125, 1);
+}
+
+div.summary table tbody tr.node svg g.chart rect.whole.reaction {
+  fill: rgba(125, 125, 125, 1);
+}
+
+div.summary table tbody svg g.chart rect.selection {
+  fill: rgba(255, 255, 255, 0.75);
+}
+
+div.summary table tbody tr.link svg g.chart rect.whole {
+  fill: rgba(100, 100, 100, 1);
+}
+
+/******************************************************************************/
+/* Menus */
+/******************************************************************************/
+
+/* TODO: Manage classes of the elements within the menu...*/
+/* TODO: cells either belong to "name" column or to "count" column... */
+
+
+div.menu {
+  width: 8.75cm;
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+div.menu input.search {
+  font-size: x-small;
+  width: 4.75cm;
+  line-height: 0.5cm;
+  padding: 0px;
+  border: 0px;
+  background-color: rgba(230, 230, 230, 1);
+}
+
+div.menu div.scroll {
+  width: 100%;
+  height: 3cm;
+  display: block;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+div.menu table {
+  table-layout: fixed;
+  text-align: left;
+  border-collapse: collapse;
+  border-style: solid;
+  border: 0px;
+  padding: 0px;
+}
+
+div.menu table th.name, td.name {
+  width: 5cm;
+}
+
+div.menu table th.chart, td.chart {
+  width: 2cm;
+}
+
+
+div.menu table thead tr {
+  vertical-align: middle;
+  border-collapse: collapse;
+  border: 0px;
+  padding: 0px;
+}
+
+div.menu table thead th {
+  vertical-align: middle;
+  border-collapse: collapse;
+  border-color: rgba(200, 200, 200, 1);
+  border-style: solid;
+  border: 0px;
+  padding: 0px;
+}
+
+div.menu table tbody tr td {
+  /*line-height: 1cm;*/
+  height: 0.5cm;
+  border: 0px;
+  padding: 0px;
+}
+
+div.menu table thead tr th span {
+  color: rgba(0, 0, 0, 1);
+  font-size: small;
+}
+
+div.menu table thead th svg.sort {
+  height: 0.5cm;
+  width: 0.5cm;
+}
+
+div.menu table thead th svg.sort polygon {
+  fill: rgba(0, 0, 0, 1);
+}
+
+div.menu table thead th.count svg.scale {
+  background-color: rgba(255, 255, 255, 1);
+  width: 3cm;
+  height: 0.5cm;
+}
+
+div.menu table th.name, td.name {
+  width: 5cm;
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+}
+
+div.menu table th.omission, td.omission, th.replication, td.replication {
+  width: 0.7cm;
+}
+
+div.menu table th.count, td.count {
+  width: auto;
+}
+
+div.menu table tbody tr {
+  vertical-align: middle;
+  padding: 0px;
+  border: 0px;
+}
+
+div.menu table tbody tr.normal:nth-child(odd) {
+  background-color: rgba(255, 255, 255, 1);
+}
+
+div.menu table tbody tr.normal:nth-child(even) {
+  background-color: rgba(240, 240, 240, 1);
+}
+
+div.menu table tbody tr.emphasis {
+  background-color: rgba(150, 150, 200, 1);
+}
+
+div.menu table tbody tr td.name {
+  color: rgba(0, 0, 0, 1);
+  font-size: x-small;
+}
+
+/* change to svg.chart */
+
+div.menu table tbody td.count svg.graph {
+  height: 0.25cm;
+  width: 3cm;
+}
+
+div.menu table tbody td.count svg.graph rect.mark.normal {
+  fill: rgba(0, 100, 255, 1);
+}
+
+div.menu table tbody td.count svg.graph rect.mark.emphasis {
+  fill: rgba(255, 100, 0, 1);
+}
+
 /******************************************************************************/
 /* State View */
 /******************************************************************************/
 
 #state {
-  background-color: rgba(150, 150, 150, 1);
-  display: block;
   height: 3cm;
 }
 
@@ -433,23 +465,12 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 /* Filter View */
 /******************************************************************************/
 
-#filter {
-  background-color: rgba(200, 200, 200, 1);
-  display: block;
-}
-
-#filter > div.title {
-  background-color: rgba(100, 100, 100, 1);
-  font-size: large;
-  color: rgba(255, 255, 255, 1);
-  font-family: sans-serif;
-  font-style: normal;
-  font-weight: bold;
-}
-
 /******************************************************************************/
-/* Simplification View */
+/* Context View */
 /******************************************************************************/
+
+
+
 
 /******************************************************************************/
 /* Detail View ... change to Summary View... */

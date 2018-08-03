@@ -268,7 +268,7 @@ class FilterMenuView {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: ("filter-" + self.category + "-menu"),
-      classNames: ["container", "panel", "control", "tierFour"],
+      classNames: ["container", "menu"],
       type: "standard",
       target: self.filterView.container,
       position: "beforeend",

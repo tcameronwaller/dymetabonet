@@ -68,7 +68,7 @@ class ViewQuery {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
       identifier: "query",
-      classNames: ["container", "panel", "control", "tierThree"],
+      classNames: ["container", "panel", "control", "sizeThree", "shadeThree"],
       type: "standard",
       target: self.subnetworkView.queryTab,
       position: "afterend",
