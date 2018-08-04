@@ -414,16 +414,16 @@ class FilterMenuView {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
+    self.pad = 1.5;
     self.representSearch(self);
     self.representSorts(self);
     // Determine maximumal value.
-    var maximalValue = self.state.setsSummaries[self.category][0].maximum;
+    self.maximalValue = self.state.setsSummaries[self.category][0].maximum;
     View.restoreTableColumnScale({
-      count: maximalValue,
-      pad: 3,
+      count: self.maximalValue,
+      pad: self.pad,
       graph: self.scaleGraph
     });
-    self.createScale(self);
     self.createActivateSummaries(self);
   }
   /**
@@ -455,25 +455,6 @@ class FilterMenuView {
     });
   }
 
-  // TODO: The scale here is different than for the column scale...
-  // TODO: Use the same scaling and padding method...
-  // TODO: follow pattern of View.restoreNodeCountChart
-
-
-  /**
-  * Creates scale.
-  * @param {Object} self Instance of a class.
-  */
-  createScale(self) {
-    // Determine maximumal value.
-    var maximalValue = self.state.setsSummaries[self.category][0].maximum;
-    // Create scale.
-    self.determineScaleValue = d3
-    .scaleLinear()
-    .domain([0, maximalValue])
-    .range([5, (self.graphWidth * 0.9)])
-    .nice(2);
-  }
   /**
   * Creates and activates summaries.
   * @param {Object} self Instance of a class.
@@ -603,8 +584,7 @@ class FilterMenuView {
     // Assign attributes to cells.
     // Assign attributes to elements.
     // Select cells for names.
-    self.names = self.cells
-    .filter(function (element, index, nodes) {
+    self.names = self.cells.filter(function (element, index, nodes) {
       return element.type === "name";
     });
     self.names
@@ -622,11 +602,67 @@ class FilterMenuView {
   * @param {Object} self Instance of a class.
   */
   representCounts(self) {
-    var barMarks = View.representCounts({
-      cells: self.cells,
-      graphHeight: self.graphHeight,
-      determineScaleValue: self.determineScaleValue
+    // Assign attributes to cells.
+    // Assign attributes to elements.
+    // Select cells for counts.
+    var counts = self.cells.filter(function (element, index, nodes) {
+      return element.type === "count";
     });
+    counts.classed("count", true);
+    // Create graphs to represent summaries' counts.
+    // Graph structure.
+    // - graphs (scalable vector graphical container)
+    // -- barGroups (group)
+    // --- barMarks (rectangle)
+    // Create graphs.
+    // Define function to access data.
+    function access(element, index, nodes) {
+      return [element];
+    };
+    // Create children elements by association to data.
+    var graphs = View.createElementsData({
+      parent: counts,
+      type: "svg",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    graphs.classed("chart", true);
+    // Create groups.
+    // Create children elements by association to data.
+    var barGroups = View.createElementsData({
+      parent: graphs,
+      type: "g",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    barGroups
+    .classed("group", true)
+    .attr("transform", function (element, index, nodes) {
+      return "translate(" + self.pad + "," + self.pad + ")";
+    });
+    // Create marks.
+    // Create children elements by association to data.
+    var barMarks = View.createElementsData({
+      parent: barGroups,
+      type: "rect",
+      accessor: access
+    });
+    // Determine dimensions.
+    var width = (self.graphWidth - (self.pad * 2));
+    // Determine scale for bars' dimensions.
+    var scaleValue = d3
+    .scaleLinear()
+    .domain([0, self.maximalValue])
+    .range([0, (width)]);
+    // Restore bars' dimensions.
+    var barHeight = 10;
+    // Assign attributes to elements.
+    barMarks
+    .classed("mark", true)
+    .attr("width", function (element, index, nodes) {
+      return scaleValue(element.count);
+    })
+    .attr("height", barHeight);
     // Assign attributes to elements.
     barMarks
     .classed("normal", function (element, index, nodes) {

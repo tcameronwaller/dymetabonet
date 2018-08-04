@@ -573,9 +573,6 @@ class View {
       General.removeDocumentChildren(parent);
     }
   }
-
-  // TODO: I think representScale is becoming obsolete...
-
   /**
   * Represents a scale.
   * @param {Object} parameters Destructured object of parameters.
@@ -584,7 +581,7 @@ class View {
   * @param {Object} parameters.determineScaleValue Function to determine scale
   * value.
   */
-  static representScale({scaleGraph, graphHeight, determineScaleValue} = {}) {
+  static createD3ScaleChart({scaleGraph, graphHeight, determineScaleValue} = {}) {
     // Remove contents of scale's container.
     General.removeDocumentChildren(scaleGraph);
     // Create scale's representation.
@@ -595,73 +592,6 @@ class View {
     axisGroup.attr("transform", "translate(0," + (graphHeight - 1) + ")");
   }
 
-  /**
-  * Represents a summaries' counts.
-  * @param {Object} parameters Destructured object of parameters.
-  * @param {Object} parameters.cells Selection of cells.
-  * @param {number} parameters.graphHeight Height of graph.
-  * @param {Object} parameters.determineScaleValue Function to determine scale
-  * value.
-  * @returns {Object} Selection of elements.
-  */
-  static representCounts({cells, graphHeight, determineScaleValue} = {}) {
-    // Assign attributes to cells.
-    // Assign attributes to elements.
-    // Select cells for counts.
-    var counts = cells.filter(function (element, index, nodes) {
-      return element.type === "count";
-    });
-    counts.classed("count", true);
-    // Create graphs to represent summaries' counts.
-    // Graph structure.
-    // - graphs (scalable vector graphical container)
-    // -- barGroups (group)
-    // --- barMarks (rectangle)
-    // Create graphs.
-    // Define function to access data.
-    function access(element, index, nodes) {
-      return [element];
-    };
-    // Create children elements by association to data.
-    var graphs = View.createElementsData({
-      parent: counts,
-      type: "svg",
-      accessor: access
-    });
-    // Assign attributes to elements.
-    graphs.classed("chart", true);
-    // Create groups.
-    // Create children elements by association to data.
-    var barGroups = View.createElementsData({
-      parent: graphs,
-      type: "g",
-      accessor: access
-    });
-    // Assign attributes to elements.
-    barGroups
-    .classed("group", true)
-    .attr("transform", function (element, index, nodes) {
-      var x = determineScaleValue(0);
-      var y = 0;
-      return "translate(" + x + "," + y + ")";
-    });
-    // Create marks.
-    // Create children elements by association to data.
-    var barMarks = View.createElementsData({
-      parent: barGroups,
-      type: "rect",
-      accessor: access
-    });
-    // Assign attributes to elements.
-    barMarks
-    .classed("mark", true)
-    .attr("width", function (element, index, nodes) {
-      return determineScaleValue(element.count);
-    })
-    .attr("height", graphHeight);
-    // Return references to elements.
-    return barMarks;
-  }
   /**
   * Creates a selector menu.
   * @param {Object} parameters Destructured object of parameters.
@@ -1354,7 +1284,7 @@ class View {
     // Restore positions of line.
     line.setAttribute("points", "0,3 0,0 " + width + ",0 " + width + ",3");
     groupLine.setAttribute(
-      "transform", "translate(" + 0 + "," + (labelDimension + (pad / 2)) + ")"
+      "transform", "translate(" + 0 + "," + (labelDimension + (pad)) + ")"
     );
     // Restore positions of chart.
     group.setAttribute("transform", "translate(" + pad + "," + pad + ")");

@@ -379,7 +379,7 @@ div.menu table thead th svg.sort polygon {
 div.menu table thead th.count svg.scale {
   background-color: rgba(255, 255, 255, 1);
   width: 3.25cm;
-  height: 0.35cm;
+  height: 0.5cm;
 }
 
 div.menu table thead tr th.name {
@@ -398,6 +398,10 @@ div.menu table thead tr th.name {
 
 div.menu table thead tr th.count {
   width: 3.5cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
 }
 
 /* Menu body. */
@@ -434,6 +438,10 @@ div.menu div.scroll table tbody tr td.name {
 
 div.menu div.scroll table tbody tr td.count {
   width: 3.5cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
 }
 
 div.menu table tbody tr {
@@ -451,7 +459,7 @@ div.menu table tbody tr.normal:nth-child(even) {
 }
 
 div.menu table tbody tr.emphasis {
-  background-color: rgba(150, 150, 200, 1);
+  background-color: rgba(255, 150, 50, 1);
 }
 
 div.menu table tbody tr td {
@@ -476,7 +484,7 @@ div.menu table tbody td.count svg.chart {
 }
 
 div.menu table tbody td.count svg.chart rect.mark.normal {
-  fill: rgba(0, 100, 255, 1);
+  fill: rgba(0, 50, 125, 1);
 }
 
 div.menu table tbody td.count svg.chart rect.mark.emphasis {
