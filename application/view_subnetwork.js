@@ -138,10 +138,18 @@ class ViewSubnetwork {
   * @param {Object} self Instance of a class.
   */
   createActivateSummary(self) {
+    // Create or set reference to container.
+    var container = View.createInsertContainer({
+      classNames: ["container", "summary"],
+      type: "standard",
+      target: self.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
     // Create table body.
     self.summaryTableBody = View.createTableBody({
       className: "summary",
-      parent: self.container,
+      parent: container,
       documentReference: self.document
     });
     self.createActivateSummaryNodes(self);
@@ -163,7 +171,7 @@ class ViewSubnetwork {
       documentReference: self.document
     });
     cellLabel.classList.add("label");
-    cellLabel.textContent = "nodes:";
+    cellLabel.textContent = "Nodes:";
     var cellChart = View.createTableBodyCell({
       parent: row,
       className: "count",
@@ -193,7 +201,7 @@ class ViewSubnetwork {
       documentReference: self.document
     });
     cellLabel.classList.add("label");
-    cellLabel.textContent = "links:";
+    cellLabel.textContent = "Links:";
     var cellChart = View.createTableBodyCell({
       parent: row,
       className: "count",
@@ -241,7 +249,7 @@ class ViewSubnetwork {
       selection: true,
       nodesMetabolitesSelection: self.state.subnetworkSummary.nodesMetabolites,
       nodesReactionsSelection: self.state.subnetworkSummary.nodesReactions,
-      pad: 3,
+      pad: 1.5,
       graph: self.graphNode
     });
     // Restore chart for links.
@@ -249,7 +257,7 @@ class ViewSubnetwork {
       links: self.state.networkSummary.links,
       selection: true,
       linksSelection: self.state.subnetworkSummary.links,
-      pad: 3,
+      pad: 1.5,
       graph: self.graphLink
     });
   }

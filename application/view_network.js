@@ -174,7 +174,7 @@ class ViewNetwork {
       documentReference: self.document
     });
     cellLabel.classList.add("label");
-    cellLabel.textContent = "nodes:";
+    cellLabel.textContent = "Nodes:";
     var cellChart = View.createTableBodyCell({
       parent: row,
       className: "count",
@@ -204,7 +204,7 @@ class ViewNetwork {
       documentReference: self.document
     });
     cellLabel.classList.add("label");
-    cellLabel.textContent = "links:";
+    cellLabel.textContent = "Links:";
     var cellChart = View.createTableBodyCell({
       parent: row,
       className: "count",
