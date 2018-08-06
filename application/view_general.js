@@ -831,7 +831,7 @@ class View {
     var tab = self.document.createElement("div");
     parent.appendChild(tab);
     var label = View.createAppendSpanText({
-      text: category,
+      text: category.toUpperCase(),
       parent: tab,
       documentReference: documentReference
     });
