@@ -80,16 +80,12 @@ class ViewState {
       // Create and activate behavior of content.
       // Create and activate button to restore view.
       self.createActivateRestorationButton(self);
-      // Create break.
-      self.container.appendChild(self.document.createElement("br"));
       // Create and activate button and label to select source file.
       self.createActivateLoadButton(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create and activate button to save application's state.
       self.createActivateSaveButton(self);
-      // Create break.
-      self.container.appendChild(self.document.createElement("br"));
       // Create and activate button to execute temporary procedure, for
       // convenience in development.
       self.createActivateExecutionButton(self);

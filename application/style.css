@@ -496,11 +496,18 @@ div.menu table tbody td.count svg.chart rect.mark.emphasis {
 /******************************************************************************/
 
 #state {
-  height: 3cm;
+  height: 1cm;
+  font-family: sans-serif;
+  font-style: normal;
+}
+
+#state span {
+  font-weight: normal;
 }
 
 #state button {
-  width: 2cm;
+  width: 1.5cm;
+  font-weight: bold;
 }
 
 /******************************************************************************/
