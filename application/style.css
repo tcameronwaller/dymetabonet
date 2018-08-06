@@ -329,9 +329,12 @@ div.menu input.search {
   font-size: x-small;
   width: 4.75cm;
   line-height: 0.5cm;
-  padding: 0px;
   border: 0px;
   background-color: rgba(230, 230, 230, 1);
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
 }
 
 div.menu table {

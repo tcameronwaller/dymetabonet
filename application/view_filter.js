@@ -86,26 +86,20 @@ class ViewFilter {
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create menu for sets by processes.
-      new FilterMenuView({
+      new ViewFilterMenu({
         category: "processes",
-        interfaceView: self.interfaceView,
-        tipView: self.tipView,
-        promptView: self.promptView,
         filterView: self,
-        state: self.state,
-        documentReference: self.document
+        documentReference: self.document,
+        state: self.state
       });
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create menu for sets by compartments.
-      new FilterMenuView({
+      new ViewFilterMenu({
         category: "compartments",
-        interfaceView: self.interfaceView,
-        tipView: self.tipView,
-        promptView: self.promptView,
         filterView: self,
-        state: self.state,
-        documentReference: self.document
+        documentReference: self.document,
+        state: self.state
       });
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
@@ -179,24 +173,18 @@ class ViewFilter {
     .determineEntityMatch("reactions", self.state);
     self.filter.checked = ViewFilter.determineFilter(self.state);
     // Create menu for sets by processes.
-    new FilterMenuView({
+    new ViewFilterMenu({
       category: "processes",
-      interfaceView: self.interfaceView,
-      tipView: self.tipView,
-      promptView: self.promptView,
       filterView: self,
-      state: self.state,
-      documentReference: self.document
+      documentReference: self.document,
+      state: self.state
     });
     // Create menu for sets by compartments.
-    new FilterMenuView({
+    new ViewFilterMenu({
       category: "compartments",
-      interfaceView: self.interfaceView,
-      tipView: self.tipView,
-      promptView: self.promptView,
       filterView: self,
-      state: self.state,
-      documentReference: self.document
+      documentReference: self.document,
+      state: self.state
     });
   }
   /**
@@ -225,20 +213,17 @@ class ViewFilter {
 /**
 * Interface to organize menu of sets.
 */
-class FilterMenuView {
+class ViewFilterMenu {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.category Name of category.
-  * @param {Object} parameters.interfaceView Instance of ViewInterface's class.
-  * @param {Object} parameters.tipView Instance of ViewTip's class.
-  * @param {Object} parameters.promptView Instance of ViewPrompt's class.
   * @param {Object} parameters.filterView Instance of ViewFilter's class.
-  * @param {Object} parameters.state Application's state.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor ({category, interfaceView, tipView, promptView, filterView, state, documentReference} = {}) {
+  constructor ({category, filterView, documentReference, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -247,9 +232,10 @@ class FilterMenuView {
     // Set reference to document object model (DOM).
     self.document = documentReference;
     // Set reference to other views.
-    self.interfaceView = interfaceView;
-    self.tipView = tipView;
-    self.promptView = promptView;
+    self.interfaceView = self.state.views.interface;
+    self.tipView = self.state.views.tip;
+    self.promptView = self.state.views.prompt;
+    self.networkView = self.state.views.network;
     self.filterView = filterView;
     // Set reference to category.
     self.category = category;
@@ -278,13 +264,8 @@ class FilterMenuView {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
-      self.container.classList.add("menu");
-
-      // TODO: change the procedure below to menu...
-
-
-      // Create table.
-      self.createActivateTable(self);
+      // Create menu.
+      self.createActivateMenu(self);
     } else {
       // Container is not empty.
       // Set references to content.
@@ -310,7 +291,7 @@ class FilterMenuView {
   * Creates and activates a table.
   * @param {Object} self Instance of a class.
   */
-  createActivateTable(self) {
+  createActivateMenu(self) {
     // Create separate tables for head and body to support stationary head and
     // scrollable body.
     // Create head table.
@@ -331,7 +312,7 @@ class FilterMenuView {
     // Create column titles.
     self.createActivateTableHeadColumnTitles(self);
     // Create column scale.
-    self.createTableHeadColumnScale(self);
+    self.createTableHeadColumnSearchScale(self);
   }
   /**
   * Creates and activates a table's head.
@@ -372,7 +353,7 @@ class FilterMenuView {
   * Creates and activates a table's head.
   * @param {Object} self Instance of a class.
   */
-  createTableHeadColumnScale(self) {
+  createTableHeadColumnSearchScale(self) {
     var row = View.createTableRow({
       parent: self.head,
       documentReference: self.document
@@ -414,11 +395,11 @@ class FilterMenuView {
   * @param {Object} self Instance of a class.
   */
   restoreView(self) {
-    self.pad = 1.5;
     self.representSearch(self);
     self.representSorts(self);
-    // Determine maximumal value.
+    // Determine values for representation of counts.
     self.maximalValue = self.state.setsSummaries[self.category][0].maximum;
+    self.pad = 1.5;
     View.restoreTableColumnScale({
       count: self.maximalValue,
       pad: self.pad,
@@ -454,7 +435,6 @@ class FilterMenuView {
       documentReference: self.document
     });
   }
-
   /**
   * Creates and activates summaries.
   * @param {Object} self Instance of a class.
@@ -504,7 +484,7 @@ class FilterMenuView {
       // Call action.
       rowSelection.classed("normal", false);
       rowSelection.classed("emphasis", true);
-      FilterMenuView.createTip({
+      ViewFilterMenu.createTip({
         attribute: element.attribute,
         value: element.value,
         count: element.count,
@@ -520,7 +500,7 @@ class FilterMenuView {
       var horizontalPosition = d3.event.clientX;
       var verticalPosition = d3.event.clientY;
       // Call action.
-      FilterMenuView.createTip({
+      ViewFilterMenu.createTip({
         attribute: element.attribute,
         value: element.value,
         count: element.count,
@@ -590,7 +570,7 @@ class FilterMenuView {
     self.names
     .classed("name", true)
     .text(function (element, index, nodes) {
-      return FilterMenuView.accessName({
+      return ViewFilterMenu.accessName({
         attribute: element.attribute,
         value: element.value,
         state: self.state
@@ -666,14 +646,14 @@ class FilterMenuView {
     // Assign attributes to elements.
     barMarks
     .classed("normal", function (element, index, nodes) {
-      return !FilterMenuView.determineSetSelection({
+      return !ViewFilterMenu.determineSetSelection({
         value: element.value,
         attribute: element.attribute,
         state: self.state
       });
     })
     .classed("emphasis", function (element, index, nodes) {
-      return FilterMenuView.determineSetSelection({
+      return ViewFilterMenu.determineSetSelection({
         value: element.value,
         attribute: element.attribute,
         state: self.state
@@ -697,7 +677,7 @@ class FilterMenuView {
   */
   static createTip({attribute, value, count, horizontalPosition, verticalPosition, tipView, documentReference, state} = {}) {
     // Create summary for tip.
-    var name = FilterMenuView.accessName({
+    var name = ViewFilterMenu.accessName({
       attribute: attribute,
       value: value,
       state: state

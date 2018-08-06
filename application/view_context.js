@@ -86,26 +86,24 @@ class ViewContext {
       self.createActivateDefaultSimplificationsControl(self);
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
-      // Create menu for candidate metabolites.
-      new SimplificationMenuView({
+      // Create menu for sets by processes.
+      new ViewContextMenu({
         category: "metabolites",
-        interfaceView: self.interfaceView,
-        tipView: self.tipView,
-        promptView: self.promptView,
-        simplificationView: self,
-        state: self.state,
-        documentReference: self.document
+        contextView: self,
+        documentReference: self.document,
+        state: self.state
       });
-      // Create menu for candidate reactions.
-      new SimplificationMenuView({
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
+      // Create menu for sets by compartments.
+      new ViewContextMenu({
         category: "reactions",
-        interfaceView: self.interfaceView,
-        tipView: self.tipView,
-        promptView: self.promptView,
-        simplificationView: self,
-        state: self.state,
-        documentReference: self.document
+        contextView: self,
+        documentReference: self.document,
+        state: self.state
       });
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
     } else {
       // Container is not empty.
       // Set references to content.
@@ -172,24 +170,18 @@ class ViewContext {
     self.simplifications.checked = ViewContext
     .determineSimplifications(self.state);
     // Create menu for candidate metabolites.
-    new SimplificationMenuView({
+    new ViewContextMenu({
       category: "metabolites",
-      interfaceView: self.interfaceView,
-      tipView: self.tipView,
-      promptView: self.promptView,
-      simplificationView: self,
-      state: self.state,
-      documentReference: self.document
+      contextView: self,
+      documentReference: self.document,
+      state: self.state
     });
     // Create menu for candidate reactions.
-    new SimplificationMenuView({
+    new ViewContextMenu({
       category: "reactions",
-      interfaceView: self.interfaceView,
-      tipView: self.tipView,
-      promptView: self.promptView,
-      simplificationView: self,
-      state: self.state,
-      documentReference: self.document
+      contextView: self,
+      documentReference: self.document,
+      state: self.state
     });
   }
   /**
@@ -220,21 +212,17 @@ class ViewContext {
 /**
 * Interface to organize menu of candidates for simplification.
 */
-class SimplificationMenuView {
+class ViewContextMenu {
   /**
   * Initializes an instance of a class.
   * @param {Object} parameters Destructured object of parameters.
   * @param {string} parameters.category Name of category.
-  * @param {Object} parameters.interfaceView Instance of ViewInterface's class.
-  * @param {Object} parameters.tipView Instance of ViewTip's class.
-  * @param {Object} parameters.promptView Instance of ViewPrompt's class.
-  * @param {Object} parameters.simplificationView Instance of
-  * ViewContext's class.
-  * @param {Object} parameters.state Application's state.
+  * @param {Object} parameters.contextView Instance of ViewContext's class.
   * @param {Object} parameters.documentReference Reference to document object
   * model.
+  * @param {Object} parameters.state Application's state.
   */
-  constructor ({category, interfaceView, tipView, promptView, simplificationView, state, documentReference} = {}) {
+  constructor ({category, contextView, documentReference, state} = {}) {
     // Set common references.
     // Set reference to class' current instance to persist across scopes.
     var self = this;
@@ -243,10 +231,11 @@ class SimplificationMenuView {
     // Set reference to document object model (DOM).
     self.document = documentReference;
     // Set reference to other views.
-    self.interfaceView = interfaceView;
-    self.tipView = tipView;
-    self.promptView = promptView;
-    self.simplificationView = simplificationView;
+    self.interfaceView = self.state.views.interface;
+    self.tipView = self.state.views.tip;
+    self.promptView = self.state.views.prompt;
+    self.networkView = self.state.views.network;
+    self.contextView = contextView;
     // Set reference to category.
     self.category = category;
     // Control view's composition and behavior.
@@ -266,7 +255,7 @@ class SimplificationMenuView {
       identifier: ("simplification-" + self.category + "-menu"),
       classNames: ["container", "menu"],
       type: "standard",
-      target: self.simplificationView.container,
+      target: self.contextView.container,
       position: "beforeend",
       documentReference: self.document
     });
@@ -274,19 +263,8 @@ class SimplificationMenuView {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
-      self.container.classList.add("menu");
-      // Create search.
-      self.search = View.createActivateSearch({
-        type: "candidates",
-        category: self.category,
-        parent: self.container,
-        documentReference: self.document,
-        state: self.state
-      });
-      // Create break.
-      self.container.appendChild(self.document.createElement("br"));
-      // Create table.
-      self.createActivateTable(self);
+      // Create menu.
+      self.createActivateMenu(self);
     } else {
       // Container is not empty.
       // Set references to content.
@@ -312,72 +290,131 @@ class SimplificationMenuView {
   * Creates and activates a table.
   * @param {Object} self Instance of a class.
   */
-  createActivateTable(self) {
+  createActivateMenu(self) {
     // Create separate tables for head and body to support stationary head and
     // scrollable body.
     // Create head table.
-    var tableHeadRow = View.createTableHeadRow({
-      className: self.category,
+    self.createActivateTableHead(self);
+    // Create body table.
+    self.createTableBody(self);
+  }
+  /**
+  * Creates and activates a table's head.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateTableHead(self) {
+    // Create head table.
+    self.head = View.createTableHead({
       parent: self.container,
       documentReference: self.document
     });
-    // Create titles, sorts, and scale in table's header.
+    // Create column titles.
+    self.createActivateTableHeadColumnTitles(self);
+    // Create column scale.
+    self.createTableHeadColumnSearchScale(self);
+  }
+  /**
+  * Creates and activates a table's head.
+  * @param {Object} self Instance of a class.
+  */
+  createActivateTableHeadColumnTitles(self) {
+    var row = View.createTableRow({
+      parent: self.head,
+      documentReference: self.document
+    });
+    // Create titles and sorts.
     // Create head for names.
-    var referencesOne = View.createActivateTableColumnHead({
+    var referencesName = View.createActivateTableColumnTitle({
       attribute: "name",
-      text: "Name",
+      text: General.capitalizeString(self.category),
       type: "candidates",
       category: self.category,
       sort: true,
-      scale: false,
-      parent: tableHeadRow,
+      parent: row,
       documentReference: self.document,
       state: self.state
     });
-    self.sortGraphName = referencesOne.sortGraph;
-    // Create head for counts.
-    var referencesTwo = View.createActivateTableColumnHead({
-      attribute: "count",
-      text: "Count",
-      type: "candidates",
-      category: self.category,
-      sort: true,
-      scale: true,
-      parent: tableHeadRow,
-      documentReference: self.document,
-      state: self.state
-    });
-    self.sortGraphCount = referencesTwo.sortGraph;
-    self.scaleGraph = referencesTwo.scaleGraph;
-    self.graphWidth = referencesTwo.graphWidth;
-    self.graphHeight = referencesTwo.graphHeight;
+    self.sortGraphName = referencesName.sortGraph;
     // Create head for omission.
-    var referencesThree = View.createActivateTableColumnHead({
+    var referencesOmission = View.createActivateTableColumnTitle({
       attribute: "omission",
       text: "X",
       type: "candidates",
       category: self.category,
       sort: false,
-      scale: false,
-      parent: tableHeadRow,
+      parent: row,
       documentReference: self.document,
       state: self.state
     });
-    if (self.category === "metabolites") {
-      // Create head for replication.
-      var referencesFour = View.createActivateTableColumnHead({
+
+    // TODO: Create column for replication once replication procedure is active.
+    // TODO: Will need to adjust column widths. Widths of metabolite count and reaction count will differ.
+    // Create head for replication.
+    if (false) {
+      var referencesOmission = View.createActivateTableColumnTitle({
         attribute: "replication",
         text: "...",
         type: "candidates",
         category: self.category,
         sort: false,
-        scale: false,
-        parent: tableHeadRow,
+        parent: row,
         documentReference: self.document,
         state: self.state
       });
     }
-    // Create body table.
+    // Create head for counts.
+    var referencesCount = View.createActivateTableColumnTitle({
+      attribute: "count",
+      text: "Count",
+      type: "candidates",
+      category: self.category,
+      sort: true,
+      parent: row,
+      documentReference: self.document,
+      state: self.state
+    });
+    self.sortGraphCount = referencesCount.sortGraph;
+  }
+  /**
+  * Creates and activates a table's head.
+  * @param {Object} self Instance of a class.
+  */
+  createTableHeadColumnSearchScale(self) {
+    var row = View.createTableRow({
+      parent: self.head,
+      documentReference: self.document
+    });
+    // Create cell with search for name column.
+    var referencesSearch = View.createTableColumnSearch({
+      type: "sets",
+      category: self.category,
+      parent: row,
+      className: "name",
+      documentReference: self.document,
+      state: self.state
+    });
+    self.search = referencesSearch.search;
+    // Create empty cell for omission column.
+    var cell = View.createTableHeadCell({
+      parent: row,
+      className: "omission",
+      documentReference: self.document
+    });
+    // Create cell with scale for count column.
+    var referencesScale = View.createTableColumnScale({
+      attribute: "count",
+      parent: row,
+      documentReference: self.document
+    });
+    self.scaleGraph = referencesScale.scaleGraph;
+    self.graphWidth = referencesScale.graphWidth;
+    self.graphHeight = referencesScale.graphHeight;
+  }
+  /**
+  * Creates and activates a table's body.
+  * @param {Object} self Instance of a class.
+  */
+  createTableBody(self) {
     self.body = View.createScrollTableBody({
       className: self.category,
       parent: self.container,
@@ -392,11 +429,13 @@ class SimplificationMenuView {
   restoreView(self) {
     self.representSearch(self);
     self.representSorts(self);
-    self.createScale(self);
-    View.representScale({
-      scaleGraph: self.scaleGraph,
-      graphHeight: self.graphHeight,
-      determineScaleValue: self.determineScaleValue
+    // Determine values for representation of counts.
+    self.maximalValue = self.state.candidatesSummaries[self.category][0].maximum;
+    self.pad = 1.5;
+    View.restoreTableColumnScale({
+      count: self.maximalValue,
+      pad: self.pad,
+      graph: self.scaleGraph
     });
     self.createActivateSummaries(self);
   }
@@ -429,20 +468,6 @@ class SimplificationMenuView {
     });
   }
   /**
-  * Creates scale.
-  * @param {Object} self Instance of a class.
-  */
-  createScale(self) {
-    // Determine maximal value.
-    var maximalValue = self.state.candidatesSummaries[self.category][0].maximum;
-    // Create scale.
-    self.determineScaleValue = d3
-    .scaleLinear()
-    .domain([0, maximalValue])
-    .range([5, (self.graphWidth * 0.9)])
-    .nice(2);
-  }
-  /**
   * Creates and activates summaries.
   * @param {Object} self Instance of a class.
   */
@@ -461,14 +486,14 @@ class SimplificationMenuView {
     // Select parent.
     var body = d3.select(self.body);
     // Define function to access data.
-    function accessOne() {
+    function access() {
       return self.state.candidatesSummaries[self.category];
     };
     // Create children elements by association to data.
     self.rows = View.createElementsData({
       parent: body,
       type: "tr",
-      accessor: accessOne
+      accessor: access
     });
     // Assign attributes to elements.
     self.rows.classed("normal", true);
@@ -483,7 +508,7 @@ class SimplificationMenuView {
       // Call action.
       rowSelection.classed("normal", false);
       rowSelection.classed("emphasis", true);
-      SimplificationMenuView.createTip({
+      ViewContextMenu.createTip({
         identifier: element.candidate,
         entity: element.entity,
         count: element.count,
@@ -499,7 +524,7 @@ class SimplificationMenuView {
       var horizontalPosition = d3.event.clientX;
       var verticalPosition = d3.event.clientY;
       // Call action.
-      SimplificationMenuView.createTip({
+      ViewContextMenu.createTip({
         identifier: element.candidate,
         entity: element.entity,
         count: element.count,
@@ -534,24 +559,24 @@ class SimplificationMenuView {
         entity: element.entity,
         identifier: element.candidate
       };
-      var count = {
-        type: "count",
-        count: element.count
-      };
       var omission = {
         type: "omission",
         entity: element.entity,
         identifier: element.candidate
       };
-      if (self.category === "metabolites") {
+      var count = {
+        type: "count",
+        count: element.count
+      };
+      if (false) {
         var replication = {
           type: "replication",
           entity: element.entity,
           identifier: element.candidate
         };
         return [].concat(name, count, omission, replication);
-      } else if (self.category === "reactions") {
-        return [].concat(name, count, omission);
+      } else {
+        return [].concat(name, omission, count);
       }
     };
     // Create children elements by association to data.
@@ -562,11 +587,11 @@ class SimplificationMenuView {
     });
     // Assign attributes to cells for names.
     self.representNames(self);
-    // Assign attributes to cells for counts.
-    self.representCounts(self);
     // Assign attributes to cells for omission.
     self.representActivateSimplifications("omission", self);
-    if (self.category === "metabolites") {
+    // Assign attributes to cells for counts.
+    self.representCounts(self);
+    if (false) {
       // Assign attributes to cells for replication.
       self.representActivateSimplifications("replication", self);
     }
@@ -585,24 +610,12 @@ class SimplificationMenuView {
     self.names
     .classed("name", true)
     .text(function (element, index, nodes) {
-      return SimplificationMenuView.accessName({
+      return ViewContextMenu.accessName({
         identifier: element.identifier,
         entity: element.entity,
         state: self.state
       });
     });
-  }
-  /**
-  * Represents counts.
-  * @param {Object} self Instance of a class.
-  */
-  representCounts(self) {
-    var barMarks = View.representCounts({
-      cells: self.cells,
-      graphHeight: self.graphHeight,
-      determineScaleValue: self.determineScaleValue
-    });
-    barMarks.classed("normal", true);
   }
   /**
   * Represents and activates controls for simplifications.
@@ -633,7 +646,7 @@ class SimplificationMenuView {
     checks
     .attr("type", "checkbox")
     .property("checked", function (element, index, nodes) {
-      return SimplificationMenuView.determineSimplification({
+      return ViewContextMenu.determineSimplification({
         identifier: element.identifier,
         category: element.entity,
         method: element.type,
@@ -647,6 +660,91 @@ class SimplificationMenuView {
         identifier: element.identifier,
         method: element.type,
         category: element.entity,
+        state: self.state
+      });
+    });
+  }
+  /**
+  * Represents counts.
+  * @param {Object} self Instance of a class.
+  */
+  representCounts(self) {
+    // Assign attributes to cells.
+    // Assign attributes to elements.
+    // Select cells for counts.
+    var counts = self.cells.filter(function (element, index, nodes) {
+      return element.type === "count";
+    });
+    counts.classed("count", true);
+    // Create graphs to represent summaries' counts.
+    // Graph structure.
+    // - graphs (scalable vector graphical container)
+    // -- barGroups (group)
+    // --- barMarks (rectangle)
+    // Create graphs.
+    // Define function to access data.
+    function access(element, index, nodes) {
+      return [element];
+    };
+    // Create children elements by association to data.
+    var graphs = View.createElementsData({
+      parent: counts,
+      type: "svg",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    graphs.classed("chart", true);
+    // Create groups.
+    // Create children elements by association to data.
+    var barGroups = View.createElementsData({
+      parent: graphs,
+      type: "g",
+      accessor: access
+    });
+    // Assign attributes to elements.
+    barGroups
+    .classed("group", true)
+    .attr("transform", function (element, index, nodes) {
+      return "translate(" + self.pad + "," + self.pad + ")";
+    });
+    // Create marks.
+    // Create children elements by association to data.
+    var barMarks = View.createElementsData({
+      parent: barGroups,
+      type: "rect",
+      accessor: access
+    });
+    // Determine dimensions.
+    var width = (self.graphWidth - (self.pad * 2));
+    // Determine scale for bars' dimensions.
+    var scaleValue = d3
+    .scaleLinear()
+    .domain([0, self.maximalValue])
+    .range([0, (width)]);
+    // Restore bars' dimensions.
+    var barHeight = 10;
+    // Assign attributes to elements.
+    barMarks
+    .classed("mark", true)
+    .attr("width", function (element, index, nodes) {
+      return scaleValue(element.count);
+    })
+    .attr("height", barHeight);
+    // Assign attributes to elements.
+    barMarks
+    .classed("normal", function (element, index, nodes) {
+      return !ViewContextMenu.determineSimplification({
+        identifier: element.identifier,
+        category: element.entity,
+        method: element.type,
+        state: self.state
+      });
+    })
+    .classed("emphasis", function (element, index, nodes) {
+      return ViewContextMenu.determineSimplification({
+        identifier: element.identifier,
+        category: element.entity,
+        method: element.type,
         state: self.state
       });
     });
@@ -668,7 +766,7 @@ class SimplificationMenuView {
   */
   static createTip({identifier, entity, count, horizontalPosition, verticalPosition, tipView, documentReference, state} = {}) {
     // Create summary for tip.
-    var name = SimplificationMenuView.accessName({
+    var name = ViewContextMenu.accessName({
       identifier: identifier,
       entity: entity,
       state: state
