@@ -206,9 +206,6 @@ class ViewContext {
   }
 }
 
-// TODO: Change order of columns in the context menus...
-// TODO: name, replicate, omit, count
-
 /**
 * Interface to organize menu of candidates for simplification.
 */
@@ -386,7 +383,7 @@ class ViewContextMenu {
     });
     // Create cell with search for name column.
     var referencesSearch = View.createTableColumnSearch({
-      type: "sets",
+      type: "candidates",
       category: self.category,
       parent: row,
       className: "name",
@@ -566,6 +563,8 @@ class ViewContextMenu {
       };
       var count = {
         type: "count",
+        entity: element.entity,
+        identifier: element.candidate,
         count: element.count
       };
       if (false) {
@@ -736,7 +735,7 @@ class ViewContextMenu {
       return !ViewContextMenu.determineSimplification({
         identifier: element.identifier,
         category: element.entity,
-        method: element.type,
+        method: "omission",
         state: self.state
       });
     })
@@ -744,7 +743,7 @@ class ViewContextMenu {
       return ViewContextMenu.determineSimplification({
         identifier: element.identifier,
         category: element.entity,
-        method: element.type,
+        method: "omission",
         state: self.state
       });
     });

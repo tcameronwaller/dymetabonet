@@ -379,9 +379,15 @@ div.menu table thead th svg.sort polygon {
   fill: rgba(0, 0, 0, 1);
 }
 
-div.menu table thead th.count svg.scale {
+#filter div.menu table thead th.count svg.scale {
   background-color: rgba(255, 255, 255, 1);
   width: 3.25cm;
+  height: 0.5cm;
+}
+
+#context div.menu table thead th.count svg.scale {
+  background-color: rgba(255, 255, 255, 1);
+  width: 2.75cm;
   height: 0.5cm;
 }
 
@@ -399,8 +405,24 @@ div.menu table thead tr th.name {
   padding-right: 0cm;
 }
 
-div.menu table thead tr th.count {
+div.menu table thead tr th.omission {
+  width: 0.5cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+}
+
+#filter div.menu table thead tr th.count {
   width: 3.5cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+}
+
+#context div.menu table thead tr th.count {
+  width: 3cm;
   padding-top: 0cm;
   padding-bottom: 0cm;
   padding-left: 0.1cm;
@@ -439,8 +461,27 @@ div.menu div.scroll table tbody tr td.name {
   padding-right: 0cm;
 }
 
-div.menu div.scroll table tbody tr td.count {
+#filter div.menu div.scroll table tbody tr td.count {
   width: 3.5cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+}
+
+#context div.menu div.scroll table tbody tr td.count {
+  width: 3cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+}
+
+div.menu table tbody tr td.omission {
+  width: 0.5cm;
+  border-right-style: solid;
+  border-right-color: rgba(0, 0, 0, 1);
+  border-right-width: 0.5mm;
   padding-top: 0cm;
   padding-bottom: 0cm;
   padding-left: 0.1cm;
@@ -472,18 +513,14 @@ div.menu table tbody tr td {
   padding: 0px;
 }
 
-div.menu table th.omission, td.omission, th.replication, td.replication {
-  width: 0.7cm;
-}
-
-div.menu table tbody tr td.name {
-  color: rgba(0, 0, 0, 1);
-  font-size: x-small;
-}
-
-div.menu table tbody td.count svg.chart {
+#filter div.menu table tbody td.count svg.chart {
   height: 0.25cm;
   width: 3.25cm;
+}
+
+#context div.menu table tbody td.count svg.chart {
+  height: 0.25cm;
+  width: 2.75cm;
 }
 
 div.menu table tbody td.count svg.chart rect.mark.normal {
