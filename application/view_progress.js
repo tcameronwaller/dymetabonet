@@ -67,7 +67,7 @@ class ViewProgress {
   initializeView(self) {
     // Create or set reference to container.
     self.container = View.createReferenceContainer({
-      identifier: "notice",
+      identifier: "progress",
       classNames: ["container"],
       type: "graph",
       target: self.explorationView.graph,

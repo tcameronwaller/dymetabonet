@@ -78,6 +78,8 @@ class ViewQuery {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
+      // Create instructional note.
+      self.createInstructionalNote(self);
       // Create and activate controls for combination.
       self.createActivateCombinationControl("inclusion", self);
       self.createActivateCombinationControl("exclusion", self);
@@ -92,13 +94,13 @@ class ViewQuery {
       self.container.appendChild(self.document.createElement("br"));
       // Create container.
       self.controlContainer = View.createInsertContainer({
-        identifier: "query-control-container",
+        classNames: ["container"],
         type: "standard",
         target: self.container,
         position: "beforeend",
         documentReference: self.document
       });
-      self.controlContainer.classList.add("menu");
+      self.controlContainer.setAttribute("id", "query-control-container");
       // Create break.
       self.container.appendChild(self.document.createElement("br"));
       // Create button for execution of all queries.
@@ -118,6 +120,25 @@ class ViewQuery {
       self.controlContainer = self
       .document.getElementById("query-control-container");
     }
+  }
+  /**
+  * Creates an instructional note about view's controls.
+  * @param {Object} self Instance of a class.
+  */
+  createInstructionalNote(self) {
+    // Create container.
+    var container = View.createInsertContainer({
+      classNames: ["container", "note"],
+      type: "standard",
+      target: self.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
+    // Create text.
+    var text = (
+      "- Query network to select subnetwork."
+    );
+    container.textContent = text;
   }
   /**
   * Creates and activates a control for the combination of sets of nodes.
@@ -193,8 +214,6 @@ class ViewQuery {
       ActionQuery.executeQuery(self.state);
     });
   }
-
-
   /**
   * Restores view's content and behavior that varies with changes to the
   * application's state.
@@ -223,12 +242,6 @@ class ViewQuery {
     self.createActivateRestoreQueryControl(self);
   }
 
-  // TODO: every version of query view needs an execute button...
-  // TODO: make the execute button an invariate part of the view.
-  // TODO: the variate portion should be within a div in the middle.
-  // TODO: the execute button should always call the same method in ActionQuery
-  // TODO: that action will figure out which type of query it is.
-
   /**
   * Creates, activates, and restores controls for traversal.
   * @param {Object} self Instance of a class.
@@ -245,7 +258,6 @@ class ViewQuery {
       self.createActivateRestoreConnectionQueryControl(self);
     }
   }
-
   /**
   * Creates, activates, and restores controls for rogue traversal.
   * @param {Object} self Instance of a class.
@@ -331,7 +343,6 @@ class ViewQuery {
       state: self.state
     });
   }
-
 
   /**
   * Creates, activates, and restores controls for proximity traversal.
@@ -477,8 +488,6 @@ class ViewQuery {
       documentReference: self.document
     });
   }
-
-
 
   /**
   * Creates, activates, and restores controls for path traversal.

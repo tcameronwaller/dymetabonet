@@ -63,7 +63,6 @@ class ActionExploration {
   * @param {Object} parameters.state Application's state.
   */
   static changeSimulationDimensions({length, width, height, state} = {}) {
-    console.log("changeSimulationDimensions");
     // Determine novel simulation's dimensions.
     var simulationDimensions = {
       length: length,
@@ -257,7 +256,8 @@ class ActionExploration {
     if (simulationRestoration) {
       // It is necessary to terminate any previous simulations when creating a
       // novel simulation.
-      var simulationControlsRecords = ActionExploration.determineNovelSimulation({
+      var simulationControlsRecords = ActionExploration
+      .determineNovelSimulation({
         forceNetworkDiagram: forceNetworkDiagram,
         simulationDimensions: simulationDimensions,
         nodesRecords: subnetworkNodesRecords,
@@ -307,8 +307,6 @@ class ActionExploration {
     // Return information.
     return variablesValues;
   }
-
-
 
   /**
   * Determines whether to create a novel simulation.
@@ -468,8 +466,6 @@ class ActionExploration {
       });
     });
   }
-
-
 
   // TODO: need updates...
 

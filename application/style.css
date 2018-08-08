@@ -30,7 +30,6 @@ United States of America
 
 /* Set dimensions of elements proportional to dimensions of the viewport or window. */
 
-
 /* Media Queries */
 /*
 @media (max-width: 15cm) {
@@ -39,19 +38,6 @@ flex-direction: column;
 }
 }
 */
-
-/******************************************************************************/
-/* Interface's Structure */
-/* -view */
-/* --control */
-/* ---state */
-/* ---set */
-/* ---context */
-/* ---traversal */
-/* --exploration */
-/* ---summary */
-/* ---topology */
-/******************************************************************************/
 
 /******************************************************************************/
 /* Interface View */
@@ -588,6 +574,15 @@ div.menu table tbody td.count svg.chart rect.mark.rejection {
 }
 
 /******************************************************************************/
+/* Notice View */
+/******************************************************************************/
+
+/******************************************************************************/
+/* Progress View */
+/******************************************************************************/
+
+
+/******************************************************************************/
 /* Topology View */
 /******************************************************************************/
 
@@ -661,68 +656,5 @@ div.menu table tbody td.count svg.chart rect.mark.rejection {
 }
 
 /******************************************************************************/
-/* Old stuff for scrap (re-use much of it) */
+/* ... */
 /******************************************************************************/
-
-/******************************************************************************/
-/* Set View */
-/******************************************************************************/
-
-#setold table tbody td {
-  border-color: rgba(200, 200, 200, 1);
-  border-style: solid;
-  border-width: 1mm;
-  height: 0.75cm;
-  overflow: hidden;
-  padding: 1mm;
-  white-space: nowrap;
-}
-
-#setold table tbody td.attribute {
-  background-color: rgba(50, 50, 50, 1);
-  color: rgba(255, 255, 255, 1);
-  font-size: medium;
-  font-weight: bold;
-  width: 3cm;
-}
-
-#setold table tbody td.attribute div.search input {
-  /*size: 10cm;*/
-}
-
-#setold table tbody td.value {
-  background-color: rgba(255, 255, 255, 1);
-}
-
-#setold table tbody td.value svg.graph {
-  height: 0.75cm;
-  width: 100%;
-}
-
-#setold table tbody td.value .mark {
-  /*fill: rgba(200, 20, 20, 1);*/
-}
-
-#setold table tbody td.value svg.graph g.group:nth-child(odd) .mark.normal {
-  fill: rgba(0, 255, 100, 1);
-}
-
-#setold table tbody td.value svg.graph g.group:nth-child(even) .mark.normal {
-  fill: rgba(0, 100, 255, 1);
-}
-
-#setold table tbody td.value svg.graph g.group:nth-child(odd) .mark.emphasis {
-  fill: rgba(255, 100, 0, 1);
-}
-
-#setold table tbody td.value svg.graph g.group:nth-child(even) .mark.emphasis {
-  fill: rgba(255, 0, 0, 1);
-}
-
-#setold table tbody td.value svg.graph text.label {
-  font-family: sans-serif;
-  font-style: normal;
-  font-weight: bold;
-  font-size: 13px;
-  fill: rgba(0, 0, 0, 1);
-}
