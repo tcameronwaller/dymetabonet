@@ -141,7 +141,7 @@ class ViewNetwork {
   * @param {Object} self Instance of a class.
   */
   createActivateSummary(self) {
-    // Create or set reference to container.
+    // Create container.
     var container = View.createInsertContainer({
       classNames: ["container", "summary"],
       type: "standard",

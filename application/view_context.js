@@ -78,6 +78,8 @@ class ViewContext {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
+      // Create instructional note.
+      self.createInstructionalNote(self);
       // Create and activate control for compartmentalization.
       self.createActivateCompartmentalizationControl(self);
       // Create break.
@@ -112,6 +114,26 @@ class ViewContext {
       self.simplifications = self
       .document.getElementById("candidacy-simplifications");
     }
+  }
+  /**
+  * Creates an instructional note about view's controls.
+  * @param {Object} self Instance of a class.
+  */
+  createInstructionalNote(self) {
+    // Create container.
+    var container = View.createInsertContainer({
+      classNames: ["container", "note"],
+      type: "standard",
+      target: self.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
+    // Create text.
+    var text = (
+      "- Select compartmentalization of metabolites.\r\n" +
+      "- Select metabolites and reactions to exclude from network."
+    );
+    container.textContent = text;
   }
   /**
   * Creates and activates a control for compartmentalization.
@@ -332,33 +354,6 @@ class ViewContextMenu {
       state: self.state
     });
     self.sortGraphName = referencesName.sortGraph;
-    // Create head for omission.
-    var referencesOmission = View.createActivateTableColumnTitle({
-      attribute: "omission",
-      text: "X",
-      type: "candidates",
-      category: self.category,
-      sort: false,
-      parent: row,
-      documentReference: self.document,
-      state: self.state
-    });
-
-    // TODO: Create column for replication once replication procedure is active.
-    // TODO: Will need to adjust column widths. Widths of metabolite count and reaction count will differ.
-    // Create head for replication.
-    if (false) {
-      var referencesOmission = View.createActivateTableColumnTitle({
-        attribute: "replication",
-        text: "...",
-        type: "candidates",
-        category: self.category,
-        sort: false,
-        parent: row,
-        documentReference: self.document,
-        state: self.state
-      });
-    }
     // Create head for counts.
     var referencesCount = View.createActivateTableColumnTitle({
       attribute: "count",
@@ -391,12 +386,6 @@ class ViewContextMenu {
       state: self.state
     });
     self.search = referencesSearch.search;
-    // Create empty cell for omission column.
-    var cell = View.createTableHeadCell({
-      parent: row,
-      className: "omission",
-      documentReference: self.document
-    });
     // Create cell with scale for count column.
     var referencesScale = View.createTableColumnScale({
       attribute: "count",
@@ -493,8 +482,36 @@ class ViewContextMenu {
       accessor: access
     });
     // Assign attributes to elements.
-    self.rows.classed("normal", true);
+    // Class selection versus rejection.
+    self.rows
+    .classed("selection", function (element, index, nodes) {
+      return ViewContextMenu.determineSimplification({
+        identifier: element.candidate,
+        category: element.entity,
+        method: "omission",
+        state: self.state
+      });
+    })
+    .classed("rejection", function (element, index, nodes) {
+      return !ViewContextMenu.determineSimplification({
+        identifier: element.candidate,
+        category: element.entity,
+        method: "omission",
+        state: self.state
+      });
+    })
+    // Class emphasis versus ignorance.
+    self.rows.classed("ignorance", true);
     // Activate behavior.
+    self.rows.on("click", function (element, index, nodes) {
+      // Call action.
+      ActionContext.changeSimplification({
+        identifier: element.candidate,
+        method: "omission",
+        category: element.entity,
+        state: self.state
+      });
+    });
     self.rows.on("mouseenter", function (element, index, nodes) {
       // Select element.
       var row = nodes[index];
@@ -503,7 +520,7 @@ class ViewContextMenu {
       var horizontalPosition = d3.event.clientX;
       var verticalPosition = d3.event.clientY;
       // Call action.
-      rowSelection.classed("normal", false);
+      rowSelection.classed("ignorance", false);
       rowSelection.classed("emphasis", true);
       ViewContextMenu.createTip({
         identifier: element.candidate,
@@ -538,7 +555,7 @@ class ViewContextMenu {
       var rowSelection = d3.select(row);
       // Call action.
       rowSelection.classed("emphasis", false);
-      rowSelection.classed("normal", true);
+      rowSelection.classed("ignorance", true);
       self.tipView.clearView(self.tipView);
     });
   }
@@ -556,27 +573,13 @@ class ViewContextMenu {
         entity: element.entity,
         identifier: element.candidate
       };
-      var omission = {
-        type: "omission",
-        entity: element.entity,
-        identifier: element.candidate
-      };
       var count = {
         type: "count",
         entity: element.entity,
         identifier: element.candidate,
         count: element.count
       };
-      if (false) {
-        var replication = {
-          type: "replication",
-          entity: element.entity,
-          identifier: element.candidate
-        };
-        return [].concat(name, count, omission, replication);
-      } else {
-        return [].concat(name, omission, count);
-      }
+      return [].concat(name, count);
     };
     // Create children elements by association to data.
     self.cells = View.createElementsData({
@@ -586,14 +589,8 @@ class ViewContextMenu {
     });
     // Assign attributes to cells for names.
     self.representNames(self);
-    // Assign attributes to cells for omission.
-    self.representActivateSimplifications("omission", self);
     // Assign attributes to cells for counts.
     self.representCounts(self);
-    if (false) {
-      // Assign attributes to cells for replication.
-      self.representActivateSimplifications("replication", self);
-    }
   }
   /**
   * Represents names.
@@ -616,6 +613,10 @@ class ViewContextMenu {
       });
     });
   }
+
+  // TODO: representActivateSimplifications() is obsolete...
+  // TODO: keep temporarily in case I decide to restore multiple methods of simplification
+
   /**
   * Represents and activates controls for simplifications.
   * @param {string} method Method for simplification, omission or replication.
@@ -663,6 +664,7 @@ class ViewContextMenu {
       });
     });
   }
+
   /**
   * Represents counts.
   * @param {Object} self Instance of a class.
@@ -730,17 +732,18 @@ class ViewContextMenu {
     })
     .attr("height", barHeight);
     // Assign attributes to elements.
+    // Class selection versus rejection.
     barMarks
-    .classed("normal", function (element, index, nodes) {
-      return !ViewContextMenu.determineSimplification({
+    .classed("selection", function (element, index, nodes) {
+      return ViewContextMenu.determineSimplification({
         identifier: element.identifier,
         category: element.entity,
         method: "omission",
         state: self.state
       });
     })
-    .classed("emphasis", function (element, index, nodes) {
-      return ViewContextMenu.determineSimplification({
+    .classed("rejection", function (element, index, nodes) {
+      return !ViewContextMenu.determineSimplification({
         identifier: element.identifier,
         category: element.entity,
         method: "omission",

@@ -78,8 +78,12 @@ class ViewFilter {
     if (self.container.children.length === 0) {
       // Container is empty.
       // Create and activate behavior of content.
+      // Create instructional note.
+      self.createInstructionalNote(self);
       // Create and activate control for filter.
       self.createActivateFilterControl(self);
+      // Create break.
+      self.container.appendChild(self.document.createElement("br"));
       // Create and activate controls for type of entities.
       self.createActivateEntitiesControl("metabolites", self);
       self.createActivateEntitiesControl("reactions", self);
@@ -112,6 +116,25 @@ class ViewFilter {
       // Control for filter.
       self.filter = self.document.getElementById("set-filter");
     }
+  }
+  /**
+  * Creates an instructional note about view's controls.
+  * @param {Object} self Instance of a class.
+  */
+  createInstructionalNote(self) {
+    // Create container.
+    var container = View.createInsertContainer({
+      classNames: ["container", "note"],
+      type: "standard",
+      target: self.container,
+      position: "beforeend",
+      documentReference: self.document
+    });
+    // Create text.
+    var text = (
+      "- Select processes and compartments to filter network's entities."
+    );
+    container.textContent = text;
   }
   /**
   * Creates and activates a control for the filter.
@@ -325,7 +348,7 @@ class ViewFilterMenu {
     });
     // Create titles and sorts.
     // Create head for names.
-    var referencesOne = View.createActivateTableColumnTitle({
+    var referencesName = View.createActivateTableColumnTitle({
       attribute: "name",
       text: General.capitalizeString(self.category),
       type: "sets",
@@ -335,9 +358,9 @@ class ViewFilterMenu {
       documentReference: self.document,
       state: self.state
     });
-    self.sortGraphName = referencesOne.sortGraph;
+    self.sortGraphName = referencesName.sortGraph;
     // Create head for counts.
-    var referencesTwo = View.createActivateTableColumnTitle({
+    var referencesCount = View.createActivateTableColumnTitle({
       attribute: "count",
       text: "Count",
       type: "sets",
@@ -347,7 +370,7 @@ class ViewFilterMenu {
       documentReference: self.document,
       state: self.state
     });
-    self.sortGraphCount = referencesTwo.sortGraph;
+    self.sortGraphCount = referencesCount.sortGraph;
   }
   /**
   * Creates and activates a table's head.
@@ -358,7 +381,7 @@ class ViewFilterMenu {
       parent: self.head,
       documentReference: self.document
     });
-    // Create empty name cell.
+    // Create cell with search for name column.
     var referencesSearch = View.createTableColumnSearch({
       type: "sets",
       category: self.category,
@@ -368,7 +391,7 @@ class ViewFilterMenu {
       state: self.state
     });
     self.search = referencesSearch.search;
-    // Create scale cell.
+    // Create cell with scale for count column.
     var referencesScale = View.createTableColumnScale({
       attribute: "count",
       parent: row,
@@ -464,7 +487,24 @@ class ViewFilterMenu {
       accessor: access
     });
     // Assign attributes to elements.
-    self.rows.classed("normal", true);
+    // Class selection versus rejection.
+    self.rows
+    .classed("selection", function (element, index, nodes) {
+      return ViewFilterMenu.determineSetSelection({
+        value: element.value,
+        attribute: element.attribute,
+        state: self.state
+      });
+    })
+    .classed("rejection", function (element, index, nodes) {
+      return !ViewFilterMenu.determineSetSelection({
+        value: element.value,
+        attribute: element.attribute,
+        state: self.state
+      });
+    })
+    // Class emphasis versus ignorance.
+    self.rows.classed("ignorance", true);
     // Activate behavior.
     self.rows.on("click", function (element, index, nodes) {
       // Call action.
@@ -482,7 +522,7 @@ class ViewFilterMenu {
       var horizontalPosition = d3.event.clientX;
       var verticalPosition = d3.event.clientY;
       // Call action.
-      rowSelection.classed("normal", false);
+      rowSelection.classed("ignorance", false);
       rowSelection.classed("emphasis", true);
       ViewFilterMenu.createTip({
         attribute: element.attribute,
@@ -517,7 +557,7 @@ class ViewFilterMenu {
       var rowSelection = d3.select(row);
       // Call action.
       rowSelection.classed("emphasis", false);
-      rowSelection.classed("normal", true);
+      rowSelection.classed("ignorance", true);
       self.tipView.clearView(self.tipView);
     });
   }
@@ -530,20 +570,19 @@ class ViewFilterMenu {
     // Define function to access data.
     function access(element, index, nodes) {
       // Organize data.
-      return [].concat(
-        {
-          type: "name",
-          attribute: element.attribute,
-          value: element.value
-        },
-        {
-          type: "count",
-          attribute: element.attribute,
-          count: element.count,
-          maximum: element.maximum,
-          value: element.value
-        }
-      );
+      var name = {
+        type: "name",
+        attribute: element.attribute,
+        value: element.value
+      };
+      var count = {
+        type: "count",
+        attribute: element.attribute,
+        count: element.count,
+        maximum: element.maximum,
+        value: element.value
+      };
+      return [].concat(name, count);
     };
     // Create children elements by association to data.
     self.cells = View.createElementsData({
@@ -644,16 +683,17 @@ class ViewFilterMenu {
     })
     .attr("height", barHeight);
     // Assign attributes to elements.
+    // Class selection versus rejection.
     barMarks
-    .classed("normal", function (element, index, nodes) {
-      return !ViewFilterMenu.determineSetSelection({
+    .classed("selection", function (element, index, nodes) {
+      return ViewFilterMenu.determineSetSelection({
         value: element.value,
         attribute: element.attribute,
         state: self.state
       });
     })
-    .classed("emphasis", function (element, index, nodes) {
-      return ViewFilterMenu.determineSetSelection({
+    .classed("rejection", function (element, index, nodes) {
+      return !ViewFilterMenu.determineSetSelection({
         value: element.value,
         attribute: element.attribute,
         state: self.state

@@ -99,8 +99,8 @@ flex-direction: column;
   border-style: solid;
   border-color: rgba(0, 0, 0, 1);
   border-top-width: 0mm;
-  border-left-width: 0.25mm;
-  border-right-width: 0.25mm;
+  border-left-width: 0.5mm;
+  border-right-width: 0.5mm;
   border-bottom-width: 0mm;
 }
 
@@ -149,7 +149,7 @@ div.tab {
   border-style: solid;
   border-color: rgba(0, 0, 0, 1);
   border-top-width: 0.25mm;
-  border-left-width: 0.25mm;
+  border-left-width: 0mm;
   border-right-width: 0mm;
   border-bottom-width: 0.25mm;
   padding-left: 0.1cm;
@@ -158,14 +158,14 @@ div.tab {
 
 div.tab.tierOne {
   font-size: large;
-  width: 10cm;
+  width: 9.9cm;
   line-height: 1cm;
   height: 1cm;
 }
 
 div.tab.tierTwo {
   font-size: medium;
-  width: 9.5cm;
+  width: 9.6cm;
   line-height: 0.5cm;
   height: 0.5cm;
 }
@@ -199,26 +199,29 @@ div.container.panel.control.tierOne {
   padding-bottom: 0cm;
   padding-left: 0cm;
   padding-right: 0cm;
+  border: 0cm;
   background-color: rgba(255, 255, 255, 1);
 }
 
 div.container.panel.control.tierTwo {
-  width: 9.5cm;
-  margin-left: 0.25cm;
+  width: 9.7cm;
+  margin-left: 0.2cm;
   padding-top: 0.1cm;
   padding-bottom: 0.1cm;
   padding-left: 0.1cm;
   padding-right: 0cm;
+  border: 0cm;
   background-color: rgba(230, 230, 230, 1);
 }
 
 div.container.panel.control.tierThree {
-  width: 9.25cm;
-  margin-left: 0.25cm;
+  width: 9.4cm;
+  margin-left: 0.2cm;
   padding-top: 0.1cm;
   padding-bottom: 0.1cm;
   padding-left: 0.1cm;
   padding-right: 0cm;
+  border: 0cm;
   background-color: rgba(220, 220, 220, 1);
 }
 
@@ -248,11 +251,32 @@ svg g.scale polyline {
 }
 
 /******************************************************************************/
+/* Notes */
+/******************************************************************************/
+
+div.note {
+  width: 8.9cm;
+  margin: 0cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+  border: 0cm;
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: xx-small;
+  white-space: pre-line;
+  /* background-color: rgba(220, 220, 220, 1); */
+  color: rgba(150, 150, 150, 1);
+}
+
+/******************************************************************************/
 /* Network summaries */
 /******************************************************************************/
 
 div.summary {
-  width: 9.25cm;
+  width: 9.3cm;
   font-family: sans-serif;
   font-style: normal;
   font-weight: bold;
@@ -261,7 +285,7 @@ div.summary {
 }
 
 div.summary table {
-  width: 9.25cm;
+  width: 9.3cm;
   table-layout: fixed;
   border-collapse: collapse;
   border-spacing: 0mm;
@@ -310,10 +334,6 @@ div.summary table tbody tr.link svg g.chart rect.whole {
 /******************************************************************************/
 /* Menus */
 /******************************************************************************/
-
-/* TODO: Manage classes of the elements within the menu...*/
-/* TODO: cells either belong to "name" column or to "count" column... */
-
 
 div.menu {
   width: 8.9cm;
@@ -379,15 +399,9 @@ div.menu table thead th svg.sort polygon {
   fill: rgba(0, 0, 0, 1);
 }
 
-#filter div.menu table thead th.count svg.scale {
+div.menu table thead th.count svg.scale {
   background-color: rgba(255, 255, 255, 1);
   width: 3.25cm;
-  height: 0.5cm;
-}
-
-#context div.menu table thead th.count svg.scale {
-  background-color: rgba(255, 255, 255, 1);
-  width: 2.75cm;
   height: 0.5cm;
 }
 
@@ -405,24 +419,8 @@ div.menu table thead tr th.name {
   padding-right: 0cm;
 }
 
-div.menu table thead tr th.omission {
-  width: 0.5cm;
-  padding-top: 0cm;
-  padding-bottom: 0cm;
-  padding-left: 0.1cm;
-  padding-right: 0cm;
-}
-
-#filter div.menu table thead tr th.count {
+div.menu table thead tr th.count {
   width: 3.5cm;
-  padding-top: 0cm;
-  padding-bottom: 0cm;
-  padding-left: 0.1cm;
-  padding-right: 0cm;
-}
-
-#context div.menu table thead tr th.count {
-  width: 3cm;
   padding-top: 0cm;
   padding-bottom: 0cm;
   padding-left: 0.1cm;
@@ -461,16 +459,8 @@ div.menu div.scroll table tbody tr td.name {
   padding-right: 0cm;
 }
 
-#filter div.menu div.scroll table tbody tr td.count {
+div.menu div.scroll table tbody tr td.count {
   width: 3.5cm;
-  padding-top: 0cm;
-  padding-bottom: 0cm;
-  padding-left: 0.1cm;
-  padding-right: 0cm;
-}
-
-#context div.menu div.scroll table tbody tr td.count {
-  width: 3cm;
   padding-top: 0cm;
   padding-bottom: 0cm;
   padding-left: 0.1cm;
@@ -494,16 +484,27 @@ div.menu table tbody tr {
   border: 0px;
 }
 
-div.menu table tbody tr.normal:nth-child(odd) {
+/* Class emphasis versus ignorance. */
+/* Class selection versus rejection. */
+
+div.menu table tbody tr.emphasis.selection, tr.emphasis.rejection {
+  background-color: rgba(255, 150, 50, 1);
+}
+
+div.menu table tbody tr.ignorance.selection:nth-child(odd) {
+  background-color: rgba(220, 220, 220, 1);
+}
+
+div.menu table tbody tr.ignorance.rejection:nth-child(odd) {
   background-color: rgba(255, 255, 255, 1);
 }
 
-div.menu table tbody tr.normal:nth-child(even) {
-  background-color: rgba(240, 240, 240, 1);
+div.menu table tbody tr.ignorance.selection:nth-child(even) {
+  background-color: rgba(210, 210, 210, 1);
 }
 
-div.menu table tbody tr.emphasis {
-  background-color: rgba(255, 150, 50, 1);
+div.menu table tbody tr.ignorance.rejection:nth-child(even) {
+  background-color: rgba(240, 240, 240, 1);
 }
 
 div.menu table tbody tr td {
@@ -513,22 +514,20 @@ div.menu table tbody tr td {
   padding: 0px;
 }
 
-#filter div.menu table tbody td.count svg.chart {
+div.menu table tbody td.count svg.chart {
   height: 0.25cm;
   width: 3.25cm;
 }
 
-#context div.menu table tbody td.count svg.chart {
-  height: 0.25cm;
-  width: 2.75cm;
+/* Count bars. */
+/* Class selection versus rejection. */
+
+div.menu table tbody td.count svg.chart rect.mark.selection {
+  fill: rgba(255, 150, 50, 1);
 }
 
-div.menu table tbody td.count svg.chart rect.mark.normal {
+div.menu table tbody td.count svg.chart rect.mark.rejection {
   fill: rgba(0, 50, 125, 1);
-}
-
-div.menu table tbody td.count svg.chart rect.mark.emphasis {
-  fill: rgba(255, 100, 0, 1);
 }
 
 /******************************************************************************/
