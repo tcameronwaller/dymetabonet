@@ -1073,7 +1073,7 @@ class ViewQuery {
         }
       } else {
         // Restore search.
-        ViewQuery.restoreTraversalSearch({
+        ViewQuery.restoreQuerySearch({
           search: search,
           variableName: variableName,
           recordSource: recordSource,
