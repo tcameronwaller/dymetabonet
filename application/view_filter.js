@@ -412,6 +412,8 @@ class ViewFilterMenu {
       documentReference: self.document
     });
   }
+
+
   /**
   * Restores view's content and behavior that varies with changes to the
   * application's state.

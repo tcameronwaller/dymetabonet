@@ -172,8 +172,6 @@ div.tab.emphasis {
 /* Control Container */
 /******************************************************************************/
 
-/* I might need to use indentOne, and shadeOne categories? */
-
 div.container.panel.control {
   display: block;
 }
@@ -543,8 +541,15 @@ div.menu table tbody td.count svg.chart rect.mark.rejection {
 /* Context View */
 /******************************************************************************/
 
+/******************************************************************************/
+/* Query View */
+/******************************************************************************/
 
+/* TODO: Style the connection table */
 
+div.query {
+  background-color: rgba(255, 255, 255, 1);
+}
 
 /******************************************************************************/
 /* Detail View ... change to Summary View... */

@@ -94,7 +94,7 @@ class ViewQuery {
       self.container.appendChild(self.document.createElement("br"));
       // Create container.
       self.controlContainer = View.createInsertContainer({
-        classNames: ["container"],
+        classNames: ["container", "query"],
         type: "standard",
         target: self.container,
         position: "beforeend",
@@ -691,10 +691,10 @@ class ViewQuery {
     } else {
       // Container's current content matches view's novel type.
       // Set references to content.
+      self.connectionTargetList = self
+      .controlContainer.getElementsByTagName("tbody").item(0);
       self.connectionTargetSearch = self
       .document.getElementById("query-connection-target-search");
-      self.connectionTargetSummary = self
-      .document.getElementById("query-connection-target-summary");
       self.connectionCount = self
       .document.getElementById("query-connection-count");
     }
@@ -705,17 +705,17 @@ class ViewQuery {
   */
   createConnectionQueryControl(self) {
     // Create summary of targets.
-    self.createConnectionQueryTargetSummary(self);
-    // Create button for inclusion.
-    self.includeTarget = View.createButton({
-      text: "+",
-      parent: self.controlContainer,
-      documentReference: self.document
-    });
+    self.createConnectionQueryTargetList(self);
     // Create search menu.
     self.connectionTargetSearch = View.createSearchOptionsList({
       identifier: "query-connection-target-search",
       prompt: "select node...",
+      parent: self.controlContainer,
+      documentReference: self.document
+    });
+    // Create button for inclusion.
+    self.includeTarget = View.createButton({
+      text: "+",
       parent: self.controlContainer,
       documentReference: self.document
     });
@@ -732,33 +732,50 @@ class ViewQuery {
   * Creates and activates summary of targets for connection traversal.
   * @param {Object} self Instance of a class.
   */
-  createConnectionQueryTargetSummary(self) {
+  createConnectionQueryTargetList(self) {
     // Create separate tables for head and body to support stationary head and
     // scrollable body.
     // Create head table.
-    var tableHeadRow = View.createTableHeadRow({
-      className: "connection-target",
+    self.createTargetListTableHead(self);
+    // Create body table.
+    self.createTargetListTableBody(self);
+  }
+  /**
+  * Creates and activates a table's head.
+  * @param {Object} self Instance of a class.
+  */
+  createTargetListTableHead(self) {
+    // Create head table.
+    var head = View.createTableHead({
       parent: self.controlContainer,
       documentReference: self.document
     });
-    // Create titles, sorts, and scale in table's header.
-    // Create head for name.
-    var nameCell = View.createTableHeadCellLabel({
-      text: "targets",
+    // Create row.
+    var row = View.createTableRow({
+      parent: head,
+      documentReference: self.document
+    });
+    // Create cell for name.
+    var cellName = View.createTableHeadCellLabel({
+      text: "Targets",
       className: "name",
-      parent: tableHeadRow,
+      parent: row,
       documentReference: self.document
     });
-    // Create head for name.
-    var nameCell = View.createTableHeadCellLabel({
-      text: "",
+    // Create empty cell for removal.
+    var cellRemoval = View.createTableHeadCell({
+      parent: row,
       className: "removal",
-      parent: tableHeadRow,
       documentReference: self.document
     });
-    // Create body table.
-    self.connectionTargetSummary = View.createScrollTableBody({
-      className: "connection",
+  }
+  /**
+  * Creates and activates a table's body.
+  * @param {Object} self Instance of a class.
+  */
+  createTargetListTableBody(self) {
+    self.connectionTargetList = View.createScrollTableBody({
+      className: "query",
       parent: self.controlContainer,
       documentReference: self.document
     });
@@ -806,7 +823,7 @@ class ViewQuery {
   restoreActivateConnectionQueryControl(self) {
     // Restore controls' settings.
     // Create and activate summary of targets.
-    self.createActivateConnectionQueryTargetSummary(self);
+    self.createActivateRestoreConnectionQueryTargetList(self);
     // Restore search.
     if (self.state.queryCombination === "inclusion") {
       var recordSource = "network";
@@ -840,18 +857,18 @@ class ViewQuery {
   * Restores and activates summary of targets for connection traversal.
   * @param {Object} self Instance of a class.
   */
-  createActivateConnectionQueryTargetSummary(self) {
-    self.createActivateConnectionQueryTargetSummaryRows(self);
-    self.createActivateConnectionQueryTargetSummaryCells(self);
+  createActivateRestoreConnectionQueryTargetList(self) {
+    self.createActivateConnectionQueryTargetListRows(self);
+    self.createActivateConnectionQueryTargetListCells(self);
   }
   /**
   * Creates and activates rows.
   * @param {Object} self Instance of a class.
   */
-  createActivateConnectionQueryTargetSummaryRows(self) {
+  createActivateConnectionQueryTargetListRows(self) {
     // Create and activate rows.
     // Select parent.
-    var body = d3.select(self.connectionTargetSummary);
+    var body = d3.select(self.connectionTargetList);
     // Define function to access data.
     function access() {
       return self.state.queryConnectionTargets;
@@ -863,14 +880,14 @@ class ViewQuery {
       accessor: access
     });
     // Assign attributes to elements.
-    self.rows.classed("normal", true);
+    self.rows.classed("ignorance", true);
     // Activate behavior.
     self.rows.on("mouseenter", function (element, index, nodes) {
       // Select element.
       var row = nodes[index];
       var rowSelection = d3.select(row);
       // Call action.
-      rowSelection.classed("normal", false);
+      rowSelection.classed("ignorance", false);
       rowSelection.classed("emphasis", true);
     });
     self.rows.on("mouseleave", function (element, index, nodes) {
@@ -879,23 +896,17 @@ class ViewQuery {
       var rowSelection = d3.select(row);
       // Call action.
       rowSelection.classed("emphasis", false);
-      rowSelection.classed("normal", true);
+      rowSelection.classed("ignorance", true);
     });
   }
   /**
   * Creates cells.
   * @param {Object} self Instance of a class.
   */
-  createActivateConnectionQueryTargetSummaryCells(self) {
+  createActivateConnectionQueryTargetListCells(self) {
     // Create cells for names, counts, omissions, and replications.
     // Define function to access data.
     function access(element, index, nodes) {
-      // Access node's name.
-      var name = ViewQuery.accessNodeName({
-        identifier: element.identifier,
-        type: element.type,
-        state: self.state
-      });
       // Organize data.
       var name = {
         type: "name",
@@ -916,15 +927,15 @@ class ViewQuery {
       accessor: access
     });
     // Create cells for names.
-    self.createConnectionQueryTargetSummaryNames(self);
+    self.createConnectionQueryTargetListNames(self);
     // Create and activate cells for removals.
-    self.createActivateConnectionQueryTargetSummaryRemovals(self);
+    self.createActivateConnectionQueryTargetListRemovals(self);
   }
   /**
   * Creates summary names.
   * @param {Object} self Instance of a class.
   */
-  createConnectionQueryTargetSummaryNames(self) {
+  createConnectionQueryTargetListNames(self) {
     // Assign attributes to cells.
     // Assign attributes to elements.
     // Select cells for names.
@@ -945,7 +956,7 @@ class ViewQuery {
   * Creates summary removals.
   * @param {Object} self Instance of a class.
   */
-  createActivateConnectionQueryTargetSummaryRemovals(self) {
+  createActivateConnectionQueryTargetListRemovals(self) {
     // Assign attributes to cells.
     // Assign attributes to elements.
     // Select cells.

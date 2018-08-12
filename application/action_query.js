@@ -52,7 +52,6 @@ class ActionQuery {
   // Direct actions.
 
   //////////////////////////////////////////////////////////////////////////////
-  // TODO: This entire block of actions needs to call deriveSubordinateState()
 
   // Direct actions that modify only proximal variables.
 
@@ -369,6 +368,9 @@ class ActionQuery {
       state: state
     });
   }
+
+  // TODO: sort the list of targets by default...
+
   /**
   * Includes a node in the targets for connection query.
   * @param {Object} state Application's state.
@@ -423,10 +425,6 @@ class ActionQuery {
       });
     }
   }
-
-  // TODO: still need to update stuff below here...
-
-
   /**
   * Excludes a node from targets for connection query.
   * @param {Object} parameters Destructured object of parameters.
@@ -439,17 +437,26 @@ class ActionQuery {
     .queryConnectionTargets.filter(function (record) {
       return !((record.identifier === identifier) && (record.type === type));
     });
+    // Derive dependent state.
+    var dependentStateVariables = ActionQuery.deriveSubordinateState({
+      viewsRestoration: state.viewsRestoration,
+      state: state
+    });
     // Compile variables' values.
     var novelVariablesValues = {
       queryConnectionTargets: queryConnectionTargets
     };
-    var variablesValues = Object.assign(novelVariablesValues);
+    var variablesValues = Object.assign(
+      novelVariablesValues,
+      dependentStateVariables
+    );
     // Submit variables' values to the application's state.
     ActionGeneral.submitStateVariablesValues({
       variablesValues: variablesValues,
       state: state
     });
   }
+
   //////////////////////////////////////////////////////////////////////////////
 
   // Direct actions that modify proximal and distal variables.
@@ -530,6 +537,9 @@ class ActionQuery {
 
   //////////////////////////////////////////////////////////////////////////////
   // TODO: this block is obsolete... once I use them for scrap...
+
+  // TODO: still need to update stuff below here...
+
 
   /**
   * Executes rogue query and combination on the network.
