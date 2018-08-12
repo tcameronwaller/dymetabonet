@@ -1,6 +1,9 @@
 /*
+This file is part of project Profondeur
+(https://github.com/tcameronwaller/profondeur/).
+
 Profondeur supports visual exploration and analysis of metabolic networks.
-Copyright (C) 2017 Thomas Cameron Waller
+Copyright (C) 2018 Thomas Cameron Waller
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -16,14 +19,12 @@ You should have received a copy of the GNU General Public License along with
 this program.
 If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of project Profondeur.
-Project repository's address: https://github.com/tcameronwaller/profondeur/
-Author's electronic address: tcameronwaller@gmail.com
-Author's physical address:
-T Cameron Waller
-Scientific Computing and Imaging Institute
+Thomas Cameron Waller
+tcameronwaller@gmail.com
+Department of Biochemistry
 University of Utah
-72 South Central Campus Drive Room 3750
+Room 5520C, Emma Eccles Jones Medical Research Building
+15 North Medical Drive East
 Salt Lake City, Utah 84112
 United States of America
 */
@@ -38,5 +39,5 @@ United States of America
 (function () {
   // Initialize application.
   var state = new State();
-  Action.initializeApplication(state);
+  ActionGeneral.initializeApplicationStateVariables(state);
 })();

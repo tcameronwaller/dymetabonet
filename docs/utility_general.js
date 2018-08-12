@@ -71,17 +71,19 @@ class General {
     }
   }
   /**
-  * Loads from file a version of an object in JavaScript Object Notation
-  * (JSON) and passes this object to another function along with appropriate
+  * Loads and reads textual information from file, parses this text either as
+  * JavaScript Object Notation (JSON) or as a table with tab delimiters, and
+  * passes this information to another function along with appropriate
   * parameters.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Object} parameters.file File with object to load.
+  * @param {Object} parameters.format File with object to load.
   * @param {Object} parameters.call Function to call upon completion of file
   * read.
   * @param {Object} parameters.parameters Parameters for the function to call
   * upon completion of file read.
   */
-  static loadPassObject({file, call, parameters} = {}) {
+  static loadParseTextPassObject({file, format, call, parameters} = {}) {
     // Create a file reader object.
     var reader = new FileReader();
     // Specify operation to perform after file loads.
@@ -89,12 +91,18 @@ class General {
       // Element on which the event originated is event.currentTarget.
       // After load, the file reader's result attribute contains the
       // file's contents, according to the read method.
-      var data = JSON.parse(event.currentTarget.result);
+      var text = event.currentTarget.result;
+      // Parse textual information from file.
+      if (format === "json") {
+        var data = JSON.parse(text);
+      } else if (format === "tsv") {
+        var data = General.parseTabTable(text);
+      }
       // Include the data in the parameters to pass to the call function.
       var dataParameter = {data: data};
-      var newParameters = Object.assign({}, parameters, dataParameter);
+      var novelParameters = Object.assign({}, parameters, dataParameter);
       // Call function with new parameters.
-      call(newParameters);
+      call(novelParameters);
     };
     // Read file as text.
     reader.readAsText(file);
@@ -139,7 +147,7 @@ class General {
   static convertRecordsStringTabSeparateTable(records) {
     // Specify delimiter or separator and line ending.
     var separator = "\t";
-    var end = "\r\n";
+    var end = "\n";
     // Prepare head row.
     // Assume that all records have same keys.
     // Assume that these keys are strings.
@@ -169,7 +177,7 @@ class General {
         } else if (type === "string" || type === "symbol") {
           var representation = String("\"" + value + "\"");
         } else if (type === "array") {
-          var representation = value.join(",");
+          var representation = value.join("; ");
         }
         // Combine to collection.
         if (string.length === 0) {
@@ -183,7 +191,39 @@ class General {
     var rows = [].concat([headRow], bodyRows);
     var string = rows.join(end);
     return string;
-  };
+  }
+  /**
+  * Parses information from a textual representation of tabular information with
+  * tab delimiters.
+  * @param {string} text Textual representation of tabular information with tab
+  * delimiters.
+  * @returns Tabular records.
+  */
+  static parseTabTable(text) {
+    // This function does not attempt to convert string values to numbers.
+    // Specify delimiter or separator and line ending.
+    var separator = "\t";
+    var end = "\n";
+    // Separate table's rows.
+    var rows = text.split(end);
+    // Separate head row from body rows.
+    var rowHead = rows[0];
+    var rowsBody = rows.slice(1);
+    // Parse head row.
+    var keys = rowHead.split(separator);
+    // Parse body rows.
+    return rowsBody.map(function (row) {
+      var values = row.split(separator);
+      // Compile record.
+      return values.reduce(function (record, value, index) {
+        // Create entry.
+        var entry = {
+          [keys[index]]: value
+        };
+        return Object.assign(record, entry);
+      }, {});
+    });
+  }
 
   // Methods for document object model (DOM).
 
@@ -252,6 +292,7 @@ class General {
   */
   static determineElementDimension(element, attribute) {
     // Alternative is to use element.getBoundingClientRect().
+    // Alternative is to use element.getBBox().
     // Alternative may also be to use d3.style(node, name).
     return parseFloat(
       window.getComputedStyle(element)[attribute].replace("px", "")
@@ -1352,7 +1393,62 @@ class General {
     });
   }
   /**
-  * Sorts records in arrray.
+  * Sorts records in array by a numeric value.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.order Direction, ascend or descend, in which to
+  * sort records.
+  * @param {Array<Object>} parameters.records Array of records.
+  * @param {string} parameters.key Record's key to value.
+  * @returns {Array<Object>} Deep copy of array with records in sort order.
+  */
+  static sortArrayRecordsByNumber({order, records, key} = {}) {
+    // Copy records.
+    var novelRecords = General.copyDeepArrayElements(records);
+    // Sort records.
+    return novelRecords.sort(function (firstRecord, secondRecord) {
+      // Determine values.
+      var firstValue = firstRecord[key];
+      var secondValue = secondRecord[key];
+      // Compare values.
+      return General.compareValuesOrder({
+        firstValue: firstValue,
+        secondValue: secondValue,
+        order: order
+      })
+    });
+  }
+  /**
+  * Sorts records in array by a character value from a reference.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string} parameters.order Direction, ascend or descend, in which to
+  * sort records.
+  * @param {Array<Object>} parameters.records Array of records.
+  * @param {string} parameters.referenceKey Record's key to entry in reference.
+  * @param {string} parameters.valueKey Reference's key to value.
+  * @param {Object} parameters.reference Information about values' names.
+  * @returns {Array<Object>} Deep copy of array with records in sort order.
+  */
+  static sortArrayRecordsByCharacterReference({order, records, referenceKey, valueKey, reference} = {}) {
+    // Copy records.
+    var novelRecords = General.copyDeepArrayElements(records);
+    // Sort records.
+    return novelRecords.sort(function (firstRecord, secondRecord) {
+      // Determine values.
+      // Convert values to lower case for comparison.
+      var firstValue = reference[firstRecord[referenceKey]][valueKey]
+      .toLowerCase();
+      var secondValue = reference[secondRecord[referenceKey]][valueKey]
+      .toLowerCase();
+      // Compare values.
+      return General.compareValuesOrder({
+        firstValue: firstValue,
+        secondValue: secondValue,
+        order: order
+      })
+    });
+  }
+  /**
+  * Sorts records in array.
   * @param {Object} parameters Destructured object of parameters.
   * @param {Array<Object>} parameters.array Array of records.
   * @param {string} parameters.key Key of value in records by which to sort.
@@ -1383,27 +1479,44 @@ class General {
         var secondValue = secondRecord[key];
       }
       // Compare values.
-      if (firstValue < secondValue) {
-        if (order === "ascend") {
-          // Place first element before second element.
-          return -1;
-        } else if (order === "descend") {
-          // Place first element after second element.
-          return 1;
-        }
-      } else if (firstValue > secondValue) {
-        if (order === "ascend") {
-          // Place first element after second element.
-          return 1;
-        } else if (order === "descend") {
-          // Place first element before second element.
-          return -1;
-        }
-      } else {
-        // Preserve current relative placements of elements.
-        return 0;
-      }
+      return General.compareValuesOrder({
+        firstValue: firstValue,
+        secondValue: secondValue,
+        order: order
+      })
     });
+  }
+  /**
+  * Compare values for sort.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {string | number} parameters.firstValue First value.
+  * @param {string | number} parameters.secondValue Second value.
+  * @param {string} parameters.order Direction, ascend or descend, in which to
+  * sort records.
+  * @returns {number} Numerical code for placement of values in order.
+  */
+  static compareValuesOrder({firstValue, secondValue, order} = {}) {
+    // Compare values.
+    if (firstValue < secondValue) {
+      if (order === "ascend") {
+        // Place first element before second element.
+        return -1;
+      } else if (order === "descend") {
+        // Place first element after second element.
+        return 1;
+      }
+    } else if (firstValue > secondValue) {
+      if (order === "ascend") {
+        // Place first element after second element.
+        return 1;
+      } else if (order === "descend") {
+        // Place first element before second element.
+        return -1;
+      }
+    } else {
+      // Preserve current relative placements of elements.
+      return 0;
+    }
   }
   /**
   * Sorts arrays by lengths within an arrray.

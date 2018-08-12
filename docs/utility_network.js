@@ -637,6 +637,62 @@ class Network {
       subnetworkLinksRecords: copyNetworkLinksRecords
     };
   }
+  /**
+  * Determines descriptive information about network's elements for summary.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Object} parameters.networkNodesMetabolites Information about
+  * network's nodes for metabolites.
+  * @param {Object} parameters.networkNodesReactions Information about network's
+  * nodes for reactions.
+  * @param {Object} parameters.networkLinks Information about network's links.
+  * @returns {Object} Information about network's elements.
+  */
+  static determineNetworkSummary({networkNodesMetabolites, networkNodesReactions, networkLinks} = {}) {
+    // Determine counts of network's elements.
+    var nodesReactions = Object.keys(networkNodesReactions).length;
+    var nodesMetabolites = Object.keys(networkNodesMetabolites).length;
+    var nodes = nodesReactions + nodesMetabolites;
+    var links = Object.keys(networkLinks).length;
+    // Compile information.
+    var networkSummary = {
+      nodesReactions: nodesReactions,
+      nodesMetabolites: nodesMetabolites,
+      nodes: nodes,
+      links: links
+    };
+    // Return information.
+    return networkSummary;
+  }
+  /**
+  * Determines descriptive information about subnetwork's elements for summary.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {Array<Object>} parameters.subnetworkNodesRecords Information about
+  * subnetwork's nodes.
+  * @param {Array<Object>} parameters.subnetworkLinksRecords Information about
+  * subnetwork's links.
+  * @returns {Object} Information about subnetwork's elements.
+  */
+  static determineSubnetworkSummary({subnetworkNodesRecords, subnetworkLinksRecords} = {}) {
+    // Determine counts of network's elements.
+    var nodes = subnetworkNodesRecords.length;
+    var nodesReactions = subnetworkNodesRecords.filter(function (record) {
+      return record.type === "reaction";
+    }).length;
+    var nodesMetabolites = subnetworkNodesRecords.filter(function (record) {
+      return record.type === "metabolite";
+    }).length;
+    var links = subnetworkLinksRecords.length;
+    // Compile information.
+    var subnetworkSummary = {
+      nodesReactions: nodesReactions,
+      nodesMetabolites: nodesMetabolites,
+      nodes: nodes,
+      links: links
+    };
+    // Return information.
+    return subnetworkSummary;
+  }
+
 
   //////////////////////////////////////////////////////////////////////////////
 

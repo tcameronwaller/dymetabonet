@@ -1,6 +1,9 @@
 /*
+This file is part of project Profondeur
+(https://github.com/tcameronwaller/profondeur/).
+
 Profondeur supports visual exploration and analysis of metabolic networks.
-Copyright (C) 2017 Thomas Cameron Waller
+Copyright (C) 2018 Thomas Cameron Waller
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -16,14 +19,12 @@ You should have received a copy of the GNU General Public License along with
 this program.
 If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of project Profondeur.
-Project repository's address: https://github.com/tcameronwaller/profondeur/
-Author's electronic address: tcameronwaller@gmail.com
-Author's physical address:
-T Cameron Waller
-Scientific Computing and Imaging Institute
+Thomas Cameron Waller
+tcameronwaller@gmail.com
+Department of Biochemistry
 University of Utah
-72 South Central Campus Drive Room 3750
+Room 5520C, Emma Eccles Jones Medical Research Building
+15 North Medical Drive East
 Salt Lake City, Utah 84112
 United States of America
 */
@@ -56,24 +57,25 @@ class Model {
   }
   /**
   * Evaluates the application's state and responds accordingly.
+  * @param {Object} self Instance of a class.
   */
   act(self) {
     if (!Model.determineApplicationControls(self.state)) {
-      Action.initializeApplicationControls(self.state);
+      ActionGeneral.initializeApplicationControls(self.state);
     } else if (!Model.determineMetabolismBaseInformation(self.state)) {
-      Action.loadMetabolismBaseInformation(self.state);
+      ActionGeneral.loadMetabolismBaseInformation(self.state);
+    } else if (!Model.determineMetabolismSupplementInformation(self.state)) {
+      ActionGeneral.loadMetabolismSupplementInformation(self.state);
     } else if (!Model.determineMetabolismDerivationInformation(self.state)) {
-      Action.deriveTotalMetabolismInformation(self.state);
+      ActionGeneral.deriveState(self.state);
     }
+
+    // TODO: determine if
+
+    // TODO: I need to automatically determine whether the simulation dimensions match those of the exploration view... and update if necessary
   }
 
-  // TODO: Try to organize as much control of views as practical here within the Model.
-  // TODO: I think the "controlContents" and "explorationContents" approach does work... so consider using it more.
-  // TODO: Within ControlView, create tabs and containers for all sub-views... I think
-  // TODO: Those sub-views should then establish themselves within approriate containers from ControlView.
-  // TODO: Rendering is expensive, so don't use the display: none strategy
-  // TODO: Instead, only create the content for ControlView's sub-views that are active.
-  // TODO: I think I can create a new state variable to control which sub-view is active? Maybe?
+  // TODO: maybe handle the dimensions for the exploration view here in the Model...
 
   /**
   * Evaluates the application's state and represents it accordingly in a visual
@@ -84,6 +86,7 @@ class Model {
   * interface.
   * Individual views' content and behavior depends further on application's
   * state.
+  * @param {Object} self Instance of a class.
   */
   represent(self) {
     // Evaluate the application's state and represent it appropriately in the
@@ -97,65 +100,358 @@ class Model {
     if (
       Model.determineApplicationControls(self.state) &&
       Model.determineMetabolismBaseInformation(self.state) &&
+      Model.determineMetabolismSupplementInformation(self.state) &&
       Model.determineMetabolismDerivationInformation(self.state)
     ) {
-      // Interface view.
-      var interfaceView = new InterfaceView({
-        body: self.body,
-        state: self.state,
-        documentReference: self.document
-      });
-      // Panel view.
-      var panelView = new PanelView({
-        interfaceView: interfaceView,
-        state: self.state,
-        documentReference: self.document
-      });
-      // Tip view.
-      // Tip view always exists but is only visible when active.
-      var tipView = new TipView({
-        interfaceView: interfaceView,
-        state: self.state,
-        documentReference: self.document,
-        windowReference: self.window
-      });
-      // Prompt view.
-      // Prompt view always exists but is only visible when active.
-      var promptView = new PromptView({
-        interfaceView: interfaceView,
-        state: self.state,
-        documentReference: self.document,
-        windowReference: self.window
-      });
-      // Detail view.
-      var detailView = new DetailView({
-        interfaceView: interfaceView,
-        panelView: panelView,
-        tipView: tipView,
-        promptView: promptView,
-        state: self.state,
-        documentReference: self.document
-      });
-      // Control view.
-      var controlView = new ControlView({
-        interfaceView: interfaceView,
-        panelView: panelView,
-        tipView: tipView,
-        promptView: promptView,
-        state: self.state,
-        documentReference: self.document
-      });
-      // Exploration view.
-      var explorationView = new ExplorationView({
-        interfaceView: interfaceView,
-        tipView: tipView,
-        promptView: promptView,
-        state: self.state,
-        documentReference: self.document,
-        windowReference: self.window
-      });
+      // Restore views.
+      self.restoreViews(self);
     }
   }
+  /**
+  * Restores views' content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreViews(self) {
+    // Determine which views to restore.
+    // Every change to application's state sets a parameter to control which
+    // views to restore.
+    // Interface view.
+    self.restoreInterfaceView(self);
+    // Tip view.
+    self.restoreTipView(self);
+    // Panel view.
+    self.restorePanelView(self);
+    // Control view.
+    self.restoreControlView(self);
+    // State view.
+    self.restoreStateView(self);
+    // Network view.
+    self.restoreNetworkView(self);
+    // Filter view.
+    self.restoreFilterView(self);
+    // Context view.
+    self.restoreContextView(self);
+    // Subnetwork view.
+    self.restoreSubnetworkView(self);
+    // Query view.
+    self.restoreQueryView(self);
+    // Measurement view.
+    // Summary view.
+    // Exploration view.
+    self.restoreExplorationView(self);
+    // Notice view.
+    self.restoreNoticeView(self);
+    // Progress view.
+    self.restoreProgressView(self);
+    // Topology view.
+    self.restoreTopologyView(self);
+
+    if (false) {
+      // Prompt view.
+      // Prompt view always exists but is only visible when active.
+      if (self.state.viewsRestoration.prompt) {
+        // Restore views.
+        self.state.views.prompt = new ViewPrompt({
+          interfaceView: self.state.views.interface,
+          state: self.state,
+          documentReference: self.document,
+          windowReference: self.window
+        });
+      }
+      // Summary view.
+      if (self.state.viewsRestoration.summary) {
+        // Restore views.
+        self.state.views.summary = new ViewSummary({
+          interfaceView: self.state.views.interface,
+          tipView: self.state.views.tip,
+          promptView: self.state.views.prompt,
+          panelView: self.state.views.panel,
+          state: self.state,
+          documentReference: self.document
+        });
+      }
+      // Exploration view.
+      if (self.state.viewsRestoration.exploration) {
+        // Restore views.
+        self.state.views.exploration = new ViewExploration({
+          interfaceView: self.state.views.interface,
+          tipView: self.state.views.tip,
+          promptView: self.state.views.prompt,
+          state: self.state,
+          documentReference: self.document,
+          windowReference: self.window
+        });
+      }
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreInterfaceView(self) {
+    // Interface view.
+    if (self.state.viewsRestoration.interface) {
+      // Restore views.
+      self.state.views.interface = new ViewInterface({
+        documentReference: self.document,
+        body: self.body,
+        state: self.state
+      });
+      // Change restoration.
+      self.state.viewsRestoration.interface = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreTipView(self) {
+    // Panel view.
+    if (self.state.viewsRestoration.tip) {
+      // Restore views.
+      self.state.views.tip = new ViewTip({
+        documentReference: self.document,
+        windowReference: self.window,
+        state: self.state
+      });
+      // Change restoration.
+      self.state.viewsRestoration.tip = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restorePanelView(self) {
+    // Panel view.
+    if (self.state.viewsRestoration.panel) {
+      // Restore views.
+      self.state.views.panel = new ViewPanel({
+        documentReference: self.document,
+        state: self.state
+      });
+      // Change restoration.
+      self.state.viewsRestoration.panel = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreControlView(self) {
+    // Control view.
+    if (self.state.viewsRestoration.control) {
+      // Restore views.
+      self.state.views.control = new ViewControl({
+        documentReference: self.document,
+        state: self.state
+      });
+      // Change restoration.
+      self.state.viewsRestoration.control = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreStateView(self) {
+    // State view.
+    if (self.state.viewsRestoration.state) {
+      // Restore views.
+      if (Model.determineControlState(self.state)) {
+        self.state.views.state = new ViewState({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("state", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.state = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreNetworkView(self) {
+    // Network view.
+    if (self.state.viewsRestoration.network) {
+      // Restore views.
+      if (Model.determineControlNetwork(self.state)) {
+        self.state.views.network = new ViewNetwork({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("network", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.network = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreFilterView(self) {
+    // Filter view.
+    if (self.state.viewsRestoration.filter) {
+      // Restore views.
+      if (Model.determineNetworkFilter(self.state)) {
+        self.state.views.filter = new ViewFilter({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("filter", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.filter = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreContextView(self) {
+    // Context view.
+    if (self.state.viewsRestoration.context) {
+      // Restore views.
+      if (Model.determineNetworkContext(self.state)) {
+        self.state.views.context = new ViewContext({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("context", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.context = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreSubnetworkView(self) {
+    // Subnetwork view.
+    if (self.state.viewsRestoration.subnetwork) {
+      // Restore views.
+      if (Model.determineControlSubnetwork(self.state)) {
+        self.state.views.subnetwork = new ViewSubnetwork({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("subnetwork", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.subnetwork = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreQueryView(self) {
+    // Context view.
+    if (self.state.viewsRestoration.query) {
+      // Restore views.
+      if (Model.determineSubnetworkQuery(self.state)) {
+        self.state.views.query = new ViewQuery({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("query", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.query = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreExplorationView(self) {
+    // Exploration view.
+    if (self.state.viewsRestoration.exploration) {
+      // Restore views.
+      self.state.views.exploration = new ViewExploration({
+        documentReference: self.document,
+        state: self.state
+      });
+      // Change restoration.
+      self.state.viewsRestoration.exploration = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreNoticeView(self) {
+    // Notice view.
+    if (self.state.viewsRestoration.notice) {
+      // Restore views.
+      if (Model.determineExplorationNotice(self.state)) {
+        self.state.views.notice = new ViewNotice({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("notice", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.notice = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreProgressView(self) {
+    // Progress view.
+    if (self.state.viewsRestoration.progress) {
+      // Restore views.
+      if (Model.determineExplorationProgress(self.state)) {
+        self.state.views.progress = new ViewProgress({
+          documentReference: self.document,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("progress", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.progress = false;
+    }
+  }
+  /**
+  * Restores view's content and behavior.
+  * @param {Object} self Instance of a class.
+  */
+  restoreTopologyView(self) {
+    // Topology view.
+    if (self.state.viewsRestoration.topology) {
+      // Restore views.
+      if (Model.determineExplorationTopology(self.state)) {
+        self.state.views.topology = new ViewTopology({
+          documentReference: self.document,
+          windowReference: self.window,
+          state: self.state
+        });
+      } else {
+        View.removeExistElement("topology", self.document);
+      }
+      // Change restoration.
+      self.state.viewsRestoration.topology = false;
+    }
+  }
+
+
+
+
+  // TODO: Mange exploration, progress, and topology views here...
 
   // Methods to evaluate application's state.
 
@@ -165,33 +461,16 @@ class Model {
   * @returns {boolean} Whether the application's state matches criteria.
   */
   static determineApplicationControls(state) {
-    return (
-      !(state.source === null) &&
-      !(state.controlViews === null) &&
-      !(state.prompt === null) &&
-      !(state.forceTopology === null) &&
-      !(state.setsFilters === null) &&
-      !(state.setsEntities === null) &&
-      !(state.setsFilter === null) &&
-      !(state.setsSearches === null) &&
-      !(state.setsSorts === null) &&
-      !(state.compartmentalization === null) &&
-      !(state.defaultSimplifications === null) &&
-      !(state.candidatesSearches === null) &&
-      !(state.candidatesSorts === null) &&
-      !(state.traversalCombination === null) &&
-      !(state.traversalType === null) &&
-      !(state.traversalRogueFocus === null) &&
-      !(state.traversalProximityFocus === null) &&
-      !(state.traversalProximityDirection === null) &&
-      !(state.traversalProximityDepth === null) &&
-      !(state.traversalPathSource === null) &&
-      !(state.traversalPathTarget === null) &&
-      !(state.traversalPathDirection === null) &&
-      !(state.traversalPathCount === null) &&
-      !(state.entitySelection === null) &&
-      !(state.simulation === null)
-    );
+    if (false) {
+      state.variablesNamesControls.forEach(function (variable) {
+        if (state[variable] === null) {
+          console.log("problem with state's variable, " + variable);
+        }
+      });
+    }
+    return state.variablesNamesControls.every(function (variable) {
+      return !(state[variable] === null);
+    });
   }
   /**
   * Determines whether the application's state has specific information.
@@ -200,12 +479,19 @@ class Model {
   */
   static determineMetabolismBaseInformation(state) {
     return (
-      !(state.metabolites === null) &&
-      !(state.reactions === null) &&
       !(state.compartments === null) &&
-      !(state.genes === null) &&
-      !(state.processes === null)
+      !(state.processes === null) &&
+      !(state.metabolites === null) &&
+      !(state.reactions === null)
     );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineMetabolismSupplementInformation(state) {
+    return !(state.defaultSimplificationsMetabolites === null);
   }
   /**
   * Determines whether the application's state has specific information.
@@ -232,8 +518,10 @@ class Model {
       !(state.networkLinks === null) &&
       !(state.networkNodesRecords === null) &&
       !(state.networkLinksRecords === null) &&
+      !(state.networkSummary === null) &&
       !(state.subnetworkNodesRecords === null) &&
-      !(state.subnetworkLinksRecords === null)
+      !(state.subnetworkLinksRecords === null) &&
+      !(state.subnetworkSummary === null)
     );
   }
   /**
@@ -241,16 +529,40 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineSource(state) {
-    return (Boolean(state.source.name));
+  static determineSourceState(state) {
+    return (Boolean(state.sourceState.name));
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSourceData(state) {
+    return (Boolean(state.sourceData.name));
   }
   /**
   * Determines tabs within control view.
   * @param {Object} state Application's state.
-  * @returns {Array<string>} Names of tabs in control view.
+  * @returns {Array<string>} Names of tabs.
   */
   static determineControlTabs(state) {
     return Object.keys(state.controlViews);
+  }
+  /**
+  * Determines tabs within network view.
+  * @param {Object} state Application's state.
+  * @returns {Array<string>} Names of tabs.
+  */
+  static determineNetworkTabs(state) {
+    return Object.keys(state.networkViews);
+  }
+  /**
+  * Determines tabs within network view.
+  * @param {Object} state Application's state.
+  * @returns {Array<string>} Names of tabs.
+  */
+  static determineSubnetworkTabs(state) {
+    return Object.keys(state.subnetworkViews);
   }
   /**
   * Determines whether the application's state has specific information.
@@ -265,55 +577,66 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineControlFilter(state) {
-    return state.controlViews.filter;
+  static determineControlNetwork(state) {
+    return state.controlViews.network;
   }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineControlSimplification(state) {
-    return state.controlViews.simplification;
+  static determineNetworkFilter(state) {
+    return state.networkViews.filter;
   }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineControlTraversal(state) {
-    return state.controlViews.traversal;
+  static determineNetworkContext(state) {
+    return state.networkViews.context;
   }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineControlDetail(state) {
-    return state.controlViews.detail;
+  static determineControlSubnetwork(state) {
+    return state.controlViews.subnetwork;
   }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineRogueTraversal(state) {
-    return (state.traversalRogueFocus.identifier.length > 0);
+  static determineSubnetworkQuery(state) {
+    return state.subnetworkViews.query;
   }
   /**
   * Determines whether the application's state has specific information.
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineProximityTraversal(state) {
+  static determineControlMeasurement(state) {
+    return state.controlViews.measurement;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineExplorationNotice(state) {
+    return !Model.determineNetworkDiagram(state);
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineExplorationProgress(state) {
     return (
-      (state.traversalProximityFocus.identifier.length > 0) &&
-      (
-        (state.traversalProximityDirection === "successors") ||
-        (state.traversalProximityDirection === "neighbors") ||
-        (state.traversalProximityDirection === "predecessors")
-      ) &&
-      (state.traversalProximityDepth > 0)
+      Model.determineNetworkDiagram(state) &&
+      !Model.determineSimulationPreparation(state)
     );
   }
   /**
@@ -321,15 +644,52 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determinePathTraversal(state) {
+  static determineExplorationTopology(state) {
     return (
-      (state.traversalPathSource.identifier.length > 0) &&
-      (state.traversalPathTarget.identifier.length > 0) &&
+      Model.determineNetworkDiagram(state) &&
+      Model.determineSimulationPreparation(state)
+    );
+  }
+
+
+
+
+
+  // TODO: introduce methods to determine exploration views
+
+
+
+
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineMetabolitesMeasurements(state) {
+    return Object.keys(state.metabolitesMeasurements).length > 0;
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineRogueQuery(state) {
+    return (state.queryRogueFocus.identifier.length > 0);
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineProximityQuery(state) {
+    return (
+      (state.queryProximityFocus.identifier.length > 0) &&
       (
-        (state.traversalPathDirection === "forward") ||
-        (state.traversalPathDirection === "reverse")
+        (state.queryProximityDirection === "successors") ||
+        (state.queryProximityDirection === "neighbors") ||
+        (state.queryProximityDirection === "predecessors")
       ) &&
-      (state.traversalPathCount > 0)
+      (state.queryProximityDepth > 0)
     );
   }
   /**
@@ -337,15 +697,92 @@ class Model {
   * @param {Object} state Application's state.
   * @returns {boolean} Whether the application's state matches criteria.
   */
-  static determineConnectionTraversal(state) {
+  static determinePathQuery(state) {
+    return (
+      (state.queryPathSource.identifier.length > 0) &&
+      (state.queryPathTarget.identifier.length > 0) &&
+      (
+        (state.queryPathDirection === "forward") ||
+        (state.queryPathDirection === "reverse") ||
+        (state.queryPathDirection === "both")
+      ) &&
+      (state.queryPathCount > 0)
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineConnectionQuery(state) {
     return (
       (
-        (state.traversalCombination === "union") ||
-        (state.traversalCombination === "difference")
+        (state.queryCombination === "inclusion") ||
+        (state.queryCombination === "exclusion")
       ) &&
-      (state.traversalConnectionTargets.length > 1) &&
-      (state.traversalConnectionCount > 0)
+      (state.queryConnectionTargets.length > 1) &&
+      (state.queryConnectionCount > 0)
     );
+  }
+
+  // TODO: is "determineNetworkDiagram" still necessary?
+
+
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineNetworkDiagram(state) {
+    return (
+      Model.determineSubnetworkNodesMinimum(state) &&
+      (
+        Model.determineSubnetworkNodesMaximum(state) ||
+        Model.determineForceNetworkDiagram(state)
+      )
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSubnetworkNodesMinimum(state) {
+    return (state.subnetworkNodesRecords.length > 0);
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSubnetworkNodesMaximum(state) {
+    return (state.subnetworkNodesRecords.length < 500);
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineForceNetworkDiagram(state) {
+    return (state.forceNetworkDiagram);
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSimulationPreparation(state) {
+    return (
+      state.simulationProgress.count > state.simulationProgress.preparation
+    );
+  }
+  /**
+  * Determines whether the application's state has specific information.
+  * @param {Object} state Application's state.
+  * @returns {boolean} Whether the application's state matches criteria.
+  */
+  static determineSimulationCompletion(state) {
+    return (state.simulationProgress.completion);
   }
   /**
   * Determines whether the application's state has specific information.
@@ -362,39 +799,18 @@ class Model {
   }
   /**
   * Determines whether the application's state has specific information.
-  * @param {Object} state Application's state.
-  * @returns {boolean} Whether the application's state matches criteria.
+  * @param {Object} parameters Destructured object of parameters.
+  * @param {number} parameters.length Length factor in pixels.
+  * @param {number} parameters.width Width of container in pixels.
+  * @param {number} parameters.height Height of container in pixels.
+  * @param {Object} parameters.state Application's state.
+  * @returns {boolean} Whether the node's entity has a selection.
   */
-  static determineForceTopology(state) {
-    return state.forceTopology;
-  }
-  /**
-  * Determines whether the application's state has specific information.
-  * @param {Object} state Application's state.
-  * @returns {boolean} Whether the application's state matches criteria.
-  */
-  static determineSubnetworkScale(state) {
-    return state.subnetworkNodesRecords.length < 3000;
-  }
-  /**
-  * Determines whether the application's state has specific information.
-  * @param {Object} state Application's state.
-  * @returns {boolean} Whether the application's state matches criteria.
-  */
-  static determineSimulation(state) {
+  static determineViewSimulationDimensions({length, width, height, state} = {}) {
     return (
-      state.simulation.hasOwnProperty("alpha") &&
-      state.simulation.hasOwnProperty("alphaDecay") &&
-      state.simulation.hasOwnProperty("alphaMin") &&
-      state.simulation.hasOwnProperty("alphaTarget") &&
-      state.simulation.hasOwnProperty("find") &&
-      state.simulation.hasOwnProperty("force") &&
-      state.simulation.hasOwnProperty("nodes") &&
-      state.simulation.hasOwnProperty("on") &&
-      state.simulation.hasOwnProperty("restart") &&
-      state.simulation.hasOwnProperty("stop") &&
-      state.simulation.hasOwnProperty("tick") &&
-      state.simulation.hasOwnProperty("velocityDecay")
+      (length === state.simulationDimensions.length) &&
+      (width === state.simulationDimensions.width) &&
+      (height === state.simulationDimensions.height)
     );
   }
   /**

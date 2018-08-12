@@ -30,7 +30,6 @@ United States of America
 
 /* Set dimensions of elements proportional to dimensions of the viewport or window. */
 
-
 /* Media Queries */
 /*
 @media (max-width: 15cm) {
@@ -41,35 +40,10 @@ flex-direction: column;
 */
 
 /******************************************************************************/
-/* Interface's Structure */
-/* -view */
-/* --control */
-/* ---state */
-/* ---set */
-/* ---context */
-/* ---traversal */
-/* --exploration */
-/* ---summary */
-/* ---topology */
-/******************************************************************************/
-
-/******************************************************************************/
-/* General */
-/******************************************************************************/
-
-.show-inline {
-  display: inline;
-}
-
-.hide {
-  display: none;
-}
-
-/******************************************************************************/
 /* Interface View */
 /******************************************************************************/
 
-#view {
+#interface {
   background-color: rgba(255, 255, 255, 1);
   display: flex;
   font-size: small;
@@ -106,11 +80,479 @@ flex-direction: column;
 /******************************************************************************/
 
 #panel {
-  flex-basis: 9cm;
+  flex-basis: 10cm;
+  height: 100%;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 1);
+  border-top-width: 0mm;
+  border-left-width: 0.5mm;
+  border-right-width: 0.5mm;
+  border-bottom-width: 0mm;
 }
 
 /******************************************************************************/
-/* Detail View */
+/* Control View */
+/******************************************************************************/
+
+#control {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#control button {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: xx-small;
+  margin: 0cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.025cm;
+  padding-right: 0.025cm;
+  line-height: 0.15cm;
+  vertical-align: middle;
+}
+
+/******************************************************************************/
+/* Tab */
+/* classes tab tierOne, tierTwo, tierThree, tierFour */
+/******************************************************************************/
+
+.show-inline {
+  display: inline;
+}
+
+.hide {
+  display: none;
+}
+
+div.tab {
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  text-align: left;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 1);
+  border-top-width: 0.25mm;
+  border-left-width: 0mm;
+  border-right-width: 0mm;
+  border-bottom-width: 0.25mm;
+  padding-left: 0.1cm;
+  color: rgba(0, 0, 0, 1);
+}
+
+div.tab.tierOne {
+  font-size: large;
+  width: 9.9cm;
+  line-height: 1cm;
+  height: 1cm;
+}
+
+div.tab.tierTwo {
+  font-size: medium;
+  width: 9.6cm;
+  line-height: 0.5cm;
+  height: 0.5cm;
+}
+
+div.tab.tierOne.normal {
+  background-color: rgba(255, 255, 255, 1);
+}
+
+div.tab.tierTwo.normal {
+  background-color: rgba(240, 240, 240, 1);
+}
+
+div.tab.emphasis {
+  background-color: rgba(255, 150, 50, 1);
+}
+
+/******************************************************************************/
+/* Control Container */
+/******************************************************************************/
+
+div.container.panel.control {
+  display: block;
+}
+
+div.container.panel.control.tierOne {
+  width: 10cm;
+  margin-left: 0cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0cm;
+  padding-right: 0cm;
+  border: 0cm;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+div.container.panel.control.tierTwo {
+  width: 9.7cm;
+  margin-left: 0.2cm;
+  padding-top: 0.1cm;
+  padding-bottom: 0.1cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+  border: 0cm;
+  background-color: rgba(230, 230, 230, 1);
+}
+
+div.container.panel.control.tierThree {
+  width: 9.4cm;
+  margin-left: 0.2cm;
+  padding-top: 0.1cm;
+  padding-bottom: 0.1cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+  border: 0cm;
+  background-color: rgba(220, 220, 220, 1);
+}
+
+/******************************************************************************/
+/* Linear scale */
+/******************************************************************************/
+
+svg g.scale text {
+  font-family: sans-serif;
+  font-style: normal;
+  font-size: xx-small;
+  font-weight: bold;
+}
+
+svg g.scale text.minimum {
+  text-anchor: start;
+}
+
+svg g.scale text.maximum {
+  text-anchor: end;
+}
+
+svg g.scale polyline {
+  fill: none;
+  stroke: rgba(0, 0, 0, 1);
+  stroke-width: 1;
+}
+
+/******************************************************************************/
+/* Notes */
+/******************************************************************************/
+
+div.note {
+  width: 8.9cm;
+  margin: 0cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+  border: 0cm;
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: xx-small;
+  white-space: pre-line;
+  /* background-color: rgba(220, 220, 220, 1); */
+  color: rgba(150, 150, 150, 1);
+}
+
+/******************************************************************************/
+/* Network summaries */
+/******************************************************************************/
+
+div.summary {
+  width: 9.3cm;
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: x-small;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+div.summary table {
+  width: 9.3cm;
+  table-layout: fixed;
+  border-collapse: collapse;
+  border-spacing: 0mm;
+}
+
+div.summary table tbody td.label {
+  width: 1.1cm;
+  padding-right: 0.1cm;
+  text-align: right;
+}
+
+div.summary table tbody td.chart svg {
+  width: 8cm;
+  height: 0.75cm;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+div.summary table tbody svg g.chart text {
+  font-size: xx-small;
+  font-weight: bold;
+  fill: rgba(255, 255, 255, 1);
+}
+
+div.summary table tbody tr.node {
+  border-bottom-style: solid;
+  border-bottom-color: rgba(0, 0, 0, 1);
+  border-bottom-width: 0.5mm;
+}
+
+div.summary table tbody tr.node svg g.chart rect.whole.metabolite {
+  fill: rgba(0, 50, 125, 1);
+}
+
+div.summary table tbody tr.node svg g.chart rect.whole.reaction {
+  fill: rgba(125, 125, 125, 1);
+}
+
+div.summary table tbody svg g.chart rect.selection {
+  fill: rgba(255, 255, 255, 0.75);
+}
+
+div.summary table tbody tr.link svg g.chart rect.whole {
+  fill: rgba(100, 100, 100, 1);
+}
+
+/******************************************************************************/
+/* Menus */
+/******************************************************************************/
+
+div.menu {
+  width: 8.9cm;
+  font-family: sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+/* Menu head. */
+
+div.menu input.search {
+  font-size: x-small;
+  width: 4.75cm;
+  line-height: 0.5cm;
+  border: 0px;
+  background-color: rgba(230, 230, 230, 1);
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+}
+
+div.menu table {
+  width: 8.75cm;
+  table-layout: fixed;
+  text-align: left;
+  border-collapse: collapse;
+  padding: 0px;
+}
+
+div.menu table thead {
+  border-bottom-style: solid;
+  border-bottom-color: rgba(0, 0, 0, 1);
+  border-bottom-width: 0.5mm;
+}
+
+div.menu table thead tr {
+  vertical-align: middle;
+  border-collapse: collapse;
+  border: 0px;
+  padding: 0px;
+}
+
+div.menu table thead th {
+  vertical-align: middle;
+  border-collapse: collapse;
+  border: 0.1cm;
+  padding: 0px;
+}
+
+div.menu table thead tr th span {
+  color: rgba(0, 0, 0, 1);
+  font-size: small;
+}
+
+div.menu table thead th svg.sort {
+  height: 0.35cm;
+  width: 0.35cm;
+}
+
+div.menu table thead th svg.sort polygon {
+  fill: rgba(0, 0, 0, 1);
+}
+
+div.menu table thead th.count svg.scale {
+  background-color: rgba(255, 255, 255, 1);
+  width: 3.25cm;
+  height: 0.5cm;
+}
+
+div.menu table thead tr th.name {
+  width: 5cm;
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  border-right-style: solid;
+  border-right-color: rgba(0, 0, 0, 1);
+  border-right-width: 0.5mm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+}
+
+div.menu table thead tr th.count {
+  width: 3.5cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+}
+
+/* Menu body. */
+
+div.menu div.scroll {
+  width: 8.9cm;
+  height: 3cm;
+  display: block;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+div.menu div.scroll table {
+  width: 8.75;
+  table-layout: fixed;
+  text-align: left;
+  border-collapse: collapse;
+  padding: 0px;
+}
+
+div.menu div.scroll table tbody tr td.name {
+  width: 5cm;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-right-style: solid;
+  border-right-color: rgba(0, 0, 0, 1);
+  border-right-width: 0.5mm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+}
+
+div.menu div.scroll table tbody tr td.count {
+  width: 3.5cm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+}
+
+div.menu table tbody tr td.omission {
+  width: 0.5cm;
+  border-right-style: solid;
+  border-right-color: rgba(0, 0, 0, 1);
+  border-right-width: 0.5mm;
+  padding-top: 0cm;
+  padding-bottom: 0cm;
+  padding-left: 0.1cm;
+  padding-right: 0cm;
+}
+
+div.menu table tbody tr {
+  vertical-align: middle;
+  padding: 0px;
+  border: 0px;
+}
+
+/* Class emphasis versus ignorance. */
+/* Class selection versus rejection. */
+
+div.menu table tbody tr.emphasis.selection, tr.emphasis.rejection {
+  background-color: rgba(255, 150, 50, 1);
+}
+
+div.menu table tbody tr.ignorance.selection:nth-child(odd) {
+  background-color: rgba(220, 220, 220, 1);
+}
+
+div.menu table tbody tr.ignorance.rejection:nth-child(odd) {
+  background-color: rgba(255, 255, 255, 1);
+}
+
+div.menu table tbody tr.ignorance.selection:nth-child(even) {
+  background-color: rgba(210, 210, 210, 1);
+}
+
+div.menu table tbody tr.ignorance.rejection:nth-child(even) {
+  background-color: rgba(240, 240, 240, 1);
+}
+
+div.menu table tbody tr td {
+  /*line-height: 1cm;*/
+  height: 0.5cm;
+  border: 0px;
+  padding: 0px;
+}
+
+div.menu table tbody td.count svg.chart {
+  height: 0.25cm;
+  width: 3.25cm;
+}
+
+/* Count bars. */
+/* Class selection versus rejection. */
+
+div.menu table tbody td.count svg.chart rect.mark.selection {
+  fill: rgba(255, 150, 50, 1);
+}
+
+div.menu table tbody td.count svg.chart rect.mark.rejection {
+  fill: rgba(0, 50, 125, 1);
+}
+
+/******************************************************************************/
+/* State View */
+/******************************************************************************/
+
+#state {
+  height: 1cm;
+  font-family: sans-serif;
+  font-style: normal;
+}
+
+#state span {
+  font-weight: normal;
+}
+
+#state button {
+  width: 1.5cm;
+  font-weight: bold;
+}
+
+/******************************************************************************/
+/* Filter View */
+/******************************************************************************/
+
+/******************************************************************************/
+/* Context View */
+/******************************************************************************/
+
+/******************************************************************************/
+/* Query View */
+/******************************************************************************/
+
+/* TODO: Style the connection table */
+
+div.query {
+  background-color: rgba(255, 255, 255, 1);
+}
+
+/******************************************************************************/
+/* Detail View ... change to Summary View... */
 /******************************************************************************/
 
 /* style the detail view differently from control views to distinguish*/
@@ -119,211 +561,7 @@ flex-direction: column;
 #detail {
   background-color: rgba(255, 255, 255, 1);
   height: 5%;
-  width: 100%;
 }
-
-/******************************************************************************/
-/* Control View */
-/******************************************************************************/
-/* needs work still... obviously... I need to figure out the display property for children...*/
-
-#control {
-  background-color: rgba(200, 200, 200, 1);
-  height: 95%;
-  width: 100%;
-  overflow: auto;
-}
-
-#control div.tab.normal {
-  background-color: rgba(50, 50, 50, 1);
-}
-
-#control div.tab.emphasis {
-  background-color: rgba(50, 0, 50, 1);
-}
-
-#control div.tab {
-  font-family: sans-serif;
-  font-style: normal;
-  font-weight: bold;
-  text-align: center;
-  height: 1cm;
-  border-style: solid;
-  border-width: 1.5mm;
-  border-color: rgba(100, 100, 100, 1);
-  font-size: large;
-  color: rgba(255, 255, 255, 1);
-}
-
-/******************************************************************************/
-/* State View */
-/******************************************************************************/
-
-#state {
-  background-color: rgba(150, 150, 150, 1);
-  display: block;
-  height: 1.25cm;
-  width: 100%;
-}
-
-#state input {
-  display: none;
-}
-
-#state button {
-  width: 2cm;
-}
-
-/******************************************************************************/
-/* Menu */
-/******************************************************************************/
-
-div.menu {
-  width: 100%;
-}
-
-div.menu input.search {
-  width: 5cm;
-}
-
-div.menu div.scroll {
-  display: block;
-  overflow-y: auto;
-  overflow-x: hidden;
-  height: 5cm;
-}
-
-div.menu table {
-  table-layout: fixed;
-  text-align: left;
-  border-collapse: collapse;
-  border-style: solid;
-  width: 100%;
-}
-
-div.menu table thead {
-  background-color: rgba(75, 75, 75, 1);
-  color: rgba(255, 255, 255, 1);
-  font-size: medium;
-  font-weight: bold;
-}
-
-div.menu table tr {
-  vertical-align: middle;
-}
-
-div.menu table thead th {
-  vertical-align: middle;
-  border-color: rgba(200, 200, 200, 1);
-  border-style: solid;
-}
-
-div.menu table thead th span {
-  background-color: rgba(50, 50, 50, 1);
-  font-size: medium;
-  color: rgba(255, 255, 255, 1);
-  font-family: sans-serif;
-  font-style: normal;
-  font-weight: bold;
-}
-
-div.menu table thead th svg.sort {
-  height: 0.5cm;
-  width: 0.5cm;
-}
-
-div.menu table thead th svg.sort polygon {
-  fill: rgba(255, 255, 255, 1);
-}
-
-div.menu table thead th svg.scale {
-  height: 0.5cm;
-  width: 100%;
-}
-
-div.menu table thead th svg.scale g text {
-  fill: rgba(255, 255, 255, 1);
-}
-
-div.menu table thead th svg.scale g path,line {
-  stroke: rgba(255, 255, 255, 1);
-}
-
-div.menu table th,td {
-  padding: 1mm;
-}
-
-div.menu table th.name, td.name {
-  width: 2cm;
-  white-space: nowrap;
-  overflow-x: hidden;
-  text-overflow: ellipsis;
-}
-
-div.menu table th.omission, td.omission, th.replication, td.replication {
-  width: 0.7cm;
-}
-
-div.menu table th.count, td.count {
-  width: auto;
-}
-
-div.menu table tbody tr.normal:nth-child(odd) {
-  background-color: rgba(200, 200, 200, 1);
-}
-
-div.menu table tbody tr.normal:nth-child(even) {
-  background-color: rgba(175, 175, 175, 1);
-}
-
-div.menu table tbody tr.emphasis {
-  background-color: rgba(150, 150, 200, 1);
-}
-
-div.menu table tbody td.name {
-  font-family: sans-serif;
-  font-style: normal;
-  font-weight: bold;
-  font-size: 13px;
-}
-
-div.menu table tbody td.count svg.graph {
-  height: 0.5cm;
-  width: 100%;
-}
-
-div.menu table tbody td.count svg.graph rect.mark.normal {
-  fill: rgba(0, 100, 255, 1);
-}
-
-div.menu table tbody td.count svg.graph rect.mark.emphasis {
-  fill: rgba(255, 100, 0, 1);
-}
-
-/******************************************************************************/
-/* Filter View */
-/******************************************************************************/
-
-#filter {
-  background-color: rgba(200, 200, 200, 1);
-  display: block;
-  width: 100%;
-}
-
-#filter > div.title {
-  background-color: rgba(100, 100, 100, 1);
-  font-size: large;
-  color: rgba(255, 255, 255, 1);
-  font-family: sans-serif;
-  font-style: normal;
-  font-weight: bold;
-  width: 100%;
-}
-
-/******************************************************************************/
-/* Simplification View */
-/******************************************************************************/
-
 
 /******************************************************************************/
 /* Exploration View */
@@ -334,6 +572,21 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   height: 100%;
 }
 
+#exploration svg {
+  height: 100%;
+  width: 100%;
+  fill: rgba(200, 200, 200, 1);
+}
+
+/******************************************************************************/
+/* Notice View */
+/******************************************************************************/
+
+/******************************************************************************/
+/* Progress View */
+/******************************************************************************/
+
+
 /******************************************************************************/
 /* Topology View */
 /******************************************************************************/
@@ -341,49 +594,41 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
 #topology {
   /*display:inline;*/
   /*float: left;*/
-  flex: 1;
-  height: 100%;
 }
 
-#topology svg {
-  height: 100%;
-  width: 100%;
-  fill: rgba(200, 50, 0, 1);
-}
-
-#topology svg rect.base {
+#topology rect.base {
   fill: rgba(255, 255, 255, 1);
 }
 
-#topology svg .node.emphasis .mark {
+#topology .node.emphasis .mark {
   fill: rgba(200, 200, 0, 1);
 }
 
-#topology svg .node.normal.metabolite .mark {
-  fill: rgba(0, 100, 255, 1);
+#topology .node.normal.metabolite .mark {
+  fill: rgba(0, 50, 125, 1);
 }
 
-#topology svg .node.normal.reaction .mark {
-  fill: rgba(255, 0, 100, 1);
+#topology .node.normal.reaction .mark {
+  fill: rgba(100, 100, 100, 1);
 }
 
-#topology svg .node.reaction .mark.supplement {
+#topology .node.reaction .mark.supplement {
   fill: rgba(255, 255, 100, 1);
 }
 
-#topology svg .node.reaction polygon.direction, rect.direction {
+#topology .node.reaction polygon.direction, rect.direction {
   /*dark*/
-  fill: rgba(50, 0, 200, 1);
+  fill: rgba(0, 0, 0, 1);
 }
 
-#topology svg .node.metabolite.replication .mark {
+#topology .node.metabolite.replication .mark {
   fill: rgba(0, 50, 150, 1);
 }
 
-#topology svg .node.reaction.replication .mark {
+#topology .node.reaction.replication .mark {
 }
 
-#topology svg .node text.label {
+#topology .node text.label {
   font-family: sans-serif;
   font-style: normal;
   font-weight: bold;
@@ -391,94 +636,36 @@ div.menu table tbody td.count svg.graph rect.mark.emphasis {
   text-anchor: middle;
 }
 
-#topology svg .node.metabolite text.label {
-  fill: rgba(0, 0, 0, 1);
+#topology .node.metabolite text.label {
+  fill: rgba(255, 255, 255, 1);
 }
 
-#topology svg .node.reaction text.label {
-  fill: rgba(0, 0, 0, 1);
+#topology .node.reaction text.label {
+  fill: rgba(255, 255, 255, 1);
 }
 
-#topology svg .link {
+#topology .link {
   stroke: rgba(0, 0, 0, 1);
+  fill: rgba(0, 0, 0, 1);
+  /* stroke-width: 0.1; */
 }
 
-#topology svg .link.reactant {
+#topology marker {
+  fill: rgba(0, 0, 0, 1);
+  /* stroke-width: 0.1; */
+}
+
+#topology .link.reactant {
   stroke-dasharray: 5,7;
 }
 
-#topology svg .link.product {
+#topology .link.product {
   stroke-dasharray: 5, 0;
 }
 
-#topology svg .link.replication {
+#topology .link.replication {
 }
-
 
 /******************************************************************************/
-/* Old stuff for scrap (re-use much of it) */
+/* ... */
 /******************************************************************************/
-
-
-/******************************************************************************/
-/* Set View */
-/******************************************************************************/
-
-#setold table tbody td {
-  border-color: rgba(200, 200, 200, 1);
-  border-style: solid;
-  border-width: 1mm;
-  height: 0.75cm;
-  overflow: hidden;
-  padding: 1mm;
-  white-space: nowrap;
-}
-
-#setold table tbody td.attribute {
-  background-color: rgba(50, 50, 50, 1);
-  color: rgba(255, 255, 255, 1);
-  font-size: medium;
-  font-weight: bold;
-  width: 3cm;
-}
-
-#setold table tbody td.attribute div.search input {
-  /*size: 10cm;*/
-}
-
-#setold table tbody td.value {
-  background-color: rgba(255, 255, 255, 1);
-}
-
-#setold table tbody td.value svg.graph {
-  height: 0.75cm;
-  width: 100%;
-}
-
-#setold table tbody td.value .mark {
-  /*fill: rgba(200, 20, 20, 1);*/
-}
-
-#setold table tbody td.value svg.graph g.group:nth-child(odd) .mark.normal {
-  fill: rgba(0, 255, 100, 1);
-}
-
-#setold table tbody td.value svg.graph g.group:nth-child(even) .mark.normal {
-  fill: rgba(0, 100, 255, 1);
-}
-
-#setold table tbody td.value svg.graph g.group:nth-child(odd) .mark.emphasis {
-  fill: rgba(255, 100, 0, 1);
-}
-
-#setold table tbody td.value svg.graph g.group:nth-child(even) .mark.emphasis {
-  fill: rgba(255, 0, 0, 1);
-}
-
-#setold table tbody td.value svg.graph text.label {
-  font-family: sans-serif;
-  font-style: normal;
-  font-weight: bold;
-  font-size: 13px;
-  fill: rgba(0, 0, 0, 1);
-}

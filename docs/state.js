@@ -1,6 +1,9 @@
 /*
+This file is part of project Profondeur
+(https://github.com/tcameronwaller/profondeur/).
+
 Profondeur supports visual exploration and analysis of metabolic networks.
-Copyright (C) 2017 Thomas Cameron Waller
+Copyright (C) 2018 Thomas Cameron Waller
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -16,14 +19,12 @@ You should have received a copy of the GNU General Public License along with
 this program.
 If not, see <http://www.gnu.org/licenses/>.
 
-This file is part of project Profondeur.
-Project repository's address: https://github.com/tcameronwaller/profondeur/
-Author's electronic address: tcameronwaller@gmail.com
-Author's physical address:
-T Cameron Waller
-Scientific Computing and Imaging Institute
+Thomas Cameron Waller
+tcameronwaller@gmail.com
+Department of Biochemistry
 University of Utah
-72 South Central Campus Drive Room 3750
+Room 5520C, Emma Eccles Jones Medical Research Building
+15 North Medical Drive East
 Salt Lake City, Utah 84112
 United States of America
 */
@@ -42,26 +43,206 @@ class State {
     // Set reference to class' current instance to persist across scopes.
     var self = this;
     // Specify state's variables.
-    var control = [
-      // Variable "source" stores a reference to a file on client's system that
-      // is a source of information.
-      "source",
-      // Variable "controlViews" stores information about whether each view
-      // within the control view is active.
-      "controlViews",
+    // Controls
+    var interfaceControls = [
+      // Variable "views" stores references to instances of views in interface.
+      "views",
+      // Variable "viewsRestoration" stores information about whether to restore
+      // each view in interface.
+      "viewsRestoration"
+    ];
+    var promptControls = [
       // Variable "prompt" stores information about the type and position of the
       // prompt view within the interface.
-      "prompt",
-      // Variable "forceTopology" stores information about whether to force the
-      // application to draw a visual representation of the network's topology
-      // even when this network is excessively large.
-      "forceTopology",
+      "prompt"
+    ];
+    var controlControls = [
+      // Variable "controlViews" stores information about whether each subordinate
+      // view within the panel view is active.
+      "controlViews"
+    ];
+    var stateControls = [
+      // Variable "sourceState" stores a reference to a file on client's system
+      // that is a source of information.
+      "sourceState"
+    ];
+    var networkControls = [
+      // Variable "networkViews" stores information about whether each
+      // subordinate view within the network view is active.
+      "networkViews"
+    ];
+    var filterControls = [
+      // Variable "setsFilters" stores information about selections of sets
+      // by values of entities' variables to apply as filters.
+      // The purpose of variable "setsFilters" is to define filters for
+      // filtration of entities by their values of variables.
+      // Information includes references to variables "compartments" and
+      // "processes".
+      "setsFilters",
+      // Variable "setsEntities" stores information about the type of entities,
+      // metabolites or reactions, to represent in the sets' summary.
+      "setsEntities",
+      // Variable "setsFilter" stores information about whether to represent
+      // entities and their values of variables after filtration in the sets'
+      // summary.
+      "setsFilter",
+      // Variable "setsSearches" stores information about searches' strings by
+      // which to filter the summaries of sets' cardinalities.
+      "setsSearches",
+      // Variable "setsSorts" stores information about the sort criteria and
+      // orders for the summaries of sets' cardinalities.
+      // Information includes references to variables "compartments" and
+      // "processes".
+      "setsSorts"
+    ];
+    var contextControls = [
+      // Variable "compartmentalization" stores information about whether to
+      // represent compartmentalization of metabolites.
+      "compartmentalization",
+      // Variable "simplificationPriority" stores information about whether to
+      // prioritize derivation of default or custom simplifications.
+      "simplificationPriority",
+      // Variable "defaultSimplifications" stores information about whether to
+      // simplify default entities.
+      "defaultSimplifications",
+      // Variable "candidatesSearches" stores information about searches'
+      // strings by which to filter the summaries of candidates' degrees.
+      "candidatesSearches",
+      // Variable "candidatesSorts" stores information about the sort criteria
+      // and orders for the summaries of candidates' degrees.
+      // Information includes references to variables "candidatesReactions" and
+      // "candidatesMetabolites".
+      "candidatesSorts"
+    ];
+    var subnetworkControls = [
+      // Variable "subnetworkViews" stores information about whether each
+      // subordinate view within the subnetwork view is active.
+      "subnetworkViews"
+    ];
+    var queryControls = [
+      // Variable "queryCombination" stores information about the strategy,
+      // union or difference, for combination of sets of nodes from queries
+      // in query view.
+      "queryCombination",
+      // Variable "queryType" stores information about the type of
+      // query, rogue, proximity, or path, for which to create controls in
+      // query view.
+      "queryType",
+      // Variable "queryRogueFocus" stores information about a network's
+      // single node to include or exclude from the subnetwork.
+      // Information includes references to variables
+      // "networkNodesMetabolites", "networkNodesReactions", and
+      // "networkNodesRecords".
+      "queryRogueFocus",
+      // Variable "queryProximityFocus" stores information about a
+      // network's single focal node for proximity query.
+      // Information includes references to variables
+      // "networkNodesMetabolites", "networkNodesReactions", and
+      // "networkNodesRecords".
+      "queryProximityFocus",
+      // Variable "queryProximityDirection" stores information about the
+      // direction of proximity query, either following successors,
+      // neighbors, or predecessors from the focal node.
+      "queryProximityDirection",
+      // Variable "queryProximityDepth" stores information about the depth
+      // of the proximity query in count of links from the focal node.
+      "queryProximityDepth",
+      // Variable "queryPathSource" stores information about a network's
+      // single node for the source of path query.
+      // Information includes references to variables
+      // "networkNodesMetabolites", "networkNodesReactions", and
+      //"networkNodesRecords".
+      "queryPathSource",
+      // Variable "queryPathTarget" stores information about a network's
+      // single node for the target of path query.
+      // Information includes references to variables
+      // "networkNodesMetabolites", "networkNodesReactions", and
+      //"networkNodesRecords".
+      "queryPathTarget",
+      // Variable "queryPathDirection" stores information about the
+      // direction of path query, either forward, reverse, or both.
+      "queryPathDirection",
+      // Variable "queryPathCount" stores information about the count of
+      // simple shortest paths to collect by path query.
+      "queryPathCount",
+      // Variable "queryConnectionTarget" stores information about a
+      // network's node to include or exclude from targets.
+      // Information includes references to variables
+      // "networkNodesMetabolites", "networkNodesReactions", and
+      //"networkNodesRecords".
+      "queryConnectionTarget",
+      // Variable "queryConnectionTargets" stores information about a
+      // network's nodes between which to traverse paths.
+      // Information includes references to variables
+      // "networkNodesMetabolites", "networkNodesReactions", and
+      //"networkNodesRecords".
+      "queryConnectionTargets",
+      // Variable "queryConnectionCount" stores information about the count
+      // of simple shortest paths to collect by path query between each pair
+      // of targets.
+      "queryConnectionCount"
+    ];
+    var measurementControls = [
+      // Variable "sourceData" stores a reference to a file on client's system
+      // that is a source of data for measurements of metabolites.
+      "sourceData",
+      // Variable "measurementReference" stores information about the reference
+      // to use for association of measurements to metabolites.
+      "measurementReference",
+      // Variable "measurementsSort" stores information about the sort criterion
+      // and order for the summary of measurements and their associations to
+      // metabolites.
+      // Information includes references to variables "metabolites" and
+      // "metabolitesMeasurements".
+      "measurementsSort"
+    ];
+    var summaryControls = [];
+    var explorationControls = [
+      // Variable "simulationDimensions" stores information about dimensions for
+      // the simulation.
+      "simulationDimensions",
+      // Variable "forceNetworkDiagram" stores information about whether to draw
+      // a network even if it is large.
+      "forceNetworkDiagram",
+      // Variable "simulationProgress" stores information about progress of an
+      // iterative simulation relative to an estimate of total iterations.
+      "simulationProgress",
       // Variable "simulation" stores references to iterative functions that
       // determine the positions of the subnetwork's elements in the network's
       // diagram.
-      "simulation"
+      "simulation",
+      // Variable "simulationNodesRecords" stores information about network's
+      // nodes with positions from simulation.
+      "simulationNodesRecords",
+      // Variable "simulation" stores information about network's links with
+      // positions from simulation.
+      "simulationLinksRecords",
+      // Variable "entitySelection" stores information about selection of an
+      // entity of interest.
+      // Information includes references to variables "metabolites",
+      // "reactions", "candidatesMetabolites", "candidatesReactions",
+      // "networkNodesMetabolites", and "networkNodesReactions".
+      "entitySelection"
     ];
-    var entities = [
+    self.variablesNamesControls = [].concat(
+      interfaceControls,
+      promptControls,
+      controlControls,
+      stateControls,
+      networkControls,
+      filterControls,
+      contextControls,
+      subnetworkControls,
+      queryControls,
+      measurementControls,
+      summaryControls,
+      explorationControls
+    );
+
+    // TODO: Make it clear that these state variables have to do with the data itself...
+
+    // Metabolic entities and sets
+    var metabolicEntities = [
       // Metabolic entities and sets.
       // Variable "metabolites" stores information about chemically-unique
       // metabolites.
@@ -72,16 +253,14 @@ class State {
       // "compartments", and "processes".
       "reactions"
     ];
-    var sets = [
-      // Variable "genes" stores information about genes.
-      "genes",
+    var metabolicSets = [
       // Variable "compartments" stores information about compartments within a
       // cell.
       "compartments",
       // Variable "processes" stores information about processes or pathways.
       "processes"
     ];
-    var totalEntitiesSets = [
+    var entitiesSets = [
       // Variable "totalSetsReactions" stores information for all reactions
       // about all the metabolites that participate in each reaction and the
       // sets to which each reaction belongs by all its values of variables.
@@ -100,18 +279,7 @@ class State {
       // "reactions", "compartments", and "processes".
       // Information derives from variables "totalSetsReactions" and
       // "reactions".
-      "totalSetsMetabolites"
-    ];
-    var entitiesSetsFilters = [
-      // Variable "setsFilters" stores information about selections of sets
-      // by values of entities' variables to apply as filters.
-      // The purpose of variable "setsFilters" is to define filters for
-      // filtration of entities by their values of variables.
-      // Information includes references to variables "compartments" and
-      // "processes".
-      "setsFilters"
-    ];
-    var currentEntitiesSets = [
+      "totalSetsMetabolites",
       // Variable "accessSetsReactions" stores information for reactions that
       // pass filters about all the metabolites that participate in each
       // reaction and the sets to which each reaction belongs by all its values
@@ -155,16 +323,7 @@ class State {
       // "reactions", "compartments", and "processes".
       // Information derives from variables "totalSetsMetabolites",
       // "filterSetsReactions" and "reactions".
-      "filterSetsMetabolites"
-    ];
-    var setsCardinalitiesSummaries = [
-      // Variable "setsEntities" stores information about the type of entities,
-      // metabolites or reactions, to represent in the sets' summary.
-      "setsEntities",
-      // Variable "setsFilter" stores information about whether to represent
-      // entities and their values of variables after filtration in the sets'
-      // summary.
-      "setsFilter",
+      "filterSetsMetabolites",
       // Variable "setsCardinalitites" stores information about the counts of
       // entities that belong to each set by their values of variables.
       // Information includes references to variables "compartments" and
@@ -173,14 +332,6 @@ class State {
       // "currentReactionsSets", "currentMetabolitesSets", "totalSetsReactions",
       // "totalSetsMetabolites".
       "setsCardinalities",
-      // Variable "setsSearches" stores information about searches' strings by
-      // which to filter the summaries of sets' cardinalities.
-      "setsSearches",
-      // Variable "setsSorts" stores information about the sort criteria and
-      // orders for the summaries of sets' cardinalities.
-      // Information includes references to variables "compartments" and
-      // "processes".
-      "setsSorts",
       // Variable "setsSummaries" stores information about the counts of
       // entities that belong to each set by their values of variables.
       // Information includes additional details for representation in menus.
@@ -191,12 +342,6 @@ class State {
       "setsSummaries"
     ];
     var context = [
-      // Variable "compartmentalization" stores information about whether to
-      // represent compartmentalization of metabolites.
-      "compartmentalization",
-      // Variable "defaultSimplifications" stores information about whether to
-      // simplify default entities.
-      "defaultSimplifications",
       // Variable "defaultSimplificationsMetabolites" stores information about
       // metabolites for which to create default simplifications.
       // Information includes references to variable "metabolites".
@@ -209,9 +354,7 @@ class State {
       // selections of metabolites for simplification either by replication or
       // omission.
       // Information includes references to variable "candidatesMetabolites".
-      "metabolitesSimplifications"
-    ];
-    var candidateEntities = [
+      "metabolitesSimplifications",
       // Variable "candidatesReactions" stores information about reactions and
       // their metabolites that are relevant in the context of interest and are
       // candidates for representation in the network.
@@ -228,17 +371,7 @@ class State {
       // Information includes references to variables "metabolites",
       // "reactions", and "compartments".
       // Information derives from variable "candidatesReactions".
-      "candidatesMetabolites"
-    ];
-    var candidatesSummaries = [
-      // Variable "candidatesSearches" stores information about searches'
-      // strings by which to filter the summaries of candidates' degrees.
-      "candidatesSearches",
-      // Variable "candidatesSorts" stores information about the sort criteria
-      // and orders for the summaries of candidates' degrees.
-      // Information includes references to variables "candidatesReactions" and
-      // "candidatesMetabolites".
-      "candidatesSorts",
+      "candidatesMetabolites",
       // Variable "candidatesSummaries" stores information about the counts of
       // other candidate entities to which each candidate entity relates.
       // Information includes additional details for representation in menus.
@@ -247,6 +380,20 @@ class State {
       // Information derives from variables "candidatesReactions",
       // "candidatesMetabolites", and "candidatesSorts".
       "candidatesSummaries"
+    ];
+    var measurement = [
+      // Variable "metabolitesMeasurements" stores information about
+      // experimental measurements of metabolites.
+      // Information includes references to variables "metabolites".
+      "metabolitesMeasurements",
+      // Variable "measurementsSummaries" stores information about measurements
+      // and their associations to metabolites.
+      // Information includes additional details for representation in menus.
+      // Information includes references to variables "metabolitesMeasurements"
+      // and "metabolites".
+      // Information derives from variables "metabolitesMeasurements" and
+      // "measurementsSort".
+      "measurementsSummaries"
     ];
     var network = [
       // Variable "networkNodesReactions" stores information about
@@ -279,70 +426,14 @@ class State {
       // network's links.
       // Information includes references to variables "networkNodesReactions",
       // and "networkNodesMetabolites".
-      "networkLinksRecords"
+      "networkLinksRecords",
+      // Variable "networkSummary" stores information about the counts of
+      // network's nodes and links.
+      // Information derives from variables "networkNodesMetabolites",
+      // "networkNodesReactions", and "networkLinks".
+      "networkSummary"
     ];
     var subnetwork = [
-      // Variable "traversalCombination" stores information about the strategy,
-      // union or difference, for combination of sets of nodes from traversals
-      // in traversal view.
-      "traversalCombination",
-      // Variable "traversalType" stores information about the type of
-      // traversal, rogue, proximity, or path, for which to create controls in
-      // traversal view.
-      "traversalType",
-      // Variable "traversalRogueFocus" stores information about a network's
-      // single node to include or exclude from the subnetwork.
-      // Information includes references to variables
-      // "networkNodesMetabolites", "networkNodesReactions", and
-      // "networkNodesRecords".
-      "traversalRogueFocus",
-      // Variable "traversalProximityFocus" stores information about a
-      // network's single focal node for proximity traversal.
-      // Information includes references to variables
-      // "networkNodesMetabolites", "networkNodesReactions", and
-      // "networkNodesRecords".
-      "traversalProximityFocus",
-      // Variable "traversalProximityDirection" stores information about the
-      // direction of proximity traversal, either following successors,
-      // neighbors, or predecessors from the focal node.
-      "traversalProximityDirection",
-      // Variable "traversalProximityDepth" stores information about the depth
-      // of the proximity traversal in count of links from the focal node.
-      "traversalProximityDepth",
-      // Variable "traversalPathSource" stores information about a network's
-      // single node for the source of path traversal.
-      // Information includes references to variables
-      // "networkNodesMetabolites", "networkNodesReactions", and
-      //"networkNodesRecords".
-      "traversalPathSource",
-      // Variable "traversalPathTarget" stores information about a network's
-      // single node for the target of path traversal.
-      // Information includes references to variables
-      // "networkNodesMetabolites", "networkNodesReactions", and
-      //"networkNodesRecords".
-      "traversalPathTarget",
-      // Variable "traversalPathDirection" stores information about the
-      // direction of path traversal, either forward, reverse, or both.
-      "traversalPathDirection",
-      // Variable "traversalPathCount" stores information about the count of
-      // simple shortest paths to collect by path traversal.
-      "traversalPathCount",
-      // Variable "traversalConnectionTarget" stores information about a
-      // network's node to include or exclude from targets.
-      // Information includes references to variables
-      // "networkNodesMetabolites", "networkNodesReactions", and
-      //"networkNodesRecords".
-      "traversalConnectionTarget",
-      // Variable "traversalConnectionTargets" stores information about a
-      // network's nodes between which to traverse paths.
-      // Information includes references to variables
-      // "networkNodesMetabolites", "networkNodesReactions", and
-      //"networkNodesRecords".
-      "traversalConnectionTargets",
-      // Variable "traversalConnectionCount" stores information about the count
-      // of simple shortest paths to collect by path traversal between each pair
-      // of targets.
-      "traversalConnectionCount",
       // Variable "subnetworkNodesRecords" stores concise information about
       // network's nodes of interest.
       // Information includes references to variables "networkNodesReactions",
@@ -353,24 +444,19 @@ class State {
       // Information includes references to variables "networkNodesReactions",
       // and "networkNodesMetabolites".
       "subnetworkLinksRecords",
-      // Variable "entitySelection" stores information about selection of an
-      // entity of interest.
-      // Information includes references to variables "metabolites",
-      // "reactions", "candidatesMetabolites", "candidatesReactions",
-      // "networkNodesMetabolites", and "networkNodesReactions".
-      "entitySelection"
+      // Variable "subnetworkSummary" stores information about the counts of
+      // subnetwork's nodes and links.
+      // Information derives from variables "subnetworkNodesRecords" and
+      // "subnetworkLinksRecords".
+      "subnetworkSummary"
     ];
     self.variablesNames = [].concat(
-      control,
-      entities,
-      sets,
-      totalEntitiesSets,
-      entitiesSetsFilters,
-      currentEntitiesSets,
-      setsCardinalitiesSummaries,
+      self.variablesNamesControls,
+      metabolicEntities,
+      metabolicSets,
+      entitiesSets,
       context,
-      candidateEntities,
-      candidatesSummaries,
+      measurement,
       network,
       subnetwork
     );

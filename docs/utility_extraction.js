@@ -206,6 +206,8 @@ class Extraction {
       return Object.assign({}, collection, newRecord);
     }, {});
   }
+
+
   /**
   * Collects metabolites that are candidates for transport in each compartment
   * of each process.
@@ -413,6 +415,9 @@ class Extraction {
       }
     }, {});
   }
+
+
+
   /**
   * Collects the identifiers of reactions between identical sets of reactants
   * and products.
@@ -600,6 +605,8 @@ class Extraction {
     // Include current record in the collection.
     return [].concat(previousRecordsCopy, currentRecord);
   }
+
+
   /**
   * Creates a record for a single reaction from a metabolic model.
   * @param {Object} parameters Destructured object of parameters.
