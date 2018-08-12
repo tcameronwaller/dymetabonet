@@ -605,11 +605,11 @@ div.query {
 }
 
 #topology .node.normal.metabolite .mark {
-  fill: rgba(40, 29, 193, 1);
+  fill: rgba(0, 50, 125, 1);
 }
 
 #topology .node.normal.reaction .mark {
-  fill: rgba(152, 32, 216, 1);
+  fill: rgba(100, 100, 100, 1);
 }
 
 #topology .node.reaction .mark.supplement {
@@ -618,7 +618,7 @@ div.query {
 
 #topology .node.reaction polygon.direction, rect.direction {
   /*dark*/
-  fill: rgba(200, 50, 0, 1);
+  fill: rgba(0, 0, 0, 1);
 }
 
 #topology .node.metabolite.replication .mark {
@@ -637,15 +637,21 @@ div.query {
 }
 
 #topology .node.metabolite text.label {
-  fill: rgba(200, 200, 200, 1);
+  fill: rgba(255, 255, 255, 1);
 }
 
 #topology .node.reaction text.label {
-  fill: rgba(200, 200, 200, 1);
+  fill: rgba(255, 255, 255, 1);
 }
 
 #topology .link {
   stroke: rgba(0, 0, 0, 1);
+  fill: rgba(0, 0, 0, 1);
+  /* stroke-width: 0.1; */
+}
+
+#topology marker {
+  fill: rgba(0, 0, 0, 1);
   /* stroke-width: 0.1; */
 }
 
