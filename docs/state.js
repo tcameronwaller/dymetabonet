@@ -182,20 +182,22 @@ class State {
       // of targets.
       "queryConnectionCount"
     ];
-    var measurementControls = [
-      // Variable "sourceData" stores a reference to a file on client's system
-      // that is a source of data for measurements of metabolites.
-      "sourceData",
-      // Variable "measurementReference" stores information about the reference
-      // to use for association of measurements to metabolites.
-      "measurementReference",
-      // Variable "measurementsSort" stores information about the sort criterion
-      // and order for the summary of measurements and their associations to
-      // metabolites.
-      // Information includes references to variables "metabolites" and
-      // "metabolitesMeasurements".
-      "measurementsSort"
-    ];
+    if(false) {
+      var measurementControls = [
+        // Variable "sourceData" stores a reference to a file on client's system
+        // that is a source of data for measurements of metabolites.
+        "sourceData",
+        // Variable "measurementReference" stores information about the reference
+        // to use for association of measurements to metabolites.
+        "measurementReference",
+        // Variable "measurementsSort" stores information about the sort criterion
+        // and order for the summary of measurements and their associations to
+        // metabolites.
+        // Information includes references to variables "metabolites" and
+        // "metabolitesMeasurements".
+        "measurementsSort"
+      ];
+    }
     var summaryControls = [];
     var explorationControls = [
       // Variable "simulationDimensions" stores information about dimensions for
@@ -234,7 +236,7 @@ class State {
       contextControls,
       subnetworkControls,
       queryControls,
-      measurementControls,
+      // measurementControls,
       summaryControls,
       explorationControls
     );
@@ -381,20 +383,22 @@ class State {
       // "candidatesMetabolites", and "candidatesSorts".
       "candidatesSummaries"
     ];
-    var measurement = [
-      // Variable "metabolitesMeasurements" stores information about
-      // experimental measurements of metabolites.
-      // Information includes references to variables "metabolites".
-      "metabolitesMeasurements",
-      // Variable "measurementsSummaries" stores information about measurements
-      // and their associations to metabolites.
-      // Information includes additional details for representation in menus.
-      // Information includes references to variables "metabolitesMeasurements"
-      // and "metabolites".
-      // Information derives from variables "metabolitesMeasurements" and
-      // "measurementsSort".
-      "measurementsSummaries"
-    ];
+    if (false) {
+      var measurement = [
+        // Variable "metabolitesMeasurements" stores information about
+        // experimental measurements of metabolites.
+        // Information includes references to variables "metabolites".
+        "metabolitesMeasurements",
+        // Variable "measurementsSummaries" stores information about measurements
+        // and their associations to metabolites.
+        // Information includes additional details for representation in menus.
+        // Information includes references to variables "metabolitesMeasurements"
+        // and "metabolites".
+        // Information derives from variables "metabolitesMeasurements" and
+        // "measurementsSort".
+        "measurementsSummaries"
+      ];
+    }
     var network = [
       // Variable "networkNodesReactions" stores information about
       // representations of reactions in the network.
@@ -456,7 +460,7 @@ class State {
       metabolicSets,
       entitiesSets,
       context,
-      measurement,
+      // measurement,
       network,
       subnetwork
     );

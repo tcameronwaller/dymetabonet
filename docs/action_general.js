@@ -148,7 +148,7 @@ class ActionGeneral {
     var subnetwork = ActionSubnetwork.initializeControls();
     var query = ActionQuery.initializeControls();
     // TODO: update measurement view and its controls
-    var measurement = ActionMeasurement.initializeControls();
+    // var measurement = ActionMeasurement.initializeControls();
     // TODO: update summary view and its controls
     var summary = ActionSummary.initializeControls();
     var exploration = ActionExploration.initializeControls();
@@ -165,7 +165,7 @@ class ActionGeneral {
       context,
       subnetwork,
       query,
-      measurement,
+      //measurement,
       summary,
       exploration
     );
@@ -471,7 +471,8 @@ class ActionGeneral {
   * @param {Object} state Application's state.
   */
   static loadMetabolismBaseInformation(state) {
-    d3.json("data/metabolism_sets_entities_recon2m2.json", function (data) {
+    // data/metabolism_sets_entities_recon2m2.json
+    d3.json("data/dymetabonet.json", function (data) {
       ActionGeneral.restoreMetabolismBaseInformation({
         data: data,
         state: state
