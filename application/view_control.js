@@ -87,7 +87,7 @@ class ViewControl {
       self.stateTab = self.document.getElementById("tab-state");
       self.networkTab = self.document.getElementById("tab-network");
       self.subnetworkTab = self.document.getElementById("tab-subnetwork");
-      self.measurementTab = self.document.getElementById("tab-measurement");
+      //self.measurementTab = self.document.getElementById("tab-measurement");
     }
   }
   /**

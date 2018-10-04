@@ -91,8 +91,7 @@ class ActionControl {
     var controlViews = {
       state: false,
       network: true,
-      subnetwork: true,
-      measurement: false
+      subnetwork: true
     };
     // Compile information.
     var variablesValues = {
