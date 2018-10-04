@@ -148,7 +148,7 @@ class ActionGeneral {
     var subnetwork = ActionSubnetwork.initializeControls();
     var query = ActionQuery.initializeControls();
     // TODO: update measurement view and its controls
-    var measurement = ActionMeasurement.initializeControls();
+    // var measurement = ActionMeasurement.initializeControls();
     // TODO: update summary view and its controls
     var summary = ActionSummary.initializeControls();
     var exploration = ActionExploration.initializeControls();
@@ -165,7 +165,7 @@ class ActionGeneral {
       context,
       subnetwork,
       query,
-      measurement,
+      //measurement,
       summary,
       exploration
     );
