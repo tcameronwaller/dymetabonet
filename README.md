@@ -44,5 +44,8 @@ Interpretations".
 Check out a demonstration of the latest stable version at
 https://tcameronwaller.github.io/dymetabonet/
 
+Watch a raw screen capture video of DyMetaboNet at
+https://zenodo.org/record/3382296
+
 [1]: https://github.com/tcameronwaller/dymetabonet
 [2]: https://github.com/tcameronwaller/metabonet
